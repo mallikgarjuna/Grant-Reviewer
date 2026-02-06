@@ -2,6 +2,12 @@
 Seed script - populates database with ERC-2024-STG sample data from Stage 2.
 """
 
+import sys
+from pathlib import Path
+
+# Add backend to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from app.db import create_db_and_tables, get_session
 from app.models.domain import (
     EvaluationCriterion,
@@ -192,15 +198,18 @@ Provide critical, reviewer-style feedback for each expectation.""",
     session.commit()
     session.refresh(template)
 
-    session.close()
-
-    return {
+    # Capture IDs before closing session
+    result = {
         "agency_id": agency.id,
         "call_id": call.id,
         "section_1_id": section_1.id,
         "section_2_id": section_2.id,
         "template_id": template.id,
     }
+
+    session.close()
+
+    return result
 
 
 if __name__ == "__main__":

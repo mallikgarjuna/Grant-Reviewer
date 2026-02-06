@@ -4,6 +4,12 @@ Run review script - manual test of the core use case.
 Usage: uv run python scripts/run_review.py
 """
 
+import sys
+from pathlib import Path
+
+# Add backend to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from scripts.seed import seed_database
 
 from app.db import get_session
@@ -58,13 +64,6 @@ def main():
     print("=" * 60)
     print("TEST 2: Reviewing Section 2 (has 0 expectations)")
     print("=" * 60)
-
-    # Need fresh session since we're using in-memory DB
-    session.close()
-    ids = seed_database()
-    session = get_session()
-    repository = ReviewRepository(session)
-    service = ReviewerService(repository)
 
     try:
         review, cards = service.generate_review(
