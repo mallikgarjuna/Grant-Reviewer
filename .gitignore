@@ -102,3 +102,8 @@ next-env.d.ts
 # Knowledge base and tasks (force add if needed)
 # knowledge_base/
 # tasks/
+
+# External AI agent skills
+.agent/skills/
+.agents/
+.claude/
