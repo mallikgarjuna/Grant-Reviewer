@@ -5,7 +5,7 @@ Domain models for Grant Reviewer MVP.
 """
 
 import enum
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -13,18 +13,18 @@ from sqlmodel import Field, Relationship, SQLModel
 
 
 # Enums
-class NodeType(str, enum.Enum):
+class NodeType(enum.StrEnum):
     SECTION = "SECTION"
     SUBSECTION = "SUBSECTION"
 
 
-class ExpectationStrength(str, enum.Enum):
+class ExpectationStrength(enum.StrEnum):
     MANDATORY = "MANDATORY"
     IMPORTANT = "IMPORTANT"
     OPTIONAL = "OPTIONAL"
 
 
-class EvaluationIntent(str, enum.Enum):
+class EvaluationIntent(enum.StrEnum):
     COMPLIANCE = "COMPLIANCE"
     QUALITY = "QUALITY"
     RISK = "RISK"
@@ -38,9 +38,9 @@ class FundingAgency(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str
     short_name: str = Field(unique=True)
-    description: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    description: str | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
     calls: list["FundingCall"] = Relationship(back_populates="agency")
@@ -54,16 +54,16 @@ class FundingCall(SQLModel, table=True):
     funding_agency_id: UUID = Field(foreign_key="funding_agencies.id")
     name: str
     code: str
-    aim_objectives: Optional[str] = None
-    scope: Optional[str] = None
-    general_guidelines: Optional[str] = None
+    aim_objectives: str | None = None
+    scope: str | None = None
+    general_guidelines: str | None = None
     call_year: int
     is_active: bool = True
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
-    agency: Optional[FundingAgency] = Relationship(back_populates="calls")
+    agency: FundingAgency | None = Relationship(back_populates="calls")
     nodes: list["ProposalNode"] = Relationship(back_populates="call")
     criteria: list["EvaluationCriterion"] = Relationship(back_populates="call")
 
@@ -74,18 +74,19 @@ class ProposalNode(SQLModel, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     funding_call_id: UUID = Field(foreign_key="funding_calls.id")
-    parent_node_id: Optional[UUID] = Field(
-        default=None, foreign_key="proposal_nodes.id"
+    parent_node_id: UUID | None = Field(
+        default=None,
+        foreign_key="proposal_nodes.id",
     )
     node_type: NodeType
     title: str
     order_index: int = 0
-    guidance_text: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    guidance_text: str | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
-    call: Optional[FundingCall] = Relationship(back_populates="nodes")
+    call: FundingCall | None = Relationship(back_populates="nodes")
     expectations: list["NodeExpectation"] = Relationship(back_populates="node")
 
 
@@ -96,13 +97,13 @@ class EvaluationCriterion(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     funding_call_id: UUID = Field(foreign_key="funding_calls.id")
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     order_index: int = 0
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
-    call: Optional[FundingCall] = Relationship(back_populates="criteria")
+    call: FundingCall | None = Relationship(back_populates="criteria")
     elements: list["EvaluationElement"] = Relationship(back_populates="criterion")
 
 
@@ -113,12 +114,12 @@ class EvaluationElement(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     evaluation_criterion_id: UUID = Field(foreign_key="evaluation_criteria.id")
     name: str
-    description: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    description: str | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
-    criterion: Optional[EvaluationCriterion] = Relationship(back_populates="elements")
+    criterion: EvaluationCriterion | None = Relationship(back_populates="elements")
     expectations: list["NodeExpectation"] = Relationship(back_populates="element")
 
 
@@ -131,14 +132,14 @@ class NodeExpectation(SQLModel, table=True):
     evaluation_element_id: UUID = Field(foreign_key="evaluation_elements.id")
     expectation_strength: ExpectationStrength
     evaluation_intent: EvaluationIntent
-    guidance_note: Optional[str] = None
+    guidance_note: str | None = None
     order_index: int = 0
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
-    node: Optional[ProposalNode] = Relationship(back_populates="expectations")
-    element: Optional[EvaluationElement] = Relationship(back_populates="expectations")
+    node: ProposalNode | None = Relationship(back_populates="expectations")
+    element: EvaluationElement | None = Relationship(back_populates="expectations")
     review_cards: list["ReviewCard"] = Relationship(back_populates="expectation")
 
 
@@ -147,10 +148,10 @@ class User(SQLModel, table=True):
     __tablename__ = "users"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    email: Optional[str] = None
+    email: str | None = None
     is_anonymous: bool = True
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
     snippets: list["ProposalSnippet"] = Relationship(back_populates="user")
@@ -166,12 +167,12 @@ class ProposalSnippet(SQLModel, table=True):
     proposal_node_id: UUID = Field(foreign_key="proposal_nodes.id")
     pasted_text: str
     expires_at: datetime = Field(
-        default_factory=lambda: datetime.utcnow() + timedelta(hours=24)
+        default_factory=lambda: datetime.now(UTC) + timedelta(hours=24),
     )
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
-    user: Optional[User] = Relationship(back_populates="snippets")
+    user: User | None = Relationship(back_populates="snippets")
     review: Optional["Review"] = Relationship(back_populates="snippet")
 
 
@@ -184,8 +185,8 @@ class PromptTemplate(SQLModel, table=True):
     version: int = 1
     template_text: str
     is_active: bool = True
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
     reviews: list["Review"] = Relationship(back_populates="template")
@@ -198,11 +199,11 @@ class Review(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     proposal_snippet_id: UUID = Field(foreign_key="proposal_snippets.id")
     prompt_template_id: UUID = Field(foreign_key="prompt_templates.id")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
-    snippet: Optional[ProposalSnippet] = Relationship(back_populates="review")
-    template: Optional[PromptTemplate] = Relationship(back_populates="reviews")
+    snippet: ProposalSnippet | None = Relationship(back_populates="review")
+    template: PromptTemplate | None = Relationship(back_populates="reviews")
     cards: list["ReviewCard"] = Relationship(back_populates="review")
 
 
@@ -214,8 +215,8 @@ class ReviewCard(SQLModel, table=True):
     review_id: UUID = Field(foreign_key="reviews.id")
     node_expectation_id: UUID = Field(foreign_key="node_expectations.id")
     feedback_text: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
-    review: Optional[Review] = Relationship(back_populates="cards")
-    expectation: Optional[NodeExpectation] = Relationship(back_populates="review_cards")
+    review: Review | None = Relationship(back_populates="cards")
+    expectation: NodeExpectation | None = Relationship(back_populates="review_cards")

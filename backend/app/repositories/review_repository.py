@@ -22,7 +22,7 @@ from app.models.domain import (
 class ReviewRepository:
     """Repository for review-related database operations."""
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         self.session = session
 
     def get_node_by_id(self, node_id: UUID) -> ProposalNode | None:
@@ -40,10 +40,10 @@ class ReviewRepository:
 
     def get_active_prompt_template(self) -> PromptTemplate | None:
         """Fetch the currently active prompt template."""
-        statement = select(PromptTemplate).where(PromptTemplate.is_active == True)
+        statement = select(PromptTemplate).where(PromptTemplate.is_active)
         return self.session.exec(statement).first()
 
-    def create_user(self, is_anonymous: bool = True) -> User:
+    def create_user(self, *, is_anonymous: bool = True) -> User:
         """Create a new user."""
         user = User(is_anonymous=is_anonymous)
         self.session.add(user)

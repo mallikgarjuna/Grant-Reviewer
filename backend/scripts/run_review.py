@@ -10,14 +10,13 @@ from pathlib import Path
 # Add backend to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scripts.seed import seed_database
-
 from app.db import get_session
 from app.repositories.review_repository import ReviewRepository
 from app.services.reviewer_service import ReviewerService
+from scripts.seed import seed_database
 
 
-def main():
+def main() -> None:
     # 1. Seed the database
     print("Seeding database...")
     ids = seed_database()

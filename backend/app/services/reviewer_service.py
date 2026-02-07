@@ -13,7 +13,7 @@ from app.repositories.review_repository import ReviewRepository
 class ReviewerService:
     """Service for generating reviews from proposal snippets."""
 
-    def __init__(self, repository: ReviewRepository):
+    def __init__(self, repository: ReviewRepository) -> None:
         self.repository = repository
 
     def generate_review(
@@ -37,6 +37,7 @@ class ReviewerService:
 
         Raises:
             ValueError: If node has no expectations or no active template
+
         """
         # 1. Fetch expectations
         expectations = self.repository.get_expectations_for_node(node_id)
@@ -53,7 +54,8 @@ class ReviewerService:
         # 4. Get node for context
         node = self.repository.get_node_by_id(node_id)
         if not node:
-            raise ValueError(f"Node {node_id} not found.")
+            msg = f"Node {node_id} not found."
+            raise ValueError(msg)
 
         # 5. Create user and snippet
         user = self.repository.create_user()
