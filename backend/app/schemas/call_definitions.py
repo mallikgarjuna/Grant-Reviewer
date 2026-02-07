@@ -4,6 +4,20 @@ YAML Ingestion Schemas for Admin Call Definition.
 Pydantic models for validating YAML call definition files.
 These map 1:1 to the database models in models/domain.py.
 
+WHY SEPARATE SCHEMAS (not reusing SQLModel from domain.py)?
+-----------------------------------------------------------
+1. **Different ID types**: YAML uses human-readable string IDs (e.g., "elem_novelty")
+   that get mapped to UUIDs during ingestion. SQLModel expects actual UUIDs.
+
+2. **No auto-generated fields**: YAML doesn't include `id`, `created_at`, `updated_at`,
+   or foreign key UUIDs - these are database concerns, not user input.
+
+3. **Nested structure**: YAML uses inline nesting (children inside parent), while
+   SQLModel uses flat tables with foreign key references.
+
+4. **Custom validators**: Pydantic allows `check_references` and `check_recursion`
+   validators that wouldn't make sense on database models.
+
 Key validation features:
 - check_references: Ensures all evaluation_element_id references exist in the rubric
 - check_recursion: Prevents cyclic relationships in proposal_nodes

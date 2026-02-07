@@ -285,6 +285,9 @@ def ingest_nodes_recursive(
             ProposalNode.title == node_def.title,
         )
         if parent_id is None:
+            # NOTE: Use is_(None) instead of == None for SQL NULL comparisons.
+            # In SQL, you must use "IS NULL" not "= NULL". SQLAlchemy's is_()
+            # method generates the correct "WHERE column IS NULL" clause.
             query = query.where(ProposalNode.parent_node_id.is_(None))
         else:
             query = query.where(ProposalNode.parent_node_id == parent_id)
@@ -456,6 +459,8 @@ def main() -> None:
         type=Path,
         help="Path to the YAML call definition file",
     )
+    # NOTE: argparse converts dashes to underscores for attribute names.
+    # So --dry-run becomes args.dry_run in Python. This is standard behavior.
     parser.add_argument(
         "--dry-run",
         action="store_true",
