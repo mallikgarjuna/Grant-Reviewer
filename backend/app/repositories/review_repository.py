@@ -15,6 +15,7 @@ from app.models.domain import (
     ProposalSnippet,
     Review,
     ReviewCard,
+    ReviewRating,
     User,
 )
 
@@ -89,12 +90,14 @@ class ReviewRepository:
         self,
         review_id: UUID,
         expectation_id: UUID,
+        rating: ReviewRating,
         feedback: str,
     ) -> ReviewCard:
         """Create a new review card."""
         card = ReviewCard(
             review_id=review_id,
             node_expectation_id=expectation_id,
+            rating=rating,
             feedback_text=feedback,
         )
         self.session.add(card)

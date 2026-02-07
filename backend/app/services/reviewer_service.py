@@ -6,7 +6,7 @@ Rule: Services call Repositories. Controllers call Services.
 
 from uuid import UUID
 
-from app.models.domain import NodeExpectation, Review, ReviewCard
+from app.models.domain import NodeExpectation, Review, ReviewCard, ReviewRating
 from app.repositories.review_repository import ReviewRepository
 
 
@@ -75,10 +75,11 @@ class ReviewerService:
         # 7. Generate mock feedback and create cards
         cards = []
         for expectation in expectations:
-            feedback = self._generate_mock_feedback(expectation, snippet_text)
+            feedback, rating = self._generate_mock_feedback(expectation, snippet_text)
             card = self.repository.create_review_card(
                 review_id=review.id,
                 expectation_id=expectation.id,
+                rating=rating,
                 feedback=feedback,
             )
             cards.append(card)
@@ -89,7 +90,7 @@ class ReviewerService:
         self,
         expectation: NodeExpectation,
         snippet_text: str,
-    ) -> str:
+    ) -> tuple[str, ReviewRating]:
         """
         Generate mock AI feedback for prototype.
 
@@ -109,12 +110,29 @@ class ReviewerService:
             "STRATEGIC_FIT": "Strategic fit evaluation: ",
         }
 
+        # Mock rating logic for demonstration
+        # If text is too short, mark mandatory/important as critical/warning
+        text_len = len(snippet_text.strip())
+        rating = ReviewRating.SUCCESS
+
+        strength = expectation.expectation_strength
+        if text_len < 100:
+            if strength == "MANDATORY":
+                rating = ReviewRating.CRITICAL
+            elif strength == "IMPORTANT":
+                rating = ReviewRating.WARNING
+            else:
+                rating = ReviewRating.NOTE
+        elif "quantum" not in snippet_text.lower():
+            rating = ReviewRating.NOTE  # Just a note if missing keyword
+
         prefix = strength_feedback.get(expectation.expectation_strength.value, "")
         intent = intent_feedback.get(expectation.evaluation_intent.value, "")
 
-        return (
+        feedback = (
             f"{prefix}{intent}"
             f"[MOCK] Feedback for '{expectation.element.name if expectation.element else 'unknown'}': "
             f"The submitted text ({len(snippet_text)} chars) has been reviewed against: "
             f"'{expectation.guidance_note or 'No specific guidance'}'"
         )
+        return feedback, rating

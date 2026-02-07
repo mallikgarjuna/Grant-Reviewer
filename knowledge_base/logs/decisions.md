@@ -56,3 +56,12 @@
 - **Decision**: Backend uses **SQLModel** (ORM), **UV** (package manager), **FastAPI** (API framework, for Stage 4+).
 - **Rationale**: User preference. SQLModel integrates Pydantic + SQLAlchemy. FastAPI is performant and type-safe.
 - **Status**: Approved.
+
+---
+
+## Date: 2026-02-07 (Stage 4 Interface Readiness)
+
+### AD 4.1: Structured Rating on ReviewCards
+- **Decision**: Added `ReviewCard.rating` using a `ReviewRating` enum (`CRITICAL`, `WARNING`, `SUCCESS`, `NOTE`).
+- **Rationale**: Supports "Traffic Light" indicators in the UI without requiring clients to parse human-readable text. Provides a structured way to sort/filter findings by severity.
+- **Status**: Implemented.

@@ -27,3 +27,8 @@
 
 ### Q: Tech stack for backend?
 **A**: SQLModel (ORM), UV (package manager), FastAPI (API framework for Stage 4+).
+
+## 2026-02-07
+
+### Q: How to support UI "traffic light" indicators?
+**A**: Added a typed `rating` field (`ReviewRating` Enum) to `ReviewCard`. This allows the UI to render findings based on severity (Critical, Warning, etc.) without string parsing. (AD 4.1)

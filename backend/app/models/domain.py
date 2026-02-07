@@ -31,6 +31,13 @@ class EvaluationIntent(enum.StrEnum):
     STRATEGIC_FIT = "STRATEGIC_FIT"
 
 
+class ReviewRating(enum.StrEnum):
+    CRITICAL = "CRITICAL"  # Red
+    WARNING = "WARNING"    # Orange
+    SUCCESS = "SUCCESS"    # Green
+    NOTE = "NOTE"          # Blue
+
+
 # 1. FundingAgency
 class FundingAgency(SQLModel, table=True):
     __tablename__ = "funding_agencies"
@@ -214,6 +221,7 @@ class ReviewCard(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     review_id: UUID = Field(foreign_key="reviews.id")
     node_expectation_id: UUID = Field(foreign_key="node_expectations.id")
+    rating: ReviewRating
     feedback_text: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 

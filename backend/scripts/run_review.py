@@ -53,6 +53,7 @@ def main() -> None:
         for i, card in enumerate(cards, 1):
             print(f"--- Card {i} ---")
             print(f"Expectation ID: {card.node_expectation_id}")
+            print(f"Rating: {card.rating}")
             print(f"Feedback: {card.feedback_text}")
             print()
 
