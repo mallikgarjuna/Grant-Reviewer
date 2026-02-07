@@ -5,5 +5,5 @@ This file tracks minor fixes, refactors, and maintenance tasks to avoid clutteri
 | ID | Task Description | Status | Commit |
 | :--- | :--- | :--- | :--- |
 | M.1 | Refactor Python code for PEP 8 compliance using Ruff | [x] | `feat: [M.1] be9c53d` |
-| M.2 | Add descriptive docstrings to domain models          | [/] | - |
-| M.3 | Fix magic values in ReviewerService                  | [ ] | - |
+| M.2 | Add descriptive docstrings to domain models          | [x] | `feat: [M.2] 0612f38` |
+| M.3 | Fix magic values in ReviewerService                  | [x] | `feat: [M.3] 0612f38` |
