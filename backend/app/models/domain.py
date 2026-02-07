@@ -51,9 +51,13 @@ class FundingAgency(SQLModel, table=True):
     __tablename__ = "funding_agencies"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    name: str
-    short_name: str = Field(unique=True)
-    description: str | None = None
+    name: str = Field(description="Full legal name of the funding agency")
+    short_name: str = Field(
+        unique=True, index=True, description="Commonly used acronym"
+    )
+    description: str | None = Field(
+        default=None, description="General mission statement"
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -68,14 +72,26 @@ class FundingCall(SQLModel, table=True):
     __tablename__ = "funding_calls"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    funding_agency_id: UUID = Field(foreign_key="funding_agencies.id")
-    name: str
-    code: str
-    aim_objectives: str | None = None
-    scope: str | None = None
-    general_guidelines: str | None = None
-    call_year: int
-    is_active: bool = True
+    funding_agency_id: UUID = Field(
+        foreign_key="funding_agencies.id",
+        description="Owning agency",
+    )
+    name: str = Field(description="Common name of the grant call")
+    code: str = Field(index=True, description="Official call identifier code")
+    aim_objectives: str | None = Field(
+        default=None,
+        description="The intended impact and goals of the call",
+    )
+    scope: str | None = Field(
+        default=None, description="The thematic areas or boundaries of the call"
+    )
+    general_guidelines: str | None = Field(
+        default=None, description="General instructions for applicants"
+    )
+    call_year: int = Field(description="The calendar year of the call")
+    is_active: bool = Field(
+        default=True, description="Whether this call is currently open or relevant"
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -92,21 +108,28 @@ class ProposalNode(SQLModel, table=True):
     __tablename__ = "proposal_nodes"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    funding_call_id: UUID = Field(foreign_key="funding_calls.id")
+    funding_call_id: UUID = Field(
+        foreign_key="funding_calls.id",
+        description="Owning call",
+    )
     parent_node_id: UUID | None = Field(
         default=None,
         foreign_key="proposal_nodes.id",
+        description="Parent section for hierarchical nesting",
     )
-    node_type: NodeType
-    title: str
-    order_index: int = 0
-    guidance_text: str | None = None
+    node_type: NodeType = Field(description="Type of node: SECTION or SUBSECTION")
+    title: str = Field(description="Display title of the section")
+    order_index: int = Field(default=0, description="Sequential order in the document")
+    guidance_text: str | None = Field(
+        default=None,
+        description="Guidance provided to the applicant",
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
     call: FundingCall | None = Relationship(back_populates="nodes")
-    expectations: list["NodeExpectation"] = Relationship(back_populates="node")
+    expectations: list["NodeExpectation"] = Relationship(back_populates="expectations")
 
 
 # 4. EvaluationCriterion
@@ -116,10 +139,16 @@ class EvaluationCriterion(SQLModel, table=True):
     __tablename__ = "evaluation_criteria"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    funding_call_id: UUID = Field(foreign_key="funding_calls.id")
-    name: str
-    description: str | None = None
-    order_index: int = 0
+    funding_call_id: UUID = Field(
+        foreign_key="funding_calls.id",
+        description="Owning call",
+    )
+    name: str = Field(description="Name of the assessment dimension")
+    description: str | None = Field(
+        default=None,
+        description="Brief explanation of the criterion",
+    )
+    order_index: int = Field(default=0, description="Display order for the rubric")
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -135,9 +164,15 @@ class EvaluationElement(SQLModel, table=True):
     __tablename__ = "evaluation_elements"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    evaluation_criterion_id: UUID = Field(foreign_key="evaluation_criteria.id")
-    name: str
-    description: str | None = None
+    evaluation_criterion_id: UUID = Field(
+        foreign_key="evaluation_criteria.id",
+        description="Owning criterion",
+    )
+    name: str = Field(description="Name of the specific reviewable concern")
+    description: str | None = Field(
+        default=None,
+        description="What the element explicitly evaluates",
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -153,12 +188,25 @@ class NodeExpectation(SQLModel, table=True):
     __tablename__ = "node_expectations"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    proposal_node_id: UUID = Field(foreign_key="proposal_nodes.id")
-    evaluation_element_id: UUID = Field(foreign_key="evaluation_elements.id")
-    expectation_strength: ExpectationStrength
-    evaluation_intent: EvaluationIntent
-    guidance_note: str | None = None
-    order_index: int = 0
+    proposal_node_id: UUID = Field(
+        foreign_key="proposal_nodes.id",
+        description="Owning proposal node",
+    )
+    evaluation_element_id: UUID = Field(
+        foreign_key="evaluation_elements.id",
+        description="Specific rubric element",
+    )
+    expectation_strength: ExpectationStrength = Field(
+        description="Priority/Strictness of the requirement",
+    )
+    evaluation_intent: EvaluationIntent = Field(
+        description="Type of reviewer check (e.g., Quality, Risk)",
+    )
+    guidance_note: str | None = Field(
+        default=None,
+        description="Specific reviewer orientation",
+    )
+    order_index: int = Field(default=0, description="Display order within a card stack")
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -175,8 +223,15 @@ class User(SQLModel, table=True):
     __tablename__ = "users"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    email: str | None = None
-    is_anonymous: bool = True
+    email: str | None = Field(
+        default=None,
+        unique=True,
+        description="Unique identifier for registered users",
+    )
+    is_anonymous: bool = Field(
+        default=True,
+        description="Whether the user is an unauthenticated guest",
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -191,12 +246,19 @@ class ProposalSnippet(SQLModel, table=True):
     __tablename__ = "proposal_snippets"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    user_id: UUID = Field(foreign_key="users.id")
-    funding_call_id: UUID = Field(foreign_key="funding_calls.id")
-    proposal_node_id: UUID = Field(foreign_key="proposal_nodes.id")
-    pasted_text: str
+    user_id: UUID = Field(foreign_key="users.id", description="Owning user")
+    funding_call_id: UUID = Field(
+        foreign_key="funding_calls.id",
+        description="Selected call rubric",
+    )
+    proposal_node_id: UUID = Field(
+        foreign_key="proposal_nodes.id",
+        description="Selected proposal section",
+    )
+    pasted_text: str = Field(description="The actual snippet content to be reviewed")
     expires_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC) + timedelta(hours=24),
+        description="Temporal deadline for snippet TTL cleanup",
     )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -212,10 +274,14 @@ class PromptTemplate(SQLModel, table=True):
     __tablename__ = "prompt_templates"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    name: str
-    version: int = 1
-    template_text: str
-    is_active: bool = True
+    name: str = Field(description="Display name for the template")
+    version: int = Field(default=1, description="Incrementing version number")
+    template_text: str = Field(description="The primary Jinja2 or f-string prompt body")
+    is_active: bool = Field(
+        default=True,
+        index=True,
+        description="Whether this version is used for new reviews",
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -230,11 +296,26 @@ class Review(SQLModel, table=True):
     __tablename__ = "reviews"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    proposal_snippet_id: UUID = Field(foreign_key="proposal_snippets.id")
-    prompt_template_id: UUID = Field(foreign_key="prompt_templates.id")
-    status: ReviewStatus = Field(default=ReviewStatus.PENDING)
-    overall_summary: str | None = None
-    overall_rating: ReviewRating | None = None
+    proposal_snippet_id: UUID = Field(
+        foreign_key="proposal_snippets.id",
+        description="Evaluated text source",
+    )
+    prompt_template_id: UUID = Field(
+        foreign_key="prompt_templates.id",
+        description="Prompt version used",
+    )
+    status: ReviewStatus = Field(
+        default=ReviewStatus.PENDING,
+        description="Current workflow state",
+    )
+    overall_summary: str | None = Field(
+        default=None,
+        description="Aggregated markdown assessment",
+    )
+    overall_rating: ReviewRating | None = Field(
+        default=None,
+        description="Most severe rating among review cards",
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
@@ -250,10 +331,15 @@ class ReviewCard(SQLModel, table=True):
     __tablename__ = "review_cards"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    review_id: UUID = Field(foreign_key="reviews.id")
-    node_expectation_id: UUID = Field(foreign_key="node_expectations.id")
-    rating: ReviewRating
-    feedback_text: str
+    review_id: UUID = Field(foreign_key="reviews.id", description="Owning review event")
+    node_expectation_id: UUID = Field(
+        foreign_key="node_expectations.id",
+        description="Rubric requirement evaluated",
+    )
+    rating: ReviewRating = Field(
+        description="Computed severity (e.g., SUCCESS, CRITICAL)"
+    )
+    feedback_text: str = Field(description="Markdown content of the AI assessment")
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
