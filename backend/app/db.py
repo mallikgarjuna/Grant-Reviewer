@@ -17,7 +17,14 @@ DB_PATH = DB_DIR / "grant_reviewer.db"
 
 DATABASE_URL = f"sqlite:///{DB_PATH}"
 
-engine = create_engine(DATABASE_URL, echo=False)
+# NOTE: check_same_thread=False is required for SQLite with FastAPI/async.
+# SQLite by default only allows the thread that created it to use it.
+# FastAPI endpoints may run on different threads, so we disable this check.
+engine = create_engine(
+    DATABASE_URL,
+    echo=False,
+    connect_args={"check_same_thread": False},
+)
 
 
 def create_db_and_tables() -> None:
