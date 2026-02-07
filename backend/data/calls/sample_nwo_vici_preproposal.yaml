@@ -47,31 +47,44 @@ proposal_nodes:
   - title: "Pre-Proposal Document"
     node_type: "SECTION"
     children:
-      - title: "Academic Profile"
+      - title: "2a. Academic Profile"
         node_type: "SUBSECTION"
-        guidance_text: "Description of the candidate's academic profile, career development, and research vision. Maximum 1200 words."
-        node_expectations:
-          - evaluation_element_id: "elem_track_record"
-            expectation_strength: "MANDATORY"
-            evaluation_intent: "QUALITY"
-            guidance_note: "Assess the depth and breadth of the researcher's academic contributions and their standing in the field."
+        guidance_text: "Description of your academic profile. This section has two parts."
+        children:
+          - title: "2a1. General Academic Profile"
+            node_type: "SUBSECTION"
+            guidance_text: "Describe your academic career, research highlights, and positioning in the field."
+            node_expectations:
+              - evaluation_element_id: "elem_track_record"
+                expectation_strength: "MANDATORY"
+                evaluation_intent: "QUALITY"
+                guidance_note: "Assess the depth and breadth of the researcher's academic contributions and their standing in the field."
 
-          - evaluation_element_id: "elem_leadership"
-            expectation_strength: "MANDATORY"
-            evaluation_intent: "QUALITY"
-            guidance_note: "Evaluate evidence of scientific leadership, mentoring, and team building."
+              - evaluation_element_id: "elem_independence"
+                expectation_strength: "MANDATORY"
+                evaluation_intent: "QUALITY"
+                guidance_note: "Verify that the researcher has established an independent research identity."
 
-          - evaluation_element_id: "elem_independence"
-            expectation_strength: "MANDATORY"
-            evaluation_intent: "QUALITY"
-            guidance_note: "Verify that the researcher has established an independent research identity."
+              - evaluation_element_id: "elem_recognition"
+                expectation_strength: "IMPORTANT"
+                evaluation_intent: "QUALITY"
+                guidance_note: "Check for indicators of national and international recognition in the field."
 
-          - evaluation_element_id: "elem_recognition"
-            expectation_strength: "IMPORTANT"
-            evaluation_intent: "QUALITY"
-            guidance_note: "Check for indicators of national and international recognition in the field."
+          - title: "2a2. Leadership and Mentorship"
+            node_type: "SUBSECTION"
+            guidance_text: "Describe your experience in leading research groups and mentoring junior researchers."
+            node_expectations:
+              - evaluation_element_id: "elem_leadership"
+                expectation_strength: "MANDATORY"
+                evaluation_intent: "QUALITY"
+                guidance_note: "Evaluate evidence of scientific leadership, mentoring, and team building."
 
-      - title: "Key Output"
+              - evaluation_element_id: "elem_independence"
+                expectation_strength: "IMPORTANT"
+                evaluation_intent: "QUALITY"
+                guidance_note: "Assess how leadership demonstrates independent research direction."
+
+      - title: "2b. Key Output"
         node_type: "SUBSECTION"
         guidance_text: "List of maximum 10 key outputs demonstrating the researcher's most important contributions (publications, patents, datasets, software, etc.)."
         node_expectations:
@@ -85,7 +98,7 @@ proposal_nodes:
             evaluation_intent: "STRATEGIC_FIT"
             guidance_note: "Assess whether key outputs demonstrate innovative thinking and potential for future breakthroughs."
 
-      - title: "Research Idea"
+      - title: "2c. Research Idea"
         node_type: "SUBSECTION"
         guidance_text: "Brief description of the research idea for the Vici project. Maximum 150 words."
         node_expectations:
