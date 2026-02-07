@@ -116,7 +116,7 @@
 - **Status**: Approved.
 
 ### AD 6.5: Store Prompt and Raw Response
-- **Decision**: Add `prompt_sent` and `raw_response` fields to `Review` table for debugging.
+- **Decision**: Add `prompt_sent` and `raw_llm_response` fields to `Review` table for debugging.
 - **Rationale**: Critical for prompt iteration and debugging malformed outputs.
 - **Status**: Approved.
 
