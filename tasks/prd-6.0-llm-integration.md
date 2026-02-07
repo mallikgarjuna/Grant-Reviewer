@@ -1,7 +1,7 @@
 # PRD 6.0: LLM Integration MVP
 
-**Status**: Draft
-**Date**: 2026-02-07
+**Status**: Draft (v1.1 - Revised)
+**Date**: 2026-02-08
 **Decisions**: AD 6.1–6.7
 
 ---
@@ -24,33 +24,34 @@ The `ReviewerService._generate_mock_feedback()` returns hardcoded placeholder te
 **So that** I can improve my proposal before submission.
 
 **Acceptance Criteria:**
-- Submit snippet → receive structured feedback for each expectation
-- Feedback references the specific evaluation element
-- Response time < 30 seconds
+- Submit exactly one snippet per request.
+- Receive structured feedback for exactly N expectations, where N is the number of expectations linked to the ProposalNode.
+- Feedback must reflect the `expectation_strength` and `evaluation_intent`.
+- Response time < 30 seconds.
 
 ### US-6.2: Debug Prompt Issues
 **As a** developer,  
-**I want** to see the exact prompt sent and raw LLM response,  
-**So that** I can iterate on prompt design.
+**I want** to see the exact prompt sent, raw LLM response, and model used,  
+**So that** I can iterate on prompt design and track performance.
 
 **Acceptance Criteria:**
-- `Review.prompt_sent` stores the assembled prompt
-- `Review.raw_llm_response` stores the raw JSON from LLM
-- Both fields are queryable via database
+- `Review.prompt_sent` stores the full assembled prompt.
+- `Review.raw_llm_response` stores the raw JSON/text from LLM.
+- `Review.llm_model` stores the string identifier of the model used.
 
 ---
 
 ## Technical Specification
 
-### LLM Response Schema
+### LLM Response Schema (Pydantic)
 
 ```python
 class ExpectationFeedback(BaseModel):
-    expectation_id: str  # UUID as string
-    feedback: str        # AI-generated text
+    node_expectation_id: str  # Valid UUID string
+    feedback: str             # Non-empty feedback text
 
 class LLMReviewResponse(BaseModel):
-    feedbacks: list[ExpectationFeedback]
+    feedbacks: list[ExpectationFeedback]  # Length must precisely match request cardinality
 ```
 
 ### Prompt Structure (Static Template)
@@ -67,66 +68,73 @@ You are a grant proposal reviewer evaluating text against specific criteria.
 
 ## Evaluation Criteria
 {for each expectation:}
-- [{expectation_id}] {element_name}: {element_description}
-  Reviewer guidance: {guidance_note}
+- ID: {node_expectation_id}
+- Element: {element_name} ({element_description})
+- Intent: {evaluation_intent} (e.g., QUALITY, RISK)
+- Strength: {expectation_strength} (e.g., MANDATORY, VALUE_ADD)
+- Reviewer guidance: {guidance_note}
 
 ## Instructions
-For EACH criterion above, provide constructive feedback.
-Return JSON: {"feedbacks": [{"expectation_id": "...", "feedback": "..."}]}
+1. For EACH criterion listed above, provide constructive, specific feedback based on the Submitted Text.
+2. Consider the 'Strength' and 'Intent' of each criterion in your assessment.
+3. You MUST return exactly one feedback item for every ID provided. Do not skip any IDs. Do not add extra IDs.
+4. Return ONLY a JSON object: {"feedbacks": [{"node_expectation_id": "...", "feedback": "..."}]}
 ```
 
-### Database Changes
+### Database Changes (`Review` Table)
 
-| Table | Field | Type | Description |
-|-------|-------|------|-------------|
-| `Review` | `prompt_sent` | `Text` | Full prompt sent to LLM |
-| `Review` | `raw_llm_response` | `Text` | Raw JSON string from LLM |
+| Field | Type | Description |
+|-------|-------|-------------|
+| `prompt_sent` | `Text` | Full prompt sent to LLM |
+| `raw_llm_response` | `Text` | Raw response from LLM (before parsing) |
+| `llm_model` | `String` | Model identifier (e.g., "gpt-4o-mini") |
+
+### Workflow & Persistence (Atomic)
+
+1. Service builds prompt using `NodeExpectation` fields (strength, intent).
+2. Service calls `LLMClient` (target OpenAI, Azure fallback).
+3. If call fails or timeout → `Review.status = FAILED`, **no ReviewCards created**.
+4. If call succeeds, service parses `raw_llm_response` via `LLMReviewResponse` schema.
+5. Service validates:
+    - JSON is valid.
+    - Cardinality: Number of feedbacks received == number of expectations sent.
+    - All `node_expectation_id`s in response exist in the original request.
+6. If validation fails → `Review.status = FAILED`, **no ReviewCards created**.
+7. If validation succeeds → Create `ReviewCard` records and commit as one transaction with `Review.status = COMPLETED`.
 
 ### LLM Client Configuration
 
 | Setting | Value |
 |---------|-------|
 | Provider | OpenAI (default), Azure OpenAI (configurable) |
-| Model | `gpt-4o-mini` (configurable via env) |
-| Response format | `json_object` (structured output) |
-| Timeout | 30 seconds |
-
-### Environment Variables
-
-```bash
-# Required
-OPENAI_API_KEY=sk-...
-
-# Optional (for Azure)
-AZURE_OPENAI_ENDPOINT=https://xxx.openai.azure.com
-AZURE_OPENAI_API_KEY=...
-AZURE_OPENAI_DEPLOYMENT=gpt-4o-mini
-
-# Model selection
-LLM_PROVIDER=openai  # or "azure"
-LLM_MODEL=gpt-4o-mini
-```
-
----
-
-## Failure Policy
-
-| Scenario | Behavior |
-|----------|----------|
-| LLM timeout | `Review.status = FAILED`, no ReviewCards |
-| Invalid JSON | `Review.status = FAILED`, store raw response for debugging |
-| Missing expectation_id | `Review.status = FAILED` |
-| User action | Retry manually |
+| Model | `gpt-4o-mini` (default, configurable via env) |
+| Max Tokens | Configurable via env (e.g., 2000) |
+| Response format | Raw text (parsed by service) |
 
 ---
 
 ## Out of Scope (MVP)
 
-- Rating generation from LLM
-- Retries, backoff, rate-limit handling
-- Partial results handling
-- Cost tracking
-- Async workers
+- **AI-generated ratings**: Ratings remain in schema placeholder but are NOT populated by AI.
+- **Advanced prompt versioning**: Rely on `prompt_sent` saved in DB for historical trace.
+- **Retries/Backoff**: Simple fail-on-error behavior.
+- **Async Workers**: REST request blocks until LLM responds.
+
+---
+
+## Clarifications & Answers
+
+**Q1: Are ratings deferred or removed?**  
+**A:** Deferred. Keep `ReviewCard.rating` in schema (nullable) but populated with mock or default (e.g., `NOTE`) during MVP.
+
+**Q2: How is node_expectation_id validated?**  
+**A:** Must exist in DB and belong to the correct `ProposalNode` for the current snippet. Any mismatch triggers `FAILED` status.
+
+**Q3: Is review limited to one ProposalSnippet per request?**  
+**A:** Yes. MVP is strictly 1 request = 1 snippet = 1 review.
+
+**Q4: Is prompt versioning in scope?**  
+**A:** No. `prompt_sent` in the `Review` record is our source of truth for "what ran".
 
 ---
 
@@ -134,9 +142,9 @@ LLM_MODEL=gpt-4o-mini
 
 | File | Change |
 |------|--------|
-| `app/models/domain.py` | Add `prompt_sent`, `raw_llm_response` to `Review` |
-| `app/schemas/llm_response.py` | [NEW] Pydantic schemas for LLM output |
-| `app/services/llm_client.py` | [NEW] OpenAI/Azure client abstraction |
-| `app/services/prompt_builder.py` | [NEW] Static template + variable substitution |
-| `app/services/reviewer_service.py` | Replace mock with real LLM call |
-| `backend/.env.example` | Add LLM config variables |
+| `app/models/domain.py` | Add `prompt_sent`, `raw_llm_response`, `llm_model` |
+| `app/schemas/llm_response.py` | [NEW] Pydantic schemas (ExpectationFeedback, LLMReviewResponse) |
+| `app/services/llm_client.py` | [NEW] Abstraction for OpenAI/Azure |
+| `app/services/prompt_builder.py` | [NEW] Multi-variable prompt assembly |
+| `app/services/reviewer_service.py` | Implement atomic LLM logic + validation |
+| `backend/.env.example` | Add keys, model, max_tokens |
