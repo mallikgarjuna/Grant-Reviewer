@@ -16,3 +16,8 @@
 **Issue**: SQLite in-memory DB resets when new session is created, causing UNIQUE constraint errors on re-seed.
 **Fix**: Don't re-seed; reuse existing session for related tests.
 **Prevention**: Design tests to share one seeded database instance.
+
+### L4: Call Definition Filename Convention
+**Convention**: `{agency}_{program}_{year}_{stage}.yaml`
+**Example**: `erc_cog_2026_full.yaml`, `nwo_vici_2026_pre.yaml`
+**Reference**: See `backend/data/calls/README.md` for full documentation.
