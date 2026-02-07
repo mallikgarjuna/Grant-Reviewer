@@ -1,0 +1,120 @@
+# Sample ERC Consolidator Grant 2026 Call Definition
+# This is a valid sample for testing the ingestion pipeline.
+
+funding_agency:
+  name: "European Research Council"
+  short_name: "ERC"
+  description: "EU funding body for frontier research excellence"
+
+funding_call:
+  name: "ERC Consolidator Grant 2026"
+  code: "ERC-COG-2026"
+  year: 2026
+  aim_objectives: "Support excellent PIs to consolidate their research teams."
+  scope: "All research domains; blue-sky frontier research."
+  general_guidelines: "Proposals must demonstrate scientific excellence and feasibility."
+
+# Rubric Definition
+evaluation_criteria:
+  - id: "crit_excellence"
+    name: "1. Excellence"
+    description: "Scientific quality and ambition of the proposed research."
+    evaluation_elements:
+      - id: "elem_novelty"
+        name: "Novelty and Originality"
+        description: "To what extent does the proposal address a novel, important problem?"
+
+      - id: "elem_objectives"
+        name: "Clarity of Objectives"
+        description: "Are the research objectives well-defined and achievable?"
+
+      - id: "elem_methodology"
+        name: "Soundness of Methodology"
+        description: "Is the proposed methodology appropriate and feasible?"
+
+  - id: "crit_impact"
+    name: "2. Impact"
+    description: "Potential scientific and societal impact of the research."
+    evaluation_elements:
+      - id: "elem_breakthrough"
+        name: "Potential Breakthrough"
+        description: "Could this research lead to a paradigm shift or major advancement?"
+
+      - id: "elem_dissemination"
+        name: "Dissemination Strategy"
+        description: "Is there a clear plan for sharing results with the community?"
+
+  - id: "crit_implementation"
+    name: "3. Quality of Implementation"
+    description: "Feasibility and management of the research project."
+    evaluation_elements:
+      - id: "elem_resources"
+        name: "Adequacy of Resources"
+        description: "Are the requested resources justified and sufficient?"
+
+      - id: "elem_risk"
+        name: "Risk Mitigation"
+        description: "Are risks identified with appropriate mitigation strategies?"
+
+# Proposal Structure (Part B1)
+proposal_nodes:
+  - title: "Part B1"
+    node_type: "SECTION"
+    children:
+      - title: "Section a: State of the Art"
+        node_type: "SUBSECTION"
+        guidance_text: "Describe the current state of the art in your field and how your proposal goes beyond it."
+        node_expectations:
+          - evaluation_element_id: "elem_novelty"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Check if the proposal clearly explains what is new compared to existing work."
+
+          - evaluation_element_id: "elem_breakthrough"
+            expectation_strength: "IMPORTANT"
+            evaluation_intent: "STRATEGIC_FIT"
+            guidance_note: "Assess the potential for groundbreaking discoveries."
+
+      - title: "Section b: Objectives"
+        node_type: "SUBSECTION"
+        guidance_text: "Present the research objectives and expected outcomes."
+        node_expectations:
+          - evaluation_element_id: "elem_objectives"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "COMPLIANCE"
+            guidance_note: "Verify that objectives are specific, measurable, and time-bound."
+
+      - title: "Section c: Methodology"
+        node_type: "SUBSECTION"
+        guidance_text: "Describe the methodology and approach for achieving your objectives."
+        node_expectations:
+          - evaluation_element_id: "elem_methodology"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Evaluate if the methodology is sound and appropriate for the objectives."
+
+          - evaluation_element_id: "elem_risk"
+            expectation_strength: "IMPORTANT"
+            evaluation_intent: "RISK"
+            guidance_note: "Check for identified risks and mitigation strategies."
+
+  - title: "Part B2"
+    node_type: "SECTION"
+    children:
+      - title: "Section d: Resources"
+        node_type: "SUBSECTION"
+        guidance_text: "Justify the requested resources and budget allocation."
+        node_expectations:
+          - evaluation_element_id: "elem_resources"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "COMPLIANCE"
+            guidance_note: "Ensure resources are justified and aligned with research plan."
+
+      - title: "Section e: Dissemination"
+        node_type: "SUBSECTION"
+        guidance_text: "Outline your strategy for disseminating research results."
+        node_expectations:
+          - evaluation_element_id: "elem_dissemination"
+            expectation_strength: "OPTIONAL"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Assess the dissemination plan for clarity and reach."

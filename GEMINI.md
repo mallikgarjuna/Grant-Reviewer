@@ -80,7 +80,7 @@ Update `./tasks/lessons.md` file for **codebase-specific** pitfalls, architectur
 - **Verify Before Proceeding**: Every major task (parent task) must end with a **Verify** subtask that tests the implementation of the entire task. This subtask must pass before moving to the next major task.
 - **3-File Limit**: If a task requires changes to more than 3 files, **stop** and break it into smaller sub-tasks before proceeding.
 - **Update the Knowledge Base** continuously.
-- **Skill & Workflow First**: Check for existing skills in `~/.gemini/.skills`, `.skills/`, `.agent/.skills`, `.agents/.skills`, `.claude/.skills`,  or workflows in `.agent/workflows/` before implementing new logic. If a reusable pattern is discovered, suggest creating a new skill/workflow.
+- **Skill & Workflow First**: Check for existing skills in `~/.agents/skills`, `~/.gemini/skills`, `.skills/`, `.agent/skills`, `.agents/skills`, `.claude/skills`,  or workflows in `.agent/workflows/` before implementing new logic. If a reusable pattern is discovered, suggest creating a new skill/workflow.
 - **Absolute URIs**: Always use absolute file URIs (e.g., `file:///path/to/file`) in artifacts to ensure links are clickable in the Task View.
 - **Archiving Strategy**: To maintain a clean workspace:
     - **Active**: Keep PRDs and Task files in the root of `/tasks` during implementation.

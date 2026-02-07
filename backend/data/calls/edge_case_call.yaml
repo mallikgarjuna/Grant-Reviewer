@@ -1,0 +1,99 @@
+# Edge Case Call Definition
+# Tests: Section-only nodes, multiple expectations per node, elements referenced from multiple nodes
+
+funding_agency:
+  name: "National Science Foundation"
+  short_name: "NSF"
+  description: "US federal agency supporting fundamental research"
+
+funding_call:
+  name: "NSF CAREER Award"
+  code: "NSF-CAREER-2026"
+  year: 2026
+  aim_objectives: "Support early-career faculty who exemplify researcher-educator integration."
+  scope: "All STEM disciplines; emphasis on education integration."
+
+evaluation_criteria:
+  - id: "crit_merit"
+    name: "Intellectual Merit"
+    description: "Scientific and technical quality of proposed activities."
+    evaluation_elements:
+      - id: "elem_innovation"
+        name: "Innovation"
+        description: "Creative, original, or transformative concepts."
+
+      - id: "elem_technical"
+        name: "Technical Approach"
+        description: "Well-reasoned and feasible research plan."
+
+  - id: "crit_broader"
+    name: "Broader Impacts"
+    description: "Benefit to society and contribution to education."
+    evaluation_elements:
+      - id: "elem_education"
+        name: "Educational Integration"
+        description: "Integration of research and education activities."
+
+      - id: "elem_diversity"
+        name: "Diversity and Inclusion"
+        description: "Plans for broadening participation in STEM."
+
+# Edge case: Section-only nodes (no subsections)
+proposal_nodes:
+  # Root section with expectations directly (no children)
+  - title: "Project Summary"
+    node_type: "SECTION"
+    guidance_text: "One-page summary including intellectual merit and broader impacts."
+    node_expectations:
+      - evaluation_element_id: "elem_innovation"
+        expectation_strength: "MANDATORY"
+        evaluation_intent: "QUALITY"
+        guidance_note: "Must clearly articulate innovative aspects."
+
+      - evaluation_element_id: "elem_education"
+        expectation_strength: "MANDATORY"
+        evaluation_intent: "QUALITY"
+        guidance_note: "Must outline education integration."
+
+  # Section with nested hierarchy
+  - title: "Project Description"
+    node_type: "SECTION"
+    children:
+      # Multiple expectations on same subsection referencing different criteria
+      - title: "Research Plan"
+        node_type: "SUBSECTION"
+        guidance_text: "Detailed description of proposed research activities."
+        node_expectations:
+          - evaluation_element_id: "elem_innovation"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Assess novelty and originality."
+
+          - evaluation_element_id: "elem_technical"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Evaluate technical soundness."
+
+      - title: "Education Plan"
+        node_type: "SUBSECTION"
+        guidance_text: "Integration of research and educational activities."
+        node_expectations:
+          - evaluation_element_id: "elem_education"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "COMPLIANCE"
+            guidance_note: "Verify education-research integration."
+
+          - evaluation_element_id: "elem_diversity"
+            expectation_strength: "IMPORTANT"
+            evaluation_intent: "STRATEGIC_FIT"
+            guidance_note: "Assess diversity and inclusion plans."
+
+  # Another root section without children
+  - title: "Broader Impacts Statement"
+    node_type: "SECTION"
+    guidance_text: "Separate statement on broader impacts and outreach."
+    node_expectations:
+      - evaluation_element_id: "elem_diversity"
+        expectation_strength: "IMPORTANT"
+        evaluation_intent: "QUALITY"
+        guidance_note: "Evaluate outreach and diversity initiatives."

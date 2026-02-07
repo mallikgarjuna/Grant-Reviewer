@@ -1,0 +1,34 @@
+# Invalid Reference Sample
+# This file intentionally contains broken references to test validation.
+
+funding_agency:
+  name: "Test Agency"
+  short_name: "TEST"
+
+funding_call:
+  name: "Invalid Reference Test Call"
+  code: "TEST-INVALID-2025"
+  year: 2025
+
+evaluation_criteria:
+  - id: "crit_only"
+    name: "Only Criterion"
+    evaluation_elements:
+      - id: "elem_exists"
+        name: "Element That Exists"
+        description: "This element is defined in the rubric."
+
+proposal_nodes:
+  - title: "Test Section"
+    node_type: "SECTION"
+    node_expectations:
+      # This reference is valid
+      - evaluation_element_id: "elem_exists"
+        expectation_strength: "MANDATORY"
+        evaluation_intent: "QUALITY"
+
+      # THIS REFERENCE IS INVALID - should cause validation to fail
+      - evaluation_element_id: "elem_does_not_exist"
+        expectation_strength: "IMPORTANT"
+        evaluation_intent: "COMPLIANCE"
+        guidance_note: "This reference should fail validation."
