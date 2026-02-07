@@ -33,13 +33,15 @@ class EvaluationIntent(enum.StrEnum):
 
 class ReviewRating(enum.StrEnum):
     CRITICAL = "CRITICAL"  # Red
-    WARNING = "WARNING"    # Orange
-    SUCCESS = "SUCCESS"    # Green
-    NOTE = "NOTE"          # Blue
+    WARNING = "WARNING"  # Orange
+    SUCCESS = "SUCCESS"  # Green
+    NOTE = "NOTE"  # Blue
 
 
 # 1. FundingAgency
 class FundingAgency(SQLModel, table=True):
+    """Organization defining the rules, criteria, and philosophy for grant calls."""
+
     __tablename__ = "funding_agencies"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -55,6 +57,8 @@ class FundingAgency(SQLModel, table=True):
 
 # 2. FundingCall
 class FundingCall(SQLModel, table=True):
+    """Specific grant program's aims, scope, and rubric context."""
+
     __tablename__ = "funding_calls"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -77,6 +81,8 @@ class FundingCall(SQLModel, table=True):
 
 # 3. ProposalNode
 class ProposalNode(SQLModel, table=True):
+    """Structural section or subsection of a proposal for anchoring reviews."""
+
     __tablename__ = "proposal_nodes"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -99,6 +105,8 @@ class ProposalNode(SQLModel, table=True):
 
 # 4. EvaluationCriterion
 class EvaluationCriterion(SQLModel, table=True):
+    """Top-level assessment dimension (e.g., Excellence, Impact) for a call."""
+
     __tablename__ = "evaluation_criteria"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -116,6 +124,8 @@ class EvaluationCriterion(SQLModel, table=True):
 
 # 5. EvaluationElement
 class EvaluationElement(SQLModel, table=True):
+    """Atomic reviewable concern explicitly evaluated within a criterion."""
+
     __tablename__ = "evaluation_elements"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -132,6 +142,8 @@ class EvaluationElement(SQLModel, table=True):
 
 # 6. NodeExpectation (Intelligence Layer)
 class NodeExpectation(SQLModel, table=True):
+    """Intersection of proposal node and rubric; defines strictness and intent."""
+
     __tablename__ = "node_expectations"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -152,6 +164,8 @@ class NodeExpectation(SQLModel, table=True):
 
 # 7. User
 class User(SQLModel, table=True):
+    """Owner of snippets and reviews; supports anonymous research sessions."""
+
     __tablename__ = "users"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -166,6 +180,8 @@ class User(SQLModel, table=True):
 
 # 8. ProposalSnippet
 class ProposalSnippet(SQLModel, table=True):
+    """User-pasted proposal fragment to be evaluated in a precise context."""
+
     __tablename__ = "proposal_snippets"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -185,6 +201,8 @@ class ProposalSnippet(SQLModel, table=True):
 
 # 9. PromptTemplate
 class PromptTemplate(SQLModel, table=True):
+    """Versioned AI reviewer logic for auditability and reproducibility."""
+
     __tablename__ = "prompt_templates"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -201,6 +219,8 @@ class PromptTemplate(SQLModel, table=True):
 
 # 10. Review
 class Review(SQLModel, table=True):
+    """Single reviewer assessment event triggered by evaluating one snippet."""
+
     __tablename__ = "reviews"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -216,6 +236,8 @@ class Review(SQLModel, table=True):
 
 # 11. ReviewCard
 class ReviewCard(SQLModel, table=True):
+    """Individual structured reviewer comment for a specific expectation."""
+
     __tablename__ = "review_cards"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)

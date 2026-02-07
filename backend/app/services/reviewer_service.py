@@ -112,11 +112,12 @@ class ReviewerService:
 
         # Mock rating logic for demonstration
         # If text is too short, mark mandatory/important as critical/warning
+        min_text_length = 100
         text_len = len(snippet_text.strip())
         rating = ReviewRating.SUCCESS
 
         strength = expectation.expectation_strength
-        if text_len < 100:
+        if text_len < min_text_length:
             if strength == "MANDATORY":
                 rating = ReviewRating.CRITICAL
             elif strength == "IMPORTANT":
