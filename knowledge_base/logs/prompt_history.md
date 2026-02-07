@@ -36,3 +36,22 @@
 ### 22:49 - Stage 3 Execution
 > OK. Go. Always ask questions if needed.
 > Follow GEMINI.md and commit after each minor task.
+
+## 2026-02-07
+
+### 12:18 - Phase 0: Admin Workflow Brainstorming
+> User asked: "What should an admin do to prepare the backend?"
+> Outcome: Brainstormed Admin Workflow. User rejected PDF parsing, preferred "Manual Knowledge Encoding" (YAML).
+
+### 12:23 - Phase 1: Definition (PRD)
+> - Created `tasks/prd-5.0-admin-ingest.md`.
+> - User feedback: Align YAML keys 1:1 with DB tables. Explicitly map IDs.
+> - Outcome: Revised PRD v1.1 approved.
+
+### 13:34 - Technical Q&A
+> User asked about SQLModel naming convention (Singular Class vs Plural Table). Confirmed as standard practice.
+
+### 13:42 - Phase 2: Planning
+> - Created `tasks/task-5.0-admin-ingest.md`.
+> - User feedback: Rename schemas to `call_definitions.py`, add `--dry-run`, add edge-case tests.
+> - Outcome: Revised Task 5.0 plan approved. Ready for Phase 3.
