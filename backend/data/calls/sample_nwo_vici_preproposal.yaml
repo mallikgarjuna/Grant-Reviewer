@@ -1,0 +1,100 @@
+# NWO Vici Pre-Proposal 2026 Call Definition
+# Focus: Quality of the Researcher (100% weight at pre-proposal stage)
+# Reference: https://www.nwo.nl/en/researchprogrammes/nwo-talent-programme/vici
+
+funding_agency:
+  name: "Dutch Research Council"
+  short_name: "NWO"
+  description: "Netherlands Organisation for Scientific Research promoting quality and innovation in science"
+
+funding_call:
+  name: "NWO Vici Pre-Proposal 2026"
+  code: "NWO-VICI-PRE-2026"
+  year: 2026
+  aim_objectives: "Enable outstanding senior researchers to develop an innovative line of research and set up their own research group."
+  scope: "All scientific disciplines; applicants must have obtained PhD 8-15 years ago."
+  general_guidelines: "Pre-proposals must be submitted by 10 March 2026, 14:00 CET. Maximum €1.5M over 5 years."
+
+# Rubric Definition
+# Pre-proposal stage: 100% Quality of the Researcher
+evaluation_criteria:
+  - id: "crit_researcher"
+    name: "Quality of the Researcher"
+    description: "Assessment of the researcher's track record, leadership, and potential (100% weight at pre-proposal stage)."
+    evaluation_elements:
+      - id: "elem_track_record"
+        name: "Academic Track Record"
+        description: "Quality and impact of publications, citations, and scientific contributions relative to career stage."
+
+      - id: "elem_leadership"
+        name: "Scientific Leadership"
+        description: "Evidence of leading research groups, supervising PhD students, and building collaborative networks."
+
+      - id: "elem_independence"
+        name: "Scientific Independence"
+        description: "Demonstration of independent research vision beyond PhD supervisor or previous group leaders."
+
+      - id: "elem_recognition"
+        name: "National/International Recognition"
+        description: "Awards, invited talks, editorial roles, committee memberships, and field visibility."
+
+      - id: "elem_innovation_potential"
+        name: "Innovation Potential"
+        description: "Ability to develop groundbreaking research directions and contribute to scientific breakthroughs."
+
+# Proposal Structure (Pre-proposal components)
+proposal_nodes:
+  - title: "Pre-Proposal Document"
+    node_type: "SECTION"
+    children:
+      - title: "Academic Profile"
+        node_type: "SUBSECTION"
+        guidance_text: "Description of the candidate's academic profile, career development, and research vision. Maximum 1200 words."
+        node_expectations:
+          - evaluation_element_id: "elem_track_record"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Assess the depth and breadth of the researcher's academic contributions and their standing in the field."
+
+          - evaluation_element_id: "elem_leadership"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Evaluate evidence of scientific leadership, mentoring, and team building."
+
+          - evaluation_element_id: "elem_independence"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Verify that the researcher has established an independent research identity."
+
+          - evaluation_element_id: "elem_recognition"
+            expectation_strength: "IMPORTANT"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Check for indicators of national and international recognition in the field."
+
+      - title: "Key Output"
+        node_type: "SUBSECTION"
+        guidance_text: "List of maximum 10 key outputs demonstrating the researcher's most important contributions (publications, patents, datasets, software, etc.)."
+        node_expectations:
+          - evaluation_element_id: "elem_track_record"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Evaluate the quality, impact, and diversity of the selected key outputs."
+
+          - evaluation_element_id: "elem_innovation_potential"
+            expectation_strength: "IMPORTANT"
+            evaluation_intent: "STRATEGIC_FIT"
+            guidance_note: "Assess whether key outputs demonstrate innovative thinking and potential for future breakthroughs."
+
+      - title: "Research Idea"
+        node_type: "SUBSECTION"
+        guidance_text: "Brief description of the research idea for the Vici project. Maximum 150 words."
+        node_expectations:
+          - evaluation_element_id: "elem_innovation_potential"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Evaluate the novelty and ambition of the proposed research direction."
+
+          - evaluation_element_id: "elem_independence"
+            expectation_strength: "IMPORTANT"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Check if the research idea reflects the researcher's independent vision."
