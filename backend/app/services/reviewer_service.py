@@ -6,7 +6,13 @@ Rule: Services call Repositories. Controllers call Services.
 
 from uuid import UUID
 
-from app.models.domain import NodeExpectation, Review, ReviewCard, ReviewRating
+from app.models.domain import (
+    NodeExpectation,
+    Review,
+    ReviewCard,
+    ReviewRating,
+    ReviewStatus,
+)
 from app.repositories.review_repository import ReviewRepository
 
 
@@ -83,6 +89,30 @@ class ReviewerService:
                 feedback=feedback,
             )
             cards.append(card)
+
+        # 8. Determine aggregate rating
+        ratings_rank = {
+            ReviewRating.CRITICAL: 4,
+            ReviewRating.WARNING: 3,
+            ReviewRating.SUCCESS: 2,
+            ReviewRating.NOTE: 1,
+        }
+        max_rank = 0
+        overall_rating = ReviewRating.NOTE
+        for card in cards:
+            rank = ratings_rank.get(card.rating, 0)
+            if rank > max_rank:
+                max_rank = rank
+                overall_rating = card.rating
+
+        # 9. Finalize review
+        review.status = ReviewStatus.COMPLETED
+        review.overall_rating = overall_rating
+        review.overall_summary = (
+            f"Review completed with {len(cards)} findings. "
+            f"Overall assessment: {overall_rating}."
+        )
+        self.repository.update_review(review)
 
         return review, cards
 

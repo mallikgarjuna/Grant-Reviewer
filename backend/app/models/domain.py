@@ -38,6 +38,12 @@ class ReviewRating(enum.StrEnum):
     NOTE = "NOTE"  # Blue
 
 
+class ReviewStatus(enum.StrEnum):
+    PENDING = "PENDING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
 # 1. FundingAgency
 class FundingAgency(SQLModel, table=True):
     """Organization defining the rules, criteria, and philosophy for grant calls."""
@@ -226,6 +232,9 @@ class Review(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     proposal_snippet_id: UUID = Field(foreign_key="proposal_snippets.id")
     prompt_template_id: UUID = Field(foreign_key="prompt_templates.id")
+    status: ReviewStatus = Field(default=ReviewStatus.PENDING)
+    overall_summary: str | None = None
+    overall_rating: ReviewRating | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships

@@ -32,3 +32,9 @@
 
 ### Q: How to support UI "traffic light" indicators?
 **A**: Added a typed `rating` field (`ReviewRating` Enum) to `ReviewCard`. This allows the UI to render findings based on severity (Critical, Warning, etc.) without string parsing. (AD 4.1)
+
+### Q: How to handle async AI latency in the UI?
+**A**: Added `Review.status` (Pending/Completed/Failed). The UI can poll this status before fetching results. (AD 4.2)
+
+### Q: Does the system provide an overall verdict?
+**A**: Yes. Added `Review.overall_summary` and `Review.overall_rating` (calculated as the highest severity among individual findings). (AD 4.2 & 4.3)

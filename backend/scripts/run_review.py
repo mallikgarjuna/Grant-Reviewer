@@ -48,6 +48,9 @@ def main() -> None:
             call_id=ids["call_id"],
         )
         print(f"✓ Review created: {review.id}")
+        print(f"  Status: {review.status}")
+        print(f"  Overall Rating: {review.overall_rating}")
+        print(f"  Summary: {review.overall_summary}")
         print(f"✓ Generated {len(cards)} ReviewCards:\n")
 
         for i, card in enumerate(cards, 1):

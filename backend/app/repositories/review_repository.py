@@ -104,3 +104,13 @@ class ReviewRepository:
         self.session.commit()
         self.session.refresh(card)
         return card
+
+    def update_review(
+        self,
+        review: Review,
+    ) -> Review:
+        """Update an existing review record."""
+        self.session.add(review)
+        self.session.commit()
+        self.session.refresh(review)
+        return review

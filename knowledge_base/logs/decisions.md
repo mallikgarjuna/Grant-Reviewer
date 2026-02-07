@@ -65,3 +65,14 @@
 - **Decision**: Added `ReviewCard.rating` using a `ReviewRating` enum (`CRITICAL`, `WARNING`, `SUCCESS`, `NOTE`).
 - **Rationale**: Supports "Traffic Light" indicators in the UI without requiring clients to parse human-readable text. Provides a structured way to sort/filter findings by severity.
 - **Status**: Implemented.
+
+### AD 4.2: Async Status and Summaries for Reviews
+- **Decision**: Added `Review.status` (`PENDING`, `COMPLETED`, `FAILED`), `Review.overall_summary`, and `Review.overall_rating`.
+- **Rationale**: Prepare for asynchronous AI generation logic. The UI can poll for status and display an "Executive Summary" at the top of the review page before the detailed cards.
+- **Status**: Implemented.
+
+### AD 4.3: Aggregate Rating Calculation
+- **Decision**: The `Review.overall_rating` is calculated as the "maximum severity" of its child `ReviewCard` ratings.
+- **Ranking**: `CRITICAL (4) > WARNING (3) > SUCCESS (2) > NOTE (1)`.
+- **Rationale**: Ensures the overall review status reflects the most urgent finding found by the AI.
+- **Status**: Implemented.
