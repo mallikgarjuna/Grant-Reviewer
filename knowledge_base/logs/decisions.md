@@ -90,3 +90,43 @@
 - **Decision**: We will NOT build a web-based Admin Dashboard for creating calls/rubrics in the MVP.
 - **Rationale**: High development cost for low frequency of use. YAML + CLI is sufficient for technical admins.
 - **Status**: Approved.
+
+---
+
+## Date: 2026-02-07 (LLM Integration MVP Scope)
+
+### AD 6.1: Single LLM Call per Review
+- **Decision**: One LLM call generates feedback for ALL expectations in a review (not one call per expectation).
+- **Rationale**: Simpler, cheaper. Full context in one prompt helps coherence.
+- **Status**: Approved.
+
+### AD 6.2: Structured JSON Output
+- **Decision**: LLM returns structured JSON with `expectation_id` + `feedback` pairs. Validated via Pydantic schema.
+- **Rationale**: Parseable, validatable, traceable to specific NodeExpectations.
+- **Status**: Approved.
+
+### AD 6.3: Feedback Only (No Rating from LLM)
+- **Decision**: MVP LLM returns text feedback only. Ratings will be a Phase-2 concern.
+- **Rationale**: Simplifies prompt design and output parsing for MVP. Rating logic can be added later.
+- **Status**: Approved.
+
+### AD 6.4: Static Prompt Template
+- **Decision**: Use simple f-string template with variable substitution. No Jinja2, no versioning for MVP.
+- **Rationale**: KISS principle. Fast iteration on prompts.
+- **Status**: Approved.
+
+### AD 6.5: Store Prompt and Raw Response
+- **Decision**: Add `prompt_sent` and `raw_response` fields to `Review` table for debugging.
+- **Rationale**: Critical for prompt iteration and debugging malformed outputs.
+- **Status**: Approved.
+
+### AD 6.6: Failure Policy (MVP)
+- **Decision**: If LLM call fails or returns invalid JSON → `Review.status = FAILED`. No partial ReviewCards. User retries manually.
+- **Rationale**: Simple, safe. Production-grade resilience is Phase-2.
+- **Status**: Approved.
+
+### AD 6.7: Out of Scope for MVP
+- Retries, backoff, rate-limit handling
+- Partial results handling  
+- Cost optimization
+- Async workers / horizontal scaling
