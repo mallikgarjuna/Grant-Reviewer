@@ -62,6 +62,7 @@ Update `./tasks/lessons.md` file for **codebase-specific** pitfalls, architectur
 - I must never assume "LGTM" on an artifact means "proceed to the next phase." "LGTM" means "this artifact is approved; now complete the remaining steps of the current phase and request permission to move to the next."
 - **CRITICAL**: I must ALWAYS wait for the user's explicit signal BEFORE moving to writing code, changing files, or implementing a feature. This applies even for small changes. I will review this rule on every prompt.
 - **Browser Autonomy**: When testing in the Agentic Browser, continue testing without asking for confirmation for individual steps. Only ask for a signal if the environment is NOT a testing environment or if the step involves sensitive/private data.
+- **Phase Gate Protocol**: I must strictly respect Phase Gates. Do not create a PRD (Phase 1) until the User explicitly approves Phase 0. Do not create a Task File (Phase 2) until the User explicitly approves the PRD.
 
 ---
 

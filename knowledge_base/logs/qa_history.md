@@ -38,3 +38,9 @@
 
 ### Q: Does the system provide an overall verdict?
 **A**: Yes. Added `Review.overall_summary` and `Review.overall_rating` (calculated as the highest severity among individual findings). (AD 4.2 & 4.3)
+
+### Q: "In SQLModel, the table name is plural while the class name is singular. Is this correct?"
+**A:** Yes, this is the industry standard convention for ORMs.
+- **Class (`FundingAgency`)**: Represents a *single object* (row) in memory.
+- **Table (`funding_agencies`)**: Represents a *collection* (set) of records in the database.
+Using plural for classes (`FundingAgencies`) would be confusing as the object instance is singular.

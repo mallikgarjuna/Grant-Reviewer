@@ -76,3 +76,17 @@
 - **Ranking**: `CRITICAL (4) > WARNING (3) > SUCCESS (2) > NOTE (1)`.
 - **Rationale**: Ensures the overall review status reflects the most urgent finding found by the AI.
 - **Status**: Implemented.
+
+---
+
+## Date: 2026-02-07 (Phase 1: Admin Ingestion)
+
+### AD 5.1: Call Definition as Code (YAML)
+- **Decision**: Funding Calls, Rubrics, and Proposal Hierarchies will be defined in a version-controlled YAML file and ingested via a CLI script.
+- **Rationale**: Matches the complex recursive structure of the domain. Easier to version and copy-paste than a UI.
+- **Status**: Approved.
+
+### AD 5.2: No Admin UI for MVP
+- **Decision**: We will NOT build a web-based Admin Dashboard for creating calls/rubrics in the MVP.
+- **Rationale**: High development cost for low frequency of use. YAML + CLI is sufficient for technical admins.
+- **Status**: Approved.
