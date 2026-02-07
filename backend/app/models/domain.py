@@ -53,10 +53,13 @@ class FundingAgency(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str = Field(description="Full legal name of the funding agency")
     short_name: str = Field(
-        unique=True, index=True, description="Commonly used acronym"
+        unique=True,
+        index=True,
+        description="Commonly used acronym",
     )
     description: str | None = Field(
-        default=None, description="General mission statement"
+        default=None,
+        description="General mission statement",
     )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
@@ -83,14 +86,17 @@ class FundingCall(SQLModel, table=True):
         description="The intended impact and goals of the call",
     )
     scope: str | None = Field(
-        default=None, description="The thematic areas or boundaries of the call"
+        default=None,
+        description="The thematic areas or boundaries of the call",
     )
     general_guidelines: str | None = Field(
-        default=None, description="General instructions for applicants"
+        default=None,
+        description="General instructions for applicants",
     )
     call_year: int = Field(description="The calendar year of the call")
     is_active: bool = Field(
-        default=True, description="Whether this call is currently open or relevant"
+        default=True,
+        description="Whether this call is currently open or relevant",
     )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
@@ -129,7 +135,7 @@ class ProposalNode(SQLModel, table=True):
 
     # Relationships
     call: FundingCall | None = Relationship(back_populates="nodes")
-    expectations: list["NodeExpectation"] = Relationship(back_populates="expectations")
+    expectations: list["NodeExpectation"] = Relationship(back_populates="node")
 
 
 # 4. EvaluationCriterion
@@ -337,7 +343,7 @@ class ReviewCard(SQLModel, table=True):
         description="Rubric requirement evaluated",
     )
     rating: ReviewRating = Field(
-        description="Computed severity (e.g., SUCCESS, CRITICAL)"
+        description="Computed severity (e.g., SUCCESS, CRITICAL)",
     )
     feedback_text: str = Field(description="Markdown content of the AI assessment")
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
