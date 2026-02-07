@@ -39,6 +39,10 @@
 
 ## 2026-02-07
 
+### 11:15 - Adding Field Descriptions
+> User requested to add descriptive comments to all `Field` arguments in `models/domain.py`.
+> Outcome: Updated all 11 models with concise field descriptions.
+
 ### 12:18 - Phase 0: Admin Workflow Brainstorming
 > User asked: "What should an admin do to prepare the backend?"
 > Outcome: Brainstormed Admin Workflow. User rejected PDF parsing, preferred "Manual Knowledge Encoding" (YAML).
