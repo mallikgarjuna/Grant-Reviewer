@@ -8,4 +8,4 @@ This file tracks minor fixes, refactors, and maintenance tasks to avoid clutteri
 | M.2 | Add descriptive docstrings to domain models          | [x] | `feat: [M.2] 0612f38` |
 | M.3 | Fix magic values in ReviewerService                  | [x] | `feat: [M.3] 0612f38` |
 | M.4 | Add Field-level descriptions to all domain models    | [x] | `feat: [M.4] 9f48c3a` |
-| M.5 | Audit and fix relationship back_populates symmetry   | [x] | `feat: [M.5] 1b6a7c3` |
+| M.5 | Audit and fix relationship back_populates symmetry   | [x] | `feat: [M.5] 6a7ded7` |
