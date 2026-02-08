@@ -80,3 +80,7 @@
 ### 14:26 - Task 7.0 Phase 0 Approved → Phase 1 PRD
 > User: "Phase 0 approved for Task 7.0; proceed to Phase 1 PRD"
 > Outcome: Drafted `tasks/prd-7.0-fastapi-mvp.md`.
+
+### 15:21 - Task 7.0 PRD Revision (critical review)
+> User requested updates to PRD 7.0 based on critical review feedback (ratings semantics, lifecycle flexibility, error taxonomy, idempotency clarity, client timeout guidance).
+> Outcome: Revised `tasks/prd-7.0-fastapi-mvp.md` (v0.2).
