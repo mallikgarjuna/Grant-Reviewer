@@ -31,3 +31,8 @@
 **Issue**: Brainstorming logs were created without a task ID in the filename.
 **Fix**: Rename brainstorming log files to include the task ID.
 **Prevention**: For each major task, name Phase 0 brainstorming logs like `knowledge_base/logs/brainstorming-[TaskID]-[slug].md`.
+
+### L7: Phase 3 Commit Granularity
+**Issue**: Phase 3 implementation progressed without commits at each completed subtask boundary (e.g., `7.1`, `7.2`).
+**Fix**: Commit after each completed Phase 3 subtask with a short, scoped message that includes the subtask ID.
+**Prevention**: Treat each subtask as a commit checkpoint during implementation; avoid batching multiple completed subtasks into one commit.
