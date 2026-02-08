@@ -88,3 +88,7 @@
 ### 15:31 - Task 7.0 PRD Approved → Phase 2 Plan
 > User: "PRD 7.0 approved; proceed to Phase 2 task plan"
 > Outcome: Created `tasks/task-7.0-fastapi-mvp.md` and linked it in `tasks/index.md`.
+
+### 15:56 - Task 7.0 Phase 2 Plan Revision (critical review)
+> User requested updates to the Phase 2 task breakdown to clarify phase semantics, enforce forward-compat status typing, centralize error mapping, add atomicity tests, and add a stub LLM verification mode.
+> Outcome: Revised `tasks/task-7.0-fastapi-mvp.md` and tightened error mapping in `tasks/prd-7.0-fastapi-mvp.md`.
