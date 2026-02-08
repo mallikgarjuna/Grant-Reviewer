@@ -65,3 +65,9 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: How are we going to approach building the rest of the app?
 **A:** API-first with a minimal FastAPI surface first, then UI. Next major slice is **Task 7.0 (FastAPI MVP)**: add discovery endpoints (calls + nodes) and a `POST /reviews` endpoint that wraps the existing `ReviewerService`, followed by tests and then a thin frontend.
+
+### Q: What is a PR (Pull Request) and why push to a remote?
+**A:** A PR is a “proposed merge” of a branch into `main` on a remote host (e.g., GitHub). Pushing uploads your local branch/commits to the remote so the PR can exist there. PRs add review, CI checks, traceability, collaboration, and off-machine backup; they are optional for local-only work.
+
+### Q: Can I run the project locally without merging a feature branch into `main`?
+**A:** Yes. You run whatever code is currently checked out. If you’re on a feature branch (e.g., `task-7.0-fastapi-mvp`), you can run/test that branch without merging it into `main`. Switching branches changes which code you run.
