@@ -21,3 +21,8 @@
 **Convention**: `{agency}_{program}_{year}_{stage}.yaml`
 **Example**: `erc_cog_2026_full.yaml`, `nwo_vici_2026_pre.yaml`
 **Reference**: See `backend/data/calls/README.md` for full documentation.
+
+### L5: Task File Updates During Execution
+**Issue**: Updated internal artifact `task.md` but forgot to update the project task file `tasks/task-X.0-*.md`.
+**Fix**: After each subtask completion, update the project task file (not just internal artifacts).
+**Prevention**: Always update `tasks/task-X.0-*.md` with `[x]` checkmarks as subtasks complete. Also update `tasks/index.md` when task status changes.
