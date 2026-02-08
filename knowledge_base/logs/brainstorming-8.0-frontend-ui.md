@@ -3,7 +3,7 @@
 **Date**: 2026-02-08  
 **Task ID**: 8.0  
 **Pipeline Phase**: Phase 0 (Brainstorming)  
-**Status**: Draft (v0.2 - Revised)  
+**Status**: Draft (v0.3 - Revised)  
 **Last Updated**: 2026-02-08  
 
 ## Goal
@@ -46,6 +46,14 @@ Related architectural decisions captured in `knowledge_base/logs/decisions.md` (
   - mapping canonical errors → user-facing copy + CTA
   - normalizing responses for UI components (a small “BFF normalization” layer)
 
+### Enforcement (mechanical, MVP)
+- Implement a single mandatory adapter module in the Next.js codebase (e.g., `src/lib/bff/*`) that:
+  - is the **only** place that knows the FastAPI base URL
+  - wraps all server-to-server calls
+  - parses canonical errors and returns typed results
+- Rule: UI components must not call FastAPI directly (no direct `fetch(FASTAPI_BASE_URL, ...)`).
+  - UI components talk to Next route handlers/server actions, which talk to the BFF adapter.
+
 ### Error taxonomy (for UX consistency)
 FastAPI errors should be classifiable by `error.code`:
 - **User/actionable**: validation, snippet-too-long, no-expectations, node-not-in-call
@@ -56,6 +64,11 @@ FastAPI errors should be classifiable by `error.code`:
 Next.js should:
 - render friendly messages for **user/actionable** and **quota/billing** codes
 - avoid automatic retries that can multiply LLM cost
+
+### Separate “errors” from “states” (clarification)
+- **API errors** describe request rejection or infrastructure failures (canonical error shape).
+- **Review status** (`PENDING`, `COMPLETED`, `FAILED`) describes lifecycle outcome once a review exists.
+- `GET /reviews/{id}` should be safe to call repeatedly; once created, it should return `200` (subject to ownership checks), regardless of status.
 
 ## MVP UX (first end-to-end slice)
 
@@ -106,6 +119,10 @@ Quota contract (desired):
 - On deny: `QUOTA_EXCEEDED` with `details` like `{limit, remaining, reset_at}`.
 - On allow: proceed; idempotent replays must not consume quota again.
 
+MVP quota policy (explicit, temporary):
+- Quota is consumed when an LLM execution attempt begins (i.e., when FastAPI accepts a new idempotency key for processing).
+- Failures after acceptance do not refund quota in v1 (tradeoff: simpler + predictable billing model; can revisit later).
+
 ### Service-to-service request signing
 To prevent direct abuse against FastAPI (bypassing Next/Clerk), add a lightweight “BFF signature”:
 - Next adds `X-GR-User-Id`, `X-GR-Timestamp`, `X-GR-Signature` (HMAC) on calls to FastAPI.
@@ -132,6 +149,10 @@ To support safe retries/timeouts and prevent accidental double-charges:
 - Next.js sends it to FastAPI (e.g., `Idempotency-Key` header).
 - FastAPI guarantees: **same user + same idempotency key + same payload → same review**.
 
+Additional constraints (MVP):
+- **Payload mismatch rule**: same user + same idempotency key + different payload → `IDEMPOTENCY_PAYLOAD_MISMATCH` (hard error).
+- **TTL**: idempotency keys expire after 24h (MVP default; configurable later).
+
 Policy (MVP recommendation):
 - Quota is consumed when FastAPI accepts a new idempotency key for processing (LLM attempt).
 - Replays with the same key do not consume additional quota.
@@ -144,6 +165,13 @@ Moving to Postgres enables:
 - Future Stripe subscription fields without schema contortions.
 
 Avoid SQLite/Postgres split: use Postgres locally and in prod to prevent schema drift surprises.
+
+## Review ownership & access control (MVP invariants)
+
+- Reviews are private to the submitting user in v1.
+- FastAPI must enforce ownership on all review reads:
+  - `GET /reviews/{review_id}` must verify the caller identity (via BFF signature + external user id) and ensure the review belongs to that user.
+- Next.js must not rely on “unguessable IDs” for security.
 
 ## SEO / Content Plan (MDX)
 
@@ -162,6 +190,19 @@ MDX articles live in-repo for fast iteration:
 - **Sharing model (MVP)**: reviews are private to the submitting user (no public share links in v1).
   - future option: share tokens / “shareable link” objects with explicit access control
 
+## Postgres + connection pooling (MVP note)
+
+- With BFF, Next.js does **not** connect to Postgres; only FastAPI does. This limits connection pressure.
+- MVP assumption: low concurrency. Prefer a small number of FastAPI workers and conservative SQLAlchemy pool sizing.
+- If Render Postgres connection limits become an issue, introduce pooling (e.g., pgBouncer) as a later hardening step.
+
+## Minimal analytics (MVP placeholder)
+
+Track just enough to learn what converts:
+- marketing/blog page views
+- CTA clicks (“Try it”, “Sign in”, “Run review”)
+- review submit started/succeeded/failed (by error code category)
+
 ## Open Questions / Risks
 
 - Quota semantics: per-day reviews vs per-month; per-char caps; what happens on failures (still consumes quota?).
@@ -171,12 +212,13 @@ MDX articles live in-repo for fast iteration:
 
 ## Suggested sequencing (reduce scope thrash)
 
-Split Phase 1/2 thinking into three “tracks” (can still be one Task 8.0 if desired):
-- **8.0A UX Slice**: pages + components + MDX + basic app flow (calls → nodes → submit → results).
-- **8.0B Contracts**: BFF normalization, idempotency, quota error semantics, kill switch.
-- **8.0C Deployment**: secrets, environments, Vercel/Render wiring, Postgres provisioning.
+Enforce execution order to reduce rework and cost risk:
+1) **8.0B Contracts**: BFF adapter, error/state separation, idempotency, quota errors + kill switch.
+2) **8.0A UX Slice**: pages + components + MDX + basic app flow (calls → nodes → submit → results).
+3) **8.0C Deployment**: secrets, environments, Vercel/Render wiring, Postgres provisioning.
 
 ## Revision History
 
 - **v0.1** (2026-02-08): Initial Phase 0 brainstorming draft.
 - **v0.2** (2026-02-08): Tightened BFF contract; clarified quota/idempotency/lifecycle, SEO rules, kill switch, and Postgres-local guidance.
+- **v0.3** (2026-02-08): Added mechanical BFF adapter enforcement, ownership invariants, idempotency mismatch + TTL, explicit MVP quota policy, pooling note, and minimal analytics placeholder.
