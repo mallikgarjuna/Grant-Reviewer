@@ -59,6 +59,12 @@ uv run python scripts/run_review.py
 LLM_MODE=stub uv run uvicorn main:app --reload
 ```
 
+Notes:
+- This is a long-running server process; the terminal will stay “busy” while it waits for requests.
+- You should see output like `Uvicorn running on http://127.0.0.1:8000` and `Application startup complete.`
+- Use a second terminal tab/window to call endpoints while the server runs.
+- Stop the server with `Ctrl+C`.
+
 ### OpenAI Mode (Costs Money)
 
 ```bash
@@ -72,6 +78,13 @@ Endpoints:
 - `GET /calls/{call_id}/nodes`
 - `POST /reviews`
 - `GET /reviews/{review_id}`
+
+Quick smoke checks (run in another terminal while the server is running):
+```bash
+curl http://127.0.0.1:8000/health
+```
+Open interactive docs:
+- `http://127.0.0.1:8000/docs`
 
 ## Scripts
 

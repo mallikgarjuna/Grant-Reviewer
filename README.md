@@ -54,10 +54,18 @@ cd backend
 LLM_MODE=stub uv run uvicorn main:app --reload
 ```
 
-Then try:
+Notes:
+- This command starts a web server and will keep running (it will look “stuck” because it’s waiting for requests).
+- Leave it running and use a second terminal tab/window to make requests.
+- Stop the server with `Ctrl+C`.
+
+Then try (in a second terminal):
 ```bash
 curl http://127.0.0.1:8000/health
 ```
+
+Or open API docs in your browser:
+- `http://127.0.0.1:8000/docs`
 
 ### Running a Review Demo
 
