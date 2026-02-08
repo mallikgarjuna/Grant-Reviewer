@@ -1,6 +1,7 @@
 # Task 7.0: FastAPI MVP (Phase 2 Plan)
 
 **Status**: [/] In Progress  
+**Phase**: Phase 2 (Task breakdown)  
 **PRD**: `tasks/prd-7.0-fastapi-mvp.md`  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-7.0-fastapi-mvp.md`
 
@@ -76,4 +77,3 @@
 
 - Adding dependencies (`fastapi`, `uvicorn`) is required for this task; confirm before Phase 3 execution if needed.
 - Any step that would touch more than 3 files should be broken into a subtask and re-confirmed before proceeding.
-

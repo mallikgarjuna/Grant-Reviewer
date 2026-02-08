@@ -81,6 +81,12 @@ From repo root:
 
 Use for new functional areas, complex refactors, or significant UI/API changes. Skip for small fixes/docs.
 
+**Phase definitions (use these labels everywhere):**
+- **Phase 0 = Brainstorming** (ideation/design note in `knowledge_base/logs/`)
+- **Phase 1 = PRD** (definition in `tasks/prd-[TaskID]-*.md`)
+- **Phase 2 = Task breakdown** (plan in `tasks/task-[TaskID]-*.md`)
+- **Phase 3 = Implementation** (execute plan + verify + walkthrough in `knowledge_base/walkthroughs/`)
+
 1. Phase 0 (Ideation): brief design note in `knowledge_base/logs/`
 2. Phase 1 (PRD): `tasks/prd-[TaskID]-[feature-name].md`
 3. Phase 2 (Plan): `tasks/task-[TaskID]-[name].md` + link in `tasks/index.md`
