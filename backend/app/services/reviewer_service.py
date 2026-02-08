@@ -19,7 +19,7 @@ from app.models.domain import (
 )
 from app.repositories.review_repository import ReviewRepository
 from app.schemas.llm_response import LLMReviewResponse
-from app.services.llm_client import LLMClientError, OpenAIClient
+from app.services.llm_client import LLMClientError, LLMClientProtocol, OpenAIClient
 from app.services.prompt_builder import build_review_prompt
 
 logger = logging.getLogger(__name__)
@@ -31,14 +31,14 @@ class ReviewerService:
     def __init__(
         self,
         repository: ReviewRepository,
-        llm_client: OpenAIClient | None = None,
+        llm_client: LLMClientProtocol | None = None,
     ) -> None:
         self.repository = repository
         self._llm_client = llm_client
         logger.debug("ReviewerService initialized")
 
     @property
-    def llm_client(self) -> OpenAIClient:
+    def llm_client(self) -> LLMClientProtocol:
         """Lazy-load LLM client."""
         if self._llm_client is None:
             logger.debug("Lazy-loading OpenAI client...")

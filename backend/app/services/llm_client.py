@@ -7,9 +7,11 @@ For MVP: OpenAI only, Azure support deferred.
 
 import logging
 import os
+import re
 import time
-from typing import ClassVar
+from typing import ClassVar, Protocol
 
+import json
 from openai import OpenAI, OpenAIError
 
 logger = logging.getLogger(__name__)
@@ -19,6 +21,18 @@ class LLMClientError(Exception):
     """Raised when LLM call fails."""
 
     pass
+
+
+class LLMClientProtocol(Protocol):
+    """Protocol for interchangeable LLM clients."""
+
+    def generate(self, prompt: str) -> str:
+        """Generate raw JSON response text for a prompt."""
+        ...
+
+    def get_model_name(self) -> str:
+        """Return model identifier."""
+        ...
 
 
 class OpenAIClient:
@@ -91,3 +105,43 @@ class OpenAIClient:
     def get_model_name(self) -> str:
         """Return the model identifier being used."""
         return self.model
+
+
+class StubLLMClient:
+    """Deterministic local client for non-network verification."""
+
+    MODEL_NAME: ClassVar[str] = "stub-llm"
+    EXPECTATION_ID_PATTERN: ClassVar[re.Pattern[str]] = re.compile(
+        r"ID:\s*([0-9a-fA-F-]{36})"
+    )
+
+    def generate(self, prompt: str) -> str:
+        """Return valid deterministic JSON without external API calls."""
+        expectation_ids = self.EXPECTATION_ID_PATTERN.findall(prompt)
+        if not expectation_ids:
+            raise LLMClientError("Stub mode could not detect expectation IDs in prompt")
+
+        feedbacks = [
+            {
+                "node_expectation_id": expectation_id,
+                "feedback": (
+                    "Stub feedback: strengthen this section with concrete, "
+                    "criterion-linked evidence."
+                ),
+            }
+            for expectation_id in expectation_ids
+        ]
+        return json.dumps({"feedbacks": feedbacks})
+
+    def get_model_name(self) -> str:
+        """Return stub model name."""
+        return self.MODEL_NAME
+
+
+def build_llm_client() -> LLMClientProtocol:
+    """Build LLM client from environment configuration."""
+    llm_mode = os.getenv("LLM_MODE", "openai").strip().lower()
+    if llm_mode == "stub":
+        logger.info("Using StubLLMClient (LLM_MODE=stub)")
+        return StubLLMClient()
+    return OpenAIClient()
