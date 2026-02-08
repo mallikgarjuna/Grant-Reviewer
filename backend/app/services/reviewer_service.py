@@ -4,7 +4,11 @@ Reviewer service - business logic layer.
 Rule: Services call Repositories. Controllers call Services.
 """
 
+import json
+import logging
 from uuid import UUID
+
+from pydantic import ValidationError
 
 from app.models.domain import (
     NodeExpectation,
@@ -14,13 +18,30 @@ from app.models.domain import (
     ReviewStatus,
 )
 from app.repositories.review_repository import ReviewRepository
+from app.schemas.llm_response import LLMReviewResponse
+from app.services.llm_client import LLMClientError, OpenAIClient
+from app.services.prompt_builder import build_review_prompt
+
+logger = logging.getLogger(__name__)
 
 
 class ReviewerService:
     """Service for generating reviews from proposal snippets."""
 
-    def __init__(self, repository: ReviewRepository) -> None:
+    def __init__(
+        self,
+        repository: ReviewRepository,
+        llm_client: OpenAIClient | None = None,
+    ) -> None:
         self.repository = repository
+        self._llm_client = llm_client
+
+    @property
+    def llm_client(self) -> OpenAIClient:
+        """Lazy-load LLM client."""
+        if self._llm_client is None:
+            self._llm_client = OpenAIClient()
+        return self._llm_client
 
     def generate_review(
         self,
@@ -29,21 +50,22 @@ class ReviewerService:
         call_id: UUID,
     ) -> tuple[Review, list[ReviewCard]]:
         """
-        Generate a review for a proposal snippet.
+        Generate a review for a proposal snippet using LLM.
 
+        Flow:
         1. Fetch NodeExpectations for the node
         2. Reject if zero expectations (AD 2.1)
-        3. Get active prompt template
+        3. Get active prompt template (for template_id tracking)
         4. Create anonymous user + snippet
-        5. Generate mock AI feedback
-        6. Create Review + ReviewCards
+        5. Build prompt and call LLM
+        6. Parse and validate response
+        7. Create Review + ReviewCards atomically
 
         Returns:
             Tuple of (Review, list[ReviewCard])
 
         Raises:
-            ValueError: If node has no expectations or no active template
-
+            ValueError: If node has no expectations or validation fails
         """
         # 1. Fetch expectations
         expectations = self.repository.get_expectations_for_node(node_id)
@@ -52,7 +74,7 @@ class ReviewerService:
         if not expectations:
             raise ValueError("No evaluation criteria defined for this section.")
 
-        # 3. Get active prompt template
+        # 3. Get active prompt template (for audit trail)
         template = self.repository.get_active_prompt_template()
         if not template:
             raise ValueError("No active prompt template found.")
@@ -72,98 +94,101 @@ class ReviewerService:
             text=snippet_text,
         )
 
-        # 6. Create review
+        # 6. Build prompt
+        prompt = build_review_prompt(node, snippet_text, expectations)
+
+        # 7. Create review record (status=PENDING initially)
         review = self.repository.create_review(
             snippet_id=snippet.id,
             template_id=template.id,
         )
 
-        # 7. Generate mock feedback and create cards
+        # Store prompt and model info
+        review.prompt_sent = prompt
+        review.llm_model = self.llm_client.get_model_name()
+
+        # 8. Call LLM
+        try:
+            raw_response = self.llm_client.generate(prompt)
+            review.raw_llm_response = raw_response
+        except LLMClientError as e:
+            logger.error(f"LLM call failed: {e}")
+            review.status = ReviewStatus.FAILED
+            review.overall_summary = f"LLM call failed: {e}"
+            self.repository.update_review(review)
+            raise ValueError(f"LLM call failed: {e}") from e
+
+        # 9. Parse and validate response
+        try:
+            llm_response = self._parse_llm_response(raw_response)
+            self._validate_response(llm_response, expectations)
+        except ValueError as e:
+            logger.error(f"LLM response validation failed: {e}")
+            review.status = ReviewStatus.FAILED
+            review.overall_summary = f"Response validation failed: {e}"
+            self.repository.update_review(review)
+            raise
+
+        # 10. Create ReviewCards
         cards = []
-        for expectation in expectations:
-            feedback, rating = self._generate_mock_feedback(expectation, snippet_text)
+        expectation_map = {str(exp.id): exp for exp in expectations}
+
+        for feedback_item in llm_response.feedbacks:
+            expectation = expectation_map[feedback_item.node_expectation_id]
             card = self.repository.create_review_card(
                 review_id=review.id,
                 expectation_id=expectation.id,
-                rating=rating,
-                feedback=feedback,
+                rating=ReviewRating.NOTE,  # Defer rating to Phase 2
+                feedback=feedback_item.feedback,
             )
             cards.append(card)
 
-        # 8. Determine aggregate rating
-        ratings_rank = {
-            ReviewRating.CRITICAL: 4,
-            ReviewRating.WARNING: 3,
-            ReviewRating.SUCCESS: 2,
-            ReviewRating.NOTE: 1,
-        }
-        max_rank = 0
-        overall_rating = ReviewRating.NOTE
-        for card in cards:
-            rank = ratings_rank.get(card.rating, 0)
-            if rank > max_rank:
-                max_rank = rank
-                overall_rating = card.rating
-
-        # 9. Finalize review
+        # 11. Finalize review as COMPLETED
         review.status = ReviewStatus.COMPLETED
-        review.overall_rating = overall_rating
+        review.overall_rating = ReviewRating.NOTE  # Defer rating logic
         review.overall_summary = (
-            f"Review completed with {len(cards)} findings. "
-            f"Overall assessment: {overall_rating}."
+            f"Review completed with {len(cards)} findings."
         )
         self.repository.update_review(review)
 
+        logger.info(f"Review {review.id} completed with {len(cards)} cards")
         return review, cards
 
-    def _generate_mock_feedback(
+    def _parse_llm_response(self, raw_response: str) -> LLMReviewResponse:
+        """Parse raw LLM response into structured format."""
+        try:
+            data = json.loads(raw_response)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON from LLM: {e}") from e
+
+        try:
+            return LLMReviewResponse.model_validate(data)
+        except ValidationError as e:
+            raise ValueError(f"LLM response schema validation failed: {e}") from e
+
+    def _validate_response(
         self,
-        expectation: NodeExpectation,
-        snippet_text: str,
-    ) -> tuple[str, ReviewRating]:
-        """
-        Generate mock AI feedback for prototype.
+        response: LLMReviewResponse,
+        expectations: list[NodeExpectation],
+    ) -> None:
+        """Validate LLM response matches expectations."""
+        # Check cardinality
+        expected_count = len(expectations)
+        actual_count = len(response.feedbacks)
+        if actual_count != expected_count:
+            raise ValueError(
+                f"Cardinality mismatch: expected {expected_count} feedbacks, "
+                f"got {actual_count}"
+            )
 
-        In production, this would call the AI API with the assembled prompt.
-        """
-        # Mock feedback based on expectation strength
-        strength_feedback = {
-            "MANDATORY": "This is a MANDATORY criterion. ",
-            "IMPORTANT": "This is an IMPORTANT criterion. ",
-            "OPTIONAL": "This is an OPTIONAL criterion. ",
-        }
+        # Check all expectation IDs exist and belong to this node
+        valid_ids = {str(exp.id) for exp in expectations}
+        received_ids = {fb.node_expectation_id for fb in response.feedbacks}
 
-        intent_feedback = {
-            "COMPLIANCE": "Compliance check: ",
-            "QUALITY": "Quality assessment: ",
-            "RISK": "Risk identification: ",
-            "STRATEGIC_FIT": "Strategic fit evaluation: ",
-        }
+        missing = valid_ids - received_ids
+        if missing:
+            raise ValueError(f"Missing feedback for expectations: {missing}")
 
-        # Mock rating logic for demonstration
-        # If text is too short, mark mandatory/important as critical/warning
-        min_text_length = 100
-        text_len = len(snippet_text.strip())
-        rating = ReviewRating.SUCCESS
-
-        strength = expectation.expectation_strength
-        if text_len < min_text_length:
-            if strength == "MANDATORY":
-                rating = ReviewRating.CRITICAL
-            elif strength == "IMPORTANT":
-                rating = ReviewRating.WARNING
-            else:
-                rating = ReviewRating.NOTE
-        elif "quantum" not in snippet_text.lower():
-            rating = ReviewRating.NOTE  # Just a note if missing keyword
-
-        prefix = strength_feedback.get(expectation.expectation_strength.value, "")
-        intent = intent_feedback.get(expectation.evaluation_intent.value, "")
-
-        feedback = (
-            f"{prefix}{intent}"
-            f"[MOCK] Feedback for '{expectation.element.name if expectation.element else 'unknown'}': "
-            f"The submitted text ({len(snippet_text)} chars) has been reviewed against: "
-            f"'{expectation.guidance_note or 'No specific guidance'}'"
-        )
-        return feedback, rating
+        extra = received_ids - valid_ids
+        if extra:
+            raise ValueError(f"Unknown expectation IDs in response: {extra}")
