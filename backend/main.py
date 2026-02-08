@@ -1,6 +1,291 @@
-def main() -> None:
-    print("Hello from grant-reviewer-backend!")
+"""FastAPI entrypoint for Grant Reviewer backend."""
+
+from contextlib import asynccontextmanager
+import logging
+from typing import Annotated, Any, Generator
+from uuid import UUID
+
+from fastapi import Depends, FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+from app.db import create_db_and_tables, get_session
+from app.models.domain import ReviewStatus
+from app.repositories.review_repository import ReviewRepository
+from app.schemas.api import (
+    APIErrorBody,
+    APIErrorResponse,
+    CallsResponse,
+    CallSummary,
+    CreateReviewRequest,
+    CreateReviewResponse,
+    NodesResponse,
+    NodeSummary,
+    ReviewCardSummary,
+    ReviewDetailResponse,
+    ReviewSummary,
+)
+from app.services.llm_client import build_llm_client
+from app.services.reviewer_service import ReviewerService
+
+logger = logging.getLogger(__name__)
+
+MAX_SNIPPET_CHARS = 10_000
+
+ERROR_STATUS_BY_CODE = {
+    "CALL_NOT_FOUND": 404,
+    "NODE_NOT_FOUND": 404,
+    "REVIEW_NOT_FOUND": 404,
+    "NO_EXPECTATIONS": 400,
+    "NODE_NOT_IN_CALL": 400,
+    "SNIPPET_TOO_LONG": 400,
+    "VALIDATION_ERROR": 400,
+    "LLM_FAILED": 502,
+    "LLM_INVALID_RESPONSE": 502,
+    "INTERNAL_ERROR": 500,
+}
+
+API_ERROR_RESPONSES = {
+    400: {"model": APIErrorResponse},
+    404: {"model": APIErrorResponse},
+    500: {"model": APIErrorResponse},
+    502: {"model": APIErrorResponse},
+}
 
 
-if __name__ == "__main__":
-    main()
+class APIException(Exception):
+    """API-level error with canonical code/message/details."""
+
+    def __init__(
+        self,
+        *,
+        code: str,
+        message: str,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        self.code = code
+        self.message = message
+        self.details = details or {}
+        super().__init__(message)
+
+
+@asynccontextmanager
+async def app_lifespan(_: FastAPI):
+    """Initialize DB tables on startup."""
+    create_db_and_tables()
+    yield
+
+
+app = FastAPI(
+    title="Grant Reviewer API",
+    version="0.1.0",
+    lifespan=app_lifespan,
+)
+
+
+def build_error_response(
+    *,
+    code: str,
+    message: str,
+    details: dict[str, Any] | None = None,
+) -> JSONResponse:
+    """Build canonical error JSON response."""
+    payload = APIErrorResponse(
+        error=APIErrorBody(code=code, message=message, details=details or {}),
+    )
+    status_code = ERROR_STATUS_BY_CODE.get(code, 500)
+    return JSONResponse(status_code=status_code, content=payload.model_dump(mode="json"))
+
+
+@app.exception_handler(APIException)
+async def api_exception_handler(_: Request, exc: APIException) -> JSONResponse:
+    """Handle known API exceptions."""
+    return build_error_response(code=exc.code, message=exc.message, details=exc.details)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    _: Request,
+    exc: RequestValidationError,
+) -> JSONResponse:
+    """Handle request schema validation failures."""
+    return build_error_response(
+        code="VALIDATION_ERROR",
+        message="Request payload validation failed.",
+        details={"errors": exc.errors()},
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(_: Request, exc: Exception) -> JSONResponse:
+    """Handle unexpected server failures."""
+    logger.exception("Unhandled API error: %s", exc)
+    return build_error_response(
+        code="INTERNAL_ERROR",
+        message="Unexpected server error.",
+    )
+
+
+def get_repository() -> Generator[ReviewRepository, None, None]:
+    """Dependency: create request-scoped repository."""
+    session = get_session()
+    try:
+        yield ReviewRepository(session)
+    finally:
+        session.close()
+
+
+def map_review_failure_to_api_error(error: ValueError) -> APIException:
+    """Translate service errors to canonical API errors."""
+    message = str(error)
+    if message == "No evaluation criteria defined for this section.":
+        return APIException(code="NO_EXPECTATIONS", message=message)
+    if message.startswith("LLM call failed:"):
+        return APIException(code="LLM_FAILED", message=message)
+    invalid_response_signals = (
+        "Invalid JSON from LLM:",
+        "LLM response schema validation failed:",
+        "Cardinality mismatch:",
+        "Missing feedback for expectations:",
+        "Unknown expectation IDs in response:",
+    )
+    if message.startswith(invalid_response_signals):
+        return APIException(
+            code="LLM_INVALID_RESPONSE",
+            message="LLM returned an invalid structured response.",
+        )
+    return APIException(code="INTERNAL_ERROR", message="Review generation failed.")
+
+
+RepositoryDep = Annotated[ReviewRepository, Depends(get_repository)]
+
+
+@app.get("/health")
+def health() -> dict[str, bool]:
+    """Liveness endpoint."""
+    return {"ok": True}
+
+
+@app.get("/calls", response_model=CallsResponse, responses=API_ERROR_RESPONSES)
+def list_calls(repository: RepositoryDep) -> CallsResponse:
+    """List active funding calls."""
+    calls = repository.get_active_calls()
+    return CallsResponse(
+        calls=[
+            CallSummary(
+                id=call.id,
+                code=call.code,
+                name=call.name,
+                year=call.call_year,
+                agency_short_name=agency.short_name,
+            )
+            for call, agency in calls
+        ],
+    )
+
+
+@app.get(
+    "/calls/{call_id}/nodes",
+    response_model=NodesResponse,
+    responses=API_ERROR_RESPONSES,
+)
+def list_call_nodes(call_id: UUID, repository: RepositoryDep) -> NodesResponse:
+    """List proposal nodes for a call (flat list)."""
+    call = repository.get_call_by_id(call_id)
+    if call is None:
+        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+
+    nodes = repository.get_nodes_for_call(call_id)
+    return NodesResponse(
+        nodes=[
+            NodeSummary(
+                id=node.id,
+                parent_node_id=node.parent_node_id,
+                title=node.title,
+                node_type=node.node_type,
+                order_index=node.order_index,
+                has_expectations=has_expectations,
+            )
+            for node, has_expectations in nodes
+        ],
+    )
+
+
+@app.post(
+    "/reviews",
+    response_model=CreateReviewResponse,
+    responses=API_ERROR_RESPONSES,
+)
+def create_review(
+    payload: CreateReviewRequest,
+    repository: RepositoryDep,
+) -> CreateReviewResponse:
+    """Create a review synchronously."""
+    if len(payload.snippet_text) > MAX_SNIPPET_CHARS:
+        raise APIException(
+            code="SNIPPET_TOO_LONG",
+            message=f"Snippet exceeds max length of {MAX_SNIPPET_CHARS} characters.",
+            details={"max_chars": MAX_SNIPPET_CHARS},
+        )
+
+    call = repository.get_call_by_id(payload.call_id)
+    if call is None:
+        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+
+    node = repository.get_node_by_id(payload.node_id)
+    if node is None:
+        raise APIException(code="NODE_NOT_FOUND", message="Proposal node not found.")
+    if node.funding_call_id != payload.call_id:
+        raise APIException(
+            code="NODE_NOT_IN_CALL",
+            message="Selected node does not belong to selected call.",
+        )
+
+    reviewer_service = ReviewerService(
+        repository=repository,
+        llm_client=build_llm_client(),
+    )
+    try:
+        review, _ = reviewer_service.generate_review(
+            node_id=payload.node_id,
+            snippet_text=payload.snippet_text,
+            call_id=payload.call_id,
+        )
+    except ValueError as err:
+        raise map_review_failure_to_api_error(err) from err
+
+    return CreateReviewResponse(review_id=review.id, status=review.status)
+
+
+@app.get(
+    "/reviews/{review_id}",
+    response_model=ReviewDetailResponse,
+    responses=API_ERROR_RESPONSES,
+)
+def get_review(review_id: UUID, repository: RepositoryDep) -> ReviewDetailResponse:
+    """Fetch review details and ordered cards."""
+    review = repository.get_review_by_id(review_id)
+    if review is None:
+        raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
+
+    cards = []
+    if review.status == ReviewStatus.COMPLETED:
+        cards = repository.get_review_cards_ordered(review_id)
+
+    return ReviewDetailResponse(
+        review=ReviewSummary(
+            id=review.id,
+            status=review.status,
+            overall_rating=review.overall_rating,
+            overall_summary=review.overall_summary,
+        ),
+        cards=[
+            ReviewCardSummary(
+                id=card.id,
+                node_expectation_id=card.node_expectation_id,
+                rating=card.rating,
+                feedback_text=card.feedback_text,
+            )
+            for card in cards
+        ],
+    )

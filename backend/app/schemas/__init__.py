@@ -1,1 +1,1 @@
-# Schemas subpackage for Pydantic validation models
+"""Schemas subpackage for Pydantic validation models."""
