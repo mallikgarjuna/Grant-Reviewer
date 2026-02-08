@@ -6,9 +6,12 @@ Rule: Only repositories talk to the database directly.
 
 from uuid import UUID
 
+from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.models.domain import (
+    FundingAgency,
+    FundingCall,
     NodeExpectation,
     PromptTemplate,
     ProposalNode,
@@ -29,6 +32,45 @@ class ReviewRepository:
     def get_node_by_id(self, node_id: UUID) -> ProposalNode | None:
         """Fetch a proposal node by ID."""
         return self.session.get(ProposalNode, node_id)
+
+    def get_call_by_id(self, call_id: UUID) -> FundingCall | None:
+        """Fetch a funding call by ID."""
+        return self.session.get(FundingCall, call_id)
+
+    def get_active_calls(self) -> list[tuple[FundingCall, FundingAgency]]:
+        """Fetch active calls with their agencies."""
+        statement = (
+            select(FundingCall, FundingAgency)
+            .join(FundingAgency, FundingCall.funding_agency_id == FundingAgency.id)
+            .where(FundingCall.is_active)
+            .order_by(FundingCall.call_year.desc(), FundingCall.code)
+        )
+        return list(self.session.exec(statement).all())
+
+    def get_nodes_for_call(
+        self,
+        call_id: UUID,
+    ) -> list[tuple[ProposalNode, bool]]:
+        """Fetch call nodes and whether they currently have expectations."""
+        statement = (
+            select(ProposalNode)
+            .where(ProposalNode.funding_call_id == call_id)
+            .order_by(ProposalNode.order_index, ProposalNode.title)
+        )
+        nodes = list(self.session.exec(statement).all())
+        if not nodes:
+            return []
+
+        node_ids = [node.id for node in nodes]
+        expectation_statement = (
+            select(NodeExpectation.proposal_node_id, func.count(NodeExpectation.id))
+            .where(NodeExpectation.proposal_node_id.in_(node_ids))
+            .group_by(NodeExpectation.proposal_node_id)
+        )
+        expectation_rows = list(self.session.exec(expectation_statement).all())
+        has_expectation_map = {row[0]: row[1] > 0 for row in expectation_rows}
+
+        return [(node, has_expectation_map.get(node.id, False)) for node in nodes]
 
     def get_expectations_for_node(self, node_id: UUID) -> list[NodeExpectation]:
         """Fetch all NodeExpectations for a given proposal node, ordered."""
@@ -85,6 +127,20 @@ class ReviewRepository:
         self.session.commit()
         self.session.refresh(review)
         return review
+
+    def get_review_by_id(self, review_id: UUID) -> Review | None:
+        """Fetch a review by ID."""
+        return self.session.get(Review, review_id)
+
+    def get_review_cards_ordered(self, review_id: UUID) -> list[ReviewCard]:
+        """Fetch review cards ordered by expectation order index."""
+        statement = (
+            select(ReviewCard)
+            .join(NodeExpectation, ReviewCard.node_expectation_id == NodeExpectation.id)
+            .where(ReviewCard.review_id == review_id)
+            .order_by(NodeExpectation.order_index, ReviewCard.id)
+        )
+        return list(self.session.exec(statement).all())
 
     def create_review_card(
         self,
