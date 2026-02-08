@@ -67,3 +67,12 @@
 > - 5.2: Created `ingest_call.py` with atomic upsert and `--dry-run` flag
 > - 5.3: Created 3 YAML test files (valid, invalid, edge cases)
 > - 5.4: All 6 verification tests passed (schema validation, dry run, ingestion, edge cases, idempotency, integration)
+
+## 2026-02-08
+
+### 13:17 - Task 7.0 Alignment (FastAPI MVP)
+> User requested an overview of what’s coming next.
+> Alignment:
+> 1) API-first
+> 2) Minimal endpoint set
+> Approved to start Phase 0 brainstorming for Task 7.0.

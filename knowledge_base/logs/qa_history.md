@@ -44,3 +44,11 @@
 - **Class (`FundingAgency`)**: Represents a *single object* (row) in memory.
 - **Table (`funding_agencies`)**: Represents a *collection* (set) of records in the database.
 Using plural for classes (`FundingAgencies`) would be confusing as the object instance is singular.
+
+## 2026-02-08
+
+### Q: What does it mean by adding `!` prefix in `.gitignore` files?
+**A:** `!` negates a previous ignore rule (“un-ignores” a path). Git evaluates rules top-to-bottom; a later `!pattern` can re-include files/dirs ignored earlier. If a parent dir is ignored, you must also unignore the parent (and sometimes `/**`) so Git will descend into it.
+
+### Q: How are we going to approach building the rest of the app?
+**A:** API-first with a minimal FastAPI surface first, then UI. Next major slice is **Task 7.0 (FastAPI MVP)**: add discovery endpoints (calls + nodes) and a `POST /reviews` endpoint that wraps the existing `ReviewerService`, followed by tests and then a thin frontend.

@@ -23,6 +23,7 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 - Default to feature branches + PRs; keep diffs small; avoid drive-by refactors.
 - Branch naming: `task-<id>-<short-slug>` (e.g., `task-6.0-llm-integration`).
 - PR title/description and commits should reference the task/sub-task ID when applicable.
+- Make a commit after each Phase (0–3) with a short descriptive message (e.g., Phase 0 brainstorming log; Phase 1 PRD; Phase 2 task plan; Phase 3 implementation + walkthrough).
 - Commit messages: use conventional prefixes (`feat:`, `fix:`, `chore:`, `docs:`) and include the ID (e.g., `feat: [6.1.2] ...`).
 - Do not commit secrets (`.env`, API keys). Keep `backend/data/*.db` gitignored.
 
@@ -37,7 +38,7 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 
 Use repo-relative paths (don’t require machine-specific `file:///...` links).
 
-- Q&A / clarifications: `knowledge_base/logs/qa_history.md`
+- Q&A / clarifications: `knowledge_base/logs/qa_history.md` (log conceptual/clarification questions when asked)
 - Architectural decisions: `knowledge_base/logs/decisions.md`
 - Prompt history (datetimestamps): `knowledge_base/logs/prompt_history.md`
 - Walkthrough per major task (include verification results): `knowledge_base/walkthroughs/walkthrough_task_[ID]_[name].md`
@@ -110,6 +111,7 @@ Approval gates: ask for an explicit “go ahead” at each phase boundary in int
 - Verify with tests/build/lint or a reliable manual repro.
 - Update `tasks/` and `knowledge_base/` as you go (decisions, Q&A, walkthroughs).
 - Be explicit about what you didn’t verify and what to run next.
+- At the end of every response, explicitly tell/ask the user what to do or prompt next.
 
 ### Ask first
 

@@ -26,3 +26,8 @@
 **Issue**: Updated internal artifact `task.md` but forgot to update the project task file `tasks/task-X.0-*.md`.
 **Fix**: After each subtask completion, update the project task file (not just internal artifacts).
 **Prevention**: Always update `tasks/task-X.0-*.md` with `[x]` checkmarks as subtasks complete. Also update `tasks/index.md` when task status changes.
+
+### L6: Brainstorming Log Naming Convention
+**Issue**: Brainstorming logs were created without a task ID in the filename.
+**Fix**: Rename brainstorming log files to include the task ID.
+**Prevention**: For each major task, name Phase 0 brainstorming logs like `knowledge_base/logs/brainstorming-[TaskID]-[slug].md`.
