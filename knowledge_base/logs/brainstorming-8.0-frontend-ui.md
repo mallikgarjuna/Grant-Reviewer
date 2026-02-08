@@ -3,6 +3,8 @@
 **Date**: 2026-02-08  
 **Task ID**: 8.0  
 **Pipeline Phase**: Phase 0 (Brainstorming)  
+**Status**: Draft (v0.2 - Revised)  
+**Last Updated**: 2026-02-08  
 
 ## Goal
 
@@ -173,3 +175,8 @@ Split Phase 1/2 thinking into three “tracks” (can still be one Task 8.0 if d
 - **8.0A UX Slice**: pages + components + MDX + basic app flow (calls → nodes → submit → results).
 - **8.0B Contracts**: BFF normalization, idempotency, quota error semantics, kill switch.
 - **8.0C Deployment**: secrets, environments, Vercel/Render wiring, Postgres provisioning.
+
+## Revision History
+
+- **v0.1** (2026-02-08): Initial Phase 0 brainstorming draft.
+- **v0.2** (2026-02-08): Tightened BFF contract; clarified quota/idempotency/lifecycle, SEO rules, kill switch, and Postgres-local guidance.
