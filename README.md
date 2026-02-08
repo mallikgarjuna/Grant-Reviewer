@@ -8,75 +8,87 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 
 1. **Ingests funding call definitions** (rubrics, evaluation criteria, proposal structure)
 2. **Analyzes proposal snippets** against the relevant rubric elements
-3. **Generates structured feedback** with severity ratings (Critical/Warning/Success/Note)
+3. **Generates structured feedback** with actionable suggestions
 
 ## Project Status
 
-🚧 **MVP in development** - Backend core logic complete, API and frontend pending.
+🎉 **MVP Core Complete** - Real LLM integration working!
 
 ### Completed
 - ✅ Domain models (11 SQLModel tables)
-- ✅ Core reviewer service with AI integration
+- ✅ Core reviewer service with real OpenAI integration
 - ✅ Admin ingestion pipeline (YAML → Database)
-- ✅ Sample ERC/NSF call definitions
+- ✅ Sample ERC call definition
+- ✅ End-to-end review flow verified
 
 ### Pending
 - ⏳ FastAPI REST endpoints
-- ⏳ Frontend UI (Next.js)
+- ⏳ Frontend UI
 
 ## Quick Start
 
 ### Prerequisites
 - Python 3.12+
 - [UV package manager](https://github.com/astral-sh/uv)
+- OpenAI API key
 
 ### Setup
 
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd Grant-Reviewer
-
-# Setup backend
+# Clone and setup backend
 cd backend
 uv sync
 
-# Create database tables
-uv run python -c "from app.db import create_db_and_tables; create_db_and_tables()"
+# Configure API key
+cp .env.example .env
+# Edit .env and add your OPENAI_API_KEY
 
-# Ingest a sample call definition
-uv run python scripts/ingest_call.py data/calls/sample_erc_call.yaml
+# Run the review demo
+uv run python scripts/run_review.py
 ```
 
-### Running Scripts
+### Running a Review Demo
 
 ```bash
-# Seed database with sample data
-uv run python scripts/seed.py
+cd backend
 
-# Run a review (demo)
+# Seeds database + runs review with real LLM
 uv run python scripts/run_review.py
+```
 
-# Ingest a call definition (dry run first)
-uv run python scripts/ingest_call.py data/calls/sample_erc_call.yaml --dry-run
-uv run python scripts/ingest_call.py data/calls/sample_erc_call.yaml
+**Sample output:**
+```
+TEST 1: Reviewing Section 1 (has 3 expectations)
+✓ Review created with status=COMPLETED
+✓ Generated 3 ReviewCards with AI feedback
+
+Sample feedback:
+"The objectives of the proposal are not articulated in a clear and 
+detailed manner. It is essential to expand on the specific goals..."
+```
+
+### Ingesting Call Definitions
+
+```bash
+# Validate first (dry run)
+uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml --dry-run
+
+# Ingest to database
+uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml
 ```
 
 ## Architecture
 
 ```
 Grant-Reviewer/
-├── backend/                 # Python backend (SQLModel + FastAPI)
+├── backend/                 # Python backend
 │   ├── app/
 │   │   ├── models/          # SQLModel domain models
 │   │   ├── schemas/         # Pydantic validation schemas
 │   │   ├── repositories/    # Data access layer
-│   │   ├── services/        # Business logic
+│   │   ├── services/        # Business logic + LLM integration
 │   │   └── db.py            # Database connection
 │   ├── scripts/             # CLI utilities
-│   │   ├── seed.py          # Sample data seeding
-│   │   ├── ingest_call.py   # YAML call ingestion
-│   │   └── run_review.py    # Review demo
 │   └── data/calls/          # YAML call definitions
 ├── knowledge_base/          # Project documentation
 └── tasks/                   # Task tracking
@@ -88,17 +100,29 @@ The system uses 11 interconnected tables:
 
 | Table | Purpose |
 |-------|---------|
-| `FundingAgency` | Organization (ERC, NSF, etc.) |
+| `FundingAgency` | Organization (ERC, NWO, etc.) |
 | `FundingCall` | Specific grant program |
 | `EvaluationCriterion` | Top-level rubric dimension (Excellence, Impact) |
 | `EvaluationElement` | Atomic reviewable concern |
 | `ProposalNode` | Hierarchical proposal structure |
-| `NodeExpectation` | Links nodes to rubric elements |
+| `NodeExpectation` | Links nodes to rubric elements + guidance |
 | `User` | Anonymous session owner |
 | `ProposalSnippet` | User-pasted text to review |
 | `PromptTemplate` | Versioned AI prompt |
-| `Review` | Assessment event |
+| `Review` | Assessment event + LLM traceability |
 | `ReviewCard` | Individual feedback item |
+
+## Development Progress
+
+| Task | Description | Status |
+|------|-------------|--------|
+| 0.0-4.0 | Domain model & core logic | ✅ Complete |
+| 5.0 | Admin YAML ingestion | ✅ Complete |
+| 6.0 | LLM Integration MVP | ✅ Complete |
+| 7.0 | FastAPI endpoints | ⏳ Pending |
+| 8.0 | Frontend UI | ⏳ Pending |
+
+See `tasks/index.md` for detailed task tracking.
 
 ## Contributing
 
