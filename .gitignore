@@ -67,6 +67,10 @@ uv.lock
 logs/
 *.log
 
+# Project memory (keep these tracked)
+!knowledge_base/logs/
+!knowledge_base/logs/**
+
 # SQLite databases
 *.db
 *.sqlite

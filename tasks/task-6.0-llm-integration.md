@@ -1,7 +1,7 @@
 # Task 6.0: LLM Integration MVP
 
 **Status**: [x] Complete
-**PRD**: [prd-6.0-llm-integration.md](file:///home/mgurram/Projects/Github/AIEng_MG/Grant-Reviewer/tasks/prd-6.0-llm-integration.md)
+**PRD**: [prd-6.0-llm-integration.md](prd-6.0-llm-integration.md)
 
 ---
 

@@ -1,7 +1,7 @@
 # Task 5.0: Admin Ingestion (Call Definition as Code)
 
 **Status**: [x] Complete
-**PRD**: [tasks/prd-5.0-admin-ingest.md](file:///home/mgurram/Projects/Github/AIEng_MG/Grant-Reviewer/tasks/prd-5.0-admin-ingest.md)
+**PRD**: [prd-5.0-admin-ingest.md](prd-5.0-admin-ingest.md)
 
 ## 5.1 Define YAML Schemas (1:1 DB Mapping)
 - [x] Create `backend/app/schemas/call_definitions.py` (Renamed from ingestion.py) <!-- id: 8 -->
