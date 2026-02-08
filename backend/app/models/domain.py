@@ -322,6 +322,19 @@ class Review(SQLModel, table=True):
         default=None,
         description="Most severe rating among review cards",
     )
+    # LLM traceability fields (Task 6.0)
+    prompt_sent: str | None = Field(
+        default=None,
+        description="Full prompt sent to LLM for debugging",
+    )
+    raw_llm_response: str | None = Field(
+        default=None,
+        description="Raw LLM response before parsing",
+    )
+    llm_model: str | None = Field(
+        default=None,
+        description="Model identifier used (e.g., gpt-4o-mini)",
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
