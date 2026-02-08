@@ -9,6 +9,7 @@ Python backend for Grant Reviewer using SQLModel and OpenAI.
 - **SQLite** - File-based database (PostgreSQL-ready)
 - **OpenAI** - LLM integration (gpt-4o-mini default)
 - **UV** - Package manager
+- **FastAPI** - HTTP API
 
 ## Structure
 
@@ -48,6 +49,29 @@ cp .env.example .env
 # Run review demo (seeds DB + calls LLM)
 uv run python scripts/run_review.py
 ```
+
+## Run API
+
+### Stub Mode (Recommended for Local Verification)
+
+```bash
+# No external API calls
+LLM_MODE=stub uv run uvicorn main:app --reload
+```
+
+### OpenAI Mode (Costs Money)
+
+```bash
+# Requires OPENAI_API_KEY in .env
+LLM_MODE=openai uv run uvicorn main:app --reload
+```
+
+Endpoints:
+- `GET /health`
+- `GET /calls`
+- `GET /calls/{call_id}/nodes`
+- `POST /reviews`
+- `GET /reviews/{review_id}`
 
 ## Scripts
 
@@ -91,8 +115,15 @@ uv run python scripts/run_review.py  # Seeds fresh DB
 |----------|-------------|---------|
 | `OPENAI_API_KEY` | OpenAI API key | **Required** |
 | `LLM_MODEL` | Model to use | `gpt-4o-mini` |
+| `LLM_MODE` | `openai` or `stub` | `openai` |
 
 Copy `.env.example` to `.env` for local development.
+
+## Tests
+
+```bash
+uv run pytest tests/test_api.py -q
+```
 
 ## LLM Integration
 

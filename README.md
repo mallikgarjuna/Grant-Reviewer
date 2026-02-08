@@ -20,9 +20,9 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 - ✅ Admin ingestion pipeline (YAML → Database)
 - ✅ Sample ERC call definition
 - ✅ End-to-end review flow verified
+- ✅ FastAPI REST endpoints (minimal MVP)
 
 ### Pending
-- ⏳ FastAPI REST endpoints
 - ⏳ Frontend UI
 
 ## Quick Start
@@ -45,6 +45,18 @@ cp .env.example .env
 
 # Run the review demo
 uv run python scripts/run_review.py
+```
+
+### Running the API (Stub Mode, No OpenAI Cost)
+
+```bash
+cd backend
+LLM_MODE=stub uv run uvicorn main:app --reload
+```
+
+Then try:
+```bash
+curl http://127.0.0.1:8000/health
 ```
 
 ### Running a Review Demo
@@ -119,7 +131,7 @@ The system uses 11 interconnected tables:
 | 0.0-4.0 | Domain model & core logic | ✅ Complete |
 | 5.0 | Admin YAML ingestion | ✅ Complete |
 | 6.0 | LLM Integration MVP | ✅ Complete |
-| 7.0 | FastAPI endpoints | ⏳ Pending |
+| 7.0 | FastAPI endpoints | ✅ Complete |
 | 8.0 | Frontend UI | ⏳ Pending |
 
 See `tasks/index.md` for detailed task tracking.
