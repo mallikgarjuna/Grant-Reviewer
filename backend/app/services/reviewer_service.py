@@ -35,11 +35,13 @@ class ReviewerService:
     ) -> None:
         self.repository = repository
         self._llm_client = llm_client
+        logger.debug("ReviewerService initialized")
 
     @property
     def llm_client(self) -> OpenAIClient:
         """Lazy-load LLM client."""
         if self._llm_client is None:
+            logger.debug("Lazy-loading OpenAI client...")
             self._llm_client = OpenAIClient()
         return self._llm_client
 
@@ -67,25 +69,35 @@ class ReviewerService:
         Raises:
             ValueError: If node has no expectations or validation fails
         """
+        logger.info(f"[Review] Starting review for node {node_id}")
+
         # 1. Fetch expectations
+        logger.debug(f"[Review] Fetching expectations for node {node_id}")
         expectations = self.repository.get_expectations_for_node(node_id)
+        logger.info(f"[Review] Found {len(expectations)} expectations")
 
         # 2. AD 2.1: Reject if zero expectations
         if not expectations:
+            logger.warning(f"[Review] No expectations for node {node_id}, rejecting")
             raise ValueError("No evaluation criteria defined for this section.")
 
         # 3. Get active prompt template (for audit trail)
         template = self.repository.get_active_prompt_template()
         if not template:
+            logger.error("[Review] No active prompt template found")
             raise ValueError("No active prompt template found.")
+        logger.debug(f"[Review] Using template: {template.id}")
 
         # 4. Get node for context
         node = self.repository.get_node_by_id(node_id)
         if not node:
+            logger.error(f"[Review] Node {node_id} not found")
             msg = f"Node {node_id} not found."
             raise ValueError(msg)
+        logger.debug(f"[Review] Node title: {node.title}")
 
         # 5. Create user and snippet
+        logger.debug("[Review] Creating user and snippet...")
         user = self.repository.create_user()
         snippet = self.repository.create_snippet(
             user_id=user.id,
@@ -93,15 +105,19 @@ class ReviewerService:
             node_id=node_id,
             text=snippet_text,
         )
+        logger.debug(f"[Review] Created snippet {snippet.id} ({len(snippet_text)} chars)")
 
         # 6. Build prompt
+        logger.debug("[Review] Building prompt...")
         prompt = build_review_prompt(node, snippet_text, expectations)
+        logger.debug(f"[Review] Prompt built ({len(prompt)} chars)")
 
         # 7. Create review record (status=PENDING initially)
         review = self.repository.create_review(
             snippet_id=snippet.id,
             template_id=template.id,
         )
+        logger.info(f"[Review] Created review {review.id} (status=PENDING)")
 
         # Store prompt and model info
         review.prompt_sent = prompt
@@ -109,10 +125,12 @@ class ReviewerService:
 
         # 8. Call LLM
         try:
+            logger.info("[Review] Calling LLM...")
             raw_response = self.llm_client.generate(prompt)
             review.raw_llm_response = raw_response
+            logger.info("[Review] LLM call successful")
         except LLMClientError as e:
-            logger.error(f"LLM call failed: {e}")
+            logger.error(f"[Review] LLM call failed: {e}")
             review.status = ReviewStatus.FAILED
             review.overall_summary = f"LLM call failed: {e}"
             self.repository.update_review(review)
@@ -120,16 +138,22 @@ class ReviewerService:
 
         # 9. Parse and validate response
         try:
+            logger.debug("[Review] Parsing LLM response...")
             llm_response = self._parse_llm_response(raw_response)
+            logger.debug(f"[Review] Parsed {len(llm_response.feedbacks)} feedback items")
+
+            logger.debug("[Review] Validating response...")
             self._validate_response(llm_response, expectations)
+            logger.info("[Review] Response validation passed")
         except ValueError as e:
-            logger.error(f"LLM response validation failed: {e}")
+            logger.error(f"[Review] Response validation failed: {e}")
             review.status = ReviewStatus.FAILED
             review.overall_summary = f"Response validation failed: {e}"
             self.repository.update_review(review)
             raise
 
         # 10. Create ReviewCards
+        logger.debug("[Review] Creating ReviewCards...")
         cards = []
         expectation_map = {str(exp.id): exp for exp in expectations}
 
@@ -142,6 +166,7 @@ class ReviewerService:
                 feedback=feedback_item.feedback,
             )
             cards.append(card)
+        logger.debug(f"[Review] Created {len(cards)} ReviewCards")
 
         # 11. Finalize review as COMPLETED
         review.status = ReviewStatus.COMPLETED
@@ -151,7 +176,7 @@ class ReviewerService:
         )
         self.repository.update_review(review)
 
-        logger.info(f"Review {review.id} completed with {len(cards)} cards")
+        logger.info(f"[Review] ✓ Review {review.id} COMPLETED with {len(cards)} cards")
         return review, cards
 
     def _parse_llm_response(self, raw_response: str) -> LLMReviewResponse:

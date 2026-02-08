@@ -5,10 +5,14 @@ Simple client that calls OpenAI API and returns raw text response.
 For MVP: OpenAI only, Azure support deferred.
 """
 
+import logging
 import os
+import time
 from typing import ClassVar
 
 from openai import OpenAI, OpenAIError
+
+logger = logging.getLogger(__name__)
 
 
 class LLMClientError(Exception):
@@ -31,6 +35,7 @@ class OpenAIClient:
 
         self.client = OpenAI(api_key=api_key, timeout=self.TIMEOUT_SECONDS)
         self.model = os.getenv("LLM_MODEL", self.DEFAULT_MODEL)
+        logger.info(f"OpenAI client initialized with model: {self.model}")
 
     def generate(self, prompt: str) -> str:
         """
@@ -45,6 +50,12 @@ class OpenAIClient:
         Raises:
             LLMClientError: If API call fails or times out
         """
+        prompt_preview = prompt[:100] + "..." if len(prompt) > 100 else prompt
+        logger.info(f"[LLM] Calling OpenAI ({self.model})...")
+        logger.debug(f"[LLM] Prompt preview: {prompt_preview}")
+
+        start_time = time.time()
+
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -52,13 +63,29 @@ class OpenAIClient:
                 response_format={"type": "json_object"},
             )
 
+            elapsed = time.time() - start_time
             content = response.choices[0].message.content
+
             if content is None:
+                logger.error("[LLM] Received empty response from OpenAI")
                 raise LLMClientError("LLM returned empty response")
+
+            # Log token usage if available
+            usage = response.usage
+            if usage:
+                logger.info(
+                    f"[LLM] Response received in {elapsed:.2f}s "
+                    f"(prompt: {usage.prompt_tokens}, completion: {usage.completion_tokens}, "
+                    f"total: {usage.total_tokens} tokens)"
+                )
+            else:
+                logger.info(f"[LLM] Response received in {elapsed:.2f}s")
 
             return content
 
         except OpenAIError as e:
+            elapsed = time.time() - start_time
+            logger.error(f"[LLM] OpenAI API error after {elapsed:.2f}s: {e}")
             raise LLMClientError(f"OpenAI API error: {e}") from e
 
     def get_model_name(self) -> str:

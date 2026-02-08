@@ -4,12 +4,20 @@ Run review script - manual test of the core use case.
 Usage: uv run python scripts/run_review.py
 """
 
+import logging
 import sys
 from pathlib import Path
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 # Add backend to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
