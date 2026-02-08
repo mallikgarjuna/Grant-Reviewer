@@ -7,6 +7,10 @@ Usage: uv run python scripts/run_review.py
 import sys
 from pathlib import Path
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 # Add backend to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
