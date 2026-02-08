@@ -149,3 +149,37 @@
 - **Decision**: Added `LLM_MODE=stub` for deterministic, schema-valid local reviews without OpenAI calls.
 - **Rationale**: Enables frequent, low-cost API verification while preserving production code paths.
 - **Status**: Implemented.
+
+---
+
+## Date: 2026-02-08 (Task 8.0 Frontend + Launch Architecture)
+
+### AD 8.1: Next.js Frontend with BFF Pattern (Split Hosting)
+- **Decision**: Build the UI and SEO site as a single Next.js app (TS/React) with MDX for articles, using a Backend-for-Frontend pattern: browser talks to Next.js routes; Next.js calls FastAPI server-to-server.
+- **Rationale**: Strong SEO + app UX on one site, while keeping LLM-backed FastAPI isolated from browser traffic and simplifying auth (no cross-origin cookie/CORS complexity).
+- **Status**: Approved (implementation pending).
+
+### AD 8.2: Login Required + Magic Link Auth + Quotas-First
+- **Decision**: Require login to submit reviews. Use magic-link email auth (initially) and enforce free-tier usage quotas before adding payments.
+- **Rationale**: Minimizes abuse/cost exposure early while keeping onboarding low-friction and preserving a straightforward upgrade path to Stripe later.
+- **Status**: Approved (implementation pending).
+
+### AD 8.3: Managed Postgres for v1
+- **Decision**: Use managed Postgres for production v1 (replacing SQLite for deployed environments), and host it close to the backend.
+- **Rationale**: Supports auth/session storage, quotas, and future scaling/reliability needs better than SQLite, especially under concurrent LLM traffic and split hosting.
+- **Status**: Approved (implementation pending).
+
+### AD 8.4: Clerk for Authentication (MVP)
+- **Decision**: Use Clerk for login (magic link) in MVP/v1.
+- **Rationale**: Avoids building email delivery + token/session plumbing during MVP while keeping login-required abuse control and a smooth upgrade path to payments later.
+- **Status**: Approved (implementation pending).
+
+### AD 8.5: Render Managed Postgres (v1)
+- **Decision**: Use Render’s managed Postgres for v1 production database.
+- **Rationale**: Consolidates DB ops (backups/availability) and pairs naturally with hosting the FastAPI service on Render.
+- **Status**: Approved (implementation pending).
+
+### AD 8.6: Split Hosting: Vercel (Next.js) + Render (FastAPI + Postgres)
+- **Decision**: Host Next.js on Vercel (with Clerk) and host FastAPI + Postgres on Render.
+- **Rationale**: Best-in-class DX/SEO for Next.js on Vercel, while isolating long-running LLM requests to a backend host suited for persistent services and managed databases.
+- **Status**: Approved (implementation pending).

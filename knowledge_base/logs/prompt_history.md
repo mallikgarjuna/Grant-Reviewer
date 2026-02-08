@@ -100,3 +100,9 @@
 ### 16:17 - Commit Granularity Clarification
 > User asked to enforce commits after each implementation subtask (`7.1`, `7.2`, ...).
 > Outcome: Added a permanent rule in `AGENTS.md` and `tasks/lessons.md` and reorganized Phase 3 work into subtask-scoped commits.
+
+### 17:05 - Task 8.0 Direction + Phase 0 Approved
+> User requested guidance on frontend stack/hosting/auth/DB for a v1 launch with SEO content.
+> Decisions: Next.js (TS/React) + Tailwind + shadcn/ui + MDX, BFF pattern (Next routes call FastAPI server-to-server), Clerk auth (magic links), quotas-first, split hosting (Vercel for Next.js + Render for FastAPI + Render Postgres).
+> User: "Go ahead to Phase 0"
+> Outcome: Created `knowledge_base/logs/brainstorming-8.0-frontend-ui.md` and recorded AD 8.x decisions.
