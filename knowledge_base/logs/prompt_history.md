@@ -92,3 +92,11 @@
 ### 15:56 - Task 7.0 Phase 2 Plan Revision (critical review)
 > User requested updates to the Phase 2 task breakdown to clarify phase semantics, enforce forward-compat status typing, centralize error mapping, add atomicity tests, and add a stub LLM verification mode.
 > Outcome: Revised `tasks/task-7.0-fastapi-mvp.md` and tightened error mapping in `tasks/prd-7.0-fastapi-mvp.md`.
+
+### 16:00 - Task 7.0 Phase 2 Approved → Phase 3 Execution
+> User approved Phase 2 and requested Phase 3 implementation.
+> Outcome: Implemented FastAPI MVP endpoints, API schemas, repository query extensions, stub LLM mode, and API tests.
+
+### 16:17 - Commit Granularity Clarification
+> User asked to enforce commits after each implementation subtask (`7.1`, `7.2`, ...).
+> Outcome: Added a permanent rule in `AGENTS.md` and `tasks/lessons.md` and reorganized Phase 3 work into subtask-scoped commits.

@@ -130,3 +130,22 @@
 - Partial results handling  
 - Cost optimization
 - Async workers / horizontal scaling
+
+---
+
+## Date: 2026-02-08 (Task 7.0 FastAPI MVP)
+
+### AD 7.1: Minimal Endpoint Surface
+- **Decision**: FastAPI MVP exposes only `GET /health`, `GET /calls`, `GET /calls/{call_id}/nodes`, `POST /reviews`, and `GET /reviews/{review_id}`.
+- **Rationale**: Delivers a complete client flow with minimal API area and lower maintenance risk.
+- **Status**: Implemented.
+
+### AD 7.2: Canonical API Error Contract
+- **Decision**: All non-2xx responses use `{ "error": { "code", "message", "details" } }` with centralized code→status mapping.
+- **Rationale**: Keeps frontend handling consistent and avoids semantic drift across handlers.
+- **Status**: Implemented.
+
+### AD 7.3: Stub LLM Mode for Verification
+- **Decision**: Added `LLM_MODE=stub` for deterministic, schema-valid local reviews without OpenAI calls.
+- **Rationale**: Enables frequent, low-cost API verification while preserving production code paths.
+- **Status**: Implemented.

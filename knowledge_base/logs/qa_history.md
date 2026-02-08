@@ -50,5 +50,18 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 ### Q: What does it mean by adding `!` prefix in `.gitignore` files?
 **A:** `!` negates a previous ignore rule (“un-ignores” a path). Git evaluates rules top-to-bottom; a later `!pattern` can re-include files/dirs ignored earlier. If a parent dir is ignored, you must also unignore the parent (and sometimes `/**`) so Git will descend into it.
 
+### Q: Clarify phase terminology used in artifacts and commits.
+**A:** Standardized pipeline naming:
+- **Phase 0** = Brainstorming
+- **Phase 1** = PRD creation
+- **Phase 2** = Task breakdown creation
+- **Phase 3** = Task implementation and verification
+
+### Q: Where should process rules be stored for Codex work in this repo?
+**A:** Use `AGENTS.md` as the primary source for Codex workflow instructions in this project.
+
+### Q: Should Phase 3 commits happen after each subtask (e.g., 7.1, 7.2)?
+**A:** Yes. During Phase 3, commit after each completed subtask with a short message that includes the subtask ID.
+
 ### Q: How are we going to approach building the rest of the app?
 **A:** API-first with a minimal FastAPI surface first, then UI. Next major slice is **Task 7.0 (FastAPI MVP)**: add discovery endpoints (calls + nodes) and a `POST /reviews` endpoint that wraps the existing `ReviewerService`, followed by tests and then a thin frontend.
