@@ -23,7 +23,7 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 - Default to feature branches + PRs; keep diffs small; avoid drive-by refactors.
 - Branch naming: `task-<id>-<short-slug>` (e.g., `task-6.0-llm-integration`).
 - PR title/description and commits should reference the task/sub-task ID when applicable.
-- Make a commit after each Phase (0–3) with a short descriptive message (e.g., Phase 0 brainstorming log; Phase 1 PRD; Phase 2 task plan; Phase 3 implementation + walkthrough).
+- Make a commit after each Phase (0–3) with a short descriptive message that includes both the **Task ID** and **what the artifact is about** (e.g., `docs: [8.0] Phase 0 brainstorming - frontend UI + launch architecture`, `docs: [8.0] Phase 1 PRD - frontend MVP scope`).
 - During Phase 3 implementation, commit after each completed subtask (e.g., `7.1`, `7.2`, `7.3`) with a short descriptive message tied to that subtask ID.
 - Commit messages: use conventional prefixes (`feat:`, `fix:`, `chore:`, `docs:`) and include the ID (e.g., `feat: [6.1.2] ...`).
 - Do not commit secrets (`.env`, API keys). Keep `backend/data/*.db` gitignored.
@@ -137,6 +137,10 @@ Approval gates: ask for an explicit “go ahead” at each phase boundary in int
 ## Known Gotchas (### Project-specific gotchas; ### Systemic coordination failures)
 
 Add lessons learned here as you encounter them. Every time the agent does something wrong, add one line to prevent it next time.
+
+Guideline:
+- Keep **always-on workflow rules** in this `AGENTS.md`.
+- Put **detailed incident writeups + prevention steps** in `tasks/lessons.md`, and reference them from here when useful.
 
 ### Project-specific gotchas
 
