@@ -106,3 +106,7 @@
 > Decisions: Next.js (TS/React) + Tailwind + shadcn/ui + MDX, BFF pattern (Next routes call FastAPI server-to-server), Clerk auth (magic links), quotas-first, split hosting (Vercel for Next.js + Render for FastAPI + Render Postgres).
 > User: "Go ahead to Phase 0"
 > Outcome: Created `knowledge_base/logs/brainstorming-8.0-frontend-ui.md` and recorded AD 8.x decisions.
+
+### 17:40 - Task 8.0B Phase 1 PRD (BFF Contracts)
+> User: "OK. Go ahead to Phase 1 and draft prd for 8.0B."
+> Outcome: Drafted `tasks/prd-8.0B-bff-contracts.md` and linked it in `tasks/index.md`.
