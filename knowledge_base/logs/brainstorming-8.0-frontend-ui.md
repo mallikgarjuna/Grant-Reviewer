@@ -17,7 +17,7 @@ Ship a v1 web experience that:
 - **Auth**: **Clerk** (magic link), login required to submit reviews.
 - **Backend**: existing FastAPI service remains the LLM execution API.
 - **Pattern**: **BFF** — browser calls Next.js routes; Next.js calls FastAPI server-to-server.
-- **DB**: **Managed Postgres** (Render Postgres for production).
+- **DB**: **Managed Postgres** (provider: Render Postgres currently preferred for MVP; revisit if constraints emerge).
 - **Hosting (split)**: Next.js on Vercel; FastAPI + Postgres on Render.
 
 Related architectural decisions captured in `knowledge_base/logs/decisions.md` (AD 8.1–8.6).
@@ -28,6 +28,32 @@ Related architectural decisions captured in `knowledge_base/logs/decisions.md` (
 - Keeps FastAPI off the public browser surface (reduced abuse surface).
 - Central place (Next) to implement session checks, UX-specific caching, and request shaping.
 - Sets up future mobile/public API as an intentional, separate choice.
+
+## Explicit BFF Contract (Must-Haves)
+
+### Responsibility split (hard rule)
+- **FastAPI decides and returns domain facts only**:
+  - validates invariants (`CALL_NOT_FOUND`, `NODE_NOT_IN_CALL`, etc.)
+  - enforces quotas
+  - performs LLM execution
+  - persists immutable review snapshots + cards
+  - returns canonical errors `{error:{code,message,details}}` and structured review results
+- **Next.js decides UX**:
+  - auth gating, redirects, and post-login routing
+  - loading/timeout UX, retries (only via idempotency)
+  - mapping canonical errors → user-facing copy + CTA
+  - normalizing responses for UI components (a small “BFF normalization” layer)
+
+### Error taxonomy (for UX consistency)
+FastAPI errors should be classifiable by `error.code`:
+- **User/actionable**: validation, snippet-too-long, no-expectations, node-not-in-call
+- **Quota/billing**: quota exceeded / reviews disabled (kill switch)
+- **Retryable infra**: upstream timeout / transient network / gateway failures (rare; BFF may suggest retry)
+- **Non-retryable LLM**: invalid structured response (treat as failed; show “try again later” + support link)
+
+Next.js should:
+- render friendly messages for **user/actionable** and **quota/billing** codes
+- avoid automatic retries that can multiply LLM cost
 
 ## MVP UX (first end-to-end slice)
 
@@ -70,8 +96,13 @@ Next.js creates BFF route handlers that call these endpoints server-to-server:
 - App submit endpoints require Clerk-authenticated session.
 
 ### Quotas-first
-- Enforce free-tier quotas in backend (source of truth) keyed by `clerk_user_id`.
+- **FastAPI is the source of truth** for quota allow/deny decisions keyed by `clerk_user_id`.
+- Next.js owns the **user-facing UX** (remaining quota messaging, upgrade CTA later).
 - Optional: add coarse IP-based rate limiting on the backend edge as a second line of defense.
+
+Quota contract (desired):
+- On deny: `QUOTA_EXCEEDED` with `details` like `{limit, remaining, reset_at}`.
+- On allow: proceed; idempotent replays must not consume quota again.
 
 ### Service-to-service request signing
 To prevent direct abuse against FastAPI (bypassing Next/Clerk), add a lightweight “BFF signature”:
@@ -80,6 +111,29 @@ To prevent direct abuse against FastAPI (bypassing Next/Clerk), add a lightweigh
 
 This keeps FastAPI “private by contract” even if the URL is discovered.
 
+### Global cost kill switch (must-have)
+- Add env kill switch in FastAPI: `REVIEWS_ENABLED=false` returns `REVIEWS_DISABLED` (maintenance/circuit-breaker).
+- Next.js should show a dedicated maintenance state when disabled (no confusing “something went wrong”).
+
+## Review Lifecycle + Idempotency (must-have before great UX)
+
+### Lifecycle states
+Current domain has `Review.status` (`PENDING`, `COMPLETED`, `FAILED`) and should remain the canonical backend state.
+UI also has ephemeral client states:
+- `draft` (not submitted)
+- `submitting/processing` (request in flight)
+- `completed` / `failed` (from backend)
+
+### Idempotency for `POST /reviews`
+To support safe retries/timeouts and prevent accidental double-charges:
+- Next.js generates an idempotency key per user submission attempt.
+- Next.js sends it to FastAPI (e.g., `Idempotency-Key` header).
+- FastAPI guarantees: **same user + same idempotency key + same payload → same review**.
+
+Policy (MVP recommendation):
+- Quota is consumed when FastAPI accepts a new idempotency key for processing (LLM attempt).
+- Replays with the same key do not consume additional quota.
+
 ## Data Model Implications (DB)
 
 Moving to Postgres enables:
@@ -87,7 +141,7 @@ Moving to Postgres enables:
 - Quota tracking (daily/monthly usage counts).
 - Future Stripe subscription fields without schema contortions.
 
-Local dev can keep SQLite initially, but production should use Postgres.
+Avoid SQLite/Postgres split: use Postgres locally and in prod to prevent schema drift surprises.
 
 ## SEO / Content Plan (MDX)
 
@@ -96,10 +150,26 @@ MDX articles live in-repo for fast iteration:
 - internal linking: article → relevant app entry point
 - clear CTAs: “Try the rubric review”
 
+## SEO + Auth + Sharing (MVP decisions)
+
+- **Marketing/blog routes are indexable**.
+- **App routes are not indexable**:
+  - add `X-Robots-Tag: noindex` on `/app/*`
+  - ensure `robots.txt` disallows `/app/`
+- **Post-login redirect**: preserve intended destination (e.g., `/app/reviews/[review_id]`) so shared/internal links remain meaningful after auth.
+- **Sharing model (MVP)**: reviews are private to the submitting user (no public share links in v1).
+  - future option: share tokens / “shareable link” objects with explicit access control
+
 ## Open Questions / Risks
 
-- Quota semantics: per-day reviews vs per-month; per-char caps; retry policy on failures.
-- Latency UX: loading states, request timeouts, and error messaging for LLM failures.
+- Quota semantics: per-day reviews vs per-month; per-char caps; what happens on failures (still consumes quota?).
+- Latency UX: loading states, request timeouts, and user guidance on retrying (idempotency required).
 - Deployment secrets: coordinating `FASTAPI_BASE_URL`, `BFF_SHARED_SECRET`, and Clerk keys across Vercel/Render.
-- DB migration plan: switching SQLModel engine/config from SQLite to Postgres cleanly (and whether to introduce Alembic now vs later).
+- Postgres plan: local dev Postgres setup + whether to introduce Alembic now vs later.
 
+## Suggested sequencing (reduce scope thrash)
+
+Split Phase 1/2 thinking into three “tracks” (can still be one Task 8.0 if desired):
+- **8.0A UX Slice**: pages + components + MDX + basic app flow (calls → nodes → submit → results).
+- **8.0B Contracts**: BFF normalization, idempotency, quota error semantics, kill switch.
+- **8.0C Deployment**: secrets, environments, Vercel/Render wiring, Postgres provisioning.
