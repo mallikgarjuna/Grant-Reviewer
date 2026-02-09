@@ -7,6 +7,7 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 ## Tech Stack (Be specific with versions; should be updated as the project evolves)
 
 - Python: `3.12` (see `backend/.python-version`; backend requires `>=3.12`)
+- Node.js: `22.17.0` (for `frontend/`; if using `nvm`, run `nvm use v22.17.0` before `npm`/`npx`)
 - Package manager: `uv` (see `backend/uv.lock`)
 - Backend deps (see `backend/pyproject.toml`):
   - `openai>=2.17.0`

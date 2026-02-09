@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 2 (Task breakdown)
-**Status**: Draft (v0.2 - Revised)
+**Status**: Draft (v0.3 - Revised)
 **Last Updated**: 2026-02-09
 **PRD**: `tasks/prd-8.0A-frontend-ui.md`
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md`
@@ -56,6 +56,22 @@
 - [ ] Create Next.js app scaffold in `frontend/` (App Router, TS).
 - [ ] Add Tailwind and shadcn/ui baseline.
 - [ ] Add minimal dev scripts (how to run frontend locally) in repo README if needed.
+
+### 8.0A.0a2 MVP style guide checkpoint (commit)
+
+- [ ] Lock a minimal MVP style guide (documented decision):
+  - typography: 1 font choice + heading scale
+  - color: primary + neutrals + semantic colors (error/success)
+  - spacing: consistent form/layout spacing
+  - primitives: `Button`, `Input`, `Card` (shadcn variants)
+- [ ] Document the choices in `tasks/prd-8.0A-frontend-ui.md` so later UI work stays consistent.
+
+Optional guardrails (run locally if you have Node/npm):
+- If you use `nvm`, activate the expected Node version first: `nvm use v22.17.0`.
+- Skill search/install:
+  - `npx skills find vercel react nextjs`
+  - `npx skills find ui accessibility web design`
+  - `npx skills add <owner/repo@skill> -g -y`
 
 ### 8.0A.0b Clerk auth + route protection (commit)
 
@@ -164,3 +180,4 @@
 
 - **v0.1** (2026-02-09): Initial Phase 2 plan split into 8.0A.0 scaffolding, 8.0A.1 app slice, 8.0A.2 marketing/MDX, plus explicit verify step.
 - **v0.2** (2026-02-09): Locked `frontend/` location and BFF route-handler approach; split 8.0A.0/8.0A.1 into smaller commit-sized subtasks; made adapter invariants and SEO guardrail verification concrete; separated Verify-Local vs deferred Verify-Deploy.
+- **v0.3** (2026-02-09): Added an explicit MVP style guide checkpoint right after scaffolding and documented optional local skill-install commands (Node/npm required).
