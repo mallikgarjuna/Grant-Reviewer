@@ -1,6 +1,6 @@
 # Task 8.0B: BFF Contracts (Phase 2 Plan)
 
-**Status**: [/] In Progress (v0.3 - Revised)  
+**Status**: [x] Complete (v0.4 - Revised)  
 **Date**: 2026-02-08  
 **Last Updated**: 2026-02-08  
 **Phase**: Phase 2 (Task breakdown)  
@@ -116,9 +116,12 @@ Rationale:
 - [ ] Add a simple normalization layer:
   - converts canonical `{error:{code,...}}` into typed `Result<T, ApiError>`
 
+Implementation note:
+- Deferred intentionally to **Task 8.0A.0** because the Next.js scaffold does not exist yet; backend contract work for 8.0B is complete.
+
 ## 8.0B.8 Verification (Manual, Stub Mode)
 
-- [ ] In `LLM_MODE=stub`, verify end-to-end via BFF routes:
+- [x] In `LLM_MODE=stub`, verify end-to-end via BFF routes:
   - submit once → gets `COMPLETED`
   - resubmit with same idempotency key → same `review_id`
   - resubmit with same key but different payload → 409 `IDEMPOTENCY_PAYLOAD_MISMATCH`
@@ -143,3 +146,4 @@ Rationale:
 - **v0.1** (2026-02-08): Initial Phase 2 plan draft.
 - **v0.2** (2026-02-08): Simplified idempotency concurrency strategy; added timeout/retry/lint staging policies and explicit MVP decisions.
 - **v0.3** (2026-02-08): Clarified sequencing: implement backend contracts first (8.0B), then treat Next.js scaffold + adapter/lint as an explicit 8.0A.0 prerequisite.
+- **v0.4** (2026-02-08): Phase 3 backend implementation completed; 8.0B.7 explicitly deferred to 8.0A.0.

@@ -122,3 +122,13 @@
 ### 18:30 - Task 8.0B Phase 2 Plan Sequencing Fix (8.0B before 8.0A)
 > User flagged that the Phase 2 plan referenced a Next.js scaffold dependency even though 8.0B is sequenced before 8.0A.
 > Outcome: Revised `tasks/task-8.0B-bff-contracts.md` to make Next scaffolding + adapter/lint an explicit “8.0A.0” prerequisite step, while keeping 8.0B focused on backend contract enforcement first.
+
+### 18:55 - Task 8.0B Phase 3 Implementation (backend contracts)
+> User approved Phase 3 and requested strict AGENTS workflow (new branch + commits per subtask).
+> Outcome: Implemented subtask commits for 8.0B.1-8.0B.5:
+> - signature auth on protected routes
+> - ownership enforcement with masked 404 + internal logging
+> - idempotency persistence + payload mismatch handling
+> - failed-state semantics for LLM/timeout paths (`200` with `status=FAILED`)
+> - daily quota + kill switch controls
+> Added walkthrough `knowledge_base/walkthroughs/walkthrough_task_8.0B_bff_contracts.md` and updated `tasks/index.md`.
