@@ -144,3 +144,7 @@
 ### 19:30 - Task 8.1 Phase 0 Revision (critical review)
 > User provided critical feedback on baseline/gating gaps and asked for MVP-fast decisions plus non-scope backlog.
 > Outcome: Revised `knowledge_base/logs/brainstorming-8.1-lint-baseline-cleanup.md` (v0.2) with explicit decisions for diff-based lint gating, CI parity, ownership, formatter policy (Ruff-only), rule/behavior guardrails, done definition, and deferred split into Tasks 8.2/8.3.
+
+### 19:40 - Workflow Instruction Recorded (MVP vs lint debt)
+> User clarified that perfect linting should not block MVP progress and asked to record this safely for future runs.
+> Outcome: Added an always-on rule in `AGENTS.md` and detailed lesson `L9` in `tasks/lessons.md` to enforce "changed-files lint now, full debt cleanup as separate task."
