@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 2 (Task breakdown)
-**Status**: Draft (v0.4 - Revised)
+**Status**: Draft (v0.5 - Revised)
 **Last Updated**: 2026-02-09
 **PRD**: `tasks/prd-8.0A-frontend-ui.md`
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md`
@@ -74,7 +74,7 @@ Optional guardrails (run locally if you have Node/npm):
   - `npx skills find tailwind shadcn nextjs`
 - Recommended MVP installs (low churn, high leverage):
   - `npx skills add vercel-labs/agent-skills@vercel-react-best-practices -g -y`
-  - `npx skills add supercent-io/skills-template@web-accessibility -g -y`
+  - `npx skills add https://github.com/addyosmani/web-quality-skills --skill accessibility -g -y`
 - Optional (only if you want shadcn bootstrapping help):
   - `npx skills add shipshitdev/library@shadcn-setup -g -y`
 
@@ -187,3 +187,4 @@ Optional guardrails (run locally if you have Node/npm):
 - **v0.2** (2026-02-09): Locked `frontend/` location and BFF route-handler approach; split 8.0A.0/8.0A.1 into smaller commit-sized subtasks; made adapter invariants and SEO guardrail verification concrete; separated Verify-Local vs deferred Verify-Deploy.
 - **v0.3** (2026-02-09): Added an explicit MVP style guide checkpoint right after scaffolding and documented optional local skill-install commands (Node/npm required).
 - **v0.4** (2026-02-09): Locked recommended skill installs for MVP guardrails (Vercel React/Next best practices + web accessibility).
+- **v0.5** (2026-02-09): Updated accessibility skill reference to match installed `web-quality-skills` accessibility skill.

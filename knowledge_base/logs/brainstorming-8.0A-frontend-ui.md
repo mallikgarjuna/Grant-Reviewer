@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 0 (Brainstorming)
-**Status**: Draft (v0.4 - Revised)
+**Status**: Draft (v0.5 - Revised)
 **Last Updated**: 2026-02-09
 
 ## Goal (MVP)
@@ -89,7 +89,7 @@ This prevents “same JSON, different bytes” failures due to re-serialization 
 
 If you want additional implementation guardrails (without expanding scope), install these skills locally:
 - `vercel-labs/agent-skills@vercel-react-best-practices` (Next.js/React guardrails)
-- `supercent-io/skills-template@web-accessibility` (accessibility baseline)
+- `addyosmani/web-quality-skills --skill accessibility` (accessibility baseline)
 
 We treat them as guidance, not as requirements or new dependencies.
 
@@ -216,3 +216,4 @@ Phase 1 PRD 8.0A should lock:
 - **v0.2** (2026-02-09): Locked MVP decisions for idempotency key storage, FAILED retry semantics, sync-timeout messaging, deep-link behavior, and immediate server-only env enforcement for the BFF boundary.
 - **v0.3** (2026-02-09): Added draft persistence, payload normalization rules, “sign exact bytes” requirement, in-flight submit lock policy, and a lightweight SEO noindex verification guardrail.
 - **v0.4** (2026-02-09): Added optional skill guardrails recommendations for MVP implementation (Next/React best practices and accessibility).
+- **v0.5** (2026-02-09): Updated skill guardrails to match installed skills (Vercel best practices + web-quality accessibility).
