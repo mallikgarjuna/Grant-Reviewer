@@ -196,3 +196,7 @@
 ### 22:35 - Task 8.0A Phase 3 Started (Tooling preflight result)
 > User approved Phase 3.
 > Outcome: Ran tooling preflight successfully (`nvm use v22.17.0`, node/npm/npx available) but Next scaffold was blocked in Codex due npm registry network resolution failure (`ENOTFOUND registry.npmjs.org`). Updated task plan with a local-scaffold fallback note and requested user to scaffold `frontend/` locally and commit.
+
+### 22:55 - Task 8.0A.0a2 Completed (MVP style guide in code)
+> User provided the local scaffold commit for `8.0A.0a`.
+> Outcome: Implemented `8.0A.0a2` style baseline in `frontend` (Inter font, light-only palette/tokens, primary `#2563EB`, medium-rounded radius defaults, focus-visible outline, reduced-motion support), updated task checklist progress, and ran `cd frontend && npm run lint` successfully.
