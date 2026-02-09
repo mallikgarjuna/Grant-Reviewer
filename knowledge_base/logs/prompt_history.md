@@ -180,3 +180,7 @@
 ### 21:30 - Task 8.0A Phase 2 Plan Revised (commit-sized subtasks)
 > User requested incorporating critical feedback on plan size/risks and commit granularity.
 > Outcome: Revised `tasks/task-8.0A-frontend-ui.md` to lock `frontend/` location and BFF route-handler approach, split 8.0A.0 and 8.0A.1 into commit-sized subtasks, and make adapter/SEO verification steps concrete.
+
+### 21:45 - Task 8.0A Skill Guardrails Identified
+> User ran `npx skills find ...` and shared results for Next.js/React and UI/accessibility.
+> Outcome: Locked recommended optional skill guardrails in 8.0A docs (Vercel React/Next best practices + web accessibility) without expanding MVP scope.

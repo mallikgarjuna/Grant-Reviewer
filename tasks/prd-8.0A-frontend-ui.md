@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 1 (PRD)
-**Status**: Draft (v0.2 - Revised)
+**Status**: Draft (v0.3 - Revised)
 **Last Updated**: 2026-02-09
 
 ## Summary
@@ -57,6 +57,16 @@ Rationale: minimizes “same JSON, different bytes” failures and keeps request
 - `8.0A.0` scaffolding (must land before UI pages): Next scaffold + Clerk + adapter + noindex guardrail.
 - `8.0A.1` app vertical slice pages (`/app`, `/app/reviews/[id]`).
 - `8.0A.2` marketing/MDX polish (non-blocking for app slice).
+
+### Optional skills (guardrails, not requirements)
+
+If you want extra best-practice guardrails during Phase 3 implementation, install these skills locally (requires Node/npm):
+- `npx skills add vercel-labs/agent-skills@vercel-react-best-practices -g -y`
+- `npx skills add supercent-io/skills-template@web-accessibility -g -y`
+
+Notes:
+- These are guidance-only and must not expand MVP scope.
+- If installed, we’ll consult them before/while implementing `8.0A.0a2` and `8.0A.1`.
 
 ## Goals (MVP)
 
@@ -218,6 +228,11 @@ Review states:
 - After ~40s, user sees a clear “still working / refresh safely” message.
 - No automatic retry behavior exists.
 
+### E. Accessibility (MVP baseline)
+- Form inputs have labels (or accessible names).
+- Buttons/inputs are keyboard reachable with visible focus.
+- Error messages are readable and associated to the relevant input.
+
 ## Dependencies
 
 - Clerk configuration for Next.js (sign-in, callbacks, and redirect preservation).
@@ -248,3 +263,4 @@ Review states:
 
 - **v0.1** (2026-02-09): Initial PRD for the 8.0A UI slice; incorporates locked Phase 0 decisions on idempotency persistence, signing exact bytes, sync UX, and SEO noindex guardrails.
 - **v0.2** (2026-02-09): Locked Clerk identity mapping, centralized signing/request-bytes ownership in the adapter, clarified tab-scoped idempotency persistence, specified adapter API surface, aligned timeout expectations, and made the SEO verification guardrail concrete.
+- **v0.3** (2026-02-09): Added optional skill-based guardrails (Next/React best practices, accessibility) and locked a minimal accessibility acceptance baseline for MVP.
