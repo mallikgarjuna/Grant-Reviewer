@@ -197,6 +197,7 @@ def post_review(
     client: TestClient,
     payload: dict[str, str],
     user_id: str = TEST_USER_ID,
+    idempotency_key: str | None = None,
     timestamp: int | None = None,
     shared_secret: str = TEST_BFF_SHARED_SECRET,
 ) -> object:
@@ -208,6 +209,10 @@ def post_review(
         timestamp=timestamp,
         shared_secret=shared_secret,
     )
+    request_idempotency_key = (
+        f"idem-{time.time_ns()}" if idempotency_key is None else idempotency_key
+    )
+    headers["Idempotency-Key"] = request_idempotency_key
     headers["Content-Type"] = "application/json"
     return client.post("/reviews", content=body, headers=headers)
 
@@ -378,6 +383,21 @@ def test_missing_signature_headers_returns_unauthorized(monkeypatch) -> None:
     assert response.json()["error"]["code"] == "UNAUTHORIZED"
 
 
+def test_missing_idempotency_key_returns_validation_error(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    payload = {
+        "call_id": str(seeded_ids.call_id),
+        "node_id": str(seeded_ids.section_with_expectations_id),
+        "snippet_text": "No idempotency key",
+    }
+    body = json.dumps(payload).encode("utf-8")
+    headers = build_signature_headers(body=body)
+    headers["Content-Type"] = "application/json"
+    response = client.post("/reviews", content=body, headers=headers)
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
 def test_invalid_signature_returns_unauthorized(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = post_review(
@@ -391,6 +411,55 @@ def test_invalid_signature_returns_unauthorized(monkeypatch) -> None:
     )
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "UNAUTHORIZED"
+
+
+def test_idempotency_replay_returns_same_review(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    payload = {
+        "call_id": str(seeded_ids.call_id),
+        "node_id": str(seeded_ids.section_with_expectations_id),
+        "snippet_text": "Replay-safe request",
+    }
+    response_one = post_review(
+        client=client,
+        payload=payload,
+        idempotency_key="idem-replay-1",
+    )
+    response_two = post_review(
+        client=client,
+        payload=payload,
+        idempotency_key="idem-replay-1",
+    )
+
+    assert response_one.status_code == 200
+    assert response_two.status_code == 200
+    assert response_one.json()["review_id"] == response_two.json()["review_id"]
+
+
+def test_idempotency_payload_mismatch_returns_conflict(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response_one = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Original payload",
+        },
+        idempotency_key="idem-mismatch-1",
+    )
+    response_two = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Modified payload",
+        },
+        idempotency_key="idem-mismatch-1",
+    )
+
+    assert response_one.status_code == 200
+    assert response_two.status_code == 409
+    assert response_two.json()["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
 
 
 def test_review_not_found_for_non_owner(monkeypatch) -> None:
@@ -419,6 +488,7 @@ def test_review_not_found_for_non_owner(monkeypatch) -> None:
 def test_error_code_status_mapping_is_consistent() -> None:
     expected = {
         "UNAUTHORIZED": 401,
+        "IDEMPOTENCY_PAYLOAD_MISMATCH": 409,
         "CALL_NOT_FOUND": 404,
         "NODE_NOT_FOUND": 404,
         "REVIEW_NOT_FOUND": 404,

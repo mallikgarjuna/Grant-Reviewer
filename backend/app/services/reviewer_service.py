@@ -4,6 +4,7 @@ Reviewer service - business logic layer.
 Rule: Services call Repositories. Controllers call Services.
 """
 
+from datetime import datetime
 import json
 import logging
 from uuid import UUID
@@ -51,6 +52,10 @@ class ReviewerService:
         snippet_text: str,
         call_id: UUID,
         external_user_id: str,
+        *,
+        idempotency_key: str | None = None,
+        request_payload_sha256: str | None = None,
+        idempotency_expires_at: datetime | None = None,
     ) -> tuple[Review, list[ReviewCard]]:
         """
         Generate a review for a proposal snippet using LLM.
@@ -117,6 +122,10 @@ class ReviewerService:
         review = self.repository.create_review(
             snippet_id=snippet.id,
             template_id=template.id,
+            external_user_id=external_user_id,
+            idempotency_key=idempotency_key,
+            request_payload_sha256=request_payload_sha256,
+            idempotency_expires_at=idempotency_expires_at,
         )
         logger.info(f"[Review] Created review {review.id} (status=PENDING)")
 

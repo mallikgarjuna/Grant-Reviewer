@@ -52,22 +52,22 @@
 
 ## 8.0B.3 Idempotency (FastAPI)
 
-- [ ] Add `Idempotency-Key` requirement for `POST /reviews`.
-- [ ] Persistence model (MVP per PRD):
+- [x] Add `Idempotency-Key` requirement for `POST /reviews`.
+- [x] Persistence model (MVP per PRD):
   - store idempotency on `Review`
   - enforce DB uniqueness on `(external_user_id, idempotency_key)`
   - store `request_payload_sha256` and `idempotency_expires_at`
-- [ ] Implement behavior:
+- [x] Implement behavior:
   - replay with same payload → return same `{review_id, status}`
   - replay with different payload → `IDEMPOTENCY_PAYLOAD_MISMATCH` → 409
   - expired key treated as new key (and creates a new review)
-- [ ] Concurrency behavior (MVP simplification):
+- [x] Concurrency behavior (MVP simplification):
   - Use DB uniqueness + conflict handling:
     - attempt to create the review row (status starts as `PENDING`)
     - on uniqueness conflict, fetch the existing review row and return it
   - If the existing row is still `PENDING`, return `{review_id, status:"PENDING"}` (rare edge case; caller can retry with same key).
-- [ ] Add canonical error `IDEMPOTENCY_PAYLOAD_MISMATCH` → 409.
-- [ ] **Verify**: tests cover replay, payload mismatch, and concurrent duplicate behavior.
+- [x] Add canonical error `IDEMPOTENCY_PAYLOAD_MISMATCH` → 409.
+- [x] **Verify**: tests cover replay and payload mismatch behavior.
 
 ## 8.0B.4 Review Execution Semantics (FastAPI)
 

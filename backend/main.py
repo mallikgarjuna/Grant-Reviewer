@@ -1,8 +1,10 @@
 """FastAPI entrypoint for Grant Reviewer backend."""
 
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
 import hashlib
 import hmac
+import json
 import logging
 import os
 import time
@@ -12,6 +14,7 @@ from uuid import UUID
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 
 from app.db import create_db_and_tables, get_session
 from app.models.domain import ReviewStatus
@@ -36,9 +39,11 @@ logger = logging.getLogger(__name__)
 
 MAX_SNIPPET_CHARS = 10_000
 BFF_SIGNATURE_MAX_AGE_SECONDS = 300
+IDEMPOTENCY_TTL_HOURS = 24
 
 ERROR_STATUS_BY_CODE = {
     "UNAUTHORIZED": 401,
+    "IDEMPOTENCY_PAYLOAD_MISMATCH": 409,
     "CALL_NOT_FOUND": 404,
     "NODE_NOT_FOUND": 404,
     "REVIEW_NOT_FOUND": 404,
@@ -53,6 +58,7 @@ ERROR_STATUS_BY_CODE = {
 
 API_ERROR_RESPONSES = {
     401: {"model": APIErrorResponse},
+    409: {"model": APIErrorResponse},
     400: {"model": APIErrorResponse},
     404: {"model": APIErrorResponse},
     500: {"model": APIErrorResponse},
@@ -282,8 +288,40 @@ def create_review(
     payload: CreateReviewRequest,
     repository: RepositoryDep,
     external_user_id: Annotated[str, Depends(require_bff_user_id)],
+    request: Request,
 ) -> CreateReviewResponse:
     """Create a review synchronously."""
+    idempotency_key = request.headers.get("Idempotency-Key", "").strip()
+    if not idempotency_key:
+        raise APIException(
+            code="VALIDATION_ERROR",
+            message="Missing required Idempotency-Key header.",
+        )
+
+    payload_json = json.dumps(
+        payload.model_dump(mode="json"),
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    request_payload_sha256 = hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
+    now = datetime.now(UTC)
+
+    existing_review = repository.get_active_review_by_idempotency(
+        external_user_id=external_user_id,
+        idempotency_key=idempotency_key,
+        at_time=now,
+    )
+    if existing_review is not None:
+        if existing_review.request_payload_sha256 != request_payload_sha256:
+            raise APIException(
+                code="IDEMPOTENCY_PAYLOAD_MISMATCH",
+                message="Idempotency key was already used with a different payload.",
+            )
+        return CreateReviewResponse(
+            review_id=existing_review.id,
+            status=existing_review.status,
+        )
+
     if len(payload.snippet_text) > MAX_SNIPPET_CHARS:
         raise APIException(
             code="SNIPPET_TOO_LONG",
@@ -314,6 +352,29 @@ def create_review(
             snippet_text=payload.snippet_text,
             call_id=payload.call_id,
             external_user_id=external_user_id,
+            idempotency_key=idempotency_key,
+            request_payload_sha256=request_payload_sha256,
+            idempotency_expires_at=now + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
+        )
+    except IntegrityError as err:
+        repository.rollback()
+        existing_on_conflict = repository.get_review_by_external_user_and_idempotency_key(
+            external_user_id=external_user_id,
+            idempotency_key=idempotency_key,
+        )
+        if existing_on_conflict is None:
+            raise APIException(
+                code="INTERNAL_ERROR",
+                message="Idempotency conflict handling failed.",
+            ) from err
+        if existing_on_conflict.request_payload_sha256 != request_payload_sha256:
+            raise APIException(
+                code="IDEMPOTENCY_PAYLOAD_MISMATCH",
+                message="Idempotency key was already used with a different payload.",
+            ) from err
+        return CreateReviewResponse(
+            review_id=existing_on_conflict.id,
+            status=existing_on_conflict.status,
         )
     except ValueError as err:
         raise map_review_failure_to_api_error(err) from err
