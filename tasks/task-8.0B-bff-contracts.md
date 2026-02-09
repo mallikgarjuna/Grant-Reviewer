@@ -71,15 +71,15 @@
 
 ## 8.0B.4 Review Execution Semantics (FastAPI)
 
-- [ ] Keep MVP behavior: `POST /reviews` is synchronous and returns terminal status on the initial request.
-- [ ] Add an application-level timeout for LLM execution (MVP target ~30s):
+- [x] Keep MVP behavior: `POST /reviews` is synchronous and returns terminal status on the initial request.
+- [x] Add an application-level timeout for LLM execution (MVP target ~30s):
   - on timeout: persist `Review(status=FAILED)` and return `200` with `{review_id, status:"FAILED"}`
   - note: if upstream infra kills the request first, idempotency must still prevent duplicate spend on retry
-- [ ] Change LLM failure handling to match PRD:
+- [x] Change LLM failure handling to match PRD:
   - create/persist `Review(status=FAILED)` and return `200` with `{review_id, status:"FAILED"}`
   - do not surface LLM failures as 5xx canonical API errors to the caller
-- [ ] Ensure `GET /reviews/{review_id}` returns `200` for `FAILED` (owned) with cards empty.
-- [ ] **Verify**: table-driven tests for error/state separation.
+- [x] Ensure `GET /reviews/{review_id}` returns `200` for `FAILED` (owned) with cards empty.
+- [x] **Verify**: tests cover timeout and invalid-LLM-output failure-state behavior.
 
 ## 8.0B.5 Quotas + Kill Switch (FastAPI)
 

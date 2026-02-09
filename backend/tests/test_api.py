@@ -354,8 +354,14 @@ def test_atomic_failure_creates_failed_review_with_no_cards(monkeypatch) -> None
             "snippet_text": "Trigger invalid JSON path",
         },
     )
-    assert response.status_code == 502
-    assert response.json()["error"]["code"] == "LLM_INVALID_RESPONSE"
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "FAILED"
+
+    detail_response = get_review_detail(client=client, review_id=payload["review_id"])
+    assert detail_response.status_code == 200
+    assert detail_response.json()["review"]["status"] == "FAILED"
+    assert detail_response.json()["cards"] == []
 
     session = get_session()
     try:
@@ -367,6 +373,27 @@ def test_atomic_failure_creates_failed_review_with_no_cards(monkeypatch) -> None
     assert len(reviews) == 1
     assert reviews[0].status == ReviewStatus.FAILED
     assert len(cards) == 0
+
+
+def test_timeout_creates_failed_review(monkeypatch) -> None:
+    monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.001")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    def slow_generate(_: StubLLMClient, __: str) -> str:
+        time.sleep(0.05)
+        return '{"feedbacks":[]}'
+
+    monkeypatch.setattr(StubLLMClient, "generate", slow_generate)
+    response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Trigger timeout path",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "FAILED"
 
 
 def test_missing_signature_headers_returns_unauthorized(monkeypatch) -> None:
@@ -496,8 +523,6 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "NODE_NOT_IN_CALL": 400,
         "SNIPPET_TOO_LONG": 400,
         "VALIDATION_ERROR": 400,
-        "LLM_FAILED": 502,
-        "LLM_INVALID_RESPONSE": 502,
         "INTERNAL_ERROR": 500,
     }
     assert ERROR_STATUS_BY_CODE == expected

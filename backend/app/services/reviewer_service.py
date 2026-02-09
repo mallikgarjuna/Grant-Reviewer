@@ -4,9 +4,11 @@ Reviewer service - business logic layer.
 Rule: Services call Repositories. Controllers call Services.
 """
 
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from datetime import datetime
 import json
 import logging
+import os
 from uuid import UUID
 
 from pydantic import ValidationError
@@ -36,6 +38,7 @@ class ReviewerService:
     ) -> None:
         self.repository = repository
         self._llm_client = llm_client
+        self._timeout_seconds = float(os.getenv("REVIEW_TIMEOUT_SECONDS", "30"))
         logger.debug("ReviewerService initialized")
 
     @property
@@ -136,15 +139,25 @@ class ReviewerService:
         # 8. Call LLM
         try:
             logger.info("[Review] Calling LLM...")
-            raw_response = self.llm_client.generate(prompt)
+            raw_response = self._generate_with_timeout(prompt)
             review.raw_llm_response = raw_response
             logger.info("[Review] LLM call successful")
+        except TimeoutError:
+            logger.error(
+                "[Review] LLM call timed out after %.2fs", self._timeout_seconds
+            )
+            review.status = ReviewStatus.FAILED
+            review.overall_summary = (
+                f"LLM call timed out after {self._timeout_seconds:.2f}s."
+            )
+            self.repository.update_review(review)
+            return review, []
         except LLMClientError as e:
             logger.error(f"[Review] LLM call failed: {e}")
             review.status = ReviewStatus.FAILED
             review.overall_summary = f"LLM call failed: {e}"
             self.repository.update_review(review)
-            raise ValueError(f"LLM call failed: {e}") from e
+            return review, []
 
         # 9. Parse and validate response
         try:
@@ -160,7 +173,7 @@ class ReviewerService:
             review.status = ReviewStatus.FAILED
             review.overall_summary = f"Response validation failed: {e}"
             self.repository.update_review(review)
-            raise
+            return review, []
 
         # 10. Create ReviewCards
         logger.debug("[Review] Creating ReviewCards...")
@@ -188,6 +201,12 @@ class ReviewerService:
 
         logger.info(f"[Review] ✓ Review {review.id} COMPLETED with {len(cards)} cards")
         return review, cards
+
+    def _generate_with_timeout(self, prompt: str) -> str:
+        """Run blocking LLM call with service-level timeout."""
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(self.llm_client.generate, prompt)
+            return future.result(timeout=self._timeout_seconds)
 
     def _parse_llm_response(self, raw_response: str) -> LLMReviewResponse:
         """Parse raw LLM response into structured format."""

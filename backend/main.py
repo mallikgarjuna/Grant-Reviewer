@@ -51,8 +51,6 @@ ERROR_STATUS_BY_CODE = {
     "NODE_NOT_IN_CALL": 400,
     "SNIPPET_TOO_LONG": 400,
     "VALIDATION_ERROR": 400,
-    "LLM_FAILED": 502,
-    "LLM_INVALID_RESPONSE": 502,
     "INTERNAL_ERROR": 500,
 }
 
@@ -62,7 +60,6 @@ API_ERROR_RESPONSES = {
     400: {"model": APIErrorResponse},
     404: {"model": APIErrorResponse},
     500: {"model": APIErrorResponse},
-    502: {"model": APIErrorResponse},
 }
 
 
@@ -208,20 +205,6 @@ def map_review_failure_to_api_error(error: ValueError) -> APIException:
     message = str(error)
     if message == "No evaluation criteria defined for this section.":
         return APIException(code="NO_EXPECTATIONS", message=message)
-    if message.startswith("LLM call failed:"):
-        return APIException(code="LLM_FAILED", message=message)
-    invalid_response_signals = (
-        "Invalid JSON from LLM:",
-        "LLM response schema validation failed:",
-        "Cardinality mismatch:",
-        "Missing feedback for expectations:",
-        "Unknown expectation IDs in response:",
-    )
-    if message.startswith(invalid_response_signals):
-        return APIException(
-            code="LLM_INVALID_RESPONSE",
-            message="LLM returned an invalid structured response.",
-        )
     return APIException(code="INTERNAL_ERROR", message="Review generation failed.")
 
 
