@@ -152,3 +152,7 @@
 ### 20:05 - Local Wrap-Up Workflow Recorded + Branch Consolidation
 > User asked to wrap up all local work before the next task and to record lessons for future runs.
 > Outcome: Added always-on guidance in `AGENTS.md` and detailed lessons (`L10`, `L11`) in `tasks/lessons.md` for no-remote branch consolidation (integration branch + tag + `git bundle`) and local workspace-file handling (`skip-worktree`).
+
+### 20:20 - Task 8.0A Phase 0 Started (Frontend UI Slice)
+> User: "OK. Let's proceed to Phase 0 for 8.0A (also consider the deferred 8.0A tasks from 8.0B from earlier)"
+> Outcome: Created `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md` to define MVP UI slice scope and explicitly include the deferred “8.0A.0 scaffolding” (Next.js scaffold + BFF adapter + staged lint boundary).
