@@ -105,10 +105,10 @@ Optional guardrails (run locally if you have Node/npm):
 
 ## 8.0A.4 Clerk auth + route protection (commit)
 
-- [ ] Add Clerk to Next.js.
-- [ ] Protect `/app/*` via Clerk middleware.
-- [ ] Preserve intended redirect path (deep link support).
-- [ ] Verify this subtask before commit (targeted auth route protection check).
+- [x] Add Clerk to Next.js.
+- [x] Protect `/app/*` via Clerk middleware.
+- [x] Preserve intended redirect path (deep link support).
+- [x] Verify this subtask before commit (targeted auth route protection check).
 
 ## 8.0A.5 BFF adapter core (commit)
 

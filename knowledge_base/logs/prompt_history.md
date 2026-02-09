@@ -208,3 +208,12 @@
 ### 23:15 - Task 8.0A Phase 2 Plan Renumbered (strict sequence)
 > User requested strict numeric subtask IDs (instead of grouped labels like `0a`, `1b`).
 > Outcome: Renumbered Task 8.0A Phase 3 subtasks to a continuous sequence `8.0A.1` through `8.0A.12` for clearer tracking.
+
+### 23:25 - Node Tooling Reminder Locked for 8.0A
+> User reiterated: use `nvm use v22.17.0` before Node/npm commands and store for future runs.
+> Outcome: Continued Phase 3 using Node `v22.17.0` in every frontend verification command.
+
+### 23:40 - Task 8.0A.4 Completed (Clerk route protection)
+> User asked to continue and complete remaining 8.0A subtasks.
+> Outcome: Implemented Clerk middleware protection for `/app/*` and `/api/bff/*`, added Clerk provider + sign-in route, verified with `cd frontend && npm run lint`, and checked off subtask `8.0A.4` in the task plan.  
+> Note: npm registry remains unreachable in Codex environment (`ENOTFOUND registry.npmjs.org`), so package installation must be run locally.
