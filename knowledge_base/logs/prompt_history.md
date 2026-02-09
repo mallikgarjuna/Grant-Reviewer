@@ -221,3 +221,7 @@
 ### 23:55 - Task 8.0A.5 Completed (BFF adapter core + invariants)
 > User asked to continue Phase 3 execution end-to-end.
 > Outcome: Implemented `frontend/src/lib/bff/*` with server-only env access, typed Result/API error parsing, canonical payload normalization + payload hashing helpers, request signing over exact bytes, and adapter functions (`listCalls`, `listNodes`, `createReview`, `getReview`). Added `frontend/scripts/bff-invariant-check.mjs` and verified via `cd frontend && npm run check:bff && npm run lint`.
+
+### 00:10 - Task 8.0A.6 Completed (BFF route handlers)
+> User asked to complete remaining 8.0A implementation subtasks.
+> Outcome: Added authenticated Next route handlers under `frontend/src/app/api/bff/*` for calls, nodes, review create, and review detail. Handlers now require Clerk user context, forward requests only through the adapter, and preserve canonical error response shape. Verified with `cd frontend && npm run lint`.

@@ -131,12 +131,12 @@ MVP gate:
 
 ## 8.0A.6 BFF route handlers (commit)
 
-- [ ] Implement `frontend/src/app/api/bff/*` route handlers:
+- [x] Implement `frontend/src/app/api/bff/*` route handlers:
   - browser -> `/api/bff/*`
   - handlers call adapter -> FastAPI
-- [ ] Protect `/api/bff/*` via Clerk middleware.
-- [ ] Ensure `X-GR-User-Id` uses Clerk user id, and `Idempotency-Key` is set on create.
-- [ ] Verify this subtask before commit (manual BFF route smoke check).
+- [x] Protect `/api/bff/*` via Clerk middleware.
+- [x] Ensure `X-GR-User-Id` uses Clerk user id, and `Idempotency-Key` is set on create.
+- [x] Verify this subtask before commit (manual BFF route smoke check).
 
 ## 8.0A.7 SEO privacy guardrails + verify script (commit)
 
