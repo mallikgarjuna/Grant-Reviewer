@@ -21,6 +21,7 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 - ✅ Sample ERC call definition
 - ✅ End-to-end review flow verified
 - ✅ FastAPI REST endpoints (minimal MVP)
+- ✅ BFF contract hardening on backend (auth signature, ownership checks, idempotency, quotas, kill switch)
 
 ### Pending
 - ⏳ Frontend UI
@@ -66,6 +67,10 @@ curl http://127.0.0.1:8000/health
 
 Or open API docs in your browser:
 - `http://127.0.0.1:8000/docs`
+
+MVP API note:
+- Protected review endpoints now require BFF-style signed headers and idempotency key (`POST /reviews`, `GET /reviews/{review_id}`).
+- See `knowledge_base/walkthroughs/walkthrough_task_8.0B_bff_contracts.md` for concrete verification examples.
 
 ### Running a Review Demo
 
@@ -140,6 +145,7 @@ The system uses 11 interconnected tables:
 | 5.0 | Admin YAML ingestion | ✅ Complete |
 | 6.0 | LLM Integration MVP | ✅ Complete |
 | 7.0 | FastAPI endpoints | ✅ Complete |
+| 8.0B | BFF Contracts (backend) | ✅ Complete |
 | 8.0 | Frontend UI | ⏳ Pending |
 
 See `tasks/index.md` for detailed task tracking.

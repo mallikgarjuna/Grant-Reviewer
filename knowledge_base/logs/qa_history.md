@@ -71,3 +71,9 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Can I run the project locally without merging a feature branch into `main`?
 **A:** Yes. You run whatever code is currently checked out. If you’re on a feature branch (e.g., `task-7.0-fastapi-mvp`), you can run/test that branch without merging it into `main`. Switching branches changes which code you run.
+
+### Q: Before starting Task 8.0, what’s the app goal, what’s done, and what’s next?
+**A:** Goal: help researchers improve grant proposals by generating rubric-grounded feedback (“review cards”) on pasted snippets, based on ingested funding-call rubrics and proposal structure. Done through Task 7.0: SQLModel domain + ingestion (YAML → DB), reviewer service with OpenAI + stub mode, and a minimal FastAPI API (`/calls`, `/calls/{call_id}/nodes`, `POST /reviews`, `GET /reviews/{review_id}`) with canonical errors and tests. Next: define and implement a thin frontend UI that consumes these endpoints (call + section selection, snippet submission, results view), then do end-to-end verification in stub mode and optional real-LLM mode.
+
+### Q: What hosting/auth/DB choices fit the v1 architecture?
+**A:** Picked v1 direction: Next.js (SEO + app) hosted on Vercel with Clerk auth; FastAPI hosted separately (BFF calls server-to-server); production DB on Render managed Postgres. Use BFF to avoid cross-origin auth complexity, and implement quotas first to control LLM spend.

@@ -100,3 +100,39 @@
 ### 16:17 - Commit Granularity Clarification
 > User asked to enforce commits after each implementation subtask (`7.1`, `7.2`, ...).
 > Outcome: Added a permanent rule in `AGENTS.md` and `tasks/lessons.md` and reorganized Phase 3 work into subtask-scoped commits.
+
+### 17:05 - Task 8.0 Direction + Phase 0 Approved
+> User requested guidance on frontend stack/hosting/auth/DB for a v1 launch with SEO content.
+> Decisions: Next.js (TS/React) + Tailwind + shadcn/ui + MDX, BFF pattern (Next routes call FastAPI server-to-server), Clerk auth (magic links), quotas-first, split hosting (Vercel for Next.js + Render for FastAPI + Render Postgres).
+> User: "Go ahead to Phase 0"
+> Outcome: Created `knowledge_base/logs/brainstorming-8.0-frontend-ui.md` and recorded AD 8.x decisions.
+
+### 17:40 - Task 8.0B Phase 1 PRD (BFF Contracts)
+> User: "OK. Go ahead to Phase 1 and draft prd for 8.0B."
+> Outcome: Drafted `tasks/prd-8.0B-bff-contracts.md` and linked it in `tasks/index.md`.
+
+### 18:05 - Task 8.0B Phase 2 Plan (BFF Contracts)
+> User: "go ahead to Phase 2"
+> Outcome: Created `tasks/task-8.0B-bff-contracts.md` and linked it in `tasks/index.md`.
+
+### 18:20 - Task 8.0B Phase 2 Plan Revision (MVP simplifications)
+> User provided critical feedback on the Phase 2 plan (idempotency concurrency risk, sync latency, lint timing, timeout policy).
+> Outcome: Revised `tasks/task-8.0B-bff-contracts.md` to simplify idempotency concurrency (unique constraint + fetch-on-conflict), lock a 30s timeout budget policy, stage lint enforcement, explicitly defer `GET /quota`, and document manual-only retries.
+
+### 18:30 - Task 8.0B Phase 2 Plan Sequencing Fix (8.0B before 8.0A)
+> User flagged that the Phase 2 plan referenced a Next.js scaffold dependency even though 8.0B is sequenced before 8.0A.
+> Outcome: Revised `tasks/task-8.0B-bff-contracts.md` to make Next scaffolding + adapter/lint an explicit “8.0A.0” prerequisite step, while keeping 8.0B focused on backend contract enforcement first.
+
+### 18:55 - Task 8.0B Phase 3 Implementation (backend contracts)
+> User approved Phase 3 and requested strict AGENTS workflow (new branch + commits per subtask).
+> Outcome: Implemented subtask commits for 8.0B.1-8.0B.5:
+> - signature auth on protected routes
+> - ownership enforcement with masked 404 + internal logging
+> - idempotency persistence + payload mismatch handling
+> - failed-state semantics for LLM/timeout paths (`200` with `status=FAILED`)
+> - daily quota + kill switch controls
+> Added walkthrough `knowledge_base/walkthroughs/walkthrough_task_8.0B_bff_contracts.md` and updated `tasks/index.md`.
+
+### 19:05 - Docs Sync After 8.0B
+> User requested: "Update KB and readme files."
+> Outcome: Updated `README.md` project status/API notes and added implementation decisions (AD 8.7, AD 8.8) in `knowledge_base/logs/decisions.md`.

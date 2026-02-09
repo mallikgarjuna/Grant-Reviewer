@@ -4,6 +4,7 @@ Review repository - database access layer.
 Rule: Only repositories talk to the database directly.
 """
 
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import func
@@ -94,6 +95,26 @@ class ReviewRepository:
         self.session.refresh(user)
         return user
 
+    def get_user_by_external_user_id(self, external_user_id: str) -> User | None:
+        """Fetch user by external auth identifier."""
+        statement = select(User).where(User.email == external_user_id)
+        return self.session.exec(statement).first()
+
+    def get_or_create_user_by_external_user_id(self, external_user_id: str) -> User:
+        """Fetch existing user by external id or create one."""
+        user = self.get_user_by_external_user_id(external_user_id)
+        if user is not None:
+            return user
+
+        user = User(
+            email=external_user_id,
+            is_anonymous=False,
+        )
+        self.session.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+        return user
+
     def create_snippet(
         self,
         user_id: UUID,
@@ -117,11 +138,20 @@ class ReviewRepository:
         self,
         snippet_id: UUID,
         template_id: UUID,
+        *,
+        external_user_id: str | None = None,
+        idempotency_key: str | None = None,
+        request_payload_sha256: str | None = None,
+        idempotency_expires_at: datetime | None = None,
     ) -> Review:
         """Create a new review record."""
         review = Review(
             proposal_snippet_id=snippet_id,
             prompt_template_id=template_id,
+            external_user_id=external_user_id,
+            idempotency_key=idempotency_key,
+            request_payload_sha256=request_payload_sha256,
+            idempotency_expires_at=idempotency_expires_at,
         )
         self.session.add(review)
         self.session.commit()
@@ -131,6 +161,66 @@ class ReviewRepository:
     def get_review_by_id(self, review_id: UUID) -> Review | None:
         """Fetch a review by ID."""
         return self.session.get(Review, review_id)
+
+    def get_review_by_external_user_and_idempotency_key(
+        self,
+        *,
+        external_user_id: str,
+        idempotency_key: str,
+    ) -> Review | None:
+        """Fetch review by idempotency scope."""
+        statement = (
+            select(Review)
+            .where(Review.external_user_id == external_user_id)
+            .where(Review.idempotency_key == idempotency_key)
+            .order_by(Review.created_at.desc())
+        )
+        return self.session.exec(statement).first()
+
+    def get_active_review_by_idempotency(
+        self,
+        *,
+        external_user_id: str,
+        idempotency_key: str,
+        at_time: datetime,
+    ) -> Review | None:
+        """Fetch unexpired idempotent review, if any."""
+        statement = (
+            select(Review)
+            .where(Review.external_user_id == external_user_id)
+            .where(Review.idempotency_key == idempotency_key)
+            .where(Review.idempotency_expires_at.is_not(None))
+            .where(Review.idempotency_expires_at >= at_time)
+            .order_by(Review.created_at.desc())
+        )
+        return self.session.exec(statement).first()
+
+    def count_reviews_for_external_user_between(
+        self,
+        *,
+        external_user_id: str,
+        start_time: datetime,
+        end_time: datetime,
+    ) -> int:
+        """Count reviews created for user within inclusive-exclusive window."""
+        statement = (
+            select(func.count(Review.id))
+            .where(Review.external_user_id == external_user_id)
+            .where(Review.created_at >= start_time)
+            .where(Review.created_at < end_time)
+            .where(Review.idempotency_key.is_not(None))
+        )
+        return int(self.session.exec(statement).one())
+
+    def get_review_owner_external_user_id(self, review_id: UUID) -> str | None:
+        """Fetch owning external user id for a review."""
+        statement = (
+            select(User.email)
+            .join(ProposalSnippet, ProposalSnippet.user_id == User.id)
+            .join(Review, Review.proposal_snippet_id == ProposalSnippet.id)
+            .where(Review.id == review_id)
+        )
+        return self.session.exec(statement).first()
 
     def get_review_cards_ordered(self, review_id: UUID) -> list[ReviewCard]:
         """Fetch review cards ordered by expectation order index."""
@@ -170,3 +260,7 @@ class ReviewRepository:
         self.session.commit()
         self.session.refresh(review)
         return review
+
+    def rollback(self) -> None:
+        """Rollback active transaction after commit failure."""
+        self.session.rollback()

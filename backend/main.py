@@ -1,13 +1,20 @@
 """FastAPI entrypoint for Grant Reviewer backend."""
 
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
+import hashlib
+import hmac
+import json
 import logging
+import os
+import time
 from typing import Annotated, Any, Generator
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 
 from app.db import create_db_and_tables, get_session
 from app.models.domain import ReviewStatus
@@ -31,25 +38,33 @@ from app.services.reviewer_service import ReviewerService
 logger = logging.getLogger(__name__)
 
 MAX_SNIPPET_CHARS = 10_000
+BFF_SIGNATURE_MAX_AGE_SECONDS = 300
+IDEMPOTENCY_TTL_HOURS = 24
+FREE_DAILY_REVIEW_LIMIT = 5
 
 ERROR_STATUS_BY_CODE = {
+    "UNAUTHORIZED": 401,
+    "IDEMPOTENCY_PAYLOAD_MISMATCH": 409,
+    "QUOTA_EXCEEDED": 429,
     "CALL_NOT_FOUND": 404,
     "NODE_NOT_FOUND": 404,
     "REVIEW_NOT_FOUND": 404,
     "NO_EXPECTATIONS": 400,
     "NODE_NOT_IN_CALL": 400,
+    "REVIEWS_DISABLED": 503,
     "SNIPPET_TOO_LONG": 400,
     "VALIDATION_ERROR": 400,
-    "LLM_FAILED": 502,
-    "LLM_INVALID_RESPONSE": 502,
     "INTERNAL_ERROR": 500,
 }
 
 API_ERROR_RESPONSES = {
+    401: {"model": APIErrorResponse},
+    409: {"model": APIErrorResponse},
+    429: {"model": APIErrorResponse},
     400: {"model": APIErrorResponse},
     404: {"model": APIErrorResponse},
     500: {"model": APIErrorResponse},
-    502: {"model": APIErrorResponse},
+    503: {"model": APIErrorResponse},
 }
 
 
@@ -135,25 +150,82 @@ def get_repository() -> Generator[ReviewRepository, None, None]:
         session.close()
 
 
+def _build_signature_payload(*, user_id: str, timestamp: int, body: bytes) -> str:
+    """Build canonical string signed by BFF."""
+    body_hash = hashlib.sha256(body).hexdigest()
+    return f"{user_id}.{timestamp}.{body_hash}"
+
+
+def _is_reviews_enabled() -> bool:
+    """Parse REVIEWS_ENABLED env var as bool with safe default."""
+    raw = os.getenv("REVIEWS_ENABLED", "true").strip().lower()
+    return raw not in {"0", "false", "no", "off"}
+
+
+def _get_free_daily_review_limit() -> int:
+    """Read per-user daily review limit from env."""
+    raw = os.getenv("FREE_DAILY_REVIEW_LIMIT", str(FREE_DAILY_REVIEW_LIMIT)).strip()
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        logger.warning("Invalid FREE_DAILY_REVIEW_LIMIT=%s; falling back to default", raw)
+        return FREE_DAILY_REVIEW_LIMIT
+
+
+async def require_bff_user_id(request: Request) -> str:
+    """Validate BFF signature headers and return external user id."""
+    user_id = request.headers.get("X-GR-User-Id")
+    timestamp_raw = request.headers.get("X-GR-Timestamp")
+    signature = request.headers.get("X-GR-Signature")
+    if not user_id or not timestamp_raw or not signature:
+        raise APIException(
+            code="UNAUTHORIZED",
+            message="Missing authentication signature headers.",
+        )
+
+    try:
+        timestamp = int(timestamp_raw)
+    except ValueError as err:
+        raise APIException(
+            code="UNAUTHORIZED",
+            message="Invalid authentication timestamp.",
+        ) from err
+
+    now = int(time.time())
+    if abs(now - timestamp) > BFF_SIGNATURE_MAX_AGE_SECONDS:
+        raise APIException(
+            code="UNAUTHORIZED",
+            message="Authentication signature has expired.",
+        )
+
+    shared_secret = os.getenv("BFF_SHARED_SECRET")
+    if not shared_secret:
+        raise APIException(
+            code="UNAUTHORIZED",
+            message="Authentication signature verification failed.",
+        )
+
+    body = await request.body()
+    payload = _build_signature_payload(user_id=user_id, timestamp=timestamp, body=body)
+    expected_signature = hmac.new(
+        shared_secret.encode("utf-8"),
+        payload.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    if not hmac.compare_digest(expected_signature, signature):
+        raise APIException(
+            code="UNAUTHORIZED",
+            message="Authentication signature verification failed.",
+        )
+
+    return user_id
+
+
 def map_review_failure_to_api_error(error: ValueError) -> APIException:
     """Translate service errors to canonical API errors."""
     message = str(error)
     if message == "No evaluation criteria defined for this section.":
         return APIException(code="NO_EXPECTATIONS", message=message)
-    if message.startswith("LLM call failed:"):
-        return APIException(code="LLM_FAILED", message=message)
-    invalid_response_signals = (
-        "Invalid JSON from LLM:",
-        "LLM response schema validation failed:",
-        "Cardinality mismatch:",
-        "Missing feedback for expectations:",
-        "Unknown expectation IDs in response:",
-    )
-    if message.startswith(invalid_response_signals):
-        return APIException(
-            code="LLM_INVALID_RESPONSE",
-            message="LLM returned an invalid structured response.",
-        )
     return APIException(code="INTERNAL_ERROR", message="Review generation failed.")
 
 
@@ -219,8 +291,66 @@ def list_call_nodes(call_id: UUID, repository: RepositoryDep) -> NodesResponse:
 def create_review(
     payload: CreateReviewRequest,
     repository: RepositoryDep,
+    external_user_id: Annotated[str, Depends(require_bff_user_id)],
+    request: Request,
 ) -> CreateReviewResponse:
     """Create a review synchronously."""
+    idempotency_key = request.headers.get("Idempotency-Key", "").strip()
+    if not idempotency_key:
+        raise APIException(
+            code="VALIDATION_ERROR",
+            message="Missing required Idempotency-Key header.",
+        )
+
+    payload_json = json.dumps(
+        payload.model_dump(mode="json"),
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    request_payload_sha256 = hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
+    now = datetime.now(UTC)
+
+    existing_review = repository.get_active_review_by_idempotency(
+        external_user_id=external_user_id,
+        idempotency_key=idempotency_key,
+        at_time=now,
+    )
+    if existing_review is not None:
+        if existing_review.request_payload_sha256 != request_payload_sha256:
+            raise APIException(
+                code="IDEMPOTENCY_PAYLOAD_MISMATCH",
+                message="Idempotency key was already used with a different payload.",
+            )
+        return CreateReviewResponse(
+            review_id=existing_review.id,
+            status=existing_review.status,
+        )
+
+    if not _is_reviews_enabled():
+        raise APIException(
+            code="REVIEWS_DISABLED",
+            message="Reviews are temporarily disabled.",
+        )
+
+    day_start = datetime(now.year, now.month, now.day, tzinfo=UTC)
+    day_end = day_start + timedelta(days=1)
+    free_daily_limit = _get_free_daily_review_limit()
+    used_today = repository.count_reviews_for_external_user_between(
+        external_user_id=external_user_id,
+        start_time=day_start,
+        end_time=day_end,
+    )
+    if used_today >= free_daily_limit:
+        raise APIException(
+            code="QUOTA_EXCEEDED",
+            message="Daily review quota exceeded.",
+            details={
+                "limit": free_daily_limit,
+                "remaining": 0,
+                "reset_at": day_end.isoformat(),
+            },
+        )
+
     if len(payload.snippet_text) > MAX_SNIPPET_CHARS:
         raise APIException(
             code="SNIPPET_TOO_LONG",
@@ -250,6 +380,30 @@ def create_review(
             node_id=payload.node_id,
             snippet_text=payload.snippet_text,
             call_id=payload.call_id,
+            external_user_id=external_user_id,
+            idempotency_key=idempotency_key,
+            request_payload_sha256=request_payload_sha256,
+            idempotency_expires_at=now + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
+        )
+    except IntegrityError as err:
+        repository.rollback()
+        existing_on_conflict = repository.get_review_by_external_user_and_idempotency_key(
+            external_user_id=external_user_id,
+            idempotency_key=idempotency_key,
+        )
+        if existing_on_conflict is None:
+            raise APIException(
+                code="INTERNAL_ERROR",
+                message="Idempotency conflict handling failed.",
+            ) from err
+        if existing_on_conflict.request_payload_sha256 != request_payload_sha256:
+            raise APIException(
+                code="IDEMPOTENCY_PAYLOAD_MISMATCH",
+                message="Idempotency key was already used with a different payload.",
+            ) from err
+        return CreateReviewResponse(
+            review_id=existing_on_conflict.id,
+            status=existing_on_conflict.status,
         )
     except ValueError as err:
         raise map_review_failure_to_api_error(err) from err
@@ -262,10 +416,24 @@ def create_review(
     response_model=ReviewDetailResponse,
     responses=API_ERROR_RESPONSES,
 )
-def get_review(review_id: UUID, repository: RepositoryDep) -> ReviewDetailResponse:
+def get_review(
+    review_id: UUID,
+    repository: RepositoryDep,
+    external_user_id: Annotated[str, Depends(require_bff_user_id)],
+) -> ReviewDetailResponse:
     """Fetch review details and ordered cards."""
     review = repository.get_review_by_id(review_id)
     if review is None:
+        raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
+
+    review_owner_external_user_id = repository.get_review_owner_external_user_id(review_id)
+    if review_owner_external_user_id != external_user_id:
+        logger.warning(
+            "OWNERSHIP_VIOLATION: review_id=%s requested_by=%s owner=%s",
+            review_id,
+            external_user_id,
+            review_owner_external_user_id,
+        )
         raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
 
     cards = []

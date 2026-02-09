@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Optional
 from uuid import UUID, uuid4
 
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -300,6 +301,13 @@ class Review(SQLModel, table=True):
     """Single reviewer assessment event triggered by evaluating one snippet."""
 
     __tablename__ = "reviews"
+    __table_args__ = (
+        UniqueConstraint(
+            "external_user_id",
+            "idempotency_key",
+            name="uq_review_external_idempotency",
+        ),
+    )
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     proposal_snippet_id: UUID = Field(
@@ -334,6 +342,23 @@ class Review(SQLModel, table=True):
     llm_model: str | None = Field(
         default=None,
         description="Model identifier used (e.g., gpt-4o-mini)",
+    )
+    external_user_id: str | None = Field(
+        default=None,
+        index=True,
+        description="External auth identifier used for ownership checks",
+    )
+    idempotency_key: str | None = Field(
+        default=None,
+        description="Client-provided key to deduplicate retries",
+    )
+    request_payload_sha256: str | None = Field(
+        default=None,
+        description="Hash of canonical request payload used for mismatch checks",
+    )
+    idempotency_expires_at: datetime | None = Field(
+        default=None,
+        description="Expiry timestamp after which the idempotency key can be reused",
     )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
