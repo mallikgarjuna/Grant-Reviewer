@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 1 (PRD)
-**Status**: Draft (v0.5 - Revised)
+**Status**: Draft (v0.6 - Revised)
 **Last Updated**: 2026-02-09
 
 ## Summary
@@ -241,6 +241,7 @@ Review states:
   - same secret available to Next server-side code
 - Frontend tooling:
   - Node.js `22.17.0` and npm available for scaffolding/building `frontend/`
+  - When `nvm` exists in the environment, run `nvm use v22.17.0` before any `npm`/`npx` commands
   - If the execution environment cannot run Node tooling, scaffold locally and commit the generated `frontend/` files, then continue implementation changes normally.
 
 ## Out of Scope Ideas (Backlog)
@@ -271,3 +272,4 @@ Review states:
 - **v0.3** (2026-02-09): Added optional skill-based guardrails (Next/React best practices, accessibility) and locked a minimal accessibility acceptance baseline for MVP.
 - **v0.4** (2026-02-09): Updated accessibility skill reference to match installed `web-quality-skills` accessibility skill.
 - **v0.5** (2026-02-09): Added explicit Node tooling dependency/fallback and required adapter invariant verification as part of Phase 3 verify.
+- **v0.6** (2026-02-09): Added explicit `nvm use v22.17.0` step for environments that use `nvm` to expose `npm/npx`.

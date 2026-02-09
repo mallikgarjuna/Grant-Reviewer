@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 0 (Brainstorming)
-**Status**: Draft (v0.6 - Revised)
+**Status**: Draft (v0.7 - Revised)
 **Last Updated**: 2026-02-09
 
 ## Goal (MVP)
@@ -138,6 +138,10 @@ We treat them as guidance, not as requirements or new dependencies.
 
 MVP mitigation: treat adapter correctness as the “hard gate” before building UI pages (sign exact bytes, canonical error parsing, idempotency helpers + invariant self-checks).
 
+Tooling note (MVP):
+- Before any `frontend/` work, run `nvm use v22.17.0` so `npm/npx` are available (when `nvm` exists in the environment).
+- If `nvm` is not available in the current environment, scaffold/build locally and commit `frontend/` outputs to keep the repo moving.
+
 ## Decisions To Make In 8.0A (Prefer MVP Defaults)
 
 ### D1: Execution model UX (sync request)
@@ -221,3 +225,4 @@ Phase 1 PRD 8.0A should lock:
 - **v0.4** (2026-02-09): Added optional skill guardrails recommendations for MVP implementation (Next/React best practices and accessibility).
 - **v0.5** (2026-02-09): Updated skill guardrails to match installed skills (Vercel best practices + web-quality accessibility).
 - **v0.6** (2026-02-09): Added explicit execution/tooling risk and locked “adapter invariants first” as the MVP mitigation before UI work.
+- **v0.7** (2026-02-09): Added explicit `nvm use v22.17.0` tooling note for Phase 3 frontend work, plus fallback if `nvm` is unavailable.

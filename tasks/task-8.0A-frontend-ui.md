@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 2 (Task breakdown)
-**Status**: Draft (v0.6 - Revised)
+**Status**: Draft (v0.7 - Revised)
 **Last Updated**: 2026-02-09
 **PRD**: `tasks/prd-8.0A-frontend-ui.md`
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md`
@@ -54,6 +54,7 @@
 ### 8.0A.0-pre Tooling preflight (commit)
 
 - [ ] Confirm Node/npm available for `frontend/` work (Node `22.17.0` recommended).
+- [ ] If the environment uses `nvm`, run `nvm use v22.17.0` to ensure `npm/npx` are available.
 - [ ] If Node tooling is not available in the current execution environment:
   - scaffold `frontend/` locally
   - commit the generated files
@@ -201,3 +202,4 @@ MVP gate:
 - **v0.4** (2026-02-09): Locked recommended skill installs for MVP guardrails (Vercel React/Next best practices + web accessibility).
 - **v0.5** (2026-02-09): Updated accessibility skill reference to match installed `web-quality-skills` accessibility skill.
 - **v0.6** (2026-02-09): Added explicit Node/tooling preflight + local scaffold fallback, and made adapter invariants a hard gate before UI pages.
+- **v0.7** (2026-02-09): Added explicit `nvm use v22.17.0` step to the tooling preflight (when `nvm` is present).

@@ -7,7 +7,7 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 ## Tech Stack (Be specific with versions; should be updated as the project evolves)
 
 - Python: `3.12` (see `backend/.python-version`; backend requires `>=3.12`)
-- Node.js: `22.17.0` (for `frontend/`; if using `nvm`, run `nvm use v22.17.0` before `npm`/`npx`)
+- Node.js: `22.17.0` (for `frontend/`; run `nvm use v22.17.0` before `npm`/`npx` when available)
 - Package manager: `uv` (see `backend/uv.lock`)
 - Backend deps (see `backend/pyproject.toml`):
   - `openai>=2.17.0`
@@ -153,6 +153,7 @@ Guideline:
 - SQLite in-memory DB resets across sessions; design tests to reuse one seeded instance (see `tasks/lessons.md`).
 - Call YAML naming: `{agency}_{program}_{year}_{stage}.yaml` (see `backend/data/calls/README.md`).
 - Don’t forget to update the real project task files (`tasks/task-*.md`) and `tasks/index.md` while executing (see `tasks/lessons.md`).
+- Frontend work requires Node tooling; prefer `nvm use v22.17.0` before running `npm`/`npx`. If `nvm` is not available in the current environment, scaffold/build locally and commit the generated `frontend/` files.
 
 ### Systemic coordination failures
 
