@@ -393,6 +393,29 @@ def test_invalid_signature_returns_unauthorized(monkeypatch) -> None:
     assert response.json()["error"]["code"] == "UNAUTHORIZED"
 
 
+def test_review_not_found_for_non_owner(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    create_response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Owner-specific review",
+        },
+        user_id="user_owner",
+    )
+    assert create_response.status_code == 200
+    review_id = create_response.json()["review_id"]
+
+    forbidden_response = get_review_detail(
+        client=client,
+        review_id=review_id,
+        user_id="user_other",
+    )
+    assert forbidden_response.status_code == 404
+    assert forbidden_response.json()["error"]["code"] == "REVIEW_NOT_FOUND"
+
+
 def test_error_code_status_mapping_is_consistent() -> None:
     expected = {
         "UNAUTHORIZED": 401,

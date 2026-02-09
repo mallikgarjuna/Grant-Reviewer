@@ -50,6 +50,7 @@ class ReviewerService:
         node_id: UUID,
         snippet_text: str,
         call_id: UUID,
+        external_user_id: str,
     ) -> tuple[Review, list[ReviewCard]]:
         """
         Generate a review for a proposal snippet using LLM.
@@ -96,9 +97,9 @@ class ReviewerService:
             raise ValueError(msg)
         logger.debug(f"[Review] Node title: {node.title}")
 
-        # 5. Create user and snippet
+        # 5. Create/fetch user and create snippet
         logger.debug("[Review] Creating user and snippet...")
-        user = self.repository.create_user()
+        user = self.repository.get_or_create_user_by_external_user_id(external_user_id)
         snippet = self.repository.create_snippet(
             user_id=user.id,
             call_id=call_id,

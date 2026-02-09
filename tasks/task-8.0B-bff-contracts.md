@@ -44,11 +44,11 @@
 
 ## 8.0B.2 Review Ownership (FastAPI)
 
-- [ ] Enforce ownership on `GET /reviews/{review_id}`:
+- [x] Enforce ownership on `GET /reviews/{review_id}`:
   - verify the review belongs to the caller (Clerk user id)
   - return `REVIEW_NOT_FOUND` (404) if not found or not owned
-- [ ] Add distinct internal logging for ownership violations (still return 404 externally).
-- [ ] **Verify**: tests cover cross-user access returns 404 and logs the violation.
+- [x] Add distinct internal logging for ownership violations (still return 404 externally).
+- [x] **Verify**: tests cover cross-user access returns 404 and logs the violation.
 
 ## 8.0B.3 Idempotency (FastAPI)
 

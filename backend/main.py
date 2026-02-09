@@ -281,7 +281,7 @@ def list_call_nodes(call_id: UUID, repository: RepositoryDep) -> NodesResponse:
 def create_review(
     payload: CreateReviewRequest,
     repository: RepositoryDep,
-    _: Annotated[str, Depends(require_bff_user_id)],
+    external_user_id: Annotated[str, Depends(require_bff_user_id)],
 ) -> CreateReviewResponse:
     """Create a review synchronously."""
     if len(payload.snippet_text) > MAX_SNIPPET_CHARS:
@@ -313,6 +313,7 @@ def create_review(
             node_id=payload.node_id,
             snippet_text=payload.snippet_text,
             call_id=payload.call_id,
+            external_user_id=external_user_id,
         )
     except ValueError as err:
         raise map_review_failure_to_api_error(err) from err
@@ -328,11 +329,21 @@ def create_review(
 def get_review(
     review_id: UUID,
     repository: RepositoryDep,
-    _: Annotated[str, Depends(require_bff_user_id)],
+    external_user_id: Annotated[str, Depends(require_bff_user_id)],
 ) -> ReviewDetailResponse:
     """Fetch review details and ordered cards."""
     review = repository.get_review_by_id(review_id)
     if review is None:
+        raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
+
+    review_owner_external_user_id = repository.get_review_owner_external_user_id(review_id)
+    if review_owner_external_user_id != external_user_id:
+        logger.warning(
+            "OWNERSHIP_VIOLATION: review_id=%s requested_by=%s owner=%s",
+            review_id,
+            external_user_id,
+            review_owner_external_user_id,
+        )
         raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
 
     cards = []

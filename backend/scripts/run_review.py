@@ -58,6 +58,7 @@ def main() -> None:
             node_id=ids["section_1_id"],
             snippet_text=snippet_text,
             call_id=ids["call_id"],
+            external_user_id="local-demo-user",
         )
         print(f"✓ Review created: {review.id}")
         print(f"  Status: {review.status}")
@@ -85,6 +86,7 @@ def main() -> None:
             node_id=ids["section_2_id"],
             snippet_text=snippet_text,
             call_id=ids["call_id"],
+            external_user_id="local-demo-user",
         )
         print(f"✗ Unexpected success: {review.id}")
 
