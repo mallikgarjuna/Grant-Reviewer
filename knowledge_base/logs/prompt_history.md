@@ -192,3 +192,7 @@
 ### 22:20 - Task 8.0A Visual Style Decisions Locked (MVP)
 > User provided explicit design choices for MVP UI direction (primary `#2563EB`, slate neutrals, Inter, medium-rounded corners, comfortable spacing, light-only theme) plus interaction principles.
 > Outcome: Updated PRD + task plan to lock these values as implementation inputs for Phase 3 (`8.0A.0a2`).
+
+### 22:35 - Task 8.0A Phase 3 Started (Tooling preflight result)
+> User approved Phase 3.
+> Outcome: Ran tooling preflight successfully (`nvm use v22.17.0`, node/npm/npx available) but Next scaffold was blocked in Codex due npm registry network resolution failure (`ENOTFOUND registry.npmjs.org`). Updated task plan with a local-scaffold fallback note and requested user to scaffold `frontend/` locally and commit.

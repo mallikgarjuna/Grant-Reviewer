@@ -53,12 +53,15 @@
 
 ### 8.0A.0-pre Tooling preflight (commit)
 
-- [ ] Confirm Node/npm available for `frontend/` work (Node `22.17.0` recommended).
-- [ ] If the environment uses `nvm`, run `nvm use v22.17.0` to ensure `npm/npx` are available.
-- [ ] If Node tooling is not available in the current execution environment:
+- [x] Confirm Node/npm available for `frontend/` work (Node `22.17.0` recommended).
+- [x] If the environment uses `nvm`, run `nvm use v22.17.0` to ensure `npm/npx` are available.
+- If scaffold commands cannot run in the current execution environment (tooling or network restrictions):
   - scaffold `frontend/` locally
   - commit the generated files
   - continue subsequent implementation in-repo as usual
+
+Execution note:
+- In this Codex environment, `nvm` works but npm registry access is blocked (`ENOTFOUND registry.npmjs.org`), so `create-next-app` cannot be downloaded here. Use the local-scaffold fallback and commit `frontend/` before continuing.
 
 ### 8.0A.0a Project scaffold (commit)
 
