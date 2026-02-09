@@ -229,3 +229,7 @@
 ### 00:20 - Task 8.0A.7 Completed (SEO privacy guardrails)
 > User asked to continue implementation with subtask-level verification.
 > Outcome: Added `/app` noindex guardrails using `src/app/robots.ts` and `next.config.ts` headers, plus `frontend/scripts/check-seo-guardrails.mjs` and `npm run check:seo` for repeatable verification. Verified with `cd frontend && npm run check:seo && npm run lint`.
+
+### 00:35 - Task 8.0A.8 Completed (`/app` submit flow)
+> User asked to complete the remaining 8.0A subtasks.
+> Outcome: Implemented `/app` submission UI (`frontend/src/app/app/page.tsx`) with call/node selectors, snippet limits, idempotent attempt reuse via `sessionStorage`, submit in-flight lock, 40s slow-request hint, and redirect to `/app/reviews/[review_id]` on success. Added client attempt helper (`frontend/src/lib/review-attempt.ts`). Verified with `cd frontend && npm run lint`.

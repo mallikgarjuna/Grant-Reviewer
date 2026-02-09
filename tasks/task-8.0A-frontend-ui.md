@@ -149,7 +149,7 @@ MVP gate:
 
 ## 8.0A.8 `/app` submit flow (commit)
 
-- [ ] `/app` submission page:
+- [x] `/app` submission page:
   - auth required (redirect to Clerk sign-in, then back)
   - call selector (via `/api/bff/*`)
   - node selector (via `/api/bff/*`)
@@ -161,7 +161,7 @@ MVP gate:
   - timeout UX:
     - after ~40s show “still working, refresh safely” message
     - no auto-retry
-- [ ] Verify this subtask before commit (manual `/app` flow check).
+- [x] Verify this subtask before commit (manual `/app` flow check).
 
 ## 8.0A.9 `/app/reviews/[review_id]` results + error mapping (commit)
 
