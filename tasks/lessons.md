@@ -46,3 +46,13 @@
 **Issue**: Repo-wide lint checks include large pre-existing debt and can stall feature delivery.
 **Fix**: For MVP-focused work, enforce lint on changed files/touched modules and keep full debt cleanup in a dedicated follow-up task.
 **Prevention**: Treat repo-wide lint remediation as planned maintenance (separate task/phase), not as a blocker for unrelated MVP feature slices.
+
+### L10: Wrap Up Locally Before Next Major Task (No Remote)
+**Issue**: Multiple local task branches can drift without a clear integration checkpoint when no GitHub remote/PR flow exists.
+**Fix**: Create a local milestone branch from `main`, merge completed task branches, add a milestone tag, and create a `git bundle` backup.
+**Prevention**: Before starting each new major task, complete a local wrap-up checkpoint so rollback and task handoff remain predictable.
+
+### L11: Keep IDE Workspace File Local
+**Issue**: `Grant-Reviewer.code-workspace` changes are local-user preferences and create noisy branch status.
+**Fix**: Mark it as local-only with `git update-index --skip-worktree Grant-Reviewer.code-workspace`.
+**Prevention**: Use `skip-worktree` for tracked, machine-local workspace config files unless an intentional shared update is required.

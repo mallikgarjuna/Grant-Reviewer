@@ -148,3 +148,7 @@
 ### 19:40 - Workflow Instruction Recorded (MVP vs lint debt)
 > User clarified that perfect linting should not block MVP progress and asked to record this safely for future runs.
 > Outcome: Added an always-on rule in `AGENTS.md` and detailed lesson `L9` in `tasks/lessons.md` to enforce "changed-files lint now, full debt cleanup as separate task."
+
+### 20:05 - Local Wrap-Up Workflow Recorded + Branch Consolidation
+> User asked to wrap up all local work before the next task and to record lessons for future runs.
+> Outcome: Added always-on guidance in `AGENTS.md` and detailed lessons (`L10`, `L11`) in `tasks/lessons.md` for no-remote branch consolidation (integration branch + tag + `git bundle`) and local workspace-file handling (`skip-worktree`).
