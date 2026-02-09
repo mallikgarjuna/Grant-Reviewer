@@ -200,3 +200,7 @@
 ### 22:55 - Task 8.0A.0a2 Completed (MVP style guide in code)
 > User provided the local scaffold commit for `8.0A.0a`.
 > Outcome: Implemented `8.0A.0a2` style baseline in `frontend` (Inter font, light-only palette/tokens, primary `#2563EB`, medium-rounded radius defaults, focus-visible outline, reduced-motion support), updated task checklist progress, and ran `cd frontend && npm run lint` successfully.
+
+### 23:05 - Verification Policy Tightened (per-subtask commits)
+> User requested: enforce tests/verification for each subtask and remember for future runs.
+> Outcome: Added an always-on AGENTS rule requiring at least one targeted verification per Phase 3 subtask before commit, and updated Task 8.0A plan with explicit “verify before commit” checkpoints per remaining subtask.

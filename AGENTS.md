@@ -120,6 +120,7 @@ Artifact convention:
 
 - Make the smallest change that works; follow existing patterns.
 - Verify with tests/build/lint or a reliable manual repro.
+- For Phase 3 implementation, run at least one targeted verification per completed subtask before committing that subtask, and log what was run.
 - Update `tasks/` and `knowledge_base/` as you go (decisions, Q&A, walkthroughs).
 - Be explicit about what you didn’t verify and what to run next.
 - At the end of every response, explicitly tell/ask the user what to do or prompt next.

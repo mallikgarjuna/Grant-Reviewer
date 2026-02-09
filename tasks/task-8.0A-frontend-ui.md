@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 2 (Task breakdown)
-**Status**: Draft (v0.8 - Revised)
+**Status**: Draft (v0.9 - Revised)
 **Last Updated**: 2026-02-09
 **PRD**: `tasks/prd-8.0A-frontend-ui.md`
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md`
@@ -16,6 +16,12 @@
 - No background jobs, streaming, or polling. `POST /reviews` stays synchronous.
 - No repo-wide lint cleanup (Task 8.1+).
 - Keep analytics as a placeholder only.
+
+## Subtask Verification Rule (Mandatory)
+
+- For every Phase 3 subtask commit, run at least one targeted verification for that subtask before committing.
+- Verification can be test, lint/build check, or reliable manual repro, depending on what the subtask changes.
+- Record what was run (and outcome) in task notes and/or walkthrough logs.
 
 ## Deliverable Separation (Execution Order)
 
@@ -103,6 +109,7 @@ Optional guardrails (run locally if you have Node/npm):
 - [ ] Add Clerk to Next.js.
 - [ ] Protect `/app/*` via Clerk middleware.
 - [ ] Preserve intended redirect path (deep link support).
+- [ ] Verify this subtask before commit (targeted auth route protection check).
 
 ### 8.0A.0c BFF adapter core (commit)
 
@@ -118,6 +125,7 @@ Optional guardrails (run locally if you have Node/npm):
 - [ ] Add minimal invariant self-check script (no new deps):
   - verifies payload normalization stability
   - verifies signature changes when bytes change
+- [ ] Verify this subtask before commit (run adapter invariant self-check).
 
 MVP gate:
 - Do not start building `/app` pages until this step passes locally (prevents brittle auth/idempotency failures from surfacing late).
@@ -129,6 +137,7 @@ MVP gate:
   - handlers call adapter -> FastAPI
 - [ ] Protect `/api/bff/*` via Clerk middleware.
 - [ ] Ensure `X-GR-User-Id` uses Clerk user id, and `Idempotency-Key` is set on create.
+- [ ] Verify this subtask before commit (manual BFF route smoke check).
 
 ### 8.0A.0e SEO privacy guardrails + verify script (commit)
 
@@ -137,6 +146,7 @@ MVP gate:
 - [ ] Add lightweight verification script:
   - asserts `robots.txt` contains `Disallow: /app/`
   - asserts `/app` response contains `X-Robots-Tag: noindex`
+- [ ] Verify this subtask before commit (run SEO guardrail script).
 
 ## 8.0A.1 App Vertical Slice
 
@@ -154,6 +164,7 @@ MVP gate:
   - timeout UX:
     - after ~40s show “still working, refresh safely” message
     - no auto-retry
+- [ ] Verify this subtask before commit (manual `/app` flow check).
 
 ### 8.0A.1b `/app/reviews/[review_id]` results + error mapping (commit)
 
@@ -167,17 +178,20 @@ MVP gate:
   - `QUOTA_EXCEEDED` -> limit reached message + reset time (if provided)
   - `REVIEWS_DISABLED` -> maintenance banner/state
   - validation/snippet-too-long/no-expectations -> inline form errors
+- [ ] Verify this subtask before commit (manual deep-link + error mapping check).
 
 ## 8.0A.2 Marketing + MDX (Minimum)
 
 ### 8.0A.2a Marketing landing (commit)
 
 - [ ] Marketing landing (`/`) with CTA to `/app` (auth will gate).
+- [ ] Verify this subtask before commit (manual landing route check).
 
 ### 8.0A.2b Blog route + one MDX article (commit)
 
 - [ ] Blog route (`/blog/*`) backed by MDX with one placeholder article.
 - [ ] Ensure marketing/blog are indexable while `/app/*` stays `noindex`.
+- [ ] Verify this subtask before commit (manual blog route + noindex boundary check).
 
 ## 8.0A.9 Verify (Required)
 
@@ -215,3 +229,4 @@ MVP gate:
 - **v0.6** (2026-02-09): Added explicit Node/tooling preflight + local scaffold fallback, and made adapter invariants a hard gate before UI pages.
 - **v0.7** (2026-02-09): Added explicit `nvm use v22.17.0` step to the tooling preflight (when `nvm` is present).
 - **v0.8** (2026-02-09): Locked concrete MVP visual style choices and interaction principles in `8.0A.0a2`.
+- **v0.9** (2026-02-09): Added mandatory per-subtask “verify before commit” checkpoints across remaining Phase 3 subtasks.
