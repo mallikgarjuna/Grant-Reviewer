@@ -1,6 +1,8 @@
 # Task 8.0B: BFF Contracts (Phase 2 Plan)
 
-**Status**: [ ] Draft  
+**Status**: Draft (v0.2 - Revised)  
+**Date**: 2026-02-08  
+**Last Updated**: 2026-02-08  
 **Phase**: Phase 2 (Task breakdown)  
 **PRD**: `tasks/prd-8.0B-bff-contracts.md`  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0-frontend-ui.md`
@@ -132,3 +134,8 @@ Dependency: Next.js scaffold exists (from 8.0A or an initial scaffolding step).
 - `GET /quota` preflight endpoint (if we see UX confusion).
 - Blocking “wait for completion” semantics for concurrent idempotent requests (likely only matters once we add async workers).
 - Automatic retries/backoff (cost-risk; revisit post-MVP).
+
+## Revision History
+
+- **v0.1** (2026-02-08): Initial Phase 2 plan draft.
+- **v0.2** (2026-02-08): Simplified idempotency concurrency strategy; added timeout/retry/lint staging policies and explicit MVP decisions.

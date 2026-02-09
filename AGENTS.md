@@ -95,6 +95,9 @@ Use for new functional areas, complex refactors, or significant UI/API changes. 
 
 Approval gates: ask for an explicit “go ahead” at each phase boundary in interactive work.
 
+Artifact convention:
+- Phase artifacts (brainstorming/PRD/task plan/walkthrough) should include a `Status` line with a lightweight version (e.g., `Draft (v0.2 - Revised)` → `Approved (v1.0)`), plus a short `Revision History` section when revised.
+
 ### Skills (Optional)
 
 - If a matching skill exists (a `SKILL.md`), follow it for that phase.
