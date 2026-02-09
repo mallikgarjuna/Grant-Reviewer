@@ -1,6 +1,6 @@
 # Task 8.0B: BFF Contracts (Phase 2 Plan)
 
-**Status**: Draft (v0.2 - Revised)  
+**Status**: Draft (v0.3 - Revised)  
 **Date**: 2026-02-08  
 **Last Updated**: 2026-02-08  
 **Phase**: Phase 2 (Task breakdown)  
@@ -27,6 +27,7 @@
 - **Retries**: BFF provides **manual-only** retry UX. No automatic retries (prevents duplicate LLM spend).
 - **Timeout budget**: target ~`30s` max for `POST /reviews` LLM execution in MVP; on application-level timeout, persist `FAILED` and return `{review_id, status:"FAILED"}`.
 - **Quota visibility**: no `GET /quota` in MVP. UI learns “remaining” only from `QUOTA_EXCEEDED.details` after a submit attempt.
+- **Frontend sequencing**: 8.0B is executed **before** 8.0A; any Next.js scaffolding needed to enforce the BFF boundary should be treated as a minimal “8.0A.0 scaffolding” step (no app pages yet).
 
 ---
 
@@ -99,9 +100,11 @@
 - [ ] Ensure FastAPI keeps a single `ERROR_STATUS_BY_CODE` mapping table and tests it (extend Task 7.0 patterns).
 - [ ] **Verify**: Next/BFF logic branches on `error.code`, not HTTP status (documented + enforced in frontend linting once present).
 
-## 8.0B.7 Frontend Enforcement (Next.js repo / folder)
+## 8.0B.7 Frontend Enforcement (execute as 8.0A.0 scaffolding)
 
-Dependency: Next.js scaffold exists (from 8.0A or an initial scaffolding step).
+Rationale:
+- The BFF boundary must be enforced mechanically, but we’re sequencing **contracts (8.0B)** before **UI work (8.0A)**.
+- Therefore, we implement a minimal Next.js scaffold as the **first** sub-step of 8.0A (8.0A.0), then immediately add the adapter and staged linting before building any UI pages.
 
 - [ ] Add `src/lib/bff/*` adapter module:
   - is the only module allowed to read `process.env.FASTAPI_BASE_URL`
@@ -139,3 +142,4 @@ Dependency: Next.js scaffold exists (from 8.0A or an initial scaffolding step).
 
 - **v0.1** (2026-02-08): Initial Phase 2 plan draft.
 - **v0.2** (2026-02-08): Simplified idempotency concurrency strategy; added timeout/retry/lint staging policies and explicit MVP decisions.
+- **v0.3** (2026-02-08): Clarified sequencing: implement backend contracts first (8.0B), then treat Next.js scaffold + adapter/lint as an explicit 8.0A.0 prerequisite.
