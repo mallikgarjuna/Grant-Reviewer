@@ -241,3 +241,7 @@
 ### 01:15 - Tasks 8.0A.10 + 8.0A.11 Completed (landing + blog/MDX)
 > User asked to complete the remainder of Task 8.0A.
 > Outcome: Replaced the default homepage with an MVP marketing landing page (`/`) and CTA to `/app`; added `/blog` index and one article route in MDX (`/blog/writing-better-grant-snippets`). Enabled MDX page extensions in Next config and added MDX component mapping. Verified with `cd frontend && npm run lint`.
+
+### 01:30 - Task 8.0A.12 Verification + Walkthrough Sync
+> User asked to complete the rest of Task 8.0A.
+> Outcome: Ran local verification scripts (`npm run check:bff`, `npm run check:seo`, `npm run lint`), created walkthrough `knowledge_base/walkthroughs/walkthrough_task_8.0A_frontend_ui.md`, and updated task/index status. Remaining gap is manual end-to-end `/app` happy-path verification in a local environment with full npm package installation.

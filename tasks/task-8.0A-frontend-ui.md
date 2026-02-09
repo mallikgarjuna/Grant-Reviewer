@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 2 (Task breakdown)
-**Status**: Draft (v0.10 - Revised)
+**Status**: In Progress (v0.11 - Phase 3 implementation complete; manual verify pending)
 **Last Updated**: 2026-02-09
 **PRD**: `tasks/prd-8.0A-frontend-ui.md`
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md`
@@ -197,9 +197,9 @@ MVP gate:
   - refresh and resubmit unchanged draft -> reuse idempotency key (no duplicate spend)
   - FAILED retry -> new key
   - deep link results route works after login
-- [ ] SEO guardrail verification script passes.
-- [ ] Adapter invariant self-check passes.
-- [ ] Document verification results in a walkthrough:
+- [x] SEO guardrail verification script passes.
+- [x] Adapter invariant self-check passes.
+- [x] Document verification results in a walkthrough:
   - `knowledge_base/walkthroughs/walkthrough_task_8.0A_frontend_ui.md`
 
 ### Verify-Deploy (defer to 8.0C)
@@ -226,3 +226,4 @@ MVP gate:
 - **v0.8** (2026-02-09): Locked concrete MVP visual style choices and interaction principles (now tracked as `8.0A.3` after renumbering).
 - **v0.9** (2026-02-09): Added mandatory per-subtask “verify before commit” checkpoints across remaining Phase 3 subtasks.
 - **v0.10** (2026-02-09): Renumbered Phase 3 subtasks to a strict sequential series (`8.0A.1` through `8.0A.12`) for clearer tracking.
+- **v0.11** (2026-02-10): Phase 3 subtasks `8.0A.4` through `8.0A.11` implemented and committed; local verification scripts passed (`check:bff`, `check:seo`, `lint`); manual happy-path verification remains pending local dependency installation.
