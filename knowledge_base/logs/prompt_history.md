@@ -140,3 +140,7 @@
 ### 19:20 - Task 8.1 Phase 0 Started (Lint Baseline Cleanup)
 > User requested creation of a new task ID and to start the gated phase workflow.
 > Outcome: Created `knowledge_base/logs/brainstorming-8.1-lint-baseline-cleanup.md`, added Task 8.1 to `tasks/index.md`, and started Phase 0 on branch `task-8.1-lint-baseline-cleanup`.
+
+### 19:30 - Task 8.1 Phase 0 Revision (critical review)
+> User provided critical feedback on baseline/gating gaps and asked for MVP-fast decisions plus non-scope backlog.
+> Outcome: Revised `knowledge_base/logs/brainstorming-8.1-lint-baseline-cleanup.md` (v0.2) with explicit decisions for diff-based lint gating, CI parity, ownership, formatter policy (Ruff-only), rule/behavior guardrails, done definition, and deferred split into Tasks 8.2/8.3.
