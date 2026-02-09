@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 1 (PRD)
-**Status**: Draft (v0.1)
+**Status**: Draft (v0.2 - Revised)
 **Last Updated**: 2026-02-09
 
 ## Summary
@@ -23,6 +23,40 @@ This PRD is intentionally scoped to the minimum that enables Task 8.0A Phase 3 i
 Related artifacts:
 - Phase 0 notes: `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md`
 - Contract PRD: `tasks/prd-8.0B-bff-contracts.md`
+
+## Decisions Locked (MVP, to unblock Phase 2)
+
+### Identity mapping (Clerk -> FastAPI)
+
+- Canonical `external_user_id` sent to FastAPI is the Clerk user id: `clerk_user_id = auth().userId` (or equivalent Clerk server API).
+- FastAPI receives this value as `X-GR-User-Id` and uses it for:
+  - review ownership enforcement
+  - idempotency uniqueness
+  - quota accounting
+
+### Where signing happens (and why)
+
+- All FastAPI calls are made from Next.js server-side code only (route handlers / server actions).
+- The BFF adapter is the single owner of:
+  - constructing request bytes
+  - signing those exact bytes
+  - making the fetch call
+  - parsing canonical errors
+
+Rationale: minimizes “same JSON, different bytes” failures and keeps request construction consistent across endpoints.
+
+### Idempotency persistence scope
+
+- Persist the “current attempt” in `sessionStorage` (tab-scoped by browser design).
+- This means:
+  - refresh safety within the same tab is supported
+  - new tab is a new, independent attempt (acceptable for MVP; no cross-tab coordination)
+
+### Deliverable separation (to protect critical path)
+
+- `8.0A.0` scaffolding (must land before UI pages): Next scaffold + Clerk + adapter + noindex guardrail.
+- `8.0A.1` app vertical slice pages (`/app`, `/app/reviews/[id]`).
+- `8.0A.2` marketing/MDX polish (non-blocking for app slice).
 
 ## Goals (MVP)
 
@@ -78,12 +112,34 @@ The adapter returns UI-safe types:
 - `Ok<T>` for success
 - `Err<ApiError>` for canonical errors
 
+#### Adapter API surface (locked for MVP)
+
+The adapter must expose exactly these MVP functions (typed):
+- `listCalls() -> Result<CallsResponse>`
+- `listNodes(callId: string) -> Result<NodesResponse>`
+- `createReview(payload: {call_id: string; node_id: string; snippet_text: string}, attempt: Attempt) -> Result<CreateReviewResponse>`
+- `getReview(reviewId: string) -> Result<ReviewDetailResponse>`
+
+Where:
+- `Attempt` contains:
+  - `idempotencyKey` (string)
+  - `payloadSha256` (string)
+  - `createdAtMs` (number)
+
+Notes:
+- `createReview` must set `Idempotency-Key` header and use the attempt persistence rules below.
+- Return type `Result<T>` is a discriminated union so UI never branches on HTTP status.
+
 ### Signing (locked decision)
 
 The adapter signs the exact request bytes it sends to FastAPI:
 - Build body bytes once.
 - Compute signature over `sha256(body_bytes)`.
 - Send those same `body_bytes` in the request.
+
+Timestamp skew policy (MVP):
+- Use current server time in seconds for `X-GR-Timestamp`.
+- On `UNAUTHORIZED` due to expiry, show a generic “session expired” message and prompt re-login; do not retry automatically.
 
 ### Idempotency (locked decision)
 
@@ -108,14 +164,21 @@ FastAPI requires `Idempotency-Key` for `POST /reviews`. Next must implement:
 - After ~40s show a “still working, refresh safely” message.
 - No automatic retries.
 
+Timeout alignment (MVP):
+- Backend targets ~30s for LLM execution; UI message at 40s is informational, not a hard cancel.
+- MVP behavior does not cancel in-flight requests; user may refresh and safely resubmit using the same attempt key (if inputs unchanged).
+
 ### SEO privacy guardrails (MVP)
 
 - `/app/*` should not be indexed:
   - `robots.txt` disallows `/app/`
   - `X-Robots-Tag: noindex` for `/app/*`
-- Add a lightweight verification guardrail (script/test) that asserts:
-  - `robots.txt` contains the disallow rule
-  - `/app/*` responses include `X-Robots-Tag: noindex`
+
+Verification guardrail (MVP, concrete):
+- Add a small script (shell or node) that:
+  - fetches `/robots.txt` and asserts it contains `Disallow: /app/`
+  - fetches a representative app route (e.g., `/app`) and asserts `X-Robots-Tag: noindex`
+- For MVP, run it as part of the Phase 3 “Verify” checklist (CI integration can come later).
 
 ## Error Handling Requirements (UI)
 
@@ -148,7 +211,7 @@ Review states:
 ### C. SEO/privacy
 - Marketing/blog routes are indexable.
 - `/app/*` is not indexable via both `robots.txt` and `X-Robots-Tag: noindex`.
-- A lightweight verification step exists for the above.
+- A lightweight verification step exists for the above and is executed during Phase 3 verification.
 
 ### D. UX resilience (sync)
 - Submit is disabled during in-flight.
@@ -168,6 +231,8 @@ Review states:
 - Background job processing with polling/streaming.
 - Proactive quota introspection endpoint and UI.
 - Strict ESLint rules that hard-block non-adapter FastAPI calls (after first slice is stable).
+- Cross-tab idempotency coordination (keep MVP tab-scoped; revisit if needed).
+- CI-enforced SEO privacy checks (run manually first, automate later).
 
 ## Verification Plan (Phase 3)
 
@@ -182,4 +247,4 @@ Review states:
 ## Revision History
 
 - **v0.1** (2026-02-09): Initial PRD for the 8.0A UI slice; incorporates locked Phase 0 decisions on idempotency persistence, signing exact bytes, sync UX, and SEO noindex guardrails.
-
+- **v0.2** (2026-02-09): Locked Clerk identity mapping, centralized signing/request-bytes ownership in the adapter, clarified tab-scoped idempotency persistence, specified adapter API surface, aligned timeout expectations, and made the SEO verification guardrail concrete.
