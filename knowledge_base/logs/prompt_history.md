@@ -184,3 +184,7 @@
 ### 21:45 - Task 8.0A Skill Guardrails Identified
 > User ran `npx skills find ...` and shared results for Next.js/React and UI/accessibility.
 > Outcome: Locked recommended optional skill guardrails in 8.0A docs (Vercel React/Next best practices + web accessibility) without expanding MVP scope.
+
+### 22:00 - Task 8.0A Docs Revised (execution risk closure)
+> User requested incorporating critical execution feedback (tooling availability, adapter-first gating, sync UX/SEO guardrails as concrete verify steps).
+> Outcome: Revised 8.0A brainstorming/PRD/task docs to explicitly include Node tooling preflight + local scaffold fallback and to require adapter invariant checks before building UI pages.

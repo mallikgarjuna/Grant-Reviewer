@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 1 (PRD)
-**Status**: Draft (v0.4 - Revised)
+**Status**: Draft (v0.5 - Revised)
 **Last Updated**: 2026-02-09
 
 ## Summary
@@ -239,6 +239,9 @@ Review states:
 - Backend env shared secret alignment:
   - `BFF_SHARED_SECRET` in FastAPI
   - same secret available to Next server-side code
+- Frontend tooling:
+  - Node.js `22.17.0` and npm available for scaffolding/building `frontend/`
+  - If the execution environment cannot run Node tooling, scaffold locally and commit the generated `frontend/` files, then continue implementation changes normally.
 
 ## Out of Scope Ideas (Backlog)
 
@@ -256,6 +259,8 @@ Review states:
   - refresh `/app` with same draft -> resubmit uses same idempotency key
   - FAILED retry -> new key (verify new review id)
   - deep link `/app/reviews/[id]` without prior submit
+- Adapter invariants:
+  - run the adapter invariant self-check (payload normalization stability + signature changes when bytes change)
 - Lightweight SEO check:
   - confirm `/robots.txt` and `/app/*` `X-Robots-Tag` behavior
 
@@ -265,3 +270,4 @@ Review states:
 - **v0.2** (2026-02-09): Locked Clerk identity mapping, centralized signing/request-bytes ownership in the adapter, clarified tab-scoped idempotency persistence, specified adapter API surface, aligned timeout expectations, and made the SEO verification guardrail concrete.
 - **v0.3** (2026-02-09): Added optional skill-based guardrails (Next/React best practices, accessibility) and locked a minimal accessibility acceptance baseline for MVP.
 - **v0.4** (2026-02-09): Updated accessibility skill reference to match installed `web-quality-skills` accessibility skill.
+- **v0.5** (2026-02-09): Added explicit Node tooling dependency/fallback and required adapter invariant verification as part of Phase 3 verify.

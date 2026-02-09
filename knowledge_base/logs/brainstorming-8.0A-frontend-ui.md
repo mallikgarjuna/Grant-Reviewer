@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 0 (Brainstorming)
-**Status**: Draft (v0.5 - Revised)
+**Status**: Draft (v0.6 - Revised)
 **Last Updated**: 2026-02-09
 
 ## Goal (MVP)
@@ -134,6 +134,9 @@ We treat them as guidance, not as requirements or new dependencies.
 - Mis-handling idempotency (accidental double submits causing extra quota/LLM cost).
 - Confusing UX for quota/disabled/errors without overbuilding UI state machines.
 - SEO and private app route indexing (must be explicit).
+- Frontend tooling availability (Node/npm) can block execution in some environments; keep a “scaffold locally, commit generated files” fallback.
+
+MVP mitigation: treat adapter correctness as the “hard gate” before building UI pages (sign exact bytes, canonical error parsing, idempotency helpers + invariant self-checks).
 
 ## Decisions To Make In 8.0A (Prefer MVP Defaults)
 
@@ -217,3 +220,4 @@ Phase 1 PRD 8.0A should lock:
 - **v0.3** (2026-02-09): Added draft persistence, payload normalization rules, “sign exact bytes” requirement, in-flight submit lock policy, and a lightweight SEO noindex verification guardrail.
 - **v0.4** (2026-02-09): Added optional skill guardrails recommendations for MVP implementation (Next/React best practices and accessibility).
 - **v0.5** (2026-02-09): Updated skill guardrails to match installed skills (Vercel best practices + web-quality accessibility).
+- **v0.6** (2026-02-09): Added explicit execution/tooling risk and locked “adapter invariants first” as the MVP mitigation before UI work.

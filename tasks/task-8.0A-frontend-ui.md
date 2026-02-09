@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 2 (Task breakdown)
-**Status**: Draft (v0.5 - Revised)
+**Status**: Draft (v0.6 - Revised)
 **Last Updated**: 2026-02-09
 **PRD**: `tasks/prd-8.0A-frontend-ui.md`
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md`
@@ -50,6 +50,14 @@
 - Clerk configured for Next.js (sign-in, redirect back to intended `/app/*` route)
 
 ## 8.0A.0 Scaffolding (Hard Prereq, Split Into Reviewable Commits)
+
+### 8.0A.0-pre Tooling preflight (commit)
+
+- [ ] Confirm Node/npm available for `frontend/` work (Node `22.17.0` recommended).
+- [ ] If Node tooling is not available in the current execution environment:
+  - scaffold `frontend/` locally
+  - commit the generated files
+  - continue subsequent implementation in-repo as usual
 
 ### 8.0A.0a Project scaffold (commit)
 
@@ -98,6 +106,9 @@ Optional guardrails (run locally if you have Node/npm):
 - [ ] Add minimal invariant self-check script (no new deps):
   - verifies payload normalization stability
   - verifies signature changes when bytes change
+
+MVP gate:
+- Do not start building `/app` pages until this step passes locally (prevents brittle auth/idempotency failures from surfacing late).
 
 ### 8.0A.0d BFF route handlers (commit)
 
@@ -166,6 +177,7 @@ Optional guardrails (run locally if you have Node/npm):
   - FAILED retry -> new key
   - deep link results route works after login
 - [ ] SEO guardrail verification script passes.
+- [ ] Adapter invariant self-check passes.
 - [ ] Document verification results in a walkthrough:
   - `knowledge_base/walkthroughs/walkthrough_task_8.0A_frontend_ui.md`
 
@@ -188,3 +200,4 @@ Optional guardrails (run locally if you have Node/npm):
 - **v0.3** (2026-02-09): Added an explicit MVP style guide checkpoint right after scaffolding and documented optional local skill-install commands (Node/npm required).
 - **v0.4** (2026-02-09): Locked recommended skill installs for MVP guardrails (Vercel React/Next best practices + web accessibility).
 - **v0.5** (2026-02-09): Updated accessibility skill reference to match installed `web-quality-skills` accessibility skill.
+- **v0.6** (2026-02-09): Added explicit Node/tooling preflight + local scaffold fallback, and made adapter invariants a hard gate before UI pages.
