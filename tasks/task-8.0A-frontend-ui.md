@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 2 (Task breakdown)
-**Status**: Draft (v0.7 - Revised)
+**Status**: Draft (v0.8 - Revised)
 **Last Updated**: 2026-02-09
 **PRD**: `tasks/prd-8.0A-frontend-ui.md`
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md`
@@ -69,10 +69,18 @@
 ### 8.0A.0a2 MVP style guide checkpoint (commit)
 
 - [ ] Lock a minimal MVP style guide (documented decision):
-  - typography: 1 font choice + heading scale
-  - color: primary + neutrals + semantic colors (error/success)
-  - spacing: consistent form/layout spacing
+  - primary color: `#2563EB`
+  - neutral palette: slate / blue-gray
+  - font: Inter (headings + body)
+  - border radius: medium-rounded (`12px` to `16px`)
+  - spacing density: comfortable -> slightly airy
+  - theme mode: light-only (MVP)
   - primitives: `Button`, `Input`, `Card` (shadcn variants)
+- [ ] Lock interaction principles in implementation notes:
+  - clarity over cleverness
+  - trust/calm surfaces and restrained color
+  - short micro-animations, no heavy effects
+  - one primary action per screen
 - [ ] Document the choices in `tasks/prd-8.0A-frontend-ui.md` so later UI work stays consistent.
 
 Optional guardrails (run locally if you have Node/npm):
@@ -203,3 +211,4 @@ MVP gate:
 - **v0.5** (2026-02-09): Updated accessibility skill reference to match installed `web-quality-skills` accessibility skill.
 - **v0.6** (2026-02-09): Added explicit Node/tooling preflight + local scaffold fallback, and made adapter invariants a hard gate before UI pages.
 - **v0.7** (2026-02-09): Added explicit `nvm use v22.17.0` step to the tooling preflight (when `nvm` is present).
+- **v0.8** (2026-02-09): Locked concrete MVP visual style choices and interaction principles in `8.0A.0a2`.

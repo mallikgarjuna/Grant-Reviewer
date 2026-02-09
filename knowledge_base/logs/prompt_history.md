@@ -188,3 +188,7 @@
 ### 22:00 - Task 8.0A Docs Revised (execution risk closure)
 > User requested incorporating critical execution feedback (tooling availability, adapter-first gating, sync UX/SEO guardrails as concrete verify steps).
 > Outcome: Revised 8.0A brainstorming/PRD/task docs to explicitly include Node tooling preflight + local scaffold fallback and to require adapter invariant checks before building UI pages.
+
+### 22:20 - Task 8.0A Visual Style Decisions Locked (MVP)
+> User provided explicit design choices for MVP UI direction (primary `#2563EB`, slate neutrals, Inter, medium-rounded corners, comfortable spacing, light-only theme) plus interaction principles.
+> Outcome: Updated PRD + task plan to lock these values as implementation inputs for Phase 3 (`8.0A.0a2`).

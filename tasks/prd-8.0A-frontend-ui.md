@@ -68,6 +68,22 @@ Notes:
 - These are guidance-only and must not expand MVP scope.
 - If installed, we’ll consult them before/while implementing `8.0A.0a2` and `8.0A.1`.
 
+### MVP visual style (locked)
+
+Use this style baseline for Phase 3 implementation:
+- Primary color: `#2563EB`
+- Neutral palette: slate / blue-gray
+- Font: Inter (headings + body)
+- Border radius: medium-rounded (`12px` to `16px`)
+- Spacing density: comfortable -> slightly airy
+- Theme mode: light-only (MVP)
+
+Interaction principles:
+- Clarity over cleverness: each screen should answer “what do I do next?”
+- Trust and calm: neutral surfaces, minimal shadows, restrained color usage.
+- Speed feel: snappy hover/press states, short micro-animations, avoid heavy visual effects.
+- One primary action per screen; secondary/tertiary actions visually de-emphasized.
+
 ## Goals (MVP)
 
 - Ship an authenticated app that can create and view reviews:
@@ -232,6 +248,7 @@ Review states:
 - Form inputs have labels (or accessible names).
 - Buttons/inputs are keyboard reachable with visible focus.
 - Error messages are readable and associated to the relevant input.
+- Color contrast follows WCAG AA targets for text and controls.
 
 ## Dependencies
 
@@ -273,3 +290,4 @@ Review states:
 - **v0.4** (2026-02-09): Updated accessibility skill reference to match installed `web-quality-skills` accessibility skill.
 - **v0.5** (2026-02-09): Added explicit Node tooling dependency/fallback and required adapter invariant verification as part of Phase 3 verify.
 - **v0.6** (2026-02-09): Added explicit `nvm use v22.17.0` step for environments that use `nvm` to expose `npm/npx`.
+- **v0.7** (2026-02-09): Locked concrete MVP visual style choices (color, typography, spacing, radius, light-only theme) and interaction principles.
