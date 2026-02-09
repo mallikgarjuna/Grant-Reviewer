@@ -140,12 +140,12 @@ MVP gate:
 
 ## 8.0A.7 SEO privacy guardrails + verify script (commit)
 
-- [ ] Add `robots.txt` disallowing `/app/`.
-- [ ] Add `X-Robots-Tag: noindex` on `/app/*` (middleware or headers).
-- [ ] Add lightweight verification script:
+- [x] Add `robots.txt` disallowing `/app/`.
+- [x] Add `X-Robots-Tag: noindex` on `/app/*` (middleware or headers).
+- [x] Add lightweight verification script:
   - asserts `robots.txt` contains `Disallow: /app/`
   - asserts `/app` response contains `X-Robots-Tag: noindex`
-- [ ] Verify this subtask before commit (run SEO guardrail script).
+- [x] Verify this subtask before commit (run SEO guardrail script).
 
 ## 8.0A.8 `/app` submit flow (commit)
 

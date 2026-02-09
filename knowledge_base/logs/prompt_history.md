@@ -225,3 +225,7 @@
 ### 00:10 - Task 8.0A.6 Completed (BFF route handlers)
 > User asked to complete remaining 8.0A implementation subtasks.
 > Outcome: Added authenticated Next route handlers under `frontend/src/app/api/bff/*` for calls, nodes, review create, and review detail. Handlers now require Clerk user context, forward requests only through the adapter, and preserve canonical error response shape. Verified with `cd frontend && npm run lint`.
+
+### 00:20 - Task 8.0A.7 Completed (SEO privacy guardrails)
+> User asked to continue implementation with subtask-level verification.
+> Outcome: Added `/app` noindex guardrails using `src/app/robots.ts` and `next.config.ts` headers, plus `frontend/scripts/check-seo-guardrails.mjs` and `npm run check:seo` for repeatable verification. Verified with `cd frontend && npm run check:seo && npm run lint`.
