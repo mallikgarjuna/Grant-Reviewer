@@ -217,3 +217,7 @@
 > User asked to continue and complete remaining 8.0A subtasks.
 > Outcome: Implemented Clerk middleware protection for `/app/*` and `/api/bff/*`, added Clerk provider + sign-in route, verified with `cd frontend && npm run lint`, and checked off subtask `8.0A.4` in the task plan.  
 > Note: npm registry remains unreachable in Codex environment (`ENOTFOUND registry.npmjs.org`), so package installation must be run locally.
+
+### 23:55 - Task 8.0A.5 Completed (BFF adapter core + invariants)
+> User asked to continue Phase 3 execution end-to-end.
+> Outcome: Implemented `frontend/src/lib/bff/*` with server-only env access, typed Result/API error parsing, canonical payload normalization + payload hashing helpers, request signing over exact bytes, and adapter functions (`listCalls`, `listNodes`, `createReview`, `getReview`). Added `frontend/scripts/bff-invariant-check.mjs` and verified via `cd frontend && npm run check:bff && npm run lint`.

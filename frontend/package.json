@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:bff": "node scripts/bff-invariant-check.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.32.5",

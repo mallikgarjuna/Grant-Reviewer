@@ -112,19 +112,19 @@ Optional guardrails (run locally if you have Node/npm):
 
 ## 8.0A.5 BFF adapter core (commit)
 
-- [ ] Enforce “server-only env” immediately:
+- [x] Enforce “server-only env” immediately:
   - `FASTAPI_BASE_URL` must not be exposed via `NEXT_PUBLIC_*`.
   - Only server code can read it.
-- [ ] Implement adapter module `frontend/src/lib/bff/*` (single owner of FastAPI calls):
+- [x] Implement adapter module `frontend/src/lib/bff/*` (single owner of FastAPI calls):
   - typed `Result<T>` and `ApiError`
   - canonical error parsing (`{error:{code,message,details}}`)
   - signing logic (HMAC; sign exact bytes sent)
   - payload normalization + `payload_sha256`
   - adapter functions (as locked in PRD): `listCalls`, `listNodes`, `createReview`, `getReview`
-- [ ] Add minimal invariant self-check script (no new deps):
+- [x] Add minimal invariant self-check script (no new deps):
   - verifies payload normalization stability
   - verifies signature changes when bytes change
-- [ ] Verify this subtask before commit (run adapter invariant self-check).
+- [x] Verify this subtask before commit (run adapter invariant self-check).
 
 MVP gate:
 - Do not start building `/app` pages until this step passes locally (prevents brittle auth/idempotency failures from surfacing late).
