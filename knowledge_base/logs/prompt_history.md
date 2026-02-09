@@ -237,3 +237,7 @@
 ### 00:55 - Task 8.0A.9 Completed (results page + retry/error mapping)
 > User asked to continue through all remaining subtasks.
 > Outcome: Added `/app/reviews/[reviewId]` page with deep-link loading, completed/failed/pending state rendering, masked not-found handling, and error-code-first messaging (`UNAUTHORIZED`, `QUOTA_EXCEEDED`, `REVIEWS_DISABLED`, validation variants). Implemented FAILED retry path that reuses saved draft with a new idempotency key. Verified with `cd frontend && npm run lint`.
+
+### 01:15 - Tasks 8.0A.10 + 8.0A.11 Completed (landing + blog/MDX)
+> User asked to complete the remainder of Task 8.0A.
+> Outcome: Replaced the default homepage with an MVP marketing landing page (`/`) and CTA to `/app`; added `/blog` index and one article route in MDX (`/blog/writing-better-grant-snippets`). Enabled MDX page extensions in Next config and added MDX component mapping. Verified with `cd frontend && npm run lint`.

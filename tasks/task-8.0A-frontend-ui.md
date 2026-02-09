@@ -179,14 +179,14 @@ MVP gate:
 
 ## 8.0A.10 Marketing landing (commit)
 
-- [ ] Marketing landing (`/`) with CTA to `/app` (auth will gate).
-- [ ] Verify this subtask before commit (manual landing route check).
+- [x] Marketing landing (`/`) with CTA to `/app` (auth will gate).
+- [x] Verify this subtask before commit (manual landing route check).
 
 ## 8.0A.11 Blog route + one MDX article (commit)
 
-- [ ] Blog route (`/blog/*`) backed by MDX with one placeholder article.
-- [ ] Ensure marketing/blog are indexable while `/app/*` stays `noindex`.
-- [ ] Verify this subtask before commit (manual blog route + noindex boundary check).
+- [x] Blog route (`/blog/*`) backed by MDX with one placeholder article.
+- [x] Ensure marketing/blog are indexable while `/app/*` stays `noindex`.
+- [x] Verify this subtask before commit (manual blog route + noindex boundary check).
 
 ## 8.0A.12 Verify (Required)
 
