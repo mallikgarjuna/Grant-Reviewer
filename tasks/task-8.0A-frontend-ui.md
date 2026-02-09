@@ -65,13 +65,13 @@ Execution note:
 
 ### 8.0A.0a Project scaffold (commit)
 
-- [ ] Create Next.js app scaffold in `frontend/` (App Router, TS).
-- [ ] Add Tailwind and shadcn/ui baseline.
-- [ ] Add minimal dev scripts (how to run frontend locally) in repo README if needed.
+- [x] Create Next.js app scaffold in `frontend/` (App Router, TS).
+- [x] Add Tailwind and shadcn/ui baseline.
+- [x] Add minimal dev scripts (how to run frontend locally) in repo README if needed.
 
 ### 8.0A.0a2 MVP style guide checkpoint (commit)
 
-- [ ] Lock a minimal MVP style guide (documented decision):
+- [x] Lock a minimal MVP style guide (documented decision):
   - primary color: `#2563EB`
   - neutral palette: slate / blue-gray
   - font: Inter (headings + body)
@@ -79,12 +79,12 @@ Execution note:
   - spacing density: comfortable -> slightly airy
   - theme mode: light-only (MVP)
   - primitives: `Button`, `Input`, `Card` (shadcn variants)
-- [ ] Lock interaction principles in implementation notes:
+- [x] Lock interaction principles in implementation notes:
   - clarity over cleverness
   - trust/calm surfaces and restrained color
   - short micro-animations, no heavy effects
   - one primary action per screen
-- [ ] Document the choices in `tasks/prd-8.0A-frontend-ui.md` so later UI work stays consistent.
+- [x] Document the choices in `tasks/prd-8.0A-frontend-ui.md` so later UI work stays consistent.
 
 Optional guardrails (run locally if you have Node/npm):
 - If you use `nvm`, activate the expected Node version first: `nvm use v22.17.0`.
