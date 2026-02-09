@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 2 (Task breakdown)
-**Status**: Draft (v0.9 - Revised)
+**Status**: Draft (v0.10 - Revised)
 **Last Updated**: 2026-02-09
 **PRD**: `tasks/prd-8.0A-frontend-ui.md`
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md`
@@ -25,9 +25,10 @@
 
 ## Deliverable Separation (Execution Order)
 
-- **8.0A.0** Scaffolding (must land first): Next.js scaffold + Clerk + BFF adapter + SEO noindex guardrail.
-- **8.0A.1** App slice: `/app` submit flow and `/app/reviews/[review_id]` results page.
-- **8.0A.2** Marketing/MDX: minimum landing + blog route to support SEO discovery.
+- **8.0A.1-8.0A.7** Scaffolding (must land first): preflight + Next scaffold + Clerk + BFF adapter + SEO noindex guardrail.
+- **8.0A.8-8.0A.9** App slice: `/app` submit flow and `/app/reviews/[review_id]` results page.
+- **8.0A.10-8.0A.11** Marketing/MDX: minimum landing + blog route to support SEO discovery.
+- **8.0A.12** Verify checklist.
 
 ## Decisions Locked In This Plan (MVP, ship-fast)
 
@@ -55,9 +56,7 @@
   - Next server has `FASTAPI_BASE_URL` (server-only)
 - Clerk configured for Next.js (sign-in, redirect back to intended `/app/*` route)
 
-## 8.0A.0 Scaffolding (Hard Prereq, Split Into Reviewable Commits)
-
-### 8.0A.0-pre Tooling preflight (commit)
+## 8.0A.1 Tooling preflight (commit)
 
 - [x] Confirm Node/npm available for `frontend/` work (Node `22.17.0` recommended).
 - [x] If the environment uses `nvm`, run `nvm use v22.17.0` to ensure `npm/npx` are available.
@@ -69,13 +68,13 @@
 Execution note:
 - In this Codex environment, `nvm` works but npm registry access is blocked (`ENOTFOUND registry.npmjs.org`), so `create-next-app` cannot be downloaded here. Use the local-scaffold fallback and commit `frontend/` before continuing.
 
-### 8.0A.0a Project scaffold (commit)
+## 8.0A.2 Project scaffold (commit)
 
 - [x] Create Next.js app scaffold in `frontend/` (App Router, TS).
 - [x] Add Tailwind and shadcn/ui baseline.
 - [x] Add minimal dev scripts (how to run frontend locally) in repo README if needed.
 
-### 8.0A.0a2 MVP style guide checkpoint (commit)
+## 8.0A.3 MVP style guide checkpoint (commit)
 
 - [x] Lock a minimal MVP style guide (documented decision):
   - primary color: `#2563EB`
@@ -104,14 +103,14 @@ Optional guardrails (run locally if you have Node/npm):
 - Optional (only if you want shadcn bootstrapping help):
   - `npx skills add shipshitdev/library@shadcn-setup -g -y`
 
-### 8.0A.0b Clerk auth + route protection (commit)
+## 8.0A.4 Clerk auth + route protection (commit)
 
 - [ ] Add Clerk to Next.js.
 - [ ] Protect `/app/*` via Clerk middleware.
 - [ ] Preserve intended redirect path (deep link support).
 - [ ] Verify this subtask before commit (targeted auth route protection check).
 
-### 8.0A.0c BFF adapter core (commit)
+## 8.0A.5 BFF adapter core (commit)
 
 - [ ] Enforce “server-only env” immediately:
   - `FASTAPI_BASE_URL` must not be exposed via `NEXT_PUBLIC_*`.
@@ -130,7 +129,7 @@ Optional guardrails (run locally if you have Node/npm):
 MVP gate:
 - Do not start building `/app` pages until this step passes locally (prevents brittle auth/idempotency failures from surfacing late).
 
-### 8.0A.0d BFF route handlers (commit)
+## 8.0A.6 BFF route handlers (commit)
 
 - [ ] Implement `frontend/src/app/api/bff/*` route handlers:
   - browser -> `/api/bff/*`
@@ -139,7 +138,7 @@ MVP gate:
 - [ ] Ensure `X-GR-User-Id` uses Clerk user id, and `Idempotency-Key` is set on create.
 - [ ] Verify this subtask before commit (manual BFF route smoke check).
 
-### 8.0A.0e SEO privacy guardrails + verify script (commit)
+## 8.0A.7 SEO privacy guardrails + verify script (commit)
 
 - [ ] Add `robots.txt` disallowing `/app/`.
 - [ ] Add `X-Robots-Tag: noindex` on `/app/*` (middleware or headers).
@@ -148,9 +147,7 @@ MVP gate:
   - asserts `/app` response contains `X-Robots-Tag: noindex`
 - [ ] Verify this subtask before commit (run SEO guardrail script).
 
-## 8.0A.1 App Vertical Slice
-
-### 8.0A.1a `/app` submit flow (commit)
+## 8.0A.8 `/app` submit flow (commit)
 
 - [ ] `/app` submission page:
   - auth required (redirect to Clerk sign-in, then back)
@@ -166,7 +163,7 @@ MVP gate:
     - no auto-retry
 - [ ] Verify this subtask before commit (manual `/app` flow check).
 
-### 8.0A.1b `/app/reviews/[review_id]` results + error mapping (commit)
+## 8.0A.9 `/app/reviews/[review_id]` results + error mapping (commit)
 
 - [ ] `/app/reviews/[review_id]` results page:
   - deep link supported
@@ -180,20 +177,18 @@ MVP gate:
   - validation/snippet-too-long/no-expectations -> inline form errors
 - [ ] Verify this subtask before commit (manual deep-link + error mapping check).
 
-## 8.0A.2 Marketing + MDX (Minimum)
-
-### 8.0A.2a Marketing landing (commit)
+## 8.0A.10 Marketing landing (commit)
 
 - [ ] Marketing landing (`/`) with CTA to `/app` (auth will gate).
 - [ ] Verify this subtask before commit (manual landing route check).
 
-### 8.0A.2b Blog route + one MDX article (commit)
+## 8.0A.11 Blog route + one MDX article (commit)
 
 - [ ] Blog route (`/blog/*`) backed by MDX with one placeholder article.
 - [ ] Ensure marketing/blog are indexable while `/app/*` stays `noindex`.
 - [ ] Verify this subtask before commit (manual blog route + noindex boundary check).
 
-## 8.0A.9 Verify (Required)
+## 8.0A.12 Verify (Required)
 
 ### Verify-Local (8.0A)
 
@@ -228,5 +223,6 @@ MVP gate:
 - **v0.5** (2026-02-09): Updated accessibility skill reference to match installed `web-quality-skills` accessibility skill.
 - **v0.6** (2026-02-09): Added explicit Node/tooling preflight + local scaffold fallback, and made adapter invariants a hard gate before UI pages.
 - **v0.7** (2026-02-09): Added explicit `nvm use v22.17.0` step to the tooling preflight (when `nvm` is present).
-- **v0.8** (2026-02-09): Locked concrete MVP visual style choices and interaction principles in `8.0A.0a2`.
+- **v0.8** (2026-02-09): Locked concrete MVP visual style choices and interaction principles (now tracked as `8.0A.3` after renumbering).
 - **v0.9** (2026-02-09): Added mandatory per-subtask “verify before commit” checkpoints across remaining Phase 3 subtasks.
+- **v0.10** (2026-02-09): Renumbered Phase 3 subtasks to a strict sequential series (`8.0A.1` through `8.0A.12`) for clearer tracking.

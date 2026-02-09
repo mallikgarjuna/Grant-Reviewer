@@ -204,3 +204,7 @@
 ### 23:05 - Verification Policy Tightened (per-subtask commits)
 > User requested: enforce tests/verification for each subtask and remember for future runs.
 > Outcome: Added an always-on AGENTS rule requiring at least one targeted verification per Phase 3 subtask before commit, and updated Task 8.0A plan with explicit “verify before commit” checkpoints per remaining subtask.
+
+### 23:15 - Task 8.0A Phase 2 Plan Renumbered (strict sequence)
+> User requested strict numeric subtask IDs (instead of grouped labels like `0a`, `1b`).
+> Outcome: Renumbered Task 8.0A Phase 3 subtasks to a continuous sequence `8.0A.1` through `8.0A.12` for clearer tracking.
