@@ -489,6 +489,74 @@ def test_idempotency_payload_mismatch_returns_conflict(monkeypatch) -> None:
     assert response_two.json()["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
 
 
+def test_quota_exceeded_returns_429_with_details(monkeypatch) -> None:
+    monkeypatch.setenv("FREE_DAILY_REVIEW_LIMIT", "1")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    payload = {
+        "call_id": str(seeded_ids.call_id),
+        "node_id": str(seeded_ids.section_with_expectations_id),
+        "snippet_text": "Quota test",
+    }
+
+    first_response = post_review(
+        client=client,
+        payload=payload,
+        idempotency_key="idem-quota-1",
+    )
+    assert first_response.status_code == 200
+
+    replay_response = post_review(
+        client=client,
+        payload=payload,
+        idempotency_key="idem-quota-1",
+    )
+    assert replay_response.status_code == 200
+
+    second_new_key_response = post_review(
+        client=client,
+        payload=payload,
+        idempotency_key="idem-quota-2",
+    )
+    assert second_new_key_response.status_code == 429
+    quota_payload = second_new_key_response.json()
+    assert quota_payload["error"]["code"] == "QUOTA_EXCEEDED"
+    assert quota_payload["error"]["details"]["limit"] == 1
+    assert quota_payload["error"]["details"]["remaining"] == 0
+    assert "reset_at" in quota_payload["error"]["details"]
+
+
+def test_kill_switch_blocks_new_submissions_not_existing_reviews(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    create_response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Created before kill switch",
+        },
+        idempotency_key="idem-kill-switch-1",
+    )
+    assert create_response.status_code == 200
+    review_id = create_response.json()["review_id"]
+
+    monkeypatch.setenv("REVIEWS_ENABLED", "false")
+
+    blocked_response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Blocked by kill switch",
+        },
+        idempotency_key="idem-kill-switch-2",
+    )
+    assert blocked_response.status_code == 503
+    assert blocked_response.json()["error"]["code"] == "REVIEWS_DISABLED"
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+    assert detail_response.status_code == 200
+
+
 def test_review_not_found_for_non_owner(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     create_response = post_review(
@@ -516,11 +584,13 @@ def test_error_code_status_mapping_is_consistent() -> None:
     expected = {
         "UNAUTHORIZED": 401,
         "IDEMPOTENCY_PAYLOAD_MISMATCH": 409,
+        "QUOTA_EXCEEDED": 429,
         "CALL_NOT_FOUND": 404,
         "NODE_NOT_FOUND": 404,
         "REVIEW_NOT_FOUND": 404,
         "NO_EXPECTATIONS": 400,
         "NODE_NOT_IN_CALL": 400,
+        "REVIEWS_DISABLED": 503,
         "SNIPPET_TOO_LONG": 400,
         "VALIDATION_ERROR": 400,
         "INTERNAL_ERROR": 500,

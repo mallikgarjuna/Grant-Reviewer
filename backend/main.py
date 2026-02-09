@@ -40,15 +40,18 @@ logger = logging.getLogger(__name__)
 MAX_SNIPPET_CHARS = 10_000
 BFF_SIGNATURE_MAX_AGE_SECONDS = 300
 IDEMPOTENCY_TTL_HOURS = 24
+FREE_DAILY_REVIEW_LIMIT = 5
 
 ERROR_STATUS_BY_CODE = {
     "UNAUTHORIZED": 401,
     "IDEMPOTENCY_PAYLOAD_MISMATCH": 409,
+    "QUOTA_EXCEEDED": 429,
     "CALL_NOT_FOUND": 404,
     "NODE_NOT_FOUND": 404,
     "REVIEW_NOT_FOUND": 404,
     "NO_EXPECTATIONS": 400,
     "NODE_NOT_IN_CALL": 400,
+    "REVIEWS_DISABLED": 503,
     "SNIPPET_TOO_LONG": 400,
     "VALIDATION_ERROR": 400,
     "INTERNAL_ERROR": 500,
@@ -57,9 +60,11 @@ ERROR_STATUS_BY_CODE = {
 API_ERROR_RESPONSES = {
     401: {"model": APIErrorResponse},
     409: {"model": APIErrorResponse},
+    429: {"model": APIErrorResponse},
     400: {"model": APIErrorResponse},
     404: {"model": APIErrorResponse},
     500: {"model": APIErrorResponse},
+    503: {"model": APIErrorResponse},
 }
 
 
@@ -149,6 +154,22 @@ def _build_signature_payload(*, user_id: str, timestamp: int, body: bytes) -> st
     """Build canonical string signed by BFF."""
     body_hash = hashlib.sha256(body).hexdigest()
     return f"{user_id}.{timestamp}.{body_hash}"
+
+
+def _is_reviews_enabled() -> bool:
+    """Parse REVIEWS_ENABLED env var as bool with safe default."""
+    raw = os.getenv("REVIEWS_ENABLED", "true").strip().lower()
+    return raw not in {"0", "false", "no", "off"}
+
+
+def _get_free_daily_review_limit() -> int:
+    """Read per-user daily review limit from env."""
+    raw = os.getenv("FREE_DAILY_REVIEW_LIMIT", str(FREE_DAILY_REVIEW_LIMIT)).strip()
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        logger.warning("Invalid FREE_DAILY_REVIEW_LIMIT=%s; falling back to default", raw)
+        return FREE_DAILY_REVIEW_LIMIT
 
 
 async def require_bff_user_id(request: Request) -> str:
@@ -303,6 +324,31 @@ def create_review(
         return CreateReviewResponse(
             review_id=existing_review.id,
             status=existing_review.status,
+        )
+
+    if not _is_reviews_enabled():
+        raise APIException(
+            code="REVIEWS_DISABLED",
+            message="Reviews are temporarily disabled.",
+        )
+
+    day_start = datetime(now.year, now.month, now.day, tzinfo=UTC)
+    day_end = day_start + timedelta(days=1)
+    free_daily_limit = _get_free_daily_review_limit()
+    used_today = repository.count_reviews_for_external_user_between(
+        external_user_id=external_user_id,
+        start_time=day_start,
+        end_time=day_end,
+    )
+    if used_today >= free_daily_limit:
+        raise APIException(
+            code="QUOTA_EXCEEDED",
+            message="Daily review quota exceeded.",
+            details={
+                "limit": free_daily_limit,
+                "remaining": 0,
+                "reset_at": day_end.isoformat(),
+            },
         )
 
     if len(payload.snippet_text) > MAX_SNIPPET_CHARS:

@@ -83,22 +83,22 @@
 
 ## 8.0B.5 Quotas + Kill Switch (FastAPI)
 
-- [ ] Add env kill switch: `REVIEWS_ENABLED` (default true):
+- [x] Add env kill switch: `REVIEWS_ENABLED` (default true):
   - when false, `POST /reviews` returns `REVIEWS_DISABLED` → 503 (before LLM)
   - `GET /reviews/*` unaffected
-- [ ] Add quota enforcement (per Clerk user id, per-day, MVP default limit):
+- [x] Add quota enforcement (per Clerk user id, per-day, MVP default limit):
   - on exceed: `QUOTA_EXCEEDED` → 429 with `{limit, remaining, reset_at}`
   - quota consumed once per **new idempotency key** (not on replays)
   - failures after acceptance do not refund in v1
-- [ ] Add canonical errors:
+- [x] Add canonical errors:
   - `QUOTA_EXCEEDED` → 429
   - `REVIEWS_DISABLED` → 503
-- [ ] **Verify**: tests cover exceeded quota, replay not consuming quota, and kill switch behavior.
+- [x] **Verify**: tests cover exceeded quota, replay not consuming quota, and kill switch behavior.
 
 ## 8.0B.6 Canonical Error Mapping Invariant
 
-- [ ] Ensure FastAPI keeps a single `ERROR_STATUS_BY_CODE` mapping table and tests it (extend Task 7.0 patterns).
-- [ ] **Verify**: Next/BFF logic branches on `error.code`, not HTTP status (documented + enforced in frontend linting once present).
+- [x] Ensure FastAPI keeps a single `ERROR_STATUS_BY_CODE` mapping table and tests it (extend Task 7.0 patterns).
+- [x] **Verify**: Next/BFF logic branches on `error.code`, not HTTP status (documented + enforced in frontend linting once present).
 
 ## 8.0B.7 Frontend Enforcement (execute as 8.0A.0 scaffolding)
 

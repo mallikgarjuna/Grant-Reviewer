@@ -195,6 +195,23 @@ class ReviewRepository:
         )
         return self.session.exec(statement).first()
 
+    def count_reviews_for_external_user_between(
+        self,
+        *,
+        external_user_id: str,
+        start_time: datetime,
+        end_time: datetime,
+    ) -> int:
+        """Count reviews created for user within inclusive-exclusive window."""
+        statement = (
+            select(func.count(Review.id))
+            .where(Review.external_user_id == external_user_id)
+            .where(Review.created_at >= start_time)
+            .where(Review.created_at < end_time)
+            .where(Review.idempotency_key.is_not(None))
+        )
+        return int(self.session.exec(statement).one())
+
     def get_review_owner_external_user_id(self, review_id: UUID) -> str | None:
         """Fetch owning external user id for a review."""
         statement = (
