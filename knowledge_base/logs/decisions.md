@@ -183,3 +183,13 @@
 - **Decision**: Host Next.js on Vercel (with Clerk) and host FastAPI + Postgres on Render.
 - **Rationale**: Best-in-class DX/SEO for Next.js on Vercel, while isolating long-running LLM requests to a backend host suited for persistent services and managed databases.
 - **Status**: Approved (implementation pending).
+
+### AD 8.7: Backend BFF Contract Enforcement (8.0B)
+- **Decision**: Protected review routes require a BFF signature (`X-GR-User-Id`, `X-GR-Timestamp`, `X-GR-Signature`) and `POST /reviews` requires `Idempotency-Key`.
+- **Rationale**: Prevent direct browser abuse of review-generation endpoints, enforce ownership boundaries, and avoid duplicate LLM spend on retries.
+- **Status**: Implemented.
+
+### AD 8.8: Review Failure as Lifecycle State (not API error)
+- **Decision**: LLM call/validation/timeout failures persist `Review(status=FAILED)` and return `200` with `{review_id, status:"FAILED"}` instead of 5xx LLM errors.
+- **Rationale**: Keeps client behavior state-driven and retry-safe with idempotency while preserving observability in persisted review records.
+- **Status**: Implemented.

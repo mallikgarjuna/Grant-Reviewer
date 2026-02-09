@@ -132,3 +132,7 @@
 > - failed-state semantics for LLM/timeout paths (`200` with `status=FAILED`)
 > - daily quota + kill switch controls
 > Added walkthrough `knowledge_base/walkthroughs/walkthrough_task_8.0B_bff_contracts.md` and updated `tasks/index.md`.
+
+### 19:05 - Docs Sync After 8.0B
+> User requested: "Update KB and readme files."
+> Outcome: Updated `README.md` project status/API notes and added implementation decisions (AD 8.7, AD 8.8) in `knowledge_base/logs/decisions.md`.
