@@ -233,3 +233,7 @@
 ### 00:35 - Task 8.0A.8 Completed (`/app` submit flow)
 > User asked to complete the remaining 8.0A subtasks.
 > Outcome: Implemented `/app` submission UI (`frontend/src/app/app/page.tsx`) with call/node selectors, snippet limits, idempotent attempt reuse via `sessionStorage`, submit in-flight lock, 40s slow-request hint, and redirect to `/app/reviews/[review_id]` on success. Added client attempt helper (`frontend/src/lib/review-attempt.ts`). Verified with `cd frontend && npm run lint`.
+
+### 00:55 - Task 8.0A.9 Completed (results page + retry/error mapping)
+> User asked to continue through all remaining subtasks.
+> Outcome: Added `/app/reviews/[reviewId]` page with deep-link loading, completed/failed/pending state rendering, masked not-found handling, and error-code-first messaging (`UNAUTHORIZED`, `QUOTA_EXCEEDED`, `REVIEWS_DISABLED`, validation variants). Implemented FAILED retry path that reuses saved draft with a new idempotency key. Verified with `cd frontend && npm run lint`.

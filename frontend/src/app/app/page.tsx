@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import {
   MAX_SNIPPET_CHARS,
+  getStoredReviewAttempt,
   getOrCreateReviewAttempt,
 } from "@/lib/review-attempt";
 import type { ApiError, CallSummary, NodeSummary } from "@/lib/bff/types";
@@ -65,6 +66,16 @@ export default function AppSubmitPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const snippetCount = useMemo(() => snippetText.length, [snippetText]);
+
+  useEffect(() => {
+    const stored = getStoredReviewAttempt();
+    if (!stored) {
+      return;
+    }
+    setSelectedCallId(stored.draft.call_id);
+    setSelectedNodeId(stored.draft.node_id);
+    setSnippetText(stored.draft.snippet_text);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -345,4 +356,3 @@ export default function AppSubmitPage() {
     </main>
   );
 }
-

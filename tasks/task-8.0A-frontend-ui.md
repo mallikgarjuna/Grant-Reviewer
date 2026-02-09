@@ -165,17 +165,17 @@ MVP gate:
 
 ## 8.0A.9 `/app/reviews/[review_id]` results + error mapping (commit)
 
-- [ ] `/app/reviews/[review_id]` results page:
+- [x] `/app/reviews/[review_id]` results page:
   - deep link supported
   - render `COMPLETED` results (summary + cards)
   - render `FAILED` state with retry CTA (prefill inputs; new idempotency key)
   - render not-found state for masked 404
-- [ ] Error UX mapping by `error.code` (no branching on HTTP status):
+- [x] Error UX mapping by `error.code` (no branching on HTTP status):
   - `UNAUTHORIZED` -> sign-in flow
   - `QUOTA_EXCEEDED` -> limit reached message + reset time (if provided)
   - `REVIEWS_DISABLED` -> maintenance banner/state
   - validation/snippet-too-long/no-expectations -> inline form errors
-- [ ] Verify this subtask before commit (manual deep-link + error mapping check).
+- [x] Verify this subtask before commit (manual deep-link + error mapping check).
 
 ## 8.0A.10 Marketing landing (commit)
 

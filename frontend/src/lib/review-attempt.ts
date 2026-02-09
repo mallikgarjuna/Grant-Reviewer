@@ -125,3 +125,21 @@ export function clearReviewAttempt(): void {
   sessionStorage.removeItem(STORAGE_KEY);
 }
 
+export function getStoredReviewAttempt(): ReviewAttempt | null {
+  return parseStoredAttempt(sessionStorage.getItem(STORAGE_KEY));
+}
+
+export async function createNewReviewAttempt(
+  draft: CreateReviewDraft,
+): Promise<ReviewAttempt> {
+  const normalizedDraft = normalizeDraft(draft);
+  const payloadSha256 = await sha256Hex(stableJsonStringify(normalizedDraft));
+  const nextAttempt: ReviewAttempt = {
+    draft: normalizedDraft,
+    idempotencyKey: crypto.randomUUID(),
+    payloadSha256,
+    createdAtMs: Date.now(),
+  };
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(nextAttempt));
+  return nextAttempt;
+}
