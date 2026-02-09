@@ -164,3 +164,7 @@
 ### 20:45 - Task 8.0A Phase 0 Revised (footgun hardening)
 > User asked to incorporate additional critical feedback (idempotency edge cases, signing brittleness, adapter drift risk, SEO misconfiguration risk).
 > Outcome: Revised `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md` to persist draft + attempt metadata in `sessionStorage`, define payload normalization for hashing, require “sign exact bytes sent,” lock an in-flight submit disable policy, and add a lightweight verification guardrail for `/app/*` noindex.
+
+### 21:00 - Task 8.0A Phase 1 PRD Started (Frontend UI Slice)
+> User: "go ahead to Phase 1"
+> Outcome: Drafted `tasks/prd-8.0A-frontend-ui.md` and linked it in `tasks/index.md`.
