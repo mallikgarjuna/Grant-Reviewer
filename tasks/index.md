@@ -11,3 +11,4 @@
 | 6.0 | LLM Integration | [prd-6.0](prd-6.0-llm-integration.md) | [task-6.0](task-6.0-llm-integration.md) | [walkthrough](../knowledge_base/walkthroughs/walkthrough_task_6.0_llm_integration.md) | [x] |
 | 7.0 | FastAPI MVP | [prd-7.0](prd-7.0-fastapi-mvp.md) | [task-7.0](task-7.0-fastapi-mvp.md) | [walkthrough](../knowledge_base/walkthroughs/walkthrough_task_7.0_fastapi_mvp.md) | [x] |
 | 8.0B | Frontend Contracts | [prd-8.0B](prd-8.0B-bff-contracts.md) | [task-8.0B](task-8.0B-bff-contracts.md) | [walkthrough](../knowledge_base/walkthroughs/walkthrough_task_8.0B_bff_contracts.md) | [x] |
+| 8.1 | Lint Baseline Cleanup | - | - | - | [ ] |

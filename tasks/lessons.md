@@ -41,3 +41,8 @@
 **Issue**: Work crossed Phase boundaries (Phase 0 → 1 → 2 → 3) without a clear commit checkpoint tied to the Task ID.
 **Fix**: Create one commit after each Phase artifact is completed (Phase 0 brainstorming log, Phase 1 PRD, Phase 2 task plan, Phase 3 implementation + walkthrough).
 **Prevention**: Use commit messages that include the Task ID (and subtask ID when relevant) plus a brief description of what the phase artifact covers, e.g. `docs: [8.0] Phase 0 brainstorming - frontend UI + launch architecture`, `docs: [8.0] Phase 1 PRD - frontend MVP scope`, `docs: [8.0] Phase 2 plan - implementation tasks`, `feat: [8.0] Phase 3 - implement frontend MVP`.
+
+### L9: Don’t Let Legacy Lint Debt Block MVP
+**Issue**: Repo-wide lint checks include large pre-existing debt and can stall feature delivery.
+**Fix**: For MVP-focused work, enforce lint on changed files/touched modules and keep full debt cleanup in a dedicated follow-up task.
+**Prevention**: Treat repo-wide lint remediation as planned maintenance (separate task/phase), not as a blocker for unrelated MVP feature slices.

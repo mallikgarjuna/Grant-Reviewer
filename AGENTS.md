@@ -157,3 +157,4 @@ Guideline:
 
 - Don’t start implementation when the user is still deciding; ask for an explicit “go ahead” when it’s non-trivial.
 - Don’t skip phase gates for non-trivial features; keep artifacts (PRD/task/walkthrough) in sync with `tasks/index.md`.
+- Don’t block MVP progress on pre-existing repo-wide lint debt; enforce lint on changed files/touched modules and track full cleanup as a separate task.
