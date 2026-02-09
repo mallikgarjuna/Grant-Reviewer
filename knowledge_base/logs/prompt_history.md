@@ -176,3 +176,7 @@
 ### 21:20 - Task 8.0A Phase 2 Plan Started (Frontend UI Slice)
 > User: "go ahead to Phase 2"
 > Outcome: Created `tasks/task-8.0A-frontend-ui.md` and linked it in `tasks/index.md`.
+
+### 21:30 - Task 8.0A Phase 2 Plan Revised (commit-sized subtasks)
+> User requested incorporating critical feedback on plan size/risks and commit granularity.
+> Outcome: Revised `tasks/task-8.0A-frontend-ui.md` to lock `frontend/` location and BFF route-handler approach, split 8.0A.0 and 8.0A.1 into commit-sized subtasks, and make adapter/SEO verification steps concrete.
