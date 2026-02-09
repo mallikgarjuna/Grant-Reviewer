@@ -160,3 +160,7 @@
 ### 20:30 - Task 8.0A Phase 0 Revised (critical review closure)
 > User provided critical feedback focused on sync UX risk, idempotency key lifecycle, BFF enforcement timing, FAILED retry semantics, and SEO privacy guardrails.
 > Outcome: Revised `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md` to lock MVP decisions for idempotency key storage (`sessionStorage`), FAILED retry behavior (new key, prefilled inputs), client timeout messaging (no auto-retry), deep-link expectations, and immediate server-only env enforcement for `FASTAPI_BASE_URL`.
+
+### 20:45 - Task 8.0A Phase 0 Revised (footgun hardening)
+> User asked to incorporate additional critical feedback (idempotency edge cases, signing brittleness, adapter drift risk, SEO misconfiguration risk).
+> Outcome: Revised `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md` to persist draft + attempt metadata in `sessionStorage`, define payload normalization for hashing, require “sign exact bytes sent,” lock an in-flight submit disable policy, and add a lightweight verification guardrail for `/app/*` noindex.

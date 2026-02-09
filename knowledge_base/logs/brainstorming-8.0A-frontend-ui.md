@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 0 (Brainstorming)
-**Status**: Draft (v0.2 - Revised)
+**Status**: Draft (v0.3 - Revised)
 **Last Updated**: 2026-02-09
 
 ## Goal (MVP)
@@ -21,8 +21,9 @@ These are the “decision closures” needed before Phase 1 PRD so UI work doesn
 
 ### Idempotency key persistence (submit + refresh safety)
 
-MVP choice: persist the current submission attempt in `sessionStorage` until a new submission is started.
+MVP choice: persist the current submission attempt in `sessionStorage` (draft + attempt metadata) until a new submission is started.
 - Store:
+  - draft: `{call_id, node_id, snippet_text}`
   - `idempotency_key`
   - `payload_sha256` (hash of `{call_id,node_id,snippet_text}`)
   - `created_at_ms`
@@ -33,6 +34,16 @@ MVP choice: persist the current submission attempt in `sessionStorage` until a n
   - The user can safely resubmit; if inputs are unchanged in this browser session, the key is reused and FastAPI replay prevents duplicate spend.
 
 This is intentionally session-scoped (not long-lived); deep sharing of “draft submits” is non-goal.
+
+### Payload normalization for `payload_sha256` (avoid accidental “new attempt”)
+
+MVP choice: normalize the payload before hashing to reduce churn from trivial edits.
+- `snippet_text` normalization:
+  - normalize newlines (`\r\n` -> `\n`)
+  - trim leading/trailing whitespace
+- Hash the normalized JSON payload of `{call_id,node_id,snippet_text}`.
+
+This improves safety (fewer accidental new keys) at low complexity. The adapter owns this normalization so UI stays consistent.
 
 ### FAILED retry semantics (simple mental model)
 
@@ -47,6 +58,7 @@ MVP choice:
 - After ~40s of waiting, show a message:
   - “Still working. You can refresh safely. Don’t spam submit.”
 - Do not auto-retry. If the user clicks submit again with unchanged inputs, the stored idempotency key is reused.
+- While a submit is in-flight, keep submit disabled. After the timeout message appears, keep the button disabled and offer: “Edit inputs to start a new attempt.”
 
 ### Deep links to results
 
@@ -62,6 +74,16 @@ MVP choice:
 - `FASTAPI_BASE_URL` is server-only immediately (no `NEXT_PUBLIC_*` usage).
 - Only the adapter module can read it.
 - ESLint hard enforcement is staged, but env visibility is locked from day 1 to prevent accidental browser calls.
+
+### Signing rule (avoid brittle auth failures)
+
+MVP choice:
+- The adapter must sign the exact request bytes it sends to FastAPI.
+- Build body bytes once, then:
+  - compute signature over `sha256(body_bytes)`
+  - send those same `body_bytes` in the request
+
+This prevents “same JSON, different bytes” failures due to re-serialization differences.
 
 ## What’s Already Locked (From 8.0 / 8.0B)
 
@@ -162,6 +184,9 @@ UI should never branch on HTTP status; it should branch on a typed error:
   - `robots.txt` disallow `/app/`
   - add `X-Robots-Tag: noindex` for app routes (middleware or headers)
 
+MVP guardrail:
+- Add one explicit verification step (script/test) that asserts `/app/*` responses include `X-Robots-Tag: noindex` and `robots.txt` contains the disallow rule. Keep it lightweight (no full E2E suite yet).
+
 ## Deferred Ideas (Keep For Later)
 
 - Public sharing links with share tokens.
@@ -181,3 +206,4 @@ Phase 1 PRD 8.0A should lock:
 
 - **v0.1** (2026-02-09): Initial Phase 0 brainstorming for the 8.0A UI slice; explicitly includes deferred 8.0A.0 adapter/lint scaffolding from 8.0B.
 - **v0.2** (2026-02-09): Locked MVP decisions for idempotency key storage, FAILED retry semantics, sync-timeout messaging, deep-link behavior, and immediate server-only env enforcement for the BFF boundary.
+- **v0.3** (2026-02-09): Added draft persistence, payload normalization rules, “sign exact bytes” requirement, in-flight submit lock policy, and a lightweight SEO noindex verification guardrail.
