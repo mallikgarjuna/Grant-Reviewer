@@ -114,3 +114,7 @@
 ### 18:05 - Task 8.0B Phase 2 Plan (BFF Contracts)
 > User: "go ahead to Phase 2"
 > Outcome: Created `tasks/task-8.0B-bff-contracts.md` and linked it in `tasks/index.md`.
+
+### 18:20 - Task 8.0B Phase 2 Plan Revision (MVP simplifications)
+> User provided critical feedback on the Phase 2 plan (idempotency concurrency risk, sync latency, lint timing, timeout policy).
+> Outcome: Revised `tasks/task-8.0B-bff-contracts.md` to simplify idempotency concurrency (unique constraint + fetch-on-conflict), lock a 30s timeout budget policy, stage lint enforcement, explicitly defer `GET /quota`, and document manual-only retries.
