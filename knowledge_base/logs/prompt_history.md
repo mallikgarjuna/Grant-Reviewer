@@ -110,3 +110,7 @@
 ### 17:40 - Task 8.0B Phase 1 PRD (BFF Contracts)
 > User: "OK. Go ahead to Phase 1 and draft prd for 8.0B."
 > Outcome: Drafted `tasks/prd-8.0B-bff-contracts.md` and linked it in `tasks/index.md`.
+
+### 18:05 - Task 8.0B Phase 2 Plan (BFF Contracts)
+> User: "go ahead to Phase 2"
+> Outcome: Created `tasks/task-8.0B-bff-contracts.md` and linked it in `tasks/index.md`.
