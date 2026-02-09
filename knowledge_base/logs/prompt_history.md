@@ -156,3 +156,7 @@
 ### 20:20 - Task 8.0A Phase 0 Started (Frontend UI Slice)
 > User: "OK. Let's proceed to Phase 0 for 8.0A (also consider the deferred 8.0A tasks from 8.0B from earlier)"
 > Outcome: Created `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md` to define MVP UI slice scope and explicitly include the deferred “8.0A.0 scaffolding” (Next.js scaffold + BFF adapter + staged lint boundary).
+
+### 20:30 - Task 8.0A Phase 0 Revised (critical review closure)
+> User provided critical feedback focused on sync UX risk, idempotency key lifecycle, BFF enforcement timing, FAILED retry semantics, and SEO privacy guardrails.
+> Outcome: Revised `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md` to lock MVP decisions for idempotency key storage (`sessionStorage`), FAILED retry behavior (new key, prefilled inputs), client timeout messaging (no auto-retry), deep-link expectations, and immediate server-only env enforcement for `FASTAPI_BASE_URL`.

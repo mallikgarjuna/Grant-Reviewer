@@ -3,7 +3,7 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 0 (Brainstorming)
-**Status**: Draft (v0.1)
+**Status**: Draft (v0.2 - Revised)
 **Last Updated**: 2026-02-09
 
 ## Goal (MVP)
@@ -14,6 +14,54 @@ Ship the first usable web UI that:
 - Supports SEO discovery via marketing + MDX content, while keeping `/app/*` private and non-indexed.
 
 This task builds on contracts already implemented in 8.0B (BFF signature headers, ownership checks, required `Idempotency-Key`, quotas, kill switch, canonical errors).
+
+## MVP Decisions Locked Now (To Remove Footguns)
+
+These are the “decision closures” needed before Phase 1 PRD so UI work doesn’t drift.
+
+### Idempotency key persistence (submit + refresh safety)
+
+MVP choice: persist the current submission attempt in `sessionStorage` until a new submission is started.
+- Store:
+  - `idempotency_key`
+  - `payload_sha256` (hash of `{call_id,node_id,snippet_text}`)
+  - `created_at_ms`
+- On submit:
+  - If payload hash matches the stored hash, reuse the stored key.
+  - Otherwise generate a new key and overwrite the stored attempt.
+- On refresh/navigation:
+  - The user can safely resubmit; if inputs are unchanged in this browser session, the key is reused and FastAPI replay prevents duplicate spend.
+
+This is intentionally session-scoped (not long-lived); deep sharing of “draft submits” is non-goal.
+
+### FAILED retry semantics (simple mental model)
+
+MVP choice:
+- Retrying after `FAILED` always creates a new attempt (new `Idempotency-Key`).
+- Inputs are prefilled for convenience, but the retry is explicitly a new run.
+
+### Client timeout messaging (sync UX hardening without async infra)
+
+MVP choice:
+- Keep `POST /reviews` synchronous.
+- After ~40s of waiting, show a message:
+  - “Still working. You can refresh safely. Don’t spam submit.”
+- Do not auto-retry. If the user clicks submit again with unchanged inputs, the stored idempotency key is reused.
+
+### Deep links to results
+
+MVP choice:
+- `/app/reviews/[review_id]` must support direct entry (deep link) and render:
+  - unauthenticated -> Clerk sign-in, then redirect back
+  - authenticated but not owned -> “Not found” (404 masked by backend)
+  - authenticated and owned -> render `COMPLETED` or `FAILED` state
+
+### BFF enforcement (remove easy footguns now)
+
+MVP choice:
+- `FASTAPI_BASE_URL` is server-only immediately (no `NEXT_PUBLIC_*` usage).
+- Only the adapter module can read it.
+- ESLint hard enforcement is staged, but env visibility is locked from day 1 to prevent accidental browser calls.
 
 ## What’s Already Locked (From 8.0 / 8.0B)
 
@@ -105,7 +153,7 @@ UI should never branch on HTTP status; it should branch on a typed error:
 - Render:
   - Overall rating + summary (if present)
   - Cards list (stable order)
-  - If `FAILED`: show “Review failed” state with manual retry CTA (back to `/app` with inputs preserved if possible)
+  - If `FAILED`: show “Review failed” state with manual retry CTA (prefill inputs; retry uses a new idempotency key)
 
 ## SEO + Private App Routes (MVP)
 
@@ -132,4 +180,4 @@ Phase 1 PRD 8.0A should lock:
 ## Revision History
 
 - **v0.1** (2026-02-09): Initial Phase 0 brainstorming for the 8.0A UI slice; explicitly includes deferred 8.0A.0 adapter/lint scaffolding from 8.0B.
-
+- **v0.2** (2026-02-09): Locked MVP decisions for idempotency key storage, FAILED retry semantics, sync-timeout messaging, deep-link behavior, and immediate server-only env enforcement for the BFF boundary.
