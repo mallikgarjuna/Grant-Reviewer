@@ -172,3 +172,7 @@
 ### 21:10 - Task 8.0A Phase 1 PRD Revised (critical review closure)
 > User requested incorporating critical feedback (Clerk identity mapping, signing brittleness, idempotency storage semantics, adapter surface definition, timeout/SEO guardrails) with MVP-fast decisions.
 > Outcome: Revised `tasks/prd-8.0A-frontend-ui.md` to lock the missing decisions, define the adapter API surface, clarify tab-scoped attempt persistence, align timeout expectations, and make the SEO verification step concrete.
+
+### 21:20 - Task 8.0A Phase 2 Plan Started (Frontend UI Slice)
+> User: "go ahead to Phase 2"
+> Outcome: Created `tasks/task-8.0A-frontend-ui.md` and linked it in `tasks/index.md`.
