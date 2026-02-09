@@ -1,6 +1,6 @@
 # Task 8.0B: BFF Contracts (Phase 2 Plan)
 
-**Status**: Draft (v0.3 - Revised)  
+**Status**: [/] In Progress (v0.3 - Revised)  
 **Date**: 2026-02-08  
 **Last Updated**: 2026-02-08  
 **Phase**: Phase 2 (Task breakdown)  
@@ -33,14 +33,14 @@
 
 ## 8.0B.1 Auth Trust: BFF Signature (FastAPI)
 
-- [ ] Add `BFF_SHARED_SECRET` env var and a request verifier:
+- [x] Add `BFF_SHARED_SECRET` env var and a request verifier:
   - validates `X-GR-User-Id`, `X-GR-Timestamp`, `X-GR-Signature`
   - rejects stale timestamps (e.g., > 5 minutes)
-- [ ] Add canonical error `UNAUTHORIZED` → 401 in centralized code→status mapping.
-- [ ] Require signature + user id for:
+- [x] Add canonical error `UNAUTHORIZED` → 401 in centralized code→status mapping.
+- [x] Require signature + user id for:
   - `POST /reviews`
   - `GET /reviews/{review_id}`
-- [ ] **Verify**: tests cover missing/invalid signature paths.
+- [x] **Verify**: tests cover missing/invalid signature paths.
 
 ## 8.0B.2 Review Ownership (FastAPI)
 

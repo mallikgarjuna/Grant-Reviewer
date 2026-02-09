@@ -1,7 +1,11 @@
 """FastAPI entrypoint for Grant Reviewer backend."""
 
 from contextlib import asynccontextmanager
+import hashlib
+import hmac
 import logging
+import os
+import time
 from typing import Annotated, Any, Generator
 from uuid import UUID
 
@@ -31,8 +35,10 @@ from app.services.reviewer_service import ReviewerService
 logger = logging.getLogger(__name__)
 
 MAX_SNIPPET_CHARS = 10_000
+BFF_SIGNATURE_MAX_AGE_SECONDS = 300
 
 ERROR_STATUS_BY_CODE = {
+    "UNAUTHORIZED": 401,
     "CALL_NOT_FOUND": 404,
     "NODE_NOT_FOUND": 404,
     "REVIEW_NOT_FOUND": 404,
@@ -46,6 +52,7 @@ ERROR_STATUS_BY_CODE = {
 }
 
 API_ERROR_RESPONSES = {
+    401: {"model": APIErrorResponse},
     400: {"model": APIErrorResponse},
     404: {"model": APIErrorResponse},
     500: {"model": APIErrorResponse},
@@ -135,6 +142,61 @@ def get_repository() -> Generator[ReviewRepository, None, None]:
         session.close()
 
 
+def _build_signature_payload(*, user_id: str, timestamp: int, body: bytes) -> str:
+    """Build canonical string signed by BFF."""
+    body_hash = hashlib.sha256(body).hexdigest()
+    return f"{user_id}.{timestamp}.{body_hash}"
+
+
+async def require_bff_user_id(request: Request) -> str:
+    """Validate BFF signature headers and return external user id."""
+    user_id = request.headers.get("X-GR-User-Id")
+    timestamp_raw = request.headers.get("X-GR-Timestamp")
+    signature = request.headers.get("X-GR-Signature")
+    if not user_id or not timestamp_raw or not signature:
+        raise APIException(
+            code="UNAUTHORIZED",
+            message="Missing authentication signature headers.",
+        )
+
+    try:
+        timestamp = int(timestamp_raw)
+    except ValueError as err:
+        raise APIException(
+            code="UNAUTHORIZED",
+            message="Invalid authentication timestamp.",
+        ) from err
+
+    now = int(time.time())
+    if abs(now - timestamp) > BFF_SIGNATURE_MAX_AGE_SECONDS:
+        raise APIException(
+            code="UNAUTHORIZED",
+            message="Authentication signature has expired.",
+        )
+
+    shared_secret = os.getenv("BFF_SHARED_SECRET")
+    if not shared_secret:
+        raise APIException(
+            code="UNAUTHORIZED",
+            message="Authentication signature verification failed.",
+        )
+
+    body = await request.body()
+    payload = _build_signature_payload(user_id=user_id, timestamp=timestamp, body=body)
+    expected_signature = hmac.new(
+        shared_secret.encode("utf-8"),
+        payload.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    if not hmac.compare_digest(expected_signature, signature):
+        raise APIException(
+            code="UNAUTHORIZED",
+            message="Authentication signature verification failed.",
+        )
+
+    return user_id
+
+
 def map_review_failure_to_api_error(error: ValueError) -> APIException:
     """Translate service errors to canonical API errors."""
     message = str(error)
@@ -219,6 +281,7 @@ def list_call_nodes(call_id: UUID, repository: RepositoryDep) -> NodesResponse:
 def create_review(
     payload: CreateReviewRequest,
     repository: RepositoryDep,
+    _: Annotated[str, Depends(require_bff_user_id)],
 ) -> CreateReviewResponse:
     """Create a review synchronously."""
     if len(payload.snippet_text) > MAX_SNIPPET_CHARS:
@@ -262,7 +325,11 @@ def create_review(
     response_model=ReviewDetailResponse,
     responses=API_ERROR_RESPONSES,
 )
-def get_review(review_id: UUID, repository: RepositoryDep) -> ReviewDetailResponse:
+def get_review(
+    review_id: UUID,
+    repository: RepositoryDep,
+    _: Annotated[str, Depends(require_bff_user_id)],
+) -> ReviewDetailResponse:
     """Fetch review details and ordered cards."""
     review = repository.get_review_by_id(review_id)
     if review is None:

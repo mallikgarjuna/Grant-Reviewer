@@ -1,6 +1,10 @@
 """FastAPI endpoint tests for Task 7.0."""
 
 from dataclasses import dataclass
+import hashlib
+import hmac
+import json
+import time
 from uuid import UUID
 
 from fastapi.testclient import TestClient
@@ -24,6 +28,9 @@ from app.models.domain import (
 )
 from app.services.llm_client import StubLLMClient
 from main import ERROR_STATUS_BY_CODE, app
+
+TEST_BFF_SHARED_SECRET = "test-bff-secret"
+TEST_USER_ID = "user_test_1"
 
 
 @dataclass(frozen=True)
@@ -155,9 +162,72 @@ def seed_api_data() -> SeededIDs:
 def create_client_with_seed(monkeypatch) -> tuple[TestClient, SeededIDs]:
     """Create test client with reset DB and stub LLM mode."""
     monkeypatch.setenv("LLM_MODE", "stub")
+    monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
     reset_database()
     seeded_ids = seed_api_data()
     return TestClient(app), seeded_ids
+
+
+def build_signature_headers(
+    *,
+    body: bytes,
+    user_id: str = TEST_USER_ID,
+    timestamp: int | None = None,
+    shared_secret: str = TEST_BFF_SHARED_SECRET,
+) -> dict[str, str]:
+    """Build signed headers expected by protected API routes."""
+    signed_timestamp = int(time.time()) if timestamp is None else timestamp
+    payload = (
+        f"{user_id}.{signed_timestamp}.{hashlib.sha256(body).hexdigest()}"
+    )
+    signature = hmac.new(
+        shared_secret.encode("utf-8"),
+        payload.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    return {
+        "X-GR-User-Id": user_id,
+        "X-GR-Timestamp": str(signed_timestamp),
+        "X-GR-Signature": signature,
+    }
+
+
+def post_review(
+    *,
+    client: TestClient,
+    payload: dict[str, str],
+    user_id: str = TEST_USER_ID,
+    timestamp: int | None = None,
+    shared_secret: str = TEST_BFF_SHARED_SECRET,
+) -> object:
+    """Call POST /reviews with signed headers and explicit JSON bytes."""
+    body = json.dumps(payload).encode("utf-8")
+    headers = build_signature_headers(
+        body=body,
+        user_id=user_id,
+        timestamp=timestamp,
+        shared_secret=shared_secret,
+    )
+    headers["Content-Type"] = "application/json"
+    return client.post("/reviews", content=body, headers=headers)
+
+
+def get_review_detail(
+    *,
+    client: TestClient,
+    review_id: str,
+    user_id: str = TEST_USER_ID,
+    timestamp: int | None = None,
+    shared_secret: str = TEST_BFF_SHARED_SECRET,
+) -> object:
+    """Call GET /reviews/{id} with signed headers."""
+    headers = build_signature_headers(
+        body=b"",
+        user_id=user_id,
+        timestamp=timestamp,
+        shared_secret=shared_secret,
+    )
+    return client.get(f"/reviews/{review_id}", headers=headers)
 
 
 def test_healthcheck(monkeypatch) -> None:
@@ -188,9 +258,9 @@ def test_list_nodes_includes_has_expectations(monkeypatch) -> None:
 
 def test_create_review_success_with_stub_mode(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
-    response = client.post(
-        "/reviews",
-        json={
+    response = post_review(
+        client=client,
+        payload={
             "call_id": str(seeded_ids.call_id),
             "node_id": str(seeded_ids.section_with_expectations_id),
             "snippet_text": "Test snippet for section one.",
@@ -200,7 +270,7 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
     payload = response.json()
     assert payload["status"] == "COMPLETED"
 
-    detail_response = client.get(f"/reviews/{payload['review_id']}")
+    detail_response = get_review_detail(client=client, review_id=payload["review_id"])
     assert detail_response.status_code == 200
     detail_payload = detail_response.json()
     assert detail_payload["review"]["status"] == "COMPLETED"
@@ -210,9 +280,9 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
 
 def test_snippet_too_long_returns_domain_error(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
-    response = client.post(
-        "/reviews",
-        json={
+    response = post_review(
+        client=client,
+        payload={
             "call_id": str(seeded_ids.call_id),
             "node_id": str(seeded_ids.section_with_expectations_id),
             "snippet_text": "a" * 10_001,
@@ -226,9 +296,9 @@ def test_snippet_too_long_returns_domain_error(monkeypatch) -> None:
 
 def test_node_not_in_call_returns_domain_error(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
-    response = client.post(
-        "/reviews",
-        json={
+    response = post_review(
+        client=client,
+        payload={
             "call_id": str(seeded_ids.call_id),
             "node_id": str(seeded_ids.other_call_node_id),
             "snippet_text": "Mismatch test",
@@ -240,9 +310,9 @@ def test_node_not_in_call_returns_domain_error(monkeypatch) -> None:
 
 def test_no_expectations_returns_domain_error(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
-    response = client.post(
-        "/reviews",
-        json={
+    response = post_review(
+        client=client,
+        payload={
             "call_id": str(seeded_ids.call_id),
             "node_id": str(seeded_ids.section_without_expectations_id),
             "snippet_text": "Section without mapped criteria.",
@@ -254,9 +324,9 @@ def test_no_expectations_returns_domain_error(monkeypatch) -> None:
 
 def test_schema_validation_error_shape(monkeypatch) -> None:
     client, _ = create_client_with_seed(monkeypatch)
-    response = client.post(
-        "/reviews",
-        json={"call_id": "not-a-uuid", "node_id": "also-not-a-uuid"},
+    response = post_review(
+        client=client,
+        payload={"call_id": "not-a-uuid", "node_id": "also-not-a-uuid"},
     )
     assert response.status_code == 400
     payload = response.json()
@@ -271,9 +341,9 @@ def test_atomic_failure_creates_failed_review_with_no_cards(monkeypatch) -> None
         return "not-json"
 
     monkeypatch.setattr(StubLLMClient, "generate", invalid_generate)
-    response = client.post(
-        "/reviews",
-        json={
+    response = post_review(
+        client=client,
+        payload={
             "call_id": str(seeded_ids.call_id),
             "node_id": str(seeded_ids.section_with_expectations_id),
             "snippet_text": "Trigger invalid JSON path",
@@ -294,8 +364,38 @@ def test_atomic_failure_creates_failed_review_with_no_cards(monkeypatch) -> None
     assert len(cards) == 0
 
 
+def test_missing_signature_headers_returns_unauthorized(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = client.post(
+        "/reviews",
+        json={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "No signature",
+        },
+    )
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "UNAUTHORIZED"
+
+
+def test_invalid_signature_returns_unauthorized(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Invalid signature",
+        },
+        shared_secret="wrong-secret",
+    )
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "UNAUTHORIZED"
+
+
 def test_error_code_status_mapping_is_consistent() -> None:
     expected = {
+        "UNAUTHORIZED": 401,
         "CALL_NOT_FOUND": 404,
         "NODE_NOT_FOUND": 404,
         "REVIEW_NOT_FOUND": 404,
