@@ -136,3 +136,7 @@
 ### 19:05 - Docs Sync After 8.0B
 > User requested: "Update KB and readme files."
 > Outcome: Updated `README.md` project status/API notes and added implementation decisions (AD 8.7, AD 8.8) in `knowledge_base/logs/decisions.md`.
+
+### 19:20 - Task 8.1 Phase 0 Started (Lint Baseline Cleanup)
+> User requested creation of a new task ID and to start the gated phase workflow.
+> Outcome: Created `knowledge_base/logs/brainstorming-8.1-lint-baseline-cleanup.md`, added Task 8.1 to `tasks/index.md`, and started Phase 0 on branch `task-8.1-lint-baseline-cleanup`.
