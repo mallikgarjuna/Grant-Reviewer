@@ -107,6 +107,21 @@ Recommended local verification entrypoint (from repo root):
 bash scripts/verify_local_8_0A.sh
 ```
 
+### End-to-End Local Verification Checklist
+
+1. Start backend in one terminal:
+   - `cd backend`
+   - `LLM_MODE=stub uv run uvicorn main:app --reload`
+2. Start frontend in a second terminal:
+   - `source ~/.nvm/nvm.sh && nvm use v22.17.0`
+   - `cd frontend && npm run dev`
+3. Open `http://localhost:3000/` and confirm landing page loads.
+4. Open `http://localhost:3000/app` while signed out and confirm redirect to `/sign-in`.
+5. Sign in with email code and confirm redirect back to `/app`.
+6. Submit a review and confirm redirect to `/app/reviews/<review_id>`.
+7. Refresh `/app/reviews/<review_id>` and confirm result still renders.
+8. If a step fails, capture both terminal logs and the failing URL before retrying.
+
 Notes:
 - `/app/*` and `/api/bff/*` are Clerk-protected.
 - `/app/*` is `noindex` and disallowed in `robots.txt`; marketing + blog routes are indexable.
