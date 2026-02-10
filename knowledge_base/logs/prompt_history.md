@@ -263,3 +263,9 @@
 ### 02:10 - Repo-Specific Clerk LLM Prompt Template Added
 > User asked to use the corrected Clerk prompt for this repo and proceed.
 > Outcome: Added `knowledge_base/logs/prompt_template_clerk_nextjs_app_router.md` as the canonical reusable prompt template for Clerk + Next.js (App Router), aligned to this repo's `frontend/` layout and MVP UX constraints.
+
+### 02:20 - Local Dev Fixes Identified (Clerk middleware + MDX loader)
+> User ran `npm run dev` and hit two runtime errors:
+> 1) Clerk complained middleware was misplaced and required `./src/middleware.ts`.
+> 2) Next MDX compilation failed due to missing `@mdx-js/loader`.
+> Outcome: Updated code to place Clerk middleware at `frontend/src/middleware.ts` and added `@mdx-js/loader` to `frontend/package.json`. Dependency install must be run in a network-enabled environment.
