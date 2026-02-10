@@ -7,10 +7,12 @@ import hmac
 import json
 import logging
 import os
+from pathlib import Path
 import time
 from typing import Annotated, Any, Generator
 from uuid import UUID
 
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -36,6 +38,12 @@ from app.services.llm_client import build_llm_client
 from app.services.reviewer_service import ReviewerService
 
 logger = logging.getLogger(__name__)
+
+# Local developer convenience: load `backend/.env` when present.
+# In prod, prefer injecting env vars via the deployment environment.
+_BACKEND_ENV_PATH = Path(__file__).resolve().parent / ".env"
+if _BACKEND_ENV_PATH.is_file():
+    load_dotenv(dotenv_path=_BACKEND_ENV_PATH, override=False)
 
 MAX_SNIPPET_CHARS = 10_000
 BFF_SIGNATURE_MAX_AGE_SECONDS = 300
