@@ -259,3 +259,7 @@
 > 1) Dedicated `/sign-in` route only (no global header auth buttons).
 > 2) Marketing + blog accessible while signed out; only `/app/*` and `/api/bff/*` are protected.
 > Outcome: Treat these as locked UX constraints for remaining `8.0A.12` manual verification and any follow-on UI polish.
+
+### 02:10 - Repo-Specific Clerk LLM Prompt Template Added
+> User asked to use the corrected Clerk prompt for this repo and proceed.
+> Outcome: Added `knowledge_base/logs/prompt_template_clerk_nextjs_app_router.md` as the canonical reusable prompt template for Clerk + Next.js (App Router), aligned to this repo's `frontend/` layout and MVP UX constraints.
