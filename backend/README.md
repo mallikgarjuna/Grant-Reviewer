@@ -64,6 +64,8 @@ Notes:
 - You should see output like `Uvicorn running on http://127.0.0.1:8000` and `Application startup complete.`
 - Use a second terminal tab/window to call endpoints while the server runs.
 - Stop the server with `Ctrl+C`.
+- `main.py` auto-loads `backend/.env` when it exists (it does not override already-set environment variables).
+- If you're running the Next.js BFF frontend, set `BFF_SHARED_SECRET` in `backend/.env` to match the frontend.
 
 ### OpenAI Mode (Costs Money)
 
@@ -127,8 +129,12 @@ uv run python scripts/run_review.py  # Seeds fresh DB
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `OPENAI_API_KEY` | OpenAI API key | **Required** |
+| `BFF_SHARED_SECRET` | Shared secret for BFF signature verification | (none) |
 | `LLM_MODEL` | Model to use | `gpt-4o-mini` |
 | `LLM_MODE` | `openai` or `stub` | `openai` |
+| `REVIEWS_ENABLED` | Kill switch for new submissions | `true` |
+| `FREE_DAILY_REVIEW_LIMIT` | Free-tier per-user daily review limit | `5` |
+| `REVIEW_TIMEOUT_SECONDS` | Timeout budget for synchronous reviews | `30` |
 
 Copy `.env.example` to `.env` for local development.
 

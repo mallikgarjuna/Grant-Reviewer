@@ -22,9 +22,10 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 - ✅ End-to-end review flow verified
 - ✅ FastAPI REST endpoints (minimal MVP)
 - ✅ BFF contract hardening on backend (auth signature, ownership checks, idempotency, quotas, kill switch)
+- ✅ Next.js frontend scaffold + BFF adapter + SEO guardrails + app UI pages (Task 8.0A implementation)
 
 ### Pending
-- ⏳ Frontend UI
+- ⏳ Deployment wiring + deploy verification (Task 8.0C)
 
 ## Quick Start
 
@@ -32,6 +33,7 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 - Python 3.12+
 - [UV package manager](https://github.com/astral-sh/uv)
 - OpenAI API key
+- Node.js 22.17.0 (for `frontend/`; if using `nvm`, run `nvm use v22.17.0`)
 
 ### Setup
 
@@ -71,6 +73,58 @@ Or open API docs in your browser:
 MVP API note:
 - Protected review endpoints now require BFF-style signed headers and idempotency key (`POST /reviews`, `GET /reviews/{review_id}`).
 - See `knowledge_base/walkthroughs/walkthrough_task_8.0B_bff_contracts.md` for concrete verification examples.
+
+### Running The Frontend (Local)
+
+Prereqs:
+- A Clerk application (publishable key + secret key).
+- A shared secret for BFF signing (`BFF_SHARED_SECRET`) that matches the backend.
+
+```bash
+source ~/.nvm/nvm.sh
+nvm use v22.17.0
+
+cd frontend
+npm install
+
+cp .env.local.example .env.local
+# Edit .env.local:
+# - CLERK_SECRET_KEY
+# - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+# - FASTAPI_BASE_URL (e.g. http://127.0.0.1:8000)
+# - BFF_SHARED_SECRET (must match backend)
+
+npm run lint
+npm run check:bff
+npm run check:seo
+
+npm run dev
+```
+
+Recommended local verification entrypoint (from repo root):
+
+```bash
+bash scripts/verify_local_8_0A.sh
+```
+
+### End-to-End Local Verification Checklist
+
+1. Start backend in one terminal:
+   - `cd backend`
+   - `LLM_MODE=stub uv run uvicorn main:app --reload`
+2. Start frontend in a second terminal:
+   - `source ~/.nvm/nvm.sh && nvm use v22.17.0`
+   - `cd frontend && npm run dev`
+3. Open `http://localhost:3000/` and confirm landing page loads.
+4. Open `http://localhost:3000/app` while signed out and confirm redirect to `/sign-in`.
+5. Sign in with email code and confirm redirect back to `/app`.
+6. Submit a review and confirm redirect to `/app/reviews/<review_id>`.
+7. Refresh `/app/reviews/<review_id>` and confirm result still renders.
+8. If a step fails, capture both terminal logs and the failing URL before retrying.
+
+Notes:
+- `/app/*` and `/api/bff/*` are Clerk-protected.
+- `/app/*` is `noindex` and disallowed in `robots.txt`; marketing + blog routes are indexable.
 
 ### Running a Review Demo
 
@@ -146,7 +200,8 @@ The system uses 11 interconnected tables:
 | 6.0 | LLM Integration MVP | ✅ Complete |
 | 7.0 | FastAPI endpoints | ✅ Complete |
 | 8.0B | BFF Contracts (backend) | ✅ Complete |
-| 8.0 | Frontend UI | ⏳ Pending |
+| 8.0A | Frontend UI Slice | ✅ Complete (Verify-Local done; Verify-Deploy deferred to 8.0C) |
+| 8.0C | Deployment wiring | ⏳ Pending |
 
 See `tasks/index.md` for detailed task tracking.
 

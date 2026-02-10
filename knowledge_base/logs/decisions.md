@@ -193,3 +193,12 @@
 - **Decision**: LLM call/validation/timeout failures persist `Review(status=FAILED)` and return `200` with `{review_id, status:"FAILED"}` instead of 5xx LLM errors.
 - **Rationale**: Keeps client behavior state-driven and retry-safe with idempotency while preserving observability in persisted review records.
 - **Status**: Implemented.
+
+---
+
+## Date: 2026-02-10 (Task 8.0A Frontend UI)
+
+### AD 8.9: Auto-load `backend/.env` on API startup (Dev Convenience)
+- **Decision**: `backend/main.py` loads `backend/.env` on startup when present, without overriding already-set environment variables.
+- **Rationale**: Removes a common footgun when running `uvicorn main:app --reload` locally (especially for `BFF_SHARED_SECRET` and `OPENAI_API_KEY`), while keeping production behavior safe (deployments inject env vars; `.env` is not shipped).
+- **Status**: Implemented.
