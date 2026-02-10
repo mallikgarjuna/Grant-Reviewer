@@ -78,6 +78,10 @@ Implementation note (Clerk):
 Implementation note (MDX):
 - If using `@next/mdx`, ensure `@mdx-js/loader` is installed (required by the Next MDX loader).
 
+Implementation note (BFF signing):
+- If `Generate Review` returns `UNAUTHORIZED` / “Authentication signature verification failed”, the backend usually does **not** have `BFF_SHARED_SECRET` set (or it does not match frontend).
+  - Ensure backend is started with `BFF_SHARED_SECRET` matching `frontend/.env.local` `BFF_SHARED_SECRET`.
+
 If you hit npm home-dir permission issues in restricted environments, use a project-local cache/logs:
 
 ```bash

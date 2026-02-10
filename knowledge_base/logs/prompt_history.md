@@ -273,3 +273,8 @@
 ### 02:30 - Next Proxy Convention Applied (8.0A)
 > User saw Next dev warning: the `middleware` file convention is deprecated and to use `proxy` instead.
 > Outcome: Migrated from `frontend/src/middleware.ts` to `frontend/src/proxy.ts` and updated the repo-specific Clerk prompt template accordingly.
+
+### 02:40 - Local Dev Debug Notes (Auth Signature Failure)
+> User clicked “Generate Review” and saw: “Authentication signature verification failed.”
+> Likely cause: backend `BFF_SHARED_SECRET` not set or does not match `frontend/.env.local` `BFF_SHARED_SECRET` (backend does not auto-load `.env` for uvicorn entrypoint).
+> Next step: restart backend with explicit env vars and retry the submit flow.
