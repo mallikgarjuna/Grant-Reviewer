@@ -249,3 +249,7 @@
 ### 01:45 - Verify Prereqs Retried (Sandbox Blockers)
 > User asked to continue the remaining pending tasks now that `node` is available in the login shell.
 > Outcome: `node -v` and `npm -v` work in `zsh -lc`. Attempted `cd frontend && npm install` with project-local npm cache/logs, but registry resolution still fails (`ENOTFOUND registry.npmjs.org`). Attempted backend smoke via `uv run`, but backend deps are not installed in this sandbox (`ModuleNotFoundError: fastapi`). Manual UI happy-path verify remains a local-machine step.
+
+### 01:55 - Gitignore Pre-Commit Rule Recorded
+> User requested an always-on rule: before any commit, check `.gitignore` behavior and update it when necessary using best practices.
+> Outcome: Added an `AGENTS.md` rule to run `git status --ignored --short` before committing and prefer narrow ignore/unignore rules over force-adding files.
