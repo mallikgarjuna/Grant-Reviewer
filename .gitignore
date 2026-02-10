@@ -95,6 +95,8 @@ frontend/.env*.local
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
+frontend/.npm-cache/
+frontend/.npm-logs/
 !frontend/src/lib/
 !frontend/src/lib/**
 
