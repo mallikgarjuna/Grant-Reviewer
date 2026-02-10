@@ -14,7 +14,7 @@
 - `8.0A.4` Clerk auth wiring:
   - Clerk provider in root layout
   - Clerk middleware protecting `/app/*` and `/api/bff/*`
-  - sign-in route scaffold
+  - sign-in route scaffold (MVP: dedicated `/sign-in` route only)
 - `8.0A.5` BFF adapter core:
   - server-only env boundary for `FASTAPI_BASE_URL` and `BFF_SHARED_SECRET`
   - signed server-to-server request flow
@@ -65,6 +65,11 @@ Run locally (outside this sandbox):
 3. Configure Clerk and BFF env vars (`FASTAPI_BASE_URL`, `BFF_SHARED_SECRET`, Clerk keys)
 4. Start backend in stub mode and frontend dev server
 5. Execute manual checklist in `tasks/task-8.0A-frontend-ui.md` section `8.0A.12`
+
+MVP UX constraints (locked):
+- Marketing + blog are accessible while signed out.
+- Only `/app/*` and `/api/bff/*` require login.
+- Auth UI is via the dedicated `/sign-in` route (no global header auth buttons in MVP).
 
 If you hit npm home-dir permission issues in restricted environments, use a project-local cache/logs:
 

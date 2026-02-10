@@ -253,3 +253,9 @@
 ### 01:55 - Gitignore Pre-Commit Rule Recorded
 > User requested an always-on rule: before any commit, check `.gitignore` behavior and update it when necessary using best practices.
 > Outcome: Added an `AGENTS.md` rule to run `git status --ignored --short` before committing and prefer narrow ignore/unignore rules over force-adding files.
+
+### 02:05 - Clerk UX Decisions Locked (8.0A)
+> User selected MVP options:
+> 1) Dedicated `/sign-in` route only (no global header auth buttons).
+> 2) Marketing + blog accessible while signed out; only `/app/*` and `/api/bff/*` are protected.
+> Outcome: Treat these as locked UX constraints for remaining `8.0A.12` manual verification and any follow-on UI polish.
