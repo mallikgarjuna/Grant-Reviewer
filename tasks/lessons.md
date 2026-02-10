@@ -56,3 +56,33 @@
 **Issue**: `Grant-Reviewer.code-workspace` changes are local-user preferences and create noisy branch status.
 **Fix**: Mark it as local-only with `git update-index --skip-worktree Grant-Reviewer.code-workspace`.
 **Prevention**: Use `skip-worktree` for tracked, machine-local workspace config files unless an intentional shared update is required.
+
+### L12: Local Runtime Verification vs Codex Sandbox Verification
+**Issue**: Static checks passed in Codex, but runtime browser/server flows (`/app` auth redirects, end-to-end submit flow) could not be reliably validated inside sandbox constraints.
+**Fix**: Add a single local verification entrypoint (`scripts/verify_local_8_0A.sh`) that runs automated checks first and then prints a required manual browser checklist.
+**Prevention**: For frontend runtime features, explicitly separate "sandbox/static verification" from "local runtime verification" in task + walkthrough artifacts.
+
+### L13: Next.js 16 Clerk Route Protection Convention
+**Issue**: Using deprecated/misplaced middleware conventions caused auth-related runtime failures and confusion around route protection.
+**Fix**: Use `frontend/src/proxy.ts` with `clerkMiddleware` and explicit route matchers for `/app/*` and `/api/bff/*`.
+**Prevention**: For new Next.js versions, follow current framework conventions (`proxy.ts`) and avoid stale middleware patterns from older examples.
+
+### L14: Backend `.env` Loading for Local Uvicorn
+**Issue**: Running `uvicorn main:app --reload` did not automatically load `backend/.env`, causing missing secret/config errors (notably `BFF_SHARED_SECRET`).
+**Fix**: Load `backend/.env` from `backend/main.py` using `load_dotenv(..., override=False)`.
+**Prevention**: Ensure local entrypoints load expected env files safely, while preserving production precedence for injected environment variables.
+
+### L15: Shared Secret Alignment Across Frontend and Backend
+**Issue**: `Generate Review` failed with signature verification errors when frontend and backend had mismatched or missing `BFF_SHARED_SECRET`.
+**Fix**: Document and enforce a single shared secret value in both `frontend/.env.local` and `backend/.env`.
+**Prevention**: Treat cross-service secrets as paired configuration and verify alignment early in local setup.
+
+### L16: Merge-and-Tag Milestone Before New Major Task
+**Issue**: Starting a new major task from an unmerged feature branch increases drift, complicates rollback, and weakens task boundaries.
+**Fix**: Merge completed task branch into `main`, tag milestone, then branch the next major task from updated `main`.
+**Prevention**: Use a consistent "finish -> merge -> tag -> new branch" lifecycle for every major task (especially with a remote repo).
+
+### L17: Pre-Commit Ignore Safety Check
+**Issue**: Secret-bearing files (`.env`, local caches, generated output) can be accidentally staged during fast iteration.
+**Fix**: Run `git status --ignored --short` before each commit and adjust `.gitignore` with narrow rules if needed.
+**Prevention**: Make ignored-file review a mandatory pre-commit gate, and never force-add secrets.
