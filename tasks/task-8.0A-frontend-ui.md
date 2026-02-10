@@ -3,8 +3,8 @@
 **Date**: 2026-02-09
 **Task ID**: 8.0A
 **Pipeline Phase**: Phase 2 (Task breakdown)
-**Status**: In Progress (v0.11 - Phase 3 implementation complete; manual verify pending)
-**Last Updated**: 2026-02-09
+**Status**: Completed (v1.0 - Verify-Local complete; Verify-Deploy deferred to 8.0C)
+**Last Updated**: 2026-02-10
 **PRD**: `tasks/prd-8.0A-frontend-ui.md`
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0A-frontend-ui.md`
 
@@ -190,9 +190,16 @@ MVP gate:
 
 ## 8.0A.12 Verify (Required)
 
+Verification purpose (explicit):
+- We use a local verification script because Codex sandbox checks are reliable for static checks, but not for long-running web-server runtime flows (`next dev`, browser redirects, sign-in UX).
+- The script separates:
+  - automated contract/lint checks (repeatable and fast)
+  - manual browser UX checks (auth redirect and end-to-end app behavior)
+
 ### Verify-Local (8.0A)
 
-- [ ] Manual happy-path (stub mode backend):
+- [x] Run `scripts/verify_local_8_0A.sh` and save the output in your PR/notes.
+- [x] Manual happy-path (stub mode backend):
   - load `/app` -> submit -> results
   - refresh and resubmit unchanged draft -> reuse idempotency key (no duplicate spend)
   - FAILED retry -> new key
@@ -204,7 +211,11 @@ MVP gate:
 
 ### Verify-Deploy (defer to 8.0C)
 
-- [ ] Confirm same behaviors on deployed environment (auth redirects, noindex headers, BFF-to-FastAPI wiring).
+- [x] Deferred to Task `8.0C`: confirm same behaviors on deployed environment (auth redirects, noindex headers, BFF-to-FastAPI wiring).
+
+Closure note:
+- `8.0A` is closed based on completed Verify-Local and user-run manual browser verification in local environment.
+- Verify-Deploy remains explicitly deferred to Task `8.0C` and is not a blocker for closing `8.0A`.
 
 ## Non-Scope Ideas (Backlog)
 
@@ -227,3 +238,6 @@ MVP gate:
 - **v0.9** (2026-02-09): Added mandatory per-subtask “verify before commit” checkpoints across remaining Phase 3 subtasks.
 - **v0.10** (2026-02-09): Renumbered Phase 3 subtasks to a strict sequential series (`8.0A.1` through `8.0A.12`) for clearer tracking.
 - **v0.11** (2026-02-10): Phase 3 subtasks `8.0A.4` through `8.0A.11` implemented and committed; local verification scripts passed (`check:bff`, `check:seo`, `lint`); manual happy-path verification remains pending local dependency installation.
+- **v0.12** (2026-02-10): Added `scripts/verify_local_8_0A.sh` and explicit verification-purpose guidance to separate sandbox-static checks from local runtime/browser verification.
+- **v1.0** (2026-02-10): Marked Verify-Local complete (script + manual browser checklist) and closed Task `8.0A`; Verify-Deploy remains deferred to `8.0C`.
+- **v1.1** (2026-02-10): Marked Verify-Deploy item as explicitly deferred-and-tracked in `8.0C` so `8.0A.12` checklist is fully closed without ambiguity.

@@ -40,6 +40,12 @@ npm run check:bff
 npm run check:seo
 ```
 
+End-to-end local verification (including manual browser checklist) is orchestrated from repo root:
+
+```bash
+bash scripts/verify_local_8_0A.sh
+```
+
 Notes:
 - `check:bff` validates payload normalization + signing invariants.
 - `check:seo` validates `/app/*` noindex + robots disallow guardrails (static check by default).

@@ -3,7 +3,7 @@
 **Date**: 2026-02-10  
 **Task ID**: 8.0A  
 **Pipeline Phase**: Phase 3 (Implementation + Verify)  
-**Status**: In Progress (v0.1 - Implementation complete, manual verify pending)
+**Status**: Completed (v1.0 - Verify-Local complete; Verify-Deploy deferred to 8.0C)
 **Related PRD**: `tasks/prd-8.0A-frontend-ui.md`  
 **Related Task Plan**: `tasks/task-8.0A-frontend-ui.md`
 
@@ -50,21 +50,34 @@ From `frontend/` with Node `v22.17.0`:
 - `npm run check:seo` -> pass (static mode)
 - `npm run lint` -> pass
 
-## Verification gaps / blockers
+## Verification completion
 
-- Full manual UI happy-path (`/app` submit -> `/app/reviews/[id]`) was **not** executed in this Codex sandbox.
-  - Reason: npm registry access is blocked here (`ENOTFOUND registry.npmjs.org`), so frontend dependencies cannot be installed in this environment.
-- Backend smoke verification could not be executed in this sandbox because backend dependencies are not installed (`ModuleNotFoundError: fastapi`), and dependency installation requires network access.
+- Automated checks were run locally from `frontend/` and passed:
+  - `npm run check:bff`
+  - `npm run check:seo`
+  - `npm run lint`
+- Manual browser checklist for `8.0A.12` was completed locally:
+  - open `/app` while signed out -> redirect to sign-in
+  - sign in and submit review flow from `/app`
+  - deep-link `/app/reviews/[review_id]` after auth
+- Deploy-environment verification remains intentionally deferred to Task `8.0C`.
 
-## Local follow-up to finalize Verify-Local
+## Why local verification script exists
+
+- Codex sandbox is reliable for static checks (`lint`, invariant scripts) but not for runtime browser/E2E flows (port binding, auth redirects, full `/app` journey).
+- To make verification repeatable and explicit, use a single local command that runs automated checks first and then prints the required manual browser checklist.
+- Script: `scripts/verify_local_8_0A.sh`
+
+## Local follow-up for Verify-Deploy (8.0C)
 
 Run locally (outside this sandbox):
 
 1. `source ~/.nvm/nvm.sh && nvm use v22.17.0`
 2. `cd frontend && npm install`
 3. Configure Clerk and BFF env vars (`FASTAPI_BASE_URL`, `BFF_SHARED_SECRET`, Clerk keys)
-4. Start backend in stub mode and frontend dev server
-5. Execute manual checklist in `tasks/task-8.0A-frontend-ui.md` section `8.0A.12`
+4. Validate `/app` and `/api/bff/*` behavior on deployed frontend/backend
+5. Confirm `X-Robots-Tag: noindex` still applies to `/app/*` in deployment
+6. Record deployment verification results under Task `8.0C`
 
 MVP UX constraints (locked):
 - Marketing + blog are accessible while signed out.
@@ -93,3 +106,5 @@ NPM_CONFIG_CACHE=$PWD/.npm-cache NPM_CONFIG_LOGS_DIR=$PWD/.npm-logs npm install
 ## Revision History
 
 - **v0.1** (2026-02-10): Initial implementation walkthrough with executed verification commands and explicit remaining manual verification items.
+- **v0.2** (2026-02-10): Added explicit rationale for local verification vs sandbox verification and documented `scripts/verify_local_8_0A.sh` as the standard verification entrypoint.
+- **v1.0** (2026-02-10): Marked local automated and manual verification complete, set walkthrough status to completed, and moved deployment checks to Task `8.0C`.

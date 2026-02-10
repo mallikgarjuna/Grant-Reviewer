@@ -278,3 +278,7 @@
 > User clicked “Generate Review” and saw: “Authentication signature verification failed.”
 > Likely cause: backend `BFF_SHARED_SECRET` not set or does not match `frontend/.env.local` `BFF_SHARED_SECRET` (backend does not auto-load `.env` for uvicorn entrypoint).
 > Next step: restart backend with explicit env vars and retry the submit flow.
+
+### 18:55 - Local `/app` auth flow hardened (no crash, no manual path guessing)
+> User reported repeated local `/app` crashes and requested a hard fix.
+> Outcome: Updated `frontend/src/proxy.ts` to (1) redirect unauthenticated `/app/*` requests to local `/sign-in` with `redirect_url`, (2) return a clear JSON error for `/api/bff/*` when Clerk env is missing/placeholder, and (3) avoid depending on hosted Clerk redirect paths for local navigation. Updated `frontend/src/app/sign-in/[[...sign-in]]/page.tsx` to show a clear config-error UI (`auth_config_error=1`) and enforce safe local post-sign-in redirects.

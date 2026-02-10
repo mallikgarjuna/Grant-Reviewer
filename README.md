@@ -25,8 +25,7 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 - ✅ Next.js frontend scaffold + BFF adapter + SEO guardrails + app UI pages (Task 8.0A implementation)
 
 ### Pending
-- ⏳ Frontend manual verify + local env wiring (Clerk + secrets)
-- ⏳ Deployment wiring (Task 8.0C)
+- ⏳ Deployment wiring + deploy verification (Task 8.0C)
 
 ## Quick Start
 
@@ -100,6 +99,12 @@ npm run check:bff
 npm run check:seo
 
 npm run dev
+```
+
+Recommended local verification entrypoint (from repo root):
+
+```bash
+bash scripts/verify_local_8_0A.sh
 ```
 
 Notes:
@@ -180,7 +185,7 @@ The system uses 11 interconnected tables:
 | 6.0 | LLM Integration MVP | ✅ Complete |
 | 7.0 | FastAPI endpoints | ✅ Complete |
 | 8.0B | BFF Contracts (backend) | ✅ Complete |
-| 8.0A | Frontend UI Slice | 🟡 Implemented (manual verify pending) |
+| 8.0A | Frontend UI Slice | ✅ Complete (Verify-Local done; Verify-Deploy deferred to 8.0C) |
 | 8.0C | Deployment wiring | ⏳ Pending |
 
 See `tasks/index.md` for detailed task tracking.
