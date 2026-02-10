@@ -269,3 +269,7 @@
 > 1) Clerk complained middleware was misplaced and required `./src/middleware.ts`.
 > 2) Next MDX compilation failed due to missing `@mdx-js/loader`.
 > Outcome: Updated code to place Clerk middleware at `frontend/src/middleware.ts` and added `@mdx-js/loader` to `frontend/package.json`. Dependency install must be run in a network-enabled environment.
+
+### 02:30 - Next Proxy Convention Applied (8.0A)
+> User saw Next dev warning: the `middleware` file convention is deprecated and to use `proxy` instead.
+> Outcome: Migrated from `frontend/src/middleware.ts` to `frontend/src/proxy.ts` and updated the repo-specific Clerk prompt template accordingly.

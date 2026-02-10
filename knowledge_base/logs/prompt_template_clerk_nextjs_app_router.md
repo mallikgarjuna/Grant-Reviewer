@@ -8,8 +8,8 @@ Use this prompt when asking an LLM to help with Clerk integration for this repo.
 
 ## Notes (repo-specific)
 
-- Next.js only runs middleware from a file named `middleware.ts` (or `src/middleware.ts` if the project root is `src/`).
-  - For this repo: `frontend/src/middleware.ts`.
+- Next.js (current) prefers the `proxy.ts` convention over `middleware.ts`.
+  - For this repo: `frontend/src/proxy.ts`.
 - MVP UX decisions (locked):
   - Dedicated `/sign-in` route only (no global header auth buttons).
   - Marketing (`/`) and blog (`/blog/*`) are public.
@@ -24,7 +24,7 @@ Use this prompt when asking an LLM to help with Clerk integration for this repo.
 Integrate Clerk into this Next.js App Router app located in `frontend/` with App Router under `frontend/src/app`.
 
 Hard requirements:
-- Use Next.js middleware at `frontend/src/middleware.ts` (NOT proxy.ts). Next.js only runs middleware from `middleware.ts`.
+- Use Next.js proxy at `frontend/src/proxy.ts` (NOT middleware.ts).
 - Protect ONLY:
   - `/app/*`
   - `/api/bff/*`

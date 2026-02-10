@@ -72,8 +72,8 @@ MVP UX constraints (locked):
 - Auth UI is via the dedicated `/sign-in` route (no global header auth buttons in MVP).
 
 Implementation note (Clerk):
-- When using a `src/` directory layout, Clerk expects Next middleware at `src/middleware.ts`.
-  - For this repo: `frontend/src/middleware.ts`.
+- Next.js (current) prefers the `proxy.ts` convention over `middleware.ts`.
+  - For this repo: `frontend/src/proxy.ts`.
 
 Implementation note (MDX):
 - If using `@next/mdx`, ensure `@mdx-js/loader` is installed (required by the Next MDX loader).
