@@ -1,12 +1,67 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-const isProtectedRoute = createRouteMatcher(["/app(.*)", "/api/bff(.*)"]);
+const isAppRoute = createRouteMatcher(["/app(.*)"]);
+const isBffApiRoute = createRouteMatcher(["/api/bff(.*)"]);
 
-export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
+function buildReturnBackPath(req: NextRequest): string {
+  const path = `${req.nextUrl.pathname}${req.nextUrl.search}`;
+  return path.startsWith("//") ? "/app" : path;
+}
+
+function hasMissingClerkEnv(): boolean {
+  const publishable = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim();
+  const secret = process.env.CLERK_SECRET_KEY?.trim();
+  if (!publishable || !secret) {
+    return true;
+  }
+  return publishable.includes("REPLACE_ME") || secret.includes("REPLACE_ME");
+}
+
+const clerkProxy = clerkMiddleware(async (auth, req) => {
+  if (isBffApiRoute(req)) {
     await auth.protect();
+    return;
+  }
+
+  if (isAppRoute(req)) {
+    const { userId } = await auth();
+    if (!userId) {
+      const signInUrl = new URL("/sign-in", req.url);
+      signInUrl.searchParams.set("redirect_url", buildReturnBackPath(req));
+      return NextResponse.redirect(signInUrl);
+    }
   }
 });
+
+export default function proxy(req: NextRequest, event: NextFetchEvent) {
+  if (hasMissingClerkEnv()) {
+    if (isAppRoute(req)) {
+      const signInUrl = new URL("/sign-in", req.url);
+      signInUrl.searchParams.set("auth_config_error", "1");
+      signInUrl.searchParams.set("redirect_url", buildReturnBackPath(req));
+      return NextResponse.redirect(signInUrl);
+    }
+    if (isBffApiRoute(req)) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "INTERNAL_ERROR",
+            message: "Authentication is not configured.",
+            details: {
+              missing:
+                "Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY in frontend/.env.local.",
+            },
+          },
+        },
+        { status: 500 },
+      );
+    }
+  }
+
+  return clerkProxy(req, event);
+}
 
 export const config = {
   matcher: [
@@ -14,4 +69,3 @@ export const config = {
     "/(api|trpc)(.*)",
   ],
 };
-

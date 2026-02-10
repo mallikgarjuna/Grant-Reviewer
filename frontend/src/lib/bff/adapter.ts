@@ -102,7 +102,24 @@ async function requestFastApi<T>(
   options: FastApiRequestOptions,
 ): Promise<Result<T>> {
   const bodyText = options.bodyText ?? "";
-  const signedHeaders = buildSignedHeaders(options.context, bodyText);
+  let signedHeaders: Record<string, string>;
+  let fastApiBaseUrl: string;
+  try {
+    signedHeaders = buildSignedHeaders(options.context, bodyText);
+    fastApiBaseUrl = getFastApiBaseUrl();
+  } catch (error) {
+    return {
+      ok: false,
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Backend gateway is not configured correctly.",
+        details: {
+          cause: error instanceof Error ? error.message : "unknown",
+        },
+        status: 500,
+      },
+    };
+  }
 
   const headers: Record<string, string> = {
     Accept: "application/json",
@@ -117,7 +134,7 @@ async function requestFastApi<T>(
 
   let response: Response;
   try {
-    response = await fetch(`${getFastApiBaseUrl()}${options.path}`, {
+    response = await fetch(`${fastApiBaseUrl}${options.path}`, {
       method: options.method,
       headers,
       body: options.method === "POST" ? bodyText : undefined,
