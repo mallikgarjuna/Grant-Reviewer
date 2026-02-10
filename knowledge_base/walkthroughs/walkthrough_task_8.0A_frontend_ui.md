@@ -53,8 +53,8 @@ From `frontend/` with Node `v22.17.0`:
 ## Verification gaps / blockers
 
 - Full manual UI happy-path (`/app` submit -> `/app/reviews/[id]`) was **not** executed in this Codex sandbox.
-  - Reason: npm registry access is blocked here (`ENOTFOUND registry.npmjs.org`), so new frontend dependencies cannot be installed in this environment.
-- Backend smoke command using `uv` from this sandbox also hit a cache permission restriction outside writable roots.
+  - Reason: npm registry access is blocked here (`ENOTFOUND registry.npmjs.org`), so frontend dependencies cannot be installed in this environment.
+- Backend smoke verification could not be executed in this sandbox because backend dependencies are not installed (`ModuleNotFoundError: fastapi`), and dependency installation requires network access.
 
 ## Local follow-up to finalize Verify-Local
 
@@ -65,6 +65,14 @@ Run locally (outside this sandbox):
 3. Configure Clerk and BFF env vars (`FASTAPI_BASE_URL`, `BFF_SHARED_SECRET`, Clerk keys)
 4. Start backend in stub mode and frontend dev server
 5. Execute manual checklist in `tasks/task-8.0A-frontend-ui.md` section `8.0A.12`
+
+If you hit npm home-dir permission issues in restricted environments, use a project-local cache/logs:
+
+```bash
+cd frontend
+mkdir -p .npm-cache .npm-logs
+NPM_CONFIG_CACHE=$PWD/.npm-cache NPM_CONFIG_LOGS_DIR=$PWD/.npm-logs npm install
+```
 
 ## Revision History
 

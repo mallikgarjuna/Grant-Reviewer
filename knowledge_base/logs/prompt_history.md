@@ -245,3 +245,7 @@
 ### 01:30 - Task 8.0A.12 Verification + Walkthrough Sync
 > User asked to complete the rest of Task 8.0A.
 > Outcome: Ran local verification scripts (`npm run check:bff`, `npm run check:seo`, `npm run lint`), created walkthrough `knowledge_base/walkthroughs/walkthrough_task_8.0A_frontend_ui.md`, and updated task/index status. Remaining gap is manual end-to-end `/app` happy-path verification in a local environment with full npm package installation.
+
+### 01:45 - Verify Prereqs Retried (Sandbox Blockers)
+> User asked to continue the remaining pending tasks now that `node` is available in the login shell.
+> Outcome: `node -v` and `npm -v` work in `zsh -lc`. Attempted `cd frontend && npm install` with project-local npm cache/logs, but registry resolution still fails (`ENOTFOUND registry.npmjs.org`). Attempted backend smoke via `uv run`, but backend deps are not installed in this sandbox (`ModuleNotFoundError: fastapi`). Manual UI happy-path verify remains a local-machine step.
