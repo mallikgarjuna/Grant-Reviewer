@@ -72,7 +72,7 @@ Or open API docs in your browser:
 
 MVP API note:
 - Protected review endpoints now require BFF-style signed headers and idempotency key (`POST /reviews`, `GET /reviews/{review_id}`).
-- See `knowledge_base/walkthroughs/walkthrough_task_8.0B_bff_contracts.md` for concrete verification examples.
+- See `docs/walkthroughs/walkthrough_task_8.0B_bff_contracts.md` for concrete verification examples.
 
 ### Running The Frontend (Local)
 
@@ -169,8 +169,7 @@ Grant-Reviewer/
 │   │   └── db.py            # Database connection
 │   ├── scripts/             # CLI utilities
 │   └── data/calls/          # YAML call definitions
-├── knowledge_base/          # Project documentation
-└── tasks/                   # Task tracking
+└── docs/                    # Project docs + task tracking
 ```
 
 ## Domain Model
@@ -201,9 +200,9 @@ The system uses 11 interconnected tables:
 | 7.0 | FastAPI endpoints | ✅ Complete |
 | 8.0B | BFF Contracts (backend) | ✅ Complete |
 | 8.0A | Frontend UI Slice | ✅ Complete (Verify-Local done; Verify-Deploy deferred to 8.0C) |
-| 8.0C | Deployment wiring | ⏳ Pending |
+| 8.0C | Deployment wiring | ✅ Complete |
 
-See `tasks/index.md` for detailed task tracking.
+See `docs/index.md` for detailed task tracking.
 
 ## Contributing
 
