@@ -156,10 +156,10 @@ Goal: ensure Vercel runtime settings won’t prematurely time out review creatio
 
 Run deploy verification in two stages:
 
-- [ ] Stage 1 (stub): `LLM_MODE=stub`
+- [x] Stage 1 (stub): `LLM_MODE=stub`
   - [x] `/api/bff/calls` returns at least 1 call (seed completed)
   - [x] End-to-end submit works via `/api/bff/reviews`
-  - [ ] Unsigned direct calls to FastAPI protected endpoints fail (verify with `curl` on `GET /reviews/{review_id}` without headers)
+  - [x] Unsigned direct calls to FastAPI protected endpoints fail (`401 UNAUTHORIZED` without signature headers)
 - [ ] Stage 2 (openai): `LLM_MODE=openai`
   - [ ] One real end-to-end review completes within the timeout budget
 
@@ -200,8 +200,8 @@ Goal: prove end-to-end deployed wiring with minimal cost/latency noise.
 - [x] Verify deployed frontend/BFF:
   - [x] `/api/bff/calls` returns at least one call
   - [x] one end-to-end submit via `/api/bff/reviews` succeeds with `LLM_MODE=stub`
-  - [ ] unsigned direct calls to protected FastAPI endpoints fail (verify with `curl` on `GET /reviews/{review_id}` without headers)
-- [ ] Record exact URLs + env toggles + outcomes in walkthrough.
+  - [x] unsigned direct calls to protected FastAPI endpoints fail (`401 UNAUTHORIZED` without signature headers)
+- [x] Record exact URLs + env toggles + outcomes in walkthrough.
 
 ---
 

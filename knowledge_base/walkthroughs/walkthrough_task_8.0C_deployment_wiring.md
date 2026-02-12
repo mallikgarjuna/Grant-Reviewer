@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
-**Status**: In Progress (v0.3 - deployed stub flow verified; Stage 2 pending)  
+**Status**: In Progress (v0.4 - Stage 1 complete; Stage 2 pending)  
 
 ## Scope Completed In This Pass
 
@@ -89,10 +89,11 @@ Verification:
 
 - Vercel app submitted one review successfully in `LLM_MODE=stub`.
 - Example review id: `a2c1ecb1-2e3f-4f94-8fb7-45f71c0cc32a` (UI showed “Review completed with 2 findings.”)
+- Unsigned direct backend access fails as expected:
+  - `curl -i https://grant-reviewer.onrender.com/reviews/a2c1ecb1-2e3f-4f94-8fb7-45f71c0cc32a` → `401 UNAUTHORIZED` (`Missing authentication signature headers.`)
 
 ## Remaining Open Subtasks
 
-- Direct-call protection verification: confirm unsigned `GET /reviews/{review_id}` fails with `401` (example command: `curl -i https://grant-reviewer.onrender.com/reviews/a2c1ecb1-2e3f-4f94-8fb7-45f71c0cc32a`).
 - `8.0C.8` Deploy execution Stage 2 (`LLM_MODE=openai` one-shot real review verification).
 
 ## Revision History
@@ -100,3 +101,4 @@ Verification:
 - **v0.1** (2026-02-12): Initial Phase 3 walkthrough with completed local implementation/verification and explicit deploy-only remaining steps.
 - **v0.2** (2026-02-12): Added `8.0C.6` readiness hardening outcomes, including explicit `503` failure semantics and targeted/full API verification results.
 - **v0.3** (2026-02-12): Recorded deployed wiring (Vercel + Clerk, Render FastAPI, Neon direct Postgres) and Stage 1 stub end-to-end verification results; Stage 2 remains pending.
+- **v0.4** (2026-02-12): Added explicit verification that unsigned `GET /reviews/{review_id}` returns `401 UNAUTHORIZED` (BFF boundary holds).

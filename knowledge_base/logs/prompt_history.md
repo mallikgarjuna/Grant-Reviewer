@@ -322,3 +322,7 @@
 ### 16:40 - 8.0C Deploy Wiring Verified (Stub)
 > User completed provider wiring and deploy verification in `LLM_MODE=stub`.
 > Outcome: Render FastAPI (`/health`, `/health/db`) connects to Neon Postgres (direct URL; avoid pooler + channel binding for MVP stability). Vercel + Clerk gating works and end-to-end submit via `/api/bff/reviews` succeeds with stub findings. Bootstrap was executed from a developer machine against the deployed Neon database because Render free instances do not support shell access.
+
+### 18:07 - 8.0C Stage 1 Security Check Confirmed
+> User verified that direct, unsigned access to protected backend endpoints fails.
+> Outcome: `GET /reviews/{review_id}` without signature headers returns `401 UNAUTHORIZED`, confirming the BFF boundary is enforced in production.
