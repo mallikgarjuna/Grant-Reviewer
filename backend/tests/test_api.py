@@ -10,7 +10,7 @@ from uuid import UUID
 from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, select
 
-from app.db import engine, get_session
+from app.db import engine, get_session, normalize_database_url
 from app.models.domain import (
     EvaluationCriterion,
     EvaluationElement,
@@ -240,6 +240,20 @@ def test_healthcheck(monkeypatch) -> None:
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"ok": True}
+
+
+def test_healthcheck_db(monkeypatch) -> None:
+    client, _ = create_client_with_seed(monkeypatch)
+    response = client.get("/health/db")
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
+
+
+def test_normalize_database_url_for_render_postgres() -> None:
+    normalized = normalize_database_url("postgres://u:p@db.example.com:5432/grant_db")
+    assert normalized.startswith("postgresql+psycopg://")
+    assert "sslmode=require" in normalized
+    assert "connect_timeout=3" in normalized
 
 
 def test_list_calls_returns_active_calls(monkeypatch) -> None:
