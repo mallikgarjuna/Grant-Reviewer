@@ -290,3 +290,7 @@
 ### 20:25 - 8.0C Brainstorming Revised (MVP decisions locked)
 > User requested a senior critical review and then asked to revise the brainstorming doc by deciding the MVP-fast defaults.
 > Outcome: Revised `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md` to (1) elevate Vercel timeout alignment as a first-class risk, (2) lock MVP defaults (Vercel+Render, prod-only, backend stays on provider URL, no Alembic yet, manual seed runbook, public `/docs`, CORS disabled), and (3) add a recommended execution sequencing to keep “deployment wiring” shippable.
+
+### 20:35 - Phase 1 PRD Started (8.0C Deployment Wiring)
+> User approved moving from Phase 0 to Phase 1.
+> Outcome: Created `tasks/prd-8.0C-deployment-wiring.md` and linked Task 8.0C in `tasks/index.md`.
