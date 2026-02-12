@@ -130,12 +130,13 @@ Implementation options (pick the simplest that works on Render):
 
 Goal: ensure Vercel runtime settings won’t prematurely time out review creation.
 
-- [ ] Update `frontend/src/app/api/bff/reviews/route.ts`:
-  - [ ] `export const runtime = "nodejs"`
-  - [ ] `export const maxDuration = 60`
+- [x] Update `frontend/src/app/api/bff/reviews/route.ts`:
+  - [x] `export const runtime = "nodejs"`
+  - [x] `export const maxDuration = 60`
 
 **Verify (local)**
-- [ ] `scripts/verify_local_8_0A.sh` (frontend static checks + backend stub smoke)
+- [x] `npm run check:bff` (adapter/BFF invariants).
+- [ ] `scripts/verify_local_8_0A.sh` full pass (still needed outside sandbox; backend smoke hangs in this environment).
 
 ---
 
