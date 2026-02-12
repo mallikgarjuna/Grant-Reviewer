@@ -282,3 +282,11 @@
 ### 18:55 - Local `/app` auth flow hardened (no crash, no manual path guessing)
 > User reported repeated local `/app` crashes and requested a hard fix.
 > Outcome: Updated `frontend/src/proxy.ts` to (1) redirect unauthenticated `/app/*` requests to local `/sign-in` with `redirect_url`, (2) return a clear JSON error for `/api/bff/*` when Clerk env is missing/placeholder, and (3) avoid depending on hosted Clerk redirect paths for local navigation. Updated `frontend/src/app/sign-in/[[...sign-in]]/page.tsx` to show a clear config-error UI (`auth_config_error=1`) and enforce safe local post-sign-in redirects.
+
+### 20:17 - Phase 0 Brainstorming Started (8.0C Deployment Wiring)
+> User asked to start Task 8.0C at Phase 0 (deployment wiring: Vercel/Clerk/BFF + FastAPI + managed Postgres + secrets/domains/CORS/health checks).
+> Outcome: Created `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md` with critical gaps/risks, clarification questions, tentative MVP decisions, env mapping, explicit local-vs-deploy verification split, non-scope backlog, and Phase 1 PRD readiness criteria.
+
+### 20:25 - 8.0C Brainstorming Revised (MVP decisions locked)
+> User requested a senior critical review and then asked to revise the brainstorming doc by deciding the MVP-fast defaults.
+> Outcome: Revised `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md` to (1) elevate Vercel timeout alignment as a first-class risk, (2) lock MVP defaults (Vercel+Render, prod-only, backend stays on provider URL, no Alembic yet, manual seed runbook, public `/docs`, CORS disabled), and (3) add a recommended execution sequencing to keep “deployment wiring” shippable.
