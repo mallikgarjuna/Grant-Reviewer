@@ -4,8 +4,8 @@
 **Task ID**: 8.0A  
 **Pipeline Phase**: Phase 3 (Implementation + Verify)  
 **Status**: Completed (v1.0 - Verify-Local complete; Verify-Deploy deferred to 8.0C)
-**Related PRD**: `tasks/prd-8.0A-frontend-ui.md`  
-**Related Task Plan**: `tasks/task-8.0A-frontend-ui.md`
+**Related PRD**: `docs/tasks/completed/prd-8.0A-frontend-ui.md`  
+**Related Task Plan**: `docs/tasks/completed/task-8.0A-frontend-ui.md`
 
 ---
 
@@ -36,7 +36,7 @@
   - 40s slow-request hint + no auto-retry
 - `8.0A.9` Results flow:
   - deep-link review page
-  - completed/pending/failed state rendering
+  - pending/failed state rendering
   - failed retry path with new idempotency key
   - error-code-based UX mapping
 - `8.0A.10` Marketing landing page (`/`)

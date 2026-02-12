@@ -20,10 +20,10 @@ These rules define how an AI coding agent should plan, execute, verify, communic
 
 ## Knowledge Base (KB) Maintenance
 
-- **Persistent Q&A**: Update `knowledge_base/logs/qa_history.md` after every user question or technical clarification.
-- **Architectural Traceability**: Log every major design decision in `knowledge_base/logs/decisions.md`.
-- **Walkthroughs**: Every major task (e.g., 1.0, 2.0) must have a walkthrough in `knowledge_base/walkthroughs/` documenting the outcome and verification results. Create/update the walkthrough for each Task immediately after completing the Task (e.g., `knowledge_base/walkthroughs/walkthrough_task_[ID]_[name].md`).
-- **Prompt History**: Log of all user prompts with datetimestamps for traceability and future reference in `knowledge_base/logs/prompt_history.md`.
+- **Persistent Q&A**: Update `docs/logs/qa_history.md` after every user question or technical clarification.
+- **Architectural Traceability**: Log every major design decision in `docs/logs/decisions.md`.
+- **Walkthroughs**: Every major task (e.g., 1.0, 2.0) must have a walkthrough in `docs/walkthroughs/` documenting the outcome and verification results. Create/update the walkthrough for each Task immediately after completing the Task (e.g., `docs/walkthroughs/walkthrough_task_[ID]_[name].md`).
+- **Prompt History**: Log of all user prompts with datetimestamps for traceability and future reference in `docs/logs/prompt_history.md`.
 
 ---
 
@@ -50,9 +50,9 @@ Update the `## Lessons` section in this file for **systemic failures** or change
 - **Goal**: Prevent the same behavioral mistake across all future tasks.
 - **Action**: Add a concise rule to the `## Lessons` section in this file.
 
-### 2. Project-Specific Lessons (tasks/lessons.md)
+### 2. Project-Specific Lessons (docs/lessons.md)
 
-Update `./tasks/lessons.md` file for **codebase-specific** pitfalls, architectural quirks, or technical edge cases.
+Update `./docs/lessons.md` file for **codebase-specific** pitfalls, architectural quirks, or technical edge cases.
 
 - **Goal**: Maintain local memory of this specific project's "gotchas."
 - **Action**: Capture the failure mode, the detection signal, and the prevention rule.
@@ -60,7 +60,7 @@ Update `./tasks/lessons.md` file for **codebase-specific** pitfalls, architectur
 ### 3. Execution Requirements
 
 - **Zero-Latency Logging**: Update these logs immediately after a correction or postmortem.
-- **Pre-flight Check**: Review `tasks/lessons.md` at the start of every session and before major refactors.
+- **Pre-flight Check**: Review `docs/lessons.md` at the start of every session and before major refactors.
 
 ---
 
@@ -76,10 +76,10 @@ Update `./tasks/lessons.md` file for **codebase-specific** pitfalls, architectur
 
 ## Task Lifecycle & Tracking
 
-- **The Project Index**: `tasks/index.md` is the **Single Source of Truth**. It contains the **Project Dashboard** (table) linking every Major ID to its PRD, Task File, and Walkthrough.
+- **The Project Index**: `docs/index.md` is the **Single Source of Truth**. It contains the **Project Dashboard** (table) linking every Major ID to its PRD, Task File, and Walkthrough.
 - **Task Segregation**:
-  - **Major Tasks (Non-Trivial)**: Each gets its own file: `tasks/task-[ID]-[name].md`. This keeps implementation context isolated and clean.
-  - **Minor Tasks (Maintenance)**: Appended to a single `tasks/maintenance.md` file to avoid file-system clutter for small fixes.
+  - **Major Tasks (Non-Trivial)**: Each gets its own file: `docs/tasks/active/task-[ID]-[name].md`. This keeps implementation context isolated and clean.
+  - **Minor Tasks (Maintenance)**: Appended to a single `docs/maintenance.md` file to avoid file-system clutter for small fixes.
 - **Hierarchical Indexing**: Use a sequential numerical system for all tasks, with sub-tasks always prefixed by their parent Major Task ID:
   - **Major Tasks**: `1.0`, `2.0`, `9.0`, etc. (feature-level)
   - **Sub-tasks**: `9.1`, `9.2`, etc. (parent phases within a major task)
@@ -92,9 +92,9 @@ Update `./tasks/lessons.md` file for **codebase-specific** pitfalls, architectur
 - **Skill & Workflow First**: Check for existing skills in `~/.agents/skills`, `~/.gemini/skills`, `.skills/`, `.agent/skills`, `.agents/skills`, `.claude/skills`, or workflows in `.agent/workflows/` before implementing new logic. If a reusable pattern is discovered, suggest creating a new skill/workflow.
 - **Repo-relative links**: Prefer repo-relative paths in artifacts (portable across machines). Use `file:///...` only when a tool requires it for clickability.
 - **Archiving Strategy**: To maintain a clean workspace:
-  - **Active**: Keep PRDs and Task files in the root of `/tasks` during implementation.
-  - **Completed**: Once finished, move both files to `tasks/completed/`.
-  - **Index Sync**: Immediately update `tasks/index.md` links to reflect the new location. This ensures the Dashboard remains a functional portal to the project's history.
+  - **Active**: Keep PRDs and Task files under `docs/tasks/active/` during implementation.
+  - **Completed**: Once finished, move both files to `docs/tasks/completed/`.
+  - **Index Sync**: Immediately update `docs/index.md` links to reflect the new location. This ensures the Dashboard remains a functional portal to the project's history.
 
 ---
 
@@ -105,19 +105,19 @@ For **non-trivial features** (new functional areas, complex refactors, or signif
 1.  **Phase 0: Ideation (Brainstorming)**
     - **Goal**: Move from a "vague idea" to a "validated design."
     - **Action**: Use the `brainstorming` skill. Ask the user clarifying questions to refine the vision.
-    - **Output**: A Design Doc or Brainstorming Log in `knowledge_base/logs/`.
+    - **Output**: A Design Doc or Brainstorming Log in `docs/brainstorms/`.
     - **Approval Gate**: You MUST ask the user if the brainstorming results are satisfactory and wait for their signal before moving to Phase 1.
 
 2.  **Phase 1: Definition (PRD)**
     - **Goal**: Turn the validated design into formal User Stories and Acceptance Criteria.
     - **Action**: Use the `prd` skill.
-    - **Output**: `tasks/prd-[TaskID]-[feature-name].md`.
+    - **Output**: `docs/tasks/active/prd-[TaskID]-[feature-name].md`.
     - **Approval Gate**: You MUST ask the user to review the PRD and wait for their signal (approval) before moving to Phase 2.
 
 3.  **Phase 2: Planning (Roadmap)**
     - **Goal**: Create a granular, chronological implementation checklist.
     - **Action**: Use the `prd-to-tasks` skill.
-    - **Output**: Create a new task file `tasks/task-[TaskID]-[name].md` and link it in `tasks/index.md`.
+    - **Output**: Create a new task file `docs/tasks/active/task-[TaskID]-[name].md` and link it in `docs/index.md`.
     - **Approval Gate**: Standard planning approval process as defined in `Workflow Orchestration`.
 
 4.  **Phase 3: Execution & Verification**
@@ -133,7 +133,7 @@ For **non-trivial features** (new functional areas, complex refactors, or signif
 - **Message Format**: Commits must start with a conventional prefix (feat:, fix:, chore:, docs:) and include the task number and the assisted tag:
   - Format: `prefix: [Task#] description assisted by antigravity`
   - Example: `feat: [7.1] add openai keys to config assisted by antigravity`
-- **Force Add Logs**: Since `knowledge_base/` and `tasks/` are critical for history, use `git add -f` if they are accidentally caught by ignore patterns.
+- **Force Add Logs**: Since `docs/` is critical for history, use `git add -f` if it is accidentally caught by ignore patterns.
 
 ## Git and Change Hygiene (If Applicable)
 

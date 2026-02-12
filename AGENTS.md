@@ -14,9 +14,9 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
   - `sqlmodel>=0.0.32`
   - `python-dotenv>=1.2.1`
   - `pyyaml>=6.0.3`
-  - Dev: `ruff>=0.15.0`
+- Dev: `ruff>=0.15.0`
 - Database: SQLite (file in `backend/data/`; Postgres-ready later)
-- API (planned): FastAPI (see `knowledge_base/logs/qa_history.md` / `knowledge_base/logs/decisions.md`)
+- API (planned): FastAPI (see `docs/logs/qa_history.md` / `docs/logs/decisions.md`)
 
 ## Git Workflow
 
@@ -32,18 +32,18 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 ## Key Directories
 
 - `backend/`: application code and scripts
-- `tasks/`: task tracking (this workflow is intended to exist in every project)
-- `knowledge_base/`: durable project memory (also intended to exist in every project)
-- If missing, create at minimum: `tasks/index.md`, `tasks/maintenance.md`, `tasks/lessons.md`, `knowledge_base/logs/qa_history.md`, `knowledge_base/logs/decisions.md`, `knowledge_base/logs/prompt_history.md`
+- `docs/`: documentation + task tracking (SSOT: `docs/index.md`)
+- If missing, create at minimum: `docs/index.md`, `docs/maintenance.md`, `docs/lessons.md`, `docs/logs/qa_history.md`, `docs/logs/decisions.md`, `docs/logs/prompt_history.md`
 
 ## Knowledge Base Maintenance (Always-On)
 
 Use repo-relative paths (don’t require machine-specific `file:///...` links).
 
-- Q&A / clarifications: `knowledge_base/logs/qa_history.md` (log conceptual/clarification questions when asked)
-- Architectural decisions: `knowledge_base/logs/decisions.md`
-- Prompt history (datetimestamps): `knowledge_base/logs/prompt_history.md`
-- Walkthrough per major task (include verification results): `knowledge_base/walkthroughs/walkthrough_task_[ID]_[name].md`
+- Q&A / clarifications: `docs/logs/qa_history.md` (log conceptual/clarification questions when asked)
+- Architectural decisions: `docs/logs/decisions.md`
+- Prompt history (datetimestamps): `docs/logs/prompt_history.md`
+- Phase 0 brainstorming notes: `docs/brainstorms/brainstorming-[TaskID]-[slug].md`
+- Walkthrough per major task (include verification results): `docs/walkthroughs/walkthrough_task_[ID]_[name].md`
 
 Update these immediately after decisions/clarifications (“zero-latency logging”).
 
@@ -55,14 +55,17 @@ Update these immediately after decisions/clarifications (“zero-latency logging
 │   ├── app/                 # models/schemas/repos/services
 │   ├── scripts/             # seed/ingest/demo utilities
 │   └── data/                # call YAML + sqlite db (gitignored)
-├── knowledge_base/
-│   ├── logs/                # qa_history/decisions/prompt_history
-│   └── walkthroughs/        # per-task verification notes
-└── tasks/
+└── docs/
     ├── index.md             # dashboard (SSOT)
     ├── maintenance.md       # small fixes
     ├── lessons.md           # gotchas
-    └── completed/           # archived PRDs/tasks
+    ├── logs/                # qa_history/decisions/prompt_history
+    ├── brainstorms/         # Phase 0 design notes
+    ├── reference/           # durable reference docs (domain model, templates, etc.)
+    ├── walkthroughs/        # per-task verification notes
+    └── tasks/
+        ├── active/          # in-flight PRDs + task plans
+        └── completed/       # archived PRDs/tasks
 ```
 
 ## Commands (actual executable commands)
@@ -84,15 +87,15 @@ From repo root:
 Use for new functional areas, complex refactors, or significant UI/API changes. Skip for small fixes/docs.
 
 **Phase definitions (use these labels everywhere):**
-- **Phase 0 = Brainstorming** (ideation/design note in `knowledge_base/logs/`)
-- **Phase 1 = PRD** (definition in `tasks/prd-[TaskID]-*.md`)
-- **Phase 2 = Task breakdown** (plan in `tasks/task-[TaskID]-*.md`)
-- **Phase 3 = Implementation** (execute plan + verify + walkthrough in `knowledge_base/walkthroughs/`)
+- **Phase 0 = Brainstorming** (ideation/design note in `docs/brainstorms/`)
+- **Phase 1 = PRD** (definition in `docs/tasks/active/prd-[TaskID]-*.md`)
+- **Phase 2 = Task breakdown** (plan in `docs/tasks/active/task-[TaskID]-*.md`)
+- **Phase 3 = Implementation** (execute plan + verify + walkthrough in `docs/walkthroughs/`)
 
-1. Phase 0 (Ideation): brief design note in `knowledge_base/logs/`
-2. Phase 1 (PRD): `tasks/prd-[TaskID]-[feature-name].md`
-3. Phase 2 (Plan): `tasks/task-[TaskID]-[name].md` + link in `tasks/index.md`
-4. Phase 3 (Execute/Verify): implement checklist + walkthrough in `knowledge_base/walkthroughs/`
+1. Phase 0 (Ideation): brief design note in `docs/brainstorms/`
+2. Phase 1 (PRD): `docs/tasks/active/prd-[TaskID]-[feature-name].md`
+3. Phase 2 (Plan): `docs/tasks/active/task-[TaskID]-[name].md` + link in `docs/index.md`
+4. Phase 3 (Execute/Verify): implement checklist + walkthrough in `docs/walkthroughs/`
 
 Approval gates: ask for an explicit “go ahead” at each phase boundary in interactive work.
 
@@ -103,16 +106,16 @@ Artifact convention:
 
 - If a matching skill exists (a `SKILL.md`), follow it for that phase.
 - Preferred pipeline skills: `brainstorming` → `prd` → `prd-to-tasks`.
-- Skill index (portable): `knowledge_base/logs/skills_index.md`.
+- Skill index (portable): `docs/reference/skills_index.md`.
 
-## Task Lifecycle & Tracking (Source of Truth: `tasks/index.md`)
+## Task Lifecycle & Tracking (Source of Truth: `docs/index.md`)
 
-- `tasks/index.md` is the SSOT (dashboard linking PRDs, task files, walkthroughs).
-- Major tasks: `tasks/task-[ID]-[name].md`; PRDs: `tasks/prd-[ID]-[name].md`.
-- Minor work: append to `tasks/maintenance.md`.
+- `docs/index.md` is the SSOT (dashboard linking PRDs, task files, walkthroughs).
+- Major tasks: `docs/tasks/active/task-[ID]-[name].md`; PRDs: `docs/tasks/active/prd-[ID]-[name].md`.
+- Minor work: append to `docs/maintenance.md`.
 - Keep checklists current (`[/]` in-progress, `[x]` done) as you execute.
 - Verification: every major task ends with a **Verify** subtask that exercises the full flow.
-- Archive completed PRDs/tasks to `tasks/completed/` and immediately fix links in `tasks/index.md`.
+- Archive completed PRDs/tasks to `docs/tasks/completed/` and immediately fix links in `docs/index.md`.
 
 ## Boundaries (subheadings: ### Always; ### Ask first; ### Never)
 
@@ -122,7 +125,7 @@ Artifact convention:
 - Verify with tests/build/lint or a reliable manual repro.
 - For Phase 3 implementation, run at least one targeted verification per completed subtask before committing that subtask, and log what was run.
 - Before any commit, confirm new/changed files are not accidentally ignored: run `git status --ignored --short`. Prefer updating `.gitignore` with narrow allow/deny rules over `git add -f` (never force-add secrets).
-- Update `tasks/` and `knowledge_base/` as you go (decisions, Q&A, walkthroughs).
+- Update `docs/` as you go (decisions, Q&A, walkthroughs).
 - Be explicit about what you didn’t verify and what to run next.
 - At the end of every response, explicitly tell/ask the user what to do or prompt next.
 
@@ -136,7 +139,7 @@ Artifact convention:
 
 ### Never
 
-- Commit secrets or paste sensitive content into `knowledge_base/` or `tasks/`.
+- Commit secrets or paste sensitive content into `docs/` (or anywhere in the repo).
 - Claim verification you didn’t run.
 - Introduce large refactors unrelated to the requested change.
 
@@ -146,20 +149,20 @@ Add lessons learned here as you encounter them. Every time the agent does someth
 
 Guideline:
 - Keep **always-on workflow rules** in this `AGENTS.md`.
-- Put **detailed incident writeups + prevention steps** in `tasks/lessons.md`, and reference them from here when useful.
+- Put **detailed incident writeups + prevention steps** in `docs/lessons.md`, and reference them from here when useful.
 
 ### Project-specific gotchas
 
-- Backend scripts importing `app/` may need path setup when run from `backend/scripts/` (see `tasks/lessons.md`).
-- SQLModel: don’t access ORM objects after session close; capture IDs/primitives first (see `tasks/lessons.md`).
-- SQLite in-memory DB resets across sessions; design tests to reuse one seeded instance (see `tasks/lessons.md`).
+- Backend scripts importing `app/` may need path setup when run from `backend/scripts/` (see `docs/lessons.md`).
+- SQLModel: don’t access ORM objects after session close; capture IDs/primitives first (see `docs/lessons.md`).
+- SQLite in-memory DB resets across sessions; design tests to reuse one seeded instance (see `docs/lessons.md`).
 - Call YAML naming: `{agency}_{program}_{year}_{stage}.yaml` (see `backend/data/calls/README.md`).
-- Don’t forget to update the real project task files (`tasks/task-*.md`) and `tasks/index.md` while executing (see `tasks/lessons.md`).
+- Don’t forget to update the real project task files (`docs/tasks/active/task-*.md`) and `docs/index.md` while executing (see `docs/lessons.md`).
 - Frontend work requires Node tooling; prefer `nvm use v22.17.0` before running `npm`/`npx`. If `nvm` is not available in the current environment, scaffold/build locally and commit the generated `frontend/` files.
 
 ### Systemic coordination failures
 
 - Don’t start implementation when the user is still deciding; ask for an explicit “go ahead” when it’s non-trivial.
-- Don’t skip phase gates for non-trivial features; keep artifacts (PRD/task/walkthrough) in sync with `tasks/index.md`.
+- Don’t skip phase gates for non-trivial features; keep artifacts (PRD/task/walkthrough) in sync with `docs/index.md`.
 - Don’t block MVP progress on pre-existing repo-wide lint debt; enforce lint on changed files/touched modules and track full cleanup as a separate task.
 - Before starting the next major task (especially without a remote), create a local integration milestone: merge completed task branches into one branch, tag it, and create a `git bundle` backup.

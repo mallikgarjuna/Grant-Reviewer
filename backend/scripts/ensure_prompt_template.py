@@ -6,7 +6,7 @@ from uuid import UUID
 
 from sqlmodel import Session, select
 
-# Add backend root for app imports (tasks/lessons.md: L1).
+# Add backend root for app imports (docs/lessons.md: L1).
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.db import create_db_and_tables, get_session

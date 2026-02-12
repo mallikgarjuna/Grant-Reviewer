@@ -22,7 +22,7 @@ Ship a v1 web experience that:
 - **DB**: **Managed Postgres** (provider: Render Postgres currently preferred for MVP; revisit if constraints emerge).
 - **Hosting (split)**: Next.js on Vercel; FastAPI + Postgres on Render.
 
-Related architectural decisions captured in `knowledge_base/logs/decisions.md` (AD 8.1–8.6).
+Related architectural decisions captured in `docs/logs/decisions.md` (AD 8.1–8.6).
 
 ## Why BFF for this app
 

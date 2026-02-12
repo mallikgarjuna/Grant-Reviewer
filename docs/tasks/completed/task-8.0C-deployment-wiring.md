@@ -5,8 +5,8 @@
 **Pipeline Phase**: Phase 2 (Task breakdown)  
 **Status**: In Progress (v0.8 - deploy wiring verified; stub-default active)  
 **Last Updated**: 2026-02-12  
-**PRD**: `tasks/prd-8.0C-deployment-wiring.md`  
-**Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
+**PRD**: `docs/tasks/completed/prd-8.0C-deployment-wiring.md`  
+**Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0C-deployment-wiring.md`  
 
 ---
 
@@ -219,7 +219,7 @@ Goal: confirm one real production review within runtime budget after stub wiring
 
 ## Walkthrough (Phase 3 requirement)
 
-- Create `knowledge_base/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md` with:
+- Create `docs/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md` with:
   - what was deployed (providers, URLs)
   - what was verified (commands + results)
   - what remains deferred (explicitly)

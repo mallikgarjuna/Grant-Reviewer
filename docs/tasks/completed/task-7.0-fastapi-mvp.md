@@ -2,8 +2,8 @@
 
 **Status**: [x] Complete  
 **Phase**: Phase 2 (Task breakdown)  
-**PRD**: `tasks/prd-7.0-fastapi-mvp.md`  
-**Phase 0 Notes**: `knowledge_base/logs/brainstorming-7.0-fastapi-mvp.md`
+**PRD**: `docs/tasks/completed/prd-7.0-fastapi-mvp.md`  
+**Phase 0 Notes**: `docs/brainstorms/brainstorming-7.0-fastapi-mvp.md`
 
 ---
 
@@ -96,7 +96,7 @@
   - `POST /reviews` in stub mode (no cost)
   - Optional: `POST /reviews` in real mode (calls OpenAI; cost)
   - `GET /reviews/{review_id}`
-- [x] 7.6.4 Write walkthrough: `knowledge_base/walkthroughs/walkthrough_task_7.0_fastapi_mvp.md`
+- [x] 7.6.4 Write walkthrough: `docs/walkthroughs/walkthrough_task_7.0_fastapi_mvp.md`
 
 ---
 

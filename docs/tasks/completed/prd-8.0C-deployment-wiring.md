@@ -3,7 +3,7 @@
 **Status**: Draft (v0.4 - Revised: Neon DB)  
 **Date**: 2026-02-12  
 **Phase**: Phase 1 (PRD)  
-**Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
+**Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0C-deployment-wiring.md`  
 
 ---
 

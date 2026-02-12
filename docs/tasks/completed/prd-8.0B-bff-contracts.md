@@ -3,7 +3,7 @@
 **Status**: Draft (v0.2 - Revised)  
 **Date**: 2026-02-08  
 **Phase**: Phase 1 (PRD)  
-**Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0-frontend-ui.md`
+**Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0-frontend-ui.md`
 
 ---
 
