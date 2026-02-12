@@ -3,7 +3,7 @@
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
 **Pipeline Phase**: Phase 2 (Task breakdown)  
-**Status**: In Progress (v0.5 - 8.0C.6 complete; deploy-stage subtasks pending)  
+**Status**: In Progress (v0.6 - Neon DB locked; deploy-stage subtasks pending)  
 **Last Updated**: 2026-02-12  
 **PRD**: `tasks/prd-8.0C-deployment-wiring.md`  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
@@ -27,7 +27,7 @@
 
 ## Decisions Locked In This Plan (MVP, ship-fast)
 
-- Providers: Vercel (Next.js) + Render (FastAPI) + Render Postgres.
+- Providers: Vercel (Next.js) + Render (FastAPI) + Neon Postgres.
 - Render backend deploy mechanics (MVP-fast default):
   - Render Web Service **Root Directory**: `backend`
   - Render Web Service **Python version**: 3.12
@@ -41,6 +41,8 @@
   - Stage 2: flip to `LLM_MODE=openai` + `OPENAI_API_KEY` and run one real end-to-end review.
 - Operational constraint: single backend instance for initial launch.
 - Bootstrap: one-time manual ingest into prod DB with a written runbook.
+
+Note: `DATABASE_URL` normalization/SSL defaults were originally driven by Render Postgres URLs; they remain valid for Neon (Neon enforces SSL; `postgres://...` is still normalized).
 
 ## Dependencies / Inputs
 
@@ -108,7 +110,7 @@ Goal: switch backend persistence to managed Postgres without breaking local dev.
 - [x] `uv run pytest tests/test_api.py -q` (SQLite mode still passes)
 
 **Verify (deploy)**
-- [ ] Render Postgres provisioned and `DATABASE_URL` set
+- [ ] Neon Postgres provisioned and `DATABASE_URL` set
 - [ ] DB readiness check passes in deployed environment
 
 ---
@@ -186,7 +188,7 @@ Goal: make DB readiness behavior deterministic and operator-friendly for deploym
 Goal: prove end-to-end deployed wiring with minimal cost/latency noise.
 
 - [ ] Complete `8.0C.1` provider/env wiring in deployed services.
-- [ ] Provision Render Postgres + set backend `DATABASE_URL`.
+- [ ] Provision Neon Postgres + set backend `DATABASE_URL`.
 - [ ] Run production bootstrap commands in deployed backend context:
   - [ ] `uv run python scripts/ensure_prompt_template.py`
   - [ ] `uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml`
@@ -244,3 +246,4 @@ Goal: confirm one real production review within runtime budget after stub wiring
 - **v0.3** (2026-02-12): Phase 3 progress update: completed 8.0C.2 backend DB wiring, 8.0C.3 bootstrap script/runbook, and 8.0C.4 BFF route runtime config; deploy-bound subtasks remain open.
 - **v0.4** (2026-02-12): Incorporated critical Phase 3 review feedback by adding next-round execution decisions, a dedicated readiness-failure hardening subtask (`8.0C.6`), and explicit staged deploy execution subtasks (`8.0C.7` stub, `8.0C.8` openai).
 - **v0.5** (2026-02-12): Completed `8.0C.6` readiness hardening: `/health/db` now returns explicit `503` canonical error on DB-unavailable checks, with targeted + full API test verification.
+- **v0.6** (2026-02-12): Locked DB provider change to Neon Postgres (Render still hosts FastAPI; `DATABASE_URL` now sourced from Neon).

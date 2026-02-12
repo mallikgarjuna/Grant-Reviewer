@@ -1,6 +1,6 @@
-# PRD 8.0C: MVP Deployment Wiring (Vercel + Clerk + BFF, Render FastAPI, Render Postgres)
+# PRD 8.0C: MVP Deployment Wiring (Vercel + Clerk + BFF, Render FastAPI, Neon Postgres)
 
-**Status**: Draft (v0.3 - Revised)  
+**Status**: Draft (v0.4 - Revised: Neon DB)  
 **Date**: 2026-02-12  
 **Phase**: Phase 1 (PRD)  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
@@ -21,7 +21,7 @@ This task is deployment wiring and operational correctness, not new product feat
 
 ## Decisions Locked (MVP-fast)
 
-- **Hosting**: Vercel (Next.js) + Render (FastAPI) + Render Postgres
+- **Hosting**: Vercel (Next.js) + Render (FastAPI) + Neon Postgres
 - **Environments**: prod-only for 8.0C (no preview parity requirement)
 - **Domains**:
   - frontend: custom domain optional; `*.vercel.app` acceptable for MVP
@@ -94,7 +94,7 @@ browser → Vercel route handler `POST /api/bff/reviews` → FastAPI `POST /revi
 **Acceptance Criteria**
 - Backend uses `DATABASE_URL` when present; does not require local filesystem paths to exist.
 - Backend starts cleanly against managed Postgres and creates tables (`create_all`) on startup.
-- Backend accepts Render-provided DB URLs:
+- Backend accepts provider-provided DB URLs (Neon):
   - supports `postgres://...` by normalizing to a SQLAlchemy-compatible scheme (e.g., `postgresql+psycopg://...`)
   - SSL requirements are explicit (`sslmode=require`)
 
@@ -194,3 +194,4 @@ Manual seed is acceptable for MVP, but it must be written down and repeatable.
 - **v0.1** (2026-02-12): Initial PRD for MVP deployment wiring (providers/env mapping, Postgres requirement, timeout alignment, health checks, bootstrap runbook, deploy verification checklist).
 - **v0.2** (2026-02-12): Locked concrete timeout defaults (`maxDuration=60`, `REVIEW_TIMEOUT_SECONDS=25`), added staged rollout (stub → openai), clarified MVP operational constraint (single backend instance), and tightened the manual seed runbook requirements.
 - **v0.3** (2026-02-12): Added explicit Render deployment mechanics requirement and corrected bootstrap definition to include the required `PromptTemplate` (not just YAML ingest). Added Postgres URL normalization + SSL expectations.
+- **v0.4** (2026-02-12): Switched managed Postgres provider to Neon (Render still hosts FastAPI).

@@ -314,3 +314,7 @@
 ### 12:13 - 8.0C.6 Implemented (Readiness failure semantics)
 > User requested implementation of subtask `8.0C.6`.
 > Outcome: Updated FastAPI readiness behavior so `GET /health/db` returns canonical `503` (`DB_UNAVAILABLE`) when DB checks fail, while keeping `GET /health` as liveness. Added failure-path API tests and updated backend docs + task/walkthrough artifacts with verification results.
+
+### 16:20 - 8.0C Provider Change Locked (Neon DB)
+> User chose Neon for managed Postgres (Render stays for FastAPI; Vercel for Next.js; Clerk for auth) and asked to lock this change in artifacts before pushing/deploying.
+> Outcome: Updated `knowledge_base/logs/decisions.md`, `tasks/prd-8.0C-deployment-wiring.md`, and `tasks/task-8.0C-deployment-wiring.md` to replace Render Postgres with Neon Postgres without modifying completed implementation subtasks.

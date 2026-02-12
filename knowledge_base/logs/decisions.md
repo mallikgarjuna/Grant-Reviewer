@@ -177,7 +177,7 @@
 ### AD 8.5: Render Managed Postgres (v1)
 - **Decision**: Use Render’s managed Postgres for v1 production database.
 - **Rationale**: Consolidates DB ops (backups/availability) and pairs naturally with hosting the FastAPI service on Render.
-- **Status**: Approved (implementation pending).
+- **Status**: Superseded by AD 8.15 (Neon).
 
 ### AD 8.6: Split Hosting: Vercel (Next.js) + Render (FastAPI + Postgres)
 - **Decision**: Host Next.js on Vercel (with Clerk) and host FastAPI + Postgres on Render.
@@ -239,3 +239,8 @@
 - **Decision**: Keep `GET /health` as liveness, but ensure DB readiness failures produce a stable `503` response instead of generic uncaught errors.
 - **Rationale**: Improves operator signal quality and deployment diagnostics with minimal implementation overhead.
 - **Status**: Implemented.
+
+### AD 8.15: DB provider is Neon (not Render Postgres)
+- **Decision**: Use Neon for managed Postgres; keep Render for hosting FastAPI.
+- **Rationale**: Separates DB provider choice from backend hosting while preserving the existing `DATABASE_URL` integration (Task 8.0C).
+- **Status**: Approved.
