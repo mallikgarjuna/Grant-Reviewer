@@ -83,20 +83,20 @@ Goal: get Vercel ↔ Render connectivity and secrets wiring correct before touch
 
 Goal: switch backend persistence to managed Postgres without breaking local dev.
 
-- [ ] Backend supports `DATABASE_URL`:
-  - [ ] Uses `DATABASE_URL` when set; otherwise defaults to local SQLite for dev.
-  - [ ] Avoid SQLite-only filesystem side effects when Postgres is used.
-- [ ] Add Postgres driver dependency (`psycopg[binary]`) and verify import/runtime.
-- [ ] Normalize Render DB URLs for SQLAlchemy:
-  - [ ] Accept `postgres://...` and rewrite to `postgresql+psycopg://...` (preserve user/pass/host/db + query string).
-  - [ ] Ensure SSL requirements are explicit (`sslmode=require`), either via `DATABASE_URL` or documented env.
-- [ ] Add DB readiness endpoint (`/health/db` or enrich `/health`) that:
-  - [ ] performs a fast `SELECT 1` (or equivalent)
-  - [ ] times out quickly
-  - [ ] returns `{ok:true}` only when DB is reachable
+- [x] Backend supports `DATABASE_URL`:
+  - [x] Uses `DATABASE_URL` when set; otherwise defaults to local SQLite for dev.
+  - [x] Avoid SQLite-only filesystem side effects when Postgres is used.
+- [x] Add Postgres driver dependency (`psycopg[binary]`) and verify import/runtime.
+- [x] Normalize Render DB URLs for SQLAlchemy:
+  - [x] Accept `postgres://...` and rewrite to `postgresql+psycopg://...` (preserve user/pass/host/db + query string).
+  - [x] Ensure SSL requirements are explicit (`sslmode=require`), either via `DATABASE_URL` or documented env.
+- [x] Add DB readiness endpoint (`/health/db` or enrich `/health`) that:
+  - [x] performs a fast `SELECT 1` (or equivalent)
+  - [x] times out quickly
+  - [x] returns `{ok:true}` only when DB is reachable
 
 **Verify (local/sandbox where possible)**
-- [ ] `uv run pytest tests/test_api.py -q` (SQLite mode still passes)
+- [x] `uv run pytest tests/test_api.py -q` (SQLite mode still passes)
 
 **Verify (deploy)**
 - [ ] Render Postgres provisioned and `DATABASE_URL` set
