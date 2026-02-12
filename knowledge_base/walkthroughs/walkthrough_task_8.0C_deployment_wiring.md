@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
-**Status**: In Progress (v0.2 - 8.0C.6 complete; deploy execution pending)  
+**Status**: In Progress (v0.3 - deployed stub flow verified; Stage 2 pending)  
 
 ## Scope Completed In This Pass
 
@@ -59,15 +59,44 @@ Result:
 ## Verification Limits / Remaining Work
 
 - `scripts/verify_local_8_0A.sh` full pass was attempted in this sandbox, but backend smoke stage hung and timed out. Partial output confirmed frontend checks (`check:bff`, `check:seo`, `lint`) reached pass points before timeout.
-- No real deploy operations were executed from this environment (no Render/Vercel provisioning actions).
+- Deploy operations were executed outside this sandbox (Render/Vercel/Neon).
+
+## Deployed Environment (What Was Wired)
+
+- **Backend (Render)**: `https://grant-reviewer.onrender.com`
+  - `GET /health` → `200 {"ok":true}`
+  - `GET /health/db` → `200 {"ok":true}` (Neon connectivity)
+  - `GET /calls` → `200` with ≥ 1 call after bootstrap
+- **Database (Neon)**:
+  - `DATABASE_URL` uses **direct** connection (pooling OFF); `sslmode=require`.
+  - Attempting Neon `-pooler` + `channel_binding=require` caused intermittent `psycopg.OperationalError` (`SSL connection has been closed unexpectedly`) on real queries; resolved by switching to direct and removing `channel_binding=require`.
+- **Frontend (Vercel)**: `https://grant-reviewer.vercel.app`
+  - Logged-out `/app` redirects to sign-in (`/sign-in?redirect_url=%2Fapp`).
+  - End-to-end submit via BFF succeeds in `LLM_MODE=stub`.
+
+## Production Bootstrap (No Render Shell)
+
+Render free instances do not support shell access; bootstrap was run from a developer machine against the same Neon database used by Render.
+
+Commands (run locally with `DATABASE_URL` set to the Neon **direct** URL used by Render):
+- `cd backend && DATABASE_URL="..." uv run python scripts/ensure_prompt_template.py`
+- `cd backend && DATABASE_URL="..." uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml`
+
+Verification:
+- `curl -i https://grant-reviewer.onrender.com/calls`
+
+## Stage 1 (Stub) End-to-End Verification
+
+- Vercel app submitted one review successfully in `LLM_MODE=stub`.
+- Example review id: `a2c1ecb1-2e3f-4f94-8fb7-45f71c0cc32a` (UI showed “Review completed with 2 findings.”)
 
 ## Remaining Open Subtasks
 
-- `8.0C.1` Provider + env wiring (deploy platform configuration, Clerk production URLs, secret setup).
-- `8.0C.7` Deploy execution Stage 1 (`LLM_MODE=stub` wiring proof in deployed environment).
+- Direct-call protection verification: confirm unsigned `GET /reviews/{review_id}` fails with `401` (example command: `curl -i https://grant-reviewer.onrender.com/reviews/a2c1ecb1-2e3f-4f94-8fb7-45f71c0cc32a`).
 - `8.0C.8` Deploy execution Stage 2 (`LLM_MODE=openai` one-shot real review verification).
 
 ## Revision History
 
 - **v0.1** (2026-02-12): Initial Phase 3 walkthrough with completed local implementation/verification and explicit deploy-only remaining steps.
 - **v0.2** (2026-02-12): Added `8.0C.6` readiness hardening outcomes, including explicit `503` failure semantics and targeted/full API verification results.
+- **v0.3** (2026-02-12): Recorded deployed wiring (Vercel + Clerk, Render FastAPI, Neon direct Postgres) and Stage 1 stub end-to-end verification results; Stage 2 remains pending.

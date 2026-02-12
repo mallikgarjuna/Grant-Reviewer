@@ -318,3 +318,7 @@
 ### 16:20 - 8.0C Provider Change Locked (Neon DB)
 > User chose Neon for managed Postgres (Render stays for FastAPI; Vercel for Next.js; Clerk for auth) and asked to lock this change in artifacts before pushing/deploying.
 > Outcome: Updated `knowledge_base/logs/decisions.md`, `tasks/prd-8.0C-deployment-wiring.md`, and `tasks/task-8.0C-deployment-wiring.md` to replace Render Postgres with Neon Postgres without modifying completed implementation subtasks.
+
+### 16:40 - 8.0C Deploy Wiring Verified (Stub)
+> User completed provider wiring and deploy verification in `LLM_MODE=stub`.
+> Outcome: Render FastAPI (`/health`, `/health/db`) connects to Neon Postgres (direct URL; avoid pooler + channel binding for MVP stability). Vercel + Clerk gating works and end-to-end submit via `/api/bff/reviews` succeeds with stub findings. Bootstrap was executed from a developer machine against the deployed Neon database because Render free instances do not support shell access.
