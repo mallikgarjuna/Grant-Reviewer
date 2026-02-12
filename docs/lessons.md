@@ -86,3 +86,18 @@
 **Issue**: Secret-bearing files (`.env`, local caches, generated output) can be accidentally staged during fast iteration.
 **Fix**: Run `git status --ignored --short` before each commit and adjust `.gitignore` with narrow rules if needed.
 **Prevention**: Make ignored-file review a mandatory pre-commit gate, and never force-add secrets.
+
+### L18: Don’t `source .env` When Values Contain `&`
+**Issue**: `source backend/.env` failed with `parse error near '&'` because the `DATABASE_URL` contained query params like `...&channel_binding=...`.
+**Fix**: Prefer `python-dotenv` for local dev entrypoints, or set env vars explicitly in your shell (e.g., `export DATABASE_URL='postgresql://...'`).
+**Prevention**: Treat `.env` files as dotenv-format (not shell scripts). If you must load them in a shell, ensure values are safely quoted.
+
+### L19: Neon Connection Strings — Prefer Direct for Render
+**Issue**: Using Neon pooler (`-pooler`) plus `channel_binding=require` caused intermittent `psycopg.OperationalError` failures (`SSL connection has been closed unexpectedly`) on real queries from Render.
+**Fix**: Use Neon **direct** connection strings (pooling OFF) and remove `channel_binding=require` for this deployment path; keep `sslmode=require`.
+**Prevention**: For server-side deployments, start with direct connections; only introduce pooling/extra SSL parameters after verifying stability under real request traffic.
+
+### L20: Production Bootstrap Without Render Shell (Free Tier)
+**Issue**: Render free instances do not support interactive shell, so you can’t run bootstrap scripts inside the service.
+**Fix**: Run bootstrap scripts locally against the same production Neon DB used by Render (export `DATABASE_URL` and run `uv run python ...`).
+**Prevention**: Always document bootstrap as an explicit “run from dev machine” step and verify via the deployed API (`/calls`, `/health/db`) afterward.
