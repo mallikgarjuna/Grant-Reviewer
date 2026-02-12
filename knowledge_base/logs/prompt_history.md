@@ -306,3 +306,11 @@
 ### 11:20 - 8.0C Phase 3 Implementation Started (Backend + Bootstrap + BFF runtime)
 > User approved starting Phase 3 with AGENTS/lessons enforcement.
 > Outcome: Implemented `DATABASE_URL` normalization + `/health/db` readiness in backend, added idempotent bootstrap script `backend/scripts/ensure_prompt_template.py`, updated backend runbook for production bootstrap, and set `runtime/maxDuration` on `frontend/src/app/api/bff/reviews/route.ts`. Added walkthrough `knowledge_base/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md` with verification results and explicit deploy-only pending items.
+
+### 12:04 - 8.0C Task Plan Revised Before Next Phase 3 Round
+> User asked to revise the task plan first using critical feedback, keep implemented subtasks intact, and add concrete next-step tracking for MVP-fast shipping.
+> Outcome: Updated `tasks/task-8.0C-deployment-wiring.md` to add next-round execution decisions and new subtasks: `8.0C.6` (readiness-failure hardening to explicit `503`), `8.0C.7` (deploy Stage 1 stub execution), and `8.0C.8` (deploy Stage 2 one-shot openai verification). Logged new architecture decisions and deferred non-scope hardening items.
+
+### 12:13 - 8.0C.6 Implemented (Readiness failure semantics)
+> User requested implementation of subtask `8.0C.6`.
+> Outcome: Updated FastAPI readiness behavior so `GET /health/db` returns canonical `503` (`DB_UNAVAILABLE`) when DB checks fail, while keeping `GET /health` as liveness. Added failure-path API tests and updated backend docs + task/walkthrough artifacts with verification results.

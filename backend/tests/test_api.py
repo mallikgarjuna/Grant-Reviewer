@@ -249,6 +249,25 @@ def test_healthcheck_db(monkeypatch) -> None:
     assert response.json() == {"ok": True}
 
 
+def test_healthcheck_db_unavailable_returns_503(monkeypatch) -> None:
+    client, _ = create_client_with_seed(monkeypatch)
+
+    def fail_ping_database() -> None:
+        raise RuntimeError("database unavailable")
+
+    monkeypatch.setattr("main.ping_database", fail_ping_database)
+
+    response = client.get("/health/db")
+    assert response.status_code == 503
+    assert response.json() == {
+        "error": {
+            "code": "DB_UNAVAILABLE",
+            "message": "Database is unavailable.",
+            "details": {},
+        },
+    }
+
+
 def test_normalize_database_url_for_render_postgres() -> None:
     normalized = normalize_database_url("postgres://u:p@db.example.com:5432/grant_db")
     assert normalized.startswith("postgresql+psycopg://")
@@ -605,6 +624,7 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "NO_EXPECTATIONS": 400,
         "NODE_NOT_IN_CALL": 400,
         "REVIEWS_DISABLED": 503,
+        "DB_UNAVAILABLE": 503,
         "SNIPPET_TOO_LONG": 400,
         "VALIDATION_ERROR": 400,
         "INTERNAL_ERROR": 500,

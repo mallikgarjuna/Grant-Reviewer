@@ -76,8 +76,8 @@ LLM_MODE=openai uv run uvicorn main:app --reload
 ```
 
 Endpoints:
-- `GET /health`
-- `GET /health/db`
+- `GET /health` (liveness: process up)
+- `GET /health/db` (readiness: `200 {"ok":true}` when DB reachable; `503` canonical error when unavailable)
 - `GET /calls`
 - `GET /calls/{call_id}/nodes`
 - `POST /reviews`
@@ -86,6 +86,7 @@ Endpoints:
 Quick smoke checks (run in another terminal while the server is running):
 ```bash
 curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/health/db
 ```
 Open interactive docs:
 - `http://127.0.0.1:8000/docs`

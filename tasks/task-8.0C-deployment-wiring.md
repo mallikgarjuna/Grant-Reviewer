@@ -3,7 +3,7 @@
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
 **Pipeline Phase**: Phase 2 (Task breakdown)  
-**Status**: In Progress (v0.3 - 8.0C.2/8.0C.3/8.0C.4 complete)  
+**Status**: In Progress (v0.5 - 8.0C.6 complete; deploy-stage subtasks pending)  
 **Last Updated**: 2026-02-12  
 **PRD**: `tasks/prd-8.0C-deployment-wiring.md`  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
@@ -47,6 +47,15 @@
 - Backend contracts are already shipped (8.0B): signatures, idempotency, quotas, kill switch, ownership.
 - Frontend BFF routes already exist (8.0A): `frontend/src/app/api/bff/*`.
 - Local verification exists (8.0A): `scripts/verify_local_8_0A.sh`.
+
+## Next-Round Decisions (MVP, ship-fast)
+
+- Execute provider/env wiring first (`8.0C.1`) before further backend hardening or real LLM deploy checks.
+- Keep deploy verification strictly separate from local verification (`scripts/verify_local_8_0A.sh` remains a local-only gate).
+- Add a lightweight readiness hardening step: DB-unreachable readiness should fail explicitly as `503` (instead of generic uncaught failure) before deploy-stage verification.
+- Preserve staged rollout discipline:
+  - Stage 1 deploy verification uses `LLM_MODE=stub`.
+  - Stage 2 runs exactly one real `LLM_MODE=openai` review after Stage 1 passes.
 
 ---
 
@@ -155,6 +164,54 @@ Record results (including exact URLs and env toggles used) in the 8.0C walkthrou
 
 ---
 
+## 8.0C.6 Readiness failure semantics hardening (commit)
+
+Goal: make DB readiness behavior deterministic and operator-friendly for deployment probes.
+
+- [x] Update backend DB readiness behavior so DB-unreachable checks return explicit HTTP `503` with stable error payload.
+- [x] Keep `GET /health` as pure liveness (`200` when app process is alive).
+- [x] Add targeted API tests covering:
+  - [x] healthy DB path (`200`, `{ok:true}`)
+  - [x] forced DB failure path (`503`, stable error body)
+- [x] Update backend docs to state liveness vs readiness semantics clearly.
+
+**Verify (local/sandbox where possible)**
+- [x] `uv run pytest tests/test_api.py -q -k "healthcheck_db or error_code_status_mapping"` (readiness + mapping focus)
+- [x] `uv run pytest tests/test_api.py -q` (full API regression)
+
+---
+
+## 8.0C.7 Deploy execution - Stage 1 (stub) (commit)
+
+Goal: prove end-to-end deployed wiring with minimal cost/latency noise.
+
+- [ ] Complete `8.0C.1` provider/env wiring in deployed services.
+- [ ] Provision Render Postgres + set backend `DATABASE_URL`.
+- [ ] Run production bootstrap commands in deployed backend context:
+  - [ ] `uv run python scripts/ensure_prompt_template.py`
+  - [ ] `uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml`
+- [ ] Verify deployed backend:
+  - [ ] `GET /health` returns `{ok:true}`
+  - [ ] DB readiness endpoint returns healthy signal
+- [ ] Verify deployed frontend/BFF:
+  - [ ] `/api/bff/calls` returns at least one call
+  - [ ] one end-to-end submit via `/api/bff/reviews` succeeds with `LLM_MODE=stub`
+  - [ ] unsigned direct calls to protected FastAPI endpoints fail
+- [ ] Record exact URLs + env toggles + outcomes in walkthrough.
+
+---
+
+## 8.0C.8 Deploy execution - Stage 2 (openai) (commit)
+
+Goal: confirm one real production review within runtime budget after stub wiring proof.
+
+- [ ] Flip backend to `LLM_MODE=openai` and set `OPENAI_API_KEY`.
+- [ ] Run exactly one real end-to-end review through frontend BFF.
+- [ ] Capture observed request latency and compare with timeout budget (`maxDuration=60`, `REVIEW_TIMEOUT_SECONDS=25`).
+- [ ] If Stage 2 fails due to timeout/instability, revert to `LLM_MODE=stub`, log findings, and open follow-up task (do not block MVP wiring completion).
+
+---
+
 ## Walkthrough (Phase 3 requirement)
 
 - Create `knowledge_base/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md` with:
@@ -174,6 +231,9 @@ Record results (including exact URLs and env toggles used) in the 8.0C walkthrou
 - Full observability stack (Sentry/OTel/metrics) beyond provider logs.
 - Dockerfile / containerization for backend deploy (only if native Render build proves unreliable).
 - Render blueprint (`render.yaml`) until the manual wiring path is stable.
+- DB pooling/connection tuning (including PgBouncer) before real load exists.
+- Health endpoint auth/rate-limit hardening beyond current MVP probe requirements.
+- Automated bootstrap admin endpoint/job (manual runbook remains preferred for 8.0C).
 
 ---
 
@@ -182,3 +242,5 @@ Record results (including exact URLs and env toggles used) in the 8.0C walkthrou
 - **v0.1** (2026-02-12): Initial Phase 2 plan with MVP sequencing (env wiring → Postgres support → bootstrap runbook → runtime config → deploy verification).
 - **v0.2** (2026-02-12): Added explicit Render build/start mechanics, tightened Postgres URL/SSL requirements, and fixed bootstrap runbook to include the required `PromptTemplate` (avoid sample seed data in prod).
 - **v0.3** (2026-02-12): Phase 3 progress update: completed 8.0C.2 backend DB wiring, 8.0C.3 bootstrap script/runbook, and 8.0C.4 BFF route runtime config; deploy-bound subtasks remain open.
+- **v0.4** (2026-02-12): Incorporated critical Phase 3 review feedback by adding next-round execution decisions, a dedicated readiness-failure hardening subtask (`8.0C.6`), and explicit staged deploy execution subtasks (`8.0C.7` stub, `8.0C.8` openai).
+- **v0.5** (2026-02-12): Completed `8.0C.6` readiness hardening: `/health/db` now returns explicit `503` canonical error on DB-unavailable checks, with targeted + full API test verification.

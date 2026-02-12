@@ -225,3 +225,17 @@
   2) ingest at least one real call YAML (`scripts/ingest_call.py ...`)
 - **Rationale**: `POST /reviews` requires an active `PromptTemplate`; YAML ingestion alone does not create it.
 - **Status**: Implemented.
+
+### AD 8.13: Phase 3 execution order is strict (`8.0C.1` -> readiness hardening -> staged deploy checks)
+- **Decision**: Next implementation round must run in this sequence:
+  1) provider/env wiring (`8.0C.1`)
+  2) readiness failure semantics hardening (explicit `503` on DB-unreachable readiness)
+  3) deploy Stage 1 verification in `LLM_MODE=stub`
+  4) deploy Stage 2 one-shot verification in `LLM_MODE=openai`
+- **Rationale**: Reduces thrash and isolates wiring risk/cost before real LLM verification.
+- **Status**: Approved (implementation pending).
+
+### AD 8.14: DB readiness failure should be explicit (`503`) for deploy probes
+- **Decision**: Keep `GET /health` as liveness, but ensure DB readiness failures produce a stable `503` response instead of generic uncaught errors.
+- **Rationale**: Improves operator signal quality and deployment diagnostics with minimal implementation overhead.
+- **Status**: Implemented.

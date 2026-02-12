@@ -60,6 +60,7 @@ ERROR_STATUS_BY_CODE = {
     "NO_EXPECTATIONS": 400,
     "NODE_NOT_IN_CALL": 400,
     "REVIEWS_DISABLED": 503,
+    "DB_UNAVAILABLE": 503,
     "SNIPPET_TOO_LONG": 400,
     "VALIDATION_ERROR": 400,
     "INTERNAL_ERROR": 500,
@@ -249,7 +250,14 @@ def health() -> dict[str, bool]:
 @app.get("/health/db")
 def health_db() -> dict[str, bool]:
     """Readiness endpoint: DB must be reachable."""
-    ping_database()
+    try:
+        ping_database()
+    except Exception as exc:
+        logger.warning("Database readiness check failed: %s", exc)
+        raise APIException(
+            code="DB_UNAVAILABLE",
+            message="Database is unavailable.",
+        ) from exc
     return {"ok": True}
 
 
