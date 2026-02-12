@@ -318,3 +318,23 @@
 ### 16:20 - 8.0C Provider Change Locked (Neon DB)
 > User chose Neon for managed Postgres (Render stays for FastAPI; Vercel for Next.js; Clerk for auth) and asked to lock this change in artifacts before pushing/deploying.
 > Outcome: Updated `knowledge_base/logs/decisions.md`, `tasks/prd-8.0C-deployment-wiring.md`, and `tasks/task-8.0C-deployment-wiring.md` to replace Render Postgres with Neon Postgres without modifying completed implementation subtasks.
+
+### 16:40 - 8.0C Deploy Wiring Verified (Stub)
+> User completed provider wiring and deploy verification in `LLM_MODE=stub`.
+> Outcome: Render FastAPI (`/health`, `/health/db`) connects to Neon Postgres (direct URL; avoid pooler + channel binding for MVP stability). Vercel + Clerk gating works and end-to-end submit via `/api/bff/reviews` succeeds with stub findings. Bootstrap was executed from a developer machine against the deployed Neon database because Render free instances do not support shell access.
+
+### 18:07 - 8.0C Stage 1 Security Check Confirmed
+> User verified that direct, unsigned access to protected backend endpoints fails.
+> Outcome: `GET /reviews/{review_id}` without signature headers returns `401 UNAUTHORIZED`, confirming the BFF boundary is enforced in production.
+
+### 18:22 - 8.0C Stage 2 OpenAI Verification Completed
+> User approved one paid OpenAI verification run and provided the results.
+> Outcome: Switched Render backend to `LLM_MODE=openai`, set `OPENAI_API_KEY`, and completed one real end-to-end review via Vercel BFF. Observed Vercel wait time was ~11.41s and the review completed successfully (`review_id=b3a9df0c-7c78-4a90-8ec8-51cf3fd5ce5e`, `status=COMPLETED`).
+
+### 18:40 - 8.0C Operational Mode Set (Stub Until Launch)
+> User chose to revert production default to `LLM_MODE=stub` until launch day after successful Stage 2 verification.
+> Outcome: Locked the operational decision in `knowledge_base/logs/decisions.md` (AD 8.16) and updated the 8.0C walkthrough to reflect stub-default intent and the manual Render env flip requirement.
+
+### 18:46 - 8.0C Stub Rollback Verified (UI)
+> User confirmed post-redeploy UI submissions return “Stub feedback…”.
+> Outcome: Updated task/walkthrough artifacts to mark the stub-default rollback as verified after Stage 2.

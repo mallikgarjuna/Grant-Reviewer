@@ -244,3 +244,8 @@
 - **Decision**: Use Neon for managed Postgres; keep Render for hosting FastAPI.
 - **Rationale**: Separates DB provider choice from backend hosting while preserving the existing `DATABASE_URL` integration (Task 8.0C).
 - **Status**: Approved.
+
+### AD 8.16: Production default `LLM_MODE=stub` until launch day
+- **Decision**: Keep production running with `LLM_MODE=stub` by default until launch day; enable `LLM_MODE=openai` only for explicit verification runs.
+- **Rationale**: Minimizes cost/blast radius while infra stabilizes; we already proved one real OpenAI end-to-end run fits within the timeout budget.
+- **Status**: Approved.

@@ -3,7 +3,7 @@
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
 **Pipeline Phase**: Phase 2 (Task breakdown)  
-**Status**: In Progress (v0.6 - Neon DB locked; deploy-stage subtasks pending)  
+**Status**: In Progress (v0.8 - deploy wiring verified; stub-default active)  
 **Last Updated**: 2026-02-12  
 **PRD**: `tasks/prd-8.0C-deployment-wiring.md`  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
@@ -65,28 +65,29 @@ Note: `DATABASE_URL` normalization/SSL defaults were originally driven by Render
 
 Goal: get Vercel ↔ Render connectivity and secrets wiring correct before touching DB internals.
 
-- [ ] Create/confirm Render FastAPI service deploys from `backend/`:
-  - [ ] Root Directory: `backend`
-  - [ ] Python: 3.12
-  - [ ] Build: `python -m pip install --upgrade pip && python -m pip install uv && uv sync --frozen`
-  - [ ] Start: `uv run uvicorn main:app --host 0.0.0.0 --port $PORT`
-- [ ] Create/confirm Vercel frontend deploys from `frontend/`.
-- [ ] Configure Clerk for production frontend URL (and local dev origins remain intact).
-- [ ] Set Vercel env vars:
-  - [ ] `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-  - [ ] `CLERK_SECRET_KEY`
-  - [ ] `FASTAPI_BASE_URL` (Render service URL; **no trailing slash**)
-  - [ ] `BFF_SHARED_SECRET` (prod secret, not `dev`)
-- [ ] Set Render env vars (minimum to boot):
-  - [ ] `BFF_SHARED_SECRET` (must match Vercel)
-  - [ ] `LLM_MODE=stub`
-  - [ ] `REVIEWS_ENABLED=true`
-  - [ ] `REVIEW_TIMEOUT_SECONDS=25`
+- [x] Create/confirm Render FastAPI service deploys from `backend/`:
+  - [x] Root Directory: `backend`
+  - [x] Python: 3.12
+  - [x] Build: `python -m pip install --upgrade pip && python -m pip install uv && uv sync --frozen`
+  - [x] Start: `uv run uvicorn main:app --host 0.0.0.0 --port $PORT`
+- [x] Create/confirm Vercel frontend deploys from `frontend/`.
+- [x] Configure Clerk for production frontend URL.
+- [x] Set Vercel env vars:
+  - [x] `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+  - [x] `CLERK_SECRET_KEY`
+  - [x] `FASTAPI_BASE_URL=https://grant-reviewer.onrender.com` (**no trailing slash**)
+  - [x] `BFF_SHARED_SECRET` (prod secret, not `dev`)
+- [x] Set Render env vars (minimum to boot):
+  - [x] `BFF_SHARED_SECRET` (must match Vercel)
+  - [x] `LLM_MODE=stub`
+  - [x] `REVIEWS_ENABLED=true`
+  - [x] `REVIEW_TIMEOUT_SECONDS=25`
+  - [x] `DATABASE_URL` (Neon direct URL; avoid `-pooler` for MVP stability)
 
 **Verify (deploy)**
-- [ ] `GET <fastapi-base-url>/health` returns `{ok:true}`
-- [ ] Frontend landing renders at `<frontend-base-url>/`
-- [ ] Logged-out `/app` redirects to sign-in
+- [x] `GET https://grant-reviewer.onrender.com/health` returns `{ok:true}`
+- [x] Frontend landing renders at `https://grant-reviewer.vercel.app/`
+- [x] Logged-out `/app` redirects to sign-in
 
 ---
 
@@ -110,8 +111,8 @@ Goal: switch backend persistence to managed Postgres without breaking local dev.
 - [x] `uv run pytest tests/test_api.py -q` (SQLite mode still passes)
 
 **Verify (deploy)**
-- [ ] Neon Postgres provisioned and `DATABASE_URL` set
-- [ ] DB readiness check passes in deployed environment
+- [x] Neon Postgres provisioned and `DATABASE_URL` set
+- [x] DB readiness check passes in deployed environment
 
 ---
 
@@ -155,12 +156,12 @@ Goal: ensure Vercel runtime settings won’t prematurely time out review creatio
 
 Run deploy verification in two stages:
 
-- [ ] Stage 1 (stub): `LLM_MODE=stub`
-  - [ ] `/api/bff/calls` returns at least 1 call (seed completed)
-  - [ ] End-to-end submit works via `/api/bff/reviews`
-  - [ ] Unsigned direct calls to FastAPI protected endpoints fail
-- [ ] Stage 2 (openai): `LLM_MODE=openai`
-  - [ ] One real end-to-end review completes within the timeout budget
+- [x] Stage 1 (stub): `LLM_MODE=stub`
+  - [x] `/api/bff/calls` returns at least 1 call (seed completed)
+  - [x] End-to-end submit works via `/api/bff/reviews`
+  - [x] Unsigned direct calls to FastAPI protected endpoints fail (`401 UNAUTHORIZED` without signature headers)
+- [x] Stage 2 (openai): `LLM_MODE=openai`
+  - [x] One real end-to-end review completes within the timeout budget
 
 Record results (including exact URLs and env toggles used) in the 8.0C walkthrough.
 
@@ -187,19 +188,20 @@ Goal: make DB readiness behavior deterministic and operator-friendly for deploym
 
 Goal: prove end-to-end deployed wiring with minimal cost/latency noise.
 
-- [ ] Complete `8.0C.1` provider/env wiring in deployed services.
-- [ ] Provision Neon Postgres + set backend `DATABASE_URL`.
-- [ ] Run production bootstrap commands in deployed backend context:
-  - [ ] `uv run python scripts/ensure_prompt_template.py`
-  - [ ] `uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml`
-- [ ] Verify deployed backend:
-  - [ ] `GET /health` returns `{ok:true}`
-  - [ ] DB readiness endpoint returns healthy signal
-- [ ] Verify deployed frontend/BFF:
-  - [ ] `/api/bff/calls` returns at least one call
-  - [ ] one end-to-end submit via `/api/bff/reviews` succeeds with `LLM_MODE=stub`
-  - [ ] unsigned direct calls to protected FastAPI endpoints fail
-- [ ] Record exact URLs + env toggles + outcomes in walkthrough.
+- [x] Complete `8.0C.1` provider/env wiring in deployed services.
+- [x] Provision Neon Postgres + set backend `DATABASE_URL`.
+- [x] Run production bootstrap commands against the deployed DB:
+  - [x] `uv run python scripts/ensure_prompt_template.py` (ran locally with `DATABASE_URL` targeting Neon; Render free has no shell)
+  - [x] `uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml` (ran locally with `DATABASE_URL` targeting Neon)
+- [x] Verify deployed backend:
+  - [x] `GET /health` returns `{ok:true}`
+  - [x] DB readiness endpoint returns healthy signal
+  - [x] `GET /calls` returns at least 1 call
+- [x] Verify deployed frontend/BFF:
+  - [x] `/api/bff/calls` returns at least one call
+  - [x] one end-to-end submit via `/api/bff/reviews` succeeds with `LLM_MODE=stub`
+  - [x] unsigned direct calls to protected FastAPI endpoints fail (`401 UNAUTHORIZED` without signature headers)
+- [x] Record exact URLs + env toggles + outcomes in walkthrough.
 
 ---
 
@@ -207,10 +209,11 @@ Goal: prove end-to-end deployed wiring with minimal cost/latency noise.
 
 Goal: confirm one real production review within runtime budget after stub wiring proof.
 
-- [ ] Flip backend to `LLM_MODE=openai` and set `OPENAI_API_KEY`.
-- [ ] Run exactly one real end-to-end review through frontend BFF.
-- [ ] Capture observed request latency and compare with timeout budget (`maxDuration=60`, `REVIEW_TIMEOUT_SECONDS=25`).
-- [ ] If Stage 2 fails due to timeout/instability, revert to `LLM_MODE=stub`, log findings, and open follow-up task (do not block MVP wiring completion).
+- [x] Flip backend to `LLM_MODE=openai` and set `OPENAI_API_KEY`.
+- [x] Run exactly one real end-to-end review through frontend BFF.
+- [x] Capture observed request latency and compare with timeout budget (`maxDuration=60`, `REVIEW_TIMEOUT_SECONDS=25`).
+- [x] If Stage 2 fails due to timeout/instability, revert to `LLM_MODE=stub`, log findings, and open follow-up task (do not block MVP wiring completion).
+- [x] Reverted production default to `LLM_MODE=stub` after verification; confirmed UI returns stub feedback post-redeploy.
 
 ---
 
@@ -247,3 +250,5 @@ Goal: confirm one real production review within runtime budget after stub wiring
 - **v0.4** (2026-02-12): Incorporated critical Phase 3 review feedback by adding next-round execution decisions, a dedicated readiness-failure hardening subtask (`8.0C.6`), and explicit staged deploy execution subtasks (`8.0C.7` stub, `8.0C.8` openai).
 - **v0.5** (2026-02-12): Completed `8.0C.6` readiness hardening: `/health/db` now returns explicit `503` canonical error on DB-unavailable checks, with targeted + full API test verification.
 - **v0.6** (2026-02-12): Locked DB provider change to Neon Postgres (Render still hosts FastAPI; `DATABASE_URL` now sourced from Neon).
+- **v0.7** (2026-02-12): Completed Stage 2 deploy verification in `LLM_MODE=openai` (one real end-to-end review succeeded within runtime budget).
+- **v0.8** (2026-02-12): Confirmed rollback to `LLM_MODE=stub` as production default after Stage 2 verification.
