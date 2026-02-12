@@ -115,3 +115,6 @@ next-env.d.ts
 .agent/skills/
 .agents/
 .claude/
+
+# Local scratch files
+Dont-read-this-AGENTS copy.md
