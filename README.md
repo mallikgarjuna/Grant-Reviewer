@@ -23,16 +23,18 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 - ✅ FastAPI REST endpoints (minimal MVP)
 - ✅ BFF contract hardening on backend (auth signature, ownership checks, idempotency, quotas, kill switch)
 - ✅ Next.js frontend scaffold + BFF adapter + SEO guardrails + app UI pages (Task 8.0A implementation)
+- ✅ Deployment wiring (Neon Postgres + Render backend + Vercel frontend + Clerk auth) + deploy verification (Task 8.0C)
 
-### Pending
-- ⏳ Deployment wiring + deploy verification (Task 8.0C)
+### Notes
+- MVP stack (current): **Neon** (Postgres) + **Render** (FastAPI) + **Vercel** (Next.js) + **Clerk** (auth).
+- Production bootstrap runs from a developer machine (Render free tier has no shell). See `docs/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md`.
 
 ## Quick Start
 
 ### Prerequisites
 - Python 3.12+
 - [UV package manager](https://github.com/astral-sh/uv)
-- OpenAI API key
+- OpenAI API key (only needed for `LLM_MODE=openai`)
 - Node.js 22.17.0 (for `frontend/`; if using `nvm`, run `nvm use v22.17.0`)
 
 ### Setup
@@ -42,9 +44,12 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 cd backend
 uv sync
 
-# Configure API key
+# Configure local environment
 cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
+# Edit .env and set at least:
+# - BFF_SHARED_SECRET
+# - DATABASE_URL (optional locally; required for Postgres)
+# - OPENAI_API_KEY (only if using LLM_MODE=openai)
 
 # Run the review demo
 uv run python scripts/run_review.py
@@ -73,6 +78,14 @@ Or open API docs in your browser:
 MVP API note:
 - Protected review endpoints now require BFF-style signed headers and idempotency key (`POST /reviews`, `GET /reviews/{review_id}`).
 - See `docs/walkthroughs/walkthrough_task_8.0B_bff_contracts.md` for concrete verification examples.
+
+### Deployment Notes (Neon + Render)
+
+- Prefer Neon **direct** connection strings for Render (pooler + `channel_binding=require` triggered intermittent SSL disconnects with real queries).
+- Avoid `source backend/.env` if your `DATABASE_URL` contains `&` (bash/zsh will parse it); set env vars via your shell (`export DATABASE_URL='...'`) or rely on `python-dotenv` in `backend/main.py`.
+- Bootstrap in production by running scripts locally against the same Neon DB used by Render:
+  - `cd backend && DATABASE_URL='...' uv run python scripts/ensure_prompt_template.py`
+  - `cd backend && DATABASE_URL='...' uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml`
 
 ### Running The Frontend (Local)
 

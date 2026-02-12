@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
-**Status**: In Progress (v0.6 - Stage 2 complete; stub-default locked)  
+**Status**: Completed (v1.0 - Deployed on Render/Vercel with Neon; stub-default locked)  
 
 ## Scope Completed In This Pass
 
@@ -94,10 +94,7 @@ Verification:
 
 ## Remaining Open Subtasks
 
-- Decide production default mode:
-  - keep `LLM_MODE=stub` until launch day (lowest cost risk), or
-  - keep `LLM_MODE=openai` enabled (ready for real users).
-- Optional: record Vercel Network timing evidence screenshot for Stage 2 in a durable location (no secrets).
+- Optional (non-blocking): record Vercel Network timing evidence screenshot for Stage 2 in a durable location (no secrets).
 
 ## Stage 2 (OpenAI) One-Shot Verification
 
@@ -120,3 +117,4 @@ Verification:
 - **v0.4** (2026-02-12): Added explicit verification that unsigned `GET /reviews/{review_id}` returns `401 UNAUTHORIZED` (BFF boundary holds).
 - **v0.5** (2026-02-12): Recorded Stage 2 `LLM_MODE=openai` one-shot end-to-end verification (completed review within runtime budget).
 - **v0.6** (2026-02-12): Locked operational choice to keep production default `LLM_MODE=stub` until launch day (AD 8.16).
+- **v1.0** (2026-02-12): Marked 8.0C complete (deploy wiring + bootstrap + stub-default confirmed after verification).
