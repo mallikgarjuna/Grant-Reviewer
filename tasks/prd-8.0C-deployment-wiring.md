@@ -1,6 +1,6 @@
 # PRD 8.0C: MVP Deployment Wiring (Vercel + Clerk + BFF, Render FastAPI, Render Postgres)
 
-**Status**: Draft (v0.1 - Initial)  
+**Status**: Draft (v0.2 - Revised)  
 **Date**: 2026-02-12  
 **Phase**: Phase 1 (PRD)  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
@@ -38,15 +38,24 @@ This task is deployment wiring and operational correctness, not new product feat
 The BFF request path must not exceed the platform runtime budget:
 browser → Vercel route handler `POST /api/bff/reviews` → FastAPI `POST /reviews` (sync).
 
-**Acceptance Criteria**
-- A single “max duration” budget is explicitly chosen and documented:
-  - Vercel route handler max duration (and runtime type)
+### Concrete MVP defaults (lock now)
+
+- **Vercel**: set the BFF create route handler to Node runtime with a long max duration:
+  - file: `frontend/src/app/api/bff/reviews/route.ts`
+  - config: `runtime="nodejs"`, `maxDuration=60`
+- **FastAPI**: set production `REVIEW_TIMEOUT_SECONDS=25` (buffer for network + auth + serialization overhead).
+
+### Acceptance Criteria
+
+- The timeout budget is explicitly documented as:
+  - Vercel `maxDuration` for `POST /api/bff/reviews`
   - FastAPI `REVIEW_TIMEOUT_SECONDS`
-- Deploy verification includes one end-to-end submit that completes within the budget.
+- Deploy verification includes one end-to-end submit that completes within the budget (stub first; openai after wiring proof).
 
 **MVP fallback if platform budget is too low**
 - Reduce `REVIEW_TIMEOUT_SECONDS` for production until it fits, and/or
 - Temporarily run deploy verification in `LLM_MODE=stub` to validate wiring without external latency/cost.
+- If the Vercel plan cannot support a duration compatible with synchronous LLM reviews, treat async execution (jobs + polling) as a follow-up task (explicitly out-of-scope for 8.0C).
 
 ---
 
@@ -113,6 +122,39 @@ Local verification remains `scripts/verify_local_8_0A.sh` and is not replaced by
 
 ---
 
+## MVP Rollout Staging (Recommended)
+
+To ship faster and reduce cost/latency noise while wiring infra:
+
+1) **Wiring proof (stub)**: deploy with `LLM_MODE=stub` and complete deploy verification end-to-end.
+2) **Real service (openai)**: set `LLM_MODE=openai` + `OPENAI_API_KEY` and run one real end-to-end review to confirm timeouts and quotas behave in prod.
+
+Notes:
+- OpenAI mode incurs cost; keep the kill switch (`REVIEWS_ENABLED=false`) ready if needed.
+- This staging does not change the product contract; it’s an operational safety step.
+
+---
+
+## Operational Constraints (MVP)
+
+- Run the backend as a **single Render instance** for initial launch.
+- Rationale: we are using `create_all()` (no migrations) and want to avoid DDL races and unknown connection pressure until the system is stable.
+
+---
+
+## Bootstrap Runbook (Manual Seed Required)
+
+Manual seed is acceptable for MVP, but it must be written down and repeatable.
+
+**Runbook must include**
+- The exact command to ingest at least one YAML call definition into prod DB.
+- Where the command is executed (e.g., a Render shell / one-off exec against the deployed code).
+- Verification steps:
+  - `GET /calls` returns at least 1 call
+  - `GET /calls/{call_id}/nodes` returns nodes
+
+---
+
 ## Non-Goals (Explicit)
 
 - Preview environment parity (Vercel previews + Clerk + backend)
@@ -120,10 +162,11 @@ Local verification remains `scripts/verify_local_8_0A.sh` and is not replaced by
 - Alembic migrations
 - Full observability stack (Sentry/OTel/metrics) beyond provider logs
 - Custom backend domain (`api.<domain>`)
+- Async execution (background jobs + polling)
 
 ---
 
 ## Revision History
 
 - **v0.1** (2026-02-12): Initial PRD for MVP deployment wiring (providers/env mapping, Postgres requirement, timeout alignment, health checks, bootstrap runbook, deploy verification checklist).
-
+- **v0.2** (2026-02-12): Locked concrete timeout defaults (`maxDuration=60`, `REVIEW_TIMEOUT_SECONDS=25`), added staged rollout (stub → openai), clarified MVP operational constraint (single backend instance), and tightened the manual seed runbook requirements.

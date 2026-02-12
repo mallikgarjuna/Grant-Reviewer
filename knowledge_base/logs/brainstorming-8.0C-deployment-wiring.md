@@ -3,7 +3,7 @@
 **Date**: 2026-02-10  
 **Task ID**: 8.0C  
 **Pipeline Phase**: Phase 0 (Brainstorming)  
-**Status**: Draft (v0.2 - Revised)  
+**Status**: Draft (v0.3 - Revised)  
 **Last Updated**: 2026-02-12  
 
 ## Goal (MVP)
@@ -125,10 +125,11 @@ Rationale: matches existing architectural direction, minimizes bespoke infra wor
   - CORS stays **disabled** (or a minimal dev-only allowlist).
 
 ### D4: Timeout alignment (must-have)
-- Choose a single end-to-end budget for synchronous reviews and enforce it:
-  - Vercel route handler max duration ≥ backend review timeout + overhead
-  - FastAPI `REVIEW_TIMEOUT_SECONDS` set accordingly
-- Deploy verification must include one real end-to-end call through the BFF path that stays within this budget.
+- **Decision (MVP)**: pick explicit numbers now and make them configurable via env:
+  - Vercel BFF route handler: set `maxDuration=60` and `runtime="nodejs"` on `frontend/src/app/api/bff/reviews/route.ts`.
+  - FastAPI: set production `REVIEW_TIMEOUT_SECONDS=25` (buffer for network + serialization + auth overhead).
+- **Constraint**: if Vercel’s allowed max duration is <30s for our plan, we do not attempt real LLM synchronous reviews in prod under the current architecture (async/polling becomes a follow-up task).
+- Deploy verification must include one end-to-end call through the BFF path that stays within the budget (stub first; real LLM after wiring is proven).
 
 ### D5: Health endpoints (liveness + readiness)
 - Keep `GET /health` as liveness.
@@ -141,6 +142,14 @@ Rationale: matches existing architectural direction, minimizes bespoke infra wor
 MVP-fast option:
 - “Create tables on startup” for now (no migrations).
 - Run a **one-time manual ingest** to populate calls (documented runbook).
+
+### D7: Rollout staging (ship-fast + reduce cost noise)
+- Stage 1 (wiring proof): deploy with `LLM_MODE=stub` and complete deploy verification.
+- Stage 2 (real service): set `LLM_MODE=openai` + `OPENAI_API_KEY` and run one real end-to-end review to confirm timeouts and cost controls.
+
+### D8: Operational constraints (MVP)
+- Run the backend as a **single Render instance** (no horizontal scaling) for initial launch.
+- Rationale: we’re using `create_all()` (no migrations) and want to avoid DDL races/unknown connection pressure.
 
 ## Environment / Secrets Mapping (Concrete, MVP)
 
@@ -212,6 +221,7 @@ If any slice grows unexpectedly (e.g., migrations become necessary), split it in
 - Zero-downtime deploys and advanced rollout strategies.
 - Preview environment parity (Vercel previews + Clerk + backend) until prod is stable.
 - Custom backend domain (`api.<domain>`) until it provides concrete value.
+- Async review execution (background jobs + polling) unless Vercel runtime limits force it.
 
 ## Phase 1 PRD Readiness Criteria (Definition of “Ready to Spec”)
 
@@ -230,3 +240,4 @@ Phase 1 PRD can be written once we have unambiguous answers/choices for:
 
 - **v0.1** (2026-02-10): Initial Phase 0 brainstorming for MVP deployment wiring (providers, env mapping, domains/CORS, health checks, Postgres/seed risks, and PRD readiness gates).
 - **v0.2** (2026-02-12): Incorporated senior critique; added Vercel timeout alignment as a first-class risk/decision, resolved clarification questions with MVP-fast defaults (prod-only, backend provider URL, no Alembic, manual seed runbook), and added recommended sequencing slices to keep deployment shippable.
+- **v0.3** (2026-02-12): Locked concrete timeout defaults (Vercel `maxDuration=60`, FastAPI `REVIEW_TIMEOUT_SECONDS=25`), added staged rollout (stub → openai), and declared MVP operational constraint (single backend instance) to reduce deployment thrash.
