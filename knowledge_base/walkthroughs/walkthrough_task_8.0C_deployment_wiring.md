@@ -110,7 +110,7 @@ Verification:
 ## Operational Decision (Post-Verification)
 
 - Decision (AD 8.16): keep production default `LLM_MODE=stub` until launch day.
-- Action required (manual): set Render env `LLM_MODE=stub` and redeploy (do not claim complete until verified).
+- Verified: Render env `LLM_MODE=stub` set and redeployed; UI submissions return “Stub feedback…” as expected.
 
 ## Revision History
 

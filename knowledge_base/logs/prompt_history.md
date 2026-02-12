@@ -334,3 +334,7 @@
 ### 18:40 - 8.0C Operational Mode Set (Stub Until Launch)
 > User chose to revert production default to `LLM_MODE=stub` until launch day after successful Stage 2 verification.
 > Outcome: Locked the operational decision in `knowledge_base/logs/decisions.md` (AD 8.16) and updated the 8.0C walkthrough to reflect stub-default intent and the manual Render env flip requirement.
+
+### 18:46 - 8.0C Stub Rollback Verified (UI)
+> User confirmed post-redeploy UI submissions return “Stub feedback…”.
+> Outcome: Updated task/walkthrough artifacts to mark the stub-default rollback as verified after Stage 2.

@@ -3,7 +3,7 @@
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
 **Pipeline Phase**: Phase 2 (Task breakdown)  
-**Status**: In Progress (v0.7 - Stage 2 openai verification complete; remaining doc sync)  
+**Status**: In Progress (v0.8 - deploy wiring verified; stub-default active)  
 **Last Updated**: 2026-02-12  
 **PRD**: `tasks/prd-8.0C-deployment-wiring.md`  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
@@ -213,6 +213,7 @@ Goal: confirm one real production review within runtime budget after stub wiring
 - [x] Run exactly one real end-to-end review through frontend BFF.
 - [x] Capture observed request latency and compare with timeout budget (`maxDuration=60`, `REVIEW_TIMEOUT_SECONDS=25`).
 - [x] If Stage 2 fails due to timeout/instability, revert to `LLM_MODE=stub`, log findings, and open follow-up task (do not block MVP wiring completion).
+- [x] Reverted production default to `LLM_MODE=stub` after verification; confirmed UI returns stub feedback post-redeploy.
 
 ---
 
@@ -250,3 +251,4 @@ Goal: confirm one real production review within runtime budget after stub wiring
 - **v0.5** (2026-02-12): Completed `8.0C.6` readiness hardening: `/health/db` now returns explicit `503` canonical error on DB-unavailable checks, with targeted + full API test verification.
 - **v0.6** (2026-02-12): Locked DB provider change to Neon Postgres (Render still hosts FastAPI; `DATABASE_URL` now sourced from Neon).
 - **v0.7** (2026-02-12): Completed Stage 2 deploy verification in `LLM_MODE=openai` (one real end-to-end review succeeded within runtime budget).
+- **v0.8** (2026-02-12): Confirmed rollback to `LLM_MODE=stub` as production default after Stage 2 verification.
