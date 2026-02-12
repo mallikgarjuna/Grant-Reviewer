@@ -202,3 +202,26 @@
 - **Decision**: `backend/main.py` loads `backend/.env` on startup when present, without overriding already-set environment variables.
 - **Rationale**: Removes a common footgun when running `uvicorn main:app --reload` locally (especially for `BFF_SHARED_SECRET` and `OPENAI_API_KEY`), while keeping production behavior safe (deployments inject env vars; `.env` is not shipped).
 - **Status**: Implemented.
+
+---
+
+## Date: 2026-02-12 (Task 8.0C Deployment Wiring - Phase 3)
+
+### AD 8.10: Normalize `DATABASE_URL` for Render Postgres
+- **Decision**: Backend DB config normalizes `DATABASE_URL` for SQLAlchemy/psycopg compatibility:
+  - `postgres://...` and `postgresql://...` are rewritten to `postgresql+psycopg://...`
+  - default query params enforce `sslmode=require` and `connect_timeout=3` when missing
+- **Rationale**: Removes provider-specific URL footguns and forces secure, bounded connection behavior for MVP.
+- **Status**: Implemented.
+
+### AD 8.11: Readiness check endpoint at `GET /health/db`
+- **Decision**: Keep `GET /health` as liveness and add `GET /health/db` that executes a minimal DB ping.
+- **Rationale**: Deployment wiring needs a DB-aware health signal; liveness-only checks are insufficient for launch gating.
+- **Status**: Implemented.
+
+### AD 8.12: Production bootstrap requires active `PromptTemplate`
+- **Decision**: Production bootstrap uses explicit commands:
+  1) ensure active prompt template (`scripts/ensure_prompt_template.py`)
+  2) ingest at least one real call YAML (`scripts/ingest_call.py ...`)
+- **Rationale**: `POST /reviews` requires an active `PromptTemplate`; YAML ingestion alone does not create it.
+- **Status**: Implemented.

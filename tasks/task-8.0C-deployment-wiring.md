@@ -3,7 +3,7 @@
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
 **Pipeline Phase**: Phase 2 (Task breakdown)  
-**Status**: Draft (v0.2 - Revised)  
+**Status**: In Progress (v0.3 - 8.0C.2/8.0C.3/8.0C.4 complete)  
 **Last Updated**: 2026-02-12  
 **PRD**: `tasks/prd-8.0C-deployment-wiring.md`  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
@@ -181,3 +181,4 @@ Record results (including exact URLs and env toggles used) in the 8.0C walkthrou
 
 - **v0.1** (2026-02-12): Initial Phase 2 plan with MVP sequencing (env wiring → Postgres support → bootstrap runbook → runtime config → deploy verification).
 - **v0.2** (2026-02-12): Added explicit Render build/start mechanics, tightened Postgres URL/SSL requirements, and fixed bootstrap runbook to include the required `PromptTemplate` (avoid sample seed data in prod).
+- **v0.3** (2026-02-12): Phase 3 progress update: completed 8.0C.2 backend DB wiring, 8.0C.3 bootstrap script/runbook, and 8.0C.4 BFF route runtime config; deploy-bound subtasks remain open.
