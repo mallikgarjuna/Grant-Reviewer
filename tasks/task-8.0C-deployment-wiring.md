@@ -108,13 +108,13 @@ Goal: switch backend persistence to managed Postgres without breaking local dev.
 
 Goal: a repeatable “seed prod DB” procedure (manual is OK, undocumented is not).
 
-- [ ] Document the exact one-time seed steps (where + command + verification).
-- [ ] Ensure prod bootstrap covers *all* prerequisites for “submit review”:
-  - [ ] At least 1 active call + nodes + expectations (YAML ingest)
-  - [ ] At least 1 active `PromptTemplate` row (required by backend; otherwise `POST /reviews` fails)
-- [ ] Required verification steps:
-  - [ ] `GET /calls` returns at least 1 call
-  - [ ] `GET /calls/{call_id}/nodes` returns nodes
+- [x] Document the exact one-time seed steps (where + command + verification).
+- [x] Ensure prod bootstrap covers *all* prerequisites for “submit review”:
+  - [x] At least 1 active call + nodes + expectations (YAML ingest)
+  - [x] At least 1 active `PromptTemplate` row (required by backend; otherwise `POST /reviews` fails)
+- [x] Required verification steps:
+  - [x] `GET /calls` returns at least 1 call
+  - [x] `GET /calls/{call_id}/nodes` returns nodes
 
 Implementation options (pick the simplest that works on Render):
 - **Decision (MVP)**: avoid `scripts/seed.py` in production (it creates sample calls); use explicit bootstrap commands instead.
