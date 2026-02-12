@@ -62,6 +62,7 @@ venv.bak/
 # UV package manager
 .uv/
 uv.lock
+!backend/uv.lock
 
 # Logs
 logs/
