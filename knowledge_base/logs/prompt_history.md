@@ -302,3 +302,7 @@
 ### 10:59 - 8.0C Phase 2 Plan Tightened (Render + Bootstrap Prereqs)
 > User requested a senior review of the 8.0C plan and asked to revise the task file for MVP-fast shipping.
 > Outcome: Updated `tasks/task-8.0C-deployment-wiring.md` to add explicit Render build/start mechanics, tightened Postgres URL/SSL expectations, and corrected bootstrap to include the required active `PromptTemplate` (not just YAML ingest). Updated `tasks/prd-8.0C-deployment-wiring.md` accordingly.
+
+### 11:20 - 8.0C Phase 3 Implementation Started (Backend + Bootstrap + BFF runtime)
+> User approved starting Phase 3 with AGENTS/lessons enforcement.
+> Outcome: Implemented `DATABASE_URL` normalization + `/health/db` readiness in backend, added idempotent bootstrap script `backend/scripts/ensure_prompt_template.py`, updated backend runbook for production bootstrap, and set `runtime/maxDuration` on `frontend/src/app/api/bff/reviews/route.ts`. Added walkthrough `knowledge_base/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md` with verification results and explicit deploy-only pending items.
