@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
-**Status**: In Progress (v0.4 - Stage 1 complete; Stage 2 pending)  
+**Status**: In Progress (v0.5 - Stage 2 complete; rollout choice pending)  
 
 ## Scope Completed In This Pass
 
@@ -94,7 +94,18 @@ Verification:
 
 ## Remaining Open Subtasks
 
-- `8.0C.8` Deploy execution Stage 2 (`LLM_MODE=openai` one-shot real review verification).
+- Decide production default mode:
+  - keep `LLM_MODE=stub` until launch day (lowest cost risk), or
+  - keep `LLM_MODE=openai` enabled (ready for real users).
+- Optional: record Vercel Network timing evidence screenshot for Stage 2 in a durable location (no secrets).
+
+## Stage 2 (OpenAI) One-Shot Verification
+
+- Backend set to `LLM_MODE=openai` with `OPENAI_API_KEY` present.
+- One real end-to-end review submitted via Vercel BFF completed successfully.
+  - Review id: `b3a9df0c-7c78-4a90-8ec8-51cf3fd5ce5e`
+  - Observed wait time (Vercel request): ~11.41s
+  - Status: `COMPLETED`
 
 ## Revision History
 
@@ -102,3 +113,4 @@ Verification:
 - **v0.2** (2026-02-12): Added `8.0C.6` readiness hardening outcomes, including explicit `503` failure semantics and targeted/full API verification results.
 - **v0.3** (2026-02-12): Recorded deployed wiring (Vercel + Clerk, Render FastAPI, Neon direct Postgres) and Stage 1 stub end-to-end verification results; Stage 2 remains pending.
 - **v0.4** (2026-02-12): Added explicit verification that unsigned `GET /reviews/{review_id}` returns `401 UNAUTHORIZED` (BFF boundary holds).
+- **v0.5** (2026-02-12): Recorded Stage 2 `LLM_MODE=openai` one-shot end-to-end verification (completed review within runtime budget).

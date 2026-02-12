@@ -3,7 +3,7 @@
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
 **Pipeline Phase**: Phase 2 (Task breakdown)  
-**Status**: In Progress (v0.6 - Neon DB locked; deploy-stage subtasks pending)  
+**Status**: In Progress (v0.7 - Stage 2 openai verification complete; remaining doc sync)  
 **Last Updated**: 2026-02-12  
 **PRD**: `tasks/prd-8.0C-deployment-wiring.md`  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
@@ -160,8 +160,8 @@ Run deploy verification in two stages:
   - [x] `/api/bff/calls` returns at least 1 call (seed completed)
   - [x] End-to-end submit works via `/api/bff/reviews`
   - [x] Unsigned direct calls to FastAPI protected endpoints fail (`401 UNAUTHORIZED` without signature headers)
-- [ ] Stage 2 (openai): `LLM_MODE=openai`
-  - [ ] One real end-to-end review completes within the timeout budget
+- [x] Stage 2 (openai): `LLM_MODE=openai`
+  - [x] One real end-to-end review completes within the timeout budget
 
 Record results (including exact URLs and env toggles used) in the 8.0C walkthrough.
 
@@ -209,10 +209,10 @@ Goal: prove end-to-end deployed wiring with minimal cost/latency noise.
 
 Goal: confirm one real production review within runtime budget after stub wiring proof.
 
-- [ ] Flip backend to `LLM_MODE=openai` and set `OPENAI_API_KEY`.
-- [ ] Run exactly one real end-to-end review through frontend BFF.
-- [ ] Capture observed request latency and compare with timeout budget (`maxDuration=60`, `REVIEW_TIMEOUT_SECONDS=25`).
-- [ ] If Stage 2 fails due to timeout/instability, revert to `LLM_MODE=stub`, log findings, and open follow-up task (do not block MVP wiring completion).
+- [x] Flip backend to `LLM_MODE=openai` and set `OPENAI_API_KEY`.
+- [x] Run exactly one real end-to-end review through frontend BFF.
+- [x] Capture observed request latency and compare with timeout budget (`maxDuration=60`, `REVIEW_TIMEOUT_SECONDS=25`).
+- [x] If Stage 2 fails due to timeout/instability, revert to `LLM_MODE=stub`, log findings, and open follow-up task (do not block MVP wiring completion).
 
 ---
 
@@ -249,3 +249,4 @@ Goal: confirm one real production review within runtime budget after stub wiring
 - **v0.4** (2026-02-12): Incorporated critical Phase 3 review feedback by adding next-round execution decisions, a dedicated readiness-failure hardening subtask (`8.0C.6`), and explicit staged deploy execution subtasks (`8.0C.7` stub, `8.0C.8` openai).
 - **v0.5** (2026-02-12): Completed `8.0C.6` readiness hardening: `/health/db` now returns explicit `503` canonical error on DB-unavailable checks, with targeted + full API test verification.
 - **v0.6** (2026-02-12): Locked DB provider change to Neon Postgres (Render still hosts FastAPI; `DATABASE_URL` now sourced from Neon).
+- **v0.7** (2026-02-12): Completed Stage 2 deploy verification in `LLM_MODE=openai` (one real end-to-end review succeeded within runtime budget).
