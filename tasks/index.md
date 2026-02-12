@@ -12,5 +12,5 @@
 | 7.0 | FastAPI MVP | [prd-7.0](prd-7.0-fastapi-mvp.md) | [task-7.0](task-7.0-fastapi-mvp.md) | [walkthrough](../knowledge_base/walkthroughs/walkthrough_task_7.0_fastapi_mvp.md) | [x] |
 | 8.0B | Frontend Contracts | [prd-8.0B](prd-8.0B-bff-contracts.md) | [task-8.0B](task-8.0B-bff-contracts.md) | [walkthrough](../knowledge_base/walkthroughs/walkthrough_task_8.0B_bff_contracts.md) | [x] |
 | 8.0A | Frontend UI Slice | [prd-8.0A](prd-8.0A-frontend-ui.md) | [task-8.0A](task-8.0A-frontend-ui.md) | [walkthrough](../knowledge_base/walkthroughs/walkthrough_task_8.0A_frontend_ui.md) | [x] |
-| 8.0C | Deployment Wiring | [prd-8.0C](prd-8.0C-deployment-wiring.md) | - | - | [ ] |
+| 8.0C | Deployment Wiring | [prd-8.0C](prd-8.0C-deployment-wiring.md) | [task-8.0C](task-8.0C-deployment-wiring.md) | - | [ ] |
 | 8.1 | Lint Baseline Cleanup | - | - | - | [ ] |
