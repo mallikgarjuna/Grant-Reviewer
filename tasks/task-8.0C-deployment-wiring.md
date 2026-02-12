@@ -3,7 +3,7 @@
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
 **Pipeline Phase**: Phase 2 (Task breakdown)  
-**Status**: Draft (v0.1 - Initial)  
+**Status**: Draft (v0.2 - Revised)  
 **Last Updated**: 2026-02-12  
 **PRD**: `tasks/prd-8.0C-deployment-wiring.md`  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
@@ -28,6 +28,11 @@
 ## Decisions Locked In This Plan (MVP, ship-fast)
 
 - Providers: Vercel (Next.js) + Render (FastAPI) + Render Postgres.
+- Render backend deploy mechanics (MVP-fast default):
+  - Render Web Service **Root Directory**: `backend`
+  - Render Web Service **Python version**: 3.12
+  - Render Web Service **Build Command**: `python -m pip install --upgrade pip && python -m pip install uv && uv sync --frozen`
+  - Render Web Service **Start Command**: `uv run uvicorn main:app --host 0.0.0.0 --port $PORT`
 - Timeout defaults:
   - Next BFF create route (`frontend/src/app/api/bff/reviews/route.ts`): `runtime="nodejs"`, `maxDuration=60`.
   - FastAPI production: `REVIEW_TIMEOUT_SECONDS=25`.
@@ -49,13 +54,17 @@
 
 Goal: get Vercel ↔ Render connectivity and secrets wiring correct before touching DB internals.
 
-- [ ] Create/confirm Render FastAPI service deploys from `backend/`.
+- [ ] Create/confirm Render FastAPI service deploys from `backend/`:
+  - [ ] Root Directory: `backend`
+  - [ ] Python: 3.12
+  - [ ] Build: `python -m pip install --upgrade pip && python -m pip install uv && uv sync --frozen`
+  - [ ] Start: `uv run uvicorn main:app --host 0.0.0.0 --port $PORT`
 - [ ] Create/confirm Vercel frontend deploys from `frontend/`.
 - [ ] Configure Clerk for production frontend URL (and local dev origins remain intact).
 - [ ] Set Vercel env vars:
   - [ ] `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
   - [ ] `CLERK_SECRET_KEY`
-  - [ ] `FASTAPI_BASE_URL` (Render service URL)
+  - [ ] `FASTAPI_BASE_URL` (Render service URL; **no trailing slash**)
   - [ ] `BFF_SHARED_SECRET` (prod secret, not `dev`)
 - [ ] Set Render env vars (minimum to boot):
   - [ ] `BFF_SHARED_SECRET` (must match Vercel)
@@ -77,7 +86,10 @@ Goal: switch backend persistence to managed Postgres without breaking local dev.
 - [ ] Backend supports `DATABASE_URL`:
   - [ ] Uses `DATABASE_URL` when set; otherwise defaults to local SQLite for dev.
   - [ ] Avoid SQLite-only filesystem side effects when Postgres is used.
-- [ ] Add Postgres driver dependency (likely `psycopg`) and verify import/runtime.
+- [ ] Add Postgres driver dependency (`psycopg[binary]`) and verify import/runtime.
+- [ ] Normalize Render DB URLs for SQLAlchemy:
+  - [ ] Accept `postgres://...` and rewrite to `postgresql+psycopg://...` (preserve user/pass/host/db + query string).
+  - [ ] Ensure SSL requirements are explicit (`sslmode=require`), either via `DATABASE_URL` or documented env.
 - [ ] Add DB readiness endpoint (`/health/db` or enrich `/health`) that:
   - [ ] performs a fast `SELECT 1` (or equivalent)
   - [ ] times out quickly
@@ -97,13 +109,20 @@ Goal: switch backend persistence to managed Postgres without breaking local dev.
 Goal: a repeatable “seed prod DB” procedure (manual is OK, undocumented is not).
 
 - [ ] Document the exact one-time seed steps (where + command + verification).
+- [ ] Ensure prod bootstrap covers *all* prerequisites for “submit review”:
+  - [ ] At least 1 active call + nodes + expectations (YAML ingest)
+  - [ ] At least 1 active `PromptTemplate` row (required by backend; otherwise `POST /reviews` fails)
 - [ ] Required verification steps:
   - [ ] `GET /calls` returns at least 1 call
   - [ ] `GET /calls/{call_id}/nodes` returns nodes
 
 Implementation options (pick the simplest that works on Render):
-- Option A: “Render shell / one-off exec” runs `uv run python scripts/ingest_call.py ...`
-- Option B: temporary admin-only route (defer unless absolutely necessary; increases attack surface)
+- **Decision (MVP)**: avoid `scripts/seed.py` in production (it creates sample calls); use explicit bootstrap commands instead.
+- Option A (preferred): Render shell / one-off exec runs:
+  - `uv run python scripts/ensure_prompt_template.py`
+  - `uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml`
+- Option B: extend `scripts/ingest_call.py` to ensure an active prompt template exists (acceptable, but mixes concerns).
+- Option C: temporary admin-only route (defer unless absolutely necessary; increases attack surface).
 
 ---
 
@@ -125,6 +144,7 @@ Goal: ensure Vercel runtime settings won’t prematurely time out review creatio
 Run deploy verification in two stages:
 
 - [ ] Stage 1 (stub): `LLM_MODE=stub`
+  - [ ] `/api/bff/calls` returns at least 1 call (seed completed)
   - [ ] End-to-end submit works via `/api/bff/reviews`
   - [ ] Unsigned direct calls to FastAPI protected endpoints fail
 - [ ] Stage 2 (openai): `LLM_MODE=openai`
@@ -151,10 +171,12 @@ Record results (including exact URLs and env toggles used) in the 8.0C walkthrou
 - Async execution (jobs + polling) if runtime limits force it.
 - IaC / CI-CD automation.
 - Full observability stack (Sentry/OTel/metrics) beyond provider logs.
+- Dockerfile / containerization for backend deploy (only if native Render build proves unreliable).
+- Render blueprint (`render.yaml`) until the manual wiring path is stable.
 
 ---
 
 ## Revision History
 
 - **v0.1** (2026-02-12): Initial Phase 2 plan with MVP sequencing (env wiring → Postgres support → bootstrap runbook → runtime config → deploy verification).
-
+- **v0.2** (2026-02-12): Added explicit Render build/start mechanics, tightened Postgres URL/SSL requirements, and fixed bootstrap runbook to include the required `PromptTemplate` (avoid sample seed data in prod).

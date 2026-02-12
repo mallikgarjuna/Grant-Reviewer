@@ -298,3 +298,7 @@
 ### 10:44 - Phase 2 Plan Created (8.0C Deployment Wiring)
 > User requested revisions based on senior critique and asked to update the brainstorming/PRD/task artifacts.
 > Outcome: Revised `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md` and `tasks/prd-8.0C-deployment-wiring.md` with concrete timeout defaults and staged rollout, and created `tasks/task-8.0C-deployment-wiring.md` (Phase 2 plan). Updated `tasks/index.md` to link the task plan.
+
+### 10:59 - 8.0C Phase 2 Plan Tightened (Render + Bootstrap Prereqs)
+> User requested a senior review of the 8.0C plan and asked to revise the task file for MVP-fast shipping.
+> Outcome: Updated `tasks/task-8.0C-deployment-wiring.md` to add explicit Render build/start mechanics, tightened Postgres URL/SSL expectations, and corrected bootstrap to include the required active `PromptTemplate` (not just YAML ingest). Updated `tasks/prd-8.0C-deployment-wiring.md` accordingly.

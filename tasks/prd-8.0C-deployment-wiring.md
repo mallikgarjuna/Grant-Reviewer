@@ -1,6 +1,6 @@
 # PRD 8.0C: MVP Deployment Wiring (Vercel + Clerk + BFF, Render FastAPI, Render Postgres)
 
-**Status**: Draft (v0.2 - Revised)  
+**Status**: Draft (v0.3 - Revised)  
 **Date**: 2026-02-12  
 **Phase**: Phase 1 (PRD)  
 **Phase 0 Notes**: `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md`  
@@ -80,11 +80,23 @@ browser → Vercel route handler `POST /api/bff/reviews` → FastAPI `POST /revi
 - `BFF_SHARED_SECRET` is different between local dev and prod.
 - FastAPI rejects protected calls when `BFF_SHARED_SECRET` is missing/mismatched.
 
+### R2: Render deployment mechanics are explicit (avoid “guess the platform”)
+
+**Decision (MVP)**: use Render’s native Python runtime first (no Docker/IaC in 8.0C).
+
+**Acceptance Criteria**
+- Render FastAPI service has explicit settings documented (root dir, build, start).
+- Backend binds `0.0.0.0:$PORT` (Render requirement).
+- Backend runs as a single instance initially.
+
 ### R2: Postgres support in backend (no SQLite-only assumptions)
 
 **Acceptance Criteria**
 - Backend uses `DATABASE_URL` when present; does not require local filesystem paths to exist.
 - Backend starts cleanly against managed Postgres and creates tables (`create_all`) on startup.
+- Backend accepts Render-provided DB URLs:
+  - supports `postgres://...` by normalizing to a SQLAlchemy-compatible scheme (e.g., `postgresql+psycopg://...`)
+  - SSL requirements are explicit (`sslmode=require`)
 
 ### R3: Health checks (liveness + DB readiness)
 
@@ -97,9 +109,18 @@ browser → Vercel route handler `POST /api/bff/reviews` → FastAPI `POST /revi
 
 ### R4: Bootstrap runbook (manual seed is OK, undocumented seed is not)
 
+The backend currently requires:
+- at least 1 call + nodes + expectations (so `/app` is usable)
+- at least 1 active `PromptTemplate` (otherwise `POST /reviews` fails)
+
 **Acceptance Criteria**
-- A documented runbook exists for seeding at least one call YAML into prod DB.
-- Verification steps confirm calls exist post-ingest (via API and/or DB query).
+- A documented runbook exists for:
+  - ensuring an active `PromptTemplate` exists
+  - ingesting at least one call YAML into prod DB
+- Verification steps confirm:
+  - `GET /calls` returns at least 1 call
+  - `GET /calls/{call_id}/nodes` returns nodes
+  - an end-to-end submit via `/api/bff/reviews` succeeds in stub mode
 
 ---
 
@@ -152,6 +173,7 @@ Manual seed is acceptable for MVP, but it must be written down and repeatable.
 - Verification steps:
   - `GET /calls` returns at least 1 call
   - `GET /calls/{call_id}/nodes` returns nodes
+  - an active `PromptTemplate` exists (required by backend)
 
 ---
 
@@ -163,6 +185,7 @@ Manual seed is acceptable for MVP, but it must be written down and repeatable.
 - Full observability stack (Sentry/OTel/metrics) beyond provider logs
 - Custom backend domain (`api.<domain>`)
 - Async execution (background jobs + polling)
+- Docker-based deployment and Render blueprints (`render.yaml`) (follow-up if native build is unreliable)
 
 ---
 
@@ -170,3 +193,4 @@ Manual seed is acceptable for MVP, but it must be written down and repeatable.
 
 - **v0.1** (2026-02-12): Initial PRD for MVP deployment wiring (providers/env mapping, Postgres requirement, timeout alignment, health checks, bootstrap runbook, deploy verification checklist).
 - **v0.2** (2026-02-12): Locked concrete timeout defaults (`maxDuration=60`, `REVIEW_TIMEOUT_SECONDS=25`), added staged rollout (stub → openai), clarified MVP operational constraint (single backend instance), and tightened the manual seed runbook requirements.
+- **v0.3** (2026-02-12): Added explicit Render deployment mechanics requirement and corrected bootstrap definition to include the required `PromptTemplate` (not just YAML ingest). Added Postgres URL normalization + SSL expectations.
