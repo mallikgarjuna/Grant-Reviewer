@@ -330,3 +330,7 @@
 ### 18:22 - 8.0C Stage 2 OpenAI Verification Completed
 > User approved one paid OpenAI verification run and provided the results.
 > Outcome: Switched Render backend to `LLM_MODE=openai`, set `OPENAI_API_KEY`, and completed one real end-to-end review via Vercel BFF. Observed Vercel wait time was ~11.41s and the review completed successfully (`review_id=b3a9df0c-7c78-4a90-8ec8-51cf3fd5ce5e`, `status=COMPLETED`).
+
+### 18:40 - 8.0C Operational Mode Set (Stub Until Launch)
+> User chose to revert production default to `LLM_MODE=stub` until launch day after successful Stage 2 verification.
+> Outcome: Locked the operational decision in `knowledge_base/logs/decisions.md` (AD 8.16) and updated the 8.0C walkthrough to reflect stub-default intent and the manual Render env flip requirement.

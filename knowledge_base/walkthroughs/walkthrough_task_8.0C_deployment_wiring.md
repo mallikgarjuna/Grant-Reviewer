@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-12  
 **Task ID**: 8.0C  
-**Status**: In Progress (v0.5 - Stage 2 complete; rollout choice pending)  
+**Status**: In Progress (v0.6 - Stage 2 complete; stub-default locked)  
 
 ## Scope Completed In This Pass
 
@@ -107,6 +107,11 @@ Verification:
   - Observed wait time (Vercel request): ~11.41s
   - Status: `COMPLETED`
 
+## Operational Decision (Post-Verification)
+
+- Decision (AD 8.16): keep production default `LLM_MODE=stub` until launch day.
+- Action required (manual): set Render env `LLM_MODE=stub` and redeploy (do not claim complete until verified).
+
 ## Revision History
 
 - **v0.1** (2026-02-12): Initial Phase 3 walkthrough with completed local implementation/verification and explicit deploy-only remaining steps.
@@ -114,3 +119,4 @@ Verification:
 - **v0.3** (2026-02-12): Recorded deployed wiring (Vercel + Clerk, Render FastAPI, Neon direct Postgres) and Stage 1 stub end-to-end verification results; Stage 2 remains pending.
 - **v0.4** (2026-02-12): Added explicit verification that unsigned `GET /reviews/{review_id}` returns `401 UNAUTHORIZED` (BFF boundary holds).
 - **v0.5** (2026-02-12): Recorded Stage 2 `LLM_MODE=openai` one-shot end-to-end verification (completed review within runtime budget).
+- **v0.6** (2026-02-12): Locked operational choice to keep production default `LLM_MODE=stub` until launch day (AD 8.16).
