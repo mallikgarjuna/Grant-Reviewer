@@ -23,14 +23,14 @@
 **Reference**: See `backend/data/calls/README.md` for full documentation.
 
 ### L5: Task File Updates During Execution
-**Issue**: Updated internal artifact `task.md` but forgot to update the project task file `tasks/task-X.0-*.md`.
+**Issue**: Updated internal artifact `task.md` but forgot to update the project task file `docs/tasks/active/task-X.0-*.md`.
 **Fix**: After each subtask completion, update the project task file (not just internal artifacts).
-**Prevention**: Always update `tasks/task-X.0-*.md` with `[x]` checkmarks as subtasks complete. Also update `tasks/index.md` when task status changes.
+**Prevention**: Always update `docs/tasks/active/task-X.0-*.md` with `[x]` checkmarks as subtasks complete. Also update `docs/index.md` when task status changes, and archive finished tasks under `docs/tasks/completed/`.
 
 ### L6: Brainstorming Log Naming Convention
 **Issue**: Brainstorming logs were created without a task ID in the filename.
 **Fix**: Rename brainstorming log files to include the task ID.
-**Prevention**: For each major task, name Phase 0 brainstorming logs like `knowledge_base/logs/brainstorming-[TaskID]-[slug].md`.
+**Prevention**: For each major task, name Phase 0 brainstorming logs like `docs/brainstorms/brainstorming-[TaskID]-[slug].md`.
 
 ### L7: Phase 3 Commit Granularity
 **Issue**: Phase 3 implementation progressed without commits at each completed subtask boundary (e.g., `7.1`, `7.2`).
