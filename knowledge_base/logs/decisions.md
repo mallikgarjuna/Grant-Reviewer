@@ -177,7 +177,7 @@
 ### AD 8.5: Render Managed Postgres (v1)
 - **Decision**: Use Render’s managed Postgres for v1 production database.
 - **Rationale**: Consolidates DB ops (backups/availability) and pairs naturally with hosting the FastAPI service on Render.
-- **Status**: Approved (implementation pending).
+- **Status**: Superseded by AD 8.15 (Neon).
 
 ### AD 8.6: Split Hosting: Vercel (Next.js) + Render (FastAPI + Postgres)
 - **Decision**: Host Next.js on Vercel (with Clerk) and host FastAPI + Postgres on Render.
@@ -202,3 +202,45 @@
 - **Decision**: `backend/main.py` loads `backend/.env` on startup when present, without overriding already-set environment variables.
 - **Rationale**: Removes a common footgun when running `uvicorn main:app --reload` locally (especially for `BFF_SHARED_SECRET` and `OPENAI_API_KEY`), while keeping production behavior safe (deployments inject env vars; `.env` is not shipped).
 - **Status**: Implemented.
+
+---
+
+## Date: 2026-02-12 (Task 8.0C Deployment Wiring - Phase 3)
+
+### AD 8.10: Normalize `DATABASE_URL` for Render Postgres
+- **Decision**: Backend DB config normalizes `DATABASE_URL` for SQLAlchemy/psycopg compatibility:
+  - `postgres://...` and `postgresql://...` are rewritten to `postgresql+psycopg://...`
+  - default query params enforce `sslmode=require` and `connect_timeout=3` when missing
+- **Rationale**: Removes provider-specific URL footguns and forces secure, bounded connection behavior for MVP.
+- **Status**: Implemented.
+
+### AD 8.11: Readiness check endpoint at `GET /health/db`
+- **Decision**: Keep `GET /health` as liveness and add `GET /health/db` that executes a minimal DB ping.
+- **Rationale**: Deployment wiring needs a DB-aware health signal; liveness-only checks are insufficient for launch gating.
+- **Status**: Implemented.
+
+### AD 8.12: Production bootstrap requires active `PromptTemplate`
+- **Decision**: Production bootstrap uses explicit commands:
+  1) ensure active prompt template (`scripts/ensure_prompt_template.py`)
+  2) ingest at least one real call YAML (`scripts/ingest_call.py ...`)
+- **Rationale**: `POST /reviews` requires an active `PromptTemplate`; YAML ingestion alone does not create it.
+- **Status**: Implemented.
+
+### AD 8.13: Phase 3 execution order is strict (`8.0C.1` -> readiness hardening -> staged deploy checks)
+- **Decision**: Next implementation round must run in this sequence:
+  1) provider/env wiring (`8.0C.1`)
+  2) readiness failure semantics hardening (explicit `503` on DB-unreachable readiness)
+  3) deploy Stage 1 verification in `LLM_MODE=stub`
+  4) deploy Stage 2 one-shot verification in `LLM_MODE=openai`
+- **Rationale**: Reduces thrash and isolates wiring risk/cost before real LLM verification.
+- **Status**: Approved (implementation pending).
+
+### AD 8.14: DB readiness failure should be explicit (`503`) for deploy probes
+- **Decision**: Keep `GET /health` as liveness, but ensure DB readiness failures produce a stable `503` response instead of generic uncaught errors.
+- **Rationale**: Improves operator signal quality and deployment diagnostics with minimal implementation overhead.
+- **Status**: Implemented.
+
+### AD 8.15: DB provider is Neon (not Render Postgres)
+- **Decision**: Use Neon for managed Postgres; keep Render for hosting FastAPI.
+- **Rationale**: Separates DB provider choice from backend hosting while preserving the existing `DATABASE_URL` integration (Task 8.0C).
+- **Status**: Approved.

@@ -77,3 +77,8 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: What hosting/auth/DB choices fit the v1 architecture?
 **A:** Picked v1 direction: Next.js (SEO + app) hosted on Vercel with Clerk auth; FastAPI hosted separately (BFF calls server-to-server); production DB on Render managed Postgres. Use BFF to avoid cross-origin auth complexity, and implement quotas first to control LLM spend.
+
+## 2026-02-12
+
+### Q: Should we revise the Task 8.0C Phase 3 plan before continuing implementation?
+**A:** Yes. For MVP-fast shipping, first tighten the plan (without rewriting completed subtasks), then execute in strict order: provider/env wiring, readiness-failure hardening (`503` semantics), deploy Stage 1 in `stub`, then one Stage 2 real-LLM verification.

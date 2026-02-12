@@ -62,6 +62,7 @@ venv.bak/
 # UV package manager
 .uv/
 uv.lock
+!backend/uv.lock
 
 # Logs
 logs/
@@ -115,3 +116,6 @@ next-env.d.ts
 .agent/skills/
 .agents/
 .claude/
+
+# Local scratch files
+Dont-read-this-AGENTS copy.md

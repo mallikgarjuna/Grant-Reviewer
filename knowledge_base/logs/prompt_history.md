@@ -282,3 +282,39 @@
 ### 18:55 - Local `/app` auth flow hardened (no crash, no manual path guessing)
 > User reported repeated local `/app` crashes and requested a hard fix.
 > Outcome: Updated `frontend/src/proxy.ts` to (1) redirect unauthenticated `/app/*` requests to local `/sign-in` with `redirect_url`, (2) return a clear JSON error for `/api/bff/*` when Clerk env is missing/placeholder, and (3) avoid depending on hosted Clerk redirect paths for local navigation. Updated `frontend/src/app/sign-in/[[...sign-in]]/page.tsx` to show a clear config-error UI (`auth_config_error=1`) and enforce safe local post-sign-in redirects.
+
+### 20:17 - Phase 0 Brainstorming Started (8.0C Deployment Wiring)
+> User asked to start Task 8.0C at Phase 0 (deployment wiring: Vercel/Clerk/BFF + FastAPI + managed Postgres + secrets/domains/CORS/health checks).
+> Outcome: Created `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md` with critical gaps/risks, clarification questions, tentative MVP decisions, env mapping, explicit local-vs-deploy verification split, non-scope backlog, and Phase 1 PRD readiness criteria.
+
+### 20:25 - 8.0C Brainstorming Revised (MVP decisions locked)
+> User requested a senior critical review and then asked to revise the brainstorming doc by deciding the MVP-fast defaults.
+> Outcome: Revised `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md` to (1) elevate Vercel timeout alignment as a first-class risk, (2) lock MVP defaults (Vercel+Render, prod-only, backend stays on provider URL, no Alembic yet, manual seed runbook, public `/docs`, CORS disabled), and (3) add a recommended execution sequencing to keep “deployment wiring” shippable.
+
+### 20:35 - Phase 1 PRD Started (8.0C Deployment Wiring)
+> User approved moving from Phase 0 to Phase 1.
+> Outcome: Created `tasks/prd-8.0C-deployment-wiring.md` and linked Task 8.0C in `tasks/index.md`.
+
+### 10:44 - Phase 2 Plan Created (8.0C Deployment Wiring)
+> User requested revisions based on senior critique and asked to update the brainstorming/PRD/task artifacts.
+> Outcome: Revised `knowledge_base/logs/brainstorming-8.0C-deployment-wiring.md` and `tasks/prd-8.0C-deployment-wiring.md` with concrete timeout defaults and staged rollout, and created `tasks/task-8.0C-deployment-wiring.md` (Phase 2 plan). Updated `tasks/index.md` to link the task plan.
+
+### 10:59 - 8.0C Phase 2 Plan Tightened (Render + Bootstrap Prereqs)
+> User requested a senior review of the 8.0C plan and asked to revise the task file for MVP-fast shipping.
+> Outcome: Updated `tasks/task-8.0C-deployment-wiring.md` to add explicit Render build/start mechanics, tightened Postgres URL/SSL expectations, and corrected bootstrap to include the required active `PromptTemplate` (not just YAML ingest). Updated `tasks/prd-8.0C-deployment-wiring.md` accordingly.
+
+### 11:20 - 8.0C Phase 3 Implementation Started (Backend + Bootstrap + BFF runtime)
+> User approved starting Phase 3 with AGENTS/lessons enforcement.
+> Outcome: Implemented `DATABASE_URL` normalization + `/health/db` readiness in backend, added idempotent bootstrap script `backend/scripts/ensure_prompt_template.py`, updated backend runbook for production bootstrap, and set `runtime/maxDuration` on `frontend/src/app/api/bff/reviews/route.ts`. Added walkthrough `knowledge_base/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md` with verification results and explicit deploy-only pending items.
+
+### 12:04 - 8.0C Task Plan Revised Before Next Phase 3 Round
+> User asked to revise the task plan first using critical feedback, keep implemented subtasks intact, and add concrete next-step tracking for MVP-fast shipping.
+> Outcome: Updated `tasks/task-8.0C-deployment-wiring.md` to add next-round execution decisions and new subtasks: `8.0C.6` (readiness-failure hardening to explicit `503`), `8.0C.7` (deploy Stage 1 stub execution), and `8.0C.8` (deploy Stage 2 one-shot openai verification). Logged new architecture decisions and deferred non-scope hardening items.
+
+### 12:13 - 8.0C.6 Implemented (Readiness failure semantics)
+> User requested implementation of subtask `8.0C.6`.
+> Outcome: Updated FastAPI readiness behavior so `GET /health/db` returns canonical `503` (`DB_UNAVAILABLE`) when DB checks fail, while keeping `GET /health` as liveness. Added failure-path API tests and updated backend docs + task/walkthrough artifacts with verification results.
+
+### 16:20 - 8.0C Provider Change Locked (Neon DB)
+> User chose Neon for managed Postgres (Render stays for FastAPI; Vercel for Next.js; Clerk for auth) and asked to lock this change in artifacts before pushing/deploying.
+> Outcome: Updated `knowledge_base/logs/decisions.md`, `tasks/prd-8.0C-deployment-wiring.md`, and `tasks/task-8.0C-deployment-wiring.md` to replace Render Postgres with Neon Postgres without modifying completed implementation subtasks.

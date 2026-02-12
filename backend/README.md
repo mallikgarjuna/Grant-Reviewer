@@ -29,6 +29,7 @@ backend/
 ├── scripts/
 │   ├── seed.py                  # Sample data seeding
 │   ├── ingest_call.py           # YAML call ingestion CLI
+│   ├── ensure_prompt_template.py # Ensures active PromptTemplate
 │   └── run_review.py            # Review demo (real LLM)
 ├── data/
 │   ├── calls/                   # YAML call definitions
@@ -75,7 +76,8 @@ LLM_MODE=openai uv run uvicorn main:app --reload
 ```
 
 Endpoints:
-- `GET /health`
+- `GET /health` (liveness: process up)
+- `GET /health/db` (readiness: `200 {"ok":true}` when DB reachable; `503` canonical error when unavailable)
 - `GET /calls`
 - `GET /calls/{call_id}/nodes`
 - `POST /reviews`
@@ -84,6 +86,7 @@ Endpoints:
 Quick smoke checks (run in another terminal while the server is running):
 ```bash
 curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/health/db
 ```
 Open interactive docs:
 - `http://127.0.0.1:8000/docs`
@@ -116,6 +119,30 @@ uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml --dry-run
 uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml
 ```
 
+### Ensure PromptTemplate (Bootstrap Precondition)
+
+```bash
+# Creates one active PromptTemplate if none exists
+uv run python scripts/ensure_prompt_template.py
+```
+
+### Production Bootstrap Runbook (Manual)
+
+Use this when provisioning a fresh production database (Task 8.0C).
+
+```bash
+# 1) Ensure active prompt template exists (required by POST /reviews)
+uv run python scripts/ensure_prompt_template.py
+
+# 2) Ingest at least one real call definition
+uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml
+```
+
+Verification checklist:
+- `GET /calls` returns at least one call.
+- `GET /calls/{call_id}/nodes` returns nodes.
+- In `LLM_MODE=stub`, one BFF `POST /reviews` completes successfully.
+
 ### Database Reset
 
 ```bash
@@ -129,6 +156,7 @@ uv run python scripts/run_review.py  # Seeds fresh DB
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `OPENAI_API_KEY` | OpenAI API key | **Required** |
+| `DATABASE_URL` | Optional DB URL (`postgres://` is normalized automatically) | local SQLite |
 | `BFF_SHARED_SECRET` | Shared secret for BFF signature verification | (none) |
 | `LLM_MODEL` | Model to use | `gpt-4o-mini` |
 | `LLM_MODE` | `openai` or `stub` | `openai` |

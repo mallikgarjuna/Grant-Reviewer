@@ -18,7 +18,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
-from app.db import create_db_and_tables, get_session
+from app.db import create_db_and_tables, get_session, ping_database
 from app.models.domain import ReviewStatus
 from app.repositories.review_repository import ReviewRepository
 from app.schemas.api import (
@@ -60,6 +60,7 @@ ERROR_STATUS_BY_CODE = {
     "NO_EXPECTATIONS": 400,
     "NODE_NOT_IN_CALL": 400,
     "REVIEWS_DISABLED": 503,
+    "DB_UNAVAILABLE": 503,
     "SNIPPET_TOO_LONG": 400,
     "VALIDATION_ERROR": 400,
     "INTERNAL_ERROR": 500,
@@ -243,6 +244,20 @@ RepositoryDep = Annotated[ReviewRepository, Depends(get_repository)]
 @app.get("/health")
 def health() -> dict[str, bool]:
     """Liveness endpoint."""
+    return {"ok": True}
+
+
+@app.get("/health/db")
+def health_db() -> dict[str, bool]:
+    """Readiness endpoint: DB must be reachable."""
+    try:
+        ping_database()
+    except Exception as exc:
+        logger.warning("Database readiness check failed: %s", exc)
+        raise APIException(
+            code="DB_UNAVAILABLE",
+            message="Database is unavailable.",
+        ) from exc
     return {"ok": True}
 
 

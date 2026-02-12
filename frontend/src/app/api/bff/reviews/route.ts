@@ -8,6 +8,9 @@ import {
 } from "@/lib/bff/adapter";
 import { apiErrorResponse, requireBffContext } from "@/lib/bff/route-helpers";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 type CreateReviewBody = {
   call_id?: unknown;
   node_id?: unknown;
@@ -67,4 +70,3 @@ export async function POST(request: Request) {
   }
   return NextResponse.json(result.data, { status: 200 });
 }
-
