@@ -1,5 +1,8 @@
 # Project Dashboard
 
+Quick links:
+- Parking lot / backlog: `docs/parking_lot.md`
+
 | Task ID | Component | PRD | Task File | Walkthrough | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | 0.0 | Phase 0 | - | [task-0-brainstorming.md](tasks/completed/task-0-brainstorming.md) | - | [x] |
@@ -13,4 +16,4 @@
 | 8.0B | Frontend Contracts | [prd-8.0B](tasks/completed/prd-8.0B-bff-contracts.md) | [task-8.0B](tasks/completed/task-8.0B-bff-contracts.md) | [walkthrough](walkthroughs/walkthrough_task_8.0B_bff_contracts.md) | [x] |
 | 8.0A | Frontend UI Slice | [prd-8.0A](tasks/completed/prd-8.0A-frontend-ui.md) | [task-8.0A](tasks/completed/task-8.0A-frontend-ui.md) | [walkthrough](walkthroughs/walkthrough_task_8.0A_frontend_ui.md) | [x] |
 | 8.0C | Deployment Wiring | [prd-8.0C](tasks/completed/prd-8.0C-deployment-wiring.md) | [task-8.0C](tasks/completed/task-8.0C-deployment-wiring.md) | [walkthrough](walkthroughs/walkthrough_task_8.0C_deployment_wiring.md) | [x] |
-| 8.1 | Lint Baseline Cleanup | - | - | - | [ ] |
+| 8.1 | Lint Baseline Cleanup | [prd-8.1](tasks/active/prd-8.1-lint-baseline-cleanup.md) | [task-8.1](tasks/active/task-8.1-lint-baseline-cleanup.md) | - | [ ] |
