@@ -27,3 +27,4 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 
 | WF ID | Slug / Feature | Brainstorm | Spec | PRD | Task File | Walkthrough | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| WF-0009 | peerlens-landing-page | [Brainstorm](brainstorms/brainstorm-WF-0009-peerlens-landing-page.md) | [Spec](specs/pages/spec-WF-0009-peerlens-landing-page.md) | [PRD](prds/prd-WF-0009-peerlens-landing-page.md) | [Tasks](tasks/tasks-WF-0009-peerlens-landing-page.md) | [Walkthrough](walkthroughs/walkthrough-WF-0009-peerlens-landing-page.md) | Phase 0 |
