@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 
 import {
@@ -76,7 +77,11 @@ export function DemoTabs() {
         Examples only. Sign in to get feedback on your proposal text.
       </p>
       <p className="text-sm leading-6 text-[var(--color-muted-foreground)]">
-        Export your review. Delete your data anytime. See <a className="underline" href="/privacy">Privacy</a>.
+        Export your review. Delete your data anytime. See{" "}
+        <Link className="underline" href="/privacy">
+          Privacy
+        </Link>
+        .
       </p>
 
       <div

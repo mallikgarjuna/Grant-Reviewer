@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Grant Reviewer",
-  description: "Rubric-grounded grant proposal feedback.",
+  title: "PeerLens",
+  description: "Review-criteria-aligned feedback for stronger grant drafts.",
 };
 
 export default function RootLayout({

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useState } from "react";
 
 type FaqItem = {
@@ -79,9 +80,9 @@ export function FaqAccordion() {
                 {item.question === "How is my data handled?" ? (
                   <>
                     {" "}
-                    <a className="underline" href="/privacy">
+                    <Link className="underline" href="/privacy">
                       See Privacy.
-                    </a>
+                    </Link>
                   </>
                 ) : null}
               </div>
