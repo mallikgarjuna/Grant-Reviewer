@@ -1,6 +1,6 @@
 # Parking Lot / Backlog
 
-**Purpose**: A dedicated place to park “not now” items (tech debt, ideas, risks, follow-ups) so they don’t get lost. When something becomes a priority, promote it into a real task/PRD under `docs/tasks/active/` and link it from `docs/index.md`.
+**Purpose**: A dedicated place to park “not now” items (tech debt, ideas, risks, follow-ups) so they don’t get lost. When something becomes a priority, promote it into a real task/PRD under `docs/tasks/` and link it from `docs/index.md`.
 
 ## Guidelines
 
@@ -20,7 +20,7 @@ Each parked item should include:
 Where to park it:
 - **Minor, opportunistic fixes** → `docs/maintenance.md`
 - **Not-now but important** → this file (`docs/parking_lot.md`)
-- **Active work** → promote to `docs/tasks/active/` and track in `docs/index.md`
+- **Active work** → promote to `docs/tasks/` and track in `docs/index.md`
 
 Maintenance hygiene:
 - Prefer fewer, higher-signal items; merge duplicates instead of adding variants.
@@ -33,7 +33,7 @@ Promote an item when it becomes “next” or when its **Promote when…** trigg
 Promotion checklist (Brainstorm → PRD → Task Plan):
 1) **Phase 0 (Brainstorming)**: create `docs/brainstorms/brainstorming-<TaskID>-<slug>.md` with scope/options/risks.
 2) **Phase 1 (PRD)**: create `docs/prds/prd-<TaskID>-<slug>.md` with goals, non-goals, success criteria.
-3) **Phase 2 (Task breakdown)**: create `docs/tasks/active/task-<TaskID>-<slug>.md` with subtasks + verification.
+3) **Phase 2 (Task breakdown)**: create `docs/tasks/task-<TaskID>-<slug>.md` with subtasks + verification.
 4) **Update dashboard**: add the new task row + links in `docs/index.md`.
 5) **Mark promoted here**: update the parked item to include:
    - `Promoted to: <TaskID>` and links to the brainstorm/PRD/task files.
@@ -53,7 +53,7 @@ Promotion checklist (Brainstorm → PRD → Task Plan):
 
 1) **Guardrails (CI + lint baseline)**  
    - Why: protects main from regressions and makes iteration cheaper.  
-   - Parked next step: complete Task 8.1 (`docs/tasks/active/task-8.1-lint-baseline-cleanup.md`).
+   - Parked next step: complete Task 8.1 (`docs/tasks/task-8.1-lint-baseline-cleanup.md`).
 
 2) **Production data safety (Alembic migrations)**  
    - Why: Postgres is real; relying on `create_all()` is risky for schema evolution.  

@@ -145,7 +145,7 @@ Guideline:
 - SQLModel: don’t access ORM objects after session close; capture IDs/primitives first (see `docs/lessons.md`).
 - SQLite in-memory DB resets across sessions; design tests to reuse one seeded instance (see `docs/lessons.md`).
 - Call YAML naming: `{agency}_{program}_{year}_{stage}.yaml` (see `backend/data/calls/README.md`).
-- Don’t forget to update the real project task files (`docs/tasks/active/task-*.md`) and `docs/index.md` while executing (see `docs/lessons.md`).
+- Don’t forget to update the real project task files (`docs/tasks/task-*.md`) and `docs/index.md` while executing (see `docs/lessons.md`).
 - Frontend work requires Node tooling; prefer `nvm use v22.17.0` before running `npm`/`npx`. If `nvm` is not available in the current environment, scaffold/build locally and commit the generated `frontend/` files.
 
 ### Systemic coordination failures

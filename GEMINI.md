@@ -1,5 +1,7 @@
 # AI Coding Agent Guidelines (GEMINI.md)
 
+Note: `AGENTS.md` and `docs/workflow/` are the SSOT for workflow + conventions in this repo. If anything here disagrees, follow `AGENTS.md`.
+
 These rules define how an AI coding agent should plan, execute, verify, communicate, and recover when working in a real codebase. Optimize for correctness, minimalism, and developer experience.
 
 ---
@@ -78,7 +80,7 @@ Update `./docs/lessons.md` file for **codebase-specific** pitfalls, architectura
 
 - **The Project Index**: `docs/index.md` is the **Single Source of Truth**. It contains the **Project Dashboard** (table) linking every Major ID to its PRD, Task File, and Walkthrough.
 - **Task Segregation**:
-  - **Major Tasks (Non-Trivial)**: Each gets its own file: `docs/tasks/active/task-[ID]-[name].md`. This keeps implementation context isolated and clean.
+  - **Major Tasks (Non-Trivial)**: Each gets its own file: `docs/tasks/task-[ID]-[name].md`. This keeps implementation context isolated and clean.
   - **Minor Tasks (Maintenance)**: Appended to a single `docs/maintenance.md` file to avoid file-system clutter for small fixes.
 - **Hierarchical Indexing**: Use a sequential numerical system for all tasks, with sub-tasks always prefixed by their parent Major Task ID:
   - **Major Tasks**: `1.0`, `2.0`, `9.0`, etc. (feature-level)
@@ -91,10 +93,7 @@ Update `./docs/lessons.md` file for **codebase-specific** pitfalls, architectura
 - **Update the Knowledge Base** continuously.
 - **Skill & Workflow First**: Check for existing skills in `~/.agents/skills`, `~/.gemini/skills`, `.skills/`, `.agent/skills`, `.agents/skills`, `.claude/skills`, or workflows in `.agent/workflows/` before implementing new logic. If a reusable pattern is discovered, suggest creating a new skill/workflow.
 - **Repo-relative links**: Prefer repo-relative paths in artifacts (portable across machines). Use `file:///...` only when a tool requires it for clickability.
-- **Archiving Strategy**: To maintain a clean workspace:
-  - **Active**: Keep PRDs and Task files under `docs/tasks/active/` during implementation.
-  - **Completed**: Once finished, move both files to `docs/tasks/completed/`.
-  - **Index Sync**: Immediately update `docs/index.md` links to reflect the new location. This ensures the Dashboard remains a functional portal to the project's history.
+- **Index Sync**: Immediately update `docs/index.md` links when artifact paths change.
 
 ---
 
@@ -117,7 +116,7 @@ For **non-trivial features** (new functional areas, complex refactors, or signif
 3.  **Phase 2: Planning (Roadmap)**
     - **Goal**: Create a granular, chronological implementation checklist.
     - **Action**: Use the `prd-to-tasks` skill.
-    - **Output**: Create a new task file `docs/tasks/active/task-[TaskID]-[name].md` and link it in `docs/index.md`.
+    - **Output**: Create a new task file `docs/tasks/task-[TaskID]-[name].md` and link it in `docs/index.md`.
     - **Approval Gate**: Standard planning approval process as defined in `Workflow Orchestration`.
 
 4.  **Phase 3: Execution & Verification**

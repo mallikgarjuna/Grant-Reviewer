@@ -23,9 +23,9 @@
 **Reference**: See `backend/data/calls/README.md` for full documentation.
 
 ### L5: Task File Updates During Execution
-**Issue**: Updated internal artifact `task.md` but forgot to update the project task file `docs/tasks/active/task-X.0-*.md`.
+**Issue**: Updated internal artifact `task.md` but forgot to update the project task file `docs/tasks/task-X.0-*.md`.
 **Fix**: After each subtask completion, update the project task file (not just internal artifacts).
-**Prevention**: Always update `docs/tasks/active/task-X.0-*.md` with `[x]` checkmarks as subtasks complete. Also update `docs/index.md` when task status changes, and archive finished tasks under `docs/tasks/completed/`.
+**Prevention**: Always update `docs/tasks/task-X.0-*.md` with `[x]` checkmarks as subtasks complete. Also update `docs/index.md` when task status changes.
 
 ### L6: Brainstorming Log Naming Convention
 **Issue**: Brainstorming logs were created without a task ID in the filename.
