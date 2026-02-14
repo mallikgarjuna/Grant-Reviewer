@@ -28,7 +28,7 @@ Do NOT use brainstorm files.
 
 ## Output
 
-- docs/prd/prd-WF-XXXX-<slug>.md
+- docs/prds/prd-WF-XXXX-<slug>.md
 
 Do NOT create a new PRD file if it exists.
 Only generate if Version = v0.0.
@@ -117,6 +117,6 @@ Use:
 
 Create:
 
-- docs/prd/prd-WF-XXXX-<slug>.md
+- docs/prds/prd-WF-XXXX-<slug>.md
 
 Stop after writing v0.1.

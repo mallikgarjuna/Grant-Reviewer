@@ -102,7 +102,7 @@ Use @docs/workflow/phase-2-1-prd-generate.md
 @docs/specs/<pages|features>/spec-<WF-ID>-<slug>.md
 
 Generate PRD v0.1 in:
-docs/prd/prd-<WF-ID>-<slug>.md
+docs/prds/prd-<WF-ID>-<slug>.md
 
 Stop after writing PRD v0.1.
 ```
@@ -113,7 +113,7 @@ Stop after writing PRD v0.1.
 
 ```text
 Use @docs/workflow/phase-2-2-prd-risk-audit.md
-@docs/prd/prd-<WF-ID>-<slug>.md
+@docs/prds/prd-<WF-ID>-<slug>.md
 
 Run a risk audit on the PRD.
 Return the required audit output only.
@@ -126,7 +126,7 @@ Do NOT edit any files.
 
 ```text
 Use @docs/workflow/phase-2-3-prd-revise.md
-@docs/prd/prd-<WF-ID>-<slug>.md
+@docs/prds/prd-<WF-ID>-<slug>.md
 
 Apply audit edits,
 bump version (v0.1 → v0.2),
@@ -141,7 +141,7 @@ and update docs/logs/decisions.md.
 
 ```text
 Use @docs/workflow/phase-3-1-tasks-generate.md
-@docs/prd/prd-<WF-ID>-<slug>.md
+@docs/prds/prd-<WF-ID>-<slug>.md
 
 Generate tasks v0.1 in:
 docs/tasks/tasks-<WF-ID>-<slug>.md

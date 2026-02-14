@@ -17,7 +17,7 @@ No review in this step.
 
 ## Required Input
 
-- docs/prd/prd-WF-XXXX-<slug>.md
+- docs/prds/prd-WF-XXXX-<slug>.md
 
 PRD must have:
 Status: Ready for Tasks
@@ -100,7 +100,7 @@ Phase 3
 Use:
 
 - @docs/workflow/phase-3-1-tasks-generate.md
-- @docs/prd/prd-WF-XXXX-<slug>.md
+- @docs/prds/prd-WF-XXXX-<slug>.md
 
 Create:
 

@@ -32,7 +32,7 @@ Promote an item when it becomes “next” or when its **Promote when…** trigg
 
 Promotion checklist (Brainstorm → PRD → Task Plan):
 1) **Phase 0 (Brainstorming)**: create `docs/brainstorms/brainstorming-<TaskID>-<slug>.md` with scope/options/risks.
-2) **Phase 1 (PRD)**: create `docs/prd/prd-<TaskID>-<slug>.md` with goals, non-goals, success criteria.
+2) **Phase 1 (PRD)**: create `docs/prds/prd-<TaskID>-<slug>.md` with goals, non-goals, success criteria.
 3) **Phase 2 (Task breakdown)**: create `docs/tasks/active/task-<TaskID>-<slug>.md` with subtasks + verification.
 4) **Update dashboard**: add the new task row + links in `docs/index.md`.
 5) **Mark promoted here**: update the parked item to include:

@@ -39,6 +39,10 @@ Rules:
 
 WF IDs connect all artifacts across phases.
 
+WF ID starting point (migration rule):
+- If there are no existing WF rows yet, start WF numbering after the highest legacy Task ID.
+  - Example: if the last legacy Task ID is `8.x`, the first WF should be `WF-0009`.
+
 ---
 
 # Standard Filename Convention
@@ -68,7 +72,7 @@ Slug rules:
 - docs/brainstorms/
 - docs/specs/pages/
 - docs/specs/features/
-- docs/prd/
+- docs/prds/
 - docs/tasks/
 - docs/walkthroughs/
 - docs/logs/decisions.md

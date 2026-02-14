@@ -1,10 +1,7 @@
-# PRDs (WF)
+# PRDs (deprecated path)
 
-This folder is for WF-based PRDs.
+PRDs are now stored in `docs/prds/` (plural) for consistent artifact folder naming.
 
-- Naming: `prd-<WF-ID>-<slug>.md`
-- Workflow reference: `docs/workflow/README.md`
-
-Migration note:
-- Legacy PRDs currently live in `docs/tasks/{active,completed}/` and are intentionally left in place until they are mapped to WF IDs.
+If you arrived here via an older link, update it to point at:
+- `docs/prds/`
 

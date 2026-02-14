@@ -16,7 +16,7 @@ This step MUST NOT edit any files.
 
 ## Required Input
 
-- docs/prd/prd-WF-XXXX-<slug>.md
+- docs/prds/prd-WF-XXXX-<slug>.md
 
 ---
 

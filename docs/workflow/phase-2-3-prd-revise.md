@@ -17,7 +17,7 @@ Stabilize PRD for Task phase.
 
 ## Required Inputs
 
-- docs/prd/prd-WF-XXXX-<slug>.md
+- docs/prds/prd-WF-XXXX-<slug>.md
 - Phase 2.2 review output
 
 ---
@@ -86,7 +86,7 @@ Use:
 
 Apply edits to:
 
-- @docs/prd/prd-WF-XXXX-<slug>.md
+- @docs/prds/prd-WF-XXXX-<slug>.md
 
 Also update:
 

@@ -4,7 +4,7 @@
 **Task ID**: 8.1  
 **Pipeline Phase**: Phase 2 (Task breakdown)  
 **Status**: Draft (v0.1 - Parked for later)  
-**PRD**: `docs/prd/prd-8.1-lint-baseline-cleanup.md`  
+**PRD**: `docs/prds/prd-8.1-lint-baseline-cleanup.md`  
 
 ---
 

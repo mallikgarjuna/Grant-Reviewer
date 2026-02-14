@@ -43,10 +43,12 @@ WF-0003
 Determine next ID by:
 
 1. Inspect docs/index.md
-2. Find highest WF-XXXX
-3. Increment by 1
-
-If none exist → start with WF-0001.
+2. If the WF registry already has rows:
+   - Find highest WF-XXXX
+   - Increment by 1
+3. If the WF registry has no rows yet:
+   - Find the highest legacy Task ID (use the integer part, e.g., `8.1` → `8`)
+   - Start WF numbering at the next integer (e.g., `8.x` → `WF-0009`)
 
 ---
 
@@ -70,7 +72,7 @@ If Type = feature:
 docs/specs/features/spec-WF-XXXX-<slug>.md
 
 PRD:
-docs/prd/prd-WF-XXXX-<slug>.md
+docs/prds/prd-WF-XXXX-<slug>.md
 
 Tasks:
 docs/tasks/tasks-WF-XXXX-<slug>.md

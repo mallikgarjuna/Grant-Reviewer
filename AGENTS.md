@@ -63,7 +63,7 @@ Update these immediately after decisions/clarifications (“zero-latency logging
 	    ├── templates/           # WF templates used by workflow phases
 	    ├── brainstorms/         # brainstorming notes (legacy + WF during migration)
 	    ├── specs/               # WF specs (pages/features)
-	    ├── prd/                 # PRDs (legacy + WF during migration)
+	    ├── prds/                # PRDs (legacy + WF during migration)
 	    ├── tasks/               # tasks (legacy + WF during migration)
 	    ├── walkthroughs/        # walkthrough notes (legacy + WF during migration)
 	    └── reference/           # durable reference docs (domain model, templates, etc.)

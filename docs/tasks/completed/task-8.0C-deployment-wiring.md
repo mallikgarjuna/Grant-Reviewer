@@ -5,7 +5,7 @@
 **Pipeline Phase**: Phase 2 (Task breakdown)  
 **Status**: In Progress (v0.8 - deploy wiring verified; stub-default active)  
 **Last Updated**: 2026-02-12  
-**PRD**: `docs/prd/prd-8.0C-deployment-wiring.md`  
+**PRD**: `docs/prds/prd-8.0C-deployment-wiring.md`  
 **Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0C-deployment-wiring.md`  
 
 ---
