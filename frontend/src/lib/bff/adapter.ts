@@ -14,6 +14,7 @@ import type {
   CreateReviewAttempt,
   CreateReviewRequest,
   CreateReviewResponse,
+  DeleteReviewResponse,
   NodesResponse,
   Result,
   ReviewDetailResponse,
@@ -29,7 +30,7 @@ type BackendApiErrorShape = {
 
 type FastApiRequestOptions = {
   path: string;
-  method: "GET" | "POST";
+  method: "GET" | "POST" | "DELETE";
   context: BffRequestContext;
   bodyText?: string;
   idempotencyKey?: string;
@@ -233,6 +234,17 @@ export async function getReview(
   return requestFastApi<ReviewDetailResponse>({
     path: `/reviews/${reviewId}`,
     method: "GET",
+    context,
+  });
+}
+
+export async function deleteReview(
+  context: BffRequestContext,
+  reviewId: string,
+): Promise<Result<DeleteReviewResponse>> {
+  return requestFastApi<DeleteReviewResponse>({
+    path: `/reviews/${reviewId}`,
+    method: "DELETE",
     context,
   });
 }

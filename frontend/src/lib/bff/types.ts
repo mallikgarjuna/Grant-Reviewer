@@ -77,3 +77,6 @@ export type ReviewDetailResponse = {
   cards: ReviewCardSummary[];
 };
 
+export type DeleteReviewResponse = {
+  ok: boolean;
+};
