@@ -22,7 +22,7 @@ This PRD is intentionally scoped to the minimum that enables Task 8.0A Phase 3 i
 
 Related artifacts:
 - Phase 0 notes: `docs/brainstorms/brainstorming-8.0A-frontend-ui.md`
-- Contract PRD: `docs/tasks/completed/prd-8.0B-bff-contracts.md`
+- Contract PRD: `docs/prds/prd-8.0B-bff-contracts.md`
 
 ## Decisions Locked (MVP, to unblock Phase 2)
 

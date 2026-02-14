@@ -5,7 +5,7 @@
 **Pipeline Phase**: Phase 2 (Task breakdown)
 **Status**: Completed (v1.0 - Verify-Local complete; Verify-Deploy deferred to 8.0C)
 **Last Updated**: 2026-02-10
-**PRD**: `docs/tasks/completed/prd-8.0A-frontend-ui.md`
+**PRD**: `docs/prds/prd-8.0A-frontend-ui.md`
 **Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0A-frontend-ui.md`
 
 ---
@@ -89,7 +89,7 @@ Execution note:
   - trust/calm surfaces and restrained color
   - short micro-animations, no heavy effects
   - one primary action per screen
-- [x] Document the choices in `docs/tasks/completed/prd-8.0A-frontend-ui.md` so later UI work stays consistent.
+- [x] Document the choices in `docs/prds/prd-8.0A-frontend-ui.md` so later UI work stays consistent.
 
 Optional guardrails (run locally if you have Node/npm):
 - If you use `nvm`, activate the expected Node version first: `nvm use v22.17.0`.

@@ -82,3 +82,29 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Should we revise the Task 8.0C Phase 3 plan before continuing implementation?
 **A:** Yes. For MVP-fast shipping, first tighten the plan (without rewriting completed subtasks), then execute in strict order: provider/env wiring, readiness-failure hardening (`503` semantics), deploy Stage 1 in `stub`, then one Stage 2 real-LLM verification.
+
+## 2026-02-14
+
+### Q: What is the minimal PeerLens MVP page set?
+**A:** Chosen MVP route set is “6 pages”:
+- `/` (PeerLens landing) with a static demo switcher (no backend calls)
+- `/sign-in` (Clerk)
+- `/app` (single-page submit wizard)
+- `/app/reviews/[review_id]` (results)
+- `/app/reviews` (recent review links stored locally on this device only)
+- `/blog` (optional SEO surface; keep minimal)
+
+### Q: Should the landing page allow running a real review while signed out?
+**A:** No. The signed-out landing demo is pre-generated/static and does not call `POST /reviews`. Real reviews require login and go through the `/app` flow.
+
+### Q: What is the MVP data retention promise for proposal snippets?
+**A:** “Retained until the user deletes them”, with self-serve deletion in the UI that hard-deletes the review, cards, and associated snippet text.
+
+### Q: Should deleting a review refund quota or allow rerun from results?
+**A:** No quota refund, and deletion ends the results flow (user returns to `/app` to start a new submission).
+
+### Q: Do we need a Privacy page in MVP, and how should “no training” + retention be stated?
+**A:** Yes. MVP includes a minimal `/privacy` page stating:
+- PeerLens does not use proposal snippets to train its models.
+- Snippets are retained until the user deletes them (self-serve deletion).
+- Minimal operational logs/backups may be retained for up to 30 days.
