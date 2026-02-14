@@ -29,6 +29,7 @@ Return:
 3. Missing definitions
 4. Over-engineering warnings
 5. Exact edits required (section + change)
+6. Next 2 actions I should take (choose one)
 
 Max 100 lines.
 Be strict about MVP.

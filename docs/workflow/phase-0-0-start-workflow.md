@@ -157,3 +157,12 @@ Steps:
 4. Commit artifacts
 5. Update docs/index.md
 6. Stop
+
+---
+
+## After You Finish (Next 2 Actions)
+
+In your final chat message, suggest the next 2 actions (so I can choose what to do next):
+
+1. Run Phase 0.1 (interactive brainstorm): `@docs/workflow/phase-0-1-brainstorm.md`
+2. Sanity-check the new baseline artifacts (headers + links in `docs/index.md`), then commit a small fix if needed.

@@ -102,3 +102,18 @@ Use:
 Instruction:
 
 "Execute all tasks sequentially. Commit after each task using the required commit format. Continue automatically until all tasks are complete."
+
+---
+
+## Stop Condition
+
+Stop when all tasks are completed, the walkthrough is drafted/updated, and `docs/index.md` is updated to Status `Done`.
+
+---
+
+## After You Finish (Next 2 Actions)
+
+In your final chat message, suggest the next 2 actions (so I can choose what to do next):
+
+1. Open a PR for the WF branch and merge it to `main` (then update local `main`).
+2. Start the next workflow (Phase 0.0) for the next idea/feature.

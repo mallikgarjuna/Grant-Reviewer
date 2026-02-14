@@ -120,3 +120,12 @@ Create:
 - docs/prds/prd-WF-XXXX-<slug>.md
 
 Stop after writing v0.1.
+
+---
+
+## After You Finish (Next 2 Actions)
+
+In your final chat message, suggest the next 2 actions (so I can choose what to do next):
+
+1. Run Phase 2.2 (PRD risk audit): `@docs/workflow/phase-2-2-prd-risk-audit.md`
+2. Do a quick PRD self-review for scope creep and missing flows, then revise PRD v0.1 before running the audit.

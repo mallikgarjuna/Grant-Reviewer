@@ -243,3 +243,18 @@ Provide 2–3 options per question.
 Label one recommended option.
 Wait for my selection before proceeding.
 Update the brainstorm file incrementally."
+
+---
+
+## Stop Condition
+
+Stop when I say the brainstorm is “good enough” for a spec (or if I explicitly pause the workflow).
+
+---
+
+## After You Finish (Next 2 Actions)
+
+In your final chat message, suggest the next 2 actions (so I can choose what to do next):
+
+1. Run Phase 1.1 (generate spec v0.1): `@docs/workflow/phase-1-1-spec-generate.md`
+2. Continue Phase 0.1 brainstorming to resolve remaining unknowns (update the brainstorm file; do not generate a spec yet).

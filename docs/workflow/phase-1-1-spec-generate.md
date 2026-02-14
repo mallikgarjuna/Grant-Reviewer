@@ -104,3 +104,12 @@ Create or update:
 - docs/specs/<pages|features>/spec-WF-XXXX-<slug>.md
 
 Stop after writing v0.1.
+
+---
+
+## After You Finish (Next 2 Actions)
+
+In your final chat message, suggest the next 2 actions (so I can choose what to do next):
+
+1. Run Phase 1.2 (spec review gate): `@docs/workflow/phase-1-2-spec-review.md`
+2. If the spec feels premature, go back to Phase 0.1 to tighten decisions in the brainstorm, then regenerate/revise the spec.
