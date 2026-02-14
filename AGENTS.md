@@ -42,7 +42,7 @@ Use repo-relative paths (don’t require machine-specific `file:///...` links).
 - Prompt history (datetimestamps): `docs/logs/prompt_history.md`
 - WF brainstorming notes: `docs/brainstorms/brainstorm-<WF-ID>-<slug>.md`
 - WF walkthrough: `docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md`
-- Legacy (pre-WF) artifacts remain in `docs/brainstorms/`, `docs/walkthroughs/`, and `docs/tasks/{active,completed}/` during migration.
+- Legacy (pre-WF) artifacts remain in `docs/brainstorms/`, `docs/walkthroughs/`, `docs/tasks/`, and `docs/prds/` during migration.
 
 Update these immediately after decisions/clarifications (“zero-latency logging”).
 

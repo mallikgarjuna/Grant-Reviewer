@@ -6,4 +6,4 @@ This folder is the canonical location for PRDs (legacy + WF) during the migratio
 - Workflow reference: `docs/workflow/README.md`
 
 Migration note:
-- Legacy PRDs also remain in `docs/tasks/{active,completed}/` for compatibility; prefer linking to `docs/prds/` going forward.
+- Legacy PRDs were originally tracked under `docs/tasks/`; they are now centralized here for a cleaner layout. Prefer linking to `docs/prds/` going forward.
