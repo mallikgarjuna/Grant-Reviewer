@@ -37,20 +37,22 @@ This is NOT auto-generation.
 ## Core Facilitation Rules
 
 1. Work section-by-section.
-2. Ask max 5 important questions per section.
-3. For each question:
+2. Ask **exactly 5** important questions per section (unless fewer are genuinely needed).
+3. Ask questions **in a single batch** (5 at a time), not one-by-one.
+4. For each question:
    - Provide 2–3 structured options.
    - Provide one recommended option (clearly labeled).
-4. Require explicit user selection or custom answer.
-5. Challenge vague answers.
-6. Avoid implementation details.
-7. Avoid architecture design.
-8. After each section:
+5. Require explicit user selection or custom answer **for each question in the batch**.
+   - Preferred answer format: `Q1:A, Q2:C, Q3:custom..., Q4:B, Q5:A`
+6. Challenge vague answers.
+7. Avoid implementation details.
+8. Avoid architecture design.
+9. After each section:
    - Summarize decisions clearly.
    - Update brainstorm file.
-9. Do NOT overwrite previous brainstorm content.
+10. Do NOT overwrite previous brainstorm content.
    - Append refinements or clarifications.
-10. Keep all thinking aligned with MVP.
+11. Keep all thinking aligned with MVP.
 
 ---
 
@@ -89,7 +91,7 @@ Option C: Power users
 
 Recommendation: Option B (more focused, clearer MVP)
 
-Wait for user selection before continuing.
+Ask all 5 questions in one batch and wait for answers to all 5 before continuing.
 
 After final answer:
 Summarize final Problem Definition.
@@ -107,7 +109,7 @@ Ask:
 
 Provide structured options + recommendation for each.
 
-Wait for selection.
+Ask 5 questions in one batch and wait for answers to all 5.
 Summarize.
 Update file.
 
