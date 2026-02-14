@@ -128,6 +128,7 @@ wf/WF-0007-landing-page
 ## When to Create Branch
 
 Branch is created during Phase 0.0.
+Always create the workflow branch from the latest `main` (PR-based flow).
 
 Phase 0.0 must:
 

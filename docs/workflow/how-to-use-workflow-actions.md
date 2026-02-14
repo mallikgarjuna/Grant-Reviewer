@@ -20,7 +20,7 @@ Please:
 
 1. Determine the next WF ID from @docs/index.md
 2. Create the required artifact files
-3. Create git branch: wf/<WF-ID>-<slug>
+3. From the latest main, create git branch: wf/<WF-ID>-<slug>
 4. Commit the new artifacts with:
    <WF-ID>: start workflow (<slug>)
 5. Add a new row in @docs/index.md with Status "Phase 0"

@@ -99,6 +99,10 @@ Create new branch:
 
 wf/WF-XXXX-<slug>
 
+Branch policy:
+- Create the workflow branch from the latest `main` (not from another in-progress WF branch).
+- If you must depend on unmerged work, keep it explicit (stacked PR) and document it in the PR description.
+
 Immediately commit the created artifact files:
 
 Commit message:
