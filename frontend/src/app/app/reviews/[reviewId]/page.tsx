@@ -22,6 +22,11 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+type ExportFeedback = {
+  kind: "success" | "error";
+  message: string;
+};
+
 async function parseApiError(response: Response): Promise<ApiError> {
   const fallback: ApiError = {
     code: "INTERNAL_ERROR",
@@ -49,6 +54,55 @@ async function parseApiError(response: Response): Promise<ApiError> {
   }
 }
 
+function buildReviewExportText(reviewDetail: ReviewDetailResponse): string {
+  const lines: string[] = [
+    "PeerLens review export",
+    "",
+    `Review ID: ${reviewDetail.review.id}`,
+    `Status: ${reviewDetail.review.status}`,
+    "",
+    "Summary:",
+    reviewDetail.review.overall_summary ?? "No overall summary available.",
+    "",
+    "Cards:",
+  ];
+
+  if (reviewDetail.cards.length === 0) {
+    lines.push("No review cards available.");
+  } else {
+    reviewDetail.cards.forEach((card, index) => {
+      lines.push("");
+      lines.push(`${index + 1}. Criterion: ${card.node_expectation_id}`);
+      lines.push(`   Rating: ${card.rating}`);
+      lines.push(`   Feedback: ${card.feedback_text}`);
+    });
+  }
+
+  return lines.join("\n");
+}
+
+async function copyTextWithFallback(text: string): Promise<void> {
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.setAttribute("readonly", "true");
+  textArea.style.position = "fixed";
+  textArea.style.left = "-9999px";
+  textArea.style.top = "0";
+  document.body.append(textArea);
+  textArea.select();
+  const copied = document.execCommand("copy");
+  textArea.remove();
+
+  if (!copied) {
+    throw new Error("Clipboard write failed.");
+  }
+}
+
 export default function ReviewDetailPage() {
   const router = useRouter();
   const params = useParams<{ reviewId: string }>();
@@ -59,11 +113,13 @@ export default function ReviewDetailPage() {
   const [reviewDetail, setReviewDetail] = useState<ReviewDetailResponse | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [exportFeedback, setExportFeedback] = useState<ExportFeedback | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function loadReview() {
       setIsLoading(true);
+      setExportFeedback(null);
       const response = await fetch(`/api/bff/reviews/${reviewId}`, {
         method: "GET",
         cache: "no-store",
@@ -139,6 +195,44 @@ export default function ReviewDetailPage() {
     } finally {
       setIsRetrying(false);
     }
+  }
+
+  async function copyReviewAsText() {
+    if (!reviewDetail) {
+      return;
+    }
+    try {
+      await copyTextWithFallback(buildReviewExportText(reviewDetail));
+      setExportFeedback({
+        kind: "success",
+        message: "Copied review text to clipboard.",
+      });
+    } catch {
+      setExportFeedback({
+        kind: "error",
+        message: "Unable to copy automatically. Use Download .txt instead.",
+      });
+    }
+  }
+
+  function downloadReviewAsText() {
+    if (!reviewDetail) {
+      return;
+    }
+    const payload = buildReviewExportText(reviewDetail);
+    const blob = new Blob([payload], { type: "text/plain;charset=utf-8" });
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = `peerlens-review-${reviewDetail.review.id}.txt`;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(objectUrl);
+    setExportFeedback({
+      kind: "success",
+      message: "Downloaded review as .txt.",
+    });
   }
 
   if (isLoading) {
@@ -236,6 +330,34 @@ export default function ReviewDetailPage() {
           </p>
         ) : null}
 
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button
+            className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white transition hover:brightness-105"
+            onClick={copyReviewAsText}
+            type="button"
+          >
+            Copy as text
+          </button>
+          <button
+            className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-5 text-sm font-medium text-[var(--color-foreground)]"
+            onClick={downloadReviewAsText}
+            type="button"
+          >
+            Download .txt
+          </button>
+        </div>
+        {exportFeedback ? (
+          <p
+            className={`mt-3 text-sm ${
+              exportFeedback.kind === "error"
+                ? "text-red-600"
+                : "text-[var(--color-muted-foreground)]"
+            }`}
+          >
+            {exportFeedback.message}
+          </p>
+        ) : null}
+
         {isPending ? (
           <p className="mt-4 text-sm text-[var(--color-muted-foreground)]">
             Still processing. Refresh this page in a few moments.
@@ -297,4 +419,3 @@ export default function ReviewDetailPage() {
     </main>
   );
 }
-
