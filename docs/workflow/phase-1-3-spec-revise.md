@@ -66,3 +66,12 @@ Bump version.
 Update changelog.
 If stable, mark Status: Ready for PRD.
 Stop.
+
+---
+
+## After You Finish (Next 2 Actions)
+
+In your final chat message, suggest the next 2 actions (so I can choose what to do next):
+
+1. Run Phase 2.1 (generate PRD v0.1): `@docs/workflow/phase-2-1-prd-generate.md`
+2. Re-run Phase 1.2 (spec review gate) to validate the revised spec: `@docs/workflow/phase-1-2-spec-review.md`

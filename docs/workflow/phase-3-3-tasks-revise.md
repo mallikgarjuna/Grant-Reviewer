@@ -67,3 +67,12 @@ Bump version.
 Append changelog.
 If stable, mark Status: Ready for Implementation.
 Stop.
+
+---
+
+## After You Finish (Next 2 Actions)
+
+In your final chat message, suggest the next 2 actions (so I can choose what to do next):
+
+1. Run Phase 4.1 (implement tasks): `@docs/workflow/phase-4-1-implement-tasks.md`
+2. Re-run Phase 3.2 (tasks review gate) to validate the revised task list: `@docs/workflow/phase-3-2-tasks-review.md`

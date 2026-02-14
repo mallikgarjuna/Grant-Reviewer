@@ -96,3 +96,12 @@ Bump version.
 Append changelog.
 If stable, mark Status: Ready for Tasks.
 Stop.
+
+---
+
+## After You Finish (Next 2 Actions)
+
+In your final chat message, suggest the next 2 actions (so I can choose what to do next):
+
+1. Run Phase 3.1 (generate tasks v0.1): `@docs/workflow/phase-3-1-tasks-generate.md`
+2. Re-run Phase 2.2 (PRD risk audit) to validate the revised PRD: `@docs/workflow/phase-2-2-prd-risk-audit.md`

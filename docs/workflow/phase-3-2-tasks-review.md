@@ -29,6 +29,7 @@ Return:
 3. Over-engineering warnings
 4. Redundant or mergeable tasks
 5. Exact edits required (task number + change)
+6. Next 2 actions I should take (choose one)
 
 Max 100 lines.
 Be strict about MVP.

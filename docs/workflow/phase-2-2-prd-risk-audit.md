@@ -29,6 +29,7 @@ Return:
 3. Scope creep warnings
 4. Implementation landmines
 5. Exact edits required (section + change)
+6. Next 2 actions I should take (choose one)
 
 Max 120 lines.
 Be strict about MVP and fast shipping.

@@ -107,3 +107,12 @@ Create:
 - docs/tasks/tasks-WF-XXXX-<slug>.md
 
 Stop after writing v0.1.
+
+---
+
+## After You Finish (Next 2 Actions)
+
+In your final chat message, suggest the next 2 actions (so I can choose what to do next):
+
+1. Run Phase 3.2 (tasks review gate): `@docs/workflow/phase-3-2-tasks-review.md`
+2. If tasks are already crisp and minimal, proceed to Phase 4.1 (implementation): `@docs/workflow/phase-4-1-implement-tasks.md`
