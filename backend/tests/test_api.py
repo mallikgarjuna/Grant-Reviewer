@@ -22,6 +22,7 @@ from app.models.domain import (
     NodeType,
     PromptTemplate,
     ProposalNode,
+    ProposalSnippet,
     Review,
     ReviewCard,
     ReviewStatus,
@@ -233,6 +234,24 @@ def get_review_detail(
         shared_secret=shared_secret,
     )
     return client.get(f"/reviews/{review_id}", headers=headers)
+
+
+def delete_review(
+    *,
+    client: TestClient,
+    review_id: str,
+    user_id: str = TEST_USER_ID,
+    timestamp: int | None = None,
+    shared_secret: str = TEST_BFF_SHARED_SECRET,
+) -> object:
+    """Call DELETE /reviews/{id} with signed headers."""
+    headers = build_signature_headers(
+        body=b"",
+        user_id=user_id,
+        timestamp=timestamp,
+        shared_secret=shared_secret,
+    )
+    return client.delete(f"/reviews/{review_id}", headers=headers)
 
 
 def test_healthcheck(monkeypatch) -> None:
@@ -611,6 +630,79 @@ def test_review_not_found_for_non_owner(monkeypatch) -> None:
     )
     assert forbidden_response.status_code == 404
     assert forbidden_response.json()["error"]["code"] == "REVIEW_NOT_FOUND"
+
+
+def test_delete_review_success_hard_deletes_data(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    create_response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Review that will be deleted",
+        },
+        user_id="user_owner",
+    )
+    assert create_response.status_code == 200
+    review_id = create_response.json()["review_id"]
+
+    delete_response = delete_review(
+        client=client,
+        review_id=review_id,
+        user_id="user_owner",
+    )
+    assert delete_response.status_code == 200
+    assert delete_response.json() == {"ok": True}
+
+    detail_response = get_review_detail(
+        client=client,
+        review_id=review_id,
+        user_id="user_owner",
+    )
+    assert detail_response.status_code == 404
+    assert detail_response.json()["error"]["code"] == "REVIEW_NOT_FOUND"
+
+    session = get_session()
+    try:
+        reviews = list(session.exec(select(Review)).all())
+        cards = list(session.exec(select(ReviewCard)).all())
+        snippets = list(session.exec(select(ProposalSnippet)).all())
+    finally:
+        session.close()
+
+    assert len(reviews) == 0
+    assert len(cards) == 0
+    assert len(snippets) == 0
+
+
+def test_delete_review_non_owner_returns_not_found(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    create_response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Owner-only delete",
+        },
+        user_id="user_owner",
+    )
+    assert create_response.status_code == 200
+    review_id = create_response.json()["review_id"]
+
+    delete_response = delete_review(
+        client=client,
+        review_id=review_id,
+        user_id="user_other",
+    )
+    assert delete_response.status_code == 404
+    assert delete_response.json()["error"]["code"] == "REVIEW_NOT_FOUND"
+
+    owner_detail_response = get_review_detail(
+        client=client,
+        review_id=review_id,
+        user_id="user_owner",
+    )
+    assert owner_detail_response.status_code == 200
 
 
 def test_error_code_status_mapping_is_consistent() -> None:

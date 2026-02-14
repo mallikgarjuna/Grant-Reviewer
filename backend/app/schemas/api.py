@@ -93,3 +93,9 @@ class ReviewDetailResponse(BaseModel):
 
     review: ReviewSummary
     cards: list[ReviewCardSummary]
+
+
+class DeleteReviewResponse(BaseModel):
+    """Success payload for DELETE /reviews/{review_id}."""
+
+    ok: bool

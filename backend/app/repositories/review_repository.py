@@ -232,6 +232,24 @@ class ReviewRepository:
         )
         return list(self.session.exec(statement).all())
 
+    def delete_review_hard(self, review_id: UUID) -> bool:
+        """Hard-delete review, cards, and associated snippet."""
+        review = self.get_review_by_id(review_id)
+        if review is None:
+            return False
+
+        snippet = self.session.get(ProposalSnippet, review.proposal_snippet_id)
+        cards = self.get_review_cards_ordered(review_id)
+
+        for card in cards:
+            self.session.delete(card)
+        self.session.delete(review)
+        if snippet is not None:
+            self.session.delete(snippet)
+
+        self.session.commit()
+        return True
+
     def create_review_card(
         self,
         review_id: UUID,
