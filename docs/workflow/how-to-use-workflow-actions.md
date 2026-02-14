@@ -25,7 +25,7 @@ Please:
    <WF-ID>: start workflow (<slug>)
 5. Add a new row in @docs/index.md with Status "Phase 0"
 
-Stop after completing these steps.
+Stop after completing these steps and suggest my next 2 actions.
 ```
 
 ---
@@ -45,6 +45,8 @@ Run an interactive, context-aware brainstorming session:
 * Update brainstorm file incrementally
 
 Start with Section 1 (Problem Statement).
+
+When I say the brainstorm is “good enough” (or I say “stop”), stop and suggest my next 2 actions.
 ```
 
 ---
@@ -62,7 +64,7 @@ Generate spec v0.1 from brainstorm for:
   or
 * docs/specs/features/spec-<WF-ID>-<slug>.md
 
-Stop after writing spec v0.1.
+Stop after writing spec v0.1 and suggest my next 2 actions.
 ```
 
 ---
@@ -75,6 +77,7 @@ Use @docs/workflow/phase-1-2-spec-review.md
 
 Run the spec review gate.
 Return the review output only.
+Include: Next 2 actions I should take (choose one).
 Do NOT edit any files.
 ```
 
@@ -91,6 +94,8 @@ bump version (v0.1 → v0.2),
 update changelog,
 mark Ready for PRD when stable.
 Update @docs/index.md Status to Phase 1 as needed.
+
+Stop after revising and suggest my next 2 actions.
 ```
 
 ---
@@ -104,7 +109,7 @@ Use @docs/workflow/phase-2-1-prd-generate.md
 Generate PRD v0.1 in:
 docs/prds/prd-<WF-ID>-<slug>.md
 
-Stop after writing PRD v0.1.
+Stop after writing PRD v0.1 and suggest my next 2 actions.
 ```
 
 ---
@@ -117,6 +122,7 @@ Use @docs/workflow/phase-2-2-prd-risk-audit.md
 
 Run a risk audit on the PRD.
 Return the required audit output only.
+Include: Next 2 actions I should take (choose one).
 Do NOT edit any files.
 ```
 
@@ -133,6 +139,8 @@ bump version (v0.1 → v0.2),
 update changelog,
 mark Ready for Tasks when stable,
 and update docs/logs/decisions.md.
+
+Stop after revising and suggest my next 2 actions.
 ```
 
 ---
@@ -146,7 +154,7 @@ Use @docs/workflow/phase-3-1-tasks-generate.md
 Generate tasks v0.1 in:
 docs/tasks/tasks-<WF-ID>-<slug>.md
 
-Stop after writing tasks v0.1.
+Stop after writing tasks v0.1 and suggest my next 2 actions.
 ```
 
 ---
@@ -159,6 +167,7 @@ Use @docs/workflow/phase-3-2-tasks-review.md
 
 Run tasks review.
 Return the review output only.
+Include: Next 2 actions I should take (choose one).
 Do NOT edit any files.
 ```
 
@@ -175,6 +184,8 @@ bump version,
 update changelog,
 mark Ready for Implementation when stable.
 Update @docs/index.md Status to Phase 3 as needed.
+
+Stop after revising and suggest my next 2 actions.
 ```
 
 ---
@@ -194,6 +205,8 @@ When completed:
 
 * Draft/Update walkthrough in docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md
 * Update docs/index.md Status to Done.
+
+Stop when complete and suggest my next 2 actions.
 ```
 
 ---
