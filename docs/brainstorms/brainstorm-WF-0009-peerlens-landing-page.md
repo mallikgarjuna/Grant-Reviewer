@@ -1,7 +1,7 @@
 # WF-0009 — PeerLens Landing Page
 
 Artifact: brainstorm  
-Version: v0.12  
+Version: v0.19  
 Status: Draft  
 Last Updated: 2026-02-14
 
@@ -87,6 +87,43 @@ Landing should quickly define “expectation-linked feedback,” show it via a f
 
 ---
 
+## Hero + CTA + Footer (Microcopy; Refinement)
+
+- Public terminology: use “review criteria” (avoid internal “expectation” DB term).
+- Hero headline (current preference):
+  - “Review-criteria-aligned feedback for your grant writing — find what reviewers look for, fast.”
+- Hero subheadline direction (combined):
+  - “Get review-criteria-aligned feedback and concrete next steps on a single snippet.”
+- Primary CTA label (current preference):
+  - “Get feedback on your proposal text”.
+- How-it-works steps:
+  - “Select funding call & section → Paste a snippet → Get review-criteria-aligned feedback”.
+- Footer: include CTA + `Privacy` + explicit “Delete your data” mention (linking into `/privacy`).
+
+### Copy Decisions (Locked)
+
+- How-it-works Step 1 label: “Select funder call & section”.
+- Preferred phrasing: “review-criteria-aligned feedback” (over “criteria-linked feedback”).
+- Hero/subheadline/CTA consistency: prefer “proposal text” wording.
+  - “Call” term in copy: “funding call”.
+  - Step 1 final wording: “Select funding call & section”.
+  - Subheadline final: “Get review-criteria-aligned feedback and concrete next steps on a single snippet.”
+
+### Trust + FAQ Decisions (Locked)
+
+- Trust line format: split into 2 short lines + 1 link (near demo).
+- Export wording: “Export your review”.
+- Deletion promise: “Delete your data anytime”.
+- “Generic” objection phrasing (no “AI” wording): “Is this aligned to review criteria, or generic feedback?”
+- Primary CTA destination: `/sign-in`.
+  - Trust line (exact, 2 lines):
+    - Line 1: “Examples only. Sign in to get feedback on your proposal text.”
+    - Line 2: “Export your review. Delete your data anytime. No training on your text.”
+  - FAQ ordering: criteria-aligned vs generic → what to paste → why sign in → no training → delete data.
+  - FAQ answer depth: 1–2 sentences each + link to `/privacy` where relevant.
+
+---
+
 ## Static Demo (MVP; Refinement)
 
 - Demo scenarios (3 tabs):
@@ -95,14 +132,20 @@ Landing should quickly define “expectation-linked feedback,” show it via a f
   - MSCA Postdoctoral Fellowship (PF)
 - Tab labels: use the program names (“NWO Veni” / “ERC Starting” / “MSCA PF”).
 - Per-scenario content (minimum):
-  - Snippet text + 3–5 feedback cards + “expectation tags”
+  - Snippet text + 3–5 feedback cards + “review-criterion tags”
 - Snippet length: ~120–180 words (one paragraph).
+- Snippet source guidance: primarily fictional/generic grant-like text, lightly flavored by real-call patterns (credible without implying a real call/rubric).
 - Feedback card anatomy:
-  - Severity → Finding → Expectation tag → Concrete next step
-- Expectation tags: plain-language “Expectation: X” (avoid strong “rubric traceability” claims).
+  - Severity → Finding → Review criterion tag → Concrete next step
+- Cards per scenario (MVP): 4 cards.
+- “Concrete next step” length: 2–3 sentences.
+- Tag wording: plain-language, criteria-oriented tag using prefix “Review criterion: …” (avoid strong “rubric traceability” claims).
 - Trust reassurance placement:
   - Short trust line near the demo + link to `/privacy` (avoid burying it; avoid leading with it in hero).
-- Trust line style (draft): “Examples only. Try with your text after sign-in. We don’t use your text to train models. You can delete your review.”
+- Trust line (exact, 2 lines + link):
+  - Line 1: “Examples only. Sign in to get feedback on your proposal text.”
+  - Line 2: “Export your review. Delete your data anytime. No training on your text.”
+  - Link: `Privacy`
 - MVP nav:
   - Logo + “Privacy” link + primary CTA button
 
@@ -163,6 +206,13 @@ Landing should quickly define “expectation-linked feedback,” show it via a f
 - v0.10 (2026-02-14): Refined hero/benefits/how-it-works/FAQ set (avoid “AI” wording in hero).
 - v0.11 (2026-02-14): Refined static demo scenarios + card anatomy + trust reassurance placement.
 - v0.12 (2026-02-14): Refined demo tab labels, snippet length, expectation-tag wording, and trust-line microcopy.
+- v0.13 (2026-02-14): Refined hero/subheadline/CTA/footer microcopy; aligned away from internal “expectation” term.
+- v0.14 (2026-02-14): Locked “review criteria” terminology and updated CTA + demo tag wording.
+- v0.15 (2026-02-14): Locked how-it-works phrasing + “proposal text” consistency; expanded trust line to include export + deletion.
+- v0.16 (2026-02-14): Locked trust-line format (2 lines + link), export/delete wording, and FAQ objection phrasing.
+- v0.17 (2026-02-14): Locked “funding call” wording, final how-it-works label, final subheadline, trust-line exact text, and FAQ ordering.
+- v0.18 (2026-02-14): Harmonized landing copy to “review-criteria-aligned” and synced demo card terminology + trust line.
+- v0.19 (2026-02-14): Finalized demo + FAQ depth (4 cards/scenario, 2–3 sentence next steps, short FAQ answers).
 
 ## Notes
 
