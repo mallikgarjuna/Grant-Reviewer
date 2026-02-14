@@ -111,7 +111,7 @@ For **non-trivial features** (new functional areas, complex refactors, or signif
 2.  **Phase 1: Definition (PRD)**
     - **Goal**: Turn the validated design into formal User Stories and Acceptance Criteria.
     - **Action**: Use the `prd` skill.
-    - **Output**: `docs/tasks/active/prd-[TaskID]-[feature-name].md`.
+    - **Output**: `docs/prds/prd-[TaskID]-[feature-name].md`.
     - **Approval Gate**: You MUST ask the user to review the PRD and wait for their signal (approval) before moving to Phase 2.
 
 3.  **Phase 2: Planning (Roadmap)**
