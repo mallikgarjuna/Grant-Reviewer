@@ -26,6 +26,18 @@ Do NOT use brainstorm files.
 
 ---
 
+## Phase Gate — Commit Previous Phase
+
+Before generating the PRD, ensure the spec you are converting is **saved and committed** (so PRD v0.1 is traceable to a stable spec input).
+
+---
+
+## Phase Completion — Commit This Phase
+
+After generating PRD v0.1, **save and commit** the updated PRD file before proceeding to Phase 2.2 risk audit.
+
+---
+
 ## Output
 
 - docs/prds/prd-WF-XXXX-<slug>.md

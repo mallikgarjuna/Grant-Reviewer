@@ -1,7 +1,7 @@
 # Phase 3.1 — Generate Tasks (v0.1)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-3-1-tasks-generate.md.
+Reference it in Codex chat using @docs/workflow/phase-3-1-task-generate.md.
 Do NOT modify this file during execution.
 
 ---
@@ -26,9 +26,21 @@ Do NOT derive tasks from spec or brainstorm.
 
 ---
 
+## Phase Gate — Commit Previous Phase
+
+Before generating the task file, ensure the PRD you are converting is **saved and committed** (so the plan is traceable to a stable PRD input).
+
+---
+
+## Phase Completion — Commit This Phase
+
+After generating task v0.1, **save and commit** the updated task file before proceeding to Phase 3.2 review.
+
+---
+
 ## Output
 
-- docs/tasks/tasks-WF-XXXX-<slug>.md
+- docs/tasks/task-WF-XXXX-<slug>.md
 
 Only generate if Version = v0.0.
 
@@ -38,7 +50,7 @@ Only generate if Version = v0.0.
 
 Tasks file must include:
 
-Artifact: tasks  
+Artifact: task  
 Version: v0.1  
 Status: Draft  
 Last Updated: YYYY-MM-DD
@@ -55,7 +67,7 @@ Include:
 
 # WF-XXXX — <Title> Tasks
 
-Artifact: tasks  
+Artifact: task  
 Version: v0.1  
 Status: Draft  
 Last Updated: <today>
@@ -99,12 +111,12 @@ Phase 3
 
 Use:
 
-- @docs/workflow/phase-3-1-tasks-generate.md
+- @docs/workflow/phase-3-1-task-generate.md
 - @docs/prds/prd-WF-XXXX-<slug>.md
 
 Create:
 
-- docs/tasks/tasks-WF-XXXX-<slug>.md
+- docs/tasks/task-WF-XXXX-<slug>.md
 
 Stop after writing v0.1.
 
@@ -114,5 +126,5 @@ Stop after writing v0.1.
 
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
-1. Run Phase 3.2 (tasks review gate): `@docs/workflow/phase-3-2-tasks-review.md`
+1. Run Phase 3.2 (tasks review gate): `@docs/workflow/phase-3-2-task-review.md`
 2. If tasks are already crisp and minimal, proceed to Phase 4.1 (implementation): `@docs/workflow/phase-4-1-implement-tasks.md`

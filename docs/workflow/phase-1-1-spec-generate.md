@@ -22,6 +22,18 @@ No review in this step.
 
 ---
 
+## Phase Gate — Commit Previous Phase
+
+Before generating the spec, ensure the brainstorm artifact you are converting is **saved and committed** (so spec generation has a stable input).
+
+---
+
+## Phase Completion — Commit This Phase
+
+After generating spec v0.1, **save and commit** the updated spec file before proceeding to Phase 1.2 review.
+
+---
+
 ## Output
 
 - docs/specs/<pages|features>/spec-WF-XXXX-<slug>.md

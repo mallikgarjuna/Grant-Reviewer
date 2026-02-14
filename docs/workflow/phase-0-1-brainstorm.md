@@ -34,6 +34,23 @@ This is NOT auto-generation.
 
 ---
 
+## Phase Gate — Commit Previous Phase
+
+Before running Phase 0.1, ensure Phase 0.0 outputs are **saved and committed** on the WF branch:
+
+- Baseline WF artifacts exist (brainstorm/spec/prd/task/walkthrough placeholders).
+- `docs/index.md` has the WF row.
+
+---
+
+## Phase Completion — Commit This Phase
+
+After completing a Phase 0.1 brainstorm session:
+
+- Ensure your brainstorm artifact edits are **saved and committed** before moving to Phase 1.
+
+---
+
 ## Core Facilitation Rules
 
 1. Work section-by-section.

@@ -140,7 +140,7 @@ and update docs/logs/decisions.md.
 ## Phase 3.1 — Generate Tasks (v0.1)
 
 ```text
-Use @docs/workflow/phase-3-1-tasks-generate.md
+Use @docs/workflow/phase-3-1-task-generate.md
 @docs/prds/prd-<WF-ID>-<slug>.md
 
 Generate tasks v0.1 in:
@@ -154,7 +154,7 @@ Stop after writing tasks v0.1.
 ## Phase 3.2 — Tasks Review (No Edits)
 
 ```text
-Use @docs/workflow/phase-3-2-tasks-review.md
+Use @docs/workflow/phase-3-2-task-review.md
 @docs/tasks/tasks-<WF-ID>-<slug>.md
 
 Run tasks review.
@@ -167,7 +167,7 @@ Do NOT edit any files.
 ## Phase 3.3 — Revise Tasks + Bump Version
 
 ```text
-Use @docs/workflow/phase-3-3-tasks-revise.md
+Use @docs/workflow/phase-3-3-task-revise.md
 @docs/tasks/tasks-<WF-ID>-<slug>.md
 
 Apply the review edits,

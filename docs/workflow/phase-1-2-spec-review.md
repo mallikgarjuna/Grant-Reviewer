@@ -20,6 +20,18 @@ This step MUST NOT edit any files.
 
 ---
 
+## Phase Gate — Commit Previous Phase
+
+Before running the spec review gate, ensure the spec draft being reviewed is **saved and committed** (so review feedback maps cleanly to a specific spec version).
+
+---
+
+## Phase Completion — Commit This Phase
+
+Phase 1.2 produces review output in chat only (no file edits). If you made no file changes, there is nothing to commit for this phase.
+
+---
+
 ## Output (in chat only)
 
 Return:

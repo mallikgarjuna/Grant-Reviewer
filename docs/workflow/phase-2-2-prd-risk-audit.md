@@ -20,6 +20,18 @@ This step MUST NOT edit any files.
 
 ---
 
+## Phase Gate — Commit Previous Phase
+
+Before running the risk audit, ensure the PRD draft being audited is **saved and committed** (so audit findings map to a specific PRD version).
+
+---
+
+## Phase Completion — Commit This Phase
+
+Phase 2.2 produces audit output in chat only (no file edits). If you made no file changes, there is nothing to commit for this phase.
+
+---
+
 ## Output (in chat only)
 
 Return:
