@@ -20,13 +20,11 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 
 ## Git Workflow
 
-- Start each new (major) task in a new branch.
-- Default to feature branches + PRs; keep diffs small; avoid drive-by refactors.
-- Branch naming: `task-<id>-<short-slug>` (e.g., `task-6.0-llm-integration`).
-- PR title/description and commits should reference the task/sub-task ID when applicable.
-- Make a commit after each Phase (0–3) with a short descriptive message that includes both the **Task ID** and **what the artifact is about** (e.g., `docs: [8.0] Phase 0 brainstorming - frontend UI + launch architecture`, `docs: [8.0] Phase 1 PRD - frontend MVP scope`).
-- During Phase 3 implementation, commit after each completed subtask (e.g., `7.1`, `7.2`, `7.3`) with a short descriptive message tied to that subtask ID.
-- Commit messages: use conventional prefixes (`feat:`, `fix:`, `chore:`, `docs:`) and include the ID (e.g., `feat: [6.1.2] ...`).
+- All meaningful initiatives should use the WF workflow system in `docs/workflow/README.md`.
+- Never commit directly to `main`.
+- Branch naming (WF): `wf/<WF-ID>-<slug>` (example: `wf/WF-0007-landing-page`).
+- Commit messages should start with the WF ID (example: `WF-0007: add landing hero CTA`).
+- Keep diffs small; avoid drive-by refactors.
 - Do not commit secrets (`.env`, API keys). Keep `backend/data/*.db` gitignored.
 
 ## Key Directories
@@ -42,8 +40,9 @@ Use repo-relative paths (don’t require machine-specific `file:///...` links).
 - Q&A / clarifications: `docs/logs/qa_history.md` (log conceptual/clarification questions when asked)
 - Architectural decisions: `docs/logs/decisions.md`
 - Prompt history (datetimestamps): `docs/logs/prompt_history.md`
-- Phase 0 brainstorming notes: `docs/brainstorms/brainstorming-[TaskID]-[slug].md`
-- Walkthrough per major task (include verification results): `docs/walkthroughs/walkthrough_task_[ID]_[name].md`
+- WF brainstorming notes: `docs/brainstorms/brainstorm-<WF-ID>-<slug>.md`
+- WF walkthrough: `docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md`
+- Legacy (pre-WF) artifacts remain in `docs/brainstorms/`, `docs/walkthroughs/`, and `docs/tasks/{active,completed}/` during migration.
 
 Update these immediately after decisions/clarifications (“zero-latency logging”).
 
@@ -56,16 +55,18 @@ Update these immediately after decisions/clarifications (“zero-latency logging
 │   ├── scripts/             # seed/ingest/demo utilities
 │   └── data/                # call YAML + sqlite db (gitignored)
 └── docs/
-    ├── index.md             # dashboard (SSOT)
-    ├── maintenance.md       # small fixes
-    ├── lessons.md           # gotchas
-    ├── logs/                # qa_history/decisions/prompt_history
-    ├── brainstorms/         # Phase 0 design notes
-    ├── reference/           # durable reference docs (domain model, templates, etc.)
-    ├── walkthroughs/        # per-task verification notes
-    └── tasks/
-        ├── active/          # in-flight PRDs + task plans
-        └── completed/       # archived PRDs/tasks
+	    ├── index.md             # dashboard (SSOT)
+	    ├── maintenance.md       # small fixes
+	    ├── lessons.md           # gotchas
+	    ├── logs/                # qa_history/decisions/prompt_history
+	    ├── workflow/            # WF workflow instructions + prompt templates (SSOT)
+	    ├── templates/           # WF templates used by workflow phases
+	    ├── brainstorms/         # brainstorming notes (legacy + WF during migration)
+	    ├── specs/               # WF specs (pages/features)
+	    ├── prd/                 # PRDs (legacy + WF during migration)
+	    ├── tasks/               # tasks (legacy + WF during migration)
+	    ├── walkthroughs/        # walkthrough notes (legacy + WF during migration)
+	    └── reference/           # durable reference docs (domain model, templates, etc.)
 ```
 
 ## Commands (actual executable commands)
@@ -82,25 +83,14 @@ From repo root:
 - Lint (autofix): `cd backend && uv run ruff check . --fix`
 - Format: `cd backend && uv run ruff format .`
 
-## Product Engineering Pipeline (Phase-Gated for Non‑Trivial Features)
+## WF Workflow (Idea → Shipped Code)
 
-Use for new functional areas, complex refactors, or significant UI/API changes. Skip for small fixes/docs.
+Use the WF workflow system for non-trivial work:
 
-**Phase definitions (use these labels everywhere):**
-- **Phase 0 = Brainstorming** (ideation/design note in `docs/brainstorms/`)
-- **Phase 1 = PRD** (definition in `docs/tasks/active/prd-[TaskID]-*.md`)
-- **Phase 2 = Task breakdown** (plan in `docs/tasks/active/task-[TaskID]-*.md`)
-- **Phase 3 = Implementation** (execute plan + verify + walkthrough in `docs/walkthroughs/`)
+- Workflow definition (SSOT): `docs/workflow/README.md`
+- Codex prompt templates (cheat sheet): `docs/workflow/how-to-use-workflow-actions.md`
 
-1. Phase 0 (Ideation): brief design note in `docs/brainstorms/`
-2. Phase 1 (PRD): `docs/tasks/active/prd-[TaskID]-[feature-name].md`
-3. Phase 2 (Plan): `docs/tasks/active/task-[TaskID]-[name].md` + link in `docs/index.md`
-4. Phase 3 (Execute/Verify): implement checklist + walkthrough in `docs/walkthroughs/`
-
-Approval gates: ask for an explicit “go ahead” at each phase boundary in interactive work.
-
-Artifact convention:
-- Phase artifacts (brainstorming/PRD/task plan/walkthrough) should include a `Status` line with a lightweight version (e.g., `Draft (v0.2 - Revised)` → `Approved (v1.0)`), plus a short `Revision History` section when revised.
+During migration, legacy task-based artifacts remain in place unless explicitly mapped to a WF ID.
 
 ### Skills (Optional)
 
@@ -110,12 +100,10 @@ Artifact convention:
 
 ## Task Lifecycle & Tracking (Source of Truth: `docs/index.md`)
 
-- `docs/index.md` is the SSOT (dashboard linking PRDs, task files, walkthroughs).
-- Major tasks: `docs/tasks/active/task-[ID]-[name].md`; PRDs: `docs/tasks/active/prd-[ID]-[name].md`.
+- `docs/index.md` is the dashboard/registry (migration in progress).
 - Minor work: append to `docs/maintenance.md`.
-- Keep checklists current (`[/]` in-progress, `[x]` done) as you execute.
-- Verification: every major task ends with a **Verify** subtask that exercises the full flow.
-- Archive completed PRDs/tasks to `docs/tasks/completed/` and immediately fix links in `docs/index.md`.
+- Decisions: `docs/logs/decisions.md`.
+- When using the WF workflow, follow `docs/workflow/README.md` for artifact paths and status updates.
 
 ## Boundaries (subheadings: ### Always; ### Ask first; ### Never)
 

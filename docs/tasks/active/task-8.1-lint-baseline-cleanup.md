@@ -4,7 +4,7 @@
 **Task ID**: 8.1  
 **Pipeline Phase**: Phase 2 (Task breakdown)  
 **Status**: Draft (v0.1 - Parked for later)  
-**PRD**: `docs/tasks/active/prd-8.1-lint-baseline-cleanup.md`  
+**PRD**: `docs/prd/prd-8.1-lint-baseline-cleanup.md`  
 
 ---
 
@@ -61,4 +61,3 @@ As of 2026-02-13:
 ## Revision History
 
 - **v0.1** (2026-02-13): Parked task plan created to resume later.
-

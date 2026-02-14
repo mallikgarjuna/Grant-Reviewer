@@ -82,7 +82,7 @@ When all tasks are complete:
    Done
 
 2. Create or update walkthrough file:
-   docs/walkthrough/walkthrough-WF-XXXX-<slug>.md
+   docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md
 
 Walkthrough must include:
 

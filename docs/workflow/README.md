@@ -65,12 +65,12 @@ Slug rules:
 
 # Folder Structure
 
-- docs/brainstorm/
+- docs/brainstorms/
 - docs/specs/pages/
 - docs/specs/features/
 - docs/prd/
 - docs/tasks/
-- docs/walkthrough/
+- docs/walkthroughs/
 - docs/logs/decisions.md
 - docs/index.md
 - docs/workflow/
@@ -81,7 +81,7 @@ Slug rules:
 
 The index is a link registry, not a narrative log.
 
-Table format:
+Table format (WF registry):
 
 | WF ID | Slug / Feature | Brainstorm | Spec | PRD | Task File | Walkthrough | Status |
 
@@ -99,6 +99,9 @@ Rules:
 - Update status only when phase changes.
 
 Keep it minimal. No descriptions.
+
+Migration note:
+- During migration, `docs/index.md` contains both a legacy task registry and a WF registry. Add new initiatives to the WF registry only.
 
 ---
 

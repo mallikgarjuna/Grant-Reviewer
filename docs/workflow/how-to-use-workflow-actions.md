@@ -36,7 +36,7 @@ Stop after completing these steps.
 Use @docs/workflow/phase-0-1-brainstorm.md
 @docs/templates/brainstorm-template.md
 @docs/index.md
-@docs/brainstorm/brainstorm-<WF-ID>-<slug>.md
+@docs/brainstorms/brainstorm-<WF-ID>-<slug>.md
 
 Run an interactive, context-aware brainstorming session:
 
@@ -54,7 +54,7 @@ Start with Section 1 (Problem Statement).
 ```text
 Use @docs/workflow/phase-1-1-spec-generate.md
 @docs/index.md
-@docs/brainstorm/brainstorm-<WF-ID>-<slug>.md
+@docs/brainstorms/brainstorm-<WF-ID>-<slug>.md
 
 Generate spec v0.1 from brainstorm for:
 
@@ -192,7 +192,7 @@ Commit after each with messages like:
 Continue through all tasks.
 When completed:
 
-* Draft/Update walkthrough in docs/walkthrough/walkthrough-<WF-ID>-<slug>.md
+* Draft/Update walkthrough in docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md
 * Update docs/index.md Status to Done.
 ```
 
@@ -204,4 +204,3 @@ When completed:
 - Use branch naming: `wf/<WF-ID>-<slug>` to protect main.
 - Artifact files should follow the `<artifact>-<WF-ID>-<slug>.md` naming rule.
 - These prompts should map directly to your workflow instructions in `docs/workflow/`.
-

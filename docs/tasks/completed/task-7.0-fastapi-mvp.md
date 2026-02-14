@@ -2,7 +2,7 @@
 
 **Status**: [x] Complete  
 **Phase**: Phase 2 (Task breakdown)  
-**PRD**: `docs/tasks/completed/prd-7.0-fastapi-mvp.md`  
+**PRD**: `docs/prd/prd-7.0-fastapi-mvp.md`  
 **Phase 0 Notes**: `docs/brainstorms/brainstorming-7.0-fastapi-mvp.md`
 
 ---

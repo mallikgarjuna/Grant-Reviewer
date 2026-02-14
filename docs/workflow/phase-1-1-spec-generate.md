@@ -17,7 +17,7 @@ No review in this step.
 
 ## Required Inputs
 
-- docs/brainstorm/brainstorm-WF-XXXX-<slug>.md
+- docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
 - docs/index.md (to confirm WF ID and paths)
 
 ---
@@ -97,7 +97,7 @@ Known constraints or complexities.
 Use:
 
 - @docs/workflow/phase-1-1-spec-generate.md
-- @docs/brainstorm/brainstorm-WF-XXXX-<slug>.md
+- @docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
 
 Create or update:
 

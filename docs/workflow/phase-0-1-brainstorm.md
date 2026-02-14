@@ -27,7 +27,7 @@ This is NOT auto-generation.
 
 ## Required Inputs
 
-- docs/brainstorm/brainstorm-WF-XXXX-<slug>.md
+- docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
 - docs/templates/brainstorm-template.md
 - docs/index.md (to understand project phase)
 - Any relevant previous WF artifacts (if related)
@@ -232,7 +232,7 @@ Wait for user signal before Phase 1.
 Use:
 
 - @docs/workflow/phase-0-1-brainstorm.md
-- @docs/brainstorm/brainstorm-WF-XXXX-<slug>.md
+- @docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
 - @docs/templates/brainstorm-template.md
 - @docs/index.md
 

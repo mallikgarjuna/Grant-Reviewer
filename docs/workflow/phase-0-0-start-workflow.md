@@ -61,7 +61,7 @@ All artifacts must follow:
 ## Files To Create
 
 Brainstorm:
-docs/brainstorm/brainstorm-WF-XXXX-<slug>.md
+docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
 
 Spec:
 If Type = page:
@@ -76,7 +76,7 @@ Tasks:
 docs/tasks/tasks-WF-XXXX-<slug>.md
 
 Walkthrough:
-docs/walkthrough/walkthrough-WF-XXXX-<slug>.md
+docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md
 
 ---
 
