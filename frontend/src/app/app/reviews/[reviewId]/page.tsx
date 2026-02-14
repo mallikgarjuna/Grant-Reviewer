@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
+  clearReviewAttempt,
   createNewReviewAttempt,
   getStoredReviewAttempt,
 } from "@/lib/review-attempt";
@@ -114,12 +115,17 @@ export default function ReviewDetailPage() {
   const [error, setError] = useState<ApiError | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [exportFeedback, setExportFeedback] = useState<ExportFeedback | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function loadReview() {
       setIsLoading(true);
       setExportFeedback(null);
+      setDeleteErrorMessage(null);
+      setShowDeleteConfirm(false);
       const response = await fetch(`/api/bff/reviews/${reviewId}`, {
         method: "GET",
         cache: "no-store",
@@ -233,6 +239,31 @@ export default function ReviewDetailPage() {
       kind: "success",
       message: "Downloaded review as .txt.",
     });
+  }
+
+  async function deleteReviewAndRedirect() {
+    setIsDeleting(true);
+    setDeleteErrorMessage(null);
+    try {
+      const response = await fetch(`/api/bff/reviews/${reviewId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        const apiError = await parseApiError(response);
+        if (apiError.code === "REVIEW_NOT_FOUND") {
+          setDeleteErrorMessage("Review no longer exists or is unavailable.");
+          return;
+        }
+        setDeleteErrorMessage("Unable to delete this review right now.");
+        return;
+      }
+      clearReviewAttempt();
+      router.push("/app");
+    } catch {
+      setDeleteErrorMessage("Unable to delete this review right now.");
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   if (isLoading) {
@@ -357,6 +388,48 @@ export default function ReviewDetailPage() {
             {exportFeedback.message}
           </p>
         ) : null}
+        <div className="mt-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--color-muted-foreground)]">
+            Data controls
+          </p>
+          <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
+            Delete this review and its snippet data from your account.
+          </p>
+          {!showDeleteConfirm ? (
+            <button
+              className="mt-3 inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-red-300 bg-red-50 px-5 text-sm font-medium text-red-700 hover:bg-red-100"
+              onClick={() => setShowDeleteConfirm(true)}
+              type="button"
+            >
+              Delete review
+            </button>
+          ) : (
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-red-600 px-5 text-sm font-medium text-white hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isDeleting}
+                onClick={deleteReviewAndRedirect}
+                type="button"
+              >
+                {isDeleting ? "Deleting..." : "Confirm delete"}
+              </button>
+              <button
+                className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-5 text-sm font-medium text-[var(--color-foreground)]"
+                disabled={isDeleting}
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeleteErrorMessage(null);
+                }}
+                type="button"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          {deleteErrorMessage ? (
+            <p className="mt-3 text-sm text-red-600">{deleteErrorMessage}</p>
+          ) : null}
+        </div>
 
         {isPending ? (
           <p className="mt-4 text-sm text-[var(--color-muted-foreground)]">
