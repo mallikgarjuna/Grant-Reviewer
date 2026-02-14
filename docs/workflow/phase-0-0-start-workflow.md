@@ -103,6 +103,15 @@ Branch policy:
 - Create the workflow branch from the latest `main` (not from another in-progress WF branch).
 - If you must depend on unmerged work, keep it explicit (stacked PR) and document it in the PR description.
 
+Suggested commands (PR-based flow):
+
+```sh
+git switch main
+git pull --ff-only
+git switch -c wf/WF-XXXX-<slug>
+git push -u origin wf/WF-XXXX-<slug>
+```
+
 Immediately commit the created artifact files:
 
 Commit message:
