@@ -2,7 +2,7 @@
 
 Artifact: brainstorm  
 Version: v0.19  
-Status: Draft  
+Status: Draft Complete
 Last Updated: 2026-02-14
 
 ---
@@ -10,14 +10,15 @@ Last Updated: 2026-02-14
 ## 1. Problem Statement (Complete)
 
 - Primary audience: new researchers/PIs drafting grant proposals.
-- Core pain: unclear reviewer expectations; existing feedback feels generic (not rubric-grounded).
+- Core pain: unclear reviewer expectations; existing feedback feels generic (not criteria-aligned).
 - When pain is most acute (priority order): early ideation/outline → mid-draft concreteness → late polish.
 - Current workaround (priority order): peers/mentors/internal review (slow/inconsistent) → old successful proposals/checklists (hard to adapt) → generic LLMs (not expectation-linked).
 - Why now (priority order): increased competitiveness/criteria-fit pressure → trust gap with generic AI unless it’s grounded.
 
 ### Problem Definition (Working)
 
-New researchers/PIs need a fast, trustworthy way to understand “what reviewers expect” and get expectation-linked feedback; current feedback channels are often generic, slow, or inconsistent.
+New researchers/PIs need a fast, trustworthy way to understand “what reviewers expect” and get criteria-aligned feedback; current feedback channels are often generic, slow, or inconsistent.
+**Refinement (v0.20):** Add regulatory anxiety. "Researchers fear manual errors in complex NWO/EU evaluation criteria and need a safe 'pre-review' check before official submission."
 
 ---
 
@@ -26,7 +27,7 @@ New researchers/PIs need a fast, trustworthy way to understand “what reviewers
 - Primary landing KPI (priority order): click-through to “Try with your text” / sign-in → demo engagement → contact/waitlist conversion.
 - Intended behavior change: “I trust this enough to try it with my text (login) now.”
 - “Good enough” MVP landing: clear hero + 3 benefits + static example demo + CTA + brief trust/privacy reassurance.
-- Core positioning takeaway: “PeerLens gives rubric-grounded, expectation-linked feedback — not generic writing tips.”
+- Core positioning takeaway: “PeerLens gives criteria-aligned, citation-backed feedback — not generic writing tips.”
 - Biggest trust blocker to address (priority order): grounded-in-expectations vs generic AI → accuracy/trustworthiness (avoid overclaiming) → privacy/training concerns.
 
 ---
@@ -46,21 +47,35 @@ New researchers/PIs need a fast, trustworthy way to understand “what reviewers
 - Demo should primarily demonstrate: expectation-linked feedback feels meaningfully different from generic advice.
   - Secondary emphasis (priority order): safety/ethics posture → speed/iteration.
 - Simplest credible demo format (priority order): 3 scenario tabs with pre-written snippet + pre-written feedback cards → short “tour” steps.
-- “Rubric-grounded” phrasing (priority order): be explicit and define it in 1–2 lines + show it in the demo → if needed, simplify wording to “reviewer expectations” without losing meaning.
+- “Criteria-aligned” phrasing (priority order): be explicit and define it in 1–2 lines + show it in the demo → if needed, simplify wording to “reviewer expectations” without losing meaning.
 - CTA style: direct (“Try with your text” / “Get feedback”).
 - Trust-protecting avoid list (priority order): over-promising outcomes → too many features/pricing details → unsupported privacy/training claims.
 
 ### Rough Direction (Working)
 
-Landing should quickly define “expectation-linked feedback,” show it via a few concrete examples (tabs), and funnel into an authenticated “try with your text” flow, without making outcome promises.
+Landing should quickly define “criteria-aligned feedback,” show it via a few concrete examples (tabs), and funnel into an authenticated “try with your text” flow, without making outcome promises.
 
-### Landing Structure (Blueprint-Guided; Refinement)
+### Landing Structure (Research-Backed Refinement)
 
-- Framework: Product-led (Framework A).
-- MVP section order (target): Nav+Hero → Benefits → Static Demo Tabs → How It Works → FAQ (objections) → Final CTA+Footer.
-- Social proof in MVP: omit logos/testimonials; earn trust via clarity + conservative claims.
-- Primary CTA destination (priority order): “Try with your text” → `/sign-in` (primary) → `/app` (fallback/secondary).
-- Objections to address (priority order): “Is this generic (or expectation-linked)?” → privacy/training reassurance → “Will this homogenize my proposal?” → “Can I try without logging in?” → “What do I actually get back?”
+- **Framework**: Blended (Product-Led A + Sales-Led B).
+- **Positioning**: "The Applicant's Pre-Reviewer" (Safe internal check).
+- **Hook**: "Check Your Readiness Score" (65/100).
+- **Trust**: Functional Trust (Explicit NWO/Horizon criteria checks).
+- **Revised Section Order (Target):**
+  1. **Nav + Hero** (with "Pre-Review" positioning)
+  2. **Social Proof / Trust** (Yellow Research style: "Trusted for NWO/ERC")
+  3. **Problem-Agitate** (The pain of "Reviewer #2" and compliance rejection)
+  4. **Solution / Demo Tabs** (The "15-Minute Review" flow)
+  5. **Benefits** (Readiness Score, Compliance Check, Time Saved)
+  6. **How It Works** (Upload -> Criteria Match -> Review)
+  7. **Transformation** (From "Uncertainty" to "Ready to Submit")
+  8. **FAQ** (Data Privacy / Training Reassurance)
+  9. **Final CTA**
+
+- **New MVP Features (from Competitor Deep-Dive)**:
+  - **"15-Minute Review" Hook**: Frame the value as a quick, high-fidelity check.
+  - **Visual Readiness Score**: A 0-100 gauge in the hero/demo to make value tangible.
+  - **Criteria Mode Switcher**: Show "NWO Veni" vs "ERC Starting" toggles explicitly.
 
 ---
 
@@ -134,12 +149,12 @@ Landing should quickly define “expectation-linked feedback,” show it via a f
 - Per-scenario content (minimum):
   - Snippet text + 3–5 feedback cards + “review-criterion tags”
 - Snippet length: ~120–180 words (one paragraph).
-- Snippet source guidance: primarily fictional/generic grant-like text, lightly flavored by real-call patterns (credible without implying a real call/rubric).
+- Snippet source guidance: primarily fictional/generic grant-like text, lightly flavored by real-call patterns (credible without implying a real call/criteria).
 - Feedback card anatomy:
-  - Severity → Finding → Review criterion tag → Concrete next step
+  - Severity → Finding → **Evaluation Criterion** tag → Concrete next step
 - Cards per scenario (MVP): 4 cards.
 - “Concrete next step” length: 2–3 sentences.
-- Tag wording: plain-language, criteria-oriented tag using prefix “Review criterion: …” (avoid strong “rubric traceability” claims).
+- Tag wording: plain-language, criteria-oriented tag using prefix “Criterion: …” (avoid strong “traceability” claims).
 - Trust reassurance placement:
   - Short trust line near the demo + link to `/privacy` (avoid burying it; avoid leading with it in hero).
 - Trust line (exact, 2 lines + link):
@@ -163,9 +178,9 @@ Landing should quickly define “expectation-linked feedback,” show it via a f
 
 ## 6. Risks / Unknowns (Complete)
 
-- Most fragile assumption (priority order): “expectation-linked” messaging feels credible without real user input → search-intent visitors trust a new brand enough to click through.
+- Most fragile assumption (priority order): “criteria-aligned” messaging feels credible without real user input → search-intent visitors trust a new brand enough to click through.
 - Validate earliest (priority order): demo scenarios + copy make people say “this is different” → CTA wording/placement converts.
-- Biggest rework risk (priority order): over-promising “rubric-grounded” before backend traceability supports it → needing extra pages unexpectedly (FAQ/pricing/blog).
+- Biggest rework risk (priority order): over-promising “criteria-alignment” before backend traceability supports it → needing extra pages unexpectedly (FAQ/pricing/blog).
 - Stall risk (priority order): unclear product narrative / copy disagreements → SEO/content rabbit holes → waiting on auth/provider setup.
 - Unknown affecting scope: final set of demo scenarios/snippets/outputs to ship.
 
@@ -174,7 +189,9 @@ Landing should quickly define “expectation-linked feedback,” show it via a f
 ## 7. MVP Definition (Complete)
 
 - 3-day “shipped” must-have: landing (`/`) with hero + benefits + static demo tabs + primary CTA to sign-in/app.
-- Minimum demo content: 3 scenarios (each: snippet + 3–5 feedback cards).
+- Minimum demo content: 3 scenarios (each: snippet + 3–5 feedback cards + **Readiness Score**).
+- **Critical MVP UI**:
+  - **Readiness Score**: A static logical score (e.g., 65/100) that changes per scenario.
 - Explicitly OK to defer: testimonials/logos, pricing, detailed FAQ, SEO tuning beyond basics, and visual polish beyond “clean and credible.”
   - Blog: defer `/blog` entirely in this WF.
 - Must NOT include: signed-out “run a real review” flow; any text upload on landing.
@@ -186,7 +203,7 @@ Landing should quickly define “expectation-linked feedback,” show it via a f
 
 - Postpone (tempting feature) (priority order): signed-out “paste your text” demo → pricing page.
 - Explicitly not solving: improving review quality/LLM prompting/back-end evaluation logic.
-- Avoid committing publicly (priority order): “rubric-grounded” traceability details we can’t reliably show yet → acceptance probability / success-rate claims.
+- Avoid committing publicly (priority order): “criteria-aligned” traceability details we can’t reliably show yet → acceptance probability / success-rate claims.
 - Belongs in a future WF: SEO/content program (blog, posts, lead magnets).
 - Design scope boundary: landing page UI only; no full design system overhaul.
 
@@ -212,7 +229,17 @@ Landing should quickly define “expectation-linked feedback,” show it via a f
 - v0.16 (2026-02-14): Locked trust-line format (2 lines + link), export/delete wording, and FAQ objection phrasing.
 - v0.17 (2026-02-14): Locked “funding call” wording, final how-it-works label, final subheadline, trust-line exact text, and FAQ ordering.
 - v0.18 (2026-02-14): Harmonized landing copy to “review-criteria-aligned” and synced demo card terminology + trust line.
-- v0.19 (2026-02-14): Finalized demo + FAQ depth (4 cards/scenario, 2–3 sentence next steps, short FAQ answers).
+- v0.20 (2026-02-14): **Research Update**: Added "Safe Pre-Reviewer" positioning (NL/EU policy compliant). Incorporated "15-Minute Review" hook and "Visual Readiness Score" from competitor deep-dive. Switched to **Blended Framework** (A+B) to address researcher anxiety.
+- v0.21 (2026-02-14): **Strategic Locks**:
+  - **Positioning**: "The Applicant's Pre-Reviewer" (Safety/Policy alignment).
+  - **Trust Strategy**: "Functional Trust" (Explicit "Checked against NWO/Horizon" claims, no fake logos).
+  - **Hook**: "Check Your Readiness Score" (Quantifiable urgency).
+  - **Hero Visual**: "Readiness Score Card Mockup" (Show NWO Veni score + specific criteria error).
+  - **Social Proof**: "Supported Funders Ticker" (NWO, ERC, MSCA logos in grayscale).
+  - **Problem Agitation**: "Reviewer #2 Anxiety" (Fear of arbitrary rejection).
+  - **Solution Strategy**: "The 'Red-Pen' Review" (Correction over generation; specific criteria error highlighting).
+  - **Transformation**: "Submit with Confidence" (From uncertainty to specific readiness).
+  - **Primary CTA**: "Check My Draft Now" (Immediate utility hook).
 
 ## Notes
 

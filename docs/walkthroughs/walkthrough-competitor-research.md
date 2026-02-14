@@ -38,21 +38,21 @@ I extended the research to cover the *logged-in* experience to support the build
 I performed a targeted deep-dive into the two most relevant direct competitors to identify PeerLens's unique "Strategic Win" in the EU/NL market:
 - **Grantable**: Uses a **Source Material Sidebar** to ground AI suggestions. Primarily focused on general grant writing.
 - **Grantease**: Tailored for **Scientific Research (NIH/NSF)**. It identifies RFA compliance requirements from text and frames the review as a "15-minute" task.
-- **EU/NL Gap**: Verified that both leading tools have **zero built-in support** for NWO (NL) or ERC/MSCA (EU) specific rubrics.
+- **EU/NL Gap**: Verified that both leading tools have **zero built-in support** for NWO (NL) or ERC/MSCA (EU) specific evaluation criteria.
 
 ![Direct Competitor Deep-Dive](file:///home/mgurram/Projects/Github/AIEng_MG/Grant-Reviewer/docs/walkthroughs/media/grant_competitor_deep_dive.webp)
 
 | Feature | Competitor Inspiration | Lesson for PeerLens |
 |---------|------------------------|---------------------|
-| AI Instruction | Grantable's "Tell AI how to improve" | Allow users to refine reviews with rubric-laden prompts. |
-| Compliance | Grantease's "Instance RFA Check" | Automate NWO/ERC rubric compliance—this is the PeerLens competitive edge. |
+| AI Instruction | Grantable's "Tell AI how to improve" | Allow users to refine reviews with criteria-specific prompts. |
+| Compliance | Grantease's "Instance RFA Check" | Automate NWO/ERC evaluation criteria compliance—this is the PeerLens competitive edge. |
 
 ## NL/EU Market Research & Strategic Positioning
 
 I performed a final research round focused on the Netherlands (NWO) and European (ERC/MSCA) funding landscape:
 - **Regulatory Edge**: Discovered that NWO/EU officially permit AI for **applicants** but prohibit it for **reviewers**. This leads to the strategic positioning of PeerLens as a **"Safe Pre-Reviewer"** for researchers.
-- **Manual vs. AI**: Identified that local incumbents (Yellow Research, Hezelburcht) rely on high-touch, expensive manual services. PeerLens disrupts this with instant, low-cost AI rubric reviews.
-- **Specific Grounding**: Recommended creating dedicated rubric-modes for **NWO Veni/Vidi/Vici** and **Horizon Europe (ERC/MSCA)** to gain trust through geospecific expertise.
+- **Manual vs. AI**: Identified that local incumbents (Yellow Research, Hezelburcht) rely on high-touch, expensive manual services. PeerLens disrupts this with instant, low-cost AI criteria reviews.
+- **Specific Grounding**: Recommended creating dedicated evaluation criteria modes for **NWO Veni/Vidi/Vici** and **Horizon Europe (ERC/MSCA)** to gain trust through geospecific expertise.
 
 ![NL/EU Research Session](file:///home/mgurram/Projects/Github/AIEng_MG/Grant-Reviewer/docs/walkthroughs/media/nl_eu_competitor_research.webp)
 

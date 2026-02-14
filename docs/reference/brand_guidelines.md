@@ -21,7 +21,7 @@ Do NOT modify this file during execution — update via a dedicated WF.
 | ✅ Do | ❌ Don't |
 |-------|---------|
 | "We found 3 areas that could be stronger" | "ALERT: 3 critical issues detected" |
-| "Your methods section aligns well with the rubric" | "Congrats! You nailed it! 🎉" |
+| "Your methods section aligns well with the evaluation criteria" | "Congrats! You nailed it! 🎉" |
 | "This section could benefit from more specificity" | "Insufficient detail provided" |
 
 ---

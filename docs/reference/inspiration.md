@@ -24,9 +24,9 @@ Insights from specialized consultancies and regulatory bodies.
 
 | Competitor / Entity | Market Focus | Key Insight | Lesson for PeerLens |
 |---------------------|--------------|-------------|---------------------|
-| **Yellow Research** | [NL/EU Consultant] | They create separate, high-trust landing pages for **ERC**, **MSCA**, and **NWO** services. | **Trust through Specificity**: Don't just say "EU Grants"; create dedicated rubric-modes for NWO vs ERC. |
+| **Yellow Research** | [NL/EU Consultant] | They create separate, high-trust landing pages for **ERC**, **MSCA**, and **NWO** services. | **Trust through Specificity**: Don't just say "EU Grants"; create dedicated evaluation criteria modes for NWO vs ERC. |
 | **NWO / EU Policy** | [Regulator] | They permit AI for **applicants** (editing/brainstorming) but prohibit it for **official reviewers**. | **Positioning**: Frame PeerLens as the **"Applicant's Pre-Reviewer"** — a safe, internal check before human submission. |
-| **PNO / Hezelburcht** | [NL Consultants] | Dominate through manual expertise and high-touch consulting. | **The Speed Win**: Disrupt the manual €5k+ consulting model with instant €50 AI-rubric reviews. |
+| **PNO / Hezelburcht** | [NL Consultants] | Dominate through manual expertise and high-touch consulting. | **The Speed Win**: Disrupt the manual €5k+ consulting model with instant €50 AI-criteria reviews. |
 | **Enspire Science** | [EU Specialist] | Focuses heavily on the "Excellence" and "Impact" criteria of ERC. | **Criterion Focusing**: Deep-dive into European-specific definitions of "Impact" (Horizon Europe). |
 
 ---
@@ -37,10 +37,10 @@ While direct competitors focus on US (NIH/NSF) or general grants, PeerLens wins 
 
 | Opportunity Gap | Competitor State | PeerLens Strategy |
 |-----------------|------------------|-------------------|
-| **NL-Specific Rubrics** | None have NWO (Veni/Vedi/Vici) templates. | **Automated NWO Rubrics**: Pre-load NWO evaluation criteria as constraints. |
+| **NL-Specific Rubrics** | None have NWO (Veni/Vedi/Vici) templates. | **Automated NWO Evaluation Criteria**: Pre-load NWO evaluation criteria as constraints. |
 | **EU Frameworks** | Generic support at best. | **ERC/MSCA Specialists**: Deep grounding in Horizon Europe structures (Excellence, Impact, Implementation). |
 | **Review over Writing** | Most focus on "Generating" text. | **"Expert Second Pair of Eyes"**: Position solely as a high-fidelity review tool for existing drafts. |
-| **Compliance Proof** | Narrative claims of compliance. | **Visual Compliance Score**: Real-time 0-100 score based *strictly* on NWO/EU rubric points. |
+| **Compliance Proof** | Narrative claims of compliance. | **Visual Compliance Score**: Real-time 0-100 score based *strictly* on NWO/EU evaluation criteria points. |
 | **Regulatory Safety** | Generic AI tools ignore policies. | **"The Pre-Reviewer"**: Explicitly market as a tool for researchers to use *before* the human committee sees it. |
 
 ---
