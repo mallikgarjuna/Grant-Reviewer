@@ -20,10 +20,12 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 
 ## Git Workflow
 
-- All meaningful initiatives should use the WF workflow system in `docs/workflow/README.md`.
+- For all *new* non-trivial initiatives, use the WF workflow system in `docs/workflow/README.md`.
+- Do not retroactively convert legacy task-based artifacts into WF artifacts unless explicitly requested.
 - Never commit directly to `main`.
-- Branch naming (WF): `wf/<WF-ID>-<slug>` (example: `wf/WF-0007-landing-page`).
-- Commit messages should start with the WF ID (example: `WF-0007: add landing hero CTA`).
+- WF IDs start after the legacy Task IDs (first WF is `WF-0009`; see `docs/index.md`).
+- Branch naming (WF): `wf/<WF-ID>-<slug>` (example: `wf/WF-0009-landing-page`).
+- Commit messages should start with the WF ID (example: `WF-0009: add landing hero CTA`).
 - Keep diffs small; avoid drive-by refactors.
 - Do not commit secrets (`.env`, API keys). Keep `backend/data/*.db` gitignored.
 
@@ -42,7 +44,7 @@ Use repo-relative paths (don’t require machine-specific `file:///...` links).
 - Prompt history (datetimestamps): `docs/logs/prompt_history.md`
 - WF brainstorming notes: `docs/brainstorms/brainstorm-<WF-ID>-<slug>.md`
 - WF walkthrough: `docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md`
-- Legacy (pre-WF) artifacts remain in `docs/brainstorms/`, `docs/walkthroughs/`, `docs/tasks/`, and `docs/prds/` during migration.
+- Legacy (pre-WF) artifacts remain in `docs/brainstorms/`, `docs/walkthroughs/`, `docs/tasks/`, and `docs/prds/` with their existing Task ID naming.
 
 Update these immediately after decisions/clarifications (“zero-latency logging”).
 
@@ -55,18 +57,18 @@ Update these immediately after decisions/clarifications (“zero-latency logging
 │   ├── scripts/             # seed/ingest/demo utilities
 │   └── data/                # call YAML + sqlite db (gitignored)
 └── docs/
-	    ├── index.md             # dashboard (SSOT)
-	    ├── maintenance.md       # small fixes
-	    ├── lessons.md           # gotchas
-	    ├── logs/                # qa_history/decisions/prompt_history
-	    ├── workflow/            # WF workflow instructions + prompt templates (SSOT)
-	    ├── templates/           # WF templates used by workflow phases
-	    ├── brainstorms/         # brainstorming notes (legacy + WF during migration)
-	    ├── specs/               # WF specs (pages/features)
-	    ├── prds/                # PRDs (legacy + WF during migration)
-	    ├── tasks/               # tasks (legacy + WF during migration)
-	    ├── walkthroughs/        # walkthrough notes (legacy + WF during migration)
-	    └── reference/           # durable reference docs (domain model, templates, etc.)
+    ├── index.md             # dashboard (SSOT)
+    ├── maintenance.md       # small fixes
+    ├── lessons.md           # gotchas
+    ├── logs/                # qa_history/decisions/prompt_history
+    ├── workflow/            # WF workflow instructions + prompt templates (SSOT)
+    ├── templates/           # WF templates used by workflow phases
+    ├── brainstorms/         # brainstorming notes (legacy + WF during migration)
+    ├── specs/               # WF specs (pages/features)
+    ├── prds/                # PRDs (legacy + WF during migration)
+    ├── tasks/               # tasks (legacy + WF during migration)
+    ├── walkthroughs/        # walkthrough notes (legacy + WF during migration)
+    └── reference/           # durable reference docs (domain model, templates, etc.)
 ```
 
 ## Commands (actual executable commands)
@@ -100,7 +102,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 
 ## Task Lifecycle & Tracking (Source of Truth: `docs/index.md`)
 
-- `docs/index.md` is the dashboard/registry (migration in progress).
+- `docs/index.md` is the dashboard/registry (migration in progress) with two tables: legacy Task IDs and WF IDs.
 - Minor work: append to `docs/maintenance.md`.
 - Decisions: `docs/logs/decisions.md`.
 - When using the WF workflow, follow `docs/workflow/README.md` for artifact paths and status updates.
