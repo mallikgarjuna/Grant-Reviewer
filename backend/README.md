@@ -82,6 +82,13 @@ Endpoints:
 - `GET /calls/{call_id}/nodes`
 - `POST /reviews`
 - `GET /reviews/{review_id}`
+- `DELETE /reviews/{review_id}`
+
+Review deletion behavior:
+- Requires the same signed BFF auth headers used by other protected review endpoints.
+- Ownership is enforced (`REVIEW_NOT_FOUND` for non-owner requests).
+- Success response is `200 {"ok": true}`.
+- Delete is hard delete for review + review cards + associated snippet.
 
 Quick smoke checks (run in another terminal while the server is running):
 ```bash
@@ -169,8 +176,14 @@ Copy `.env.example` to `.env` for local development.
 ## Tests
 
 ```bash
-uv run pytest tests/test_api.py -q
+uv run pytest -q
 ```
+
+Recent API coverage includes:
+- signed auth and idempotency behavior
+- quota / kill switch handling
+- ownership checks for read + delete
+- hard-delete lifecycle assertions
 
 ## LLM Integration
 
