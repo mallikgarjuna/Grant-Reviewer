@@ -1,7 +1,7 @@
 # WF-0009 — PeerLens Landing Page
 
 Artifact: brainstorm  
-Version: v0.8  
+Version: v0.12  
 Status: Draft  
 Last Updated: 2026-02-14
 
@@ -53,6 +53,58 @@ New researchers/PIs need a fast, trustworthy way to understand “what reviewers
 ### Rough Direction (Working)
 
 Landing should quickly define “expectation-linked feedback,” show it via a few concrete examples (tabs), and funnel into an authenticated “try with your text” flow, without making outcome promises.
+
+### Landing Structure (Blueprint-Guided; Refinement)
+
+- Framework: Product-led (Framework A).
+- MVP section order (target): Nav+Hero → Benefits → Static Demo Tabs → How It Works → FAQ (objections) → Final CTA+Footer.
+- Social proof in MVP: omit logos/testimonials; earn trust via clarity + conservative claims.
+- Primary CTA destination (priority order): “Try with your text” → `/sign-in` (primary) → `/app` (fallback/secondary).
+- Objections to address (priority order): “Is this generic (or expectation-linked)?” → privacy/training reassurance → “Will this homogenize my proposal?” → “Can I try without logging in?” → “What do I actually get back?”
+
+---
+
+## Landing Page Content (Copy + Sections; Refinement)
+
+- Hero headline direction (priority order; avoid “AI” wording):
+  - “Expectation-linked feedback for your grant writing.”
+  - “Find what reviewers expect — fast.”
+- Hero subheadline direction:
+  - Explain mechanism: expectation-linked feedback on a single snippet → faster iteration → better criteria fit (no outcome promises).
+- Benefits (top 3):
+  - Expectation-linked findings
+  - Scannable severity
+  - Copy-ready next steps
+- How-it-works (MVP steps):
+  - Choose call/section → paste snippet (in app) → get expectation-linked feedback + copy
+- FAQ (MVP 5 objections; A + B prioritized; C secondary):
+  - “Is this generic (or is it expectation-linked)?”
+  - “Do you train on my text?”
+  - “Why do I need to sign in?”
+  - “What should I paste?”
+  - “Can I delete my review/snippet?”
+  - Secondary candidates (not in MVP 5): supported funders, time-to-results, export/copy, compliance, homogenization, accuracy.
+
+---
+
+## Static Demo (MVP; Refinement)
+
+- Demo scenarios (3 tabs):
+  - NWO Veni
+  - ERC Starting Grant
+  - MSCA Postdoctoral Fellowship (PF)
+- Tab labels: use the program names (“NWO Veni” / “ERC Starting” / “MSCA PF”).
+- Per-scenario content (minimum):
+  - Snippet text + 3–5 feedback cards + “expectation tags”
+- Snippet length: ~120–180 words (one paragraph).
+- Feedback card anatomy:
+  - Severity → Finding → Expectation tag → Concrete next step
+- Expectation tags: plain-language “Expectation: X” (avoid strong “rubric traceability” claims).
+- Trust reassurance placement:
+  - Short trust line near the demo + link to `/privacy` (avoid burying it; avoid leading with it in hero).
+- Trust line style (draft): “Examples only. Try with your text after sign-in. We don’t use your text to train models. You can delete your review.”
+- MVP nav:
+  - Logo + “Privacy” link + primary CTA button
 
 ---
 
@@ -107,6 +159,10 @@ Landing should quickly define “expectation-linked feedback,” show it via a f
 - v0.6 (2026-02-14): Captured MVP Definition decisions (blog pending).
 - v0.7 (2026-02-14): Finalized MVP Definition decision to defer `/blog` in this WF.
 - v0.8 (2026-02-14): Captured Explicit Non-Goals decisions.
+- v0.9 (2026-02-14): Refined landing page section structure using landing page blueprint (Framework A).
+- v0.10 (2026-02-14): Refined hero/benefits/how-it-works/FAQ set (avoid “AI” wording in hero).
+- v0.11 (2026-02-14): Refined static demo scenarios + card anatomy + trust reassurance placement.
+- v0.12 (2026-02-14): Refined demo tab labels, snippet length, expectation-tag wording, and trust-line microcopy.
 
 ## Notes
 
