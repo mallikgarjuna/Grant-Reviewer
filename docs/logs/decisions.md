@@ -291,3 +291,35 @@
   - Minimal operational logs/backups may be retained for up to **30 days**.
 - **Rationale**: Researchers expect explicit privacy posture before pasting sensitive proposal text; this keeps copy truthful while allowing operational reality.
 - **Status**: Approved.
+
+### AD 9.7: Landing page: remove “Watch Demo”, use text-only trust, privacy-only footer
+- **Decision**: The landing page MVP:
+  - Removes the secondary “Watch Demo” CTA (single primary CTA only).
+  - Uses text-only “Supported calls” (no funder logos).
+  - Uses a privacy-only footer (no Terms link in MVP scope).
+  - Avoids making detailed privacy/training claims on the landing page; links to `/privacy` for specifics.
+- **Rationale**: Reduces implied scope (extra routes/assets) and avoids accidental over-claims while preserving the conversion goal (sign-in).
+- **Status**: Approved.
+
+### AD 9.8: Landing demo content is fixed (micro-rewrites + export promise + ERC label)
+- **Decision**: Lock the landing page static demo content for MVP:
+  - Each tab includes micro-rewrite examples inside suggested fixes (not a separate before/after block).
+  - Landing may promise “Export your review” (app feature).
+  - Use the label “ERC Starting” (not “StG”).
+- **Rationale**: Prevents copy/UI thrash during PRD/tasks and keeps the demo aligned with the sign-in funnel.
+- **Status**: Approved.
+
+### AD 9.9: Landing demo tabs use a minimal client component (no vendor deps)
+- **Decision**: Implement the landing demo tab switcher as a small `use client` component with local state (no URL state, no third-party tab library).
+- **Rationale**: Keeps the landing interactive enough to communicate value while avoiding dependency bloat and reducing performance/accessibility risk.
+- **Status**: Approved.
+
+### AD 9.10: MVP “Export your review” means copy/download text (no PDF)
+- **Decision**: For MVP, “Export your review” is satisfied by providing a user-visible export action that supports “Copy as text” and/or “Download .txt”. PDF export is explicitly not required for MVP.
+- **Rationale**: Keeps the landing copy truthful with minimal implementation effort and low UX risk.
+- **Status**: Approved.
+
+### AD 9.11: Delete review endpoint returns `200 { ok: true }` (MVP)
+- **Decision**: `DELETE /reviews/{review_id}` returns `200` with JSON `{ "ok": true }` on successful deletion.
+- **Rationale**: Simplifies Next.js BFF + UI handling and avoids special-casing `204` parsing behavior in the adapter.
+- **Status**: Approved.
