@@ -249,3 +249,45 @@
 - **Decision**: Keep production running with `LLM_MODE=stub` by default until launch day; enable `LLM_MODE=openai` only for explicit verification runs.
 - **Rationale**: Minimizes cost/blast radius while infra stabilizes; we already proved one real OpenAI end-to-end run fits within the timeout budget.
 - **Status**: Approved.
+
+---
+
+## Date: 2026-02-14 (PeerLens Frontend MVP Decisions)
+
+### AD 9.1: Product name is PeerLens (UI copy + metadata)
+- **Decision**: Rename the user-facing product/app to **PeerLens** (keep “Grant Reviewer” as the repo/internal name if convenient).
+- **Rationale**: Avoids repeated copy/SEO rework; aligns the MVP with the intended product brand early.
+- **Status**: Approved.
+
+### AD 9.2: Signed-out landing demo is static and pre-generated (no backend calls)
+- **Decision**: The landing page demo is a **static example switcher** (no user-provided text, no calls to `POST /reviews`).
+  - Examples to showcase: `NWO-Veni`, `ERC-Starting`, `MSCA-PF`.
+- **Rationale**: Preserves the “login + quotas + BFF boundary” cost-control posture and avoids exposing review generation on the highest-traffic route.
+- **Status**: Approved.
+
+### AD 9.3: Data retention promise is “until user deletes” with self-serve deletion
+- **Decision**: MVP promise: user proposal snippets are retained **until the user deletes them**, and deletion is **self-serve in the UI**.
+- **Rationale**: Matches researcher expectations and reduces reluctance to paste sensitive proposal content.
+- **Status**: Approved.
+
+### AD 9.4: Deletion semantics (hard delete review + cards + snippet; no quota refund; no rerun)
+- **Decision**: “Delete review” performs a **hard delete** of:
+  - the `Review`
+  - its `ReviewCard`s
+  - the associated proposal snippet text
+  - Deletion does **not** refund quota, and deletion ends the results flow (no “rerun from results”).
+- **Rationale**: Keeps abuse/cost controls intact and makes the retention promise truthful.
+- **Status**: Approved.
+
+### AD 9.5: Review Library is local-only in MVP (device-scoped)
+- **Decision**: `/app/reviews` is “Recent reviews on this device” (local storage) and is not account-wide in MVP.
+- **Rationale**: Avoids new backend API surface and keeps the MVP focused on the submit → results loop.
+- **Status**: Approved.
+
+### AD 9.6: Add minimal `/privacy` page (MVP)
+- **Decision**: Ship a minimal `/privacy` page in MVP that states:
+  - PeerLens does not use proposal snippets to train its models.
+  - Proposal snippets are retained until the user deletes them (self-serve deletion).
+  - Minimal operational logs/backups may be retained for up to **30 days**.
+- **Rationale**: Researchers expect explicit privacy posture before pasting sensitive proposal text; this keeps copy truthful while allowing operational reality.
+- **Status**: Approved.
