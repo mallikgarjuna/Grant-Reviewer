@@ -20,9 +20,9 @@ const FAQ_ITEMS: readonly FaqItem[] = [
       "Sign-in connects a review to your account so you can return to it, export it, and delete it later.",
   },
   {
-    question: "What should I paste?",
+    question: "How should I use PeerLens?",
     answer:
-      "Paste one draft section at a time (for example, methodology, impact, or work plan) so the feedback stays specific and actionable.",
+      "Select the funding call, then a proposal application's section heading, then paste one draft section at a time (for example, methodology, impact, or work plan) so the feedback stays specific and actionable.",
   },
   {
     question: "How is my data handled?",

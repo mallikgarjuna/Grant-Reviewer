@@ -71,9 +71,10 @@ Do NOT modify this file during execution — update via a dedicated WF.
 
 | Property | Value |
 |----------|-------|
-| **Family** | [Inter](https://rsms.me/inter/) (headings + body) |
-| **Fallback** | `-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif` |
-| **CSS Variable** | `var(--font-inter)` |
+| **Heading Family** | [Lora](https://fonts.google.com/specimen/Lora) (primary large headings + editorial titles) |
+| **Body/UI Family** | [Inter](https://rsms.me/inter/) (body, nav, controls, forms, dense UI) |
+| **Fallbacks** | Heading: `"Times New Roman", Georgia, serif` / Body: `-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif` |
+| **CSS Variables** | `var(--font-heading)` + `var(--font-body)` |
 
 ### Weight Hierarchy (Restrained)
 
@@ -81,17 +82,19 @@ Deliberately lighter than typical SaaS — scholarly, approachable, non-salesy.
 
 | Element | Weight | Size | Line Height |
 |---------|--------|------|-------------|
-| **H1** | `600` (semibold) | `clamp(2rem, 4vw, 3rem)` | `1.1` |
-| **H2** | `500` (medium) | `clamp(1.5rem, 2.8vw, 2.25rem)` | `1.2` |
-| **H3** | `500` (medium) | `clamp(1.25rem, 2vw, 1.5rem)` | `1.3` |
-| **Body** | `400` (regular) | `1rem` (16px) | `1.5` |
+| **H1** | `600` (semibold, Lora) | `clamp(2.2rem, 3.6vw, 2.95rem)` | `1.22` |
+| **H2** | `600` (semibold, Lora) | `clamp(1.55rem, 2.1vw, 1.95rem)` | `1.28` |
+| **H3** | `600` (semibold, Lora) | `clamp(1.2rem, 1.45vw, 1.32rem)` | `1.36` |
+| **Body** | `400` (regular) | `1rem` (16px) | `1.6` |
 | **Small / Caption** | `400` (regular) | `0.875rem` (14px) | `1.4` |
 | **Eyebrow** | `600` (semibold) | `0.75rem` (12px), uppercase, `tracking-[0.2em]` | `1.5` |
 
 ### Typography Principles
 
-- **Letter-spacing**: `-0.02em` on all headings for tightness.
+- **Letter-spacing**: `-0.01em` max on Lora headings for a light, non-cramped rhythm.
 - **No bold body text** in long-form — use semibold sparingly for emphasis.
+- **No serif in dense UI controls** (forms, tables, buttons).
+- **Serif scope**: serif for heading tags by default; explicitly override to Inter for dense UI headings.
 - **Monospace** (`font-mono`) for review IDs, technical values only.
 
 ---

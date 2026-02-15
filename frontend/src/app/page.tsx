@@ -3,9 +3,8 @@ import Link from "next/link";
 import { DemoTabs } from "./_components/landing/demo-tabs";
 import { FaqAccordion } from "./_components/landing/faq-accordion";
 
-import { LANDING_DEMO_TABS } from "@/lib/landing-demo";
-
-const SUPPORTED_CALLS = LANDING_DEMO_TABS.map((tab) => tab.label).join(" · ");
+const SUPPORTED_FUNDING_CALLS =
+  "NL (NWO, ZonMw), EU/Horizon-Europe (ERC, MSCA)";
 
 const BENEFITS = [
   {
@@ -26,9 +25,27 @@ const BENEFITS = [
 ] as const;
 
 const HOW_IT_WORKS = [
-  "Sign in and open a review session.",
-  "Select your call and section, then paste one draft passage.",
-  "Receive structured feedback cards you can revise from or export.",
+  {
+    key: "step_1",
+    badge: "1",
+    title: "Step 1",
+    description: "Sign in and open a review session.",
+    isHighlighted: false,
+  },
+  {
+    key: "step_2",
+    badge: "2",
+    title: "Step 2",
+    description: "Select your call and section, then paste one draft passage.",
+    isHighlighted: false,
+  },
+  {
+    key: "step_3",
+    badge: "3",
+    title: "Step 3",
+    description: "Receive structured feedback cards you can revise from or export.",
+    isHighlighted: false,
+  },
 ] as const;
 
 export default function Home() {
@@ -63,7 +80,7 @@ export default function Home() {
         </nav>
       </header>
 
-      <main className="mt-12 flex flex-col gap-14 md:gap-16" id="main-content" tabIndex={-1}>
+      <main className="mt-12 flex flex-col gap-16 md:gap-20" id="main-content" tabIndex={-1}>
         <section className="rounded-3xl bg-[var(--color-surface)] px-5 py-8 sm:px-7 sm:py-9 md:px-12 md:py-12">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
             Sharpen your proposal before you submit
@@ -84,7 +101,7 @@ export default function Home() {
               Check My Draft Now
             </Link>
             <p className="text-sm text-[var(--color-muted-foreground)]">
-              Supported calls: {SUPPORTED_CALLS}
+              Supported funding calls: {SUPPORTED_FUNDING_CALLS}
             </p>
           </div>
         </section>
@@ -108,7 +125,9 @@ export default function Home() {
               className="border-l-2 border-[var(--color-border)] pl-4"
               key={benefit.title}
             >
-              <h2 className="text-lg font-medium text-[var(--color-foreground)]">{benefit.title}</h2>
+              <h2 className="text-lg font-medium text-[var(--color-foreground)]">
+                {benefit.title}
+              </h2>
               <p className="mt-2 text-sm leading-6 text-[var(--color-muted-foreground)]">
                 {benefit.description}
               </p>
@@ -121,16 +140,26 @@ export default function Home() {
           <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
             How it works
           </h2>
-          <ol className="mt-5 grid gap-3 md:grid-cols-3">
-            {HOW_IT_WORKS.map((step, index) => (
+          <ol className="mt-6 grid gap-4 md:grid-cols-3 md:gap-6">
+            {HOW_IT_WORKS.map((step) => (
               <li
-                className="rounded-xl bg-white/75 p-4 text-sm leading-6 text-[var(--color-foreground)]"
-                key={step}
+                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 md:px-6 md:py-6"
+                key={step.key}
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]">
-                  Step {index + 1}
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-[var(--color-border)] bg-[var(--color-surface-muted)] text-lg leading-none text-[var(--color-muted-foreground)]"
+                  >
+                    {step.badge}
+                  </span>
+                  <h3 className="font-sans text-[1.35rem] font-semibold text-[var(--color-foreground)]">
+                    {step.title}
+                  </h3>
+                </div>
+                <p className="mt-3 text-[0.98rem] leading-7 text-[var(--color-muted-foreground)]">
+                  {step.description}
                 </p>
-                <p className="mt-2">{step}</p>
               </li>
             ))}
           </ol>
@@ -138,7 +167,7 @@ export default function Home() {
 
         <section className="rounded-2xl bg-[var(--color-surface)] px-6 py-6 md:px-8">
           <p className="text-sm font-medium text-[var(--color-muted-foreground)]">
-            Supported calls (text-only): {SUPPORTED_CALLS}
+            Supported funding calls: {SUPPORTED_FUNDING_CALLS}
           </p>
         </section>
 

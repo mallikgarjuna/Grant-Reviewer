@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading-fallback: "Times New Roman", Georgia, serif;
+  --font-body-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: var(--font-inter), var(--font-body-fallback);
+  --font-heading: var(--font-lora), var(--font-heading-fallback);
   --background: #fcfbf7;
   --foreground: #0b1f3b;
   --surface: #f4f2ec;
@@ -35,14 +38,19 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-body), var(--font-body-fallback);
+  --font-serif: var(--font-heading), var(--font-heading-fallback);
+}
+
+html {
+  font-size: 106.25%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), sans-serif;
-  line-height: 1.5;
+  font-family: var(--font-body), var(--font-body-fallback);
+  line-height: 1.65;
   background-image:
     linear-gradient(to right, rgb(11 31 59 / 0.035) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(11 31 59 / 0.035) 1px, transparent 1px);
@@ -52,26 +60,27 @@ body {
 h1,
 h2,
 h3 {
-  letter-spacing: -0.02em;
+  font-family: var(--font-heading), var(--font-heading-fallback);
+  letter-spacing: -0.005em;
   color: var(--foreground);
 }
 
 h1 {
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1.1;
+  font-size: clamp(2.2rem, 3.6vw, 2.95rem);
+  line-height: 1.22;
   font-weight: 600;
 }
 
 h2 {
-  font-size: clamp(1.5rem, 2.8vw, 2.25rem);
-  line-height: 1.2;
-  font-weight: 500;
+  font-size: clamp(1.55rem, 2.1vw, 1.95rem);
+  line-height: 1.28;
+  font-weight: 600;
 }
 
 h3 {
-  font-size: clamp(1.25rem, 2vw, 1.5rem);
-  line-height: 1.3;
-  font-weight: 500;
+  font-size: clamp(1.2rem, 1.45vw, 1.32rem);
+  line-height: 1.36;
+  font-weight: 600;
 }
 
 button,

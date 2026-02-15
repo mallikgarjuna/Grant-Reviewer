@@ -63,6 +63,7 @@ Observed:
 
 - v0.1 (2026-02-15): Initial implementation walkthrough for WF-0010 Phase 4 tasks.
 - v0.2 (2026-02-15): Post-implementation manual-pass polish added for small-screen header/hero resilience and long-text wrapping safety.
+- v0.3 (2026-02-15): Copy lock update for supported funding line and FAQ usage prompt/answer.
 
 ## Follow-Up Polish (Post Task Run)
 
@@ -77,3 +78,11 @@ Observed:
 - Verification rerun:
   - `cd frontend && npm run -s lint` (pass)
   - Mobile screenshot checks run against local branch-specific server (`http://localhost:3101/`) at `390x844` and `430x932`.
+
+## Copy Lock Follow-Up
+
+- Updated landing funding-line copy in `frontend/src/app/page.tsx`:
+  - `Supported funding calls: NL (NWO, ZonMw), EU/Horizon-Europe (ERC, MSCA)`
+- Updated FAQ usage copy in `frontend/src/app/_components/landing/faq-accordion.tsx`:
+  - Question: `How should I use PeerLens?`
+  - Answer: `Select the funding call, then a proposal application's section heading, then paste one draft section at a time (for example, methodology, impact, or work plan) so the feedback stays specific and actionable.`

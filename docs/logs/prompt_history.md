@@ -378,3 +378,27 @@
 ### 15:28 - WF-0010 Manual Mobile/Keyboard Polish Pass
 > User requested a quick local manual pass on `/` (keyboard-only + mobile widths) with one follow-up tiny polish commit if needed.
 > Outcome: Re-validated via local lint and mobile screenshots, then applied small-screen polish in `frontend/src/app/page.tsx` and `frontend/src/app/_components/landing/demo-tabs.tsx` (header/nav small-screen fit, hero spacing, long-text wrapping safety) and updated the WF-0010 walkthrough with the follow-up verification notes.
+
+### 15:40 - WF-0010 Copy Lock Update (Funding Line + FAQ Usage)
+> User requested copy changes and source-artifact synchronization.
+> Outcome: Updated landing funding line to `Supported funding calls: NL (NWO, ZonMw), EU/Horizon-Europe (ERC, MSCA)` in `frontend/src/app/page.tsx`; updated FAQ prompt/answer in `frontend/src/app/_components/landing/faq-accordion.tsx`; synced WF-0010 source artifacts (`brainstorm`, `spec`, `prd`, `walkthrough`) and logs (`qa_history`, `prompt_history`) with the new locked wording.
+
+### 15:49 - WF-0010 Typography Architecture Update (Playfair + Inter)
+> User requested frontend updates using `brand_guidelines.md` and `brand_typography_system.md`, plus a logged decision.
+> Outcome: Updated font loading in `frontend/src/app/layout.tsx` to load Inter + Playfair Display via `next/font/google`, applied heading/body typography architecture and scale in `frontend/src/app/globals.css`, and recorded AD 10.6 in `docs/logs/decisions.md` to lock the serif-heading + sans-body system.
+
+### 16:02 - Typography Decision Revision (Merriweather + Inter)
+> User requested replacing Playfair Display with Merriweather and updating docs first (including size choices that pair well with Inter).
+> Outcome: Updated `docs/reference/brand_typography_system.md`, `docs/reference/brand_guidelines.md`, and AD 10.6 in `docs/logs/decisions.md` to lock `Merriweather` for major headings, `Inter` for body/UI, and a tuned heading scale for readability with dense research content.
+
+### 16:08 - Frontend Typography Implementation (Merriweather)
+> User approved proceeding with frontend updates after docs-first changes.
+> Outcome: Replaced `Playfair_Display` with `Merriweather` in `frontend/src/app/layout.tsx`, updated heading token mapping and scale in `frontend/src/app/globals.css` to match the revised typography docs, and verified with `cd frontend && npm run -s lint`.
+
+### 16:20 - Typography Rebaseline (Lora + Inter)
+> User requested another serif adjustment for a lighter, elegant academic tone (less heavy than previous choices).
+> Outcome: Updated `docs/reference/brand_typography_system.md`, `docs/reference/brand_guidelines.md`, and AD 10.6 in `docs/logs/decisions.md` to lock `Lora` (`600`) for primary/editorial headings with Inter for body/UI; implemented frontend swap in `frontend/src/app/layout.tsx` and `frontend/src/app/globals.css`, kept dense UI headings on Inter, and verified with `cd frontend && npm run -s lint`.
+
+### 16:36 - Landing “How It Works” Static Redesign + Global Type Scale Increase
+> User requested a static, card-based “How it works” section (similar to provided visual direction) and a larger default text scale across the site with improved spacing/readability.
+> Outcome: Redesigned `How it works` in `frontend/src/app/page.tsx` into a static three-card rail with a center highlighted card and subtle bottom accent bar, increased vertical section spacing, raised global default font size and line-height in `frontend/src/app/globals.css`, and relaxed heading letter-spacing slightly for a cleaner, less cramped academic reading feel. Verified with `cd frontend && npm run -s lint`.

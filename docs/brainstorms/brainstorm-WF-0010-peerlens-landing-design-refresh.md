@@ -1,7 +1,7 @@
 # WF-0010 — PeerLens Landing Design Refresh
 
 Artifact: brainstorm  
-Version: v0.1  
+Version: v0.2  
 Status: Draft  
 Last Updated: 2026-02-15
 
@@ -20,6 +20,10 @@ Make `/` look professional and credible for academics/researchers/funders while 
 - Palette: Ink + Parchment (see `docs/logs/decisions.md`)
 - We can tweak copy as part of this WF.
 - We will update `docs/reference/brand_guidelines.md` to match the new palette and typography.
+- Supported funding line copy lock: `Supported funding calls: NL (NWO, ZonMw), EU/Horizon-Europe (ERC, MSCA)`.
+- FAQ copy lock:
+  - Question: `How should I use PeerLens?`
+  - Answer: `Select the funding call, then a proposal application's section heading, then paste one draft section at a time (for example, methodology, impact, or work plan) so the feedback stays specific and actionable.`
 
 ## Problems Observed
 

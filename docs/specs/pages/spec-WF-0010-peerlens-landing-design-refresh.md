@@ -1,7 +1,7 @@
 # WF-0010 — PeerLens Landing Design Refresh Spec
 
 Artifact: spec
-Version: v0.2
+Version: v0.3
 Status: Ready for PRD
 Last Updated: 2026-02-15
 
@@ -40,6 +40,9 @@ Improve the existing PeerLens landing page so it reads as academically credible 
   - trust/support context line
   - demo presentation shell text
   - final CTA area
+  - locked labels:
+    - `Supported funding calls: NL (NWO, ZonMw), EU/Horizon-Europe (ERC, MSCA)`
+    - FAQ prompt: `How should I use PeerLens?`
 - Preserve and validate accessibility quality:
   - WCAG AA contrast
   - visible keyboard focus states
@@ -90,7 +93,7 @@ Improve the existing PeerLens landing page so it reads as academically credible 
 |  Structured feedback aligned to grant review expectations.        |
 |                                                                   |
 |  [ Check My Draft Now ]                                           |
-|  Supported calls: NWO Veni · ERC Starting · MSCA PF               |
+|  Supported funding calls: NL (NWO, ZonMw), EU/Horizon-Europe...  |
 |                                                                   |
 +-------------------------------------------------------------------+
 |  Why researchers use PeerLens                                     |
@@ -126,3 +129,4 @@ Improve the existing PeerLens landing page so it reads as academically credible 
 
 - v0.1 (2026-02-15): Initial spec from brainstorm.
 - v0.2 (2026-02-15): Applied review refinements, clarified success signal/acceptance checks, and marked Ready for PRD.
+- v0.3 (2026-02-15): Locked funding-line and FAQ usage copy labels for implementation/docs consistency.

@@ -140,7 +140,9 @@ export function DemoTabs() {
             role="tabpanel"
             tabIndex={0}
           >
-            <h3 className="text-lg font-medium text-[var(--color-foreground)]">{tab.label}</h3>
+            <h3 className="font-sans text-lg font-medium text-[var(--color-foreground)]">
+              {tab.label}
+            </h3>
             <p className="mt-3 text-sm leading-7 text-[var(--color-foreground)] [overflow-wrap:anywhere]">
               {tab.snippet}
             </p>

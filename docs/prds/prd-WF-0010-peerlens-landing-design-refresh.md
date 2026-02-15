@@ -1,7 +1,7 @@
 # WF-0010 — PeerLens Landing Design Refresh
 
 Artifact: prd  
-Version: v0.2  
+Version: v0.3  
 Status: Ready for Tasks  
 Last Updated: 2026-02-15
 
@@ -63,6 +63,9 @@ Last Updated: 2026-02-15
 - **FR4: Copy tone refresh**
   - Replace SaaS/hype phrasing with precise, academically credible wording.
   - Keep claims conservative and aligned with current product capabilities.
+  - Use locked copy:
+    - `Supported funding calls: NL (NWO, ZonMw), EU/Horizon-Europe (ERC, MSCA)`
+    - FAQ question: `How should I use PeerLens?`
 - **FR5: Accessibility and responsive quality**
   - Maintain WCAG AA contrast targets.
   - Maintain visible keyboard focus states.
@@ -134,3 +137,4 @@ Last Updated: 2026-02-15
 
 - v0.1 (2026-02-15): Initial PRD from spec.
 - v0.2 (2026-02-15): Applied risk-audit edits, added readiness checklist/verification gate, and marked Ready for Tasks.
+- v0.3 (2026-02-15): Added locked funding-line and FAQ usage copy requirements.

@@ -380,3 +380,22 @@
 - **Why**: Keeps the refresh MVP-fast while preserving functional stability and quality.
 - **Tradeoff**: Defers conversion instrumentation and proof-asset expansion to a follow-up WF.
 - **Status**: Approved.
+
+### AD 10.6: Introduce Serif Heading Layer Alongside Inter
+- **Decision**: Introduce a serif heading layer (`Lora`) alongside `Inter` to convey academic authority while preserving UI clarity and readability for dense research content.
+- **Typography Architecture**:
+  - `Lora` (`600`) for primary large headings and editorial titles.
+  - `Inter` for body, navigation, controls, forms, and dense UI.
+  - No serif usage in forms, tables, buttons, or long body paragraphs.
+- **Scale Update (Lora + Inter pairing)**:
+  - `H1` (editorial): `clamp(2.2rem, 3.6vw, 2.95rem)`, `line-height: 1.22`, `600`
+  - `H2` (editorial): `clamp(1.55rem, 2.1vw, 1.95rem)`, `line-height: 1.28`, `600`
+  - `H3` (default): `clamp(1.2rem, 1.45vw, 1.32rem)`, `line-height: 1.36`, Lora `600`
+  - `Body`: Inter `16px`, `line-height: 1.6`
+- **Exception Rule**:
+  - Dense UI headings may explicitly opt into Inter (`font-sans`) to preserve compact readability.
+- **Implementation Notes**:
+  - Load both fonts via `next/font/google` and expose CSS variables in `frontend/src/app/layout.tsx`.
+  - Map variables in `frontend/src/app/globals.css` and apply heading/body scale from `docs/reference/brand_typography_system.md`.
+- **Rationale**: Adds scholarly tone on marketing surfaces without harming legibility or interaction clarity.
+- **Status**: Approved.

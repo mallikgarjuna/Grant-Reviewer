@@ -134,3 +134,12 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: During Phase 1 runner output, can we require explicit proof that Part B reviewed Part A output and Part C applied Part B feedback?
 **A:** Yes. Added a required traceability statement to `docs/workflow/phase-1-run-spec.md` with concrete references (path + version and/or commit IDs) and explicit Part B→Part C edit mapping.
+
+### Q: What exact landing copy should we use for supported funding calls and FAQ usage guidance?
+**A:** Lock copy to:
+- `Supported funding calls: NL (NWO, ZonMw), EU/Horizon-Europe (ERC, MSCA)`
+- FAQ question: `How should I use PeerLens?`
+- FAQ answer: `Select the funding call, then a proposal application's section heading, then paste one draft section at a time (for example, methodology, impact, or work plan) so the feedback stays specific and actionable.`
+
+### Q: Which serif/sans pairing should we use for an elegant, gentle academic tone without heaviness?
+**A:** Use `Lora` (`600`) for primary large/editorial headings and `Inter` (`400`, UI `500–600`) for body and interface text. Keep serif out of forms/inputs/dense UI text and use a lighter heading scale to avoid cramped or thick-looking typography.
