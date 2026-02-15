@@ -124,3 +124,8 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Can we change the Phase 0.1 facilitation to ask 5 questions at a time?
 **A:** Yes (when explicitly requested). Updated `docs/workflow/phase-0-1-brainstorm.md` to ask 5 questions in a single batch per section and collect answers in one reply.
+
+## 2026-02-15
+
+### Q: During Phase 1 runner output, can we require explicit proof that Part B reviewed Part A output and Part C applied Part B feedback?
+**A:** Yes. Added a required traceability statement to `docs/workflow/phase-1-run-spec.md` with concrete references (path + version and/or commit IDs) and explicit Part B→Part C edit mapping.

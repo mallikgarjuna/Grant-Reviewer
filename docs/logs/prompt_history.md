@@ -354,3 +354,7 @@
 ### 13:34 - WF-0010 Phase 1 Runner Completed (Spec)
 > User asked to run Phase 1 end-to-end for WF-0010 using the workflow runner and print Part A/B/C.
 > Outcome: Finalized and committed the WF-0010 brainstorm (Phase 0.1 gate), generated spec v0.1, ran strict review (non-blocking issues only), revised spec to v0.2 and marked it `Ready for PRD`, then updated `docs/index.md` WF-0010 row to include the spec link and `Phase 1` status.
+
+### 13:42 - Phase 1 Runner Traceability Rule Added
+> User requested clearer confirmation that Part B reviews Part A output and Part C uses Part B feedback.
+> Outcome: Updated `docs/workflow/phase-1-run-spec.md` to require a final traceability statement with artifact references (path/version/commit) and explicit Part B findings → Part C edits mapping.

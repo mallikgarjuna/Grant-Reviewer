@@ -62,6 +62,10 @@ After completing Phase 1 (including Part C revisions):
    - Proceed to Part C and fix them automatically.
 6. Do NOT expand scope beyond brainstorm.
 7. Only update docs/index.md Status to Phase 1 if spec is marked "Ready for PRD".
+8. At the end of the run, print an explicit **Traceability Statement** confirming:
+   - Part B reviewed the spec produced in Part A.
+   - Part C applied feedback produced in Part B.
+   - Include concrete references (path + version and/or commit IDs).
 
 ---
 
@@ -86,6 +90,9 @@ After writing, print:
 Follow @docs/workflow/phase-1-2-spec-review.md exactly.
 
 Print review output.
+Also print:
+
+- `Reviewed artifact: <path> @ <version>` (include commit ID when available)
 
 Then classify issues:
 
@@ -108,6 +115,11 @@ If user answered questions:
 - incorporate decisions
 - note them succinctly in the spec (where appropriate)
 
+Before ending Part C, print:
+
+- `Applied feedback from Part B: yes/no`
+- If yes, list 3–5 exact edits mapped to Part B findings.
+
 ---
 
 ## End of Runner — Next Actions
@@ -127,6 +139,13 @@ After completing Part C, output:
 - Update docs/index.md row if needed (status/links)
 
 Keep it concise.
+
+Also output this final block:
+
+## Traceability Statement (Required)
+
+- Part A output reviewed in Part B: `<yes/no>` + `<path/version/commit>`
+- Part B feedback applied in Part C: `<yes/no>` + `<key edits>`
 
 ---
 
