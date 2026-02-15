@@ -68,6 +68,10 @@ uv.lock
 logs/
 *.log
 
+# Keep repo docs logs tracked
+!docs/logs/
+!docs/logs/**
+
 # Project memory (keep these tracked)
 !knowledge_base/logs/
 !knowledge_base/logs/**

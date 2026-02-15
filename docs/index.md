@@ -27,3 +27,12 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 
 | WF ID | Slug / Feature | Brainstorm | Spec | PRD | Task File | Walkthrough | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| WF-0009 | peerlens-landing-page | [Brainstorm](brainstorms/brainstorm-WF-0009-peerlens-landing-page.md) | [Spec](specs/pages/spec-WF-0009-peerlens-landing-page.md) | [PRD](prds/prd-WF-0009-peerlens-landing-page.md) | [Tasks](tasks/task-WF-0009-peerlens-landing-page.md) | [Walkthrough](walkthroughs/walkthrough-WF-0009-peerlens-landing-page.md) | Done |
+
+---
+
+## Research & Market Analysis
+
+- **Competitor Research (2026-02-14)**: [Walkthrough](walkthroughs/walkthrough-competitor-research.md) — Analyzed 8 competitors (Grantease, Grantable, Paperpal, Writefull, SciSpace, Elicit, Overleaf, Grammarly).
+- **Landing Page Blueprints**: [Strategy Reference](reference/landing_page_blueprint.md) — 9-section frameworks (Product-Led vs. Sales-Led).
+- **Brand Guidelines**: [Visual & Voice](reference/brand_guidelines.md) — PeerLens atomic design tokens and academic tone.

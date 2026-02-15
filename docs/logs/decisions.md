@@ -291,3 +291,58 @@
   - Minimal operational logs/backups may be retained for up to **30 days**.
 - **Rationale**: Researchers expect explicit privacy posture before pasting sensitive proposal text; this keeps copy truthful while allowing operational reality.
 - **Status**: Approved.
+
+### AD 9.7: Landing page: remove “Watch Demo”, use text-only trust, privacy-only footer
+- **Decision**: The landing page MVP:
+  - Removes the secondary “Watch Demo” CTA (single primary CTA only).
+  - Uses text-only “Supported calls” (no funder logos).
+  - Uses a privacy-only footer (no Terms link in MVP scope).
+  - Avoids making detailed privacy/training claims on the landing page; links to `/privacy` for specifics.
+- **Rationale**: Reduces implied scope (extra routes/assets) and avoids accidental over-claims while preserving the conversion goal (sign-in).
+- **Status**: Approved.
+
+### AD 9.8: Landing demo content is fixed (micro-rewrites + export promise + ERC label)
+- **Decision**: Lock the landing page static demo content for MVP:
+  - Each tab includes micro-rewrite examples inside suggested fixes (not a separate before/after block).
+  - Landing may promise “Export your review” (app feature).
+  - Use the label “ERC Starting” (not “StG”).
+- **Rationale**: Prevents copy/UI thrash during PRD/tasks and keeps the demo aligned with the sign-in funnel.
+- **Status**: Approved.
+
+### AD 9.9: Landing demo tabs use a minimal client component (no vendor deps)
+- **Decision**: Implement the landing demo tab switcher as a small `use client` component with local state (no URL state, no third-party tab library).
+- **Rationale**: Keeps the landing interactive enough to communicate value while avoiding dependency bloat and reducing performance/accessibility risk.
+- **Status**: Approved.
+
+### AD 9.10: MVP “Export your review” means copy/download text (no PDF)
+- **Decision**: For MVP, “Export your review” is satisfied by providing a user-visible export action that supports “Copy as text” and/or “Download .txt”. PDF export is explicitly not required for MVP.
+- **Rationale**: Keeps the landing copy truthful with minimal implementation effort and low UX risk.
+- **Status**: Approved.
+
+### AD 9.11: Delete review endpoint returns `200 { ok: true }` (MVP)
+- **Decision**: `DELETE /reviews/{review_id}` returns `200` with JSON `{ "ok": true }` on successful deletion.
+- **Rationale**: Simplifies Next.js BFF + UI handling and avoids special-casing `204` parsing behavior in the adapter.
+- **Status**: Approved.
+
+---
+
+## Date: 2026-02-15 (Documentation Alignment)
+
+### AD 10.1: Documentation Convergence (Phase 0-4 Alignment)
+- **Decision**:
+    1.  **Single Source of Truth**: `AGENTS.md` and `docs/workflow/README.md` are the SSOT for Process/Workflow/Git. `GEMINI.md` is restricted to Behavioral Guidelines only.
+    2.  **Pipeline Alignment**: All docs now agree on: Phase 0 (Brainstorm) -> Phase 1 (Spec) -> Phase 2 (PRD) -> Phase 3 (Tasks) -> Phase 4 (Impl).
+    3.  **Naming Convention**: Enforced `task-` (Singular) filename prefix inside `docs/tasks/` folder.
+    4.  **Skills**: Consolidated local project skills into global `~/.agents/skills` and removed `agent-operating-protocol.md`.
+- **Rationale**: Eliminates drift between agent instructions and actual workflow rules. Supports parallel agent usage (Antigravity/Codex).
+- **Status**: Implemented.
+
+### AD 10.2: “Check Skills First” Habit
+- **Decision**: Before starting a new category of work, the agent should check for an existing skill in `~/.agents/skills` (or ask the user to run `ls ~/.agents/skills`) and follow the most relevant `SKILL.md`.
+- **Rationale**: Reuses battle-tested workflows and reduces “reinventing” patterns (migrations, a11y, API usage).
+- **Status**: Implemented (`AGENTS.md` + Codex/Copilot instructions updated).
+
+### AD 10.3: Tool-Specific Instruction Adapters Live Alongside `AGENTS.md`
+- **Decision**: Keep `AGENTS.md` as the SSOT, and allow tool-specific instruction files (like `.github/copilot-instructions.md`) to exist as *adapters* that point tools back to `AGENTS.md`.
+- **Rationale**: Different agent tools auto-discover different filenames/locations. Adapters reduce drift by centralizing real rules in `AGENTS.md` while still satisfying each tool’s discovery mechanism.
+- **Status**: Implemented (added rationale header to `.github/copilot-instructions.md` and documented the pattern in `docs/reference/README_agent_instructions.md`).

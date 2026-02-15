@@ -19,6 +19,12 @@ Every meaningful initiative is tracked using a Workflow ID (WF-XXXX).
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).
 
+## Phase Gate (Always)
+
+Before starting a new phase, ensure the previous phase’s primary artifact(s) are **saved and committed** on the WF branch. This prevents running later phases against uncommitted or half-edited inputs.
+
+After completing a phase, **commit any artifacts you created/edited in that phase** before proceeding to the next phase.
+
 ---
 
 # Workflow ID System
@@ -49,14 +55,14 @@ WF ID starting point (migration rule):
 
 All artifacts must follow this format:
 
-<brainstorm/spec/prd/tasks/walkthrough>-WF-XXXX-<slug>.md
+<brainstorm/spec/prd/task/walkthrough>-WF-XXXX-<slug>.md
 
 Examples:
 
 brainstorm-WF-0007-landing-page.md  
 spec-WF-0007-landing-page.md  
 prd-WF-0007-landing-page.md  
-tasks-WF-0007-landing-page.md  
+task-WF-0007-landing-page.md  
 walkthrough-WF-0007-landing-page.md
 
 Slug rules:

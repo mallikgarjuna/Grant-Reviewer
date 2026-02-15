@@ -28,6 +28,7 @@ from app.schemas.api import (
     CallSummary,
     CreateReviewRequest,
     CreateReviewResponse,
+    DeleteReviewResponse,
     NodesResponse,
     NodeSummary,
     ReviewCardSummary,
@@ -459,9 +460,9 @@ def get_review(
         )
         raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
 
-    cards = []
+    cards_with_criteria = []
     if review.status == ReviewStatus.COMPLETED:
-        cards = repository.get_review_cards_ordered(review_id)
+        cards_with_criteria = repository.get_review_cards_with_criteria(review_id)
 
     return ReviewDetailResponse(
         review=ReviewSummary(
@@ -474,9 +475,39 @@ def get_review(
             ReviewCardSummary(
                 id=card.id,
                 node_expectation_id=card.node_expectation_id,
+                criterion=criterion_name,
                 rating=card.rating,
                 feedback_text=card.feedback_text,
             )
-            for card in cards
+            for card, criterion_name in cards_with_criteria
         ],
     )
+
+
+@app.delete(
+    "/reviews/{review_id}",
+    response_model=DeleteReviewResponse,
+    responses=API_ERROR_RESPONSES,
+)
+def delete_review(
+    review_id: UUID,
+    repository: RepositoryDep,
+    external_user_id: Annotated[str, Depends(require_bff_user_id)],
+) -> DeleteReviewResponse:
+    """Hard-delete a review and associated data for its owner."""
+    review = repository.get_review_by_id(review_id)
+    if review is None:
+        raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
+
+    review_owner_external_user_id = repository.get_review_owner_external_user_id(review_id)
+    if review_owner_external_user_id != external_user_id:
+        logger.warning(
+            "OWNERSHIP_VIOLATION: delete review_id=%s requested_by=%s owner=%s",
+            review_id,
+            external_user_id,
+            review_owner_external_user_id,
+        )
+        raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
+
+    repository.delete_review_hard(review_id)
+    return DeleteReviewResponse(ok=True)

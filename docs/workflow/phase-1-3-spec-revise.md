@@ -21,6 +21,18 @@ Lock spec for PRD phase.
 
 ---
 
+## Phase Gate — Commit Previous Phase
+
+Before revising the spec, ensure the Phase 1.2 review output has been captured in chat and the current spec is **saved**. After revisions, commit the updated spec before moving to Phase 2.
+
+---
+
+## Phase Completion — Commit This Phase
+
+After applying revisions and bumping spec version, ensure the updated spec is **saved and committed** before starting Phase 2.
+
+---
+
 ## Versioning Rules
 
 When revising:

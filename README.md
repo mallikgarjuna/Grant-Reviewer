@@ -24,10 +24,12 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 - ✅ BFF contract hardening on backend (auth signature, ownership checks, idempotency, quotas, kill switch)
 - ✅ Next.js frontend scaffold + BFF adapter + SEO guardrails + app UI pages (Task 8.0A implementation)
 - ✅ Deployment wiring (Neon Postgres + Render backend + Vercel frontend + Clerk auth) + deploy verification (Task 8.0C)
+- ✅ PeerLens landing release (WF-0009): new `/` marketing page, `/privacy`, static call demos, review export, and self-serve delete flow
 
 ### Notes
 - MVP stack (current): **Neon** (Postgres) + **Render** (FastAPI) + **Vercel** (Next.js) + **Clerk** (auth).
 - Production bootstrap runs from a developer machine (Render free tier has no shell). See `docs/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md`.
+- Workflow status: `WF-0009` is complete (`docs/index.md` marked `Done`).
 
 ## Quick Start
 
@@ -134,6 +136,11 @@ bash scripts/verify_local_8_0A.sh
 6. Submit a review and confirm redirect to `/app/reviews/<review_id>`.
 7. Refresh `/app/reviews/<review_id>` and confirm result still renders.
 8. If a step fails, capture both terminal logs and the failing URL before retrying.
+9. Verify landing truthfulness flow:
+   - `/` shows PeerLens landing sections and CTA to `/sign-in`
+   - `/privacy` contains retention/training/deletion statements
+   - open a completed review at `/app/reviews/<review_id>`, test `Copy as text`, `Download .txt`, and `Delete review`
+   - refreshing the deleted review URL returns not found behavior
 
 Notes:
 - `/app/*` and `/api/bff/*` are Clerk-protected.
@@ -214,6 +221,7 @@ The system uses 11 interconnected tables:
 | 8.0B | BFF Contracts (backend) | ✅ Complete |
 | 8.0A | Frontend UI Slice | ✅ Complete (Verify-Local done; Verify-Deploy deferred to 8.0C) |
 | 8.0C | Deployment wiring | ✅ Complete |
+| WF-0009 | PeerLens landing page | ✅ Complete |
 
 See `docs/index.md` for detailed task tracking.
 

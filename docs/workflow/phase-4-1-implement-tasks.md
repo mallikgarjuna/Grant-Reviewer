@@ -21,10 +21,25 @@ This produces clean, traceable progress and stable checkpoints.
 
 ## Required Inputs
 
-- docs/tasks/tasks-WF-XXXX-<slug>.md
+- docs/tasks/task-WF-XXXX-<slug>.md
 
 Tasks file must have:
 Status: Ready for Implementation
+
+---
+
+## Phase Gate — Commit Previous Phase
+
+Before starting Phase 4 implementation, ensure Phase 3 outputs are **saved and committed** on the WF branch:
+
+- `docs/tasks/task-WF-XXXX-<slug>.md` is committed and marked Ready for Implementation
+- `docs/index.md` Phase 3 status/links are committed if updated
+
+---
+
+## Phase Completion — Commit This Phase
+
+After completing Phase 4 (all tasks implemented, walkthrough updated, and `docs/index.md` set to Done), ensure those final docs changes are **saved and committed**.
 
 ---
 
@@ -97,7 +112,7 @@ Walkthrough must include:
 Use:
 
 - @docs/workflow/phase-4-1-implement-tasks.md
-- @docs/tasks/tasks-WF-XXXX-<slug>.md
+- @docs/tasks/task-WF-XXXX-<slug>.md
 
 Instruction:
 

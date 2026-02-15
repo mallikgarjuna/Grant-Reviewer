@@ -22,6 +22,18 @@ Stabilize PRD for Task phase.
 
 ---
 
+## Phase Gate — Commit Previous Phase
+
+Before revising the PRD, ensure the Phase 2.2 audit output has been captured in chat and the current PRD is **saved**. After revisions, commit the updated PRD (and any logged decisions) before moving to Phase 3.
+
+---
+
+## Phase Completion — Commit This Phase
+
+After revising the PRD, bumping version, and logging decisions, ensure all updated files are **saved and committed** before starting Phase 3.
+
+---
+
 ## Versioning Rules
 
 When revising:
@@ -103,5 +115,5 @@ Stop.
 
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
-1. Run Phase 3.1 (generate tasks v0.1): `@docs/workflow/phase-3-1-tasks-generate.md`
+1. Run Phase 3.1 (generate tasks v0.1): `@docs/workflow/phase-3-1-task-generate.md`
 2. Re-run Phase 2.2 (PRD risk audit) to validate the revised PRD: `@docs/workflow/phase-2-2-prd-risk-audit.md`

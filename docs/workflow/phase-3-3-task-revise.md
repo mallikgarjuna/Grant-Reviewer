@@ -1,7 +1,7 @@
 # Phase 3.3 — Revise Tasks + Bump Version
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-3-3-tasks-revise.md.
+Reference it in Codex chat using @docs/workflow/phase-3-3-task-revise.md.
 Do NOT modify this file during execution.
 
 ---
@@ -16,8 +16,20 @@ Finalize task list for implementation.
 
 ## Required Inputs
 
-- docs/tasks/tasks-WF-XXXX-<slug>.md
+- docs/tasks/task-WF-XXXX-<slug>.md
 - Phase 3.2 review output
+
+---
+
+## Phase Gate — Commit Previous Phase
+
+Before revising the task plan, ensure the Phase 3.2 review output has been captured in chat and the current task file is **saved**. After revisions, commit the updated task file before starting Phase 4.
+
+---
+
+## Phase Completion — Commit This Phase
+
+After revising the task file, bumping version, and marking it ready, ensure the updated task file is **saved and committed** before starting Phase 4.
 
 ---
 
@@ -57,11 +69,11 @@ Do NOT mark Done yet.
 
 Use:
 
-- @docs/workflow/phase-3-3-tasks-revise.md
+- @docs/workflow/phase-3-3-task-revise.md
 
 Apply edits to:
 
-- @docs/tasks/tasks-WF-XXXX-<slug>.md
+- @docs/tasks/task-WF-XXXX-<slug>.md
 
 Bump version.
 Append changelog.
@@ -75,4 +87,4 @@ Stop.
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
 1. Run Phase 4.1 (implement tasks): `@docs/workflow/phase-4-1-implement-tasks.md`
-2. Re-run Phase 3.2 (tasks review gate) to validate the revised task list: `@docs/workflow/phase-3-2-tasks-review.md`
+2. Re-run Phase 3.2 (tasks review gate) to validate the revised task list: `@docs/workflow/phase-3-2-task-review.md`

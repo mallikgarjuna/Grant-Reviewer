@@ -19,6 +19,19 @@ This ensures every initiative is isolated and traceable.
 
 ---
 
+## Phase Gate (Always)
+
+Before minting a new workflow:
+
+- Ensure your working tree is clean (`git status --short`).
+- If you have uncommitted work from a previous phase/initiative, **save and commit it first** so workflows do not interleave.
+
+After completing Phase 0.0:
+
+- Ensure the created baseline artifacts and the WF row update in `docs/index.md` are **saved and committed** before starting Phase 0.1.
+
+---
+
 ## Required Inputs (provided in chat)
 
 - Title (short human-readable name)
@@ -56,7 +69,7 @@ Determine next ID by:
 
 All artifacts must follow:
 
-<brainstorm/spec/prd/tasks/walkthrough>-WF-XXXX-<slug>.md
+<brainstorm/spec/prd/task/walkthrough>-WF-XXXX-<slug>.md
 
 ---
 
@@ -75,7 +88,7 @@ PRD:
 docs/prds/prd-WF-XXXX-<slug>.md
 
 Tasks:
-docs/tasks/tasks-WF-XXXX-<slug>.md
+docs/tasks/task-WF-XXXX-<slug>.md
 
 Walkthrough:
 docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md
@@ -86,7 +99,7 @@ docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md
 
 # WF-XXXX — <Title>
 
-Artifact: brainstorm | spec | prd | tasks | walkthrough  
+Artifact: brainstorm | spec | prd | task | walkthrough  
 Version: v0.0  
 Status: Not started  
 Last Updated: YYYY-MM-DD

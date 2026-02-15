@@ -108,3 +108,19 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 - PeerLens does not use proposal snippets to train its models.
 - Snippets are retained until the user deletes them (self-serve deletion).
 - Minimal operational logs/backups may be retained for up to 30 days.
+
+### Q: What should the landing page say about demos, funders, and privacy?
+**A:** For MVP:
+- Remove “Watch Demo” (single primary CTA).
+- Use text-only “Supported calls” (no funder logos).
+- Footer includes `Privacy` only (no `Terms` route implied).
+- Keep privacy language minimal on landing and link to `/privacy` for specifics.
+
+### Q: How should the landing demo express “both” (fix + rewrite), and what’s the locked copy?
+**A:** Use micro-rewrite examples *inside* the suggested fix on some cards (not a separate before/after block). Keep the landing promise “Export your review”, and label the ERC tab “ERC Starting”.
+
+### Q: Do Phase 0.1 decisions get written into `docs/workflow/phase-0-1-brainstorm.md`?
+**A:** No. `docs/workflow/*` files are workflow instructions and should not be edited during execution; decisions belong in the WF artifacts (e.g., `docs/brainstorms/brainstorm-WF-0009-peerlens-landing-page.md`) and the registry in `docs/index.md`.
+
+### Q: Can we change the Phase 0.1 facilitation to ask 5 questions at a time?
+**A:** Yes (when explicitly requested). Updated `docs/workflow/phase-0-1-brainstorm.md` to ask 5 questions in a single batch per section and collect answers in one reply.

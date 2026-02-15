@@ -84,6 +84,7 @@ class ReviewCardSummary(BaseModel):
 
     id: UUID
     node_expectation_id: UUID
+    criterion: str
     rating: ReviewRating
     feedback_text: str
 
@@ -93,3 +94,9 @@ class ReviewDetailResponse(BaseModel):
 
     review: ReviewSummary
     cards: list[ReviewCardSummary]
+
+
+class DeleteReviewResponse(BaseModel):
+    """Success payload for DELETE /reviews/{review_id}."""
+
+    ok: bool

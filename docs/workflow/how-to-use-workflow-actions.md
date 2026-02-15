@@ -1,4 +1,4 @@
-# How To Use Workflow Actions — Codex Prompt Templates
+# How To Use Workflow Actions — Chat Prompt Templates
 
 Replace placeholders like `<WF-ID>` and `<slug>` with your current workflow values.
 
@@ -148,11 +148,11 @@ Stop after revising and suggest my next 2 actions.
 ## Phase 3.1 — Generate Tasks (v0.1)
 
 ```text
-Use @docs/workflow/phase-3-1-tasks-generate.md
+Use @docs/workflow/phase-3-1-task-generate.md
 @docs/prds/prd-<WF-ID>-<slug>.md
 
 Generate tasks v0.1 in:
-docs/tasks/tasks-<WF-ID>-<slug>.md
+docs/tasks/task-<WF-ID>-<slug>.md
 
 Stop after writing tasks v0.1 and suggest my next 2 actions.
 ```
@@ -162,8 +162,8 @@ Stop after writing tasks v0.1 and suggest my next 2 actions.
 ## Phase 3.2 — Tasks Review (No Edits)
 
 ```text
-Use @docs/workflow/phase-3-2-tasks-review.md
-@docs/tasks/tasks-<WF-ID>-<slug>.md
+Use @docs/workflow/phase-3-2-task-review.md
+@docs/tasks/task-<WF-ID>-<slug>.md
 
 Run tasks review.
 Return the review output only.
@@ -176,8 +176,8 @@ Do NOT edit any files.
 ## Phase 3.3 — Revise Tasks + Bump Version
 
 ```text
-Use @docs/workflow/phase-3-3-tasks-revise.md
-@docs/tasks/tasks-<WF-ID>-<slug>.md
+Use @docs/workflow/phase-3-3-task-revise.md
+@docs/tasks/task-<WF-ID>-<slug>.md
 
 Apply the review edits,
 bump version,
@@ -194,7 +194,7 @@ Stop after revising and suggest my next 2 actions.
 
 ```text
 Use @docs/workflow/phase-4-1-implement-tasks.md
-@docs/tasks/tasks-<WF-ID>-<slug>.md
+@docs/tasks/task-<WF-ID>-<slug>.md
 
 Execute tasks sequentially.
 Commit after each with messages like:
