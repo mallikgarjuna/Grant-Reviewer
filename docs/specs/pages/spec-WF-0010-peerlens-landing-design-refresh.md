@@ -1,8 +1,8 @@
 # WF-0010 — PeerLens Landing Design Refresh Spec
 
 Artifact: spec
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for PRD
 Last Updated: 2026-02-15
 
 ## 1. Purpose
@@ -26,6 +26,7 @@ Improve the existing PeerLens landing page so it reads as academically credible 
 - Copy is tightened to remove hype and increase academic clarity.
 - Primary CTA remains sign-in oriented.
 - Existing trust cues remain lightweight and text-based.
+- Primary success signal for this refresh: improved landing-to-sign-in click-through rate.
 
 ## 4. In Scope
 
@@ -76,6 +77,7 @@ Improve the existing PeerLens landing page so it reads as academically credible 
 - Risk of over-design (too much churn) vs under-design (insufficient trust improvement).
 - Ensure trust language stays specific and non-promissory.
 - Maintain readability and hierarchy on small screens when reducing container usage.
+- Keep existing CTA destination and route behavior stable while changing layout/copy.
 
 ## 8. Desktop Wireframe (ASCII)
 
@@ -113,6 +115,14 @@ Improve the existing PeerLens landing page so it reads as academically credible 
 +-------------------------------------------------------------------+
 ```
 
+## 9. Ready-for-PRD Acceptance Checks
+
+- Scope remains landing-only with no backend/app-flow changes.
+- UX intent is explicit: institutional trust first, conversion to `/sign-in` second.
+- Verification bundle is concrete (`lint`, `check:seo`, `next build --webpack`, manual keyboard/mobile pass).
+- Deferred items are explicitly listed (analytics, A/B testing, content expansion, proof-asset expansion).
+
 ## Changelog
 
 - v0.1 (2026-02-15): Initial spec from brainstorm.
+- v0.2 (2026-02-15): Applied review refinements, clarified success signal/acceptance checks, and marked Ready for PRD.

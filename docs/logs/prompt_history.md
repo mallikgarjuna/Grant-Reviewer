@@ -350,3 +350,7 @@
 ### 09:37 - Documented “Adapter File” Rationale
 > User requested metadata explaining why `.github/copilot-instructions.md` exists, plus a durable record of this decision for use with other agent tools.
 > Outcome: Added a “Why this file exists” header to `.github/copilot-instructions.md` and documented the pattern in `docs/reference/README_agent_instructions.md` (with a corresponding decision logged in `docs/logs/decisions.md`).
+
+### 13:34 - WF-0010 Phase 1 Runner Completed (Spec)
+> User asked to run Phase 1 end-to-end for WF-0010 using the workflow runner and print Part A/B/C.
+> Outcome: Finalized and committed the WF-0010 brainstorm (Phase 0.1 gate), generated spec v0.1, ran strict review (non-blocking issues only), revised spec to v0.2 and marked it `Ready for PRD`, then updated `docs/index.md` WF-0010 row to include the spec link and `Phase 1` status.
