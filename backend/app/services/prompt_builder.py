@@ -32,7 +32,11 @@ Guidance: {guidance_text}
 def _format_expectation(exp: NodeExpectation, index: int) -> str:
     """Format a single expectation for the prompt."""
     element_name = exp.element.name if exp.element else "Unknown"
-    element_desc = exp.element.description if exp.element and exp.element.description else "No description"
+    element_desc = (
+        exp.element.description
+        if exp.element and exp.element.description
+        else "No description"
+    )
 
     return f"""
 {index}. ID: {exp.id}

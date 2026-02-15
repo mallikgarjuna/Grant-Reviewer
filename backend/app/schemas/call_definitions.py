@@ -140,12 +140,8 @@ class CallDefinition(BaseModel):
     Validators ensure referential integrity and prevent recursive cycles.
     """
 
-    funding_agency: FundingAgencyDefinition = Field(
-        description="Agency metadata"
-    )
-    funding_call: FundingCallDefinition = Field(
-        description="Call metadata"
-    )
+    funding_agency: FundingAgencyDefinition = Field(description="Agency metadata")
+    funding_call: FundingCallDefinition = Field(description="Call metadata")
     evaluation_criteria: list[EvaluationCriterionDefinition] = Field(
         default_factory=list,
         description="Rubric: list of criteria with their elements",
@@ -177,7 +173,9 @@ class CallDefinition(BaseModel):
         referenced_ids: set[str] = set()
         errors: list[str] = []
 
-        def collect_references(nodes: list[ProposalNodeDefinition], path: str = "") -> None:
+        def collect_references(
+            nodes: list[ProposalNodeDefinition], path: str = ""
+        ) -> None:
             for _i, node in enumerate(nodes):
                 node_path = f"{path}/{node.title}" if path else node.title
                 for exp in node.node_expectations:
@@ -202,6 +200,7 @@ class CallDefinition(BaseModel):
         if unused:
             # Log warning but don't fail - elements might be used in future nodes
             import logging
+
             logging.getLogger(__name__).warning(
                 f"Unused evaluation elements (defined but not referenced): {unused}"
             )
@@ -227,9 +226,7 @@ class CallDefinition(BaseModel):
             path: str = "",
         ) -> None:
             if depth > MAX_DEPTH:
-                errors.append(
-                    f"Max depth ({MAX_DEPTH}) exceeded at path: {path}"
-                )
+                errors.append(f"Max depth ({MAX_DEPTH}) exceeded at path: {path}")
                 return
 
             for node in nodes:

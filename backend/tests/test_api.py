@@ -178,9 +178,7 @@ def build_signature_headers(
 ) -> dict[str, str]:
     """Build signed headers expected by protected API routes."""
     signed_timestamp = int(time.time()) if timestamp is None else timestamp
-    payload = (
-        f"{user_id}.{signed_timestamp}.{hashlib.sha256(body).hexdigest()}"
-    )
+    payload = f"{user_id}.{signed_timestamp}.{hashlib.sha256(body).hexdigest()}"
     signature = hmac.new(
         shared_secret.encode("utf-8"),
         payload.encode("utf-8"),
@@ -300,7 +298,10 @@ def test_list_calls_returns_active_calls(monkeypatch) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert len(payload["calls"]) == 2
-    assert {call["code"] for call in payload["calls"]} == {"ERC-2026-COG", "ERC-2026-STG"}
+    assert {call["code"] for call in payload["calls"]} == {
+        "ERC-2026-COG",
+        "ERC-2026-STG",
+    }
 
 
 def test_list_nodes_includes_has_expectations(monkeypatch) -> None:
@@ -310,7 +311,9 @@ def test_list_nodes_includes_has_expectations(monkeypatch) -> None:
     payload = response.json()
     by_id = {UUID(node["id"]): node for node in payload["nodes"]}
     assert by_id[seeded_ids.section_with_expectations_id]["has_expectations"] is True
-    assert by_id[seeded_ids.section_without_expectations_id]["has_expectations"] is False
+    assert (
+        by_id[seeded_ids.section_without_expectations_id]["has_expectations"] is False
+    )
 
 
 def test_create_review_success_with_stub_mode(monkeypatch) -> None:

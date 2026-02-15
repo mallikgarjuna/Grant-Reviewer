@@ -29,7 +29,9 @@ from app.models.domain import (
 )
 
 
-def get_or_create_agency_and_call(session: Session) -> tuple[FundingAgency, FundingCall]:
+def get_or_create_agency_and_call(
+    session: Session,
+) -> tuple[FundingAgency, FundingCall]:
     """Get or create agency and call."""
     # Check if agency exists
     agency = session.exec(
@@ -151,9 +153,7 @@ def get_or_create_nodes(
     return sec_1, sec_2
 
 
-def get_or_create_expectations(
-    session: Session, call_id: UUID, node_id: UUID
-) -> None:
+def get_or_create_expectations(session: Session, call_id: UUID, node_id: UUID) -> None:
     """Get or create criteria, elements and expectations."""
     # Check if criteria already exist for this call
     existing_criteria = session.exec(

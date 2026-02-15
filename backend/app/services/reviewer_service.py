@@ -114,7 +114,9 @@ class ReviewerService:
             node_id=node_id,
             text=snippet_text,
         )
-        logger.debug(f"[Review] Created snippet {snippet.id} ({len(snippet_text)} chars)")
+        logger.debug(
+            f"[Review] Created snippet {snippet.id} ({len(snippet_text)} chars)"
+        )
 
         # 6. Build prompt
         logger.debug("[Review] Building prompt...")
@@ -163,7 +165,9 @@ class ReviewerService:
         try:
             logger.debug("[Review] Parsing LLM response...")
             llm_response = self._parse_llm_response(raw_response)
-            logger.debug(f"[Review] Parsed {len(llm_response.feedbacks)} feedback items")
+            logger.debug(
+                f"[Review] Parsed {len(llm_response.feedbacks)} feedback items"
+            )
 
             logger.debug("[Review] Validating response...")
             self._validate_response(llm_response, expectations)
@@ -194,9 +198,7 @@ class ReviewerService:
         # 11. Finalize review as COMPLETED
         review.status = ReviewStatus.COMPLETED
         review.overall_rating = ReviewRating.NOTE  # Defer rating logic
-        review.overall_summary = (
-            f"Review completed with {len(cards)} findings."
-        )
+        review.overall_summary = f"Review completed with {len(cards)} findings."
         self.repository.update_review(review)
 
         logger.info(f"[Review] ✓ Review {review.id} COMPLETED with {len(cards)} cards")
