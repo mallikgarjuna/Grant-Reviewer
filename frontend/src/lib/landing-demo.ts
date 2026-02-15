@@ -10,6 +10,7 @@ export type LandingDemoCard = {
 export type LandingDemoTab = {
   id: LandingDemoTabId;
   label: string;
+  section: string;
   snippet: string;
   cards: [LandingDemoCard, LandingDemoCard, LandingDemoCard, LandingDemoCard];
   readinessScore: number;
@@ -19,6 +20,7 @@ export const LANDING_DEMO_TABS: readonly LandingDemoTab[] = [
   {
     id: "nwo_veni",
     label: "NWO Veni",
+    section: "2b. Research Methodology",
     snippet:
       "This project tests why early-career researchers (ECRs) struggle to form cross-lab collaborations despite strong incentives to do so. We combine (1) a survey of ECRs across three Dutch universities (target n≈250) to quantify perceived barriers, with (2) 24 semi-structured interviews to explain the highest-impact barriers in depth. We will triangulate findings into a practical collaboration checklist for PIs and research support offices, and validate it via a small pilot workshop. Deliverables include an open interview guide, an anonymized codebook, and a short policy brief.",
     cards: [
@@ -63,6 +65,7 @@ export const LANDING_DEMO_TABS: readonly LandingDemoTab[] = [
   {
     id: "erc_starting",
     label: "ERC Starting",
+    section: "Part B1: Scientific Proposal",
     snippet:
       "I will develop a high-risk, high-gain framework for learning causal, clinician-auditable representations from multimodal hospital data (images + notes). The core hypothesis is that enforcing explicit, testable links between textual evidence and visual features reduces shortcut learning and improves out-of-distribution reliability. WP1 derives the theory and constraints; WP2 implements the model and evaluation suite; WP3 validates robustness on two independent hospital cohorts with prospectively-defined failure tests (shifted protocols, rare subgroups). Deliverables include open-source code, a reproducible benchmark, and a methods paper.",
     cards: [
@@ -107,6 +110,7 @@ export const LANDING_DEMO_TABS: readonly LandingDemoTab[] = [
   {
     id: "msca_pf",
     label: "MSCA PF",
+    section: "2. Impact",
     snippet:
       "This MSCA Postdoctoral Fellowship will strengthen my expertise in causal inference and open science while delivering a comparative evaluation of two education policies using linked administrative datasets. At the host institution I will receive structured training in synthetic controls, event studies, and reproducible workflows (pre-registration, versioned pipelines), with a secondment to a policy unit to learn evidence translation. The research will produce two first-author papers and a reusable analysis toolkit. I will communicate results via a stakeholder brief, a public explainer, and open materials (code + documentation) aligned to EU open science practices.",
     cards: [

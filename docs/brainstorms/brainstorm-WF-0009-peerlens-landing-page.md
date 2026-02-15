@@ -241,6 +241,35 @@ Landing should quickly define “criteria-aligned feedback,” show it via a few
   - **Transformation**: "Submit with Confidence" (From uncertainty to specific readiness).
   - **Primary CTA**: "Check My Draft Now" (Immediate utility hook).
 
-## Notes
+## 9. Copy Refinement Log (2026-02-15)
 
-- Brainstorming is being done in batches (up to 5 questions per section) for speed.
+Recorded for future reference on tone and messaging decisions.
+
+### Hero Section
+**Options Presented:**
+- A: "The Applicant's Pre-Reviewer" (Grounded & Authority)
+- B: "Compliance & Confidence" (Crisp & Professional)
+- C: "Internal Check" (Human & Empathetic)
+
+**Decision:** Option A ("The Grant Applicant's Pre-Reviewer")
+**Refinement:** Added "Private" to the descriptor list ("Fast, private, and criteria-specific").
+
+### Trust Section
+**Options Presented:**
+- A: "Verified Review Criteria"
+- B: "Aligned with NL & EU Standards"
+- C: "Don't guess the criteria"
+
+**Decision:** Option B
+**Refinement:** Explicitly engaged with NWO, ZonMw, and Horizon Europe (ERC/MSCA).
+
+### Benefits Section
+**Decision:** Adoption of the "Strongest" mix:
+1. **Know Your Readiness** (Outcome: clarity on constraints)
+2. **Zero Generic Feedback** (Outcome: trust/specificity)
+3. **Self-Correction First** (Outcome: privacy/partnership)
+
+### Key Learnings
+- **Tone:** Grounded, specific to funding calls (not generic "grant writing"), emphasis on privacy and "pre-review" nature.
+- **Vocabulary:** Use "Criteria-Aligned," "Pre-Reviewer," "Evidence-Based." Avoid "AI" hype.
+

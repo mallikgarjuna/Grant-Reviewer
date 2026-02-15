@@ -75,8 +75,11 @@ If branch does not exist:
 
 For each task:
 
-1. Implement the task.
-2. Run verification steps listed under the task.
+1. Check available skills (`ls ~/.agents/skills` or `docs/reference/skills_index.md`).
+   - If a relevant skill exists, **read it**.
+   - If NO skill exists for a **complex** task (e.g., new DB, new API, complex refactor), **ask the user** if they want to create a skill first or proceed.
+2. Implement the task.
+3. Run verification steps listed under the task.
 3. Fix until verification passes.
 4. Commit using this format:
 
@@ -98,6 +101,12 @@ When all tasks are complete:
 
 2. Create or update walkthrough file:
    docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md
+
+3. Update project documentation (README.md, docs/reference/, etc.)
+   - If the task added new features, update `README.md`.
+   - If the task changed architecture, update `docs/reference/`.
+   - Commit these updates with:
+     WF-XXXX: <slug> — update docs
 
 Walkthrough must include:
 

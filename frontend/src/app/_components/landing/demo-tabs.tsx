@@ -72,21 +72,23 @@ export function DemoTabs() {
   return (
     <section
       aria-label="Static feedback demo"
-      className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 md:p-8"
+      className="rounded-3xl bg-[var(--color-surface)] p-6 md:p-9"
     >
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-        Static demo
-      </p>
-      <p className="mt-3 text-sm leading-6 text-[var(--color-muted-foreground)]">
-        Examples only. Sign in to get feedback on your proposal text.
-      </p>
-      <p className="text-sm leading-6 text-[var(--color-muted-foreground)]">
-        Export your review. Delete your data anytime. See{" "}
-        <Link className="underline" href="/privacy">
-          Privacy
-        </Link>
-        .
-      </p>
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)] md:text-3xl">
+          See PeerLens in action
+        </h2>
+        <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-muted-foreground)]">
+          Select a funding call below to see how PeerLens identifies specific gaps in evidence.
+        </p>
+        <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
+          <span className="font-medium text-[var(--color-foreground)]">Note:</span> These are static examples.{" "}
+          <Link className="underline underline-offset-4 hover:text-[var(--color-primary)]" href="/sign-in">
+            Sign in
+          </Link>{" "}
+          to run a private, review-criteria-aligned check on your own text.
+        </p>
+      </div>
 
       <div
         aria-label="Supported calls"
@@ -105,7 +107,7 @@ export function DemoTabs() {
               className={`inline-flex h-10 items-center rounded-full border px-4 text-sm font-medium transition ${
                 isActive
                   ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
-                  : "border-[var(--color-border)] bg-white text-[var(--color-foreground)] hover:bg-[var(--color-surface-muted)]"
+                  : "border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-foreground)] hover:bg-[var(--color-surface-muted)]"
               }`}
               data-pl="demo-tab"
               id={tabId}
@@ -133,34 +135,48 @@ export function DemoTabs() {
         return (
           <section
             aria-labelledby={tabId}
-            className="mt-6 rounded-xl border border-[var(--color-border)] bg-white p-5 md:p-6"
+            className="mt-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-background)] p-5 md:p-6"
             hidden={!isActive}
             id={panelId}
             key={tab.id}
             role="tabpanel"
             tabIndex={0}
           >
-            <h3 className="text-lg font-medium text-[var(--color-foreground)]">{tab.label}</h3>
-            <p className="mt-3 text-sm leading-7 text-[var(--color-foreground)]">{tab.snippet}</p>
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+              <h3 className="font-sans text-lg font-medium text-[var(--color-foreground)]">
+                {tab.label}
+              </h3>
+              <p className="text-sm font-medium text-[var(--color-muted-foreground)]">
+                {tab.section}
+              </p>
+            </div>
+            <div className="relative mt-3">
+              <p className="line-clamp-3 text-sm leading-7 text-[var(--color-foreground)] [overflow-wrap:anywhere]">
+                {tab.snippet}
+              </p>
+              <div className="absolute bottom-0 right-0 bg-gradient-to-l from-[var(--color-background)] pl-8 text-sm text-[var(--color-muted-foreground)]">
+                ...
+              </div>
+            </div>
 
             <div className="mt-6 grid gap-3">
               {tab.cards.map((card) => (
                 <article
-                  className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                  className="rounded-xl bg-[var(--color-surface)] p-4"
                   key={`${tab.id}-${card.criterion}`}
                 >
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]">
                     {card.criterion}
                   </p>
-                  <p className="mt-2 text-sm text-[var(--color-foreground)]">
+                  <p className="mt-2 text-sm text-[var(--color-foreground)] [overflow-wrap:anywhere]">
                     <span className="font-medium">Finding: </span>
                     {card.finding}
                   </p>
-                  <p className="mt-1 text-sm text-[var(--color-foreground)]">
+                  <p className="mt-1 text-sm text-[var(--color-foreground)] [overflow-wrap:anywhere]">
                     <span className="font-medium">Suggested fix: </span>
                     {card.suggestedFix}
                   </p>
-                  <p className="mt-1 text-sm text-[var(--color-foreground)]">
+                  <p className="mt-1 text-sm text-[var(--color-foreground)] [overflow-wrap:anywhere]">
                     <span className="font-medium">Micro-rewrite (example): </span>
                     {card.microRewriteExample}
                   </p>

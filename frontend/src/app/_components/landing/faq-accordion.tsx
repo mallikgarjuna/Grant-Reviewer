@@ -20,9 +20,9 @@ const FAQ_ITEMS: readonly FaqItem[] = [
       "Sign-in connects a review to your account so you can return to it, export it, and delete it later.",
   },
   {
-    question: "What should I paste?",
+    question: "How should I use PeerLens?",
     answer:
-      "Paste one draft section at a time (for example, methodology, impact, or work plan) so the feedback stays specific and actionable.",
+      "Select the funding call, then a proposal application's section heading, then paste one draft section at a time (for example, methodology, impact, or work plan) so the feedback stays specific and actionable.",
   },
   {
     question: "How is my data handled?",
@@ -43,10 +43,10 @@ export function FaqAccordion() {
   return (
     <section
       aria-label="Frequently asked questions"
-      className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 md:p-8"
+      className="rounded-3xl bg-[var(--color-surface)] p-6 md:p-9"
     >
       <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">FAQ</h2>
-      <div className="mt-5 divide-y divide-[var(--color-border)] rounded-xl border border-[var(--color-border)] bg-white">
+      <div className="mt-5 divide-y divide-[var(--color-border)] rounded-2xl border border-[var(--color-border)] bg-[var(--color-background)]">
         {FAQ_ITEMS.map((item, index) => {
           const isOpen = openIndex === index;
           const buttonId = `${rootId}-button-${index}`;
@@ -57,7 +57,7 @@ export function FaqAccordion() {
                 <button
                   aria-controls={panelId}
                   aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-surface)]"
+                  className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-surface-muted)]"
                   data-pl="faq-toggle"
                   id={buttonId}
                   onClick={() => setOpenIndex(isOpen ? null : index)}

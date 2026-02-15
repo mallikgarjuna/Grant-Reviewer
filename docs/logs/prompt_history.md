@@ -366,3 +366,63 @@
 ### 13:03 - New Pre-Push Documentation Rule Added
 > User requested a new memory rule: always update docs before pushing a branch to remote.
 > Outcome: Updated `AGENTS.md` Always rules to require `docs/` updates before any remote push, and logged the clarification in `docs/logs/qa_history.md`.
+
+### 13:34 - WF-0010 Phase 1 Runner Completed (Spec)
+> User asked to run Phase 1 end-to-end for WF-0010 using the workflow runner and print Part A/B/C.
+> Outcome: Finalized and committed the WF-0010 brainstorm (Phase 0.1 gate), generated spec v0.1, ran strict review (non-blocking issues only), revised spec to v0.2 and marked it `Ready for PRD`, then updated `docs/index.md` WF-0010 row to include the spec link and `Phase 1` status.
+
+### 13:42 - Phase 1 Runner Traceability Rule Added
+> User requested clearer confirmation that Part B reviews Part A output and Part C uses Part B feedback.
+> Outcome: Updated `docs/workflow/phase-1-run-spec.md` to require a final traceability statement with artifact references (path/version/commit) and explicit Part B findings → Part C edits mapping.
+
+### 13:44 - Phase 2/3 Runner Traceability Rules Added
+> User requested the same traceability requirement for Phase 2 and Phase 3 runners.
+> Outcome: Updated `docs/workflow/phase-2-run-prd.md` and `docs/workflow/phase-3-run-task.md` to require reviewed-artifact output in Part B, explicit “Applied feedback from Part B” output in Part C, and a final required traceability statement with concrete references.
+
+### 13:51 - WF-0010 Phase 2 Runner Completed (PRD)
+> User asked to run Phase 2 end-to-end for WF-0010 using the workflow runner and print Part A/B/C.
+> Outcome: Generated PRD v0.1 from the committed spec and updated WF-0010 to Phase 2, ran a no-edit risk audit (non-blocking findings), revised PRD to v0.2 and marked `Ready for Tasks`, logged WF-0010 PRD guardrail decisions in `docs/logs/decisions.md` (AD 10.5), and updated `docs/index.md` status to `Phase 2 (Ready)`.
+
+### 14:01 - WF-0010 Phase 3 Runner Completed (Tasks)
+> User asked to run Phase 3 end-to-end for WF-0010 using the workflow runner and print Part A/B/C.
+> Outcome: Generated tasks v0.1 from the committed PRD and updated WF-0010 to Phase 3, ran a no-edit task review (non-blocking findings), revised tasks to v0.2 and marked `Ready for Implementation`, and updated `docs/index.md` status to `Phase 3 (Ready)`.
+
+### 14:01 - WF-0010 Phase 4 Implementation Completed (Tasks 1-7)
+> User requested sequential task execution with per-task commits, walkthrough update, and final `Done` status in `docs/index.md`.
+> Outcome: Implemented all WF-0010 tasks in order with per-task commits (brand guideline alignment, token/type updates, layout rhythm improvements, copy refresh, demo/FAQ shell harmonization, a11y/mobile hardening), ran required frontend verification bundle (`lint`, `check:seo`, `next build --webpack`), updated walkthrough `docs/walkthroughs/walkthrough-WF-0010-peerlens-landing-design-refresh.md`, and set WF-0010 status to `Done` in `docs/index.md`.
+
+### 15:28 - WF-0010 Manual Mobile/Keyboard Polish Pass
+> User requested a quick local manual pass on `/` (keyboard-only + mobile widths) with one follow-up tiny polish commit if needed.
+> Outcome: Re-validated via local lint and mobile screenshots, then applied small-screen polish in `frontend/src/app/page.tsx` and `frontend/src/app/_components/landing/demo-tabs.tsx` (header/nav small-screen fit, hero spacing, long-text wrapping safety) and updated the WF-0010 walkthrough with the follow-up verification notes.
+
+### 15:40 - WF-0010 Copy Lock Update (Funding Line + FAQ Usage)
+> User requested copy changes and source-artifact synchronization.
+> Outcome: Updated landing funding line to `Supported funding calls: NL (NWO, ZonMw), EU/Horizon-Europe (ERC, MSCA)` in `frontend/src/app/page.tsx`; updated FAQ prompt/answer in `frontend/src/app/_components/landing/faq-accordion.tsx`; synced WF-0010 source artifacts (`brainstorm`, `spec`, `prd`, `walkthrough`) and logs (`qa_history`, `prompt_history`) with the new locked wording.
+
+### 15:49 - WF-0010 Typography Architecture Update (Playfair + Inter)
+> User requested frontend updates using `brand_guidelines.md` and `brand_typography_system.md`, plus a logged decision.
+> Outcome: Updated font loading in `frontend/src/app/layout.tsx` to load Inter + Playfair Display via `next/font/google`, applied heading/body typography architecture and scale in `frontend/src/app/globals.css`, and recorded AD 10.6 in `docs/logs/decisions.md` to lock the serif-heading + sans-body system.
+
+### 16:02 - Typography Decision Revision (Merriweather + Inter)
+> User requested replacing Playfair Display with Merriweather and updating docs first (including size choices that pair well with Inter).
+> Outcome: Updated `docs/reference/brand_typography_system.md`, `docs/reference/brand_guidelines.md`, and AD 10.6 in `docs/logs/decisions.md` to lock `Merriweather` for major headings, `Inter` for body/UI, and a tuned heading scale for readability with dense research content.
+
+### 16:08 - Frontend Typography Implementation (Merriweather)
+> User approved proceeding with frontend updates after docs-first changes.
+> Outcome: Replaced `Playfair_Display` with `Merriweather` in `frontend/src/app/layout.tsx`, updated heading token mapping and scale in `frontend/src/app/globals.css` to match the revised typography docs, and verified with `cd frontend && npm run -s lint`.
+
+### 16:20 - Typography Rebaseline (Lora + Inter)
+> User requested another serif adjustment for a lighter, elegant academic tone (less heavy than previous choices).
+> Outcome: Updated `docs/reference/brand_typography_system.md`, `docs/reference/brand_guidelines.md`, and AD 10.6 in `docs/logs/decisions.md` to lock `Lora` (`600`) for primary/editorial headings with Inter for body/UI; implemented frontend swap in `frontend/src/app/layout.tsx` and `frontend/src/app/globals.css`, kept dense UI headings on Inter, and verified with `cd frontend && npm run -s lint`.
+
+### 16:36 - Landing “How It Works” Static Redesign + Global Type Scale Increase
+> User requested a static, card-based “How it works” section (similar to provided visual direction) and a larger default text scale across the site with improved spacing/readability.
+> Outcome: Redesigned `How it works` in `frontend/src/app/page.tsx` into a static three-card rail with a center highlighted card and subtle bottom accent bar, increased vertical section spacing, raised global default font size and line-height in `frontend/src/app/globals.css`, and relaxed heading letter-spacing slightly for a cleaner, less cramped academic reading feel. Verified with `cd frontend && npm run -s lint`.
+
+### 16:48 - How-It-Works Copy Refinement
+> User requested clearer proposal-focused wording for all three step bodies.
+> Outcome: Updated step text in `frontend/src/app/page.tsx` to emphasize proposal draft text input and criteria-aligned revision feedback; verified with `cd frontend && npm run -s lint`.
+
+### 16:55 - Supported Calls Visibility Redesign (NL/EU Grouped Cards)
+> User requested improving the supported-calls design so NL and EU groups (and their child programs) are easier to scan.
+> Outcome: Replaced the single-line supported-calls block in `frontend/src/app/page.tsx` with a static two-card grouped layout (`NL` and `EU/Horizon-Europe`) and pill-style child programs (`NWO`, `ZonMw`, `ERC`, `MSCA`), while preserving the original one-line copy beneath for continuity. Verified with `cd frontend && npm run -s lint`.

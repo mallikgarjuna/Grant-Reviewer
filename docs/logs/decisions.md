@@ -347,6 +347,27 @@
 - **Rationale**: Different agent tools auto-discover different filenames/locations. Adapters reduce drift by centralizing real rules in `AGENTS.md` while still satisfying each tool’s discovery mechanism.
 - **Status**: Implemented (added rationale header to `.github/copilot-instructions.md` and documented the pattern in `docs/reference/README_agent_instructions.md`).
 
+## Date: 2026-02-15 (WF-0010: PeerLens Landing Design Refresh)
+
+### AD 10.4: PeerLens Landing Visual Direction + Palette
+- **Decision**: PeerLens landing should feel like a clean journal/institutional site (“ink on paper”), not a startup SaaS.
+- **Palette (Ink + Parchment)**:
+  - `--background`: `#FCFBF7` (paper)
+  - `--foreground`: `#0B1F3B` (ink navy)
+  - `--muted-foreground`: `#4B5563`
+  - `--surface`: `#F4F2EC`
+  - `--surface-muted`: `#EEEAE2`
+  - `--border`: `#D6D3C8`
+  - `--primary`: `#1F4E79` (institutional blue)
+  - `--primary-foreground`: `#FFFFFF`
+  - Optional accent (very sparing): `--accent`: `#0F766E` (deep teal) **or** `#A35D2A` (copper)
+- **Rules**:
+  - Primary color only for clickable actions/links.
+  - Accent never for body text; use for small badges/markers only.
+  - Maintain WCAG AA contrast for text/controls.
+- **Scope**: WF-0010 may tweak landing copy and will update `docs/reference/brand_guidelines.md` to match.
+- **Status**: Approved.
+
 ### AD 10.5: Backend Ruff MVP Baseline Scope (Task 8.1)
 - **Decision**: Adopt a safe backend Ruff baseline in `backend/pyproject.toml` with:
   - `select = ["E4", "E7", "E9", "F", "I", "B", "UP"]`
@@ -354,3 +375,33 @@
 - **Rationale**: Enables a reliable lint signal with low behavior-change risk by focusing on correctness/import hygiene and avoiding broad strictness families during MVP.
 - **Scope note**: CI diff-gating is intentionally deferred to the next guardrails slice (Task 8.2) to keep 8.1 low-risk and mergeable.
 - **Status**: Implemented.
+
+### AD 10.6: WF-0010 PRD Execution Guardrails (Landing-Only + Explicit Verification Gate)
+- **Decision**: WF-0010 PRD is constrained to landing-surface work only (`/`, landing components, `globals.css`, brand guideline updates) with no backend/auth or `/app/*` behavior changes.
+- **Verification Gate**: PRD requires this bundle before implementation close:
+  - `cd frontend && npm run lint`
+  - `cd frontend && npm run check:seo`
+  - `cd frontend && npx next build --webpack`
+  - manual keyboard + mobile readability pass on `/`
+- **Why**: Keeps the refresh MVP-fast while preserving functional stability and quality.
+- **Tradeoff**: Defers conversion instrumentation and proof-asset expansion to a follow-up WF.
+- **Status**: Approved.
+
+### AD 10.7: Introduce Serif Heading Layer Alongside Inter
+- **Decision**: Introduce a serif heading layer (`Lora`) alongside `Inter` to convey academic authority while preserving UI clarity and readability for dense research content.
+- **Typography Architecture**:
+  - `Lora` (`600`) for primary large headings and editorial titles.
+  - `Inter` for body, navigation, controls, forms, and dense UI.
+  - No serif usage in forms, tables, buttons, or long body paragraphs.
+- **Scale Update (Lora + Inter pairing)**:
+  - `H1` (editorial): `clamp(2.2rem, 3.6vw, 2.95rem)`, `line-height: 1.22`, `600`
+  - `H2` (editorial): `clamp(1.55rem, 2.1vw, 1.95rem)`, `line-height: 1.28`, `600`
+  - `H3` (default): `clamp(1.2rem, 1.45vw, 1.32rem)`, `line-height: 1.36`, Lora `600`
+  - `Body`: Inter `16px`, `line-height: 1.6`
+- **Exception Rule**:
+  - Dense UI headings may explicitly opt into Inter (`font-sans`) to preserve compact readability.
+- **Implementation Notes**:
+  - Load both fonts via `next/font/google` and expose CSS variables in `frontend/src/app/layout.tsx`.
+  - Map variables in `frontend/src/app/globals.css` and apply heading/body scale from `docs/reference/brand_typography_system.md`.
+- **Rationale**: Adds scholarly tone on marketing surfaces without harming legibility or interaction clarity.
+- **Status**: Approved.

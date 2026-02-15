@@ -127,8 +127,27 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ## 2026-02-15
 
+<<<<<<< HEAD
+### Q: During workflow runner output, can we require explicit proof that Part B reviewed Part A output and Part C applied Part B feedback?
+**A:** Yes. Added required traceability-statement rules to `docs/workflow/phase-1-run-spec.md`, `docs/workflow/phase-2-run-prd.md`, and `docs/workflow/phase-3-run-task.md`, including path/version/commit references and explicit Part B findings → Part C edit mapping.
+
+## 2026-02-15
+
+### Q: During Phase 1 runner output, can we require explicit proof that Part B reviewed Part A output and Part C applied Part B feedback?
+**A:** Yes. Added a required traceability statement to `docs/workflow/phase-1-run-spec.md` with concrete references (path + version and/or commit IDs) and explicit Part B→Part C edit mapping.
+
+### Q: What exact landing copy should we use for supported funding calls and FAQ usage guidance?
+**A:** Lock copy to:
+- `Supported funding calls: NL (NWO, ZonMw), EU/Horizon-Europe (ERC, MSCA)`
+- FAQ question: `How should I use PeerLens?`
+- FAQ answer: `Select the funding call, then a proposal application's section heading, then paste one draft section at a time (for example, methodology, impact, or work plan) so the feedback stays specific and actionable.`
+
+### Q: Which serif/sans pairing should we use for an elegant, gentle academic tone without heaviness?
+**A:** Use `Lora` (`600`) for primary large/editorial headings and `Inter` (`400`, UI `500–600`) for body and interface text. Keep serif out of forms/inputs/dense UI text and use a lighter heading scale to avoid cramped or thick-looking typography.
+=======
 ### Q: If we choose Task 8.1 now, should it be done on the active WF-0010 branch or a separate branch?
 **A:** Use a separate branch from `main` (e.g., `task/8.1-lint-baseline-cleanup`) to keep WF phase boundaries clean and avoid mixing broad backend lint churn into WF-0010 landing-refresh work.
 
 ### Q: What rule should we enforce before pushing a branch to remote?
 **A:** Always update `docs/` with all relevant branch work before pushing (including status/index, decisions, Q&A, prompt history, and workflow artifacts where applicable).
+>>>>>>> origin/main
