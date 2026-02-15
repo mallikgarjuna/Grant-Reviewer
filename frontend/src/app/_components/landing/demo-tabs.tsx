@@ -72,7 +72,7 @@ export function DemoTabs() {
   return (
     <section
       aria-label="Static feedback demo"
-      className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 md:p-8"
+      className="rounded-3xl bg-[var(--color-surface)] p-6 md:p-9"
     >
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
         Static demo
@@ -105,7 +105,7 @@ export function DemoTabs() {
               className={`inline-flex h-10 items-center rounded-full border px-4 text-sm font-medium transition ${
                 isActive
                   ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
-                  : "border-[var(--color-border)] bg-white text-[var(--color-foreground)] hover:bg-[var(--color-surface-muted)]"
+                  : "border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-foreground)] hover:bg-[var(--color-surface-muted)]"
               }`}
               data-pl="demo-tab"
               id={tabId}
@@ -133,7 +133,7 @@ export function DemoTabs() {
         return (
           <section
             aria-labelledby={tabId}
-            className="mt-6 rounded-xl border border-[var(--color-border)] bg-white p-5 md:p-6"
+            className="mt-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-background)] p-5 md:p-6"
             hidden={!isActive}
             id={panelId}
             key={tab.id}
@@ -146,7 +146,7 @@ export function DemoTabs() {
             <div className="mt-6 grid gap-3">
               {tab.cards.map((card) => (
                 <article
-                  className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                  className="rounded-xl bg-[var(--color-surface)] p-4"
                   key={`${tab.id}-${card.criterion}`}
                 >
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]">
