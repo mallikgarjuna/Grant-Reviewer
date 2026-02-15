@@ -3,8 +3,16 @@ import Link from "next/link";
 import { DemoTabs } from "./_components/landing/demo-tabs";
 import { FaqAccordion } from "./_components/landing/faq-accordion";
 
-const SUPPORTED_FUNDING_CALLS =
-  "NL (NWO, ZonMw), EU/Horizon-Europe (ERC, MSCA)";
+const SUPPORTED_CALL_GROUPS = [
+  {
+    region: "NL",
+    programs: ["NWO", "ZonMw"],
+  },
+  {
+    region: "EU/Horizon-Europe",
+    programs: ["ERC", "MSCA"],
+  },
+] as const;
 
 const BENEFITS = [
   {
@@ -29,21 +37,22 @@ const HOW_IT_WORKS = [
     key: "step_1",
     badge: "1",
     title: "Step 1",
-    description: "Sign in and open a review session.",
+    description: "Bring your draft proposal text.",
     isHighlighted: false,
   },
   {
     key: "step_2",
     badge: "2",
     title: "Step 2",
-    description: "Select your call and section, then paste one draft passage.",
+    description: "Select your call and section, then paste your proposal draft text.",
     isHighlighted: false,
   },
   {
     key: "step_3",
     badge: "3",
     title: "Step 3",
-    description: "Receive structured feedback cards you can revise from or export.",
+    description:
+      "Receive structured, review-criteria-aligned feedback to revise your draft proposal.",
     isHighlighted: false,
   },
 ] as const;
@@ -100,9 +109,6 @@ export default function Home() {
             >
               Check My Draft Now
             </Link>
-            <p className="text-sm text-[var(--color-muted-foreground)]">
-              Supported funding calls: {SUPPORTED_FUNDING_CALLS}
-            </p>
           </div>
         </section>
 
@@ -166,9 +172,31 @@ export default function Home() {
         </section>
 
         <section className="rounded-2xl bg-[var(--color-surface)] px-6 py-6 md:px-8">
-          <p className="text-sm font-medium text-[var(--color-muted-foreground)]">
-            Supported funding calls: {SUPPORTED_FUNDING_CALLS}
-          </p>
+          <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
+            Supported Funding Calls
+          </h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {SUPPORTED_CALL_GROUPS.map((group) => (
+              <article
+                className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-4"
+                key={group.region}
+              >
+                <p className="font-sans text-base font-semibold text-[var(--color-foreground)]">
+                  {group.region}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {group.programs.map((program) => (
+                    <span
+                      className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-sm font-medium text-[var(--color-foreground)]"
+                      key={`${group.region}-${program}`}
+                    >
+                      {program}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
         </section>
 
         <FaqAccordion />
