@@ -1,8 +1,8 @@
 # WF-0011 — Local Postgres Dev DB Tasks
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-15
 
 ## Task Breakdown (Sequential Order)
@@ -41,55 +41,39 @@ Acceptance Criteria:
 - SQLite fallback behavior is documented as explicit fallback only.
 
 Verification Steps:
-- Open `.env.example` and confirm contract text and sample URL.
+- Open `backend/.env.example` and confirm contract text and sample URL.
 
 Risks (if any):
 - Confusion if local `.env` still contains stale Neon URL.
 
-### Task 3 — Document startup/bootstrap/verification runbook
+### Task 3 — Document canonical local runbook (startup, bootstrap, reset, verify)
 
 Goal:
-- Provide canonical local setup flow for contributors in one place.
+- Provide one authoritative local setup and recovery flow for contributors.
 
 Files to modify:
 - `backend/README.md`
 
 Acceptance Criteria:
-- README includes: start/stop/reset commands for compose service.
+- README includes start/stop/reset commands for compose service.
+- Reset command is clearly labeled destructive and local-only.
+- Reset guidance includes warning to verify `DATABASE_URL` host is local before running.
 - README includes bootstrap commands using existing scripts.
 - README includes minimum readiness thresholds (`prompt_templates`, `funding_calls`, `proposal_nodes` >= 1).
 - README includes one Postgres-backed stub review verification path with expected terminal status behavior.
-- README includes brief no-Docker fallback note (non-primary path).
+- README includes brief no-Docker fallback note (secondary path only).
 
 Verification Steps:
 - Manually follow runbook steps from clean local DB state.
+- Run reset flow, rerun bootstrap, and reconfirm readiness thresholds.
 
 Risks (if any):
 - Documentation drift if commands are not validated during task execution.
 
-### Task 4 — Ensure local reset command is safe and explicit
+### Task 4 — Capture Postgres-backed verification evidence in walkthrough
 
 Goal:
-- Provide a local-only destructive reset flow that is hard to misuse.
-
-Files to modify:
-- `backend/README.md`
-
-Acceptance Criteria:
-- Reset command clearly labeled destructive and local-only.
-- Reset section includes warning to verify `DATABASE_URL` host is local before running.
-- Reset flow restores DB to bootstrappable state.
-
-Verification Steps:
-- Run reset flow on local DB and rerun bootstrap successfully.
-
-Risks (if any):
-- Accidental misuse if safety wording is unclear.
-
-### Task 5 — Add targeted Postgres-backed verification evidence
-
-Goal:
-- Prove end-to-end local readiness on Postgres with minimal but concrete checks.
+- Prove local readiness on Postgres with concrete command/result evidence.
 
 Files to modify:
 - `docs/walkthroughs/walkthrough-WF-0011-local-postgres-dev-db.md`
@@ -100,7 +84,7 @@ Acceptance Criteria:
   - bootstrap scripts,
   - readiness count checks,
   - one stub review flow reaching terminal status.
-- Walkthrough records any deviations/fixes observed during execution.
+- Walkthrough records deviations and fixes observed during execution.
 
 Verification Steps:
 - Confirm walkthrough contains timestamped command/result evidence for each required check.
@@ -108,22 +92,22 @@ Verification Steps:
 Risks (if any):
 - Incomplete evidence may reduce confidence in reproducibility.
 
-### Task 6 — Final docs/index status and consistency pass
+### Task 5 — Final consistency and implementation handoff gate
 
 Goal:
-- Ensure WF artifacts and registry status are consistent at Phase 3 completion.
+- Ensure WF-0011 artifacts are implementation-ready and phase status is consistent.
 
 Files to modify:
 - `docs/index.md`
 - `docs/tasks/task-WF-0011-local-postgres-dev-db.md`
 
 Acceptance Criteria:
-- Task file status updated to `Ready for Implementation` after review/revision pass.
-- `docs/index.md` WF-0011 row status updated to `Phase 3 (Ready)`.
-- Changelog updated in task file for revision version bump.
+- Task file remains `Status: Ready for Implementation`.
+- `docs/index.md` WF-0011 row status is `Phase 3 (Ready)`.
+- Task changelog reflects review-driven revision.
 
 Verification Steps:
-- `rg -n "WF-0011|Phase 3" docs/index.md docs/tasks/task-WF-0011-local-postgres-dev-db.md`
+- `rg -n "WF-0011|Phase 3 \(Ready\)|Ready for Implementation" docs/index.md docs/tasks/task-WF-0011-local-postgres-dev-db.md`
 
 Risks (if any):
 - Workflow state drift if status updates are skipped.
@@ -131,3 +115,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-02-15): Initial task breakdown from PRD
+- v0.2 (2026-02-15): Applied review edits (sequencing cleanup, merged redundant README tasks, and tightened handoff criteria)
