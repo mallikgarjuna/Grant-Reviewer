@@ -51,6 +51,23 @@ When I say the brainstorm is “good enough” (or I say “stop”), stop and s
 
 ---
 
+## Phase 1 — Run Spec (End-to-End)
+
+This runs Phase 1.1 + 1.2 + 1.3 in sequence.
+
+```text
+Use @docs/workflow/phase-1-run-spec.md
+@docs/index.md
+@docs/brainstorms/brainstorm-<WF-ID>-<slug>.md
+
+Run Phase 1 end-to-end for <WF-ID>/<slug> using this runner.
+Print what you did in Part A/B/C.
+Ask me questions if needed (options + recommendation).
+End with two suggested next actions.
+```
+
+---
+
 ## Phase 1.1 — Generate Spec (v0.1)
 
 ```text
@@ -100,6 +117,24 @@ Stop after revising and suggest my next 2 actions.
 
 ---
 
+## Phase 2 — Run PRD (End-to-End)
+
+This runs Phase 2.1 + 2.2 + 2.3 in sequence.
+
+```text
+Use @docs/workflow/phase-2-run-prd.md
+@docs/index.md
+@docs/specs/<pages|features>/spec-<WF-ID>-<slug>.md
+@docs/logs/decisions.md
+
+Run Phase 2 end-to-end for <WF-ID>/<slug> using this runner.
+Print what you did in Part A/B/C.
+Ask me questions if needed (options + recommendation).
+End with two suggested next actions.
+```
+
+---
+
 ## Phase 2.1 — Generate PRD (v0.1)
 
 ```text
@@ -141,6 +176,23 @@ mark Ready for Tasks when stable,
 and update docs/logs/decisions.md.
 
 Stop after revising and suggest my next 2 actions.
+```
+
+---
+
+## Phase 3 — Run Tasks (End-to-End)
+
+This runs Phase 3.1 + 3.2 + 3.3 in sequence.
+
+```text
+Use @docs/workflow/phase-3-run-task.md
+@docs/index.md
+@docs/prds/prd-<WF-ID>-<slug>.md
+
+Run Phase 3 end-to-end for <WF-ID>/<slug> using this runner.
+Print what you did in Part A/B/C.
+Ask me questions if needed (options + recommendation).
+End with two suggested next actions.
 ```
 
 ---
