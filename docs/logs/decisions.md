@@ -323,3 +323,16 @@
 - **Decision**: `DELETE /reviews/{review_id}` returns `200` with JSON `{ "ok": true }` on successful deletion.
 - **Rationale**: Simplifies Next.js BFF + UI handling and avoids special-casing `204` parsing behavior in the adapter.
 - **Status**: Approved.
+
+---
+
+## Date: 2026-02-15 (Documentation Alignment)
+
+### AD 10.1: Documentation Convergence (Phase 0-4 Alignment)
+- **Decision**:
+    1.  **Single Source of Truth**: `AGENTS.md` and `docs/workflow/README.md` are the SSOT for Process/Workflow/Git. `GEMINI.md` is restricted to Behavioral Guidelines only.
+    2.  **Pipeline Alignment**: All docs now agree on: Phase 0 (Brainstorm) -> Phase 1 (Spec) -> Phase 2 (PRD) -> Phase 3 (Tasks) -> Phase 4 (Impl).
+    3.  **Naming Convention**: Enforced `task-` (Singular) filename prefix inside `docs/tasks/` folder.
+    4.  **Skills**: Consolidated local project skills into global `~/.agents/skills` and removed `agent-operating-protocol.md`.
+- **Rationale**: Eliminates drift between agent instructions and actual workflow rules. Supports parallel agent usage (Antigravity/Codex).
+- **Status**: Implemented.
