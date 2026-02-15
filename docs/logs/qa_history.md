@@ -127,5 +127,10 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ## 2026-02-15
 
+### Q: During workflow runner output, can we require explicit proof that Part B reviewed Part A output and Part C applied Part B feedback?
+**A:** Yes. Added required traceability-statement rules to `docs/workflow/phase-1-run-spec.md`, `docs/workflow/phase-2-run-prd.md`, and `docs/workflow/phase-3-run-task.md`, including path/version/commit references and explicit Part B findings → Part C edit mapping.
+
+## 2026-02-15
+
 ### Q: During Phase 1 runner output, can we require explicit proof that Part B reviewed Part A output and Part C applied Part B feedback?
 **A:** Yes. Added a required traceability statement to `docs/workflow/phase-1-run-spec.md` with concrete references (path + version and/or commit IDs) and explicit Part B→Part C edit mapping.

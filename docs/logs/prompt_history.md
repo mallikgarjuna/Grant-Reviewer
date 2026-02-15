@@ -358,3 +358,7 @@
 ### 13:42 - Phase 1 Runner Traceability Rule Added
 > User requested clearer confirmation that Part B reviews Part A output and Part C uses Part B feedback.
 > Outcome: Updated `docs/workflow/phase-1-run-spec.md` to require a final traceability statement with artifact references (path/version/commit) and explicit Part B findings → Part C edits mapping.
+
+### 13:44 - Phase 2/3 Runner Traceability Rules Added
+> User requested the same traceability requirement for Phase 2 and Phase 3 runners.
+> Outcome: Updated `docs/workflow/phase-2-run-prd.md` and `docs/workflow/phase-3-run-task.md` to require reviewed-artifact output in Part B, explicit “Applied feedback from Part B” output in Part C, and a final required traceability statement with concrete references.

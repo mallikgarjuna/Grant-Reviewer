@@ -61,6 +61,10 @@ After completing Phase 2 (including Part C revisions + decision logging):
    - Proceed to Part C and fix automatically.
 6. Do NOT expand scope beyond the Spec.
 7. Only update docs/index.md Status to Phase 2 if PRD is marked "Ready for Tasks".
+8. At the end of the run, print an explicit **Traceability Statement** confirming:
+   - Part B reviewed the artifact produced in Part A.
+   - Part C applied feedback produced in Part B.
+   - Include concrete references (path + version and/or commit IDs).
 
 ---
 
@@ -81,6 +85,9 @@ After writing, print:
 Follow @docs/workflow/phase-2-2-prd-risk-audit.md exactly.
 
 Print audit output.
+Also print:
+
+- `Reviewed artifact: <path> @ <version>` (include commit ID when available)
 
 Then classify:
 
@@ -105,6 +112,11 @@ If user answered questions:
 
 Mark PRD "Ready for Tasks" if stable.
 
+Before ending Part C, print:
+
+- `Applied feedback from Part B: yes/no`
+- If yes, list 3–5 exact edits mapped to Part B findings.
+
 ---
 
 ## End of Runner — Next Actions
@@ -124,6 +136,13 @@ After completing Part C, output:
 - Update docs/index.md row if needed (status/links)
 
 Keep it concise.
+
+Also output this final block:
+
+## Traceability Statement (Required)
+
+- Part A output reviewed in Part B: `<yes/no>` + `<path/version/commit>`
+- Part B feedback applied in Part C: `<yes/no>` + `<key edits>`
 
 ---
 
