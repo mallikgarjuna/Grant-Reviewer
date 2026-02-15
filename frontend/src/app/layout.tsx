@@ -18,6 +18,9 @@ const lora = Lora({
 export const metadata: Metadata = {
   title: "PeerLens",
   description: "Review-criteria-aligned feedback for stronger grant drafts.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
