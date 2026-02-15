@@ -354,3 +354,11 @@
 ### 12:47 - Task 8.1 Completed (safe lint baseline)
 > User requested Task 8.1 execution on a separate branch with a safety-first approach.
 > Outcome: Created branch `task/8.1-lint-baseline-cleanup`, added backend Ruff baseline config in `backend/pyproject.toml` (`E4,E7,E9,F,I,B,UP`) with targeted `scripts/run_review.py:E402` ignore, applied Ruff autofix + one manual `B007` fix, and verified `cd backend && uv run ruff check .` plus `cd backend && uv run pytest -q` (`24 passed`).
+
+### 12:55 - Task 8.1 Critical Review + Remediation Pass
+> User requested another critical review of the active branch and asked to fix any findings.
+> Outcome: Performed a severity-ordered review, then remediated findings by (1) resolving decision-log ID collision (`AD 10.4` -> `AD 10.5`), (2) aligning Task 8.1 scope language with delivered work (CI diff-gating deferred to follow-up), and (3) completing explicit `ruff format` verification. Re-verified with `cd backend && uv run ruff format . && uv run ruff check . && uv run pytest -q` (`24 passed`).
+
+### 13:00 - Task 8.1 Merged to Main via GitHub PR
+> User requested push + PR + merge for the completed branch.
+> Outcome: Pushed `task/8.1-lint-baseline-cleanup`, opened PR `#11`, merged to `main` on GitHub, and confirmed local `main` fast-forwarded to merge commit `aad96f6`; remote task branch deleted.
