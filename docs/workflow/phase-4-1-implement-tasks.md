@@ -102,6 +102,12 @@ When all tasks are complete:
 2. Create or update walkthrough file:
    docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md
 
+3. Update project documentation (README.md, docs/reference/, etc.)
+   - If the task added new features, update `README.md`.
+   - If the task changed architecture, update `docs/reference/`.
+   - Commit these updates with:
+     WF-XXXX: <slug> — update docs
+
 Walkthrough must include:
 
 - How to run
