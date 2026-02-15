@@ -94,8 +94,8 @@ export default function Home() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
             THE GRANT APPLICANT’S PRE-REVIEWER
           </p>
-          <h1 className="mt-3 max-w-4xl text-5xl font-semibold tracking-tight text-[var(--color-foreground)] [overflow-wrap:anywhere] md:text-7xl">
-            Pre-Review your grant-proposal
+          <h1 className="mt-3 max-w-4xl text-6xl font-semibold tracking-tight text-[var(--color-foreground)] [overflow-wrap:anywhere] md:text-7xl">
+            Pre-review your grant-proposal
           </h1>
           <ul className="mt-6 flex flex-col gap-2 text-base leading-7 text-[var(--color-muted-foreground)] md:text-lg">
             <li className="flex gap-2">
@@ -122,11 +122,11 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-4xl">
-          <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
+        <section className="rounded-3xl bg-[var(--color-surface)] px-6 py-8 md:px-8 md:text-center">
+          <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)] md:text-3xl">
             Aligned with NL & EU Standards.
           </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--color-muted-foreground)]">
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--color-muted-foreground)] md:mx-auto md:text-base">
             Direct support for NWO, ZonMw and Horizon Europe (ERC/MSCA) funding calls.
           </p>
         </section>
