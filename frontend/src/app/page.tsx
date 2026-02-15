@@ -28,7 +28,7 @@ const BENEFITS = [
   {
     title: "Self-Correction First",
     description:
-      "Privately resolve structural issues and criterial alignment so you can focus on the science.",
+      "Resolve structural issues and criterial alignment so you can focus on the science.",
   },
 ] as const;
 
