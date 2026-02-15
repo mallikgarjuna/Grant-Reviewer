@@ -350,3 +350,7 @@
 ### 09:37 - Documented “Adapter File” Rationale
 > User requested metadata explaining why `.github/copilot-instructions.md` exists, plus a durable record of this decision for use with other agent tools.
 > Outcome: Added a “Why this file exists” header to `.github/copilot-instructions.md` and documented the pattern in `docs/reference/README_agent_instructions.md` (with a corresponding decision logged in `docs/logs/decisions.md`).
+
+### 12:47 - Task 8.1 Completed (safe lint baseline)
+> User requested Task 8.1 execution on a separate branch with a safety-first approach.
+> Outcome: Created branch `task/8.1-lint-baseline-cleanup`, added backend Ruff baseline config in `backend/pyproject.toml` (`E4,E7,E9,F,I,B,UP`) with targeted `scripts/run_review.py:E402` ignore, applied Ruff autofix + one manual `B007` fix, and verified `cd backend && uv run ruff check .` plus `cd backend && uv run pytest -q` (`24 passed`).

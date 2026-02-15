@@ -21,3 +21,14 @@ dev = [
     "pytest>=8.4.2",
     "ruff>=0.15.0",
 ]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+# MVP-safe baseline: correctness, imports, and small mechanical improvements.
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Script intentionally mutates sys.path before app imports for CLI execution.
+"scripts/run_review.py" = ["E402"]
