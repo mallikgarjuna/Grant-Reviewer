@@ -1,11 +1,13 @@
 # WF-0010 — PeerLens Landing Design Refresh
 
 Artifact: task  
-Version: v0.1  
-Status: Draft  
+Version: v0.2  
+Status: Ready for Implementation  
 Last Updated: 2026-02-15
 
 ## Task Breakdown (Sequential Order)
+
+Execution order is strict: complete Tasks 1->7 in sequence.
 
 ### Task 1 — Align brand guideline source of truth
 
@@ -40,6 +42,7 @@ Acceptance Criteria:
 
 Verification Steps:
 - `cd frontend && npm run lint`
+- Manual spot-check of `/sign-in`, `/privacy`, and `/app` visual sanity after token changes.
 
 Risks (if any):
 - Global style changes could unintentionally affect non-landing routes.
@@ -59,6 +62,7 @@ Acceptance Criteria:
 
 Verification Steps:
 - `cd frontend && npm run lint`
+- Manual keyboard check for tab/accordion focus and activation behavior.
 - Manual visual check on desktop + mobile widths.
 
 Risks (if any):
@@ -144,6 +148,7 @@ Acceptance Criteria:
 
 Verification Steps:
 - Run all required commands and record outcomes in walkthrough/implementation notes.
+- Record final results in `docs/walkthroughs/walkthrough-WF-0010-peerlens-landing-design-refresh.md`.
 
 Risks (if any):
 - Build/runtime discrepancies between local and sandboxed environments.
@@ -151,3 +156,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-02-15): Initial tasks from PRD.
+- v0.2 (2026-02-15): Applied review edits (sequencing + verification clarity) and marked Ready for Implementation.
