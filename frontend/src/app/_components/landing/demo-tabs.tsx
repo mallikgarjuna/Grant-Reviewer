@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 
 import {
   DEFAULT_LANDING_DEMO_TAB_ID,
@@ -22,6 +22,7 @@ function nextIndex(currentIndex: number, direction: 1 | -1): number {
 export function DemoTabs() {
   const tabsRootId = useId();
   const [activeTabId, setActiveTabId] = useState(DEFAULT_LANDING_DEMO_TAB_ID);
+  const tabButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const activeTab = useMemo<LandingDemoTab>(() => {
     return (
@@ -30,38 +31,41 @@ export function DemoTabs() {
     );
   }, [activeTabId]);
 
-  function setActiveTabByIndex(index: number): void {
+  function setActiveTabByIndex(index: number, options?: { focusButton?: boolean }): void {
     const nextTab = LANDING_DEMO_TABS[index];
     if (!nextTab) {
       return;
     }
     setActiveTabId(nextTab.id);
+    if (options?.focusButton) {
+      tabButtonRefs.current[index]?.focus();
+    }
   }
 
   function onTabKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number): void {
     if (event.key === "ArrowRight") {
       event.preventDefault();
-      setActiveTabByIndex(nextIndex(index, 1));
+      setActiveTabByIndex(nextIndex(index, 1), { focusButton: true });
       return;
     }
     if (event.key === "ArrowLeft") {
       event.preventDefault();
-      setActiveTabByIndex(nextIndex(index, -1));
+      setActiveTabByIndex(nextIndex(index, -1), { focusButton: true });
       return;
     }
     if (event.key === "Home") {
       event.preventDefault();
-      setActiveTabByIndex(0);
+      setActiveTabByIndex(0, { focusButton: true });
       return;
     }
     if (event.key === "End") {
       event.preventDefault();
-      setActiveTabByIndex(LANDING_DEMO_TABS.length - 1);
+      setActiveTabByIndex(LANDING_DEMO_TABS.length - 1, { focusButton: true });
       return;
     }
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      setActiveTabByIndex(index);
+      setActiveTabByIndex(index, { focusButton: true });
     }
   }
 
@@ -86,6 +90,7 @@ export function DemoTabs() {
 
       <div
         aria-label="Supported calls"
+        aria-orientation="horizontal"
         className="mt-5 flex flex-wrap gap-2"
         role="tablist"
       >
@@ -107,6 +112,9 @@ export function DemoTabs() {
               key={tab.id}
               onClick={() => setActiveTabByIndex(index)}
               onKeyDown={(event) => onTabKeyDown(event, index)}
+              ref={(element) => {
+                tabButtonRefs.current[index] = element;
+              }}
               role="tab"
               tabIndex={isActive ? 0 : -1}
               type="button"

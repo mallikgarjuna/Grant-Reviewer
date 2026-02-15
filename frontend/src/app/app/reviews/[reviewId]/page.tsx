@@ -73,7 +73,7 @@ function buildReviewExportText(reviewDetail: ReviewDetailResponse): string {
   } else {
     reviewDetail.cards.forEach((card, index) => {
       lines.push("");
-      lines.push(`${index + 1}. Criterion: ${card.node_expectation_id}`);
+      lines.push(`${index + 1}. Criterion: ${card.criterion}`);
       lines.push(`   Rating: ${card.rating}`);
       lines.push(`   Feedback: ${card.feedback_text}`);
     });

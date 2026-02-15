@@ -1,9 +1,9 @@
 # WF-0009 — PeerLens Landing Page
 
 Artifact: walkthrough  
-Version: v1.0  
+Version: v1.1  
 Status: Completed  
-Last Updated: 2026-02-14
+Last Updated: 2026-02-15
 
 ---
 
@@ -29,6 +29,15 @@ Last Updated: 2026-02-14
   - `data-pl="cta-primary"`
   - `data-pl="demo-tab"`
   - `data-pl="faq-toggle"`
+
+## Post-Completion Fixes (v1.1)
+
+- Export payload/readability fix:
+  - backend now returns `criterion` on review cards
+  - review export now uses criterion names instead of expectation UUIDs
+- Landing footer now includes privacy link + copyright
+- Demo tabs keyboard interaction now uses roving focus on arrow/Home/End navigation
+- Frontend font loading changed to local/system stack (`--font-inter`) to avoid external Google Fonts dependency during build
 
 ## How to Run
 
@@ -64,6 +73,7 @@ Open:
 - `cd frontend && npm run lint` -> pass
 - `cd frontend && npm run check:bff` -> pass
 - `cd frontend && npm run check:seo` -> pass
+- `cd frontend && npx next build --webpack` -> compile succeeds; build fails at existing TypeScript error in `src/app/sign-in/[[...sign-in]]/page.tsx` generated type check
 
 ### Manual verification checklist
 
@@ -82,10 +92,11 @@ Open:
 
 - `npm run build` cannot complete in this sandbox environment:
   - Turbopack fails with OS permission when spawning/binding
-  - Webpack fallback fails because external Google Fonts fetch is blocked
+- `npx next build --webpack` now avoids font-fetch/network failure, but still fails on a pre-existing Next.js/TypeScript mismatch under sign-in route page props typing.
 - Clerk-authenticated browser flows (`/sign-in`, `/app/*`) were not fully exercised in this sandbox and should be validated locally with real env vars.
 
 ## Revision History
 
 - v0.0 (2026-02-14): placeholder
 - v1.0 (2026-02-14): implementation complete, verification logged, limitations documented
+- v1.1 (2026-02-15): post-implementation quality fixes (export criterion labels, tab focus behavior, local font stack, footer compliance)

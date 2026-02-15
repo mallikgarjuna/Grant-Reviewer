@@ -460,9 +460,9 @@ def get_review(
         )
         raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
 
-    cards = []
+    cards_with_criteria = []
     if review.status == ReviewStatus.COMPLETED:
-        cards = repository.get_review_cards_ordered(review_id)
+        cards_with_criteria = repository.get_review_cards_with_criteria(review_id)
 
     return ReviewDetailResponse(
         review=ReviewSummary(
@@ -475,10 +475,11 @@ def get_review(
             ReviewCardSummary(
                 id=card.id,
                 node_expectation_id=card.node_expectation_id,
+                criterion=criterion_name,
                 rating=card.rating,
                 feedback_text=card.feedback_text,
             )
-            for card in cards
+            for card, criterion_name in cards_with_criteria
         ],
     )
 

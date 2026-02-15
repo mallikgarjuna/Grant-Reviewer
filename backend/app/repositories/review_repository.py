@@ -11,6 +11,8 @@ from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.models.domain import (
+    EvaluationCriterion,
+    EvaluationElement,
     FundingAgency,
     FundingCall,
     NodeExpectation,
@@ -227,6 +229,21 @@ class ReviewRepository:
         statement = (
             select(ReviewCard)
             .join(NodeExpectation, ReviewCard.node_expectation_id == NodeExpectation.id)
+            .where(ReviewCard.review_id == review_id)
+            .order_by(NodeExpectation.order_index, ReviewCard.id)
+        )
+        return list(self.session.exec(statement).all())
+
+    def get_review_cards_with_criteria(self, review_id: UUID) -> list[tuple[ReviewCard, str]]:
+        """Fetch review cards with criterion names ordered by expectation index."""
+        statement = (
+            select(ReviewCard, EvaluationCriterion.name)
+            .join(NodeExpectation, ReviewCard.node_expectation_id == NodeExpectation.id)
+            .join(EvaluationElement, NodeExpectation.evaluation_element_id == EvaluationElement.id)
+            .join(
+                EvaluationCriterion,
+                EvaluationElement.evaluation_criterion_id == EvaluationCriterion.id,
+            )
             .where(ReviewCard.review_id == review_id)
             .order_by(NodeExpectation.order_index, ReviewCard.id)
         )

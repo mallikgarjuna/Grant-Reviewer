@@ -151,9 +151,12 @@ export default function Home() {
       </main>
 
       <footer className="mt-10 border-t border-[var(--color-border)] py-6 text-sm text-[var(--color-muted-foreground)]">
-        <Link className="hover:underline" href="/privacy">
-          Privacy
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p>© 2026 PeerLens</p>
+          <Link className="hover:underline" href="/privacy">
+            Privacy
+          </Link>
+        </div>
       </footer>
     </div>
   );
