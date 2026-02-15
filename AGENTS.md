@@ -91,7 +91,7 @@ From repo root:
 Use the WF workflow system for non-trivial work:
 
 - Workflow definition (SSOT): `docs/workflow/README.md`
-- Codex prompt templates (cheat sheet): `docs/workflow/how-to-use-workflow-actions.md`
+- Chat prompt templates (cheat sheet): `docs/workflow/how-to-use-workflow-actions.md`
 - WF artifact filename convention (note singular *task* prefix):
   - `docs/brainstorms/brainstorm-WF-XXXX-<slug>.md`
   - `docs/specs/<pages|features>/spec-WF-XXXX-<slug>.md`
@@ -104,7 +104,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 ### Skills (Optional)
 
 - If a matching skill exists (a `SKILL.md`), follow it for that phase.
-- Preferred pipeline skills: `brainstorming` → `prd` → `prd-to-tasks`.
+- Preferred pipeline skills: `brainstorming` → `spec` → `prd` → `tasks`.
 - Skill index (portable): `docs/reference/skills_index.md`.
 
 ## Task Lifecycle & Tracking (Source of Truth: `docs/index.md`)
@@ -122,7 +122,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - Verify with tests/build/lint or a reliable manual repro.
 - Before starting a new WF phase (or phase runner), ensure the previous phase’s primary artifact(s) are saved and committed (use `git status --short` to confirm a clean boundary).
 - After completing a WF phase, ensure any artifacts edited/created in that phase are saved and committed before starting the next phase.
-- For Phase 3 implementation, run at least one targeted verification per completed subtask before committing that subtask, and log what was run.
+- For Phase 4 implementation, run at least one targeted verification per completed subtask before committing that subtask, and log what was run.
 - Before any commit, confirm new/changed files are not accidentally ignored: run `git status --ignored --short`. Prefer updating `.gitignore` with narrow allow/deny rules over `git add -f` (never force-add secrets).
 - Update `docs/` as you go (decisions, Q&A, walkthroughs).
 - Be explicit about what you didn’t verify and what to run next.
@@ -165,3 +165,4 @@ Guideline:
 - Don’t skip phase gates for non-trivial features; keep artifacts (PRD/task/walkthrough) in sync with `docs/index.md`.
 - Don’t block MVP progress on pre-existing repo-wide lint debt; enforce lint on changed files/touched modules and track full cleanup as a separate task.
 - Before starting the next major task (especially without a remote), create a local integration milestone: merge completed task branches into one branch, tag it, and create a `git bundle` backup.
+
