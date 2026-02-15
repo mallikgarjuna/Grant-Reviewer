@@ -75,8 +75,9 @@ If branch does not exist:
 
 For each task:
 
-1. Implement the task.
-2. Run verification steps listed under the task.
+1. Check available skills with `ls ~/.agents/skills` or `docs/reference/skills_index.md`. If a relevant skill exists, read it.
+2. Implement the task.
+3. Run verification steps listed under the task.
 3. Fix until verification passes.
 4. Commit using this format:
 
