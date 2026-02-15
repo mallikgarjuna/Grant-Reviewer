@@ -33,7 +33,7 @@ const HOW_IT_WORKS = [
 
 export default function Home() {
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-8 md:px-10 md:py-10">
+    <div className="mx-auto w-full max-w-6xl px-6 py-10 md:px-10 md:py-14">
       <header className="flex items-center justify-between gap-4">
         <Link className="text-lg font-semibold text-[var(--color-foreground)]" href="/">
           PeerLens
@@ -54,8 +54,8 @@ export default function Home() {
         </nav>
       </header>
 
-      <main className="mt-8 flex flex-col gap-8 md:gap-10">
-        <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 md:p-10">
+      <main className="mt-12 flex flex-col gap-14 md:gap-16">
+        <section className="rounded-3xl bg-[var(--color-surface)] px-7 py-9 md:px-12 md:py-12">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
             Sharpen your proposal before you submit
           </p>
@@ -80,7 +80,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[var(--color-border)] bg-white p-6 md:p-8">
+        <section className="mx-auto w-full max-w-4xl">
           <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
             Reviewer #2 anxiety is real.
           </h2>
@@ -92,10 +92,11 @@ export default function Home() {
 
         <DemoTabs />
 
-        <section className="grid gap-4 md:grid-cols-3">
+        <section className="rounded-3xl bg-[var(--color-surface)] px-6 py-8 md:px-8 md:py-10">
+          <div className="grid gap-6 md:grid-cols-3">
           {BENEFITS.map((benefit) => (
             <article
-              className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6"
+              className="border-l-2 border-[var(--color-border)] pl-4"
               key={benefit.title}
             >
               <h2 className="text-lg font-medium text-[var(--color-foreground)]">{benefit.title}</h2>
@@ -104,16 +105,17 @@ export default function Home() {
               </p>
             </article>
           ))}
+          </div>
         </section>
 
-        <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 md:p-8">
+        <section className="rounded-3xl bg-[var(--color-surface)] px-6 py-8 md:px-8 md:py-10">
           <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
             How it works
           </h2>
           <ol className="mt-5 grid gap-3 md:grid-cols-3">
             {HOW_IT_WORKS.map((step, index) => (
               <li
-                className="rounded-xl border border-[var(--color-border)] bg-white p-4 text-sm leading-6 text-[var(--color-foreground)]"
+                className="rounded-xl bg-white/75 p-4 text-sm leading-6 text-[var(--color-foreground)]"
                 key={step}
               >
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]">
@@ -125,7 +127,7 @@ export default function Home() {
           </ol>
         </section>
 
-        <section className="rounded-2xl border border-[var(--color-border)] bg-white p-6 md:p-8">
+        <section className="rounded-2xl bg-[var(--color-surface)] px-6 py-6 md:px-8">
           <p className="text-sm font-medium text-[var(--color-muted-foreground)]">
             Supported calls (text-only): {SUPPORTED_CALLS}
           </p>
@@ -133,7 +135,7 @@ export default function Home() {
 
         <FaqAccordion />
 
-        <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
+        <section className="rounded-3xl bg-[var(--color-surface)] px-8 py-10 text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
             Ready to review your draft?
           </h2>
@@ -150,7 +152,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="mt-10 border-t border-[var(--color-border)] py-6 text-sm text-[var(--color-muted-foreground)]">
+      <footer className="mt-16 border-t border-[var(--color-border)] py-6 text-sm text-[var(--color-muted-foreground)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p>© 2026 PeerLens</p>
           <Link className="hover:underline" href="/privacy">
