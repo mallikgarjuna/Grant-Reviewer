@@ -402,3 +402,11 @@
 ### 16:36 - Landing “How It Works” Static Redesign + Global Type Scale Increase
 > User requested a static, card-based “How it works” section (similar to provided visual direction) and a larger default text scale across the site with improved spacing/readability.
 > Outcome: Redesigned `How it works` in `frontend/src/app/page.tsx` into a static three-card rail with a center highlighted card and subtle bottom accent bar, increased vertical section spacing, raised global default font size and line-height in `frontend/src/app/globals.css`, and relaxed heading letter-spacing slightly for a cleaner, less cramped academic reading feel. Verified with `cd frontend && npm run -s lint`.
+
+### 16:48 - How-It-Works Copy Refinement
+> User requested clearer proposal-focused wording for all three step bodies.
+> Outcome: Updated step text in `frontend/src/app/page.tsx` to emphasize proposal draft text input and criteria-aligned revision feedback; verified with `cd frontend && npm run -s lint`.
+
+### 16:55 - Supported Calls Visibility Redesign (NL/EU Grouped Cards)
+> User requested improving the supported-calls design so NL and EU groups (and their child programs) are easier to scan.
+> Outcome: Replaced the single-line supported-calls block in `frontend/src/app/page.tsx` with a static two-card grouped layout (`NL` and `EU/Horizon-Europe`) and pill-style child programs (`NWO`, `ZonMw`, `ERC`, `MSCA`), while preserving the original one-line copy beneath for continuity. Verified with `cd frontend && npm run -s lint`.
