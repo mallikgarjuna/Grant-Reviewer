@@ -124,3 +124,11 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Can we change the Phase 0.1 facilitation to ask 5 questions at a time?
 **A:** Yes (when explicitly requested). Updated `docs/workflow/phase-0-1-brainstorm.md` to ask 5 questions in a single batch per section and collect answers in one reply.
+
+## 2026-02-15
+
+### Q: If we choose Task 8.1 now, should it be done on the active WF-0010 branch or a separate branch?
+**A:** Use a separate branch from `main` (e.g., `task/8.1-lint-baseline-cleanup`) to keep WF phase boundaries clean and avoid mixing broad backend lint churn into WF-0010 landing-refresh work.
+
+### Q: What rule should we enforce before pushing a branch to remote?
+**A:** Always update `docs/` with all relevant branch work before pushing (including status/index, decisions, Q&A, prompt history, and workflow artifacts where applicable).
