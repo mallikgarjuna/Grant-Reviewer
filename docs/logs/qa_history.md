@@ -144,3 +144,6 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Which serif/sans pairing should we use for an elegant, gentle academic tone without heaviness?
 **A:** Use `Lora` (`600`) for primary large/editorial headings and `Inter` (`400`, UI `500–600`) for body and interface text. Keep serif out of forms/inputs/dense UI text and use a lighter heading scale to avoid cramped or thick-looking typography.
+
+### Q: How should “Next 2 actions” be formatted going forward in workflow guidance?
+**A:** Before Phase 4 completion, provide only end-to-end runner options (e.g., `phase-1-run-spec`, `phase-2-run-prd`, `phase-3-run-task`) instead of part-level phase files. After Phase 4 completion, replace that section with “Next 2 WF ideas/features” (candidate follow-up workflows) and suggest starting each via Phase 0.0.

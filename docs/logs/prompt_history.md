@@ -426,3 +426,7 @@
 ### 16:55 - Supported Calls Visibility Redesign (NL/EU Grouped Cards)
 > User requested improving the supported-calls design so NL and EU groups (and their child programs) are easier to scan.
 > Outcome: Replaced the single-line supported-calls block in `frontend/src/app/page.tsx` with a static two-card grouped layout (`NL` and `EU/Horizon-Europe`) and pill-style child programs (`NWO`, `ZonMw`, `ERC`, `MSCA`), while preserving the original one-line copy beneath for continuity. Verified with `cd frontend && npm run -s lint`.
+
+### 23:03 - Memory Rule Added for “Next 2” Guidance Format
+> User requested a durable response-format rule: use end-to-end phase runners (not part files) for “Next 2 actions,” and after Phase 4 completion switch to “Next 2 WF ideas/features.”
+> Outcome: Updated `AGENTS.md` Always rules and logged the clarification in `docs/logs/qa_history.md` + `docs/logs/prompt_history.md` for zero-latency memory.
