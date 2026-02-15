@@ -9,26 +9,26 @@ const SUPPORTED_CALLS = LANDING_DEMO_TABS.map((tab) => tab.label).join(" · ");
 
 const BENEFITS = [
   {
-    title: "Readiness Score",
+    title: "Readiness Snapshot",
     description:
-      "See an example score and concrete fixes so you know where your draft is weakest.",
+      "See where your section is currently strong and where reviewers may ask for sharper evidence.",
   },
   {
-    title: "Review Criteria Check",
+    title: "Criteria-Aligned Review",
     description:
-      "Feedback is framed around evaluation criteria used in real grant review settings.",
+      "Feedback is framed around evaluation criteria used in real funding-call assessments.",
   },
   {
-    title: "Time Saved",
+    title: "Faster Iteration",
     description:
-      "Get structured guidance fast before sharing your draft with supervisors or peers.",
+      "Refine key sections before sending drafts to supervisors, peers, or internal review support.",
   },
 ] as const;
 
 const HOW_IT_WORKS = [
-  "Sign in to your account.",
-  "Select your call and section, then paste your draft text.",
-  "Get a review with actionable cards and export options.",
+  "Sign in and open a review session.",
+  "Select your call and section, then paste one draft passage.",
+  "Receive structured feedback cards you can revise from or export.",
 ] as const;
 
 export default function Home() {
@@ -60,11 +60,11 @@ export default function Home() {
             Sharpen your proposal before you submit
           </p>
           <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-[var(--color-foreground)] md:text-5xl">
-            Review-criteria-aligned feedback for your grant writing.
+            PeerLens helps you pressure-test proposal text before submission.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted-foreground)]">
-            PeerLens helps you pre-review one proposal section at a time so you can tighten your
-            argument before submission.
+            Get a focused, criteria-aligned review of one section at a time so your argument is
+            clearer before formal evaluation.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-4">
             <Link
@@ -82,11 +82,11 @@ export default function Home() {
 
         <section className="mx-auto w-full max-w-4xl">
           <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
-            Reviewer #2 anxiety is real.
+            Reviewer expectations are often implicit.
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--color-muted-foreground)]">
-            Rejection often feels arbitrary when expectations are unclear. PeerLens gives you a
-            structured pre-review pass so your draft is easier to evaluate and defend.
+            When expectations are unclear, strong ideas can read as under-evidenced. PeerLens gives
+            you a structured pre-review pass so key sections are easier to evaluate and defend.
           </p>
         </section>
 
@@ -137,10 +137,10 @@ export default function Home() {
 
         <section className="rounded-3xl bg-[var(--color-surface)] px-8 py-10 text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
-            Ready to review your draft?
+            Ready to review a section before submission?
           </h2>
           <p className="mt-3 text-sm text-[var(--color-muted-foreground)]">
-            Sign in to run feedback on your proposal text.
+            Sign in to run a structured review on your proposal text.
           </p>
           <Link
             className="mt-6 inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white transition hover:brightness-105"
