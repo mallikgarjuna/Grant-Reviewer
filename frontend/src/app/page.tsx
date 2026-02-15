@@ -18,7 +18,7 @@ const BENEFITS = [
   {
     title: "Know Your Readiness",
     description:
-      "See not just a score, but exactly where you meet the constraints—and where you don't.",
+      "See not just a score, but exactly where you meet the constraints and where you don't.",
   },
   {
     title: "Zero Generic Feedback",
@@ -28,7 +28,7 @@ const BENEFITS = [
   {
     title: "Self-Correction First",
     description:
-      "Fix the basics privately so your human mentors can focus on the science, not the structure.",
+      "Privately resolve structural issues and criterial alignment so you can focus on the science.",
   },
 ] as const;
 
