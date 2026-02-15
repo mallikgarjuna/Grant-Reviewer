@@ -28,7 +28,7 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF ID | Slug / Feature | Brainstorm | Spec | PRD | Task File | Walkthrough | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | WF-0009 | peerlens-landing-page | [Brainstorm](brainstorms/brainstorm-WF-0009-peerlens-landing-page.md) | [Spec](specs/pages/spec-WF-0009-peerlens-landing-page.md) | [PRD](prds/prd-WF-0009-peerlens-landing-page.md) | [Tasks](tasks/task-WF-0009-peerlens-landing-page.md) | [Walkthrough](walkthroughs/walkthrough-WF-0009-peerlens-landing-page.md) | Done |
-| WF-0010 | peerlens-landing-design-refresh | [Brainstorm](brainstorms/brainstorm-WF-0010-peerlens-landing-design-refresh.md) | [Spec](specs/pages/spec-WF-0010-peerlens-landing-design-refresh.md) | [PRD](prds/prd-WF-0010-peerlens-landing-design-refresh.md) | - | - | Phase 2 (Ready) |
+| WF-0010 | peerlens-landing-design-refresh | [Brainstorm](brainstorms/brainstorm-WF-0010-peerlens-landing-design-refresh.md) | [Spec](specs/pages/spec-WF-0010-peerlens-landing-design-refresh.md) | [PRD](prds/prd-WF-0010-peerlens-landing-design-refresh.md) | [Tasks](tasks/task-WF-0010-peerlens-landing-design-refresh.md) | - | Phase 3 |
 
 ---
 
