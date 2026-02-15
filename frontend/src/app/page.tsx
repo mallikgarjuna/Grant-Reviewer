@@ -68,7 +68,7 @@ export default function Home() {
       </a>
       <header className="flex flex-wrap items-start justify-between gap-2 sm:items-center sm:gap-3">
         <Link className="text-lg font-semibold text-[var(--color-foreground)]" href="/">
-          PeerLens
+          <span className="text-[var(--color-muted-foreground)]">[</span>PeerLens<span className="text-[var(--color-muted-foreground)]">]</span>
         </Link>
         <nav
           aria-label="Primary"
@@ -229,7 +229,7 @@ export default function Home() {
 
       <footer className="mt-16 border-t border-[var(--color-border)] py-6 text-sm text-[var(--color-muted-foreground)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p>© 2026 PeerLens</p>
+          <p>© 2026 <span className="text-[var(--color-muted-foreground)]">[</span>PeerLens<span className="text-[var(--color-muted-foreground)]">]</span></p>
           <Link className="hover:underline" href="/privacy">
             Privacy
           </Link>
