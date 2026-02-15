@@ -346,3 +346,26 @@
 - **Decision**: Keep `AGENTS.md` as the SSOT, and allow tool-specific instruction files (like `.github/copilot-instructions.md`) to exist as *adapters* that point tools back to `AGENTS.md`.
 - **Rationale**: Different agent tools auto-discover different filenames/locations. Adapters reduce drift by centralizing real rules in `AGENTS.md` while still satisfying each tool’s discovery mechanism.
 - **Status**: Implemented (added rationale header to `.github/copilot-instructions.md` and documented the pattern in `docs/reference/README_agent_instructions.md`).
+
+---
+
+## Date: 2026-02-15 (WF-0010: PeerLens Landing Design Refresh)
+
+### AD 10.4: PeerLens Landing Visual Direction + Palette
+- **Decision**: PeerLens landing should feel like a clean journal/institutional site (“ink on paper”), not a startup SaaS.
+- **Palette (Ink + Parchment)**:
+  - `--background`: `#FCFBF7` (paper)
+  - `--foreground`: `#0B1F3B` (ink navy)
+  - `--muted-foreground`: `#4B5563`
+  - `--surface`: `#F4F2EC`
+  - `--surface-muted`: `#EEEAE2`
+  - `--border`: `#D6D3C8`
+  - `--primary`: `#1F4E79` (institutional blue)
+  - `--primary-foreground`: `#FFFFFF`
+  - Optional accent (very sparing): `--accent`: `#0F766E` (deep teal) **or** `#A35D2A` (copper)
+- **Rules**:
+  - Primary color only for clickable actions/links.
+  - Accent never for body text; use for small badges/markers only.
+  - Maintain WCAG AA contrast for text/controls.
+- **Scope**: WF-0010 may tweak landing copy and will update `docs/reference/brand_guidelines.md` to match.
+- **Status**: Approved.
