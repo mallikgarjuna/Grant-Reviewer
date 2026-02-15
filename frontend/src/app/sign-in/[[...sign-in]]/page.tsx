@@ -16,13 +16,14 @@ function safeRedirectTarget(rawValue: string | undefined): string {
   return "/app";
 }
 
-export default function SignInPage({
+export default async function SignInPage({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const configError = firstValue(searchParams?.auth_config_error) === "1";
-  const redirectTarget = safeRedirectTarget(firstValue(searchParams?.redirect_url));
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const configError = firstValue(resolvedSearchParams?.auth_config_error) === "1";
+  const redirectTarget = safeRedirectTarget(firstValue(resolvedSearchParams?.redirect_url));
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-4xl items-center justify-center px-6 py-16">
