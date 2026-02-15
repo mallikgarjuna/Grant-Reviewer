@@ -369,3 +369,14 @@
   - Maintain WCAG AA contrast for text/controls.
 - **Scope**: WF-0010 may tweak landing copy and will update `docs/reference/brand_guidelines.md` to match.
 - **Status**: Approved.
+
+### AD 10.5: WF-0010 PRD Execution Guardrails (Landing-Only + Explicit Verification Gate)
+- **Decision**: WF-0010 PRD is constrained to landing-surface work only (`/`, landing components, `globals.css`, brand guideline updates) with no backend/auth or `/app/*` behavior changes.
+- **Verification Gate**: PRD requires this bundle before implementation close:
+  - `cd frontend && npm run lint`
+  - `cd frontend && npm run check:seo`
+  - `cd frontend && npx next build --webpack`
+  - manual keyboard + mobile readability pass on `/`
+- **Why**: Keeps the refresh MVP-fast while preserving functional stability and quality.
+- **Tradeoff**: Defers conversion instrumentation and proof-asset expansion to a follow-up WF.
+- **Status**: Approved.

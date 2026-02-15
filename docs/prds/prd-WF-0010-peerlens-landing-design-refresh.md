@@ -1,8 +1,8 @@
 # WF-0010 — PeerLens Landing Design Refresh
 
 Artifact: prd  
-Version: v0.1  
-Status: Draft  
+Version: v0.2  
+Status: Ready for Tasks  
 Last Updated: 2026-02-15
 
 ## 1. In Scope
@@ -17,6 +17,7 @@ Last Updated: 2026-02-15
   - trust/support context line
   - demo shell labels
   - final CTA area
+- Preserve current demo behavior and static data contract (presentation-only refresh).
 - Update `docs/reference/brand_guidelines.md` to match finalized landing visual direction.
 - Preserve accessibility and mobile quality (contrast, keyboard focus, readability).
 
@@ -66,6 +67,11 @@ Last Updated: 2026-02-15
   - Maintain WCAG AA contrast targets.
   - Maintain visible keyboard focus states.
   - Preserve readability and interaction clarity on mobile layouts.
+- **FR6: Verification gate (must pass before implementation close)**
+  - `cd frontend && npm run lint`
+  - `cd frontend && npm run check:seo`
+  - `cd frontend && npx next build --webpack`
+  - Manual keyboard + mobile readability pass on `/`
 
 ## 5. Data & API Contracts
 
@@ -103,7 +109,7 @@ Last Updated: 2026-02-15
 
 - No new analytics integrations in this phase.
 - Preserve existing stable attributes/hooks if already present.
-- Optional: keep `data-*` hooks unchanged to avoid breaking future instrumentation work.
+- Keep existing `data-*` hooks unchanged to avoid breaking future instrumentation work.
 
 ## Deferred / Not in MVP
 
@@ -116,6 +122,15 @@ Last Updated: 2026-02-15
 
 - None blocking for this PRD phase.
 
+## Ready-for-Tasks Checklist
+
+- Scope remains landing-only (`/`, supporting landing components/styles, brand guideline updates).
+- No backend/API/auth or `/app/*` behavior changes are introduced.
+- Existing CTA/link destinations remain stable (`/sign-in`, `/privacy`).
+- Token/copy/layout changes are specific enough for sequential task generation.
+- Verification gate is explicit and executable.
+
 ## Changelog
 
 - v0.1 (2026-02-15): Initial PRD from spec.
+- v0.2 (2026-02-15): Applied risk-audit edits, added readiness checklist/verification gate, and marked Ready for Tasks.
