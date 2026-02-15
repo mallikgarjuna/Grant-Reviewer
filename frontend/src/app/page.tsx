@@ -16,19 +16,19 @@ const SUPPORTED_CALL_GROUPS = [
 
 const BENEFITS = [
   {
-    title: "Readiness Snapshot",
+    title: "Know Your Readiness",
     description:
-      "See where your section is currently strong and where reviewers may ask for sharper evidence.",
+      "See not just a score, but exactly where you meet the constraints—and where you don't.",
   },
   {
-    title: "Criteria-Aligned Review",
+    title: "Zero Generic Feedback",
     description:
-      "Feedback is framed around evaluation criteria used in real funding-call assessments.",
+      "Every comment is linked to a specific NWO/EU rule. No vague 'write clearer' advice.",
   },
   {
-    title: "Faster Iteration",
+    title: "Self-Correction First",
     description:
-      "Refine key sections before sending drafts to supervisors, peers, or internal review support.",
+      "Fix the basics privately so your human mentors can focus on the science, not the structure.",
   },
 ] as const;
 
@@ -92,14 +92,13 @@ export default function Home() {
       <main className="mt-12 flex flex-col gap-16 md:gap-20" id="main-content" tabIndex={-1}>
         <section className="rounded-3xl bg-[var(--color-surface)] px-5 py-8 sm:px-7 sm:py-9 md:px-12 md:py-12">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-            Sharpen your proposal before you submit
+            THE GRANT APPLICANT’S PRE-REVIEWER
           </p>
           <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-[var(--color-foreground)] [overflow-wrap:anywhere] md:text-5xl">
-            PeerLens helps you pressure-test proposal text before submission.
+            Get a criteria-aligned review before you submit.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted-foreground)] [overflow-wrap:anywhere] md:text-[1.02rem]">
-            Get a focused, criteria-aligned review of one section at a time so your argument is
-            clearer before formal evaluation.
+            Check your draft proposal against specific funding call's review-criteria. Identify weak evidence and unclear claims before the real reviewers do. Fast, private, and criteria-specific.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-4">
             <Link
@@ -114,11 +113,10 @@ export default function Home() {
 
         <section className="mx-auto w-full max-w-4xl">
           <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
-            Reviewer expectations are often implicit.
+            Aligned with NL & EU Standards.
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--color-muted-foreground)]">
-            When expectations are unclear, strong ideas can read as under-evidenced. PeerLens gives
-            you a structured pre-review pass so key sections are easier to evaluate and defend.
+            Direct support for NWO, ZonMw and Horizon Europe (ERC/MSCA) funding calls.
           </p>
         </section>
 
