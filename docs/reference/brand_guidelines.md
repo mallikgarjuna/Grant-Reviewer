@@ -13,7 +13,7 @@ Do NOT modify this file during execution — update via a dedicated WF.
 |----------|-------|
 | **Product Name** | PeerLens |
 | **Tagline** | Sharpen your proposal before you submit |
-| **Logo** | Text-only wordmark — "PeerLens" in Inter Bold |
+| **Logo** | Text-only wordmark — "PeerLens" in Inter Semibold |
 | **Voice & Tone** | Friendly expert — warm, clear, jargon-aware but not dumbed down. Like a helpful postdoc. |
 
 ### Voice Examples
@@ -28,24 +28,24 @@ Do NOT modify this file during execution — update via a dedicated WF.
 
 ## Color Palette
 
-### Core Colors
+### Core Colors (Ink + Parchment)
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--primary` | `#2563EB` | Primary actions, links, focus rings |
+| `--background` | `#FCFBF7` | Page background (paper) |
+| `--foreground` | `#0B1F3B` | Body text, headings (ink navy) |
+| `--muted-foreground` | `#4B5563` | Secondary text, captions |
+| `--surface` | `#F4F2EC` | Cards, elevated surfaces |
+| `--surface-muted` | `#EEEAE2` | Secondary surfaces, subtle hover states |
+| `--border` | `#D6D3C8` | Borders, dividers |
+| `--primary` | `#1F4E79` | Primary actions, links, focus rings |
 | `--primary-foreground` | `#FFFFFF` | Text on primary backgrounds |
-| `--foreground` | `#0F172A` | Body text, headings (slate-900) |
-| `--background` | `#FFFFFF` | Page background |
-| `--surface` | `#F8FAFC` | Cards, elevated surfaces (slate-50) |
-| `--surface-muted` | `#F1F5F9` | Secondary surfaces, hover states (slate-100) |
-| `--border` | `#CBD5E1` | Borders, dividers (slate-300) |
-| `--muted-foreground` | `#64748B` | Secondary text, captions (slate-500) |
 
-### Accent Color
+### Accent Color (Optional, Sparse)
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--accent` | `#0D9488` | Badges, highlights, tags, secondary actions (teal-600) |
+| `--accent` | `#0F766E` | Badges/highlights only (never body text) |
 | `--accent-foreground` | `#FFFFFF` | Text on accent backgrounds |
 
 ### Semantic Colors
@@ -58,9 +58,10 @@ Do NOT modify this file during execution — update via a dedicated WF.
 
 ### Color Principles
 
-- **Restrained usage** — most of the page should be white/slate. Color draws attention to what matters.
+- **Restrained usage** — most of the page should be parchment/surface neutrals. Color draws attention to what matters.
 - **No harsh reds** in feedback — use amber for "needs improvement", reserve red for form errors only.
-- **Blue = action** — if it's blue, you can click it.
+- **Primary = action** — if it uses the primary color, it should be clickable.
+- **Accent is optional and sparse** — use for small markers only.
 
 ---
 
@@ -156,7 +157,7 @@ Design for generous whitespace — feels calm, premium, academic-friendly.
 2. **Trust and calm** — neutral surfaces, minimal shadows, restrained color.
 3. **Speed feel** — snappy hover/press states, short micro-animations (`150ms–200ms`).
 4. **One primary action per screen** — secondary/tertiary actions visually de-emphasized.
-5. **Accessible by default** — visible focus rings (`3px solid #2563EB`), reduced-motion support.
+5. **Accessible by default** — visible focus rings (`3px solid #1F4E79`), reduced-motion support.
 
 ### Hover & Focus States
 
@@ -164,7 +165,7 @@ Design for generous whitespace — feels calm, premium, academic-friendly.
 |-------|-------|
 | **Hover** (buttons) | `brightness(1.05)` or subtle background shift |
 | **Hover** (links) | Underline on hover |
-| **Focus-visible** | `outline: 3px solid #2563EB; outline-offset: 2px` |
+| **Focus-visible** | `outline: 3px solid #1F4E79; outline-offset: 2px` |
 | **Disabled** | `opacity: 0.6; cursor: not-allowed` |
 
 ---
@@ -184,7 +185,7 @@ Design for generous whitespace — feels calm, premium, academic-friendly.
 | Property | Value |
 |----------|-------|
 | **Mode** | Light-only (MVP) |
-| **Background pattern** | Subtle 32px grid lines (`rgba(15,23,42, 0.04)`) |
+| **Background pattern** | Subtle 32px grid lines (`rgba(11,31,59, 0.035)`) |
 
 Dark mode is explicitly deferred.
 
@@ -194,15 +195,15 @@ Dark mode is explicitly deferred.
 
 ```css
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
-  --surface: #f8fafc;
-  --surface-muted: #f1f5f9;
-  --border: #cbd5e1;
-  --muted-foreground: #64748b;
-  --primary: #2563eb;
+  --background: #fcfbf7;
+  --foreground: #0b1f3b;
+  --surface: #f4f2ec;
+  --surface-muted: #eeeae2;
+  --border: #d6d3c8;
+  --muted-foreground: #4b5563;
+  --primary: #1f4e79;
   --primary-foreground: #ffffff;
-  --accent: #0d9488;
+  --accent: #0f766e;
   --accent-foreground: #ffffff;
   --success: #059669;
   --warning: #d97706;
