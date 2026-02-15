@@ -141,7 +141,9 @@ export function DemoTabs() {
             tabIndex={0}
           >
             <h3 className="text-lg font-medium text-[var(--color-foreground)]">{tab.label}</h3>
-            <p className="mt-3 text-sm leading-7 text-[var(--color-foreground)]">{tab.snippet}</p>
+            <p className="mt-3 text-sm leading-7 text-[var(--color-foreground)] [overflow-wrap:anywhere]">
+              {tab.snippet}
+            </p>
 
             <div className="mt-6 grid gap-3">
               {tab.cards.map((card) => (
@@ -152,15 +154,15 @@ export function DemoTabs() {
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]">
                     {card.criterion}
                   </p>
-                  <p className="mt-2 text-sm text-[var(--color-foreground)]">
+                  <p className="mt-2 text-sm text-[var(--color-foreground)] [overflow-wrap:anywhere]">
                     <span className="font-medium">Finding: </span>
                     {card.finding}
                   </p>
-                  <p className="mt-1 text-sm text-[var(--color-foreground)]">
+                  <p className="mt-1 text-sm text-[var(--color-foreground)] [overflow-wrap:anywhere]">
                     <span className="font-medium">Suggested fix: </span>
                     {card.suggestedFix}
                   </p>
-                  <p className="mt-1 text-sm text-[var(--color-foreground)]">
+                  <p className="mt-1 text-sm text-[var(--color-foreground)] [overflow-wrap:anywhere]">
                     <span className="font-medium">Micro-rewrite (example): </span>
                     {card.microRewriteExample}
                   </p>

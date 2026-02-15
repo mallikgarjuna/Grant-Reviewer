@@ -62,3 +62,18 @@ Observed:
 ## Changelog
 
 - v0.1 (2026-02-15): Initial implementation walkthrough for WF-0010 Phase 4 tasks.
+- v0.2 (2026-02-15): Post-implementation manual-pass polish added for small-screen header/hero resilience and long-text wrapping safety.
+
+## Follow-Up Polish (Post Task Run)
+
+- Manual pass requested for `/` with keyboard-only and mobile widths.
+- Applied tiny polish in:
+  - `frontend/src/app/page.tsx`
+  - `frontend/src/app/_components/landing/demo-tabs.tsx`
+- Changes:
+  - Reduced small-screen outer/hero spacing to improve fit.
+  - Hardened long text wrapping (`overflow-wrap:anywhere`) on hero/demo content blocks.
+  - Adjusted small-screen header behavior and hid top-right `Sign In` chrome button on very small widths (primary CTA in hero remains available).
+- Verification rerun:
+  - `cd frontend && npm run -s lint` (pass)
+  - Mobile screenshot checks run against local branch-specific server (`http://localhost:3101/`) at `390x844` and `430x932`.

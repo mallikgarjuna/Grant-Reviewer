@@ -374,3 +374,7 @@
 ### 14:01 - WF-0010 Phase 4 Implementation Completed (Tasks 1-7)
 > User requested sequential task execution with per-task commits, walkthrough update, and final `Done` status in `docs/index.md`.
 > Outcome: Implemented all WF-0010 tasks in order with per-task commits (brand guideline alignment, token/type updates, layout rhythm improvements, copy refresh, demo/FAQ shell harmonization, a11y/mobile hardening), ran required frontend verification bundle (`lint`, `check:seo`, `next build --webpack`), updated walkthrough `docs/walkthroughs/walkthrough-WF-0010-peerlens-landing-design-refresh.md`, and set WF-0010 status to `Done` in `docs/index.md`.
+
+### 15:28 - WF-0010 Manual Mobile/Keyboard Polish Pass
+> User requested a quick local manual pass on `/` (keyboard-only + mobile widths) with one follow-up tiny polish commit if needed.
+> Outcome: Re-validated via local lint and mobile screenshots, then applied small-screen polish in `frontend/src/app/page.tsx` and `frontend/src/app/_components/landing/demo-tabs.tsx` (header/nav small-screen fit, hero spacing, long-text wrapping safety) and updated the WF-0010 walkthrough with the follow-up verification notes.
