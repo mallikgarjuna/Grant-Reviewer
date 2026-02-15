@@ -347,8 +347,6 @@
 - **Rationale**: Different agent tools auto-discover different filenames/locations. Adapters reduce drift by centralizing real rules in `AGENTS.md` while still satisfying each tool’s discovery mechanism.
 - **Status**: Implemented (added rationale header to `.github/copilot-instructions.md` and documented the pattern in `docs/reference/README_agent_instructions.md`).
 
----
-
 ## Date: 2026-02-15 (WF-0010: PeerLens Landing Design Refresh)
 
 ### AD 10.4: PeerLens Landing Visual Direction + Palette
@@ -370,7 +368,15 @@
 - **Scope**: WF-0010 may tweak landing copy and will update `docs/reference/brand_guidelines.md` to match.
 - **Status**: Approved.
 
-### AD 10.5: WF-0010 PRD Execution Guardrails (Landing-Only + Explicit Verification Gate)
+### AD 10.5: Backend Ruff MVP Baseline Scope (Task 8.1)
+- **Decision**: Adopt a safe backend Ruff baseline in `backend/pyproject.toml` with:
+  - `select = ["E4", "E7", "E9", "F", "I", "B", "UP"]`
+  - per-file ignore: `"scripts/run_review.py" = ["E402"]`
+- **Rationale**: Enables a reliable lint signal with low behavior-change risk by focusing on correctness/import hygiene and avoiding broad strictness families during MVP.
+- **Scope note**: CI diff-gating is intentionally deferred to the next guardrails slice (Task 8.2) to keep 8.1 low-risk and mergeable.
+- **Status**: Implemented.
+
+### AD 10.6: WF-0010 PRD Execution Guardrails (Landing-Only + Explicit Verification Gate)
 - **Decision**: WF-0010 PRD is constrained to landing-surface work only (`/`, landing components, `globals.css`, brand guideline updates) with no backend/auth or `/app/*` behavior changes.
 - **Verification Gate**: PRD requires this bundle before implementation close:
   - `cd frontend && npm run lint`
@@ -381,7 +387,7 @@
 - **Tradeoff**: Defers conversion instrumentation and proof-asset expansion to a follow-up WF.
 - **Status**: Approved.
 
-### AD 10.6: Introduce Serif Heading Layer Alongside Inter
+### AD 10.7: Introduce Serif Heading Layer Alongside Inter
 - **Decision**: Introduce a serif heading layer (`Lora`) alongside `Inter` to convey academic authority while preserving UI clarity and readability for dense research content.
 - **Typography Architecture**:
   - `Lora` (`600`) for primary large headings and editorial titles.

@@ -30,7 +30,9 @@ class LLMReviewResponse(BaseModel):
 
     @field_validator("feedbacks")
     @classmethod
-    def feedbacks_not_empty(cls, v: list[ExpectationFeedback]) -> list[ExpectationFeedback]:
+    def feedbacks_not_empty(
+        cls, v: list[ExpectationFeedback]
+    ) -> list[ExpectationFeedback]:
         """Ensure at least one feedback item is present."""
         if not v:
             raise ValueError("Feedbacks list must not be empty")

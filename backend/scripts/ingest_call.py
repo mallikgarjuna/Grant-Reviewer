@@ -130,9 +130,7 @@ def ingest_agency_and_call(
 
     # Upsert Agency by short_name
     existing_agency = session.exec(
-        select(FundingAgency).where(
-            FundingAgency.short_name == agency_def.short_name
-        )
+        select(FundingAgency).where(FundingAgency.short_name == agency_def.short_name)
     ).first()
 
     if existing_agency:
@@ -320,9 +318,7 @@ def ingest_nodes_recursive(
 
         # Recurse for children
         if node_def.children:
-            ingest_nodes_recursive(
-                session, call_id, node_def.children, node.id, id_map
-            )
+            ingest_nodes_recursive(session, call_id, node_def.children, node.id, id_map)
 
 
 def _replace_expectations(
@@ -417,9 +413,7 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
 
         ingest_rubric(session, call.id, call_def.evaluation_criteria, id_map)
 
-        ingest_nodes_recursive(
-            session, call.id, call_def.proposal_nodes, None, id_map
-        )
+        ingest_nodes_recursive(session, call.id, call_def.proposal_nodes, None, id_map)
 
         logger.info("=== Ingestion completed successfully ===")
 

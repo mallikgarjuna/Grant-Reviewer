@@ -1,15 +1,16 @@
 """FastAPI entrypoint for Grant Reviewer backend."""
 
-from contextlib import asynccontextmanager
-from datetime import UTC, datetime, timedelta
 import hashlib
 import hmac
 import json
 import logging
 import os
-from pathlib import Path
 import time
-from typing import Annotated, Any, Generator
+from collections.abc import Generator
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from typing import Annotated, Any
 from uuid import UUID
 
 from dotenv import load_dotenv
@@ -119,7 +120,9 @@ def build_error_response(
         error=APIErrorBody(code=code, message=message, details=details or {}),
     )
     status_code = ERROR_STATUS_BY_CODE.get(code, 500)
-    return JSONResponse(status_code=status_code, content=payload.model_dump(mode="json"))
+    return JSONResponse(
+        status_code=status_code, content=payload.model_dump(mode="json")
+    )
 
 
 @app.exception_handler(APIException)
@@ -178,7 +181,9 @@ def _get_free_daily_review_limit() -> int:
     try:
         return max(0, int(raw))
     except ValueError:
-        logger.warning("Invalid FREE_DAILY_REVIEW_LIMIT=%s; falling back to default", raw)
+        logger.warning(
+            "Invalid FREE_DAILY_REVIEW_LIMIT=%s; falling back to default", raw
+        )
         return FREE_DAILY_REVIEW_LIMIT
 
 
@@ -411,9 +416,11 @@ def create_review(
         )
     except IntegrityError as err:
         repository.rollback()
-        existing_on_conflict = repository.get_review_by_external_user_and_idempotency_key(
-            external_user_id=external_user_id,
-            idempotency_key=idempotency_key,
+        existing_on_conflict = (
+            repository.get_review_by_external_user_and_idempotency_key(
+                external_user_id=external_user_id,
+                idempotency_key=idempotency_key,
+            )
         )
         if existing_on_conflict is None:
             raise APIException(
@@ -450,7 +457,9 @@ def get_review(
     if review is None:
         raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
 
-    review_owner_external_user_id = repository.get_review_owner_external_user_id(review_id)
+    review_owner_external_user_id = repository.get_review_owner_external_user_id(
+        review_id
+    )
     if review_owner_external_user_id != external_user_id:
         logger.warning(
             "OWNERSHIP_VIOLATION: review_id=%s requested_by=%s owner=%s",
@@ -499,7 +508,9 @@ def delete_review(
     if review is None:
         raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
 
-    review_owner_external_user_id = repository.get_review_owner_external_user_id(review_id)
+    review_owner_external_user_id = repository.get_review_owner_external_user_id(
+        review_id
+    )
     if review_owner_external_user_id != external_user_id:
         logger.warning(
             "OWNERSHIP_VIOLATION: delete review_id=%s requested_by=%s owner=%s",
