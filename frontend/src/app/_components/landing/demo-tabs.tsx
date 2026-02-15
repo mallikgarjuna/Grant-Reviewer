@@ -74,19 +74,21 @@ export function DemoTabs() {
       aria-label="Static feedback demo"
       className="rounded-3xl bg-[var(--color-surface)] p-6 md:p-9"
     >
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-        Static demo
-      </p>
-      <p className="mt-3 text-sm leading-6 text-[var(--color-muted-foreground)]">
-        Examples only. Sign in to get feedback on your proposal text.
-      </p>
-      <p className="text-sm leading-6 text-[var(--color-muted-foreground)]">
-        Export your review. Delete your data anytime. See{" "}
-        <Link className="underline" href="/privacy">
-          Privacy
-        </Link>
-        .
-      </p>
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)] md:text-3xl">
+          See PeerLens in action
+        </h2>
+        <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-muted-foreground)]">
+          Select a funding call below to see how PeerLens identifies specific gaps in evidence.
+        </p>
+        <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
+          <span className="font-medium text-[var(--color-foreground)]">Note:</span> These are static examples.{" "}
+          <Link className="underline underline-offset-4 hover:text-[var(--color-primary)]" href="/sign-in">
+            Sign in
+          </Link>{" "}
+          to run a private, review-criteria-aligned check on your own text.
+        </p>
+      </div>
 
       <div
         aria-label="Supported calls"
