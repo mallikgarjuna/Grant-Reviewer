@@ -1,8 +1,8 @@
 # WF-0011 — Local Postgres Dev DB
 
 Artifact: walkthrough
-Version: v0.1
-Status: Draft
+Version: v1.0
+Status: Completed
 Last Updated: 2026-02-15
 
 ## Overview
@@ -106,3 +106,4 @@ Observed outcome:
 ## Changelog
 
 - v0.1 (2026-02-15): Initial walkthrough with local Postgres runbook verification evidence and deviations
+- v1.0 (2026-02-15): Finalized walkthrough for WF-0011 completion
