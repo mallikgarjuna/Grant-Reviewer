@@ -126,6 +126,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - For Phase 4 implementation, run at least one targeted verification per completed subtask before committing that subtask, and log what was run.
 - Before any commit, confirm new/changed files are not accidentally ignored: run `git status --ignored --short`. Prefer updating `.gitignore` with narrow allow/deny rules over `git add -f` (never force-add secrets).
 - Update `docs/` as you go (decisions, Q&A, walkthroughs).
+- Before pushing any branch to a remote, update `docs/` with all relevant work done on that branch (status/index, decisions, Q&A, prompt history, walkthrough/task artifacts as applicable).
 - Be explicit about what you didn’t verify and what to run next.
 - At the end of every response, explicitly tell/ask the user what to do or prompt next.
 

@@ -362,3 +362,7 @@
 ### 13:00 - Task 8.1 Merged to Main via GitHub PR
 > User requested push + PR + merge for the completed branch.
 > Outcome: Pushed `task/8.1-lint-baseline-cleanup`, opened PR `#11`, merged to `main` on GitHub, and confirmed local `main` fast-forwarded to merge commit `aad96f6`; remote task branch deleted.
+
+### 13:03 - New Pre-Push Documentation Rule Added
+> User requested a new memory rule: always update docs before pushing a branch to remote.
+> Outcome: Updated `AGENTS.md` Always rules to require `docs/` updates before any remote push, and logged the clarification in `docs/logs/qa_history.md`.
