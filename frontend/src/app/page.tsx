@@ -34,6 +34,12 @@ const HOW_IT_WORKS = [
 export default function Home() {
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-10 md:px-10 md:py-14">
+      <a
+        className="sr-only focus:not-sr-only focus:absolute focus:left-6 focus:top-4 focus:z-50 focus:rounded-[var(--radius-md)] focus:bg-[var(--color-primary)] focus:px-4 focus:py-2 focus:text-sm focus:text-white"
+        href="#main-content"
+      >
+        Skip to main content
+      </a>
       <header className="flex items-center justify-between gap-4">
         <Link className="text-lg font-semibold text-[var(--color-foreground)]" href="/">
           PeerLens
@@ -54,7 +60,7 @@ export default function Home() {
         </nav>
       </header>
 
-      <main className="mt-12 flex flex-col gap-14 md:gap-16">
+      <main className="mt-12 flex flex-col gap-14 md:gap-16" id="main-content" tabIndex={-1}>
         <section className="rounded-3xl bg-[var(--color-surface)] px-7 py-9 md:px-12 md:py-12">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
             Sharpen your proposal before you submit
@@ -62,7 +68,7 @@ export default function Home() {
           <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-[var(--color-foreground)] md:text-5xl">
             PeerLens helps you pressure-test proposal text before submission.
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted-foreground)]">
+          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted-foreground)] md:text-[1.02rem]">
             Get a focused, criteria-aligned review of one section at a time so your argument is
             clearer before formal evaluation.
           </p>
