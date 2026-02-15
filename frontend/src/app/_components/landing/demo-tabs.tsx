@@ -142,12 +142,22 @@ export function DemoTabs() {
             role="tabpanel"
             tabIndex={0}
           >
-            <h3 className="font-sans text-lg font-medium text-[var(--color-foreground)]">
-              {tab.label}
-            </h3>
-            <p className="mt-3 text-sm leading-7 text-[var(--color-foreground)] [overflow-wrap:anywhere]">
-              {tab.snippet}
-            </p>
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+              <h3 className="font-sans text-lg font-medium text-[var(--color-foreground)]">
+                {tab.label}
+              </h3>
+              <p className="text-sm font-medium text-[var(--color-muted-foreground)]">
+                {tab.section}
+              </p>
+            </div>
+            <div className="relative mt-3">
+              <p className="line-clamp-3 text-sm leading-7 text-[var(--color-foreground)] [overflow-wrap:anywhere]">
+                {tab.snippet}
+              </p>
+              <div className="absolute bottom-0 right-0 bg-gradient-to-l from-[var(--color-background)] pl-8 text-sm text-[var(--color-muted-foreground)]">
+                ...
+              </div>
+            </div>
 
             <div className="mt-6 grid gap-3">
               {tab.cards.map((card) => (
