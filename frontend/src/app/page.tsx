@@ -36,21 +36,21 @@ const HOW_IT_WORKS = [
   {
     key: "step_1",
     badge: "1",
-    title: "Step 1",
+    title: "Draft",
     description: "Bring your draft proposal text.",
     isHighlighted: false,
   },
   {
     key: "step_2",
     badge: "2",
-    title: "Step 2",
+    title: "Target",
     description: "Select your call and section, then paste your proposal draft text.",
     isHighlighted: false,
   },
   {
     key: "step_3",
     badge: "3",
-    title: "Step 3",
+    title: "Refine",
     description:
       "Receive structured, review-criteria-aligned feedback to revise your draft proposal.",
     isHighlighted: false,
