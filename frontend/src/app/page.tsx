@@ -94,12 +94,23 @@ export default function Home() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
             THE GRANT APPLICANT’S PRE-REVIEWER
           </p>
-          <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-[var(--color-foreground)] [overflow-wrap:anywhere] md:text-5xl">
-            Get a criteria-aligned review before you submit.
+          <h1 className="mt-3 max-w-4xl text-5xl font-semibold tracking-tight text-[var(--color-foreground)] [overflow-wrap:anywhere] md:text-7xl">
+            Pre-Review your grant-proposal
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted-foreground)] [overflow-wrap:anywhere] md:text-[1.02rem]">
-            Check your draft proposal against specific funding call's review-criteria. Identify weak evidence and unclear claims before the real reviewers do. Fast, private, and criteria-specific.
-          </p>
+          <ul className="mt-6 flex flex-col gap-2 text-base leading-7 text-[var(--color-muted-foreground)] md:text-lg">
+            <li className="flex gap-2">
+              <span className="text-[var(--color-primary)]" aria-hidden="true">✓</span>
+              <span>Get a criteria-aligned review before you submit.</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-[var(--color-primary)]" aria-hidden="true">✓</span>
+              <span>Identify weak evidence and unclear claims before the real reviewers do.</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-[var(--color-primary)]" aria-hidden="true">✓</span>
+              <span>Fast and criteria-specific.</span>
+            </li>
+          </ul>
           <div className="mt-7 flex flex-wrap items-center gap-4">
             <Link
               className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white transition hover:brightness-105"
