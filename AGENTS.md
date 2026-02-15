@@ -104,6 +104,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 ### Skills (Optional)
 
 - If a matching skill exists (a `SKILL.md`), follow it for that phase.
+- **Check skills first**: before starting a new type of task, check `~/.agents/skills` (or ask the user to run `ls ~/.agents/skills`) and follow the most relevant `SKILL.md`.
 - Preferred pipeline skills: `brainstorming` → `spec` → `prd` → `tasks`.
 - Skill index (portable): `docs/reference/skills_index.md`.
 
@@ -165,4 +166,3 @@ Guideline:
 - Don’t skip phase gates for non-trivial features; keep artifacts (PRD/task/walkthrough) in sync with `docs/index.md`.
 - Don’t block MVP progress on pre-existing repo-wide lint debt; enforce lint on changed files/touched modules and track full cleanup as a separate task.
 - Before starting the next major task (especially without a remote), create a local integration milestone: merge completed task branches into one branch, tag it, and create a `git bundle` backup.
-

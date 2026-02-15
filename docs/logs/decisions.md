@@ -336,3 +336,13 @@
     4.  **Skills**: Consolidated local project skills into global `~/.agents/skills` and removed `agent-operating-protocol.md`.
 - **Rationale**: Eliminates drift between agent instructions and actual workflow rules. Supports parallel agent usage (Antigravity/Codex).
 - **Status**: Implemented.
+
+### AD 10.2: “Check Skills First” Habit
+- **Decision**: Before starting a new category of work, the agent should check for an existing skill in `~/.agents/skills` (or ask the user to run `ls ~/.agents/skills`) and follow the most relevant `SKILL.md`.
+- **Rationale**: Reuses battle-tested workflows and reduces “reinventing” patterns (migrations, a11y, API usage).
+- **Status**: Implemented (`AGENTS.md` + Codex/Copilot instructions updated).
+
+### AD 10.3: Tool-Specific Instruction Adapters Live Alongside `AGENTS.md`
+- **Decision**: Keep `AGENTS.md` as the SSOT, and allow tool-specific instruction files (like `.github/copilot-instructions.md`) to exist as *adapters* that point tools back to `AGENTS.md`.
+- **Rationale**: Different agent tools auto-discover different filenames/locations. Adapters reduce drift by centralizing real rules in `AGENTS.md` while still satisfying each tool’s discovery mechanism.
+- **Status**: Implemented (added rationale header to `.github/copilot-instructions.md` and documented the pattern in `docs/reference/README_agent_instructions.md`).

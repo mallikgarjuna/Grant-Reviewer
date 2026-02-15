@@ -338,3 +338,15 @@
 ### 18:46 - 8.0C Stub Rollback Verified (UI)
 > User confirmed post-redeploy UI submissions return “Stub feedback…”.
 > Outcome: Updated task/walkthrough artifacts to mark the stub-default rollback as verified after Stage 2.
+
+### 09:32 - Codex Instruction: “Check Skills First”
+> User requested enforcing a habit to check for existing agent skills before starting a new type of task (e.g., “Do I have a skill for writing a migration?”).
+> Outcome: Updated `.github/copilot-instructions.md` to instruct agents to check `~/.agents/skills` (or ask the user to run `ls ~/.agents/skills`) and follow the relevant `SKILL.md` before proceeding.
+
+### 09:33 - SSOT Update: “Check Skills First” in `AGENTS.md`
+> User asked whether the “Check Skills First” habit should live in `AGENTS.md` since it is the SSOT.
+> Outcome: Added “Check skills first” to `AGENTS.md` (Skills section) and kept `.github/copilot-instructions.md` as the enforcement hook for Codex/Copilot.
+
+### 09:37 - Documented “Adapter File” Rationale
+> User requested metadata explaining why `.github/copilot-instructions.md` exists, plus a durable record of this decision for use with other agent tools.
+> Outcome: Added a “Why this file exists” header to `.github/copilot-instructions.md` and documented the pattern in `docs/reference/README_agent_instructions.md` (with a corresponding decision logged in `docs/logs/decisions.md`).
