@@ -29,7 +29,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
-
 # ============================================================================
 # Enum Aliases (Match domain.py)
 # ============================================================================
@@ -179,7 +178,7 @@ class CallDefinition(BaseModel):
         errors: list[str] = []
 
         def collect_references(nodes: list[ProposalNodeDefinition], path: str = "") -> None:
-            for i, node in enumerate(nodes):
+            for _i, node in enumerate(nodes):
                 node_path = f"{path}/{node.title}" if path else node.title
                 for exp in node.node_expectations:
                     referenced_ids.add(exp.evaluation_element_id)
@@ -195,7 +194,7 @@ class CallDefinition(BaseModel):
 
         if errors:
             raise ValueError(
-                f"Reference validation failed:\n  - " + "\n  - ".join(errors)
+                "Reference validation failed:\n  - " + "\n  - ".join(errors)
             )
 
         # Optional: Warn about unused elements (not an error, just logged)
@@ -252,7 +251,7 @@ class CallDefinition(BaseModel):
 
         if errors:
             raise ValueError(
-                f"Recursion validation failed:\n  - " + "\n  - ".join(errors)
+                "Recursion validation failed:\n  - " + "\n  - ".join(errors)
             )
 
         return self

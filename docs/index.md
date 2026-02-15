@@ -18,7 +18,7 @@ Quick links:
 | 8.0B | Frontend Contracts | [prd-8.0B](prds/prd-8.0B-bff-contracts.md) | [task-8.0B](tasks/task-8.0B-bff-contracts.md) | [walkthrough](walkthroughs/walkthrough_task_8.0B_bff_contracts.md) | [x] |
 | 8.0A | Frontend UI Slice | [prd-8.0A](prds/prd-8.0A-frontend-ui.md) | [task-8.0A](tasks/task-8.0A-frontend-ui.md) | [walkthrough](walkthroughs/walkthrough_task_8.0A_frontend_ui.md) | [x] |
 | 8.0C | Deployment Wiring | [prd-8.0C](prds/prd-8.0C-deployment-wiring.md) | [task-8.0C](tasks/task-8.0C-deployment-wiring.md) | [walkthrough](walkthroughs/walkthrough_task_8.0C_deployment_wiring.md) | [x] |
-| 8.1 | Lint Baseline Cleanup | [prd-8.1](prds/prd-8.1-lint-baseline-cleanup.md) | [task-8.1](tasks/task-8.1-lint-baseline-cleanup.md) | - | [ ] |
+| 8.1 | Lint Baseline Cleanup | [prd-8.1](prds/prd-8.1-lint-baseline-cleanup.md) | [task-8.1](tasks/task-8.1-lint-baseline-cleanup.md) | - | [x] |
 
 ## WF Registry (new work)
 

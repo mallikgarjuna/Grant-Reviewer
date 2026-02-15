@@ -7,7 +7,6 @@ Includes expectation_strength and evaluation_intent per PRD requirements.
 
 from app.models.domain import NodeExpectation, ProposalNode
 
-
 REVIEW_PROMPT_TEMPLATE = """You are a grant proposal reviewer evaluating text against specific criteria.
 
 ## Proposal Section

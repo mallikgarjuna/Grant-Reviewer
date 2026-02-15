@@ -5,13 +5,13 @@ Simple client that calls OpenAI API and returns raw text response.
 For MVP: OpenAI only, Azure support deferred.
 """
 
+import json
 import logging
 import os
 import re
 import time
 from typing import ClassVar, Protocol
 
-import json
 from openai import OpenAI, OpenAIError
 
 logger = logging.getLogger(__name__)

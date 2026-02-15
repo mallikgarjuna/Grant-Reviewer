@@ -1,15 +1,16 @@
 """FastAPI entrypoint for Grant Reviewer backend."""
 
-from contextlib import asynccontextmanager
-from datetime import UTC, datetime, timedelta
 import hashlib
 import hmac
 import json
 import logging
 import os
-from pathlib import Path
 import time
-from typing import Annotated, Any, Generator
+from collections.abc import Generator
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from typing import Annotated, Any
 from uuid import UUID
 
 from dotenv import load_dotenv

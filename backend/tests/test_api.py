@@ -1,10 +1,10 @@
 """FastAPI endpoint tests for Task 7.0."""
 
-from dataclasses import dataclass
 import hashlib
 import hmac
 import json
 import time
+from dataclasses import dataclass
 from uuid import UUID
 
 from fastapi.testclient import TestClient

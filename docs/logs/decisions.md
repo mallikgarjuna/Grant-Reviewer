@@ -346,3 +346,10 @@
 - **Decision**: Keep `AGENTS.md` as the SSOT, and allow tool-specific instruction files (like `.github/copilot-instructions.md`) to exist as *adapters* that point tools back to `AGENTS.md`.
 - **Rationale**: Different agent tools auto-discover different filenames/locations. Adapters reduce drift by centralizing real rules in `AGENTS.md` while still satisfying each tool’s discovery mechanism.
 - **Status**: Implemented (added rationale header to `.github/copilot-instructions.md` and documented the pattern in `docs/reference/README_agent_instructions.md`).
+
+### AD 10.4: Backend Ruff MVP Baseline Scope (Task 8.1)
+- **Decision**: Adopt a safe backend Ruff baseline in `backend/pyproject.toml` with:
+  - `select = ["E4", "E7", "E9", "F", "I", "B", "UP"]`
+  - per-file ignore: `"scripts/run_review.py" = ["E402"]`
+- **Rationale**: Enables a reliable lint signal with low behavior-change risk by focusing on correctness/import hygiene and avoiding broad strictness families during MVP.
+- **Status**: Implemented.
