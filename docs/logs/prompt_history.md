@@ -442,3 +442,37 @@
 ### 23:28 - Fixed README Readiness Check Env Loading
 > User reported `DATABASE_URL is required` while running the README readiness command despite setting `backend/.env`.
 > Outcome: Updated `backend/app/db.py` to load `backend/.env` (same behavior as `main.py`) so direct `uv run python -c ...` imports resolve `DATABASE_URL` consistently.
+
+## 2026-02-16
+
+### 09:10 - WF-0012 Restart and Phase 0→1 Execution Request
+> User requested restarting WF-0012 from Phase 0.0 using workflow runners and keeping MVP-fast scope for a Postgres-only Alembic migration baseline.
+> Outcome: Created WF-0012 branch/artifacts, completed Phase 0.1 brainstorm, and ran Phase 1 end-to-end with spec generation/review/revision for baseline init, first migration, docs/runbook updates, and verification commands.
+
+### 09:20 - Workflow Process Correction (Runner Commit Boundaries + Interactive Brainstorm)
+> User asked why brainstorming was not interactive and requested explicit commit discipline after each runner part and each phase.
+> Outcome: Added an always-on AGENTS rule for runner part-level commits (Part A/Part C, plus Part B when edits exist), clarified no-commit behavior for no-edit Part B phases, and logged the interactive brainstorm expectation in Q&A history.
+
+### 09:35 - WF-0012 Phase 2 Runner (PRD) Execution
+> User selected next action `1` to run Phase 2 runner for WF-0012.
+> Outcome: Generated PRD v0.1 from spec, ran no-edit risk audit, revised to PRD v0.2 (`Ready for Tasks`), updated WF-0012 status to `Phase 2 (Ready)`, and logged Alembic baseline decisions (AD 12.1, AD 12.2).
+
+### 09:50 - WF-0012 Phase 3 Runner (Tasks) Execution
+> User selected next action `1` to run Phase 3 runner for WF-0012.
+> Outcome: Generated task breakdown v0.1 from PRD, ran no-edit task review, revised to tasks v0.2 (`Ready for Implementation`), and updated WF-0012 status to `Phase 3 (Ready)`.
+
+### 10:05 - WF-0012 Phase 4.1 Implementation Completed
+> User selected next action `1` to run Phase 4.1 implementation for WF-0012.
+> Outcome: Implemented all six tasks with per-task commits: Alembic dependency/scaffold, Postgres metadata wiring, baseline migration generation, reversible lifecycle validation, backend migration runbook updates, and walkthrough/index/decision sync. WF-0012 status set to `Done`.
+
+### 10:08 - Reporting Provenance Rule Added
+> User requested that completion summaries always include what files/skills/instructions were considered for each completed phase/part/action.
+> Outcome: Added an always-on AGENTS rule and logged corresponding Q&A clarification.
+
+### 10:15 - Commit Message Slug Rule Added
+> User requested a new rule that WF commit messages include the relevant slug.
+> Outcome: Updated AGENTS + Q&A logs to enforce commit messages that include both WF ID and slug for clearer traceability.
+
+### 10:20 - Commit History Handling Decision for Slug Rule
+> User selected option `2` for commit-history handling.
+> Outcome: Confirmed no retroactive history rewrite; enforce slug-inclusive WF commit messages from this point forward.

@@ -88,6 +88,37 @@ Safety rule:
 - Keep local `.env` pointed to `localhost` by default.
 - Do not keep Neon/prod hosts as your default local `DATABASE_URL`.
 
+### Alembic Migration Runbook (Postgres-only)
+
+Use this runbook for local migration lifecycle checks.
+
+```bash
+cd backend
+uv run alembic current
+uv run alembic history --verbose
+uv run alembic upgrade head
+uv run alembic downgrade -1
+uv run alembic upgrade head
+```
+
+Command intent:
+- `current`: show applied revision(s) in the target database.
+- `history --verbose`: show migration chain and metadata.
+- `upgrade head`: apply all migrations to latest revision.
+- `downgrade -1`: roll back one revision.
+
+Baseline policy:
+- The baseline migration is immutable once committed.
+- Any schema change after baseline must be a new migration revision.
+- This WF adds local migration foundation only; it does not automate production rollout.
+
+Troubleshooting:
+- Invalid/missing `DATABASE_URL`: set a valid local Postgres URL in `backend/.env` and rerun.
+- Metadata import errors in Alembic: ensure model imports in `backend/migrations/env.py` remain aligned with `app.models`.
+- Existing local DB drift (tables exist but no Alembic revision):
+  - Preferred local-only reset: run the Step 7 reset flow below, then rerun migrations.
+  - If schema is known to match baseline and reset is not desired: `uv run alembic stamp head`.
+
 ### 3) Bootstrap minimum required data
 
 ```bash

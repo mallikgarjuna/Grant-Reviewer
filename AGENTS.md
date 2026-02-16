@@ -25,7 +25,7 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 - Never commit directly to `main`.
 - WF IDs start after the legacy Task IDs (first WF is `WF-0009`; see `docs/index.md`).
 - Branch naming (WF): `wf/<WF-ID>-<slug>` (example: `wf/WF-0009-landing-page`).
-- Commit messages should start with the WF ID (example: `WF-0009: add landing hero CTA`).
+- Commit messages should start with the WF ID and include the workflow slug (example: `WF-0009: peerlens-landing-page - add landing hero CTA`).
 - Keep diffs small; avoid drive-by refactors.
 - Do not commit secrets (`.env`, API keys). Keep `backend/data/*.db` gitignored.
 
@@ -123,12 +123,14 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - Verify with tests/build/lint or a reliable manual repro.
 - Before starting a new WF phase (or phase runner), ensure the previous phase’s primary artifact(s) are saved and committed (use `git status --short` to confirm a clean boundary).
 - After completing a WF phase, ensure any artifacts edited/created in that phase are saved and committed before starting the next phase.
+- During phase runners, commit at each part boundary: after Part A outputs, after Part C revisions, and after any Part B edits when applicable (if Part B is no-edit by design, explicitly state no commit needed).
 - For Phase 4 implementation, run at least one targeted verification per completed subtask before committing that subtask, and log what was run.
 - Before any commit, confirm new/changed files are not accidentally ignored: run `git status --ignored --short`. Prefer updating `.gitignore` with narrow allow/deny rules over `git add -f` (never force-add secrets).
 - Update `docs/` as you go (decisions, Q&A, walkthroughs).
 - Before pushing any branch to a remote, update `docs/` with all relevant work done on that branch (status/index, decisions, Q&A, prompt history, walkthrough/task artifacts as applicable).
 - Be explicit about what you didn’t verify and what to run next.
 - At the end of every response, explicitly tell/ask the user what to do or prompt next.
+- When reporting completion of a phase/part/action, explicitly list the files and skills/instructions used for that step.
 - For workflow guidance in responses: before Phase 4 completion, present “Next 2 actions” as end-to-end phase runner options (`phase-1-run-spec`, `phase-2-run-prd`, `phase-3-run-task`) rather than split part files.
 - After Phase 4 is completed, replace “Next 2 actions” with “Next 2 WF ideas/features” phrased as candidate follow-up workflows (with suggested Phase 0.0 starts).
 
