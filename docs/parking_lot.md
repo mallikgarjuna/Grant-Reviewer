@@ -54,10 +54,9 @@ When you pick an item to start work:
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Add review history ("My Reviews") | product | Add `GET /reviews` backend endpoint + `/app/reviews` list page so returning users can find past reviews — currently a closed tab = lost review. | 2026-02-16 |
-| 2 | Upgrade review results UX | product | Render criterion name as card heading, add visual rating indicators, format overall summary prominently — cards currently show only rating pill + text. | 2026-02-16 |
-| 3 | Add auto-polling for processing reviews | product | Replace "refresh manually" with safe polling (3s interval, max 90s) that auto-transitions to COMPLETED/FAILED. | 2026-02-16 |
-| 4 | Harden submit flow UX | product | Add "Start new review" button (clears draft), make slow-hint actionable, verify sign-in deep-link round-trip and sign-out redirect. | 2026-02-16 |
+| 1 | Upgrade review results UX | product | Render criterion name as card heading, add visual rating indicators, format overall summary prominently — cards currently show only rating pill + text. | 2026-02-16 |
+| 2 | Add auto-polling for processing reviews | product | Replace "refresh manually" with safe polling (3s interval, max 90s) that auto-transitions to COMPLETED/FAILED. | 2026-02-16 |
+| 3 | Harden submit flow UX | product | Add "Start new review" button (clears draft), make slow-hint actionable, verify sign-in deep-link round-trip and sign-out redirect. | 2026-02-16 |
 
 ---
 
@@ -90,6 +89,7 @@ When you pick an item to start work:
 | # | Original P-tier | Task | WF ID | Date Promoted |
 |---|---|---|---|---|
 | 1 | P0 | Add app shell + sign-out | [WF-0013](tasks/task-WF-0013-app-shell-signout.md) | 2026-02-16 |
+| 2 | P0 | Add review history ("My Reviews") | [WF-0014](tasks/task-WF-0014-review-history.md) | 2026-02-16 |
 
 ---
 
