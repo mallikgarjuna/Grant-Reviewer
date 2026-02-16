@@ -6,7 +6,7 @@ Python backend for Grant Reviewer using SQLModel and OpenAI.
 
 - **Python 3.12+**
 - **SQLModel** - ORM with Pydantic validation
-- **PostgreSQL (local dev default)** with **SQLite fallback** when `DATABASE_URL` is unset
+- **PostgreSQL** - local Docker dev + hosted production
 - **OpenAI** - LLM integration (gpt-4o-mini default)
 - **UV** - Package manager
 - **FastAPI** - HTTP API
@@ -32,8 +32,7 @@ backend/
 │   ├── ensure_prompt_template.py # Ensures active PromptTemplate
 │   └── run_review.py            # Review demo (real LLM)
 ├── data/
-│   ├── calls/                   # YAML call definitions
-│   └── grant_reviewer.db        # SQLite database (gitignored)
+│   └── calls/                   # YAML call definitions
 └── .env                         # API keys (gitignored)
 ```
 
@@ -46,6 +45,7 @@ uv sync
 # Create .env from template
 cp .env.example .env
 # Add your OPENAI_API_KEY
+# Ensure DATABASE_URL points to PostgreSQL (required)
 
 # Run review demo (seeds DB + calls LLM)
 uv run python scripts/run_review.py
@@ -251,14 +251,6 @@ Verification checklist:
 - `GET /calls` returns at least one call.
 - `GET /calls/{call_id}/nodes` returns nodes.
 - In `LLM_MODE=stub`, one BFF `POST /reviews` completes successfully.
-
-### Legacy SQLite Reset (fallback only)
-
-```bash
-# Delete and recreate SQLite fallback database
-rm -f data/grant_reviewer.db
-uv run python scripts/run_review.py  # Seeds fresh DB
-```
 
 ## Environment Variables
 

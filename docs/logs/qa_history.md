@@ -154,3 +154,8 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 **A:** Yes. Park them in `docs/parking_lot.md` under **Parked Items** with date, why, and promote-when trigger. Added:
 - Alembic migration baseline (`WF-0012` candidate)
 - One-command local DB verification automation (`WF-0013` candidate)
+
+## 2026-02-16
+
+### Q: Can we discard SQLite completely and use only PostgreSQL for local/prod workflow?
+**A:** Yes. Locked as Postgres-only runtime: backend now requires `DATABASE_URL` and no longer falls back to SQLite. Updated code (`backend/app/db.py`) and operational docs (`backend/.env.example`, `backend/README.md`, `AGENTS.md`) accordingly.

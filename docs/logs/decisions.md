@@ -431,3 +431,13 @@
 - **Why**: Ensures local Postgres setup is actually usable for app flows, not just reachable.
 - **Tradeoff**: Adds a small verification step to local setup before development can proceed.
 - **Status**: Approved.
+
+## Date: 2026-02-16 (WF-0011 Follow-up: Postgres-only Runtime)
+
+### AD 11.4: Remove SQLite fallback and require PostgreSQL `DATABASE_URL`
+- **WF ID**: WF-0011 (follow-up policy hardening)
+- **Context**: Mixed local DB modes (SQLite fallback vs local Postgres) caused confusing count mismatches and reduced confidence in development verification.
+- **Decision**: Backend runtime is now PostgreSQL-only. `DATABASE_URL` is required; SQLite fallback behavior has been removed from `backend/app/db.py`.
+- **Why**: Single-engine development and production parity reduces ambiguity and speeds iteration/debugging.
+- **Tradeoff**: Local startup now depends on Postgres availability; missing `DATABASE_URL` fails fast at app startup.
+- **Status**: Implemented.

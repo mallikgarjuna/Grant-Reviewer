@@ -434,3 +434,7 @@
 ### 23:10 - Parked Follow-up WF Ideas in Backlog
 > User asked to park two follow-up ideas for later and commit them.
 > Outcome: Added two dated parked items to `docs/parking_lot.md` (WF-0012 Alembic baseline, WF-0013 local DB verification automation) and logged the clarification in Q&A.
+
+### 23:20 - Postgres-only Runtime Policy Applied
+> User requested removing SQLite completely to avoid dual-DB confusion.
+> Outcome: Removed SQLite fallback from backend DB resolution (`DATABASE_URL` required), aligned backend/env/agent docs to Postgres-only operation, and recorded decision AD 11.4.

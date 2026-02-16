@@ -15,7 +15,7 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
   - `python-dotenv>=1.2.1`
   - `pyyaml>=6.0.3`
 - Dev: `ruff>=0.15.0`
-- Database: SQLite (file in `backend/data/`; Postgres-ready later)
+- Database: PostgreSQL (local Docker + Neon in production)
 - API (planned): FastAPI (see `docs/logs/qa_history.md` / `docs/logs/decisions.md`)
 
 ## Git Workflow
@@ -56,7 +56,7 @@ Update these immediately after decisions/clarifications (“zero-latency logging
 ├── backend/
 │   ├── app/                 # models/schemas/repos/services
 │   ├── scripts/             # seed/ingest/demo utilities
-│   └── data/                # call YAML + sqlite db (gitignored)
+│   └── data/                # call YAML fixtures and local data files
 └── docs/
     ├── index.md             # dashboard (SSOT)
     ├── maintenance.md       # small fixes
@@ -81,7 +81,7 @@ From repo root:
 - Run review demo (calls OpenAI API): `cd backend && uv run python scripts/run_review.py`
 - Validate call YAML (dry run): `cd backend && uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml --dry-run`
 - Ingest call YAML: `cd backend && uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml`
-- Reset local DB: `cd backend && rm -f data/grant_reviewer.db`
+- Reset local DB (Postgres): `cd backend && docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d`
 - Lint: `cd backend && uv run ruff check .`
 - Lint (autofix): `cd backend && uv run ruff check . --fix`
 - Format: `cd backend && uv run ruff format .`
@@ -158,7 +158,7 @@ Guideline:
 
 - Backend scripts importing `app/` may need path setup when run from `backend/scripts/` (see `docs/lessons.md`).
 - SQLModel: don’t access ORM objects after session close; capture IDs/primitives first (see `docs/lessons.md`).
-- SQLite in-memory DB resets across sessions; design tests to reuse one seeded instance (see `docs/lessons.md`).
+- `DATABASE_URL` is required; backend no longer falls back to SQLite when unset.
 - Call YAML naming: `{agency}_{program}_{year}_{stage}.yaml` (see `backend/data/calls/README.md`).
 - Don’t forget to update the real project task files (`docs/tasks/task-*.md`) and `docs/index.md` while executing (see `docs/lessons.md`).
 - Frontend work requires Node tooling; prefer `nvm use v22.17.0` before running `npm`/`npx`. If `nvm` is not available in the current environment, scaffold/build locally and commit the generated `frontend/` files.

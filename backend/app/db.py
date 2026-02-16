@@ -1,20 +1,14 @@
 """
 Database connection setup for Grant Reviewer.
 
-Uses SQLite file-based database. No migrations yet - tables are created
-via SQLModel.metadata.create_all(). Easily swappable to PostgreSQL later.
+Uses PostgreSQL via DATABASE_URL. No SQLite fallback.
 """
 
 import os
-from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine
-
-DEFAULT_DB_DIR = Path(__file__).parent.parent / "data"
-DEFAULT_DB_PATH = DEFAULT_DB_DIR / "grant_reviewer.db"
-DEFAULT_SQLITE_DATABASE_URL = f"sqlite:///{DEFAULT_DB_PATH}"
 
 
 def normalize_database_url(raw_url: str) -> str:
@@ -42,24 +36,18 @@ def normalize_database_url(raw_url: str) -> str:
 
 def _resolve_database_url() -> str:
     configured_url = os.getenv("DATABASE_URL", "").strip()
-    if configured_url:
-        return normalize_database_url(configured_url)
-
-    DEFAULT_DB_DIR.mkdir(parents=True, exist_ok=True)
-    return DEFAULT_SQLITE_DATABASE_URL
-
-
-def _build_connect_args(database_url: str) -> dict[str, object]:
-    if database_url.startswith("sqlite"):
-        return {"check_same_thread": False}
-    return {}
+    if not configured_url:
+        raise RuntimeError(
+            "DATABASE_URL is required. SQLite fallback has been removed; "
+            "set DATABASE_URL to a PostgreSQL connection string."
+        )
+    return normalize_database_url(configured_url)
 
 
 DATABASE_URL = _resolve_database_url()
 engine = create_engine(
     DATABASE_URL,
     echo=False,
-    connect_args=_build_connect_args(DATABASE_URL),
 )
 
 
