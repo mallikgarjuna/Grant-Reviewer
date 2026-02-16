@@ -34,6 +34,8 @@ from app.schemas.api import (
     NodeSummary,
     ReviewCardSummary,
     ReviewDetailResponse,
+    ReviewListItem,
+    ReviewsListResponse,
     ReviewSummary,
 )
 from app.services.llm_client import build_llm_client
@@ -440,6 +442,35 @@ def create_review(
         raise map_review_failure_to_api_error(err) from err
 
     return CreateReviewResponse(review_id=review.id, status=review.status)
+
+
+@app.get(
+    "/reviews",
+    response_model=ReviewsListResponse,
+    responses=API_ERROR_RESPONSES,
+)
+def list_reviews(
+    repository: RepositoryDep,
+    external_user_id: Annotated[str, Depends(require_bff_user_id)],
+    limit: int = 50,
+) -> ReviewsListResponse:
+    """List reviews for the authenticated user."""
+    rows = repository.list_reviews_for_external_user(
+        external_user_id, limit=limit,
+    )
+    return ReviewsListResponse(
+        reviews=[
+            ReviewListItem(
+                id=review.id,
+                status=review.status,
+                overall_rating=review.overall_rating,
+                created_at=review.created_at.isoformat(),
+                call_name=call_name,
+                node_title=node_title,
+            )
+            for review, call_name, node_title in rows
+        ],
+    )
 
 
 @app.get(

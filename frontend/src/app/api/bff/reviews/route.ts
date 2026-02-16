@@ -4,12 +4,28 @@ import { NextResponse } from "next/server";
 import {
   buildCreateReviewPayloadSha256,
   createReview,
+  listReviews,
   normalizeCreateReviewDraft,
 } from "@/lib/bff/adapter";
 import { apiErrorResponse, requireBffContext } from "@/lib/bff/route-helpers";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+export async function GET() {
+  const { userId } = await auth();
+  const contextResult = requireBffContext(userId);
+  if (!contextResult.ok) {
+    return apiErrorResponse(contextResult.error);
+  }
+
+  const result = await listReviews(contextResult.data);
+  if (!result.ok) {
+    return apiErrorResponse(result.error);
+  }
+  return NextResponse.json(result.data, { status: 200 });
+}
+
 
 type CreateReviewBody = {
   call_id?: unknown;

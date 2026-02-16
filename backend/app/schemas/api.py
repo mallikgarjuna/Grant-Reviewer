@@ -100,3 +100,21 @@ class DeleteReviewResponse(BaseModel):
     """Success payload for DELETE /reviews/{review_id}."""
 
     ok: bool
+
+
+class ReviewListItem(BaseModel):
+    """Single review entry for the reviews list page."""
+
+    id: UUID
+    status: ReviewStatus
+    overall_rating: ReviewRating | None
+    created_at: str
+    call_name: str
+    node_title: str
+
+
+class ReviewsListResponse(BaseModel):
+    """Response for GET /reviews."""
+
+    reviews: list[ReviewListItem]
+

@@ -81,3 +81,16 @@ export type ReviewDetailResponse = {
 export type DeleteReviewResponse = {
   ok: boolean;
 };
+
+export type ReviewListItem = {
+  id: string;
+  status: ReviewStatus;
+  overall_rating: ReviewRating | null;
+  created_at: string;
+  call_name: string;
+  node_title: string;
+};
+
+export type ReviewsListResponse = {
+  reviews: ReviewListItem[];
+};

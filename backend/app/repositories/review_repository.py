@@ -304,3 +304,36 @@ class ReviewRepository:
     def rollback(self) -> None:
         """Rollback active transaction after commit failure."""
         self.session.rollback()
+
+    def list_reviews_for_external_user(
+        self,
+        external_user_id: str,
+        *,
+        limit: int = 50,
+    ) -> list[tuple[Review, str, str]]:
+        """List reviews owned by an external user with call name and node title.
+
+        Returns list of (Review, call_name, node_title) tuples ordered
+        by created_at descending.
+        """
+        capped_limit = min(max(limit, 1), 100)
+        statement = (
+            select(Review, FundingCall.name, ProposalNode.title)
+            .join(
+                ProposalSnippet,
+                Review.proposal_snippet_id == ProposalSnippet.id,
+            )
+            .join(
+                FundingCall,
+                ProposalSnippet.funding_call_id == FundingCall.id,
+            )
+            .join(
+                ProposalNode,
+                ProposalSnippet.proposal_node_id == ProposalNode.id,
+            )
+            .where(Review.external_user_id == external_user_id)
+            .order_by(Review.created_at.desc())
+            .limit(capped_limit)
+        )
+        return list(self.session.exec(statement).all())
+

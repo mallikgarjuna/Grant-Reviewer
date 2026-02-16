@@ -18,6 +18,7 @@ import type {
   NodesResponse,
   Result,
   ReviewDetailResponse,
+  ReviewsListResponse,
 } from "./types";
 
 type BackendApiErrorShape = {
@@ -245,6 +246,16 @@ export async function deleteReview(
   return requestFastApi<DeleteReviewResponse>({
     path: `/reviews/${reviewId}`,
     method: "DELETE",
+    context,
+  });
+}
+
+export async function listReviews(
+  context: BffRequestContext,
+): Promise<Result<ReviewsListResponse>> {
+  return requestFastApi<ReviewsListResponse>({
+    path: "/reviews",
+    method: "GET",
     context,
   });
 }

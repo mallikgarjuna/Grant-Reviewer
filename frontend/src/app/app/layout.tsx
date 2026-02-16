@@ -51,6 +51,7 @@ export default function AppLayout({
             </Link>
             <nav aria-label="App navigation" className="flex items-center gap-1">
               <NavLink href="/app">New Review</NavLink>
+              <NavLink href="/app/reviews">My Reviews</NavLink>
             </nav>
           </div>
           <div className="flex items-center">

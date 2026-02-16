@@ -726,3 +726,97 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "INTERNAL_ERROR": 500,
     }
     assert ERROR_STATUS_BY_CODE == expected
+
+
+# ── GET /reviews (list) ──────────────────────────────────────────────
+
+
+def list_reviews(
+    *,
+    client: TestClient,
+    user_id: str = TEST_USER_ID,
+    timestamp: int | None = None,
+    shared_secret: str = TEST_BFF_SHARED_SECRET,
+) -> object:
+    """Call GET /reviews with signed headers."""
+    headers = build_signature_headers(
+        body=b"",
+        user_id=user_id,
+        timestamp=timestamp,
+        shared_secret=shared_secret,
+    )
+    return client.get("/reviews", headers=headers)
+
+
+def test_list_reviews_returns_user_reviews(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    # Create two reviews
+    r1 = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "First review text",
+        },
+        user_id="user_list_test",
+        idempotency_key="idem-list-1",
+    )
+    r2 = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Second review text",
+        },
+        user_id="user_list_test",
+        idempotency_key="idem-list-2",
+    )
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+
+    response = list_reviews(client=client, user_id="user_list_test")
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["reviews"]) == 2
+
+    # Newest first
+    ids = [r["id"] for r in payload["reviews"]]
+    assert ids[0] == r2.json()["review_id"]
+    assert ids[1] == r1.json()["review_id"]
+
+    # All expected fields
+    first = payload["reviews"][0]
+    assert first["status"] in ("COMPLETED", "FAILED")
+    assert "created_at" in first
+    assert first["call_name"] == "ERC Consolidator Grant 2026"
+    assert first["node_title"] == "Section 1"
+
+
+def test_list_reviews_excludes_other_users(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    # Create review as user_a
+    post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "User A review",
+        },
+        user_id="user_a",
+        idempotency_key="idem-isolation-a",
+    )
+
+    # List as user_b → should be empty
+    response = list_reviews(client=client, user_id="user_b")
+    assert response.status_code == 200
+    assert response.json()["reviews"] == []
+
+
+def test_list_reviews_unauthenticated_returns_401(monkeypatch) -> None:
+    client, _ = create_client_with_seed(monkeypatch)
+    response = client.get("/reviews")
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "UNAUTHORIZED"
+
