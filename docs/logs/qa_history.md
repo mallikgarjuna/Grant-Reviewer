@@ -164,3 +164,6 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Why does README readiness check fail even when `DATABASE_URL` is set in `backend/.env`?
 **A:** The one-liner imports `app.db` directly; previously `app.db` did not load `.env` automatically (only `main.py` did). Updated `backend/app/db.py` to load `backend/.env` with `override=False`, so direct CLI imports now pick up `DATABASE_URL` consistently.
+
+### Q: In workflow runners, do we require commits after each Part and each Phase, and should brainstorming be interactive when requested?
+**A:** Yes. Enforce commit boundaries per runner part (Part A output commit, Part C revision commit, and Part B commit only if it includes edits) and per phase gate. When a user requests an interactive brainstorm, run it interactively rather than silently synthesizing answers.
