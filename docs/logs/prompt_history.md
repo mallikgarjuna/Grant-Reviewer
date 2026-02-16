@@ -491,3 +491,9 @@
 ### 19:52 - Code Phrases System Created
 > User requested shortcut code phrases for frequent actions (parking, picking, remembering rules, status, shipping, etc.).
 > Outcome: Created `docs/reference/code_phrases.md` with 14 phrases in 4 categories (Backlog, Workflow, Knowledge, Session). Updated `AGENTS.md` to reference the code phrases file. Cross-linked from `docs/parking_lot.md`.
+
+### 2026-02-16T20:05 — Pick P0 #1
+- **User**: "Pick P0 #1" (app shell + sign-out)
+- **Agent**: Promoted to WF-0013, initially skipped WF phases, corrected after user feedback.
+- **Lessons logged**: L21 (never skip phase gates), L22 (small-scope self-directed).
+- **Result**: Full WF pipeline (Phase 0-4) executed self-directed. Implementation committed on `wf/WF-0013-app-shell-signout`.
