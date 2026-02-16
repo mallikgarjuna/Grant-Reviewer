@@ -1,15 +1,15 @@
 # WF-0012 — Alembic Migration Baseline PRD
 
 Artifact: prd  
-Version: v0.1  
-Status: Draft  
+Version: v0.2  
+Status: Ready for Tasks  
 Last Updated: 2026-02-16
 
 ## 1. In Scope
 
 - Initialize Alembic for backend Postgres workflow under `backend/`.
 - Configure Alembic environment to load project SQLModel metadata.
-- Add first baseline migration revision representing current schema.
+- Add first baseline migration revision representing current schema using `alembic revision --autogenerate`, followed by manual review before apply.
 - Update backend docs/runbook with exact migration lifecycle commands.
 - Verify migration command flow for current/history/upgrade/downgrade/re-upgrade.
 
@@ -51,13 +51,16 @@ Last Updated: 2026-02-16
 2. Alembic config reads Postgres URL from project environment contract.
 3. `env.py` points to project SQLModel metadata used by runtime models.
 4. Baseline revision file exists as root (`down_revision = None`).
-5. Commands below succeed on local Postgres dev path:
+5. Baseline migration is immutable once committed; any follow-up schema changes must be new revisions.
+6. Local drift handling is documented with explicit recovery paths (`reset local DB` or `alembic stamp`) for non-production environments.
+7. Commands below succeed on local Postgres dev path:
    - `uv run alembic current`
    - `uv run alembic history --verbose`
    - `uv run alembic upgrade head`
    - `uv run alembic downgrade -1`
    - `uv run alembic upgrade head`
-6. Documentation updates include command purpose, expected output shape, and failure handling notes.
+8. Documentation updates include command purpose, expected output shape, and failure handling notes.
+9. Documentation explicitly states this WF does not automate production migration rollout.
 
 ## 5. Data & API Contracts
 
@@ -72,6 +75,7 @@ Last Updated: 2026-02-16
 - `upgrade head` transitions to latest revision.
 - `downgrade -1` transitions one revision backward.
 - `current` and `history --verbose` provide revision observability.
+- Baseline generation command is run once for this WF and reviewed before apply.
 
 ### State Transitions
 
@@ -106,6 +110,7 @@ Last Updated: 2026-02-16
 - Automated migration checks in CI pipelines.
 - Multi-environment release sequencing playbooks.
 - Data backfill automation patterns and concurrent index policies.
+- Any migration changes beyond the first baseline revision.
 
 ## Open Questions (if any)
 
@@ -114,3 +119,4 @@ Last Updated: 2026-02-16
 ## Changelog
 
 - v0.1 (2026-02-16): Initial PRD from spec
+- v0.2 (2026-02-16): Applied risk-audit edits for baseline immutability, local drift handling, and rollout-scope guardrails

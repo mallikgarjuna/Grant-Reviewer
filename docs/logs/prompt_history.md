@@ -452,3 +452,7 @@
 ### 09:20 - Workflow Process Correction (Runner Commit Boundaries + Interactive Brainstorm)
 > User asked why brainstorming was not interactive and requested explicit commit discipline after each runner part and each phase.
 > Outcome: Added an always-on AGENTS rule for runner part-level commits (Part A/Part C, plus Part B when edits exist), clarified no-commit behavior for no-edit Part B phases, and logged the interactive brainstorm expectation in Q&A history.
+
+### 09:35 - WF-0012 Phase 2 Runner (PRD) Execution
+> User selected next action `1` to run Phase 2 runner for WF-0012.
+> Outcome: Generated PRD v0.1 from spec, ran no-edit risk audit, revised to PRD v0.2 (`Ready for Tasks`), updated WF-0012 status to `Phase 2 (Ready)`, and logged Alembic baseline decisions (AD 12.1, AD 12.2).
