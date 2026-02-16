@@ -268,7 +268,7 @@ export default function ReviewDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-6 py-12 md:px-10">
+      <main className="mx-auto flex w-full max-w-5xl flex-col px-6 py-12 md:px-10">
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8">
           <p className="text-sm text-[var(--color-muted-foreground)]">Loading review...</p>
         </div>
@@ -279,7 +279,7 @@ export default function ReviewDetailPage() {
   if (error) {
     if (error.code === "UNAUTHORIZED") {
       return (
-        <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col items-start justify-center px-6 py-12">
+        <main className="mx-auto flex w-full max-w-3xl flex-col items-start justify-center px-6 py-12">
           <h1 className="text-2xl font-semibold text-[var(--color-foreground)]">
             Sign in required
           </h1>
@@ -298,7 +298,7 @@ export default function ReviewDetailPage() {
 
     if (error.code === "REVIEW_NOT_FOUND") {
       return (
-        <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col items-start justify-center px-6 py-12">
+        <main className="mx-auto flex w-full max-w-3xl flex-col items-start justify-center px-6 py-12">
           <h1 className="text-2xl font-semibold text-[var(--color-foreground)]">
             Review not found
           </h1>
@@ -316,7 +316,7 @@ export default function ReviewDetailPage() {
     }
 
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col items-start justify-center px-6 py-12">
+      <main className="mx-auto flex w-full max-w-3xl flex-col items-start justify-center px-6 py-12">
         <h1 className="text-2xl font-semibold text-[var(--color-foreground)]">
           Unable to load review
         </h1>
@@ -339,7 +339,7 @@ export default function ReviewDetailPage() {
   const isPending = reviewDetail.review.status === "PENDING";
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-6 py-12 md:px-10">
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-12 md:px-10">
       <header className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
           Review

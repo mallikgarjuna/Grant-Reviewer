@@ -245,7 +245,7 @@ export default function AppSubmitPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-6 py-12 md:px-10">
+    <main className="mx-auto flex w-full max-w-5xl flex-col px-6 py-12 md:px-10">
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-sm">
         <h1 className="text-3xl font-semibold tracking-tight text-[var(--color-foreground)]">
           Run a Grant Review
