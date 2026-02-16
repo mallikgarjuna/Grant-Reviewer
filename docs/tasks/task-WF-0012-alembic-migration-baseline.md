@@ -1,8 +1,8 @@
 # WF-0012 — Alembic Migration Baseline Tasks
 
 Artifact: task  
-Version: v0.1  
-Status: Draft  
+Version: v0.2  
+Status: Ready for Implementation  
 Last Updated: 2026-02-16
 
 ## Task Breakdown (Sequential Order)
@@ -22,6 +22,7 @@ Files to modify:
 Acceptance Criteria:
 - Alembic command is available via `uv run alembic`.
 - Scaffold files are present under `backend/migrations/`.
+- No app runtime behavior outside migration tooling is changed.
 
 Verification Steps:
 - `cd backend && uv run alembic --help`
@@ -42,6 +43,7 @@ Files to modify:
 Acceptance Criteria:
 - `env.py` imports/targets the application metadata.
 - Alembic reads Postgres URL contract without SQLite fallback assumptions.
+- Task starts only after Task 1 scaffold exists.
 
 Verification Steps:
 - `cd backend && uv run alembic current`
@@ -61,6 +63,7 @@ Files to modify:
 Acceptance Criteria:
 - Baseline revision exists with `down_revision = None`.
 - Migration file accurately reflects current schema intent and has working upgrade/downgrade.
+- Revision message clearly indicates baseline intent.
 
 Verification Steps:
 - `cd backend && uv run alembic revision --autogenerate -m "baseline schema"`
@@ -80,6 +83,7 @@ Files to modify:
 Acceptance Criteria:
 - Baseline applies and rolls back cleanly.
 - Final state returns to baseline head.
+- Validation is executed on local Postgres only (no production DB operations).
 
 Verification Steps:
 - `cd backend && uv run alembic upgrade head`
@@ -101,6 +105,7 @@ Files to modify:
 Acceptance Criteria:
 - Docs include setup assumptions, baseline command sequence, and troubleshooting for invalid URL/import/drift issues.
 - Docs state baseline immutability and no production rollout automation in this WF.
+- Commands documented here match commands validated in Task 4.
 
 Verification Steps:
 - Review docs for command accuracy against implemented flow.
@@ -116,11 +121,12 @@ Goal:
 
 Files to modify:
 - `docs/walkthroughs/walkthrough-WF-0012-alembic-migration-baseline.md`
-- `docs/index.md` (when implementation is complete)
+- `docs/logs/decisions.md` (only if new implementation-time decisions are made)
 
 Acceptance Criteria:
 - Walkthrough records executed verification commands and outcomes.
 - Any implementation decisions discovered during execution are logged in `docs/logs/decisions.md`.
+- No new migrations beyond baseline are introduced in this workflow.
 
 Verification Steps:
 - `cd backend && uv run alembic history --verbose`
@@ -132,3 +138,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-02-16): Initial task breakdown from PRD
+- v0.2 (2026-02-16): Applied task review edits for sequencing clarity and implementation readiness
