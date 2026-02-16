@@ -480,3 +480,14 @@
 ### 10:30 - Post-Push Docs Confirmation Rule Added
 > User requested a reminder behavior for push operations.
 > Outcome: Added an always-on rule to explicitly confirm docs/WF artifact update status after each successful remote push.
+
+### 19:04 - MVP Readiness Audit + Parking Lot Restructuring
+> User requested a project status overview, then a deep audit of 10 must-do items for MVP readiness.
+> After two rounds of review (including cross-referencing with another agent's findings), produced a merged 15-item priority list across P0/P1/P2 tiers.
+> User asked to formalize this into `docs/parking_lot.md` with priority tables, a code phrase (`park this`), and promotion mechanics.
+> Outcome: Rewrote `docs/parking_lot.md` (v0.2) with P0 (5 items), P1 (6 items), P2 (4 items) tables, "Promoted Items" section, and guidelines. Added two always-on rules in `AGENTS.md` for parking lot hygiene and promotion workflow.
+> Code phrases: **`park this`** to add a new item; **`pick P[x] #[n]`** (e.g., `pick P0 #1`) to promote a parked item into a new WF.
+
+### 19:52 - Code Phrases System Created
+> User requested shortcut code phrases for frequent actions (parking, picking, remembering rules, status, shipping, etc.).
+> Outcome: Created `docs/reference/code_phrases.md` with 14 phrases in 4 categories (Backlog, Workflow, Knowledge, Session). Updated `AGENTS.md` to reference the code phrases file. Cross-linked from `docs/parking_lot.md`.

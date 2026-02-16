@@ -1,96 +1,99 @@
 # Parking Lot / Backlog
 
-**Purpose**: A dedicated place to park “not now” items (tech debt, ideas, risks, follow-ups) so they don’t get lost. When something becomes a priority, promote it into a real task/PRD under `docs/tasks/` and link it from `docs/index.md`.
+**Purpose**: The prioritized backlog for "not now" items. When you're ready to work on one, promote it into the WF workflow system.
 
 ## Guidelines
 
-### Parking (adding non-priority items)
+### Priority Tiers
 
-Add items under **Parked Items** when they are valuable but **not the next thing** to do.
+- **🔴 P0** — Must-fix before any real user touches the app.
+- **🟡 P1** — Must-fix before public launch.
+- **🟢 P2** — Must-fix before scaling / ongoing traffic.
 
-Each parked item should include:
-- **Date**: when it was parked (helps prune stale items).
-- **One-line title**: specific and searchable (start with a verb).
-- **Type**: idea / tech debt / risk / ops / product.
-- **Why it matters**: 1–2 lines max.
-- **Promote when…**: a trigger (e.g., “before launch”, “after first timeout”, “next schema change”).
-- **Owner** (optional): who will likely pick it up.
-- **Links** (optional): to relevant files, walkthroughs, or incidents.
+> **All code phrases** (including `park this`, `pick`, and others): see [docs/reference/code_phrases.md](reference/code_phrases.md).
 
-Where to park it:
-- **Minor, opportunistic fixes** → `docs/maintenance.md`
-- **Not-now but important** → this file (`docs/parking_lot.md`)
-- **Active work** → promote to `docs/tasks/` and track in `docs/index.md`
+Each table has **independent numbering** (1, 2, 3…) so items are easy to reference (e.g., "P0 #2").
 
-Maintenance hygiene:
-- Prefer fewer, higher-signal items; merge duplicates instead of adding variants.
-- When an item is promoted, don’t delete it—mark it as promoted and link the new artifacts.
+### Adding Items (Code Phrase: `park this`)
 
-### Unparking (promoting into the workflow)
+Say **"park this"** followed by a description and the agent will:
+1. Add the item to the appropriate P0/P1/P2 table.
+2. Assign the next `#` within that table.
+3. Confirm: "Parked as P[x] #[n]: [title]".
 
-Promote an item when it becomes “next” or when its **Promote when…** trigger fires.
+You can also add items manually. Each row should have:
+- **#**: sequential within the table.
+- **Task**: short, verb-first title.
+- **Type**: `product` / `tech-debt` / `ops` / `legal` / `idea`.
+- **Recommendation**: one-line why and what.
+- **Date**: when parked (YYYY-MM-DD).
 
-Promotion checklist (Brainstorm → PRD → Task Plan):
-1) **Phase 0 (Brainstorming)**: create `docs/brainstorms/brainstorming-<TaskID>-<slug>.md` with scope/options/risks.
-2) **Phase 1 (PRD)**: create `docs/prds/prd-<TaskID>-<slug>.md` with goals, non-goals, success criteria.
-3) **Phase 2 (Task breakdown)**: create `docs/tasks/task-<TaskID>-<slug>.md` with subtasks + verification.
-4) **Update dashboard**: add the new task row + links in `docs/index.md`.
-5) **Mark promoted here**: update the parked item to include:
-   - `Promoted to: <TaskID>` and links to the brainstorm/PRD/task files.
-6) **Phase gates**: before Phase 3 implementation, explicitly decide “go ahead” on scope and verification approach.
+### Picking Items (Code Phrase: `pick P[x] #[n]`)
 
----
+Say **`pick P0 #1`** (or any P[x] #[n] reference) and the agent will promote that item into a new WF.
 
-## Critical Snapshot (2026-02-13)
+### Promoting Items (What Happens When Picked)
 
-- MVP is end-to-end: FastAPI + Next.js BFF + Clerk; production Postgres path exists; backend API tests pass (`cd backend && uv run pytest -q`).
-- Guardrails are weak: no repo CI workflows found; backend lint is currently failing at repo scale (`cd backend && uv run ruff check .` reports ~275 findings).
-- Some planning/doc drift exists (example: 8.0C is marked complete in `docs/index.md` while the 8.0C task file reports “In Progress”).
+When you pick an item to start work:
+1. **Assign the next WF ID** from the WF Registry in `docs/index.md`.
+2. **Move the row** from the priority table to the **Promoted Items** section below.
+3. Mark it: `→ Promoted to WF-xxxx` with links to artifacts as they're created.
+4. **Add the WF row** to `docs/index.md` WF Registry.
+5. Follow the standard WF phase workflow from there.
 
----
+### Maintenance
 
-## Next Priority Options (recommended order as of 2026-02-13)
-
-1) **Guardrails (CI + lint baseline)**  
-   - Why: protects main from regressions and makes iteration cheaper.  
-   - Parked next step: complete Task 8.1 (`docs/tasks/task-8.1-lint-baseline-cleanup.md`).
-
-2) **Production data safety (Alembic migrations)**  
-   - Why: Postgres is real; relying on `create_all()` is risky for schema evolution.  
-   - Promote when: next time we need a schema change or before public launch.
-
-3) **Async review execution (scaling path)**  
-   - Why: improves timeout/retry behavior and supports longer model latencies.  
-   - Promote when: we see timeouts, want background jobs, or need better UX for long-running reviews.
+- Prefer fewer, higher-signal items; merge duplicates.
+- Re-prioritize periodically — items can move between P0/P1/P2.
+- Where to park: **minor opportunistic fixes** → `docs/maintenance.md`; **everything else** → here.
 
 ---
 
-## Parked Items
+## 🔴 P0 — Must-fix before real users
 
-- [ ] (2026-02-13) Add CI workflows for backend (`pytest`, `ruff`) and frontend (`npm run lint`, `npm run check:*`).  
-  - Why: enforce “green main”.  
-  - Promote when: before starting the next multi-day feature.
+| # | Task | Type | Recommendation | Date |
+|---|------|------|----------------|------|
+| 1 | Add app shell + sign-out | product | Add a persistent `/app/*` header with PeerLens logo, nav links, and Clerk `UserButton` (includes sign-out) — zero sign-out references exist today. | 2026-02-16 |
+| 2 | Add review history ("My Reviews") | product | Add `GET /reviews` backend endpoint + `/app/reviews` list page so returning users can find past reviews — currently a closed tab = lost review. | 2026-02-16 |
+| 3 | Upgrade review results UX | product | Render criterion name as card heading, add visual rating indicators, format overall summary prominently — cards currently show only rating pill + text. | 2026-02-16 |
+| 4 | Add auto-polling for processing reviews | product | Replace "refresh manually" with safe polling (3s interval, max 90s) that auto-transitions to COMPLETED/FAILED. | 2026-02-16 |
+| 5 | Harden submit flow UX | product | Add "Start new review" button (clears draft), make slow-hint actionable, verify sign-in deep-link round-trip and sign-out redirect. | 2026-02-16 |
 
-- [ ] (2026-02-13) Create Task/PRD for Alembic migration baseline.  
-  - Why: safe schema changes in Postgres.  
-  - Promote when: first new table/column beyond MVP.
+---
 
-- [ ] (2026-02-13) Create Task/PRD for async review pipeline (queue + poll).  
-  - Why: resilience and UX improvements for long-running model calls.  
-  - Promote when: we introduce retries, background processing, or higher traffic.
+## 🟡 P1 — Must-fix before public launch
 
-- [ ] (2026-02-16) Start WF for Alembic migration baseline (`WF-0012` candidate).  
-  - Type: tech debt / reliability.  
-  - Why: local/prod Postgres is now the practical path; schema changes need migration safety beyond `create_all()`.  
-  - Promote when: before the next schema/model change or prior to public launch hardening.
+| # | Task | Type | Recommendation | Date |
+|---|------|------|----------------|------|
+| 1 | Add loading & empty states | product | Replace plain-text "Loading..." with skeleton/shimmer loaders; show onboarding guidance when no calls are available. | 2026-02-16 |
+| 2 | Add node hierarchy selector | product | Group flat node `<select>` by parent sections (cascade or grouped optgroups) — current flat list is confusing for 10+ nodes. | 2026-02-16 |
+| 3 | Add CI pipeline (GitHub Actions) | ops | Add `pytest` + `ruff` for backend, `lint` + `next build` for frontend — zero CI workflows exist today. | 2026-02-16 |
+| 4 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 5 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
+| 6 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
 
-- [ ] (2026-02-16) Start WF for one-command local DB verification automation (`WF-0013` candidate).  
-  - Type: ops / developer experience.  
-  - Why: automates bootstrap + readiness thresholds + signed stub review check to reduce onboarding drift and manual mistakes.  
-  - Promote when: before onboarding another contributor or before the next backend workflow branch.
+---
+
+## 🟢 P2 — Must-fix before scaling
+
+| # | Task | Type | Recommendation | Date |
+|---|------|------|----------------|------|
+| 1 | Set up Alembic migration baseline | tech-debt | Neon Postgres is live with `create_all()` — one schema change will silently break prod; create baseline migration. | 2026-02-16 |
+| 2 | Add error monitoring (Sentry) | ops | Zero error tracking in production; blind to LLM timeouts, BFF failures, and client crashes with real users. | 2026-02-16 |
+| 3 | Prompt quality tuning | product | Test AI output quality with real ERC/NWO proposals; tune `PromptTemplate` for actionable, criteria-specific feedback. | 2026-02-16 |
+| 4 | Production hardening | ops | Lock CORS, verify rate limiting beyond daily quota, add custom 404 page, tune Vercel/Render timeout alignment. | 2026-02-16 |
+
+---
+
+## Promoted Items
+
+_Items moved here when picked for a WF. Format: `→ Promoted to WF-xxxx` with artifact links._
+
+_(none yet)_
 
 ---
 
 ## Revision History
 
 - **v0.1** (2026-02-13): Created as a dedicated parking place for snapshot + priorities + non-urgent TODOs.
+- **v0.2** (2026-02-16): Restructured into P0/P1/P2 priority tables with independent numbering, code phrase (`park this`), and promotion mechanics. Pre-populated 15 MVP readiness items from deep frontend + infra audit.
