@@ -476,3 +476,8 @@
 - **Decision**: `GET /reviews` uses a simple `limit` parameter (default 50, max 100) and no cursor/offset for MVP.
 - **Rationale**: User volume is low; complex pagination is premature optimization.
 - **Status**: Implemented.
+
+### AD 14.2: Reviews are Server-Side (Overturns AD 9.5)
+- **Decision**: "My Reviews" (`/app/reviews`) is backed by a server-side `GET /reviews` endpoint, making history available across devices for authenticated users.
+- **Rationale**: User feedback and implementation reality favor persistent, accessible history over device-scoped MVP limitations.
+- **Status**: Implemented.

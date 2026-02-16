@@ -32,7 +32,7 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF-0011 | local-postgres-dev-db | [Brainstorm](brainstorms/brainstorm-WF-0011-local-postgres-dev-db.md) | [Spec](specs/features/spec-WF-0011-local-postgres-dev-db.md) | [PRD](prds/prd-WF-0011-local-postgres-dev-db.md) | [Tasks](tasks/task-WF-0011-local-postgres-dev-db.md) | [Walkthrough](walkthroughs/walkthrough-WF-0011-local-postgres-dev-db.md) | Done |
 | WF-0012 | alembic-migration-baseline | [Brainstorm](brainstorms/brainstorm-WF-0012-alembic-migration-baseline.md) | [Spec](specs/features/spec-WF-0012-alembic-migration-baseline.md) | [PRD](prds/prd-WF-0012-alembic-migration-baseline.md) | [Tasks](tasks/task-WF-0012-alembic-migration-baseline.md) | [Walkthrough](walkthroughs/walkthrough-WF-0012-alembic-migration-baseline.md) | Done |
 | WF-0013 | app-shell-signout | [Brainstorm](brainstorms/brainstorm-WF-0013-app-shell-signout.md) | [Spec](specs/features/spec-WF-0013-app-shell-signout.md) | [PRD](prds/prd-WF-0013-app-shell-signout.md) | [Tasks](tasks/task-WF-0013-app-shell-signout.md) | [Walkthrough](walkthroughs/walkthrough-WF-0013-app-shell-signout.md) | Done |
-| WF-0014 | review-history | [Brainstorm](brainstorms/brainstorm-WF-0014-review-history.md) | — | — | [Tasks](tasks/task-WF-0014-review-history.md) | [Walkthrough](walkthroughs/walkthrough-WF-0014-review-history.md) | Done |
+| WF-0014 | review-history | [Brainstorm](brainstorms/brainstorm-WF-0014-review-history.md) | [Spec](specs/features/spec-WF-0014-review-history.md) | [PRD](prds/prd-WF-0014-review-history.md) | [Tasks](tasks/task-WF-0014-review-history.md) | [Walkthrough](walkthroughs/walkthrough-WF-0014-review-history.md) | Done |
 
 ---
 
