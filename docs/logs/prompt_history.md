@@ -442,3 +442,9 @@
 ### 23:28 - Fixed README Readiness Check Env Loading
 > User reported `DATABASE_URL is required` while running the README readiness command despite setting `backend/.env`.
 > Outcome: Updated `backend/app/db.py` to load `backend/.env` (same behavior as `main.py`) so direct `uv run python -c ...` imports resolve `DATABASE_URL` consistently.
+
+## 2026-02-16
+
+### 09:10 - WF-0012 Restart and Phase 0→1 Execution Request
+> User requested restarting WF-0012 from Phase 0.0 using workflow runners and keeping MVP-fast scope for a Postgres-only Alembic migration baseline.
+> Outcome: Created WF-0012 branch/artifacts, completed Phase 0.1 brainstorm, and ran Phase 1 end-to-end with spec generation/review/revision for baseline init, first migration, docs/runbook updates, and verification commands.
