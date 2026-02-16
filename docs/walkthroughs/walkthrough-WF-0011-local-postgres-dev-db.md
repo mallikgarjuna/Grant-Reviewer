@@ -7,7 +7,7 @@ Last Updated: 2026-02-15
 
 ## Overview
 
-WF-0011 implemented a local Postgres-first developer runbook for backend work, with SQLite retained as explicit fallback when `DATABASE_URL` is unset.
+WF-0011 implemented a local Postgres-first developer runbook for backend work. Follow-up hardening removed SQLite fallback and requires `DATABASE_URL` for backend runtime.
 
 ## Verification Evidence
 
