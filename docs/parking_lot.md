@@ -38,8 +38,9 @@ When you pick an item to start work:
 1. **Assign the next WF ID** from the WF Registry in `docs/index.md`.
 2. **Move the row** from the priority table to the **Promoted Items** section below.
 3. Mark it: `→ Promoted to WF-xxxx` with links to artifacts as they're created.
-4. **Add the WF row** to `docs/index.md` WF Registry.
-5. Follow the standard WF phase workflow from there.
+4. **Renumber** remaining items in that priority tier so `#1` is always the top item.
+5. **Add the WF row** to `docs/index.md` WF Registry.
+6. Follow the standard WF phase workflow from there.
 
 ### Maintenance
 
@@ -53,11 +54,10 @@ When you pick an item to start work:
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | ~~Add app shell + sign-out~~ | product | → Promoted to WF-0013 | 2026-02-16 |
-| 2 | Add review history ("My Reviews") | product | Add `GET /reviews` backend endpoint + `/app/reviews` list page so returning users can find past reviews — currently a closed tab = lost review. | 2026-02-16 |
-| 3 | Upgrade review results UX | product | Render criterion name as card heading, add visual rating indicators, format overall summary prominently — cards currently show only rating pill + text. | 2026-02-16 |
-| 4 | Add auto-polling for processing reviews | product | Replace "refresh manually" with safe polling (3s interval, max 90s) that auto-transitions to COMPLETED/FAILED. | 2026-02-16 |
-| 5 | Harden submit flow UX | product | Add "Start new review" button (clears draft), make slow-hint actionable, verify sign-in deep-link round-trip and sign-out redirect. | 2026-02-16 |
+| 1 | Add review history ("My Reviews") | product | Add `GET /reviews` backend endpoint + `/app/reviews` list page so returning users can find past reviews — currently a closed tab = lost review. | 2026-02-16 |
+| 2 | Upgrade review results UX | product | Render criterion name as card heading, add visual rating indicators, format overall summary prominently — cards currently show only rating pill + text. | 2026-02-16 |
+| 3 | Add auto-polling for processing reviews | product | Replace "refresh manually" with safe polling (3s interval, max 90s) that auto-transitions to COMPLETED/FAILED. | 2026-02-16 |
+| 4 | Harden submit flow UX | product | Add "Start new review" button (clears draft), make slow-hint actionable, verify sign-in deep-link round-trip and sign-out redirect. | 2026-02-16 |
 
 ---
 

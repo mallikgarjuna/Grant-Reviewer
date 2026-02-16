@@ -177,3 +177,4 @@ Guideline:
 - When the user explicitly grants self-directed execution for small-scope WFs, proceed through all phases using own best recommendations without waiting for signals. Default: wait for signals at each phase gate.
 - Always execute Part A (generate), Part B (review, no edits), and Part C (revise) explicitly in every phase runner — even in self-directed mode. Print PART headers, document findings, and output the traceability statement. No compression into a single step (see `docs/lessons.md` L23).
 - **AGENTS.md is the SSOT for project rules and lessons.** Any coding agent (Antigravity, Codex, etc.) must update `AGENTS.md` — never agent-specific files like `GEMINI.md` — for project-level rules. Agent-specific files should reference `AGENTS.md`.
+- After promoting a parking lot item to a WF, **renumber** remaining items in that priority tier so `#1` is always the top item. The Promoted Items section preserves the original identity via its WF ID link.
