@@ -405,3 +405,39 @@
   - Map variables in `frontend/src/app/globals.css` and apply heading/body scale from `docs/reference/brand_typography_system.md`.
 - **Rationale**: Adds scholarly tone on marketing surfaces without harming legibility or interaction clarity.
 - **Status**: Approved.
+
+## Date: 2026-02-15 (WF-0011: Local Postgres Dev DB)
+
+### AD 11.1: Local Postgres blessed path is Docker Compose (`backend/docker-compose.dev.yml`)
+- **WF ID**: WF-0011
+- **Context**: Local development needs a single reproducible startup contract to reduce SQLite/Postgres drift and onboarding variance.
+- **Decision**: Define one blessed local DB startup path using `backend/docker-compose.dev.yml` with `postgres` service, local bind on `localhost:5432`, and local dev persistence volume.
+- **Why**: One standard path minimizes setup ambiguity and support overhead while staying MVP-fast.
+- **Tradeoff**: Developers without Docker get only brief fallback notes in this WF (no full native setup playbooks).
+- **Status**: Approved.
+
+### AD 11.2: Local env safety contract defaults to localhost Postgres (`sslmode=disable`)
+- **WF ID**: WF-0011
+- **Context**: Current backend normalizer adds Postgres SSL defaults appropriate for hosted providers; local dev needs explicit local connection semantics and protection against accidental Neon usage.
+- **Decision**: Local docs/env contract must default `DATABASE_URL` to localhost Postgres with `sslmode=disable`; Neon URLs are explicit opt-in only for local debugging.
+- **Why**: Prevents accidental writes to hosted environments and keeps local startup predictable.
+- **Tradeoff**: Requires stricter env-profile discipline in local onboarding docs.
+- **Status**: Approved.
+
+### AD 11.3: PRD verification gate requires minimum seed thresholds + terminal stub review flow
+- **WF ID**: WF-0011
+- **Context**: DB connectivity alone is insufficient; local workflow must prove functional readiness for review generation.
+- **Decision**: Define readiness as: required seed thresholds met (`prompt_templates >= 1 active`, `funding_calls >= 1`, `proposal_nodes >= 1`) plus one local stub review submission reaching terminal status.
+- **Why**: Ensures local Postgres setup is actually usable for app flows, not just reachable.
+- **Tradeoff**: Adds a small verification step to local setup before development can proceed.
+- **Status**: Approved.
+
+## Date: 2026-02-16 (WF-0011 Follow-up: Postgres-only Runtime)
+
+### AD 11.4: Remove SQLite fallback and require PostgreSQL `DATABASE_URL`
+- **WF ID**: WF-0011 (follow-up policy hardening)
+- **Context**: Mixed local DB modes (SQLite fallback vs local Postgres) caused confusing count mismatches and reduced confidence in development verification.
+- **Decision**: Backend runtime is now PostgreSQL-only. `DATABASE_URL` is required; SQLite fallback behavior has been removed from `backend/app/db.py`.
+- **Why**: Single-engine development and production parity reduces ambiguity and speeds iteration/debugging.
+- **Tradeoff**: Local startup now depends on Postgres availability; missing `DATABASE_URL` fails fast at app startup.
+- **Status**: Implemented.

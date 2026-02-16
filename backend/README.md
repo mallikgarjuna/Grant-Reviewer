@@ -6,7 +6,7 @@ Python backend for Grant Reviewer using SQLModel and OpenAI.
 
 - **Python 3.12+**
 - **SQLModel** - ORM with Pydantic validation
-- **SQLite** - File-based database (PostgreSQL-ready)
+- **PostgreSQL** - local Docker dev + hosted production
 - **OpenAI** - LLM integration (gpt-4o-mini default)
 - **UV** - Package manager
 - **FastAPI** - HTTP API
@@ -32,8 +32,7 @@ backend/
 │   ├── ensure_prompt_template.py # Ensures active PromptTemplate
 │   └── run_review.py            # Review demo (real LLM)
 ├── data/
-│   ├── calls/                   # YAML call definitions
-│   └── grant_reviewer.db        # SQLite database (gitignored)
+│   └── calls/                   # YAML call definitions
 └── .env                         # API keys (gitignored)
 ```
 
@@ -46,10 +45,113 @@ uv sync
 # Create .env from template
 cp .env.example .env
 # Add your OPENAI_API_KEY
+# Ensure DATABASE_URL points to PostgreSQL (required)
 
 # Run review demo (seeds DB + calls LLM)
 uv run python scripts/run_review.py
 ```
+
+## Local Postgres Runbook (Canonical)
+
+This is the primary local development path.
+
+### 1) Start local Postgres
+
+```bash
+cd backend
+docker compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml ps
+```
+
+Optional DB GUI (pgAdmin):
+- Open `http://localhost:5050`
+- Login with:
+  - Email: `admin@local.dev`
+  - Password: `admin`
+- Add server in pgAdmin with:
+  - Host: `postgres`
+  - Port: `5432`
+  - Username: `grant`
+  - Password: `grant`
+  - Database: `grant_reviewer_dev`
+
+### 2) Configure local env
+
+In `backend/.env`, use localhost Postgres:
+
+```env
+DATABASE_URL=postgresql://grant:grant@localhost:5432/grant_reviewer_dev?sslmode=disable
+LLM_MODE=stub
+```
+
+Safety rule:
+- Keep local `.env` pointed to `localhost` by default.
+- Do not keep Neon/prod hosts as your default local `DATABASE_URL`.
+
+### 3) Bootstrap minimum required data
+
+```bash
+cd backend
+uv run python scripts/ensure_prompt_template.py
+uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml
+```
+
+### 4) Verify readiness thresholds
+
+```bash
+cd backend
+uv run python -c "from app.db import get_session; from app.models.domain import PromptTemplate, FundingCall, ProposalNode; from sqlmodel import select; s=get_session(); print('active_prompt_templates=', len(s.exec(select(PromptTemplate).where(PromptTemplate.is_active == True)).all())); print('funding_calls=', len(s.exec(select(FundingCall)).all())); print('proposal_nodes=', len(s.exec(select(ProposalNode)).all())); s.close()"
+```
+
+Expected minimums:
+- `active_prompt_templates >= 1`
+- `funding_calls >= 1`
+- `proposal_nodes >= 1`
+
+### 5) Verify one Postgres-backed stub review flow
+
+```bash
+cd backend
+LLM_MODE=stub uv run uvicorn main:app --reload
+```
+
+In another terminal:
+
+```bash
+curl http://127.0.0.1:8000/health/db
+```
+
+Then submit one local stub review through backend or BFF path:
+- backend API path: `POST /reviews`
+- frontend BFF path: `POST /api/bff/reviews`
+
+Expected behavior:
+- request returns review payload with terminal status (`COMPLETED` or `FAILED`).
+
+### 6) Stop local Postgres
+
+```bash
+cd backend
+docker compose -f docker-compose.dev.yml down
+```
+
+### 7) Reset local Postgres (destructive, local-only)
+
+Warning:
+- This deletes local dev DB data for the compose volume.
+- Before running, confirm `DATABASE_URL` host is `localhost`.
+
+```bash
+cd backend
+docker compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml up -d
+uv run python scripts/ensure_prompt_template.py
+uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml
+```
+
+No-Docker fallback (secondary path only):
+- Use a local native Postgres instance that matches the same `DATABASE_URL` contract.
+- Keep this as a temporary alternative; the blessed path remains Docker Compose.
 
 ## Run API
 
@@ -150,20 +252,12 @@ Verification checklist:
 - `GET /calls/{call_id}/nodes` returns nodes.
 - In `LLM_MODE=stub`, one BFF `POST /reviews` completes successfully.
 
-### Database Reset
-
-```bash
-# Delete and recreate database
-rm -f data/grant_reviewer.db
-uv run python scripts/run_review.py  # Seeds fresh DB
-```
-
 ## Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `OPENAI_API_KEY` | OpenAI API key | **Required** |
-| `DATABASE_URL` | Optional DB URL (`postgres://` is normalized automatically) | local SQLite |
+| `DATABASE_URL` | Local DB URL (`postgres://`/`postgresql://` normalized automatically) | localhost Postgres in `.env.example` |
 | `BFF_SHARED_SECRET` | Shared secret for BFF signature verification | (none) |
 | `LLM_MODEL` | Model to use | `gpt-4o-mini` |
 | `LLM_MODE` | `openai` or `stub` | `openai` |

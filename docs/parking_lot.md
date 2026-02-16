@@ -79,6 +79,16 @@ Promotion checklist (Brainstorm → PRD → Task Plan):
   - Why: resilience and UX improvements for long-running model calls.  
   - Promote when: we introduce retries, background processing, or higher traffic.
 
+- [ ] (2026-02-16) Start WF for Alembic migration baseline (`WF-0012` candidate).  
+  - Type: tech debt / reliability.  
+  - Why: local/prod Postgres is now the practical path; schema changes need migration safety beyond `create_all()`.  
+  - Promote when: before the next schema/model change or prior to public launch hardening.
+
+- [ ] (2026-02-16) Start WF for one-command local DB verification automation (`WF-0013` candidate).  
+  - Type: ops / developer experience.  
+  - Why: automates bootstrap + readiness thresholds + signed stub review check to reduce onboarding drift and manual mistakes.  
+  - Promote when: before onboarding another contributor or before the next backend workflow branch.
+
 ---
 
 ## Revision History

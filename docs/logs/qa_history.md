@@ -144,3 +144,23 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Which serif/sans pairing should we use for an elegant, gentle academic tone without heaviness?
 **A:** Use `Lora` (`600`) for primary large/editorial headings and `Inter` (`400`, UI `500–600`) for body and interface text. Keep serif out of forms/inputs/dense UI text and use a lighter heading scale to avoid cramped or thick-looking typography.
+
+### Q: How should “Next 2 actions” be formatted going forward in workflow guidance?
+**A:** Before Phase 4 completion, provide only end-to-end runner options (e.g., `phase-1-run-spec`, `phase-2-run-prd`, `phase-3-run-task`) instead of part-level phase files. After Phase 4 completion, replace that section with “Next 2 WF ideas/features” (candidate follow-up workflows) and suggest starting each via Phase 0.0.
+
+## 2026-02-16
+
+### Q: Can we park two follow-up WF ideas for now and where should they go?
+**A:** Yes. Park them in `docs/parking_lot.md` under **Parked Items** with date, why, and promote-when trigger. Added:
+- Alembic migration baseline (`WF-0012` candidate)
+- One-command local DB verification automation (`WF-0013` candidate)
+
+## 2026-02-16
+
+### Q: Can we discard SQLite completely and use only PostgreSQL for local/prod workflow?
+**A:** Yes. Locked as Postgres-only runtime: backend now requires `DATABASE_URL` and no longer falls back to SQLite. Updated code (`backend/app/db.py`) and operational docs (`backend/.env.example`, `backend/README.md`, `AGENTS.md`) accordingly.
+
+## 2026-02-16
+
+### Q: Why does README readiness check fail even when `DATABASE_URL` is set in `backend/.env`?
+**A:** The one-liner imports `app.db` directly; previously `app.db` did not load `.env` automatically (only `main.py` did). Updated `backend/app/db.py` to load `backend/.env` with `override=False`, so direct CLI imports now pick up `DATABASE_URL` consistently.

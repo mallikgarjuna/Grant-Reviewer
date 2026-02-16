@@ -426,3 +426,19 @@
 ### 16:55 - Supported Calls Visibility Redesign (NL/EU Grouped Cards)
 > User requested improving the supported-calls design so NL and EU groups (and their child programs) are easier to scan.
 > Outcome: Replaced the single-line supported-calls block in `frontend/src/app/page.tsx` with a static two-card grouped layout (`NL` and `EU/Horizon-Europe`) and pill-style child programs (`NWO`, `ZonMw`, `ERC`, `MSCA`), while preserving the original one-line copy beneath for continuity. Verified with `cd frontend && npm run -s lint`.
+
+### 23:03 - Memory Rule Added for “Next 2” Guidance Format
+> User requested a durable response-format rule: use end-to-end phase runners (not part files) for “Next 2 actions,” and after Phase 4 completion switch to “Next 2 WF ideas/features.”
+> Outcome: Updated `AGENTS.md` Always rules and logged the clarification in `docs/logs/qa_history.md` + `docs/logs/prompt_history.md` for zero-latency memory.
+
+### 23:10 - Parked Follow-up WF Ideas in Backlog
+> User asked to park two follow-up ideas for later and commit them.
+> Outcome: Added two dated parked items to `docs/parking_lot.md` (WF-0012 Alembic baseline, WF-0013 local DB verification automation) and logged the clarification in Q&A.
+
+### 23:20 - Postgres-only Runtime Policy Applied
+> User requested removing SQLite completely to avoid dual-DB confusion.
+> Outcome: Removed SQLite fallback from backend DB resolution (`DATABASE_URL` required), aligned backend/env/agent docs to Postgres-only operation, and recorded decision AD 11.4.
+
+### 23:28 - Fixed README Readiness Check Env Loading
+> User reported `DATABASE_URL is required` while running the README readiness command despite setting `backend/.env`.
+> Outcome: Updated `backend/app/db.py` to load `backend/.env` (same behavior as `main.py`) so direct `uv run python -c ...` imports resolve `DATABASE_URL` consistently.
