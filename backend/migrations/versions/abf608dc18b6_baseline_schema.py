@@ -183,4 +183,9 @@ def downgrade() -> None:
     op.drop_table('prompt_templates')
     op.drop_index(op.f('ix_funding_agencies_short_name'), table_name='funding_agencies')
     op.drop_table('funding_agencies')
+    op.execute("DROP TYPE IF EXISTS reviewstatus")
+    op.execute("DROP TYPE IF EXISTS reviewrating")
+    op.execute("DROP TYPE IF EXISTS evaluationintent")
+    op.execute("DROP TYPE IF EXISTS expectationstrength")
+    op.execute("DROP TYPE IF EXISTS nodetype")
     # ### end Alembic commands ###
