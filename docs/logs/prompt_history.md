@@ -430,3 +430,7 @@
 ### 23:03 - Memory Rule Added for “Next 2” Guidance Format
 > User requested a durable response-format rule: use end-to-end phase runners (not part files) for “Next 2 actions,” and after Phase 4 completion switch to “Next 2 WF ideas/features.”
 > Outcome: Updated `AGENTS.md` Always rules and logged the clarification in `docs/logs/qa_history.md` + `docs/logs/prompt_history.md` for zero-latency memory.
+
+### 23:10 - Parked Follow-up WF Ideas in Backlog
+> User asked to park two follow-up ideas for later and commit them.
+> Outcome: Added two dated parked items to `docs/parking_lot.md` (WF-0012 Alembic baseline, WF-0013 local DB verification automation) and logged the clarification in Q&A.

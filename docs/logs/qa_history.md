@@ -147,3 +147,10 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: How should “Next 2 actions” be formatted going forward in workflow guidance?
 **A:** Before Phase 4 completion, provide only end-to-end runner options (e.g., `phase-1-run-spec`, `phase-2-run-prd`, `phase-3-run-task`) instead of part-level phase files. After Phase 4 completion, replace that section with “Next 2 WF ideas/features” (candidate follow-up workflows) and suggest starting each via Phase 0.0.
+
+## 2026-02-16
+
+### Q: Can we park two follow-up WF ideas for now and where should they go?
+**A:** Yes. Park them in `docs/parking_lot.md` under **Parked Items** with date, why, and promote-when trigger. Added:
+- Alembic migration baseline (`WF-0012` candidate)
+- One-command local DB verification automation (`WF-0013` candidate)
