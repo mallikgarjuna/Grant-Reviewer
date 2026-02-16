@@ -159,3 +159,8 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Can we discard SQLite completely and use only PostgreSQL for local/prod workflow?
 **A:** Yes. Locked as Postgres-only runtime: backend now requires `DATABASE_URL` and no longer falls back to SQLite. Updated code (`backend/app/db.py`) and operational docs (`backend/.env.example`, `backend/README.md`, `AGENTS.md`) accordingly.
+
+## 2026-02-16
+
+### Q: Why does README readiness check fail even when `DATABASE_URL` is set in `backend/.env`?
+**A:** The one-liner imports `app.db` directly; previously `app.db` did not load `.env` automatically (only `main.py` did). Updated `backend/app/db.py` to load `backend/.env` with `override=False`, so direct CLI imports now pick up `DATABASE_URL` consistently.

@@ -5,10 +5,18 @@ Uses PostgreSQL via DATABASE_URL. No SQLite fallback.
 """
 
 import os
+from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
+from dotenv import load_dotenv
 from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine
+
+# Local developer convenience: load `backend/.env` when present.
+# In prod, prefer injecting env vars via the deployment environment.
+_BACKEND_ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
+if _BACKEND_ENV_PATH.is_file():
+    load_dotenv(dotenv_path=_BACKEND_ENV_PATH, override=False)
 
 
 def normalize_database_url(raw_url: str) -> str:

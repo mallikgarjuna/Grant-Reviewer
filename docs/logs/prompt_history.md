@@ -438,3 +438,7 @@
 ### 23:20 - Postgres-only Runtime Policy Applied
 > User requested removing SQLite completely to avoid dual-DB confusion.
 > Outcome: Removed SQLite fallback from backend DB resolution (`DATABASE_URL` required), aligned backend/env/agent docs to Postgres-only operation, and recorded decision AD 11.4.
+
+### 23:28 - Fixed README Readiness Check Env Loading
+> User reported `DATABASE_URL is required` while running the README readiness command despite setting `backend/.env`.
+> Outcome: Updated `backend/app/db.py` to load `backend/.env` (same behavior as `main.py`) so direct `uv run python -c ...` imports resolve `DATABASE_URL` consistently.
