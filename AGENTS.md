@@ -173,3 +173,7 @@ Guideline:
 - Don’t skip phase gates for non-trivial features; keep artifacts (PRD/task/walkthrough) in sync with `docs/index.md`.
 - Don’t block MVP progress on pre-existing repo-wide lint debt; enforce lint on changed files/touched modules and track full cleanup as a separate task.
 - Before starting the next major task (especially without a remote), create a local integration milestone: merge completed task branches into one branch, tag it, and create a `git bundle` backup.
+- Never treat an external agent's `implementation_plan.md` (e.g. Antigravity) as a substitute for WF artifacts (brainstorm/spec/PRD/tasks). Always create and commit proper WF artifacts before writing code.
+- When the user explicitly grants self-directed execution for small-scope WFs, proceed through all phases using own best recommendations without waiting for signals. Default: wait for signals at each phase gate.
+- Always execute Part A (generate), Part B (review, no edits), and Part C (revise) explicitly in every phase runner — even in self-directed mode. Print PART headers, document findings, and output the traceability statement. No compression into a single step (see `docs/lessons.md` L23).
+- **AGENTS.md is the SSOT for project rules and lessons.** Any coding agent (Antigravity, Codex, etc.) must update `AGENTS.md` — never agent-specific files like `GEMINI.md` — for project-level rules. Agent-specific files should reference `AGENTS.md`.

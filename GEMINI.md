@@ -74,14 +74,12 @@ Update `./docs/lessons.md` for **codebase-specific** pitfalls.
 
 ## Lessons
 
-- I must follow the **Product Engineering Pipeline** defined in `AGENTS.md`.
+**Project-level rules live in `AGENTS.md`.** This section is for agent-behavioral reminders only.
+
 - I must never assume "LGTM" on an artifact means "proceed"; wait for explicit approval.
 - **CRITICAL**: I must ALWAYS wait for the user's explicit signal BEFORE moving to writing code.
 - **Browser Autonomy**: When testing in the Agentic Browser, continue testing without asking for confirmation unless sensitive.
-- **Phase Gate Protocol**: Strictly respect Phase Gates as defined in `docs/workflow/README.md`.
-- **No Shortcutting Artifacts**: Never treat an Antigravity `implementation_plan.md` as a substitute for WF artifacts (brainstorm/spec/PRD/tasks). Always create and commit proper WF artifacts before writing code.
-- **Self-Directed Small Scope**: When user explicitly authorizes for small-scope WFs, proceed through all phases using own recommendations without waiting for signals.
-- **Part A/B/C Discipline**: Always execute Part A (generate), Part B (review, no edits), and Part C (revise) explicitly in every phase runner — even in self-directed mode. Print PART headers, document findings, and output the traceability statement. No compression into a single step.
+- For all project-level rules (phase gates, artifact discipline, Part A/B/C, self-directed scope, etc.), see `AGENTS.md` § "Systemic coordination failures".
 
 ---
 
