@@ -79,6 +79,8 @@ Update `./docs/lessons.md` for **codebase-specific** pitfalls.
 - **CRITICAL**: I must ALWAYS wait for the user's explicit signal BEFORE moving to writing code.
 - **Browser Autonomy**: When testing in the Agentic Browser, continue testing without asking for confirmation unless sensitive.
 - **Phase Gate Protocol**: Strictly respect Phase Gates as defined in `docs/workflow/README.md`.
+- **No Shortcutting Artifacts**: Never treat an Antigravity `implementation_plan.md` as a substitute for WF artifacts (brainstorm/spec/PRD/tasks). Always create and commit proper WF artifacts before writing code.
+- **Self-Directed Small Scope**: When user explicitly authorizes for small-scope WFs, proceed through all phases using own recommendations without waiting for signals.
 
 ---
 
