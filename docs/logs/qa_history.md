@@ -176,3 +176,6 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Should we rewrite past WF commits that missed slug text, or enforce the rule going forward?
 **A:** Enforce going forward only. Keep existing commit history unchanged unless an explicit history-rewrite request is made.
+
+### Q: What should the assistant say after pushing to remote regarding docs updates?
+**A:** After every successful push, explicitly confirm that docs/WF artifacts were updated before push (or explicitly state that no docs updates were required).
