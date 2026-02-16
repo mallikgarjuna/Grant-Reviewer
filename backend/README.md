@@ -63,6 +63,18 @@ docker compose -f docker-compose.dev.yml up -d
 docker compose -f docker-compose.dev.yml ps
 ```
 
+Optional DB GUI (pgAdmin):
+- Open `http://localhost:5050`
+- Login with:
+  - Email: `admin@local.dev`
+  - Password: `admin`
+- Add server in pgAdmin with:
+  - Host: `postgres`
+  - Port: `5432`
+  - Username: `grant`
+  - Password: `grant`
+  - Database: `grant_reviewer_dev`
+
 ### 2) Configure local env
 
 In `backend/.env`, use localhost Postgres:
