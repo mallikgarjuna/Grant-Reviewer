@@ -111,3 +111,8 @@
 **Issue**: For very small-scope items (≤3 files, clear requirements), asking for user approval at every phase gate creates unnecessary friction.
 **Fix**: When the user explicitly grants self-directed execution for small scope, the agent may proceed through all phases using its own best recommendations without waiting for signals.
 **Prevention**: Only apply self-directed mode when explicitly authorized by user AND scope is genuinely small. Default remains: wait for signals at each phase gate.
+
+### L23: Always Execute Part A/B/C Explicitly in Phase Runners
+**Issue**: During self-directed WF execution, agent compressed Parts A (generate), B (review), and C (revise) into a single artifact write per phase. No Part B review findings were documented, no traceability statements were printed, and no PART A/B/C headers were shown.
+**Fix**: Even in self-directed mode, execute each part sequentially: write the artifact (A), then review it without editing (B), then revise and bump version (C). Document Part B findings and print the traceability statement at the end of each phase runner.
+**Prevention**: Treat Part A/B/C as mandatory process steps regardless of scope or self-directed authorization. The discipline exists to catch blind spots, not just to satisfy a gate.

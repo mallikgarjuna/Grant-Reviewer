@@ -81,6 +81,7 @@ Update `./docs/lessons.md` for **codebase-specific** pitfalls.
 - **Phase Gate Protocol**: Strictly respect Phase Gates as defined in `docs/workflow/README.md`.
 - **No Shortcutting Artifacts**: Never treat an Antigravity `implementation_plan.md` as a substitute for WF artifacts (brainstorm/spec/PRD/tasks). Always create and commit proper WF artifacts before writing code.
 - **Self-Directed Small Scope**: When user explicitly authorizes for small-scope WFs, proceed through all phases using own recommendations without waiting for signals.
+- **Part A/B/C Discipline**: Always execute Part A (generate), Part B (review, no edits), and Part C (revise) explicitly in every phase runner — even in self-directed mode. Print PART headers, document findings, and output the traceability statement. No compression into a single step.
 
 ---
 
