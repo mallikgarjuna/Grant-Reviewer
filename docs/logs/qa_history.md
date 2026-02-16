@@ -173,3 +173,6 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: What commit-message format should we enforce for WF work?
 **A:** Every WF commit message must include both the WF ID and the relevant slug so history is self-describing (e.g., `WF-0012: alembic-migration-baseline - <change>`).
+
+### Q: Should we rewrite past WF commits that missed slug text, or enforce the rule going forward?
+**A:** Enforce going forward only. Keep existing commit history unchanged unless an explicit history-rewrite request is made.

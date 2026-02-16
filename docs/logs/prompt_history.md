@@ -472,3 +472,7 @@
 ### 10:15 - Commit Message Slug Rule Added
 > User requested a new rule that WF commit messages include the relevant slug.
 > Outcome: Updated AGENTS + Q&A logs to enforce commit messages that include both WF ID and slug for clearer traceability.
+
+### 10:20 - Commit History Handling Decision for Slug Rule
+> User selected option `2` for commit-history handling.
+> Outcome: Confirmed no retroactive history rewrite; enforce slug-inclusive WF commit messages from this point forward.
