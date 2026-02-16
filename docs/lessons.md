@@ -101,3 +101,18 @@
 **Issue**: Render free instances do not support interactive shell, so you can’t run bootstrap scripts inside the service.
 **Fix**: Run bootstrap scripts locally against the same production Neon DB used by Render (export `DATABASE_URL` and run `uv run python ...`).
 **Prevention**: Always document bootstrap as an explicit “run from dev machine” step and verify via the deployed API (`/calls`, `/health/db`) afterward.
+
+### L21: Never Skip Phase-Gated Workflow for Non-Trivial Features
+**Issue**: Agent treated Antigravity `implementation_plan.md` as a substitute for the WF artifact chain (brainstorm → spec → PRD → tasks), and treated "LGTM" on that plan as "go ahead and code". This skipped Phases 0–3 entirely.
+**Fix**: Always follow `docs/workflow/README.md` for any non-trivial feature. An Antigravity implementation plan is NOT a WF artifact. Phase gates must be respected regardless of how clear the scope seems.
+**Prevention**: Before writing any code for a new WF, verify that Phases 0–3 artifacts exist and are committed. No exceptions.
+
+### L22: Small-Scope WFs Can Run Self-Directed
+**Issue**: For very small-scope items (≤3 files, clear requirements), asking for user approval at every phase gate creates unnecessary friction.
+**Fix**: When the user explicitly grants self-directed execution for small scope, the agent may proceed through all phases using its own best recommendations without waiting for signals.
+**Prevention**: Only apply self-directed mode when explicitly authorized by user AND scope is genuinely small. Default remains: wait for signals at each phase gate.
+
+### L23: Always Execute Part A/B/C Explicitly in Phase Runners
+**Issue**: During self-directed WF execution, agent compressed Parts A (generate), B (review), and C (revise) into a single artifact write per phase. No Part B review findings were documented, no traceability statements were printed, and no PART A/B/C headers were shown.
+**Fix**: Even in self-directed mode, execute each part sequentially: write the artifact (A), then review it without editing (B), then revise and bump version (C). Document Part B findings and print the traceability statement at the end of each phase runner.
+**Prevention**: Treat Part A/B/C as mandatory process steps regardless of scope or self-directed authorization. The discipline exists to catch blind spots, not just to satisfy a gate.

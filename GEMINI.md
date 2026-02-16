@@ -74,11 +74,12 @@ Update `./docs/lessons.md` for **codebase-specific** pitfalls.
 
 ## Lessons
 
-- I must follow the **Product Engineering Pipeline** defined in `AGENTS.md`.
+**Project-level rules live in `AGENTS.md`.** This section is for agent-behavioral reminders only.
+
 - I must never assume "LGTM" on an artifact means "proceed"; wait for explicit approval.
 - **CRITICAL**: I must ALWAYS wait for the user's explicit signal BEFORE moving to writing code.
 - **Browser Autonomy**: When testing in the Agentic Browser, continue testing without asking for confirmation unless sensitive.
-- **Phase Gate Protocol**: Strictly respect Phase Gates as defined in `docs/workflow/README.md`.
+- For all project-level rules (phase gates, artifact discipline, Part A/B/C, self-directed scope, etc.), see `AGENTS.md` § "Systemic coordination failures".
 
 ---
 
