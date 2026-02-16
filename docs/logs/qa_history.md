@@ -170,3 +170,6 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: What must completion summaries include after each phase/part/action?
 **A:** Include explicit provenance for that completed step: which files were considered/edited and which skills/instructions were used.
+
+### Q: What commit-message format should we enforce for WF work?
+**A:** Every WF commit message must include both the WF ID and the relevant slug so history is self-describing (e.g., `WF-0012: alembic-migration-baseline - <change>`).

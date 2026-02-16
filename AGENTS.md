@@ -25,7 +25,7 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 - Never commit directly to `main`.
 - WF IDs start after the legacy Task IDs (first WF is `WF-0009`; see `docs/index.md`).
 - Branch naming (WF): `wf/<WF-ID>-<slug>` (example: `wf/WF-0009-landing-page`).
-- Commit messages should start with the WF ID (example: `WF-0009: add landing hero CTA`).
+- Commit messages should start with the WF ID and include the workflow slug (example: `WF-0009: peerlens-landing-page - add landing hero CTA`).
 - Keep diffs small; avoid drive-by refactors.
 - Do not commit secrets (`.env`, API keys). Keep `backend/data/*.db` gitignored.
 

@@ -468,3 +468,7 @@
 ### 10:08 - Reporting Provenance Rule Added
 > User requested that completion summaries always include what files/skills/instructions were considered for each completed phase/part/action.
 > Outcome: Added an always-on AGENTS rule and logged corresponding Q&A clarification.
+
+### 10:15 - Commit Message Slug Rule Added
+> User requested a new rule that WF commit messages include the relevant slug.
+> Outcome: Updated AGENTS + Q&A logs to enforce commit messages that include both WF ID and slug for clearer traceability.
