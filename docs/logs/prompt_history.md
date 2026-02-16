@@ -460,3 +460,11 @@
 ### 09:50 - WF-0012 Phase 3 Runner (Tasks) Execution
 > User selected next action `1` to run Phase 3 runner for WF-0012.
 > Outcome: Generated task breakdown v0.1 from PRD, ran no-edit task review, revised to tasks v0.2 (`Ready for Implementation`), and updated WF-0012 status to `Phase 3 (Ready)`.
+
+### 10:05 - WF-0012 Phase 4.1 Implementation Completed
+> User selected next action `1` to run Phase 4.1 implementation for WF-0012.
+> Outcome: Implemented all six tasks with per-task commits: Alembic dependency/scaffold, Postgres metadata wiring, baseline migration generation, reversible lifecycle validation, backend migration runbook updates, and walkthrough/index/decision sync. WF-0012 status set to `Done`.
+
+### 10:08 - Reporting Provenance Rule Added
+> User requested that completion summaries always include what files/skills/instructions were considered for each completed phase/part/action.
+> Outcome: Added an always-on AGENTS rule and logged corresponding Q&A clarification.

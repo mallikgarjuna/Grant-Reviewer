@@ -167,3 +167,6 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: In workflow runners, do we require commits after each Part and each Phase, and should brainstorming be interactive when requested?
 **A:** Yes. Enforce commit boundaries per runner part (Part A output commit, Part C revision commit, and Part B commit only if it includes edits) and per phase gate. When a user requests an interactive brainstorm, run it interactively rather than silently synthesizing answers.
+
+### Q: What must completion summaries include after each phase/part/action?
+**A:** Include explicit provenance for that completed step: which files were considered/edited and which skills/instructions were used.

@@ -130,6 +130,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - Before pushing any branch to a remote, update `docs/` with all relevant work done on that branch (status/index, decisions, Q&A, prompt history, walkthrough/task artifacts as applicable).
 - Be explicit about what you didn’t verify and what to run next.
 - At the end of every response, explicitly tell/ask the user what to do or prompt next.
+- When reporting completion of a phase/part/action, explicitly list the files and skills/instructions used for that step.
 - For workflow guidance in responses: before Phase 4 completion, present “Next 2 actions” as end-to-end phase runner options (`phase-1-run-spec`, `phase-2-run-prd`, `phase-3-run-task`) rather than split part files.
 - After Phase 4 is completed, replace “Next 2 actions” with “Next 2 WF ideas/features” phrased as candidate follow-up workflows (with suggested Phase 0.0 starts).
 

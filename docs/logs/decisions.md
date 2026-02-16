@@ -459,3 +459,11 @@
 - **Why**: Keeps migration history trustworthy and avoids rewriting applied revisions.
 - **Tradeoff**: Some local environments may require manual cleanup before converging to the baseline.
 - **Status**: Approved.
+
+### AD 12.3: Explicit enum type cleanup in baseline downgrade for re-upgrade safety
+- **WF ID**: WF-0012
+- **Context**: Baseline downgrade left PostgreSQL enum types behind, causing re-upgrade failure (`DuplicateObject` on enum creation).
+- **Decision**: Add explicit `DROP TYPE IF EXISTS` statements for workflow enums in baseline migration downgrade.
+- **Why**: Ensures baseline migration remains reversible on local Postgres verification cycles.
+- **Tradeoff**: Downgrade now assumes enum types are owned by this schema/migration path, which is valid for this baseline.
+- **Status**: Implemented.
