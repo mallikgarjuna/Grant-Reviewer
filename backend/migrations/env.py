@@ -2,11 +2,9 @@ import os
 from logging.config import fileConfig
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
-from sqlalchemy import pool
-from sqlalchemy.engine import Connection
-from sqlalchemy.engine import engine_from_config
-
 from alembic import context
+from sqlalchemy import pool
+from sqlalchemy.engine import Connection, engine_from_config
 from sqlmodel import SQLModel
 
 # Import model module so SQLModel metadata is populated.

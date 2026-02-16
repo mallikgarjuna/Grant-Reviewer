@@ -819,4 +819,3 @@ def test_list_reviews_unauthenticated_returns_401(monkeypatch) -> None:
     response = client.get("/reviews")
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "UNAUTHORIZED"
-

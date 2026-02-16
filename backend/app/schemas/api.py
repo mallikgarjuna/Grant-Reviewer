@@ -117,4 +117,3 @@ class ReviewsListResponse(BaseModel):
     """Response for GET /reviews."""
 
     reviews: list[ReviewListItem]
-

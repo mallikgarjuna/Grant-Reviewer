@@ -336,4 +336,3 @@ class ReviewRepository:
             .limit(capped_limit)
         )
         return list(self.session.exec(statement).all())
-

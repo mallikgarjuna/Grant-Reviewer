@@ -467,3 +467,12 @@
 - **Why**: Ensures baseline migration remains reversible on local Postgres verification cycles.
 - **Tradeoff**: Downgrade now assumes enum types are owned by this schema/migration path, which is valid for this baseline.
 - **Status**: Implemented.
+
+---
+
+## Date: 2026-02-16 (WF-0014: Review History)
+
+### AD 14.1: Simple Pagination for Reviews List
+- **Decision**: `GET /reviews` uses a simple `limit` parameter (default 50, max 100) and no cursor/offset for MVP.
+- **Rationale**: User volume is low; complex pagination is premature optimization.
+- **Status**: Implemented.

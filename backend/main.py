@@ -456,7 +456,8 @@ def list_reviews(
 ) -> ReviewsListResponse:
     """List reviews for the authenticated user."""
     rows = repository.list_reviews_for_external_user(
-        external_user_id, limit=limit,
+        external_user_id,
+        limit=limit,
     )
     return ReviewsListResponse(
         reviews=[
