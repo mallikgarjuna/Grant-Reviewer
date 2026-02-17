@@ -126,3 +126,8 @@
 **Issue**: Agent merged the feature branch into local `main` but did not `git push origin main`, leaving local and remote out of sync. User had to flag the discrepancy.
 **Fix**: "Ship it" = merge to `main` AND push to `origin`. Both steps are required.
 **Prevention**: After any merge to `main`, always run `git push origin main` and verify with `git log --oneline --decorate -1` that `origin/main` matches `HEAD`.
+
+### L27: Workflow Runners contain References, not Rules
+**Issue**: Agent skipped branch creation because `run-lifecycle-auto.md` listed "Phase 0.0" as a single bullet without explicit sub-steps.
+**Fix**: Updated runners to explicitly reference `phase-0-0-start-workflow.md`.
+**Prevention**: Always read the detailed phase file referenced in the runner before executing the phase. The runner is a router, not the full protocol.
