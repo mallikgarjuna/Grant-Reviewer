@@ -134,7 +134,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - **Ship It = PR -> Merge**: To follow industry standards, `ship it` means:
   1. Push feature branch to `origin`.
   2. Create a PR via `gh pr create --fill`.
-  3. Merge via `gh pr merge --auto --merge` (or wait for approval if required).
+  3. Merge via `gh pr merge --auto --merge --delete-branch` (or wait for approval if required).
   4. Sync local `main` via `git checkout main && git pull`.
   Local merges are discouraged.
 - Be explicit about what you didn’t verify and what to run next.
