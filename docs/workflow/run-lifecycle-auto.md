@@ -15,12 +15,12 @@ Reference in chat: `@docs/workflow/run-lifecycle-auto.md`
 ## Execution Flow
 **(No stops until implementation is done)**
 
-1. **Phase 0.0 (Start)**: Initialize -> **Create Branch** (`git checkout -b wf/WF-XXXX-slug`).
-2. **Phase 0.1 (Brainstorm)**: 5 questions in one batch -> Baseline.
-3. **Phase 1 (Spec)**: Generate -> Self-Review -> Revise.
-4. **Phase 2 (PRD)**: Generate -> Self-Audit -> Revise.
-5. **Phase 3 (Tasks)**: Generate -> Self-Review -> Revise.
-6. **Phase 4 (Implement)**: Code -> Verify -> Walkthrough.
+1. **Phase 0.0 (Start)**: Initialize -> **Create Branch** (`git checkout -b wf/WF-XXXX-slug`). (Ref: `@docs/workflow/phase-0-0-start-workflow.md`)
+2. **Phase 0.1 (Brainstorm)**: 5 questions in one batch -> Baseline. (Ref: `@docs/workflow/phase-0-1-brainstorm.md`)
+3. **Phase 1 (Spec)**: Generate -> Self-Review -> Revise. (Ref: `@docs/workflow/phase-1-run-spec.md`)
+4. **Phase 2 (PRD)**: Generate -> Self-Audit -> Revise. (Ref: `@docs/workflow/phase-2-run-prd.md`)
+5. **Phase 3 (Tasks)**: Generate -> Self-Review -> Revise. (Ref: `@docs/workflow/phase-3-run-task.md`)
+6. **Phase 4 (Implement)**: Code -> Verify -> Walkthrough. (Ref: `@docs/workflow/phase-4-1-implement-tasks.md`)
    - *Stop*
 
 ## How to Invoke
