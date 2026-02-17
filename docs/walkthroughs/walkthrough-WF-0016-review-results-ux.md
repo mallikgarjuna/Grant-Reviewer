@@ -40,3 +40,21 @@ We upgraded the Review Results UX to present feedback in a structured "Scorecard
 ## 5. Next Steps
 - Consider adding "Group by Section" if we support multi-section reviews in the future.
 - Add animation for the score badge appearing.
+
+## 6. Post-Review Hardening (2026-02-17)
+
+Follow-up fixes were applied after a focused implementation review:
+
+- **ScoreBadge safety + clarity**:
+  - Removed optimistic fallback that previously rendered unknown ratings as `NOTE`.
+  - Added explicit neutral fallback (`Unrated`, 0 active dots) for unexpected values.
+  - Switched badge copy from pseudo-numeric labels (e.g., `GOOD (4/5)`) to qualitative labels (`Excellent`, `Good`, `Fair`, `Needs Improvement`) to match the enum-driven scale.
+- **Summary spacing edge case**:
+  - Page now conditionally renders the summary container only when `overall_summary` contains non-whitespace text.
+  - Prevents empty vertical gaps for pending/failed/no-summary reviews.
+- **Backend assertion hardening**:
+  - API test now validates the joined `criterion_description` value (not just field presence), improving regression detection for repository join/mapping paths.
+
+### Post-Review Verification
+- `cd backend && uv run pytest tests/test_api.py -k create_review_success_with_stub_mode` passed.
+- `cd frontend && npm run lint` passed.

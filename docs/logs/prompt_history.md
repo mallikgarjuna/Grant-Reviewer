@@ -497,3 +497,17 @@
 - **Agent**: Promoted to WF-0013, initially skipped WF phases, corrected after user feedback.
 - **Lessons logged**: L21 (never skip phase gates), L22 (small-scope self-directed).
 - **Result**: Full WF pipeline (Phase 0-4) executed self-directed. Implementation committed on `wf/WF-0013-app-shell-signout`.
+
+## 2026-02-17
+
+### 09:40 - WF-0016 Scorecard Critical Review + Hardening
+> User requested a targeted implementation review of WF-0016 (Scorecard UX) across frontend components and backend/BFF criterion-description flow.
+> Outcome: Review identified edge-case hardening items and they were implemented:
+> - `ScoreBadge` now uses an explicit neutral fallback (`Unrated`) for unexpected rating values.
+> - Summary container rendering is now conditional on non-empty `overall_summary` to avoid empty spacing.
+> - API test now asserts concrete `criterion_description` content from join mapping.
+> Verification run: `cd backend && uv run pytest tests/test_api.py -k create_review_success_with_stub_mode`, `cd frontend && npm run lint`, `uvx pre-commit run --all-files`.
+
+### 09:50 - Wrap Up Requested
+> User requested `wrap up` via code phrase.
+> Outcome: Updated WF-0016 docs (`walkthrough` + `prompt_history`), committed wrap-up docs updates on `wf/WF-0016-review-results-ux`, and prepared/pushed branch without merge.
