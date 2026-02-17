@@ -15,7 +15,7 @@ Reference in chat: `@docs/workflow/run-lifecycle-auto.md`
 ## Execution Flow
 **(No stops until implementation is done)**
 
-1. **Phase 0.0 (Start)**: Initialize.
+1. **Phase 0.0 (Start)**: Initialize -> **Create Branch** (`git checkout -b wf/WF-XXXX-slug`).
 2. **Phase 0.1 (Brainstorm)**: 5 questions in one batch -> Baseline.
 3. **Phase 1 (Spec)**: Generate -> Self-Review -> Revise.
 4. **Phase 2 (PRD)**: Generate -> Self-Audit -> Revise.

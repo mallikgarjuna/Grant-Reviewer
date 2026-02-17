@@ -11,7 +11,7 @@ Reference in chat: `@docs/workflow/run-lifecycle-interactive.md`
 - Title, Type, Slug
 
 ## Execution Flow
-1. **Phase 0.0 (Start)**: Initialize branch/files.
+1. **Phase 0.0 (Start)**: Initialize -> **Create Branch** (`git checkout -b wf/WF-XXXX-slug`).
    - *Wait for User Signal*
 2. **Phase 0.1 (Brainstorm)**: Interactive session.
    - *Wait for User Signal*
