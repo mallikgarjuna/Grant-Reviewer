@@ -336,6 +336,7 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
     assert detail_payload["review"]["status"] == "COMPLETED"
     assert len(detail_payload["cards"]) == 1
     assert detail_payload["cards"][0]["criterion"] == "Excellence"
+    assert "criterion_description" in detail_payload["cards"][0]
     assert detail_payload["cards"][0]["rating"] == "NOTE"
 
 
