@@ -1,8 +1,8 @@
 # WF-0012 — Alembic Migration Baseline
 
-Artifact: walkthrough  
-Version: v0.1  
-Status: Complete  
+Artifact: walkthrough
+Version: v0.1
+Status: Complete
 Last Updated: 2026-02-16
 
 ## Summary

@@ -19,8 +19,8 @@ The `ReviewerService._generate_mock_feedback()` returns hardcoded placeholder te
 ## User Stories
 
 ### US-6.1: Receive AI Feedback
-**As a** researcher,  
-**I want** to submit my proposal text and receive AI-generated feedback,  
+**As a** researcher,
+**I want** to submit my proposal text and receive AI-generated feedback,
 **So that** I can improve my proposal before submission.
 
 **Acceptance Criteria:**
@@ -30,8 +30,8 @@ The `ReviewerService._generate_mock_feedback()` returns hardcoded placeholder te
 - Response time < 30 seconds.
 
 ### US-6.2: Debug Prompt Issues
-**As a** developer,  
-**I want** to see the exact prompt sent, raw LLM response, and model used,  
+**As a** developer,
+**I want** to see the exact prompt sent, raw LLM response, and model used,
 **So that** I can iterate on prompt design and track performance.
 
 **Acceptance Criteria:**
@@ -124,16 +124,16 @@ You are a grant proposal reviewer evaluating text against specific criteria.
 
 ## Clarifications & Answers
 
-**Q1: Are ratings deferred or removed?**  
+**Q1: Are ratings deferred or removed?**
 **A:** Deferred. Keep `ReviewCard.rating` in schema (nullable) but populated with mock or default (e.g., `NOTE`) during MVP.
 
-**Q2: How is node_expectation_id validated?**  
+**Q2: How is node_expectation_id validated?**
 **A:** Must exist in DB and belong to the correct `ProposalNode` for the current snippet. Any mismatch triggers `FAILED` status.
 
-**Q3: Is review limited to one ProposalSnippet per request?**  
+**Q3: Is review limited to one ProposalSnippet per request?**
 **A:** Yes. MVP is strictly 1 request = 1 snippet = 1 review.
 
-**Q4: Is prompt versioning in scope?**  
+**Q4: Is prompt versioning in scope?**
 **A:** No. `prompt_sent` in the `Review` record is our source of truth for "what ran".
 
 ---

@@ -8,4 +8,3 @@ During migration:
   - `brainstorm-<WF-ID>-<slug>.md`
 
 Workflow reference (SSOT): `docs/workflow/README.md`
-

@@ -1,8 +1,8 @@
 # WF-0009 — PeerLens Landing Page PRD
 
-Artifact: prd  
-Version: v0.3  
-Status: Ready for Tasks  
+Artifact: prd
+Version: v0.3
+Status: Ready for Tasks
 Last Updated: 2026-02-14
 
 ## 1. In Scope

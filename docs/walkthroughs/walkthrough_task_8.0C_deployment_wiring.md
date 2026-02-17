@@ -1,8 +1,8 @@
 # Walkthrough: Task 8.0C Deployment Wiring (Phase 3)
 
-**Date**: 2026-02-12  
-**Task ID**: 8.0C  
-**Status**: Completed (v1.0 - Deployed on Render/Vercel with Neon; stub-default locked)  
+**Date**: 2026-02-12
+**Task ID**: 8.0C
+**Status**: Completed (v1.0 - Deployed on Render/Vercel with Neon; stub-default locked)
 
 ## Scope Completed In This Pass
 

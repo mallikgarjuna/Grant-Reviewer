@@ -1,8 +1,8 @@
 # WF-0009 — PeerLens Landing Page Tasks
 
-Artifact: task  
-Version: v0.3  
-Status: Ready for Implementation  
+Artifact: task
+Version: v0.3
+Status: Ready for Implementation
 Last Updated: 2026-02-14
 
 ## Task Breakdown (Sequential Order)

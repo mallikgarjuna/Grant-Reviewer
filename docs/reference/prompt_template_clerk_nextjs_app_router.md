@@ -1,7 +1,7 @@
 # Prompt Template: Clerk + Next.js (App Router) for Grant Reviewer
 
-**Date**: 2026-02-10  
-**Scope**: `frontend/` (Next.js App Router)  
+**Date**: 2026-02-10
+**Scope**: `frontend/` (Next.js App Router)
 **Status**: Draft (v0.1)
 
 Use this prompt when asking an LLM to help with Clerk integration for this repo.

@@ -1,8 +1,8 @@
 # WF-0010 — PeerLens Landing Design Refresh
 
-Artifact: brainstorm  
-Version: v0.2  
-Status: Draft  
+Artifact: brainstorm
+Version: v0.2
+Status: Draft
 Last Updated: 2026-02-15
 
 ## Goal

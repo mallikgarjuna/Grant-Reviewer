@@ -1,8 +1,8 @@
 # WF-0012 — Alembic Migration Baseline Spec
 
-Artifact: spec  
-Version: v0.2  
-Status: Ready for PRD  
+Artifact: spec
+Version: v0.2
+Status: Ready for PRD
 Last Updated: 2026-02-16
 
 ## 1. Purpose

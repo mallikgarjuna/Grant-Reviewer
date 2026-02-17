@@ -245,7 +245,7 @@ uv run python scripts/run_review.py
 ✓ Generated 3 ReviewCards with AI feedback
 
 Sample feedback:
-"The objectives of the proposal are not articulated in a clear and 
+"The objectives of the proposal are not articulated in a clear and
 detailed manner..."
 ```
 

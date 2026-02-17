@@ -1,10 +1,10 @@
 # Task 8.1: Lint Baseline Cleanup (Phase 2 Plan)
 
-**Date**: 2026-02-13  
-**Task ID**: 8.1  
-**Pipeline Phase**: Phase 2 (Task breakdown)  
-**Status**: Complete (v0.3)  
-**PRD**: `docs/prds/prd-8.1-lint-baseline-cleanup.md`  
+**Date**: 2026-02-13
+**Task ID**: 8.1
+**Pipeline Phase**: Phase 2 (Task breakdown)
+**Status**: Complete (v0.3)
+**PRD**: `docs/prds/prd-8.1-lint-baseline-cleanup.md`
 
 ---
 

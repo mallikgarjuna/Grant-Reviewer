@@ -1,9 +1,9 @@
 # WF-XXXX — <Title> Brainstorm
 
-Artifact: brainstorm  
-Version: v0.1  
-Status: Draft  
-Last Updated: YYYY-MM-DD  
+Artifact: brainstorm
+Version: v0.1
+Status: Draft
+Last Updated: YYYY-MM-DD
 
 ---
 

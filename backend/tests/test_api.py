@@ -725,7 +725,7 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "VALIDATION_ERROR": 400,
         "INTERNAL_ERROR": 500,
     }
-    assert ERROR_STATUS_BY_CODE == expected
+    assert expected == ERROR_STATUS_BY_CODE
 
 
 # ── GET /reviews (list) ──────────────────────────────────────────────

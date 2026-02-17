@@ -31,8 +31,8 @@ After completing a phase, **commit any artifacts you created/edited in that phas
 
 All initiatives use an incremental ID:
 
-WF-0001  
-WF-0002  
+WF-0001
+WF-0002
 WF-0003
 
 Rules:
@@ -59,10 +59,10 @@ All artifacts must follow this format:
 
 Examples:
 
-brainstorm-WF-0007-landing-page.md  
-spec-WF-0007-landing-page.md  
-prd-WF-0007-landing-page.md  
-task-WF-0007-landing-page.md  
+brainstorm-WF-0007-landing-page.md
+spec-WF-0007-landing-page.md
+prd-WF-0007-landing-page.md
+task-WF-0007-landing-page.md
 walkthrough-WF-0007-landing-page.md
 
 Slug rules:
@@ -157,7 +157,7 @@ When Phase 4 is complete and Status = Done:
 
 Each artifact file must contain:
 
-Version: v0.x (while iterating)  
+Version: v0.x (while iterating)
 Version: v1.0 (when locked for next phase)
 
 On every meaningful revision:
@@ -223,8 +223,8 @@ Do NOT log minor wording or cosmetic edits.
 
 All commits must start with WF ID:
 
-WF-0007: implement hero section  
-WF-0007: add empty state handling  
+WF-0007: implement hero section
+WF-0007: add empty state handling
 WF-0007: revise PRD risk audit
 
 This keeps implementation traceable to workflow artifacts.

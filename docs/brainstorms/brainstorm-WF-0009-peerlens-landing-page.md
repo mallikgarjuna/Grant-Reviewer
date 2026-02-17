@@ -1,7 +1,7 @@
 # WF-0009 — PeerLens Landing Page
 
-Artifact: brainstorm  
-Version: v0.19  
+Artifact: brainstorm
+Version: v0.19
 Status: Draft Complete
 Last Updated: 2026-02-14
 
@@ -272,4 +272,3 @@ Recorded for future reference on tone and messaging decisions.
 ### Key Learnings
 - **Tone:** Grounded, specific to funding calls (not generic "grant writing"), emphasis on privacy and "pre-review" nature.
 - **Vocabulary:** Use "Criteria-Aligned," "Pre-Reviewer," "Evidence-Based." Avoid "AI" hype.
-

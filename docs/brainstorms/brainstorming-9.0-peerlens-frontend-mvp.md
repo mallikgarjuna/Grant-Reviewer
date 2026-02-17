@@ -1,10 +1,10 @@
 # Brainstorming 9.0: PeerLens Frontend MVP (Ship-Fast UX + Static Demo)
 
-**Date**: 2026-02-14  
-**Task ID**: 9.0  
-**Pipeline Phase**: Phase 0 (Brainstorming)  
-**Status**: Draft (v0.1)  
-**Last Updated**: 2026-02-14  
+**Date**: 2026-02-14
+**Task ID**: 9.0
+**Pipeline Phase**: Phase 0 (Brainstorming)
+**Status**: Draft (v0.1)
+**Last Updated**: 2026-02-14
 
 ## Goal (MVP)
 
@@ -117,4 +117,3 @@ If approved, Phase 1 PRD should lock:
 ## Revision History
 
 - **v0.1** (2026-02-14): Initial ship-fast Phase 0 decisions + demo draft content.
-

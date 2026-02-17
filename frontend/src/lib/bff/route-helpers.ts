@@ -29,4 +29,3 @@ export function apiErrorResponse(error: ApiError): NextResponse {
     { status: error.status },
   );
 }
-

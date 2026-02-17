@@ -1,9 +1,9 @@
 # PRD 8.0C: MVP Deployment Wiring (Vercel + Clerk + BFF, Render FastAPI, Neon Postgres)
 
-**Status**: Draft (v0.4 - Revised: Neon DB)  
-**Date**: 2026-02-12  
-**Phase**: Phase 1 (PRD)  
-**Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0C-deployment-wiring.md`  
+**Status**: Draft (v0.4 - Revised: Neon DB)
+**Date**: 2026-02-12
+**Phase**: Phase 1 (PRD)
+**Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0C-deployment-wiring.md`
 
 ---
 

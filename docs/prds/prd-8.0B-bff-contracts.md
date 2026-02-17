@@ -1,8 +1,8 @@
 # PRD 8.0B: BFF Contracts (Auth, Quotas, Idempotency, Ownership)
 
-**Status**: Draft (v0.2 - Revised)  
-**Date**: 2026-02-08  
-**Phase**: Phase 1 (PRD)  
+**Status**: Draft (v0.2 - Revised)
+**Date**: 2026-02-08
+**Phase**: Phase 1 (PRD)
 **Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0-frontend-ui.md`
 
 ---

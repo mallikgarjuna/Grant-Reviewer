@@ -1,8 +1,8 @@
 # Task 7.0: FastAPI MVP (Phase 2 Plan)
 
-**Status**: [x] Complete  
-**Phase**: Phase 2 (Task breakdown)  
-**PRD**: `docs/prds/prd-7.0-fastapi-mvp.md`  
+**Status**: [x] Complete
+**Phase**: Phase 2 (Task breakdown)
+**PRD**: `docs/prds/prd-7.0-fastapi-mvp.md`
 **Phase 0 Notes**: `docs/brainstorms/brainstorming-7.0-fastapi-mvp.md`
 
 ---

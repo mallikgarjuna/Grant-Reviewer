@@ -36,7 +36,7 @@ TEST 1: Reviewing Section 1 (has 3 expectations)
 ✓ Generated 3 ReviewCards with AI feedback
 
 Sample feedback:
-"The objectives of the proposal are not articulated in a clear and 
+"The objectives of the proposal are not articulated in a clear and
 detailed manner. It is essential to expand on the specific goals..."
 
 TEST 2: Reviewing Section 2 (has 0 expectations)

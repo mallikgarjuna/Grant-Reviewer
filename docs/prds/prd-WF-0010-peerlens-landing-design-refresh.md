@@ -1,8 +1,8 @@
 # WF-0010 — PeerLens Landing Design Refresh
 
-Artifact: prd  
-Version: v0.3  
-Status: Ready for Tasks  
+Artifact: prd
+Version: v0.3
+Status: Ready for Tasks
 Last Updated: 2026-02-15
 
 ## 1. In Scope
@@ -41,11 +41,11 @@ Last Updated: 2026-02-15
 
 ### Failure Paths
 
-- **FP1: Trust mismatch persists**  
+- **FP1: Trust mismatch persists**
   Visual or copy tone still feels generic/startup-like; user exits without clicking CTA.
-- **FP2: CTA path regressions**  
+- **FP2: CTA path regressions**
   CTA or top-nav sign-in link points incorrectly; conversion path breaks.
-- **FP3: A11y/mobile regressions**  
+- **FP3: A11y/mobile regressions**
   Focus visibility, contrast, or mobile readability degrades after layout changes.
 
 ## 4. Functional Requirements

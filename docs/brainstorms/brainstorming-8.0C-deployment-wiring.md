@@ -1,10 +1,10 @@
 # Brainstorming 8.0C: MVP Deployment Wiring (Next.js + Clerk + BFF, FastAPI, Postgres)
 
-**Date**: 2026-02-10  
-**Task ID**: 8.0C  
-**Pipeline Phase**: Phase 0 (Brainstorming)  
-**Status**: Draft (v0.3 - Revised)  
-**Last Updated**: 2026-02-12  
+**Date**: 2026-02-10
+**Task ID**: 8.0C
+**Pipeline Phase**: Phase 0 (Brainstorming)
+**Status**: Draft (v0.3 - Revised)
+**Last Updated**: 2026-02-12
 
 ## Goal (MVP)
 

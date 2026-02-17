@@ -1,7 +1,7 @@
 # Launch Checklist (Neon + Render + Vercel + Clerk)
 
-**Status**: Draft (v0.1)  
-**Last updated**: 2026-02-12  
+**Status**: Draft (v0.1)
+**Last updated**: 2026-02-12
 
 This checklist is intentionally MVP-focused and biased toward “ship safely with minimal moving parts”.
 
@@ -104,4 +104,3 @@ Then do a one-shot end-to-end test from the frontend UI and capture:
 
 - Walkthrough: `docs/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md`
 - Lessons: `docs/lessons.md` (Neon/Render + dotenv gotchas)
-

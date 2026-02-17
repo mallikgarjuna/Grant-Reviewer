@@ -1,12 +1,12 @@
 # Task 8.0C: Deployment Wiring (Phase 2 Plan)
 
-**Date**: 2026-02-12  
-**Task ID**: 8.0C  
-**Pipeline Phase**: Phase 2 (Task breakdown)  
-**Status**: In Progress (v0.8 - deploy wiring verified; stub-default active)  
-**Last Updated**: 2026-02-12  
-**PRD**: `docs/prds/prd-8.0C-deployment-wiring.md`  
-**Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0C-deployment-wiring.md`  
+**Date**: 2026-02-12
+**Task ID**: 8.0C
+**Pipeline Phase**: Phase 2 (Task breakdown)
+**Status**: In Progress (v0.8 - deploy wiring verified; stub-default active)
+**Last Updated**: 2026-02-12
+**PRD**: `docs/prds/prd-8.0C-deployment-wiring.md`
+**Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0C-deployment-wiring.md`
 
 ---
 

@@ -121,6 +121,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 
 - Make the smallest change that works; follow existing patterns.
 - Verify with tests/build/lint or a reliable manual repro.
+- **Git Hygiene**: Run `pre-commit run --all-files` before committing to ensure clean whitespace and valid config.
 - Before starting a new WF phase (or phase runner), ensure the previous phase’s primary artifact(s) are saved and committed (use `git status --short` to confirm a clean boundary).
 - After completing a WF phase, ensure any artifacts edited/created in that phase are saved and committed before starting the next phase.
 - During phase runners, commit at each part boundary: after Part A outputs, after Part C revisions, and after any Part B edits when applicable (if Part B is no-edit by design, explicitly state no commit needed).

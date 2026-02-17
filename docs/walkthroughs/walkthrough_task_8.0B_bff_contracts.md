@@ -1,7 +1,7 @@
 # Walkthrough: Task 8.0B - BFF Contracts
 
-**Completed**: 2026-02-08  
-**Task ID**: 8.0B  
+**Completed**: 2026-02-08
+**Task ID**: 8.0B
 **Pipeline Phase**: Phase 3 (Implementation)
 
 ## Summary
