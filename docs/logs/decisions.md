@@ -481,3 +481,17 @@
 - **Decision**: "My Reviews" (`/app/reviews`) is backed by a server-side `GET /reviews` endpoint, making history available across devices for authenticated users.
 - **Rationale**: User feedback and implementation reality favor persistent, accessible history over device-scoped MVP limitations.
 - **Status**: Implemented.
+
+---
+
+## Date: 2026-02-17 (WF-0015: Practices Upgrade)
+
+### AD 15.1: Strict Linting on Legacy Code
+- **Decision**: Enforce strict `ruff` + `mypy` on *new* code, but use `per-file-ignores` or configuration excludes for existing legacy violations.
+- **Rationale**: Blocking the upgrade on fixing 100% of legacy debt is impractical.
+- **Status**: Proposed.
+
+### AD 15.2: CI/CD Tooling Selection
+- **Decision**: Use GitHub Actions for CI, `uv` for python management, and `npm` for frontend.
+- **Rationale**: Standard, modern stack with excellent caching support. `uv` is significantly faster than pip/poetry.
+- **Status**: Proposed.
