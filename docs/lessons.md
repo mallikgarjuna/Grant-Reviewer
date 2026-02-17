@@ -116,3 +116,8 @@
 **Issue**: During self-directed WF execution, agent compressed Parts A (generate), B (review), and C (revise) into a single artifact write per phase. No Part B review findings were documented, no traceability statements were printed, and no PART A/B/C headers were shown.
 **Fix**: Even in self-directed mode, execute each part sequentially: write the artifact (A), then review it without editing (B), then revise and bump version (C). Document Part B findings and print the traceability statement at the end of each phase runner.
 **Prevention**: Treat Part A/B/C as mandatory process steps regardless of scope or self-directed authorization. The discipline exists to catch blind spots, not just to satisfy a gate.
+
+### L24: "Ship It" Means Push to Remote
+**Issue**: Agent merged the feature branch into local `main` but did not `git push origin main`, leaving local and remote out of sync. User had to flag the discrepancy.
+**Fix**: "Ship it" = merge to `main` AND push to `origin`. Both steps are required.
+**Prevention**: After any merge to `main`, always run `git push origin main` and verify with `git log --oneline --decorate -1` that `origin/main` matches `HEAD`.
