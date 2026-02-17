@@ -34,4 +34,4 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | **`status`** | Print project status: active WF, parking lot snapshot, recent changes. |
 | **`what's next`** | Suggest top 2 next actions (WF steps or parking lot picks). |
 | **`wrap up`** | End-of-session save: update docs, commit, push. Does **not** merge. |
-| **`ship it`** | Merge feature branch into `main` (local) → push `main` to remote → delete feature branch. |
+| **`ship it`** | Push feature branch → Create GitHub PR (`gh`) → Merge (remote) → Sync local `main`. |

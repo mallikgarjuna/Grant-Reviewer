@@ -129,7 +129,13 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - Update `docs/` as you go (decisions, Q&A, walkthroughs).
 - Before pushing any branch to a remote, update `docs/` with all relevant work done on that branch (status/index, decisions, Q&A, prompt history, walkthrough/task artifacts as applicable).
 - After each successful push to remote, explicitly print a confirmation that docs/WF artifacts were updated before that push (or explicitly state if none were required).
-- **Ship It = Push to Remote**: When the user says "ship it", it means merge to `main` AND `git push origin main`. A local-only merge is considered incomplete.
+- After each successful push to remote, explicitly print a confirmation that docs/WF artifacts were updated before that push (or explicitly state if none were required).
+- **Ship It = PR -> Merge**: To follow industry standards, `ship it` means:
+  1. Push feature branch to `origin`.
+  2. Create a PR via `gh pr create --fill`.
+  3. Merge via `gh pr merge --auto --merge` (or wait for approval if required).
+  4. Sync local `main` via `git checkout main && git pull`.
+  Local merges are discouraged.
 - Be explicit about what you didn’t verify and what to run next.
 - At the end of every response, explicitly tell/ask the user what to do or prompt next.
 - **Code phrases**: The user has shortcut phrases for frequent actions (see `docs/reference/code_phrases.md`). Key ones: **`park this`** (add to parking lot), **`pick P[x] #[n]`** (promote to WF), **`remember this`** (codify rule in `AGENTS.md` or `docs/lessons.md`), **`log this`** (record in `docs/logs/`), **`status`** / **`what's next`** / **`diff`** / **`critical review`** / **`run phase [N]`** / **`go ahead`** / **`update docs`** / **`wrap up`** / **`ship it`**. Recognize and act on these immediately.
