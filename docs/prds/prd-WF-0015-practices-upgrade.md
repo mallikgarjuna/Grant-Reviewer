@@ -1,8 +1,8 @@
 # WF-0015 — Practices Upgrade PRD
 
-Artifact: prd  
-Version: v1.0  
-Status: Ready for Tasks  
+Artifact: prd
+Version: v1.0
+Status: Ready for Tasks
 Last Updated: 2026-02-17
 
 ## 1. Goal

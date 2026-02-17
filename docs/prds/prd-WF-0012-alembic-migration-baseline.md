@@ -1,8 +1,8 @@
 # WF-0012 — Alembic Migration Baseline PRD
 
-Artifact: prd  
-Version: v0.2  
-Status: Ready for Tasks  
+Artifact: prd
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-16
 
 ## 1. In Scope

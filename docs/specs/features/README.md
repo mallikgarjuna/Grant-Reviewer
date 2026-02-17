@@ -7,4 +7,3 @@ This folder is for WF-based feature specs.
 
 Migration note:
 - Legacy, task-based planning docs remain in `docs/tasks/` until mapped to WF IDs.
-

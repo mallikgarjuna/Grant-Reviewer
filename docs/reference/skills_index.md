@@ -20,4 +20,3 @@ Keep `AGENTS.md` concise. Put the expandable list of skills here.
 - `.claude/skills/**/SKILL.md`
 
 If your environment provides user-level skills, consult those as well (location varies by setup).
-

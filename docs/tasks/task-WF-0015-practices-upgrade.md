@@ -1,8 +1,8 @@
 # WF-0015 — Practices Upgrade Tasks
 
-Artifact: task  
-Version: v1.0  
-Status: Ready for Implementation  
+Artifact: task
+Version: v1.0
+Status: Ready for Implementation
 Last Updated: 2026-02-17
 
 ## Task Breakdown (Sequential Order)

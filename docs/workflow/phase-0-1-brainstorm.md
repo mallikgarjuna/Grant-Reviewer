@@ -102,8 +102,8 @@ Example format:
 
 Q1: Who primarily experiences this problem?
 
-Option A: All users  
-Option B: New users only  
+Option A: All users
+Option B: New users only
 Option C: Power users
 
 Recommendation: Option B (more focused, clearer MVP)

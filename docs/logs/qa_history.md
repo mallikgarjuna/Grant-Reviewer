@@ -18,7 +18,7 @@
 **A**: NodeExpectation. Provides full context (strength, intent, guidance_note).
 
 ### Q: Two guidance fields - what's the difference?
-**A**: 
+**A**:
 - `ProposalNode.guidance_text`: What the applicant should write
 - `NodeExpectation.guidance_note`: What the reviewer should look for
 

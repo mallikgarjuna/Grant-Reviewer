@@ -50,9 +50,9 @@ Only generate if Version = v0.0.
 
 Tasks file must include:
 
-Artifact: task  
-Version: v0.1  
-Status: Draft  
+Artifact: task
+Version: v0.1
+Status: Draft
 Last Updated: YYYY-MM-DD
 
 Include:
@@ -67,9 +67,9 @@ Include:
 
 # WF-XXXX — <Title> Tasks
 
-Artifact: task  
-Version: v0.1  
-Status: Draft  
+Artifact: task
+Version: v0.1
+Status: Draft
 Last Updated: <today>
 
 ## Task Breakdown (Sequential Order)

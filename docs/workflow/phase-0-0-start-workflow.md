@@ -99,9 +99,9 @@ docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md
 
 # WF-XXXX — <Title>
 
-Artifact: brainstorm | spec | prd | task | walkthrough  
-Version: v0.0  
-Status: Not started  
+Artifact: brainstorm | spec | prd | task | walkthrough
+Version: v0.0
+Status: Not started
 Last Updated: YYYY-MM-DD
 
 ---

@@ -1,10 +1,10 @@
 # Brainstorming 8.1: Lint Baseline Cleanup
 
-**Date**: 2026-02-09  
-**Task ID**: 8.1  
-**Pipeline Phase**: Phase 0 (Brainstorming)  
-**Status**: Draft (v0.2 - Revised)  
-**Last Updated**: 2026-02-09  
+**Date**: 2026-02-09
+**Task ID**: 8.1
+**Pipeline Phase**: Phase 0 (Brainstorming)
+**Status**: Draft (v0.2 - Revised)
+**Last Updated**: 2026-02-09
 
 ## Goal
 

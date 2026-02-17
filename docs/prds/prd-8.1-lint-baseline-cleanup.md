@@ -1,10 +1,10 @@
 # PRD: Task 8.1 Lint Baseline Cleanup
 
-**Date**: 2026-02-13  
-**Task ID**: 8.1  
-**Pipeline Phase**: Phase 1 (PRD)  
-**Status**: Draft (v0.1 - Parked for later)  
-**Owner**: -  
+**Date**: 2026-02-13
+**Task ID**: 8.1
+**Pipeline Phase**: Phase 1 (PRD)
+**Status**: Draft (v0.1 - Parked for later)
+**Owner**: -
 
 ---
 
@@ -64,4 +64,3 @@ Observed today:
 ## Revision History
 
 - **v0.1** (2026-02-13): Parked PRD created to resume later with clear exit criteria.
-

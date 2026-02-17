@@ -1,10 +1,10 @@
 # Brainstorming 8.0: Frontend UI + Launch Architecture (Next.js + BFF)
 
-**Date**: 2026-02-08  
-**Task ID**: 8.0  
-**Pipeline Phase**: Phase 0 (Brainstorming)  
-**Status**: Draft (v0.3 - Revised)  
-**Last Updated**: 2026-02-08  
+**Date**: 2026-02-08
+**Task ID**: 8.0
+**Pipeline Phase**: Phase 0 (Brainstorming)
+**Status**: Draft (v0.3 - Revised)
+**Last Updated**: 2026-02-08
 
 ## Goal
 

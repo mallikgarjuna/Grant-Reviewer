@@ -1,8 +1,8 @@
 # WF-0010 — PeerLens Landing Design Refresh
 
-Artifact: walkthrough  
-Version: v0.1  
-Status: Completed  
+Artifact: walkthrough
+Version: v0.1
+Status: Completed
 Last Updated: 2026-02-15
 
 ## What Was Implemented

@@ -1,8 +1,8 @@
 # WF-0010 — PeerLens Landing Design Refresh
 
-Artifact: task  
-Version: v0.2  
-Status: Ready for Implementation  
+Artifact: task
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-15
 
 ## Task Breakdown (Sequential Order)

@@ -215,7 +215,7 @@
 
 ### 23:40 - Task 8.0A.4 Completed (Clerk route protection)
 > User asked to continue and complete remaining 8.0A subtasks.
-> Outcome: Implemented Clerk middleware protection for `/app/*` and `/api/bff/*`, added Clerk provider + sign-in route, verified with `cd frontend && npm run lint`, and checked off subtask `8.0A.4` in the task plan.  
+> Outcome: Implemented Clerk middleware protection for `/app/*` and `/api/bff/*`, added Clerk provider + sign-in route, verified with `cd frontend && npm run lint`, and checked off subtask `8.0A.4` in the task plan.
 > Note: npm registry remains unreachable in Codex environment (`ENOTFOUND registry.npmjs.org`), so package installation must be run locally.
 
 ### 23:55 - Task 8.0A.5 Completed (BFF adapter core + invariants)

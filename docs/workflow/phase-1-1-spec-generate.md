@@ -47,8 +47,8 @@ Update it only if Version = v0.0.
 
 Spec must include:
 
-Version: v0.1  
-Status: Draft  
+Version: v0.1
+Status: Draft
 Last Updated: YYYY-MM-DD
 
 Changelog:
@@ -63,9 +63,9 @@ Changelog:
 
 # WF-XXXX — <Title> Spec
 
-Artifact: spec  
-Version: v0.1  
-Status: Draft  
+Artifact: spec
+Version: v0.1
+Status: Draft
 Last Updated: <today>
 
 ## 1. Purpose

@@ -80,7 +80,7 @@ Patterns for the logged-in experience, dashboards, and review pages.
 Based on these 8 competitors, here is how we should differentiate:
 
 ### 1. The "Academic" Trust Stack
-- **Recommendation**: Implement **ORCID Login** early. 
+- **Recommendation**: Implement **ORCID Login** early.
 - **Why**: Overleaf used this to become the standard. It proves the tool is for *academics*, not just "general users."
 - **Social Proof**: Instead of generic testimonials, use researcher roles (e.g., "Postdoc, Stanford", "Principal Investigator, Yale").
 
@@ -93,7 +93,7 @@ Based on these 8 competitors, here is how we should differentiate:
 - **Why**: Researchers take pride in their work. Frame the tool as a coach that "brings out your best" rather than a tool that "writes for you."
 
 ### 4. Layout: The Workflow Guide
-- **Recommendation**: Use the **Tabbed Workflow** approach (Paperpal/Grantable). 
+- **Recommendation**: Use the **Tabbed Workflow** approach (Paperpal/Grantable).
 - **Sections**: 1. Draft Proposal → 2. Select Rubric → 3. Get Expert Review.
 
 ### 5. Multi-Page Gamification (App UX)

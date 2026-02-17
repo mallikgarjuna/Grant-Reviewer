@@ -111,7 +111,7 @@ WF-0011 is intentionally constrained to local developer workflow reliability. It
 Local dev needs Postgres-first behavior to match production semantics and reduce late defect discovery from SQLite/Postgres drift.
 
 ### Intended users
-Primary: full-stack contributors running local app flows.  
+Primary: full-stack contributors running local app flows.
 Secondary: new contributors onboarding to the repo.
 
 ### MVP slice for this WF

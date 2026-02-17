@@ -51,9 +51,9 @@ Only generate if Version = v0.0.
 
 PRD must include:
 
-Artifact: prd  
-Version: v0.1  
-Status: Draft  
+Artifact: prd
+Version: v0.1
+Status: Draft
 Last Updated: YYYY-MM-DD
 
 Include:
@@ -68,9 +68,9 @@ Include:
 
 # WF-XXXX — <Title> PRD
 
-Artifact: prd  
-Version: v0.1  
-Status: Draft  
+Artifact: prd
+Version: v0.1
+Status: Draft
 Last Updated: <today>
 
 ## 1. In Scope

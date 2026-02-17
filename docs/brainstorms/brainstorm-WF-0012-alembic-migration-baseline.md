@@ -1,8 +1,8 @@
 # WF-0012 — Alembic Migration Baseline
 
-Artifact: brainstorm  
-Version: v0.1  
-Status: Draft Complete  
+Artifact: brainstorm
+Version: v0.1
+Status: Draft Complete
 Last Updated: 2026-02-16
 
 ## 1. Problem Statement

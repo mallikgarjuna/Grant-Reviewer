@@ -1,8 +1,8 @@
 # WF-0015 — Practices Upgrade Spec
 
-Artifact: spec  
-Version: v1.0  
-Status: Ready for PRD  
+Artifact: spec
+Version: v1.0
+Status: Ready for PRD
 Last Updated: 2026-02-17
 
 ## 1. Purpose

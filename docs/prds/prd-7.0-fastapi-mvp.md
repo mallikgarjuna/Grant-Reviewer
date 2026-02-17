@@ -1,8 +1,8 @@
 # PRD 7.0: FastAPI MVP
 
-**Status**: Draft (v0.2 - Revised)  
-**Date**: 2026-02-08  
-**Phase**: Phase 1 (PRD)  
+**Status**: Draft (v0.2 - Revised)
+**Date**: 2026-02-08
+**Phase**: Phase 1 (PRD)
 **Phase 0 Notes**: `docs/brainstorms/brainstorming-7.0-fastapi-mvp.md`
 
 ---
@@ -10,8 +10,8 @@
 ## Goal
 
 Expose the existing review flow over HTTP via a minimal FastAPI API so a UI can:
-1) discover calls + proposal sections,  
-2) submit a snippet for review, and  
+1) discover calls + proposal sections,
+2) submit a snippet for review, and
 3) fetch the resulting review + cards.
 
 ## Non-Goals (MVP)
@@ -29,16 +29,16 @@ Expose the existing review flow over HTTP via a minimal FastAPI API so a UI can:
 ## User Stories
 
 ### US-7.1: Discover available calls
-**As a** researcher,  
-**I want** to select the relevant funding call,  
+**As a** researcher,
+**I want** to select the relevant funding call,
 **So that** the app uses the correct rubric + proposal structure.
 
 **Acceptance Criteria**
 - `GET /calls` returns a list of active calls with stable IDs and minimal metadata.
 
 ### US-7.2: Choose a proposal section to review
-**As a** researcher,  
-**I want** to pick the correct proposal section (node) for my pasted text,  
+**As a** researcher,
+**I want** to pick the correct proposal section (node) for my pasted text,
 **So that** the review uses the right expectations.
 
 **Acceptance Criteria**
@@ -47,8 +47,8 @@ Expose the existing review flow over HTTP via a minimal FastAPI API so a UI can:
 - `has_expectations` is a UI hint only; server-side validation on `POST /reviews` is authoritative.
 
 ### US-7.3: Submit a snippet and receive a review
-**As a** researcher,  
-**I want** to submit one snippet of text for a chosen section,  
+**As a** researcher,
+**I want** to submit one snippet of text for a chosen section,
 **So that** I get rubric-grounded feedback.
 
 **Acceptance Criteria**
@@ -62,8 +62,8 @@ Expose the existing review flow over HTTP via a minimal FastAPI API so a UI can:
 - Multiple submissions of the same payload may create multiple reviews (reviews are immutable snapshots).
 
 ### US-7.4: Fetch the review and cards
-**As a** researcher,  
-**I want** to view the results of my review,  
+**As a** researcher,
+**I want** to view the results of my review,
 **So that** I can make edits based on actionable feedback.
 
 **Acceptance Criteria**

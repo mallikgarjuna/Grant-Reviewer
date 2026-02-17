@@ -15,4 +15,3 @@ export function getFastApiBaseUrl(): string {
 export function getBffSharedSecret(): string {
   return readRequiredEnv("BFF_SHARED_SECRET");
 }
-

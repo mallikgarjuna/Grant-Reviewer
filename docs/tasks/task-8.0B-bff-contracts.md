@@ -1,10 +1,10 @@
 # Task 8.0B: BFF Contracts (Phase 2 Plan)
 
-**Status**: [x] Complete (v0.4 - Revised)  
-**Date**: 2026-02-08  
-**Last Updated**: 2026-02-08  
-**Phase**: Phase 2 (Task breakdown)  
-**PRD**: `docs/prds/prd-8.0B-bff-contracts.md`  
+**Status**: [x] Complete (v0.4 - Revised)
+**Date**: 2026-02-08
+**Last Updated**: 2026-02-08
+**Phase**: Phase 2 (Task breakdown)
+**PRD**: `docs/prds/prd-8.0B-bff-contracts.md`
 **Phase 0 Notes**: `docs/brainstorms/brainstorming-8.0-frontend-ui.md`
 
 ---

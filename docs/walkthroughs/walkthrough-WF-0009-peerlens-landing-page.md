@@ -1,8 +1,8 @@
 # WF-0009 — PeerLens Landing Page
 
-Artifact: walkthrough  
-Version: v1.1  
-Status: Completed  
+Artifact: walkthrough
+Version: v1.1
+Status: Completed
 Last Updated: 2026-02-15
 
 ---

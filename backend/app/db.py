@@ -23,9 +23,7 @@ def normalize_database_url(raw_url: str) -> str:
     """Normalize DATABASE_URL into a SQLAlchemy-compatible connection URL."""
     parsed = urlparse(raw_url.strip())
     normalized_scheme = parsed.scheme
-    if parsed.scheme == "postgres":
-        normalized_scheme = "postgresql+psycopg"
-    elif parsed.scheme == "postgresql":
+    if parsed.scheme == "postgres" or parsed.scheme == "postgresql":
         normalized_scheme = "postgresql+psycopg"
 
     if normalized_scheme != "postgresql+psycopg":

@@ -22,4 +22,3 @@ export async function GET(_: Request, context: RouteContext) {
   }
   return NextResponse.json(result.data, { status: 200 });
 }
-

@@ -1,6 +1,6 @@
 # Brainstorming Log: FastAPI MVP (Task 7.0) — Phase 0
 
-**Date**: 2026-02-08  
+**Date**: 2026-02-08
 **Objective**: Define the smallest FastAPI surface that enables a real client flow (pick a call + section, submit text, view results) using the already-working service layer.
 
 ## 0. Critical Review Notes (Incorporated)

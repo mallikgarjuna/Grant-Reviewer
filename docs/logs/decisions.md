@@ -127,7 +127,7 @@
 
 ### AD 6.7: Out of Scope for MVP
 - Retries, backoff, rate-limit handling
-- Partial results handling  
+- Partial results handling
 - Cost optimization
 - Async workers / horizontal scaling
 
