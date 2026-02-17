@@ -66,10 +66,9 @@ When you pick an item to start work:
 |---|------|------|----------------|------|
 | 1 | Add loading & empty states | product | Replace plain-text "Loading..." with skeleton/shimmer loaders; show onboarding guidance when no calls are available. | 2026-02-16 |
 | 2 | Add node hierarchy selector | product | Group flat node `<select>` by parent sections (cascade or grouped optgroups) — current flat list is confusing for 10+ nodes. | 2026-02-16 |
-| 3 | Add CI pipeline (GitHub Actions) | ops | Add `pytest` + `ruff` for backend, `lint` + `next build` for frontend — zero CI workflows exist today. | 2026-02-16 |
-| 4 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
-| 5 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
-| 6 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
+| 3 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 4 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
+| 5 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
 
 ---
 
@@ -90,6 +89,7 @@ When you pick an item to start work:
 |---|---|---|---|---|
 | 1 | P0 | Add app shell + sign-out | [WF-0013](tasks/task-WF-0013-app-shell-signout.md) | 2026-02-16 |
 | 2 | P0 | Add review history ("My Reviews") | [WF-0014](tasks/task-WF-0014-review-history.md) | 2026-02-16 |
+| 3 | P1 | Practices Upgrade (CI/CD) | [WF-0015](tasks/task-WF-0015-practices-upgrade.md) | 2026-02-17 |
 
 ---
 
