@@ -339,6 +339,7 @@ export default function ReviewDetailPage() {
 
   const isFailed = reviewDetail.review.status === "FAILED";
   const isPending = reviewDetail.review.status === "PENDING";
+  const hasOverallSummary = Boolean(reviewDetail.review.overall_summary?.trim());
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-12 md:px-10">
@@ -357,16 +358,18 @@ export default function ReviewDetailPage() {
           Review ID: <span className="font-mono">{reviewDetail.review.id}</span>
         </p>
 
-        <div className="mt-6">
-          <ReviewSummary
-             summary={{
-               id: reviewDetail.review.id,
-               status: reviewDetail.review.status,
-               overall_rating: reviewDetail.review.overall_rating,
-               overall_summary: reviewDetail.review.overall_summary,
-             }}
-          />
-        </div>
+        {hasOverallSummary ? (
+          <div className="mt-6">
+            <ReviewSummary
+              summary={{
+                id: reviewDetail.review.id,
+                status: reviewDetail.review.status,
+                overall_rating: reviewDetail.review.overall_rating,
+                overall_summary: reviewDetail.review.overall_summary,
+              }}
+            />
+          </div>
+        ) : null}
 
         <div className="mt-4 flex flex-wrap gap-3">
           <button

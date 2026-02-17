@@ -5,7 +5,7 @@ interface ReviewSummaryProps {
 }
 
 export function ReviewSummary({ summary }: ReviewSummaryProps) {
-  const { overall_summary, status } = summary;
+  const { overall_summary } = summary;
 
   if (!overall_summary) return null;
 
