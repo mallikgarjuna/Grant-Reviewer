@@ -517,10 +517,11 @@ def get_review(
                 id=card.id,
                 node_expectation_id=card.node_expectation_id,
                 criterion=criterion_name,
+                criterion_description=criterion_desc,
                 rating=card.rating,
                 feedback_text=card.feedback_text,
             )
-            for card, criterion_name in cards_with_criteria
+            for card, criterion_name, criterion_desc in cards_with_criteria
         ],
     )
 

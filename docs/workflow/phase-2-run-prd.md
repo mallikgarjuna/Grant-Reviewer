@@ -49,7 +49,8 @@ After completing Phase 2 (including Part C revisions + decision logging):
 
 ## Runner Rules (Strict)
 
-1. Execute Part A, then Part B, then Part C in order.
+1. **Runners are Routers**: You **MUST** read the detailed instruction file referenced in each "PART" section below. Do not guess.
+2. Execute Part A, then Part B, then Part C in order.
 2. Print a short "PART A/B/C" header and a bullet summary of actions taken.
 3. During Part B (risk audit), do NOT edit any files.
 4. If Part B identifies missing decisions that block revision:

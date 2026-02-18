@@ -117,7 +117,17 @@
 **Fix**: Even in self-directed mode, execute each part sequentially: write the artifact (A), then review it without editing (B), then revise and bump version (C). Document Part B findings and print the traceability statement at the end of each phase runner.
 **Prevention**: Treat Part A/B/C as mandatory process steps regardless of scope or self-directed authorization. The discipline exists to catch blind spots, not just to satisfy a gate.
 
-### L24: "Ship It" Means Push to Remote
+### L25: Always Create Branch at Start of WF
+**Issue**: Started WF-0016 implementation directly on `main` without creating a feature branch first.
+**Fix**: `git checkout -b wf/WF-XXXX-slug` immediately after promoting the item.
+**Prevention**: Make branch creation the *very first step* of Phase 0/1.
+
+### L26: "Ship It" Means Push to Remote
 **Issue**: Agent merged the feature branch into local `main` but did not `git push origin main`, leaving local and remote out of sync. User had to flag the discrepancy.
 **Fix**: "Ship it" = merge to `main` AND push to `origin`. Both steps are required.
 **Prevention**: After any merge to `main`, always run `git push origin main` and verify with `git log --oneline --decorate -1` that `origin/main` matches `HEAD`.
+
+### L27: Workflow Runners contain References, not Rules
+**Issue**: Agent skipped branch creation because `run-lifecycle-auto.md` listed "Phase 0.0" as a single bullet without explicit sub-steps.
+**Fix**: Updated runners to explicitly reference `phase-0-0-start-workflow.md`.
+**Prevention**: Always read the detailed phase file referenced in the runner before executing the phase. The runner is a router, not the full protocol.

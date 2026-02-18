@@ -115,6 +115,7 @@ def seed_api_data() -> SeededIDs:
         criterion = EvaluationCriterion(
             funding_call_id=call.id,
             name="Excellence",
+            description="Scientific excellence of the proposal section.",
             order_index=1,
         )
         session.add(criterion)
@@ -336,6 +337,10 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
     assert detail_payload["review"]["status"] == "COMPLETED"
     assert len(detail_payload["cards"]) == 1
     assert detail_payload["cards"][0]["criterion"] == "Excellence"
+    assert (
+        detail_payload["cards"][0]["criterion_description"]
+        == "Scientific excellence of the proposal section."
+    )
     assert detail_payload["cards"][0]["rating"] == "NOTE"
 
 

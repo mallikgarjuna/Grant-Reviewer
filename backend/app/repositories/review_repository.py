@@ -236,10 +236,14 @@ class ReviewRepository:
 
     def get_review_cards_with_criteria(
         self, review_id: UUID
-    ) -> list[tuple[ReviewCard, str]]:
-        """Fetch review cards with criterion names ordered by expectation index."""
+    ) -> list[tuple[ReviewCard, str, str | None]]:
+        """Fetch review cards with criterion names and descriptions ordered by expectation index."""
         statement = (
-            select(ReviewCard, EvaluationCriterion.name)
+            select(
+                ReviewCard,
+                EvaluationCriterion.name,
+                EvaluationCriterion.description,
+            )
             .join(NodeExpectation, ReviewCard.node_expectation_id == NodeExpectation.id)
             .join(
                 EvaluationElement,

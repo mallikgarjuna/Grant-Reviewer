@@ -10,6 +10,8 @@ import {
   getStoredReviewAttempt,
 } from "@/lib/review-attempt";
 import type { ApiError, ReviewDetailResponse } from "@/lib/bff/types";
+import { ReviewCard } from "@/components/review/ReviewCard";
+import { ReviewSummary } from "@/components/review/ReviewSummary";
 
 type ApiErrorEnvelope = {
   error?: {
@@ -337,6 +339,7 @@ export default function ReviewDetailPage() {
 
   const isFailed = reviewDetail.review.status === "FAILED";
   const isPending = reviewDetail.review.status === "PENDING";
+  const hasOverallSummary = Boolean(reviewDetail.review.overall_summary?.trim());
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-12 md:px-10">
@@ -355,10 +358,17 @@ export default function ReviewDetailPage() {
           Review ID: <span className="font-mono">{reviewDetail.review.id}</span>
         </p>
 
-        {reviewDetail.review.overall_summary ? (
-          <p className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm leading-6 text-[var(--color-foreground)]">
-            {reviewDetail.review.overall_summary}
-          </p>
+        {hasOverallSummary ? (
+          <div className="mt-6">
+            <ReviewSummary
+              summary={{
+                id: reviewDetail.review.id,
+                status: reviewDetail.review.status,
+                overall_rating: reviewDetail.review.overall_rating,
+                overall_summary: reviewDetail.review.overall_summary,
+              }}
+            />
+          </div>
         ) : null}
 
         <div className="mt-4 flex flex-wrap gap-3">
@@ -466,22 +476,13 @@ export default function ReviewDetailPage() {
       {reviewDetail.cards.length > 0 ? (
         <section className="grid gap-4">
           {reviewDetail.cards.map((card) => (
-            <article
-              className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm"
+            <ReviewCard
               key={card.id}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--color-muted-foreground)]">
-                  Rating
-                </p>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  {card.rating}
-                </span>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-[var(--color-foreground)]">
-                {card.feedback_text}
-              </p>
-            </article>
+              criterion={card.criterion}
+              description={card.criterion_description}
+              rating={card.rating}
+              feedback={card.feedback_text}
+            />
           ))}
         </section>
       ) : (

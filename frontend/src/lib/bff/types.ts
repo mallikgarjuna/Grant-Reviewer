@@ -69,6 +69,7 @@ export type ReviewCardSummary = {
   id: string;
   node_expectation_id: string;
   criterion: string;
+  criterion_description?: string | null;
   rating: ReviewRating;
   feedback_text: string;
 };
