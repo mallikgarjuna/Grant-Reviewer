@@ -13,6 +13,9 @@ import type { ApiError, ReviewDetailResponse } from "@/lib/bff/types";
 import { ReviewCard } from "@/components/review/ReviewCard";
 import { ReviewSummary } from "@/components/review/ReviewSummary";
 
+const POLL_INTERVAL_MS = 3_000;
+const POLL_MAX_DURATION_MS = 90_000;
+
 type ApiErrorEnvelope = {
   error?: {
     code?: unknown;
@@ -104,6 +107,10 @@ async function copyTextWithFallback(text: string): Promise<void> {
   if (!copied) {
     throw new Error("Clipboard write failed.");
   }
+}
+
+function isPendingReview(status: string): boolean {
+  return status === "PENDING";
 }
 
 export default function ReviewDetailPage() {
@@ -338,7 +345,7 @@ export default function ReviewDetailPage() {
   }
 
   const isFailed = reviewDetail.review.status === "FAILED";
-  const isPending = reviewDetail.review.status === "PENDING";
+  const isPending = isPendingReview(reviewDetail.review.status);
   const hasOverallSummary = Boolean(reviewDetail.review.overall_summary?.trim());
 
   return (
