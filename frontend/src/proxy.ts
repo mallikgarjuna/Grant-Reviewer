@@ -23,24 +23,28 @@ function hasMissingClerkEnv(): boolean {
   return publishable.includes("REPLACE_ME") || secret.includes("REPLACE_ME");
 }
 
-const clerkProxy = clerkMiddleware(async (auth, req) => {
-  if (isBffApiRoute(req)) {
-    await auth.protect();
-    return;
-  }
+const isClerkConfigured = !hasMissingClerkEnv();
 
-  if (isAppRoute(req)) {
-    const { userId } = await auth();
-    if (!userId) {
-      const signInUrl = new URL("/sign-in", req.url);
-      signInUrl.searchParams.set("redirect_url", buildReturnBackPath(req));
-      return NextResponse.redirect(signInUrl);
-    }
-  }
-});
+const clerkProxy = isClerkConfigured
+  ? clerkMiddleware(async (auth, req) => {
+      if (isBffApiRoute(req)) {
+        await auth.protect();
+        return;
+      }
+
+      if (isAppRoute(req)) {
+        const { userId } = await auth();
+        if (!userId) {
+          const signInUrl = new URL("/sign-in", req.url);
+          signInUrl.searchParams.set("redirect_url", buildReturnBackPath(req));
+          return NextResponse.redirect(signInUrl);
+        }
+      }
+    })
+  : null;
 
 export default function proxy(req: NextRequest, event: NextFetchEvent) {
-  if (hasMissingClerkEnv()) {
+  if (!isClerkConfigured) {
     if (isAppRoute(req)) {
       const signInUrl = new URL("/sign-in", req.url);
       signInUrl.searchParams.set("auth_config_error", "1");
@@ -62,9 +66,10 @@ export default function proxy(req: NextRequest, event: NextFetchEvent) {
         { status: 500 },
       );
     }
+    return NextResponse.next();
   }
 
-  return clerkProxy(req, event);
+  return clerkProxy ? clerkProxy(req, event) : NextResponse.next();
 }
 
 export const config = {

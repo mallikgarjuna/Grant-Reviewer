@@ -645,3 +645,8 @@
 > User requested Phase 4 start (`go to start Phase 4 implementation`).
 > Outcome: Completed Tasks 1-4 with per-task commits; implemented parent-first node hierarchy selection in `/app`, added deterministic `Other Sections` fallback and ambiguity-safe labels/order, updated walkthrough/task artifacts, and marked `WF-0020` as `Done` in `docs/index.md`.
 > Files: `frontend/src/app/app/page.tsx`, `frontend/src/lib/node-hierarchy.ts`, `docs/tasks/task-WF-0020-add-node-hierarchy-selector.md`, `docs/walkthroughs/walkthrough-WF-0020-add-node-hierarchy-selector.md`, `docs/index.md`, `README.md`, `docs/logs/prompt_history.md`.
+
+### 18:12 - WF-0020 Clerkless runtime start fix
+> User reported `npm run start` crash: `@clerk/nextjs: Missing publishableKey`.
+> Outcome: Patched `frontend/src/proxy.ts` to avoid initializing Clerk middleware when keys are missing and to short-circuit with safe redirects/errors in missing-key mode; verified lint and production start on alternate port.
+> Files: `frontend/src/proxy.ts`, `docs/logs/prompt_history.md`.
