@@ -105,3 +105,6 @@ Risks (if any):
   - Confirmed in-scope selector surface: `frontend/src/app/app/page.tsx` (`Proposal Section` field in `/app` submit flow).
   - Confirmed hierarchy/grouping inputs from `NodeSummary`: `parent_node_id`, `title`, `order_index`, `has_expectations` (`frontend/src/lib/bff/types.ts`).
   - Confirmed fallback criteria for implementation: when a node has missing/non-resolvable `parent_node_id`, place it in deterministic `Other Sections` bucket while preserving valid child `node_id` submission.
+- [x] Task 2 — Implement parent-first selector state and grouping adapter
+  - Added hierarchy adapter at `frontend/src/lib/node-hierarchy.ts` with deterministic parent buckets and fallback `Other Sections`.
+  - Updated `/app` submit flow to use parent-first selection, child filtering by selected parent, and unchanged submission payload mapping to selected child `node_id`.

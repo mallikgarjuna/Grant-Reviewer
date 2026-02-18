@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -10,6 +10,7 @@ import {
   getOrCreateReviewAttempt,
 } from "@/lib/review-attempt";
 import { APP_REVIEWS_ROUTE } from "@/lib/routes";
+import { buildNodeHierarchyOptions } from "@/lib/node-hierarchy";
 import type { ApiError, CallSummary, NodeSummary } from "@/lib/bff/types";
 
 const SLOW_REQUEST_HINT_MS = 40_000;
@@ -58,6 +59,7 @@ export default function AppSubmitPage() {
   const [calls, setCalls] = useState<CallSummary[]>([]);
   const [nodes, setNodes] = useState<NodeSummary[]>([]);
   const [selectedCallId, setSelectedCallId] = useState("");
+  const [selectedParentId, setSelectedParentId] = useState("");
   const [selectedNodeId, setSelectedNodeId] = useState("");
   const [snippetText, setSnippetText] = useState("");
   const [isLoadingCalls, setIsLoadingCalls] = useState(true);
@@ -66,8 +68,18 @@ export default function AppSubmitPage() {
   const [showSlowHint, setShowSlowHint] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const selectedNodeIdRef = useRef(selectedNodeId);
 
   const snippetCount = useMemo(() => snippetText.length, [snippetText]);
+  const nodeHierarchy = useMemo(() => buildNodeHierarchyOptions(nodes), [nodes]);
+  const childOptions = useMemo(
+    () => (selectedParentId ? nodeHierarchy.childrenByParent[selectedParentId] ?? [] : []),
+    [nodeHierarchy.childrenByParent, selectedParentId],
+  );
+
+  useEffect(() => {
+    selectedNodeIdRef.current = selectedNodeId;
+  }, [selectedNodeId]);
 
   useEffect(() => {
     const stored = getStoredReviewAttempt();
@@ -110,6 +122,7 @@ export default function AppSubmitPage() {
   useEffect(() => {
     if (!selectedCallId) {
       setNodes([]);
+      setSelectedParentId("");
       setSelectedNodeId("");
       return;
     }
@@ -136,12 +149,16 @@ export default function AppSubmitPage() {
         const reviewableNodes = Array.isArray(payload.nodes)
           ? payload.nodes.filter((node) => node.has_expectations)
           : [];
+        const nextNodeHierarchy = buildNodeHierarchyOptions(reviewableNodes);
+        const currentNodeId = selectedNodeIdRef.current;
+        const isCurrentNodeValid = reviewableNodes.some((node) => node.id === currentNodeId);
+        const nextNodeId = isCurrentNodeValid ? currentNodeId : "";
+        const nextParentId = nextNodeId
+          ? (nextNodeHierarchy.parentByNodeId[nextNodeId] ?? "")
+          : "";
         setNodes(reviewableNodes);
-        setSelectedNodeId((current) =>
-          reviewableNodes.some((node) => node.id === current)
-            ? current
-            : reviewableNodes[0]?.id ?? "",
-        );
+        setSelectedParentId(nextParentId);
+        setSelectedNodeId(nextNodeId);
         setIsLoadingNodes(false);
       }
     }
@@ -151,6 +168,17 @@ export default function AppSubmitPage() {
     };
   }, [selectedCallId]);
 
+  useEffect(() => {
+    if (!selectedNodeId) {
+      return;
+    }
+    const parentIdForNode = nodeHierarchy.parentByNodeId[selectedNodeId];
+    if (!parentIdForNode || parentIdForNode === selectedParentId) {
+      return;
+    }
+    setSelectedParentId(parentIdForNode);
+  }, [nodeHierarchy.parentByNodeId, selectedNodeId, selectedParentId]);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
@@ -159,6 +187,9 @@ export default function AppSubmitPage() {
     const nextFieldErrors: Record<string, string> = {};
     if (!selectedCallId) {
       nextFieldErrors.call = "Select a funding call.";
+    }
+    if (!selectedParentId) {
+      nextFieldErrors.parent = "Select a parent section.";
     }
     if (!selectedNodeId) {
       nextFieldErrors.node = "Select a proposal section.";
@@ -341,20 +372,54 @@ export default function AppSubmitPage() {
           </div>
 
           <div className="space-y-2">
+            <label className="text-sm font-medium text-[var(--color-foreground)]" htmlFor="parent-node">
+              Parent Section
+            </label>
+            <select
+              id="parent-node"
+              className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+              disabled={!selectedCallId || isLoadingNodes || isSubmitting}
+              onChange={(event) => {
+                const nextParentId = event.target.value;
+                setSelectedParentId(nextParentId);
+                setSelectedNodeId((currentNodeId) => {
+                  const nextChildren = nextParentId
+                    ? nodeHierarchy.childrenByParent[nextParentId] ?? []
+                    : [];
+                  return nextChildren.some((childOption) => childOption.id === currentNodeId)
+                    ? currentNodeId
+                    : "";
+                });
+              }}
+              value={selectedParentId}
+            >
+              <option value="">Select a parent section</option>
+              {nodeHierarchy.parentOptions.map((parentOption) => (
+                <option key={parentOption.id} value={parentOption.id}>
+                  {parentOption.label}
+                </option>
+              ))}
+            </select>
+            {fieldErrors.parent ? (
+              <p className="text-sm text-red-600">{fieldErrors.parent}</p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--color-foreground)]" htmlFor="node">
               Proposal Section
             </label>
             <select
               id="node"
               className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-              disabled={!selectedCallId || isLoadingNodes || isSubmitting}
+              disabled={!selectedCallId || !selectedParentId || isLoadingNodes || isSubmitting}
               onChange={(event) => setSelectedNodeId(event.target.value)}
               value={selectedNodeId}
             >
               <option value="">Select a section</option>
-              {nodes.map((node) => (
-                <option key={node.id} value={node.id}>
-                  {node.title}
+              {childOptions.map((childOption) => (
+                <option key={childOption.id} value={childOption.id}>
+                  {childOption.label}
                 </option>
               ))}
             </select>
