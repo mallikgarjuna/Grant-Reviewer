@@ -1,8 +1,8 @@
 # WF-0019 — Add Loading & Empty States
 
 Artifact: spec
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for PRD
 Last Updated: 2026-02-18
 
 ## 1. Purpose
@@ -53,6 +53,16 @@ Improve user trust and clarity in the app by replacing plain loading text with p
 - States should avoid false negatives (brief loading should not flash empty state prematurely).
 - Copy should remain concise and avoid implying system errors for ordinary empty data.
 
+## 8. Verification Expectations
+
+- `/app` call-loading state renders skeletons and no plain `Loading...` copy.
+- `/app` no-calls state renders onboarding guidance and a deterministic next step.
+- `/app/reviews` loading state renders skeletons and no plain `Loading...` copy.
+- `/app/reviews` empty state explains no saved reviews and points users to start a review.
+- `/app/reviews/[reviewId]` loading state uses skeletons and preserves existing error-state behavior.
+- `cd frontend && npm run lint` passes after implementation changes.
+
 ## Changelog
 
 - v0.1 (2026-02-18): Initial spec from brainstorm
+- v0.2 (2026-02-18): Added explicit verification expectations and marked Ready for PRD
