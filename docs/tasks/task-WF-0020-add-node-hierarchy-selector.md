@@ -1,6 +1,98 @@
 # WF-0020 — Add node hierarchy selector
 
 Artifact: task
-Version: v0.0
-Status: Not started
+Version: v0.1
+Status: Draft
 Last Updated: 2026-02-18
+
+## Task Breakdown (Sequential Order)
+
+### Task 1 — Audit current node selector surface and hierarchy inputs
+
+Goal:
+- Confirm the exact in-scope selector surface and verify available node hierarchy metadata from existing payloads.
+
+Files to modify:
+- `frontend/src/app/app/page.tsx`
+- `frontend/src/lib/bff/types.ts` (read/adjust typing only if needed)
+- `docs/walkthroughs/walkthrough-WF-0020-add-node-hierarchy-selector.md`
+
+Acceptance Criteria:
+- In-scope selector surface is explicitly confirmed as `/app` submit flow.
+- Node payload fields used for parent/child grouping are documented.
+- Fallback criteria for incomplete metadata are documented before implementation.
+
+Verification Steps:
+- Inspect `/app` selector implementation and node payload shape.
+- `cd frontend && npm run lint`
+
+Risks (if any):
+- Assuming hierarchy fields incorrectly can cause broken grouping logic.
+
+### Task 2 — Implement parent-first selector state and grouping adapter
+
+Goal:
+- Add parent-first selection flow and deterministic grouping/fallback transformation based on existing node payload.
+
+Files to modify:
+- `frontend/src/app/app/page.tsx`
+- `frontend/src/lib/**` grouping helper(s) (if extracted)
+- optional shared selector UI file under `frontend/src/components/**`
+
+Acceptance Criteria:
+- Parent must be selected before child options become active.
+- Child options only show nodes valid for selected parent.
+- Nodes with missing parent metadata are placed under `Other Sections`.
+
+Verification Steps:
+- Manual scenario checks for parent selection, child filtering, and fallback bucket behavior.
+- `cd frontend && npm run lint`
+
+Risks (if any):
+- State-reset bugs when parent changes after child selection.
+
+### Task 3 — Add label disambiguation and stable ordering
+
+Goal:
+- Ensure duplicated/ambiguous child labels are distinguishable and node ordering remains predictable.
+
+Files to modify:
+- `frontend/src/app/app/page.tsx`
+- grouping/helper files created in Task 2 (if applicable)
+
+Acceptance Criteria:
+- Ambiguous child labels include enough parent context to avoid confusion.
+- Ordering is deterministic within each parent grouping.
+- Existing submit form behavior remains unchanged outside selector UX.
+
+Verification Steps:
+- Manual checks with representative calls containing similar child titles.
+- `cd frontend && npm run lint`
+
+Risks (if any):
+- Over-formatting labels can reduce readability if not concise.
+
+### Task 4 — Validate end-to-end behavior and capture walkthrough
+
+Goal:
+- Verify PRD scenarios and document reproducible verification notes.
+
+Files to modify:
+- `docs/walkthroughs/walkthrough-WF-0020-add-node-hierarchy-selector.md`
+- `docs/tasks/task-WF-0020-add-node-hierarchy-selector.md` (progress updates)
+
+Acceptance Criteria:
+- Manual checks cover parent-first flow, parent switch reset, ambiguous label clarity, and fallback bucket usability.
+- Walkthrough captures run/verify steps and known limitations.
+- Lint/pre-commit checks pass for changed files.
+
+Verification Steps:
+- `cd frontend && npm run lint`
+- `pre-commit run --all-files`
+
+Risks (if any):
+- Incomplete manual coverage may miss edge regressions.
+
+## Changelog
+
+- v0.1 (2026-02-18): Initial task breakdown from PRD
