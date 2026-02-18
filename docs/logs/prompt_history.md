@@ -620,3 +620,8 @@
 ### 16:56 - WF-0020 Kickoff for Parking Lot P1 #1 (Add node hierarchy selector)
 > User requested kickoff for P1 #1: "Add node hierarchy selector".
 > Outcome: Promoted to `WF-0020`, created branch `wf/WF-0020-add-node-hierarchy-selector`, bootstrapped baseline WF artifacts, updated WF registry in `docs/index.md`, and renumbered remaining P1 backlog items.
+
+### 17:08 - WF-0020 Phase 0.1 Brainstorm Completed
+> User requested recommendation-led interactive answers ("go with your recommendations") for all Sections 1-8.
+> Outcome: Completed context-aware brainstorm for `WF-0020` with focused scope (hierarchy selector UX only), defined constraints/risks/MVP/non-goals, and set brainstorm status to `Draft Complete`.
+> Files: `docs/brainstorms/brainstorm-WF-0020-add-node-hierarchy-selector.md`, `docs/logs/prompt_history.md`.
