@@ -612,3 +612,7 @@
 ### 16:37 - CI Failure Triage (Run 22145822811)
 > User reported a failing GitHub Actions run.
 > Outcome: Identified two causes and applied fixes: (1) frontend build crash when Clerk keys are absent by adding Clerkless-safe render fallbacks (`RootLayout`, app shell, sign-in page), and (2) backend pytest DB table-loss across connections by switching CI test DB URL from in-memory SQLite to file-backed SQLite in `.github/workflows/ci.yml`. Verified locally with `frontend npm run build` (no Clerk keys) and `backend pytest tests/test_api.py`.
+
+### 16:49 - New Code Phrase Added: verify workflow
+> User asked for a predefined phrase to verify current-workflow outcomes and requested a future-reference rule for composing phrases from existing ones.
+> Outcome: Added `verify workflow` to `docs/reference/code_phrases.md` as a composed verification bundle (`status` + `diff` + targeted checks + pass/fail summary), added composition guideline in code-phrases doc, and updated `AGENTS.md` to recognize `verify workflow` + composed-phrase execution rule.
