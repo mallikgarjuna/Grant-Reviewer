@@ -555,7 +555,10 @@ export default function ReviewDetailPage() {
             <p className="text-sm text-[var(--color-muted-foreground)]">
               {hasPollingCapReached
                 ? "Still processing after 90 seconds. This review may still finish soon; refresh to check again."
-                : "Still processing. Checking status automatically..."}
+                : "Still processing. Checking status automatically every few seconds."}
+            </p>
+            <p className="text-sm text-[var(--color-muted-foreground)]">
+              You can keep waiting, open My reviews, or start a new review.
             </p>
             {pollingNotice ? (
               <p className="text-sm text-[var(--color-muted-foreground)]">{pollingNotice}</p>
