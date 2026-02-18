@@ -19,6 +19,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | **`run phase [N]`** | Execute WF phase runner (0=brainstorm, 1=spec, 2=PRD, 3=tasks, 4=implement). |
 | **`go ahead`** | Explicit approval to proceed to the next phase/step. |
 | **`critical review`** | Senior-level review of current work with actionable findings. |
+| **`workflow preflight`** | Critical review of current WF readiness, required actions before starting next WF, recommended order, and whether to start a new chat. |
 | **`diff`** | Show changes on the current branch vs `main`. |
 
 ## Knowledge & Memory
@@ -48,6 +49,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | Approve continuation of current plan | **`go ahead`** |
 | Advance artifact pipeline by phase | **`run phase [N]`** |
 | Deep quality/risk analysis of implementation | **`critical review`** |
+| Decide if current WF is cleanly closed before moving to the next WF | **`workflow preflight`** |
 | Inspect branch delta against `main` | **`diff`** |
 | Persist new standing workflow rule | **`remember this`** |
 | Capture decision/clarification in logs | **`log this`** |

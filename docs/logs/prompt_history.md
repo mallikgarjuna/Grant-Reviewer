@@ -544,3 +544,7 @@
 ### 12:07 - WF-0017 Phase 4.1 Implementation Completed
 > User selected `1` to proceed with implementation.
 > Outcome: Implemented Task 1-5 sequentially with per-task commits: status semantic alignment (`PENDING`), bounded polling loop (3s interval, 90s cap), cap fallback UX, transient-error-safe polling behavior, and walkthrough verification docs. Updated `docs/index.md` status for `WF-0017` to `Done`.
+
+### 13:07 - New Code Phrase Added: workflow preflight
+> User requested a new phrase to run a critical review of current workflow readiness before starting the next WF, with explicit recommended actions and guidance on whether to start a new chat.
+> Outcome: Added `workflow preflight` to `docs/reference/code_phrases.md` and registered it in `AGENTS.md` key phrase list.
