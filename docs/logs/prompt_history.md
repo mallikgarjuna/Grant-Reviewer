@@ -616,3 +616,7 @@
 ### 16:49 - New Code Phrase Added: verify workflow
 > User asked for a predefined phrase to verify current-workflow outcomes and requested a future-reference rule for composing phrases from existing ones.
 > Outcome: Added `verify workflow` to `docs/reference/code_phrases.md` as a composed verification bundle (`status` + `diff` + targeted checks + pass/fail summary), added composition guideline in code-phrases doc, and updated `AGENTS.md` to recognize `verify workflow` + composed-phrase execution rule.
+
+### 16:56 - WF-0020 Kickoff for Parking Lot P1 #1 (Add node hierarchy selector)
+> User requested kickoff for P1 #1: "Add node hierarchy selector".
+> Outcome: Promoted to `WF-0020`, created branch `wf/WF-0020-add-node-hierarchy-selector`, bootstrapped baseline WF artifacts, updated WF registry in `docs/index.md`, and renumbered remaining P1 backlog items.
