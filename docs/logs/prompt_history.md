@@ -520,3 +520,7 @@
 > - `context refresh` for bounded project-state re-grounding before deciding next work.
 > - `new chat kickoff` for generating a compact 3-line starter once direction is known.
 > Also expanded `docs/reference/code_phrases.md` with a "when to use what" table covering all existing phrases.
+
+### 12:02 - Pick P0 #1 Promoted to WF-0017
+> User issued code phrase `pick P0 #1`.
+> Outcome: Promoted "Add auto-polling for processing reviews" to `WF-0017`, created baseline workflow artifacts, created branch `wf/WF-0017-auto-polling-processing-reviews`, and updated registry links in `docs/index.md` plus backlog renumbering in `docs/parking_lot.md`.
