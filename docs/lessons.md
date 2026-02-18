@@ -131,3 +131,8 @@
 **Issue**: Agent skipped branch creation because `run-lifecycle-auto.md` listed "Phase 0.0" as a single bullet without explicit sub-steps.
 **Fix**: Updated runners to explicitly reference `phase-0-0-start-workflow.md`.
 **Prevention**: Always read the detailed phase file referenced in the runner before executing the phase. The runner is a router, not the full protocol.
+
+### L28: WF Commit Messages Must Include WF ID and Slug
+**Issue**: Multiple WF commits used `WF-XXXX: ...` but omitted the workflow slug segment required by project convention.
+**Fix**: Use commit messages in the format `WF-XXXX: <wf-slug> - <change summary>` for every WF commit.
+**Prevention**: Before each commit, check message format against `AGENTS.md` commit rule and reject/redo commits that omit the WF slug.
