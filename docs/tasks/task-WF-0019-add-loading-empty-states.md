@@ -1,8 +1,8 @@
 # WF-0019 — Add Loading & Empty States
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-18
 
 ## Task Breakdown (Sequential Order)
@@ -96,3 +96,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-02-18): Initial task breakdown from PRD
+- v0.2 (2026-02-18): Tightened task scope and marked Ready for Implementation
