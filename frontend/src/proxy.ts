@@ -1,13 +1,17 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { APP_CREATE_REVIEW_ROUTE } from "@/lib/routes";
 
 const isAppRoute = createRouteMatcher(["/app(.*)"]);
 const isBffApiRoute = createRouteMatcher(["/api/bff(.*)"]);
 
 function buildReturnBackPath(req: NextRequest): string {
   const path = `${req.nextUrl.pathname}${req.nextUrl.search}`;
-  return path.startsWith("//") ? "/app" : path;
+  if (path.startsWith("//") || !path.startsWith("/app")) {
+    return APP_CREATE_REVIEW_ROUTE;
+  }
+  return path;
 }
 
 function hasMissingClerkEnv(): boolean {

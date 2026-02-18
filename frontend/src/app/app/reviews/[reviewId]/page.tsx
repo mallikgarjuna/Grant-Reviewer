@@ -114,6 +114,11 @@ function isPendingReview(status: string): boolean {
   return status === "PENDING";
 }
 
+function buildSignInRedirectHref(path: string): string {
+  const params = new URLSearchParams({ redirect_url: path });
+  return `/sign-in?${params.toString()}`;
+}
+
 export default function ReviewDetailPage() {
   const router = useRouter();
   const params = useParams<{ reviewId: string }>();
@@ -386,7 +391,7 @@ export default function ReviewDetailPage() {
           </p>
           <Link
             className="mt-6 inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white"
-            href={`/sign-in?redirect_url=/app/reviews/${reviewId}`}
+            href={buildSignInRedirectHref(`/app/reviews/${reviewId}`)}
           >
             Continue to sign in
           </Link>
