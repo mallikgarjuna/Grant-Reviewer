@@ -127,6 +127,7 @@ export default function ReviewDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
+  const reviewStatus = reviewDetail?.review.status;
 
   useEffect(() => {
     let cancelled = false;
@@ -160,6 +161,79 @@ export default function ReviewDetailPage() {
       cancelled = true;
     };
   }, [reviewId]);
+
+  useEffect(() => {
+    if (!reviewStatus || !isPendingReview(reviewStatus)) {
+      return;
+    }
+
+    let cancelled = false;
+    let stopped = false;
+    let requestInFlight = false;
+    const startedAtMs = Date.now();
+
+    async function pollReviewStatus() {
+      if (cancelled || stopped || requestInFlight) {
+        return;
+      }
+      if (Date.now() - startedAtMs >= POLL_MAX_DURATION_MS) {
+        stopped = true;
+        return;
+      }
+
+      requestInFlight = true;
+      try {
+        const response = await fetch(`/api/bff/reviews/${reviewId}`, {
+          method: "GET",
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          const apiError = await parseApiError(response);
+          if (!cancelled) {
+            setError(apiError);
+          }
+          stopped = true;
+          return;
+        }
+
+        const payload = (await response.json()) as ReviewDetailResponse;
+        if (cancelled) {
+          return;
+        }
+
+        setReviewDetail(payload);
+        setError(null);
+
+        if (!isPendingReview(payload.review.status)) {
+          stopped = true;
+        }
+      } catch {
+        if (!cancelled) {
+          setError({
+            code: "INTERNAL_ERROR",
+            message: "Unable to refresh review status.",
+            details: {},
+            status: 500,
+          });
+        }
+        stopped = true;
+      } finally {
+        requestInFlight = false;
+      }
+    }
+
+    const intervalId = window.setInterval(() => {
+      void pollReviewStatus();
+    }, POLL_INTERVAL_MS);
+
+    void pollReviewStatus();
+
+    return () => {
+      cancelled = true;
+      stopped = true;
+      window.clearInterval(intervalId);
+    };
+  }, [reviewId, reviewStatus]);
 
   async function retryFailedReview() {
     const stored = getStoredReviewAttempt();
