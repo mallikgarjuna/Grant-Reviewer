@@ -1,8 +1,8 @@
 # WF-0018 — Harden Submit Flow UX
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-18
 
 ## Task Breakdown (Sequential Order)
@@ -13,16 +13,19 @@ Goal:
 - Lock the canonical create-review route and restart-reset boundary used by implementation.
 
 Files to modify:
-- `docs/prds/prd-WF-0018-harden-submit-flow-ux.md` (only if route/fallback wording needs final alignment)
+- `frontend/src/app/app/**` route entrypoints for create-review flow
+- `frontend/src/lib/**` flow-state utilities (if route/reset contract is encoded there)
 - `docs/walkthroughs/walkthrough-WF-0018-harden-submit-flow-ux.md`
 
 Acceptance Criteria:
 - Canonical restart destination is confirmed against actual frontend routes.
 - Reset boundary is explicit enough to implement without ambiguity.
+- Any route-name mismatch vs PRD assumptions is resolved in implementation notes before Task 2.
 
 Verification Steps:
 - Inspect current route definitions in `frontend/src/app/app/**`.
 - Record confirmed contract in walkthrough notes.
+- `cd frontend && npm run lint`
 
 Risks (if any):
 - Wrong route assumption can break restart flow.
@@ -130,3 +133,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-02-18): Initial task breakdown from PRD
+- v0.2 (2026-02-18): Clarified route-contract task files/acceptance criteria; marked Ready for Implementation
