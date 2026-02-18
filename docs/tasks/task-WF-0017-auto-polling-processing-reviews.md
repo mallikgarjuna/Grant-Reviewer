@@ -1,8 +1,8 @@
 # WF-0017 — Auto Polling for Processing Reviews
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-18
 
 ## Task Breakdown (Sequential Order)
@@ -14,7 +14,6 @@ Goal:
 
 Files to modify:
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx`
-- `frontend/src/lib/bff/types.ts` (only if clarifying comments/types are needed)
 
 Acceptance Criteria:
 - Polling trigger status is unambiguous in code.
@@ -55,7 +54,6 @@ Goal:
 
 Files to modify:
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx`
-- `frontend/src/components/review/ReviewSummary.tsx` (only if status message placement requires component support)
 
 Acceptance Criteria:
 - After 90 seconds in pending, polling stops and fallback message appears.
@@ -83,7 +81,7 @@ Acceptance Criteria:
 - UI remains in pending context unless terminal state is returned.
 
 Verification Steps:
-- Manual simulation of intermittent network error during polling.
+- Manual simulation of intermittent network error during polling while confirming cap timer does not reset.
 - `cd frontend && npm run lint`.
 
 Risks (if any):
@@ -114,3 +112,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-02-18): Initial task breakdown from PRD
+- v0.2 (2026-02-18): Applied task review refinements and marked ready for implementation
