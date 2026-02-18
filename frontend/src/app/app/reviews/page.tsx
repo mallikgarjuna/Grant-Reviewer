@@ -158,12 +158,15 @@ export default function ReviewsListPage() {
 
       {/* Loading */}
       {state.kind === "loading" && (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
+        <div className="space-y-4" aria-hidden="true">
+          {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-20 animate-pulse rounded-[var(--radius-lg)] bg-[var(--color-surface-muted)]"
-            />
+              className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5"
+            >
+              <div className="h-4 w-56 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+              <div className="mt-3 h-3 w-36 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+            </div>
           ))}
         </div>
       )}
