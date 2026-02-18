@@ -540,3 +540,7 @@
 ### 12:06 - WF-0017 Phase 3 Runner Completed (Task A/B/C)
 > User selected `1` to run Phase 3.
 > Outcome: Executed Phase 3 runner end-to-end for `WF-0017`: generated task plan `v0.1` (Part A), performed no-edit task review (Part B), revised to `v0.2` and marked `Ready for Implementation` (Part C), then updated `docs/index.md` to `Phase 3 (Ready)`.
+
+### 12:07 - WF-0017 Phase 4.1 Implementation Completed
+> User selected `1` to proceed with implementation.
+> Outcome: Implemented Task 1-5 sequentially with per-task commits: status semantic alignment (`PENDING`), bounded polling loop (3s interval, 90s cap), cap fallback UX, transient-error-safe polling behavior, and walkthrough verification docs. Updated `docs/index.md` status for `WF-0017` to `Done`.
