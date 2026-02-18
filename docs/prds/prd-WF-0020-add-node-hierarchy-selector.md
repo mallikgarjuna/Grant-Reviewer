@@ -1,13 +1,13 @@
 # WF-0020 — Add node hierarchy selector
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-18
 
 ## 1. In Scope
 
-- Replace flat node selection UX in in-scope submit/review entry points with hierarchy-aware selection.
+- Replace flat node selection UX in `frontend/src/app/app/page.tsx` (`Proposal Section` field) with hierarchy-aware selection.
 - Implement parent-first cascade interaction for node selection.
 - Add parent-context disambiguation for ambiguous child labels where required.
 - Preserve predictable ordering inside parent groups.
@@ -49,7 +49,7 @@ Failure path C - large option set fatigue:
 - FR1: In-scope node selection enforces parent selection before child selection.
 - FR2: Child options update deterministically based on selected parent.
 - FR3: Child labels include parent context where ambiguity exists.
-- FR4: Existing submit/review behavior remains unchanged after node selection.
+- FR4: Existing submit behavior in `frontend/src/app/app/page.tsx` remains unchanged after node selection.
 - FR5: Fallback rendering remains usable when hierarchy metadata is incomplete.
 - FR6: Node ordering is stable within each parent context.
 - FR7: Selector interaction preserves existing keyboard behavior.
@@ -63,6 +63,7 @@ Validation rules:
 - Parent choice is required before child choice in the new interaction.
 - Selected child must belong to the currently selected parent context.
 - If metadata is incomplete, fallback path must still return valid selectable nodes.
+- Fallback contract: if no parent metadata is derivable for a node, place it under a deterministic `Other Sections` parent bucket while preserving selection validity.
 
 State transitions:
 - initial selector state -> parent selected -> child options populated -> child selected
@@ -80,7 +81,6 @@ Boundaries and responsibilities:
 
 Suggested file paths:
 - `frontend/src/app/app/page.tsx`
-- `frontend/src/app/app/reviews/[reviewId]/page.tsx` (if node selection appears in this flow)
 - `frontend/src/components/**` for reusable selector UI pieces
 - `frontend/src/lib/**` for grouping/fallback transformation helpers
 
@@ -97,6 +97,13 @@ Suggested file paths:
 - No new telemetry pipeline in MVP.
 - Optional temporary local debug logging during verification is allowed but should not ship as persistent instrumentation.
 
+Verification checklist (manual):
+- Load a call with 10+ reviewable nodes and confirm parent-first flow narrows child options.
+- Switch parent after selecting child and confirm stale child selection resets.
+- Confirm ambiguous child labels are distinguishable with context.
+- Confirm nodes lacking parent metadata remain selectable via `Other Sections` fallback bucket.
+- Confirm submit form validation and submission behavior remain unchanged.
+
 ## Deferred / Not in MVP
 
 - Cross-app standardization of all selector experiences.
@@ -106,8 +113,9 @@ Suggested file paths:
 
 ## Open Questions (if any)
 
-- Confirm exact set of routes/components that currently expose flat node selection and must be included in this WF.
+- None for MVP.
 
 ## Changelog
 
 - v0.1 (2026-02-18): Initial PRD from spec
+- v0.2 (2026-02-18): Tightened route scope to `/app` submit flow, defined deterministic fallback bucket behavior, and marked Ready for Tasks

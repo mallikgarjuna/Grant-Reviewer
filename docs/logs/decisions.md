@@ -1,5 +1,23 @@
 # Architectural Decisions
 
+## Date: 2026-02-18 (WF-0020: Add node hierarchy selector)
+
+### AD 20.1: Frontend-only node hierarchy selector using existing node contracts
+- **WF ID**: WF-0020
+- **Context**: Flat node selection in the submit form is confusing for calls with many nodes, but backend contracts already provide the data needed for UI-level hierarchy shaping.
+- **Decision**: Implement hierarchy selection entirely in frontend (`/app` submit flow) with no backend/API/schema changes.
+- **Why**: Fastest launch-readiness improvement with minimal system risk.
+- **Tradeoff**: Any deeper hierarchy data normalization is deferred to future workflows.
+- **Status**: Approved.
+
+### AD 20.2: Deterministic fallback bucket for incomplete hierarchy metadata
+- **WF ID**: WF-0020
+- **Context**: Some node payloads may not expose usable parent metadata for every entry.
+- **Decision**: Nodes lacking derivable parent metadata are placed in a deterministic `Other Sections` bucket so they remain selectable.
+- **Why**: Prevents broken or hidden node options while preserving a hierarchy-first experience.
+- **Tradeoff**: Fallback grouping may be less semantically precise than fully modeled hierarchy.
+- **Status**: Approved.
+
 ## Date: 2026-02-18 (WF-0019: Add Loading & Empty States)
 
 ### AD 19.1: Frontend-only state UX improvements
