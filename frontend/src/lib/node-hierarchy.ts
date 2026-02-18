@@ -19,6 +19,11 @@ export type NodeHierarchyOptions = {
   parentByNodeId: Record<string, string>;
 };
 
+type ParentOrderMeta = {
+  orderIndex: number;
+  label: string;
+};
+
 function compareNodes(a: NodeSummary, b: NodeSummary): number {
   if (a.order_index !== b.order_index) {
     return a.order_index - b.order_index;
@@ -31,6 +36,7 @@ export function buildNodeHierarchyOptions(nodes: NodeSummary[]): NodeHierarchyOp
   const parentByNodeId: Record<string, string> = {};
   const childrenByParentNodes = new Map<string, NodeSummary[]>();
   const parentLabels = new Map<string, string>();
+  const parentOrderById = new Map<string, ParentOrderMeta>();
 
   for (const node of nodes) {
     const parentNode = node.parent_node_id ? nodeById.get(node.parent_node_id) : undefined;
@@ -38,6 +44,18 @@ export function buildNodeHierarchyOptions(nodes: NodeSummary[]): NodeHierarchyOp
     const parentLabel = parentNode?.title ?? OTHER_SECTIONS_PARENT_LABEL;
     parentByNodeId[node.id] = parentId;
     parentLabels.set(parentId, parentLabel);
+    const currentMeta = parentOrderById.get(parentId);
+    if (!currentMeta) {
+      parentOrderById.set(parentId, {
+        orderIndex: parentNode?.order_index ?? Number.MAX_SAFE_INTEGER,
+        label: parentLabel,
+      });
+    } else if (parentNode && parentNode.order_index < currentMeta.orderIndex) {
+      parentOrderById.set(parentId, {
+        orderIndex: parentNode.order_index,
+        label: parentLabel,
+      });
+    }
     const bucket = childrenByParentNodes.get(parentId) ?? [];
     bucket.push(node);
     childrenByParentNodes.set(parentId, bucket);
@@ -56,6 +74,11 @@ export function buildNodeHierarchyOptions(nodes: NodeSummary[]): NodeHierarchyOp
       }
       if (b.id === OTHER_SECTIONS_PARENT_KEY) {
         return -1;
+      }
+      const orderA = parentOrderById.get(a.id);
+      const orderB = parentOrderById.get(b.id);
+      if (orderA && orderB && orderA.orderIndex !== orderB.orderIndex) {
+        return orderA.orderIndex - orderB.orderIndex;
       }
       return a.label.localeCompare(b.label);
     });

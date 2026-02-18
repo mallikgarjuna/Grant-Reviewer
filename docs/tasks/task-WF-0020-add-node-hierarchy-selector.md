@@ -108,3 +108,6 @@ Risks (if any):
 - [x] Task 2 — Implement parent-first selector state and grouping adapter
   - Added hierarchy adapter at `frontend/src/lib/node-hierarchy.ts` with deterministic parent buckets and fallback `Other Sections`.
   - Updated `/app` submit flow to use parent-first selection, child filtering by selected parent, and unchanged submission payload mapping to selected child `node_id`.
+- [x] Task 3 — Add label disambiguation and stable ordering
+  - Added duplicate-title disambiguation in child options using parent-context suffixes only where needed.
+  - Enforced deterministic ordering for parents/children using `order_index` plus title tie-breakers, with `Other Sections` rendered last.
