@@ -635,3 +635,8 @@
 > User requested execution (`go`) of Phase 2 runner for `WF-0020`.
 > Outcome: Part A generated and committed PRD `v0.1`; Part B ran no-edit MVP risk audit (non-blocking findings only); Part C revised PRD to `v0.2` (`Ready for Tasks`), logged WF-0020 decisions, and updated `docs/index.md` status to `Phase 2 (Ready)`.
 > Files: `docs/prds/prd-WF-0020-add-node-hierarchy-selector.md`, `docs/logs/decisions.md`, `docs/index.md`, `docs/logs/prompt_history.md`.
+
+### 17:40 - WF-0020 Phase 3 Runner Completed (Tasks A/B/C)
+> User requested execution (`go`) of Phase 3 runner for `WF-0020`.
+> Outcome: Part A generated and committed tasks `v0.1`; Part B ran no-edit task review (non-blocking sequencing/integration findings); Part C revised tasks to `v0.2` (`Ready for Implementation`) and updated `docs/index.md` to `Phase 3 (Ready)`.
+> Files: `docs/tasks/task-WF-0020-add-node-hierarchy-selector.md`, `docs/index.md`, `docs/logs/prompt_history.md`.

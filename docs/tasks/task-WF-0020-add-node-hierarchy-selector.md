@@ -1,8 +1,8 @@
 # WF-0020 — Add node hierarchy selector
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-18
 
 ## Task Breakdown (Sequential Order)
@@ -15,12 +15,12 @@ Goal:
 Files to modify:
 - `frontend/src/app/app/page.tsx`
 - `frontend/src/lib/bff/types.ts` (read/adjust typing only if needed)
-- `docs/walkthroughs/walkthrough-WF-0020-add-node-hierarchy-selector.md`
 
 Acceptance Criteria:
 - In-scope selector surface is explicitly confirmed as `/app` submit flow.
 - Node payload fields used for parent/child grouping are documented.
 - Fallback criteria for incomplete metadata are documented before implementation.
+- No production behavior changes are introduced in this audit step.
 
 Verification Steps:
 - Inspect `/app` selector implementation and node payload shape.
@@ -43,6 +43,7 @@ Acceptance Criteria:
 - Parent must be selected before child options become active.
 - Child options only show nodes valid for selected parent.
 - Nodes with missing parent metadata are placed under `Other Sections`.
+- Existing submission payload still sends valid `node_id` mapped to selected child node.
 
 Verification Steps:
 - Manual scenario checks for parent selection, child filtering, and fallback bucket behavior.
@@ -96,3 +97,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-02-18): Initial task breakdown from PRD
+- v0.2 (2026-02-18): Tightened sequencing, added node_id integration acceptance criterion, and marked Ready for Implementation
