@@ -51,6 +51,27 @@ When I say the brainstorm is “good enough” (or I say “stop”), stop and s
 
 ---
 
+## Phase 0 — Run Start + Brainstorm (End-to-End)
+
+This runs Phase 0.0 + 0.1 in sequence.
+
+```text
+Use @docs/workflow/phase-0-run-start-and-brainstorm.md
+@docs/index.md
+@docs/templates/brainstorm-template.md
+
+Title: <Title>
+Type: <page|feature>
+Slug: <slug>
+
+Run Phase 0 end-to-end for this initiative.
+Execute Part A (0.0) then Part B (0.1) exactly as routed.
+Ask interactive brainstorm questions with options + recommendation.
+End with two suggested next actions.
+```
+
+---
+
 ## Phase 1 — Run Spec (End-to-End)
 
 This runs Phase 1.1 + 1.2 + 1.3 in sequence.

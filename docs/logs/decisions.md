@@ -1,5 +1,12 @@
 # Architectural Decisions
 
+## Date: 2026-02-18 (Workflow System)
+
+### AD W.1: Add Phase 0 End-to-End Runner
+- **Decision**: Introduce `docs/workflow/phase-0-run-start-and-brainstorm.md` to execute Phase `0.0` then `0.1` sequentially in one run.
+- **Rationale**: Reduces phase-sequencing errors and makes `run phase 0` consistent with existing end-to-end runners for phases 1-3.
+- **Status**: Approved.
+
 ## Date: 2026-02-06
 
 ### AD 0.1: Recursive Proposal Node Structure
