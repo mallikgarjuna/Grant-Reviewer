@@ -524,3 +524,7 @@
 ### 12:02 - Pick P0 #1 Promoted to WF-0017
 > User issued code phrase `pick P0 #1`.
 > Outcome: Promoted "Add auto-polling for processing reviews" to `WF-0017`, created baseline workflow artifacts, created branch `wf/WF-0017-auto-polling-processing-reviews`, and updated registry links in `docs/index.md` plus backlog renumbering in `docs/parking_lot.md`.
+
+### 12:03 - WF-0017 Phase 0.1 Brainstorm Completed
+> User selected "go with recommendations" for all five-question batches across Sections 1-8 in Phase 0.1.
+> Outcome: Completed interactive brainstorm for `WF-0017` with tightened MVP scope, explicit constraints/risks, and non-goals; set brainstorm artifact status to `Draft Complete`.
