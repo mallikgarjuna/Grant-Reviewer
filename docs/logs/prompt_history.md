@@ -640,3 +640,8 @@
 > User requested execution (`go`) of Phase 3 runner for `WF-0020`.
 > Outcome: Part A generated and committed tasks `v0.1`; Part B ran no-edit task review (non-blocking sequencing/integration findings); Part C revised tasks to `v0.2` (`Ready for Implementation`) and updated `docs/index.md` to `Phase 3 (Ready)`.
 > Files: `docs/tasks/task-WF-0020-add-node-hierarchy-selector.md`, `docs/index.md`, `docs/logs/prompt_history.md`.
+
+### 18:03 - WF-0020 Phase 4 Implementation Completed
+> User requested Phase 4 start (`go to start Phase 4 implementation`).
+> Outcome: Completed Tasks 1-4 with per-task commits; implemented parent-first node hierarchy selection in `/app`, added deterministic `Other Sections` fallback and ambiguity-safe labels/order, updated walkthrough/task artifacts, and marked `WF-0020` as `Done` in `docs/index.md`.
+> Files: `frontend/src/app/app/page.tsx`, `frontend/src/lib/node-hierarchy.ts`, `docs/tasks/task-WF-0020-add-node-hierarchy-selector.md`, `docs/walkthroughs/walkthrough-WF-0020-add-node-hierarchy-selector.md`, `docs/index.md`, `README.md`, `docs/logs/prompt_history.md`.

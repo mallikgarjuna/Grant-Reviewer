@@ -1,8 +1,8 @@
 # WF-0020 — Add node hierarchy selector
 
 Artifact: task
-Version: v0.2
-Status: Ready for Implementation
+Version: v0.3
+Status: Completed
 Last Updated: 2026-02-18
 
 ## Task Breakdown (Sequential Order)
@@ -98,6 +98,7 @@ Risks (if any):
 
 - v0.1 (2026-02-18): Initial task breakdown from PRD
 - v0.2 (2026-02-18): Tightened sequencing, added node_id integration acceptance criterion, and marked Ready for Implementation
+- v0.3 (2026-02-18): Completed implementation across Tasks 1-4 and added walkthrough verification notes
 
 ## Implementation Progress
 
@@ -111,3 +112,6 @@ Risks (if any):
 - [x] Task 3 — Add label disambiguation and stable ordering
   - Added duplicate-title disambiguation in child options using parent-context suffixes only where needed.
   - Enforced deterministic ordering for parents/children using `order_index` plus title tie-breakers, with `Other Sections` rendered last.
+- [x] Task 4 — Validate end-to-end behavior and capture walkthrough
+  - Added implementation walkthrough with run instructions, verification checklist, and known limitations at `docs/walkthroughs/walkthrough-WF-0020-add-node-hierarchy-selector.md`.
+  - Verified lint and pre-commit checks; manual browser verification checklist documented for local execution.
