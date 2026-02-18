@@ -1,8 +1,8 @@
 # WF-0017 — Auto Polling for Processing Reviews
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-18
 
 ## 1. In Scope
@@ -37,8 +37,8 @@ Last Updated: 2026-02-18
 
 ### Failure Path B: Transient Request Error During Polling
 1. Poll request errors (network or temporary server failure).
-2. Client keeps bounded behavior and does not spawn duplicate loops.
-3. UI maintains processing context and continues next scheduled attempt until cap or terminal state.
+2. Client keeps bounded behavior, does not spawn duplicate loops, and does not reset the 90-second cap timer.
+3. UI maintains processing context and continues only the next scheduled interval attempt until cap or terminal state.
 
 ### Failure Path C: View Unmount/Navigate Away
 1. User leaves processing view while polling is active.
@@ -54,6 +54,8 @@ Last Updated: 2026-02-18
 - FR5: Only one polling loop may exist per review view instance.
 - FR6: At cap while still processing, UI must show non-failure fallback guidance.
 - FR7: The feature must reuse existing review-status fetch paths and auth context.
+- FR8: After cap is reached, revisiting a still-processing review view may start a fresh bounded polling window.
+- FR9: Implementation verification must include one terminal transition case and one cap-reached fallback case.
 
 ## 5. Data & API Contracts
 
@@ -67,7 +69,7 @@ Last Updated: 2026-02-18
 
 ### Validation Rules
 - Polling starts only for recognized `PROCESSING` status.
-- Unknown or missing status should fail safe by stopping polling and surfacing existing error handling.
+- Unknown or missing status should fail safe by stopping polling and surfacing existing error handling state.
 
 ### State Transitions (Client View)
 - `PROCESSING` -> `PROCESSING`: continue polling until cap.
@@ -85,6 +87,7 @@ Last Updated: 2026-02-18
 ### Suggested File Paths
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx`
 - `frontend/src/lib/api.ts`
+- `frontend/src/lib/reviews/` (polling lifecycle helper/hook if extracted)
 - `frontend/src/components/review/` (status display components as needed)
 
 ## 7. Edge Cases
@@ -118,3 +121,4 @@ No new external monitoring integration in this WF.
 ## Changelog
 
 - v0.1 (2026-02-18): Initial PRD from spec
+- v0.2 (2026-02-18): Applied risk-audit clarifications and marked ready for tasks

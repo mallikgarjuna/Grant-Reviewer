@@ -532,3 +532,7 @@
 ### 12:04 - WF-0017 Phase 1 Runner Completed (Spec A/B/C)
 > User selected `run phase 1`.
 > Outcome: Executed Phase 1 runner end-to-end for `WF-0017`: generated spec `v0.1` (Part A), performed no-edit review gate (Part B), applied non-blocking clarifications in revision `v0.2` and marked `Ready for PRD` (Part C), then updated `docs/index.md` status to `Phase 1`.
+
+### 12:05 - WF-0017 Phase 2 Runner Completed (PRD A/B/C)
+> User requested: "run phase 2 end-to-end".
+> Outcome: Executed Phase 2 runner end-to-end for `WF-0017`: generated PRD `v0.1` (Part A), completed no-edit risk audit (Part B), revised to `v0.2` and marked `Ready for Tasks` with decision logging (Part C), then updated `docs/index.md` to `Phase 2 (Ready)`.
