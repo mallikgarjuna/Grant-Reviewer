@@ -128,6 +128,7 @@ export default function ReviewDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
   const [hasPollingCapReached, setHasPollingCapReached] = useState(false);
+  const [pollingNotice, setPollingNotice] = useState<string | null>(null);
   const reviewStatus = reviewDetail?.review.status;
 
   useEffect(() => {
@@ -166,6 +167,7 @@ export default function ReviewDetailPage() {
   useEffect(() => {
     if (!reviewStatus || !isPendingReview(reviewStatus)) {
       setHasPollingCapReached(false);
+      setPollingNotice(null);
       return;
     }
 
@@ -180,6 +182,7 @@ export default function ReviewDetailPage() {
       }
       if (Date.now() - startedAtMs >= POLL_MAX_DURATION_MS) {
         setHasPollingCapReached(true);
+        setPollingNotice(null);
         stopped = true;
         return;
       }
@@ -192,10 +195,17 @@ export default function ReviewDetailPage() {
         });
         if (!response.ok) {
           const apiError = await parseApiError(response);
-          if (!cancelled) {
+          if (
+            !cancelled &&
+            (apiError.code === "UNAUTHORIZED" || apiError.code === "REVIEW_NOT_FOUND")
+          ) {
             setError(apiError);
+            stopped = true;
+            return;
           }
-          stopped = true;
+          if (!cancelled) {
+            setPollingNotice("Temporary issue checking status. Retrying automatically...");
+          }
           return;
         }
 
@@ -206,6 +216,7 @@ export default function ReviewDetailPage() {
 
         setReviewDetail(payload);
         setError(null);
+        setPollingNotice(null);
 
         if (!isPendingReview(payload.review.status)) {
           stopped = true;
@@ -213,14 +224,8 @@ export default function ReviewDetailPage() {
         }
       } catch {
         if (!cancelled) {
-          setError({
-            code: "INTERNAL_ERROR",
-            message: "Unable to refresh review status.",
-            details: {},
-            status: 500,
-          });
+          setPollingNotice("Network issue while checking status. Retrying automatically...");
         }
-        stopped = true;
       } finally {
         requestInFlight = false;
       }
@@ -527,11 +532,16 @@ export default function ReviewDetailPage() {
         </div>
 
         {isPending ? (
-          <p className="mt-4 text-sm text-[var(--color-muted-foreground)]">
-            {hasPollingCapReached
-              ? "Still processing after 90 seconds. This review may still finish soon; refresh to check again."
-              : "Still processing. Checking status automatically..."}
-          </p>
+          <div className="mt-4 space-y-2">
+            <p className="text-sm text-[var(--color-muted-foreground)]">
+              {hasPollingCapReached
+                ? "Still processing after 90 seconds. This review may still finish soon; refresh to check again."
+                : "Still processing. Checking status automatically..."}
+            </p>
+            {pollingNotice ? (
+              <p className="text-sm text-[var(--color-muted-foreground)]">{pollingNotice}</p>
+            ) : null}
+          </div>
         ) : null}
 
         {isFailed ? (
