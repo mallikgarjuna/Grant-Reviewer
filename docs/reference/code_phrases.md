@@ -29,6 +29,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | **`remember this`** `: [rule]` | Codify a new rule → `AGENTS.md` (workflow) or `docs/lessons.md` (project gotcha). |
 | **`log this`** `: [decision/Q&A]` | Record a decision or clarification in `docs/logs/`. |
 | **`update docs`** | Sync all doc artifacts (index, walkthrough, decisions, prompt history). |
+| **`docs cleanup`** | Run a docs-closure checklist before next WF: align WF status across artifacts, remove stale draft/phase labels, update relevant logs (`prompt_history`/`decisions` as needed), run `pre-commit`, and commit docs-only changes with WF ID + slug. |
 
 ## Session & Shipping
 
@@ -54,6 +55,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | Persist new standing workflow rule | **`remember this`** |
 | Capture decision/clarification in logs | **`log this`** |
 | Sync all docs after work changes | **`update docs`** |
+| Run final doc hygiene before starting next WF | **`docs cleanup`** |
 | Quick project snapshot and next priorities | **`status`**, **`what's next`** |
 | End session without merge | **`wrap up`** |
 | Complete PR-based merge flow to `main` | **`ship it`** |

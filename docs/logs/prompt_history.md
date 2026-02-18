@@ -548,3 +548,7 @@
 ### 13:07 - New Code Phrase Added: workflow preflight
 > User requested a new phrase to run a critical review of current workflow readiness before starting the next WF, with explicit recommended actions and guidance on whether to start a new chat.
 > Outcome: Added `workflow preflight` to `docs/reference/code_phrases.md` and registered it in `AGENTS.md` key phrase list.
+
+### 13:14 - New Code Phrase Added: docs cleanup
+> User asked whether a dedicated docs cleanup phrase exists and requested creation with explicit action guidance.
+> Outcome: Added `docs cleanup` to `docs/reference/code_phrases.md` with a concrete closure checklist (status alignment, stale-label cleanup, log updates, pre-commit, docs-only commit) and registered it in `AGENTS.md`.
