@@ -373,7 +373,12 @@ export default function ReviewDetailPage() {
     return (
       <main className="mx-auto flex w-full max-w-5xl flex-col px-6 py-12 md:px-10">
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8">
-          <p className="text-sm text-[var(--color-muted-foreground)]">Loading review...</p>
+          <div aria-hidden="true" className="space-y-4">
+            <div className="h-4 w-20 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+            <div className="h-8 w-60 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+            <div className="h-4 w-48 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+            <div className="h-24 w-full animate-pulse rounded-[var(--radius-md)] bg-[var(--color-surface-muted)]" />
+          </div>
         </div>
       </main>
     );

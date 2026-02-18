@@ -1,5 +1,23 @@
 # Architectural Decisions
 
+## Date: 2026-02-18 (WF-0019: Add Loading & Empty States)
+
+### AD 19.1: Frontend-only state UX improvements
+- **WF ID**: WF-0019
+- **Context**: P1 launch-readiness issue is user confusion in loading/no-data moments, not backend correctness.
+- **Decision**: Implement loading and empty-state improvements only in frontend route components and shared UI helpers; no backend/API changes.
+- **Why**: Smallest change that addresses user-facing trust issues quickly.
+- **Tradeoff**: Reuse of current fetch lifecycle means deeper async-state redesign is deferred.
+- **Status**: Approved.
+
+### AD 19.2: Deterministic empty-state CTA behavior
+- **WF ID**: WF-0019
+- **Context**: Empty states without explicit direction can stall first-time users.
+- **Decision**: Every in-scope empty state includes a deterministic next-action CTA (for reviews-empty, CTA targets `/app` start flow).
+- **Why**: Prevents dead-end UX and improves first-use onboarding clarity.
+- **Tradeoff**: CTA destinations stay minimal; richer context-aware routing is deferred.
+- **Status**: Approved.
+
 ## Date: 2026-02-18 (WF-0018: Harden Submit Flow UX)
 
 ### AD 18.1: Submit-flow hardening without backend/API expansion

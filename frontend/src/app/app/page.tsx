@@ -246,6 +246,66 @@ export default function AppSubmitPage() {
     }
   }
 
+  if (isLoadingCalls) {
+    return (
+      <main className="mx-auto flex w-full max-w-5xl flex-col px-6 py-12 md:px-10">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-sm">
+          <div className="h-8 w-64 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+          <div className="mt-3 h-4 w-full max-w-xl animate-pulse rounded bg-[var(--color-surface-muted)]" />
+          <div className="mt-8 space-y-6">
+            <div className="space-y-2">
+              <div className="h-4 w-28 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+              <div className="h-11 w-full animate-pulse rounded-[var(--radius-md)] bg-[var(--color-surface-muted)]" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 w-32 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+              <div className="h-11 w-full animate-pulse rounded-[var(--radius-md)] bg-[var(--color-surface-muted)]" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 w-32 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+              <div className="h-48 w-full animate-pulse rounded-[var(--radius-md)] bg-[var(--color-surface-muted)]" />
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!formError && calls.length === 0) {
+    return (
+      <main className="mx-auto flex w-full max-w-5xl flex-col px-6 py-12 md:px-10">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-sm">
+          <h1 className="text-3xl font-semibold tracking-tight text-[var(--color-foreground)]">
+            Run a Grant Review
+          </h1>
+          <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
+            We could not find any funding calls to review right now.
+          </p>
+          <div className="mt-6 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] bg-[var(--color-background)] px-5 py-6">
+            <p className="text-sm text-[var(--color-foreground)]">
+              Next step: refresh this page to retry loading calls, or open your existing reviews.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                className="inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 text-sm font-medium text-[var(--color-primary-foreground)] transition hover:opacity-90"
+                onClick={() => window.location.reload()}
+                type="button"
+              >
+                Retry loading calls
+              </button>
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-foreground)]"
+                href={APP_REVIEWS_ROUTE}
+              >
+                Go to My Reviews
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col px-6 py-12 md:px-10">
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-sm">
@@ -268,9 +328,7 @@ export default function AppSubmitPage() {
               onChange={(event) => setSelectedCallId(event.target.value)}
               value={selectedCallId}
             >
-              <option value="">
-                {isLoadingCalls ? "Loading calls..." : "Select a funding call"}
-              </option>
+              <option value="">Select a funding call</option>
               {calls.map((call) => (
                 <option key={call.id} value={call.id}>
                   {call.code} - {call.name}
@@ -293,15 +351,19 @@ export default function AppSubmitPage() {
               onChange={(event) => setSelectedNodeId(event.target.value)}
               value={selectedNodeId}
             >
-              <option value="">
-                {isLoadingNodes ? "Loading sections..." : "Select a section"}
-              </option>
+              <option value="">Select a section</option>
               {nodes.map((node) => (
                 <option key={node.id} value={node.id}>
                   {node.title}
                 </option>
               ))}
             </select>
+            {isLoadingNodes ? (
+              <div aria-hidden="true" className="space-y-2 pt-1">
+                <div className="h-3 w-40 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+                <div className="h-3 w-52 animate-pulse rounded bg-[var(--color-surface-muted)]" />
+              </div>
+            ) : null}
             {fieldErrors.node ? (
               <p className="text-sm text-red-600">{fieldErrors.node}</p>
             ) : null}

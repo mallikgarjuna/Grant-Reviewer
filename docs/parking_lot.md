@@ -61,11 +61,10 @@ When you pick an item to start work:
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Add loading & empty states | product | Replace plain-text "Loading..." with skeleton/shimmer loaders; show onboarding guidance when no calls are available. | 2026-02-16 |
-| 2 | Add node hierarchy selector | product | Group flat node `<select>` by parent sections (cascade or grouped optgroups) — current flat list is confusing for 10+ nodes. | 2026-02-16 |
-| 3 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
-| 4 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
-| 5 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
+| 1 | Add node hierarchy selector | product | Group flat node `<select>` by parent sections (cascade or grouped optgroups) — current flat list is confusing for 10+ nodes. | 2026-02-16 |
+| 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 3 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
+| 4 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
 
 ---
 
@@ -90,6 +89,7 @@ When you pick an item to start work:
 | 4 | P0 | Upgrade review results UX | [WF-0016](tasks/task-WF-0016-review-results-ux.md) | 2026-02-17 |
 | 5 | P0 | Add auto-polling for processing reviews | [WF-0017](tasks/task-WF-0017-auto-polling-processing-reviews.md) | 2026-02-18 |
 | 6 | P0 | Harden submit flow UX | [WF-0018](tasks/task-WF-0018-harden-submit-flow-ux.md) | 2026-02-18 |
+| 7 | P1 | Add loading & empty states | [WF-0019](tasks/task-WF-0019-add-loading-empty-states.md) | 2026-02-18 |
 
 ---
 
