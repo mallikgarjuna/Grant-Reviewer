@@ -1,8 +1,8 @@
 # WF-0018 — Harden Submit Flow UX
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-18
 
 ## 1. In Scope
@@ -65,6 +65,10 @@ Failure path C - sign-out redirect dead end:
 Request/response shapes:
 - Reuse existing review creation/status/auth contracts; no new API surface is introduced.
 
+Route contract assumptions:
+- Clean submit start route: `/app/review/new` (or current equivalent create-review entry route in codebase).
+- Public entry route after sign-out: `/` (marketing/home entry), unless current auth middleware contract defines a different canonical public route.
+
 Validation rules:
 - `Start new review` must clear current submit-flow draft/attempt context before navigation.
 - Slow-processing UI must present at least one direct action (not passive informational copy only).
@@ -104,10 +108,8 @@ Suggested file paths (to refine in Tasks phase):
 
 ## 8. Telemetry (Minimal)
 
-- Log submit-flow restart action invocation count.
-- Log restart success/fallback events (e.g., reset failure guard path).
-- Log auth return mismatch events (if detected).
-- Log sign-out redirect mismatch events (if detected).
+- Optional lightweight client-side logs/counters only if existing instrumentation hooks are already available.
+- Do not add new backend telemetry pipelines in this WF.
 
 ## Deferred / Not in MVP
 
@@ -118,8 +120,10 @@ Suggested file paths (to refine in Tasks phase):
 
 ## Open Questions (if any)
 
-- None blocking for task generation; implementation details can be finalized in Phase 3 task breakdown.
+- Confirm canonical in-app create-review route string used by current frontend routing.
+- Confirm whether explicit fallback UI is needed if restart reset guard detects stale state.
 
 ## Changelog
 
 - v0.1 (2026-02-18): Initial PRD from spec
+- v0.2 (2026-02-18): Added route contract assumptions, tightened telemetry scope, and marked Ready for Tasks
