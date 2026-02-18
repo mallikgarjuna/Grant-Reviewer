@@ -528,3 +528,7 @@
 ### 12:03 - WF-0017 Phase 0.1 Brainstorm Completed
 > User selected "go with recommendations" for all five-question batches across Sections 1-8 in Phase 0.1.
 > Outcome: Completed interactive brainstorm for `WF-0017` with tightened MVP scope, explicit constraints/risks, and non-goals; set brainstorm artifact status to `Draft Complete`.
+
+### 12:04 - WF-0017 Phase 1 Runner Completed (Spec A/B/C)
+> User selected `run phase 1`.
+> Outcome: Executed Phase 1 runner end-to-end for `WF-0017`: generated spec `v0.1` (Part A), performed no-edit review gate (Part B), applied non-blocking clarifications in revision `v0.2` and marked `Ready for PRD` (Part C), then updated `docs/index.md` status to `Phase 1`.
