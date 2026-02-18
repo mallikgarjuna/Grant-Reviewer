@@ -271,6 +271,41 @@ export default function AppSubmitPage() {
     );
   }
 
+  if (!formError && calls.length === 0) {
+    return (
+      <main className="mx-auto flex w-full max-w-5xl flex-col px-6 py-12 md:px-10">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-sm">
+          <h1 className="text-3xl font-semibold tracking-tight text-[var(--color-foreground)]">
+            Run a Grant Review
+          </h1>
+          <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
+            We could not find any funding calls to review right now.
+          </p>
+          <div className="mt-6 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] bg-[var(--color-background)] px-5 py-6">
+            <p className="text-sm text-[var(--color-foreground)]">
+              Next step: refresh this page to retry loading calls, or open your existing reviews.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                className="inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 text-sm font-medium text-[var(--color-primary-foreground)] transition hover:opacity-90"
+                onClick={() => window.location.reload()}
+                type="button"
+              >
+                Retry loading calls
+              </button>
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-foreground)]"
+                href={APP_REVIEWS_ROUTE}
+              >
+                Go to My Reviews
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col px-6 py-12 md:px-10">
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-sm">

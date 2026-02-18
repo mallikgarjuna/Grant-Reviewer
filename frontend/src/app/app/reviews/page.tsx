@@ -188,7 +188,7 @@ export default function ReviewsListPage() {
             No reviews yet
           </p>
           <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">
-            Submit a proposal snippet to get your first AI-powered review.
+            Start with one proposal section in New Review to generate your first feedback report.
           </p>
           <Link
             className="mt-6 inline-flex h-9 items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 text-sm font-medium text-[var(--color-primary-foreground)] transition hover:opacity-90"
