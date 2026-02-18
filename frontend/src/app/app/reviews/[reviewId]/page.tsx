@@ -127,6 +127,7 @@ export default function ReviewDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
+  const [hasPollingCapReached, setHasPollingCapReached] = useState(false);
   const reviewStatus = reviewDetail?.review.status;
 
   useEffect(() => {
@@ -164,6 +165,7 @@ export default function ReviewDetailPage() {
 
   useEffect(() => {
     if (!reviewStatus || !isPendingReview(reviewStatus)) {
+      setHasPollingCapReached(false);
       return;
     }
 
@@ -177,6 +179,7 @@ export default function ReviewDetailPage() {
         return;
       }
       if (Date.now() - startedAtMs >= POLL_MAX_DURATION_MS) {
+        setHasPollingCapReached(true);
         stopped = true;
         return;
       }
@@ -206,6 +209,7 @@ export default function ReviewDetailPage() {
 
         if (!isPendingReview(payload.review.status)) {
           stopped = true;
+          setHasPollingCapReached(false);
         }
       } catch {
         if (!cancelled) {
@@ -524,7 +528,9 @@ export default function ReviewDetailPage() {
 
         {isPending ? (
           <p className="mt-4 text-sm text-[var(--color-muted-foreground)]">
-            Still processing. Refresh this page in a few moments.
+            {hasPollingCapReached
+              ? "Still processing after 90 seconds. This review may still finish soon; refresh to check again."
+              : "Still processing. Checking status automatically..."}
           </p>
         ) : null}
 
