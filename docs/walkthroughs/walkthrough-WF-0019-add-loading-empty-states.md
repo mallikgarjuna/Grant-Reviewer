@@ -1,8 +1,8 @@
 # WF-0019 — Add Loading & Empty States
 
 Artifact: walkthrough
-Version: v0.1
-Status: In Progress
+Version: v0.2
+Status: Completed
 Last Updated: 2026-02-18
 
 ## Summary
@@ -26,3 +26,47 @@ Findings:
 Implementation direction locked:
 - Add lightweight reusable skeleton blocks and state cards.
 - Keep API contracts and navigation behavior unchanged.
+
+## Implemented Changes
+
+- `/app`:
+  - Added full-page skeleton loading state while calls load.
+  - Removed loading copy from select placeholders and added section-loading skeleton hints.
+  - Added explicit no-calls empty state with deterministic CTA actions:
+    - `Retry loading calls`
+    - `Go to My Reviews`
+- `/app/reviews`:
+  - Upgraded loading placeholders to structured card-like skeletons.
+  - Tightened empty-state onboarding copy while keeping CTA to `/app`.
+- `/app/reviews/[reviewId]`:
+  - Replaced plain `Loading review...` text with structured skeleton UI.
+
+## How To Run
+
+```bash
+source ~/.nvm/nvm.sh
+nvm use v22.17.0
+cd frontend
+npm run dev
+```
+
+## How To Verify
+
+Automated:
+
+```bash
+cd frontend
+npm run lint
+```
+
+Manual scenarios:
+1. `/app` initial load: confirm full skeleton UI (not plain text) before form appears.
+2. `/app` no-calls state: simulate empty calls response and confirm onboarding guidance + retry/reviews actions.
+3. `/app/reviews` initial load: confirm card-like skeleton list appears.
+4. `/app/reviews` empty state: confirm onboarding copy + `Start a Review` CTA.
+5. `/app/reviews/[reviewId]` load: confirm skeleton state appears before review content/error branches.
+
+## Known Limitations
+
+- Manual scenario checks were documented but not fully executed in this environment (no mocked empty API response harness was added in this WF).
+- Skeleton styles are route-local and intentionally minimal; a global shared state-component system is deferred.
