@@ -1,8 +1,8 @@
 # WF-0019 — Add Loading & Empty States
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-18
 
 ## 1. In Scope
@@ -104,8 +104,9 @@ Suggested file paths:
 
 ## Open Questions (if any)
 
-- Confirm exact component extraction level (page-local vs shared state UI components) after quick file inspection.
+- Use a small shared set of state UI helpers where practical, but avoid broad framework extraction.
 
 ## Changelog
 
 - v0.1 (2026-02-18): Initial PRD from spec
+- v0.2 (2026-02-18): Resolved component extraction direction and marked Ready for Tasks
