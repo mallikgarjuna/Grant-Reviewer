@@ -10,6 +10,7 @@ This file tracks minor fixes, refactors, and maintenance tasks to avoid clutteri
 | M.4 | Add Field-level descriptions to all domain models    | [x] | `feat: [M.4] 9f48c3a` |
 | M.5 | Audit and fix relationship back_populates symmetry   | [x] | `feat: [M.5] 6a7ded7` |
 | M.6 | WF-0016 scorecard hardening (badge fallback, summary spacing, API assertion) | [x] | pending commit |
+| M.7 | CI stabilization: frontend Clerkless build fallback + backend file-based sqlite test DB | [x] | pending commit |
 
 ## Local Maintenance & Verification (WF-0015)
 

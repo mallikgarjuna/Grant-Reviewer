@@ -41,7 +41,7 @@ jobs:
         run: uv run pytest
         env:
           LLM_MODE: stub # Ensure tests run without OpenAI key
-          DATABASE_URL: "sqlite:///:memory:" # Use in-memory DB for tests if needed, or mock
+          DATABASE_URL: "sqlite:///./ci_test.db" # File-backed SQLite avoids per-connection in-memory table loss
 
   frontend:
     runs-on: ubuntu-latest
