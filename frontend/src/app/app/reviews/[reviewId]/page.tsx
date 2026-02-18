@@ -13,6 +13,9 @@ import type { ApiError, ReviewDetailResponse } from "@/lib/bff/types";
 import { ReviewCard } from "@/components/review/ReviewCard";
 import { ReviewSummary } from "@/components/review/ReviewSummary";
 
+const POLL_INTERVAL_MS = 3_000;
+const POLL_MAX_DURATION_MS = 90_000;
+
 type ApiErrorEnvelope = {
   error?: {
     code?: unknown;
@@ -106,6 +109,10 @@ async function copyTextWithFallback(text: string): Promise<void> {
   }
 }
 
+function isPendingReview(status: string): boolean {
+  return status === "PENDING";
+}
+
 export default function ReviewDetailPage() {
   const router = useRouter();
   const params = useParams<{ reviewId: string }>();
@@ -120,6 +127,9 @@ export default function ReviewDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
+  const [hasPollingCapReached, setHasPollingCapReached] = useState(false);
+  const [pollingNotice, setPollingNotice] = useState<string | null>(null);
+  const reviewStatus = reviewDetail?.review.status;
 
   useEffect(() => {
     let cancelled = false;
@@ -153,6 +163,86 @@ export default function ReviewDetailPage() {
       cancelled = true;
     };
   }, [reviewId]);
+
+  useEffect(() => {
+    if (!reviewStatus || !isPendingReview(reviewStatus)) {
+      setHasPollingCapReached(false);
+      setPollingNotice(null);
+      return;
+    }
+
+    let cancelled = false;
+    let stopped = false;
+    let requestInFlight = false;
+    const startedAtMs = Date.now();
+
+    async function pollReviewStatus() {
+      if (cancelled || stopped || requestInFlight) {
+        return;
+      }
+      if (Date.now() - startedAtMs >= POLL_MAX_DURATION_MS) {
+        setHasPollingCapReached(true);
+        setPollingNotice(null);
+        stopped = true;
+        return;
+      }
+
+      requestInFlight = true;
+      try {
+        const response = await fetch(`/api/bff/reviews/${reviewId}`, {
+          method: "GET",
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          const apiError = await parseApiError(response);
+          if (
+            !cancelled &&
+            (apiError.code === "UNAUTHORIZED" || apiError.code === "REVIEW_NOT_FOUND")
+          ) {
+            setError(apiError);
+            stopped = true;
+            return;
+          }
+          if (!cancelled) {
+            setPollingNotice("Temporary issue checking status. Retrying automatically...");
+          }
+          return;
+        }
+
+        const payload = (await response.json()) as ReviewDetailResponse;
+        if (cancelled) {
+          return;
+        }
+
+        setReviewDetail(payload);
+        setError(null);
+        setPollingNotice(null);
+
+        if (!isPendingReview(payload.review.status)) {
+          stopped = true;
+          setHasPollingCapReached(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setPollingNotice("Network issue while checking status. Retrying automatically...");
+        }
+      } finally {
+        requestInFlight = false;
+      }
+    }
+
+    const intervalId = window.setInterval(() => {
+      void pollReviewStatus();
+    }, POLL_INTERVAL_MS);
+
+    void pollReviewStatus();
+
+    return () => {
+      cancelled = true;
+      stopped = true;
+      window.clearInterval(intervalId);
+    };
+  }, [reviewId, reviewStatus]);
 
   async function retryFailedReview() {
     const stored = getStoredReviewAttempt();
@@ -338,7 +428,7 @@ export default function ReviewDetailPage() {
   }
 
   const isFailed = reviewDetail.review.status === "FAILED";
-  const isPending = reviewDetail.review.status === "PENDING";
+  const isPending = isPendingReview(reviewDetail.review.status);
   const hasOverallSummary = Boolean(reviewDetail.review.overall_summary?.trim());
 
   return (
@@ -442,9 +532,16 @@ export default function ReviewDetailPage() {
         </div>
 
         {isPending ? (
-          <p className="mt-4 text-sm text-[var(--color-muted-foreground)]">
-            Still processing. Refresh this page in a few moments.
-          </p>
+          <div className="mt-4 space-y-2">
+            <p className="text-sm text-[var(--color-muted-foreground)]">
+              {hasPollingCapReached
+                ? "Still processing after 90 seconds. This review may still finish soon; refresh to check again."
+                : "Still processing. Checking status automatically..."}
+            </p>
+            {pollingNotice ? (
+              <p className="text-sm text-[var(--color-muted-foreground)]">{pollingNotice}</p>
+            ) : null}
+          </div>
         ) : null}
 
         {isFailed ? (

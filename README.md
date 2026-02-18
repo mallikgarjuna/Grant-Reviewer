@@ -25,6 +25,7 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 - ✅ Next.js frontend scaffold + BFF adapter + SEO guardrails + app UI pages (Task 8.0A implementation)
 - ✅ Deployment wiring (Neon Postgres + Render backend + Vercel frontend + Clerk auth) + deploy verification (Task 8.0C)
 - ✅ PeerLens landing release (WF-0009): new `/` marketing page, `/privacy`, static call demos, review export, and self-serve delete flow
+- ✅ Review detail auto-polling (WF-0017): pending reviews now auto-refresh every 3s with a 90s cap and safe fallback messaging
 
 ### Notes
 - MVP stack (current): **Neon** (Postgres) + **Render** (FastAPI) + **Vercel** (Next.js) + **Clerk** (auth).

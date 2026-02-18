@@ -520,3 +520,35 @@
 > - `context refresh` for bounded project-state re-grounding before deciding next work.
 > - `new chat kickoff` for generating a compact 3-line starter once direction is known.
 > Also expanded `docs/reference/code_phrases.md` with a "when to use what" table covering all existing phrases.
+
+### 12:02 - Pick P0 #1 Promoted to WF-0017
+> User issued code phrase `pick P0 #1`.
+> Outcome: Promoted "Add auto-polling for processing reviews" to `WF-0017`, created baseline workflow artifacts, created branch `wf/WF-0017-auto-polling-processing-reviews`, and updated registry links in `docs/index.md` plus backlog renumbering in `docs/parking_lot.md`.
+
+### 12:03 - WF-0017 Phase 0.1 Brainstorm Completed
+> User selected "go with recommendations" for all five-question batches across Sections 1-8 in Phase 0.1.
+> Outcome: Completed interactive brainstorm for `WF-0017` with tightened MVP scope, explicit constraints/risks, and non-goals; set brainstorm artifact status to `Draft Complete`.
+
+### 12:04 - WF-0017 Phase 1 Runner Completed (Spec A/B/C)
+> User selected `run phase 1`.
+> Outcome: Executed Phase 1 runner end-to-end for `WF-0017`: generated spec `v0.1` (Part A), performed no-edit review gate (Part B), applied non-blocking clarifications in revision `v0.2` and marked `Ready for PRD` (Part C), then updated `docs/index.md` status to `Phase 1`.
+
+### 12:05 - WF-0017 Phase 2 Runner Completed (PRD A/B/C)
+> User requested: "run phase 2 end-to-end".
+> Outcome: Executed Phase 2 runner end-to-end for `WF-0017`: generated PRD `v0.1` (Part A), completed no-edit risk audit (Part B), revised to `v0.2` and marked `Ready for Tasks` with decision logging (Part C), then updated `docs/index.md` to `Phase 2 (Ready)`.
+
+### 12:06 - WF-0017 Phase 3 Runner Completed (Task A/B/C)
+> User selected `1` to run Phase 3.
+> Outcome: Executed Phase 3 runner end-to-end for `WF-0017`: generated task plan `v0.1` (Part A), performed no-edit task review (Part B), revised to `v0.2` and marked `Ready for Implementation` (Part C), then updated `docs/index.md` to `Phase 3 (Ready)`.
+
+### 12:07 - WF-0017 Phase 4.1 Implementation Completed
+> User selected `1` to proceed with implementation.
+> Outcome: Implemented Task 1-5 sequentially with per-task commits: status semantic alignment (`PENDING`), bounded polling loop (3s interval, 90s cap), cap fallback UX, transient-error-safe polling behavior, and walkthrough verification docs. Updated `docs/index.md` status for `WF-0017` to `Done`.
+
+### 13:07 - New Code Phrase Added: workflow preflight
+> User requested a new phrase to run a critical review of current workflow readiness before starting the next WF, with explicit recommended actions and guidance on whether to start a new chat.
+> Outcome: Added `workflow preflight` to `docs/reference/code_phrases.md` and registered it in `AGENTS.md` key phrase list.
+
+### 13:14 - New Code Phrase Added: docs cleanup
+> User asked whether a dedicated docs cleanup phrase exists and requested creation with explicit action guidance.
+> Outcome: Added `docs cleanup` to `docs/reference/code_phrases.md` with a concrete closure checklist (status alignment, stale-label cleanup, log updates, pre-commit, docs-only commit) and registered it in `AGENTS.md`.

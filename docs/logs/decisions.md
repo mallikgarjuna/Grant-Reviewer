@@ -495,3 +495,15 @@
 - **Decision**: Use GitHub Actions for CI, `uv` for python management, and `npm` for frontend.
 - **Rationale**: Standard, modern stack with excellent caching support. `uv` is significantly faster than pip/poetry.
 - **Status**: Proposed.
+
+---
+
+## Date: 2026-02-18 (WF-0017: Auto Polling for Processing Reviews)
+
+### AD 17.1: Bounded client polling with no backend contract changes
+- **WF ID**: WF-0017
+- **Context**: Users currently need manual refresh while reviews are in `PROCESSING`, but introducing new transport/API surface would expand MVP scope.
+- **Decision**: Implement client-side polling every 3 seconds with a 90-second cap using existing review status contracts (`PROCESSING`, `COMPLETED`, `FAILED`) and no backend API changes.
+- **Why**: Fastest low-risk path to improve user trust in wait-state behavior before real-user rollout.
+- **Tradeoff**: Long-running reviews may still require manual follow-up after the polling cap, and this does not provide real-time push semantics.
+- **Status**: Approved.
