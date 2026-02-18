@@ -1,8 +1,8 @@
 # WF-0017 — Auto Polling for Processing Reviews
 
 Artifact: walkthrough
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Completed
 Last Updated: 2026-02-18
 
 ## Summary
@@ -70,3 +70,4 @@ Evidence in code:
 ## Changelog
 
 - v0.1 (2026-02-18): Initial implementation walkthrough with verification guidance and limits
+- v0.2 (2026-02-18): Docs cleanup alignment after WF completion
