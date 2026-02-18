@@ -98,3 +98,10 @@ Risks (if any):
 
 - v0.1 (2026-02-18): Initial task breakdown from PRD
 - v0.2 (2026-02-18): Tightened sequencing, added node_id integration acceptance criterion, and marked Ready for Implementation
+
+## Implementation Progress
+
+- [x] Task 1 — Audit current node selector surface and hierarchy inputs
+  - Confirmed in-scope selector surface: `frontend/src/app/app/page.tsx` (`Proposal Section` field in `/app` submit flow).
+  - Confirmed hierarchy/grouping inputs from `NodeSummary`: `parent_node_id`, `title`, `order_index`, `has_expectations` (`frontend/src/lib/bff/types.ts`).
+  - Confirmed fallback criteria for implementation: when a node has missing/non-resolvable `parent_node_id`, place it in deterministic `Other Sections` bucket while preserving valid child `node_id` submission.
