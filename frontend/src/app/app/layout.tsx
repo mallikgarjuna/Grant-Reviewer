@@ -8,6 +8,7 @@ import {
   APP_CREATE_REVIEW_ROUTE,
   APP_REVIEWS_ROUTE,
   PUBLIC_ENTRY_ROUTE,
+  SIGN_IN_ROUTE,
 } from "@/lib/routes";
 
 function NavLink({
@@ -39,6 +40,10 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() ?? "";
+  const isClerkConfigured =
+    publishableKey.length > 0 && !publishableKey.includes("REPLACE_ME");
+
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-background)]/95 backdrop-blur-sm">
@@ -60,14 +65,23 @@ export default function AppLayout({
             </nav>
           </div>
           <div className="flex items-center">
-            <UserButton
-              afterSignOutUrl={PUBLIC_ENTRY_ROUTE}
-              appearance={{
-                elements: {
-                  avatarBox: "h-8 w-8",
-                },
-              }}
-            />
+            {isClerkConfigured ? (
+              <UserButton
+                afterSignOutUrl={PUBLIC_ENTRY_ROUTE}
+                appearance={{
+                  elements: {
+                    avatarBox: "h-8 w-8",
+                  },
+                }}
+              />
+            ) : (
+              <Link
+                className="inline-flex h-9 items-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-foreground)]"
+                href={SIGN_IN_ROUTE}
+              >
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       </header>

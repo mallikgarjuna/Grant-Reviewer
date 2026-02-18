@@ -28,7 +28,15 @@ export default async function SignInPage({
   searchParams?: Promise<SearchParams>;
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const configError = firstValue(resolvedSearchParams?.auth_config_error) === "1";
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() ?? "";
+  const clerkSecretKey = process.env.CLERK_SECRET_KEY?.trim() ?? "";
+  const hasMissingClerkEnv =
+    publishableKey.length === 0 ||
+    clerkSecretKey.length === 0 ||
+    publishableKey.includes("REPLACE_ME") ||
+    clerkSecretKey.includes("REPLACE_ME");
+  const configError =
+    firstValue(resolvedSearchParams?.auth_config_error) === "1" || hasMissingClerkEnv;
   const redirectTarget = safeRedirectTarget(firstValue(resolvedSearchParams?.redirect_url));
 
   return (

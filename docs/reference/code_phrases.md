@@ -21,6 +21,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | **`critical review`** | Senior-level review of current work with actionable findings. |
 | **`workflow preflight`** | Critical review of current WF readiness, required actions before starting next WF, recommended order, and whether to start a new chat. |
 | **`diff`** | Show changes on the current branch vs `main`. |
+| **`verify workflow`** | Run a verification bundle for the current workflow (composed phrase): `status` + `diff` + targeted checks (lint/build/tests used in this WF) + concise pass/fail summary. |
 
 ## Knowledge & Memory
 
@@ -59,3 +60,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | Quick project snapshot and next priorities | **`status`**, **`what's next`** |
 | End session without merge | **`wrap up`** |
 | Complete PR-based merge flow to `main` | **`ship it`** |
+
+## Composition Guideline
+
+When a new phrase overlaps existing phrases, define and execute it as a composed shortcut (reuse existing phrase behaviors first, then add only the minimal extra checks/reporting).

@@ -23,16 +23,28 @@ export const metadata: Metadata = {
   },
 };
 
+function isClerkConfigured(): boolean {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim();
+  if (!publishableKey) {
+    return false;
+  }
+  return !publishableKey.includes("REPLACE_ME");
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const content = isClerkConfigured() ? (
+    <ClerkProvider>{children}</ClerkProvider>
+  ) : (
+    children
+  );
+
   return (
     <html className={`${inter.variable} ${lora.variable}`} lang="en">
-      <body className="antialiased">
-        <ClerkProvider>{children}</ClerkProvider>
-      </body>
+      <body className="antialiased">{content}</body>
     </html>
   );
 }
