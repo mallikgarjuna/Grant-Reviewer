@@ -26,11 +26,12 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 - ✅ Deployment wiring (Neon Postgres + Render backend + Vercel frontend + Clerk auth) + deploy verification (Task 8.0C)
 - ✅ PeerLens landing release (WF-0009): new `/` marketing page, `/privacy`, static call demos, review export, and self-serve delete flow
 - ✅ Review detail auto-polling (WF-0017): pending reviews now auto-refresh every 3s with a 90s cap and safe fallback messaging
+- ✅ Submit flow hardening (WF-0018): added deterministic `Start new review` reset flow, actionable slow-state guidance, and stricter auth/sign-out redirect continuity
 
 ### Notes
 - MVP stack (current): **Neon** (Postgres) + **Render** (FastAPI) + **Vercel** (Next.js) + **Clerk** (auth).
 - Production bootstrap runs from a developer machine (Render free tier has no shell). See `docs/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md`.
-- Workflow status: `WF-0009` is complete (`docs/index.md` marked `Done`).
+- Workflow status: `WF-0018` is complete (`docs/index.md` marked `Done`).
 
 ## Quick Start
 

@@ -9,6 +9,7 @@ import {
   createNewReviewAttempt,
   getStoredReviewAttempt,
 } from "@/lib/review-attempt";
+import { APP_CREATE_REVIEW_ROUTE, APP_REVIEWS_ROUTE } from "@/lib/routes";
 import type { ApiError, ReviewDetailResponse } from "@/lib/bff/types";
 import { ReviewCard } from "@/components/review/ReviewCard";
 import { ReviewSummary } from "@/components/review/ReviewSummary";
@@ -111,6 +112,11 @@ async function copyTextWithFallback(text: string): Promise<void> {
 
 function isPendingReview(status: string): boolean {
   return status === "PENDING";
+}
+
+function buildSignInRedirectHref(path: string): string {
+  const params = new URLSearchParams({ redirect_url: path });
+  return `/sign-in?${params.toString()}`;
 }
 
 export default function ReviewDetailPage() {
@@ -295,6 +301,11 @@ export default function ReviewDetailPage() {
     }
   }
 
+  function handleStartNewReview() {
+    clearReviewAttempt();
+    router.push(APP_CREATE_REVIEW_ROUTE);
+  }
+
   async function copyReviewAsText() {
     if (!reviewDetail) {
       return;
@@ -350,7 +361,7 @@ export default function ReviewDetailPage() {
         return;
       }
       clearReviewAttempt();
-      router.push("/app");
+      router.push(APP_CREATE_REVIEW_ROUTE);
     } catch {
       setDeleteErrorMessage("Unable to delete this review right now.");
     } finally {
@@ -380,7 +391,7 @@ export default function ReviewDetailPage() {
           </p>
           <Link
             className="mt-6 inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white"
-            href={`/sign-in?redirect_url=/app/reviews/${reviewId}`}
+            href={buildSignInRedirectHref(`/app/reviews/${reviewId}`)}
           >
             Continue to sign in
           </Link>
@@ -476,6 +487,19 @@ export default function ReviewDetailPage() {
           >
             Download .txt
           </button>
+          <button
+            className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-5 text-sm font-medium text-[var(--color-foreground)]"
+            onClick={handleStartNewReview}
+            type="button"
+          >
+            Start new review
+          </button>
+          <Link
+            className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-5 text-sm font-medium text-[var(--color-foreground)]"
+            href={APP_REVIEWS_ROUTE}
+          >
+            My reviews
+          </Link>
         </div>
         {exportFeedback ? (
           <p
@@ -536,7 +560,10 @@ export default function ReviewDetailPage() {
             <p className="text-sm text-[var(--color-muted-foreground)]">
               {hasPollingCapReached
                 ? "Still processing after 90 seconds. This review may still finish soon; refresh to check again."
-                : "Still processing. Checking status automatically..."}
+                : "Still processing. Checking status automatically every few seconds."}
+            </p>
+            <p className="text-sm text-[var(--color-muted-foreground)]">
+              You can keep waiting, open My reviews, or start a new review.
             </p>
             {pollingNotice ? (
               <p className="text-sm text-[var(--color-muted-foreground)]">{pollingNotice}</p>
@@ -558,12 +585,13 @@ export default function ReviewDetailPage() {
               >
                 {isRetrying ? "Retrying..." : "Retry Review"}
               </button>
-              <Link
+              <button
                 className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-5 text-sm font-medium text-[var(--color-foreground)]"
-                href="/app"
+                onClick={handleStartNewReview}
+                type="button"
               >
-                Edit and resubmit
-              </Link>
+                Start new review
+              </button>
             </div>
             {statusMessage ? <p className="text-sm text-red-600">{statusMessage}</p> : null}
           </div>

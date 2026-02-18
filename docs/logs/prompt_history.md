@@ -552,3 +552,31 @@
 ### 13:14 - New Code Phrase Added: docs cleanup
 > User asked whether a dedicated docs cleanup phrase exists and requested creation with explicit action guidance.
 > Outcome: Added `docs cleanup` to `docs/reference/code_phrases.md` with a concrete closure checklist (status alignment, stale-label cleanup, log updates, pre-commit, docs-only commit) and registered it in `AGENTS.md`.
+
+### 13:25 - WF-0018 Promotion + Workflow Routing Fix
+> User issued `pick P0 #1` and then flagged that next step after Phase 0.0 should be Phase 0.1 brainstorm.
+> Outcome: Promoted parking lot item to `WF-0018` (`harden-submit-flow-ux`) with branch/artifact baseline; then added a new end-to-end Phase 0 runner (`docs/workflow/phase-0-run-start-and-brainstorm.md`) and wired it into workflow action docs/code-phrase references to prevent sequencing mistakes.
+
+### 13:35 - WF-0018 Phase 0 Runner Execution Completed
+> User ran `run phase 0` and requested recommendation-driven completion.
+> Outcome: Completed Phase 0.1 brainstorm for `WF-0018` with recommended selections across Sections 1-8; finalized brainstorm as `Draft Complete` and committed.
+
+### 13:45 - WF-0018 Phase 1 Runner Completed (Spec A/B/C)
+> User ran `run phase 1`.
+> Outcome: Generated spec `v0.1`, executed no-edit review gate, applied non-blocking revisions to `v0.2` (`Ready for PRD`), and updated `docs/index.md` to `Phase 1`.
+
+### 13:55 - WF-0018 Phase 2 Runner Completed (PRD A/B/C)
+> User ran `run phase 2 end-to-end`.
+> Outcome: Generated PRD `v0.1`, executed no-edit risk audit, revised to `v0.2` (`Ready for Tasks`), logged WF-0018 decisions in `docs/logs/decisions.md`, and updated `docs/index.md` to `Phase 2 (Ready)`.
+
+### 14:05 - WF-0018 Phase 3 Runner Completed (Tasks A/B/C)
+> User ran `run phase 3 end-to-end`.
+> Outcome: Generated tasks `v0.1`, executed no-edit task review, revised to `v0.2` (`Ready for Implementation`), and updated `docs/index.md` to `Phase 3 (Ready)`.
+
+### 14:20 - WF-0018 Phase 4 Implementation Completed
+> User ran `run phase 4`.
+> Outcome: Implemented Tasks 1-6 sequentially with per-task commits, added route constants and submit-flow hardening changes, updated walkthrough/task status docs, and set `WF-0018` to `Done` in `docs/index.md`.
+
+### 14:30 - WF-0018 Wrap Up + Ship Request
+> User requested `wrap up and then ship it`.
+> Outcome: Performed final docs sync/cleanup, then executed push + PR + merge flow for `wf/WF-0018-harden-submit-flow-ux`, followed by local `main` sync.

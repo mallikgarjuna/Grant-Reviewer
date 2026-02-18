@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
@@ -8,6 +9,7 @@ import {
   getStoredReviewAttempt,
   getOrCreateReviewAttempt,
 } from "@/lib/review-attempt";
+import { APP_REVIEWS_ROUTE } from "@/lib/routes";
 import type { ApiError, CallSummary, NodeSummary } from "@/lib/bff/types";
 
 const SLOW_REQUEST_HINT_MS = 40_000;
@@ -339,8 +341,22 @@ export default function AppSubmitPage() {
           ) : null}
 
           {showSlowHint ? (
-            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-muted-foreground)]">
-              Still processing. You can safely refresh and submit again if needed.
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-3 text-sm text-[var(--color-muted-foreground)]">
+              <p>This is taking longer than usual.</p>
+              <p className="mt-1">Next steps:</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5">
+                <li>Keep this tab open while your review request finishes.</li>
+                <li>
+                  Open{" "}
+                  <Link
+                    className="font-medium text-[var(--color-foreground)] underline underline-offset-2"
+                    href={APP_REVIEWS_ROUTE}
+                  >
+                    My Reviews
+                  </Link>{" "}
+                  to check status updates.
+                </li>
+              </ul>
             </div>
           ) : null}
 

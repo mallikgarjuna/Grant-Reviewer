@@ -1,4 +1,5 @@
 import { SignIn } from "@clerk/nextjs";
+import { APP_CREATE_REVIEW_ROUTE } from "@/lib/routes";
 
 type SearchParams = {
   redirect_url?: string | string[];
@@ -10,10 +11,15 @@ function firstValue(value: string | string[] | undefined): string | undefined {
 }
 
 function safeRedirectTarget(rawValue: string | undefined): string {
-  if (rawValue && rawValue.startsWith("/") && !rawValue.startsWith("//")) {
+  if (
+    rawValue &&
+    rawValue.startsWith("/app") &&
+    !rawValue.startsWith("//") &&
+    !rawValue.includes("\\")
+  ) {
     return rawValue;
   }
-  return "/app";
+  return APP_CREATE_REVIEW_ROUTE;
 }
 
 export default async function SignInPage({
@@ -40,7 +46,10 @@ export default async function SignInPage({
           </p>
         </section>
       ) : (
-        <SignIn fallbackRedirectUrl="/app" forceRedirectUrl={redirectTarget} />
+        <SignIn
+          fallbackRedirectUrl={APP_CREATE_REVIEW_ROUTE}
+          forceRedirectUrl={redirectTarget}
+        />
       )}
     </main>
   );

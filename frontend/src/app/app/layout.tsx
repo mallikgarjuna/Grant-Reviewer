@@ -4,6 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
+import {
+  APP_CREATE_REVIEW_ROUTE,
+  APP_REVIEWS_ROUTE,
+  PUBLIC_ENTRY_ROUTE,
+} from "@/lib/routes";
 
 function NavLink({
   href,
@@ -39,7 +44,7 @@ export default function AppLayout({
       <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-background)]/95 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6 md:px-10">
           <div className="flex items-center gap-5">
-            <Link className="flex items-center" href="/">
+            <Link className="flex items-center" href={PUBLIC_ENTRY_ROUTE}>
               <Image
                 alt="PeerLens"
                 className="h-7 w-auto object-contain"
@@ -50,13 +55,13 @@ export default function AppLayout({
               />
             </Link>
             <nav aria-label="App navigation" className="flex items-center gap-1">
-              <NavLink href="/app">New Review</NavLink>
-              <NavLink href="/app/reviews">My Reviews</NavLink>
+              <NavLink href={APP_CREATE_REVIEW_ROUTE}>New Review</NavLink>
+              <NavLink href={APP_REVIEWS_ROUTE}>My Reviews</NavLink>
             </nav>
           </div>
           <div className="flex items-center">
             <UserButton
-              afterSignOutUrl="/"
+              afterSignOutUrl={PUBLIC_ENTRY_ROUTE}
               appearance={{
                 elements: {
                   avatarBox: "h-8 w-8",

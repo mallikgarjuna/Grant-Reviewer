@@ -1,5 +1,30 @@
 # Architectural Decisions
 
+## Date: 2026-02-18 (WF-0018: Harden Submit Flow UX)
+
+### AD 18.1: Submit-flow hardening without backend/API expansion
+- **WF ID**: WF-0018
+- **Context**: Current submit-flow trust issues are UX/state-transition problems; adding new backend endpoints would increase scope/risk.
+- **Decision**: Keep WF-0018 frontend-focused and reuse existing review/auth contracts with no API changes.
+- **Why**: Fastest path to eliminate user confusion before real-user rollout.
+- **Tradeoff**: Some observability and deeper state guarantees are deferred to future workflows.
+- **Status**: Approved.
+
+### AD 18.2: Canonical restart and redirect targets for submit continuity
+- **WF ID**: WF-0018
+- **Context**: Ambiguous restart/redirect targets cause dead-end navigation and inconsistent user recovery paths.
+- **Decision**: Define deterministic targets for restart (`/app/review/new` or equivalent create-review route) and sign-out public return (`/` unless auth contract requires equivalent canonical public route).
+- **Why**: Deterministic routing is required to validate no dead-end submit-flow states.
+- **Tradeoff**: If current route contracts differ, task implementation must align names while preserving deterministic target behavior.
+- **Status**: Approved.
+
+## Date: 2026-02-18 (Workflow System)
+
+### AD W.1: Add Phase 0 End-to-End Runner
+- **Decision**: Introduce `docs/workflow/phase-0-run-start-and-brainstorm.md` to execute Phase `0.0` then `0.1` sequentially in one run.
+- **Rationale**: Reduces phase-sequencing errors and makes `run phase 0` consistent with existing end-to-end runners for phases 1-3.
+- **Status**: Approved.
+
 ## Date: 2026-02-06
 
 ### AD 0.1: Recursive Proposal Node Structure

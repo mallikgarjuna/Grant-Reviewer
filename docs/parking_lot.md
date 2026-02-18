@@ -54,7 +54,6 @@ When you pick an item to start work:
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Harden submit flow UX | product | Add "Start new review" button (clears draft), make slow-hint actionable, verify sign-in deep-link round-trip and sign-out redirect. | 2026-02-16 |
 
 ---
 
@@ -90,6 +89,7 @@ When you pick an item to start work:
 | 3 | P1 | Practices Upgrade (CI/CD) | [WF-0015](tasks/task-WF-0015-practices-upgrade.md) | 2026-02-17 |
 | 4 | P0 | Upgrade review results UX | [WF-0016](tasks/task-WF-0016-review-results-ux.md) | 2026-02-17 |
 | 5 | P0 | Add auto-polling for processing reviews | [WF-0017](tasks/task-WF-0017-auto-polling-processing-reviews.md) | 2026-02-18 |
+| 6 | P0 | Harden submit flow UX | [WF-0018](tasks/task-WF-0018-harden-submit-flow-ux.md) | 2026-02-18 |
 
 ---
 
