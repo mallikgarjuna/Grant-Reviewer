@@ -511,3 +511,12 @@
 ### 09:50 - Wrap Up Requested
 > User requested `wrap up` via code phrase.
 > Outcome: Updated WF-0016 docs (`walkthrough` + `prompt_history`), committed wrap-up docs updates on `wf/WF-0016-review-results-ux`, and prepared/pushed branch without merge.
+
+## 2026-02-18
+
+### 10:40 - Code Phrase Clarification: Context vs Kickoff
+> User asked whether adding a new context-loading phrase would be redundant and requested constructive guidance.
+> Outcome: Introduced distinct semantics for two phrases:
+> - `context refresh` for bounded project-state re-grounding before deciding next work.
+> - `new chat kickoff` for generating a compact 3-line starter once direction is known.
+> Also expanded `docs/reference/code_phrases.md` with a "when to use what" table covering all existing phrases.
