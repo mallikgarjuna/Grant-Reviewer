@@ -625,3 +625,8 @@
 > User requested recommendation-led interactive answers ("go with your recommendations") for all Sections 1-8.
 > Outcome: Completed context-aware brainstorm for `WF-0020` with focused scope (hierarchy selector UX only), defined constraints/risks/MVP/non-goals, and set brainstorm status to `Draft Complete`.
 > Files: `docs/brainstorms/brainstorm-WF-0020-add-node-hierarchy-selector.md`, `docs/logs/prompt_history.md`.
+
+### 17:18 - WF-0020 Phase 1 Runner Completed (Spec A/B/C)
+> User requested execution (`go`) of Phase 1 runner for `WF-0020`.
+> Outcome: Part A generated and committed spec `v0.1`; Part B performed no-edit MVP review gate with non-blocking clarity/scope findings; Part C revised spec to `v0.2` (`Ready for PRD`) and updated `docs/index.md` status to `Phase 1`.
+> Files: `docs/specs/features/spec-WF-0020-add-node-hierarchy-selector.md`, `docs/index.md`, `docs/logs/prompt_history.md`.

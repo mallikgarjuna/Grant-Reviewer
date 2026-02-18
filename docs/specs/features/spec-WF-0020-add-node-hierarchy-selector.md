@@ -1,8 +1,8 @@
 # WF-0020 — Add node hierarchy selector
 
 Artifact: spec
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for PRD
 Last Updated: 2026-02-18
 
 ## 1. Purpose
@@ -19,18 +19,18 @@ Improve node findability and selection accuracy by introducing hierarchy context
 ## 3. Core Behavior
 
 - Provide hierarchy-aware selection so users can choose nodes with clear parent context.
-- Prioritize a simple grouped/cascaded flow that reduces wrong selections and re-navigation.
+- Use a two-step cascade flow for MVP: select parent section first, then select child node.
 - Keep node ordering predictable and labels disambiguated where necessary.
 - Preserve existing backend contracts and submission semantics.
 
 Behavioral definitions:
-- `Hierarchy-aware selection`: parent grouping (and/or parent-first cascade) is visible before final child node choice.
+- `Hierarchy-aware selection`: parent context is explicitly chosen first before final child node choice.
 - `Selection accuracy`: users can choose intended nodes in representative long-node scenarios without repeated trial-and-error.
 
 ## 4. In Scope
 
-- Frontend selector UX updates for primary node-selection entry points in submit/review flows.
-- Parent-context grouping/cascade behavior for node choices.
+- Frontend selector UX updates for node-selection entry points in submit/review flows where the current flat selector is used.
+- Parent-first cascade behavior for node choices.
 - Label adjustments for ambiguous child nodes (for example, parent-prefixed labels where needed).
 - Stable ordering within parent groups.
 - Manual verification across representative calls with 10+ nodes.
@@ -56,16 +56,17 @@ Behavioral definitions:
 - Calls may contain uneven hierarchy depth; selector behavior should remain deterministic.
 - Added interaction steps must not create dead-end states or hidden values.
 - If hierarchy metadata is incomplete for certain calls, fallback rendering must remain usable.
-- Large option sets should remain scannable and keyboard-friendly.
+- Large option sets should remain scannable and preserve existing keyboard behavior.
 
 ## 8. Verification Expectations
 
-- Primary node-selection flows show parent context during selection.
-- Representative long-node calls (10+ nodes) support reliable target-node selection.
+- Primary node-selection flows enforce parent selection before child selection.
+- Representative long-node calls (10+ nodes) support reliable target-node selection on first attempt in manual scenarios.
 - No obvious regressions in existing submit/review route behavior.
 - Lint and pre-commit checks pass for changed files.
-- Manual QA confirms reduced backtracking in selection scenarios.
+- Manual QA confirms the fallback experience remains usable when hierarchy metadata is incomplete.
 
 ## Changelog
 
 - v0.1 (2026-02-18): Initial spec from brainstorm
+- v0.2 (2026-02-18): Clarified MVP interaction model, tightened scope/verification definitions, and marked Ready for PRD
