@@ -1,5 +1,13 @@
 # Architectural Decisions
 
+## Date: 2026-02-20 (Terminology)
+
+### AD T.1: Standardize on “Evaluation criteria/elements” in product copy
+- **Context**: Different funders use different labels (e.g., “Assessment criteria” vs “Evaluation criteria”), and “rubric” is less familiar to many researchers.
+- **Decision**: Use **“Evaluation criteria”** and **“Evaluation elements”** consistently across all calls in user-facing copy to reduce confusion. Keep a private/internal note of funder-specific variations for reference only.
+- **Notes (variations observed)**: NWO commonly uses “Assessment criteria”; Horizon Europe commonly uses “Evaluation criteria”; some people use “Review criteria”.
+- **Status**: Approved.
+
 ## Date: 2026-02-18 (WF-0019: Add Loading & Empty States)
 
 ### AD 19.1: Frontend-only state UX improvements
