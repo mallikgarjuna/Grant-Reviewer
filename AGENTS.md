@@ -4,6 +4,12 @@
 
 Grant Reviewer helps researchers improve grant proposals by generating rubric-grounded feedback on proposal snippets. It ingests funding call definitions (rubrics + proposal structure) and produces structured review cards that are traceable back to rubric expectations.
 
+## Terminology (researcher-friendly)
+
+- Prefer **“evaluation criteria”** and **“evaluation elements”** over **“rubric”** when communicating with researchers/users (use “rubric” mainly for internal/dev shorthand where helpful).
+- When it improves clarity, treat **evaluation** as a synonym for **assessment** or **review** in researcher-facing language (e.g., “assessment criteria”, “review criteria”).
+- For consistency and to avoid user confusion, default to **“evaluation criteria”** / **“evaluation elements”** across *all* calls in product/UI copy (even if a specific funder uses “assessment”). Track per-funder wording variations for internal reference only.
+
 ## Tech Stack (Be specific with versions; should be updated as the project evolves)
 
 - Python: `3.12` (see `backend/.python-version`; backend requires `>=3.12`)
