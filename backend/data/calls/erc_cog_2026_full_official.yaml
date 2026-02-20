@@ -1,0 +1,151 @@
+# ERC Consolidator Grant 2026 Call Definition (OFFICIAL-ALIGNED)
+#
+# Sources (downloaded 2026-02-19):
+# - af_he-erc-cog_en.pdf (Application Form / Part B template): Part B1/Part B2, Part I + Part II descriptions
+# - guide-for-peer-reviewers_he-erc-stg-cog_en.pdf: "Scientific excellence is the sole criterion of evaluation"
+#
+# Notes:
+# - This file is intended to be closer to the official ERC framing than the demo fixture.
+# - The proposal-node tree here is kept to two levels (parent + child) to match the current UI selector.
+# - Evaluation rubric is modeled as a single criterion ("Scientific Excellence") with elements and node expectations.
+
+funding_agency:
+  name: "European Research Council"
+  short_name: "ERC"
+  description: "EU funding body for frontier research excellence"
+
+funding_call:
+  name: "ERC Consolidator Grant 2026"
+  code: "ERC-COG-2026"
+  year: 2026
+  aim_objectives: "Support excellent PIs to consolidate their research teams."
+  scope: "All research domains; frontier research."
+  general_guidelines: "Peer review uses scientific excellence as the sole evaluation criterion."
+
+evaluation_criteria:
+  - id: "crit_excellence"
+    name: "Scientific Excellence (Sole Criterion)"
+    description: "Scientific excellence is the sole evaluation criterion; applied to the research project and the PI."
+    evaluation_elements:
+      - id: "elem_groundbreaking"
+        name: "Ground-breaking Nature and Ambition"
+        description: "Originality/creativity and ambition of the research project; potential to advance the frontier of knowledge."
+      - id: "elem_pi_capacity"
+        name: "PI Intellectual Capacity and Creativity"
+        description: "PI’s scientific expertise, capacity, and creativity to successfully execute the project."
+      - id: "elem_state_of_knowledge"
+        name: "Current State of Knowledge"
+        description: "Quality and accuracy of the state-of-the-art/context framing."
+      - id: "elem_objectives"
+        name: "Scientific Question and Objectives"
+        description: "Clarity and coherence of the scientific question and project objectives."
+      - id: "elem_strategy"
+        name: "Overall Approach / Research Strategy"
+        description: "Overall approach or research strategy to reach the project goals."
+      - id: "elem_methodology"
+        name: "Research Methodology"
+        description: "Appropriateness and feasibility of research methodology."
+      - id: "elem_work_plan"
+        name: "Work Plan"
+        description: "Feasibility and coherence of work plan (tasks, timing, dependencies)."
+      - id: "elem_risks"
+        name: "Risk Assessment and Mitigation"
+        description: "Identification of risks and adequacy of mitigating measures."
+      - id: "elem_resources"
+        name: "Resources and Budget Justification"
+        description: "Justification for requested budget/resources (assessed at Step 2)."
+
+proposal_nodes:
+  - title: "Part B1"
+    node_type: "SECTION"
+    children:
+      - title: "Part I — Current State of Knowledge"
+        node_type: "SUBSECTION"
+        guidance_text: "Lay out the current state of knowledge and position the project in context."
+        node_expectations:
+          - evaluation_element_id: "elem_state_of_knowledge"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Assess whether the state of knowledge is accurate, selective (not exhaustive), and sets up the need for the project."
+          - evaluation_element_id: "elem_groundbreaking"
+            expectation_strength: "IMPORTANT"
+            evaluation_intent: "STRATEGIC_FIT"
+            guidance_note: "Look for clear articulation of what is novel/creative compared to existing work."
+
+      - title: "Part I — Scientific Question and Objectives"
+        node_type: "SUBSECTION"
+        guidance_text: "Explain the scientific question and the objectives of the project."
+        node_expectations:
+          - evaluation_element_id: "elem_objectives"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "COMPLIANCE"
+            guidance_note: "Verify objectives are clear and logically derived from the scientific question."
+          - evaluation_element_id: "elem_groundbreaking"
+            expectation_strength: "IMPORTANT"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Assess whether the objectives aim beyond incremental advances and target frontier questions."
+
+      - title: "Part I — Overall Approach / Research Strategy"
+        node_type: "SUBSECTION"
+        guidance_text: "Present the overall approach or research strategy to reach the goals of the project."
+        node_expectations:
+          - evaluation_element_id: "elem_strategy"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Evaluate coherence of the high-level strategy and alignment to objectives."
+          - evaluation_element_id: "elem_pi_capacity"
+            expectation_strength: "IMPORTANT"
+            evaluation_intent: "RISK"
+            guidance_note: "Check that the strategy matches the PI’s demonstrated expertise and capacity."
+
+      - title: "Curriculum Vitae and Track Record"
+        node_type: "SUBSECTION"
+        guidance_text: "Describe PI’s education, key qualifications, positions, and track record relevant to executing the project."
+        node_expectations:
+          - evaluation_element_id: "elem_pi_capacity"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Assess evidence of intellectual capacity/creativity and ability to execute the proposed work."
+
+  - title: "Part B2"
+    node_type: "SECTION"
+    children:
+      - title: "Part II — Research Methodology"
+        node_type: "SUBSECTION"
+        guidance_text: "Explain the research methodology in detail."
+        node_expectations:
+          - evaluation_element_id: "elem_methodology"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Evaluate methodological appropriateness and feasibility for achieving objectives."
+          - evaluation_element_id: "elem_groundbreaking"
+            expectation_strength: "OPTIONAL"
+            evaluation_intent: "QUALITY"
+            guidance_note: "If relevant, assess whether methods enable genuinely new capability or insight."
+
+      - title: "Part II — Work Plan"
+        node_type: "SUBSECTION"
+        guidance_text: "Provide a coherent work plan, including tasks and timing."
+        node_expectations:
+          - evaluation_element_id: "elem_work_plan"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "QUALITY"
+            guidance_note: "Check that sequencing, dependencies, and effort are plausible and aligned with objectives."
+
+      - title: "Part II — Risk Assessment and Mitigating Measures"
+        node_type: "SUBSECTION"
+        guidance_text: "Identify key scientific/technical risks and propose mitigating measures."
+        node_expectations:
+          - evaluation_element_id: "elem_risks"
+            expectation_strength: "MANDATORY"
+            evaluation_intent: "RISK"
+            guidance_note: "Assess realism of risks and credibility of mitigations."
+
+      - title: "Part II — Resources and Budget Justification"
+        node_type: "SUBSECTION"
+        guidance_text: "Justify requested budget and resources needed to carry out the proposed work."
+        node_expectations:
+          - evaluation_element_id: "elem_resources"
+            expectation_strength: "IMPORTANT"
+            evaluation_intent: "COMPLIANCE"
+            guidance_note: "At Step 2, assess whether resources are justified and necessary for the work plan."
