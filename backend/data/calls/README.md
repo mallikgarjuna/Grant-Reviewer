@@ -2,6 +2,9 @@
 
 This directory contains YAML call definitions for ingestion into the Grant Reviewer database.
 
+Guidelines for authoring call YAML that validates/ingests correctly:
+- `docs/reference/call_yaml_guidelines.md`
+
 ## Filename Convention
 
 ```
