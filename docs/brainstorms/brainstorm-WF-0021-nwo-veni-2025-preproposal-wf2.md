@@ -1,8 +1,8 @@
 # WF-0021 — NWO Veni 2025 preproposal (WF-2): DB logical IDs + V2 ingest
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-02-21
 
 ---
@@ -44,6 +44,11 @@ Q5 (verification definition): **A** — Add targeted commands/tests proving: V2 
 ### Summary
 
 After WF-0021, call definitions are stored canonically as versioned/validated JSONB for robustness against schema evolution, while the stable relational projection enables efficient querying and traceability for reviews. Verification must include a real DB round-trip and an idempotent re-ingest check.
+
+### Critical Clarifications (from architectural review)
+
+- **Semantic checksum**: compute `checksum` over the validated, canonicalized JSON representation (stable key ordering; ignore YAML comments/whitespace), not raw YAML text.
+- **Single-read hydration**: the internal read service must fetch the canonical JSONB document once per call and hydrate node configs in-memory (avoid N+1 JSON parsing/lookup per node).
 
 ---
 
@@ -127,6 +132,12 @@ Q1: **A**. Q2: **A**. Q3: **A**. Q4: **A**. Q5: **A**.
 
 Implement canonical JSONB storage plus `logical_id`-keyed projection. Ingest is two-phase and version-aware. Runtime reads use a single internal service that can hydrate node config (constraints/rules/notes) from canonical JSONB while continuing to use the projection for joins and ordering.
 
+### Critical Clarifications (from architectural review)
+
+- **Transaction boundary**: canonical document write + projection upserts must run in a single DB transaction (no intermediate state if the process crashes mid-ingest).
+- **Orphan handling**: projection ingestion must define what happens when YAML removes entities:
+  - Default: **soft-delete/archive** missing `logical_id`s in the projection (do not hard-delete rows that might be referenced by reviews/snippets).
+
 ---
 
 ## 5. Constraints
@@ -209,6 +220,13 @@ Q1: **A**. Q2: **A**. Q3: **A**. Q4: **A**. Q5: **A**.
 
 Big risks are correctness and compatibility: idempotent upsert by `logical_id`, safe migrations/backfill, and preserving V1 while enabling V2 DB ingest. Mitigation is canonical JSONB storage + narrow projections + targeted DB tests.
 
+### Critical Clarifications (from architectural review)
+
+- **Deletion/orphans**: define a projection deletion strategy that preserves referential integrity:
+  - Prefer soft-delete (`is_active` / `archived_at`) for nodes/criteria/elements when missing from a re-ingest.
+  - Node expectations can be replaced deterministically because they are “derived links”.
+- **Backfill robustness**: consider a one-off migration/backfill that assigns deterministic `logical_id`s to legacy V1 projection rows (e.g., slugified titles/names, stable within call), so new code can safely treat `logical_id` as always-present going forward.
+
 ---
 
 ## 7. MVP Definition
@@ -290,3 +308,9 @@ Q1: **A**. Q2: **A**. Q3: **A**. Q4: **A**. Q5: **A**.
 ### Summary
 
 WF-0021 explicitly excludes WF-3+ items (endpoints, frontend, compliance engine) and avoids premature normalization of every evolving YAML field. It focuses on canonical storage + stable projection + traceability.
+
+---
+
+## Changelog
+
+- v0.2 (2026-02-21): Incorporated critical architectural review clarifications (orphan strategy, transactional ingest, N+1 hydration avoidance, semantic checksum, and legacy `logical_id` backfill posture).
