@@ -89,6 +89,8 @@ Slug rules:
 - docs/index.md
 - docs/workflow/
 
+*(Note: Every artifact directory contains a `completed/` subdirectory. When a workflow is marked `Done`, its artifacts must be moved into their respective `completed/` folders to keep the root workspace clean for active workflows).*
+
 ---
 
 # docs/index.md (Workflow Registry)
