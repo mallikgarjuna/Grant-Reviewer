@@ -27,6 +27,7 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 ## Git Workflow
 
 - For all *new* non-trivial initiatives, use the WF workflow system in `docs/workflow/README.md`.
+- **Workflow & Docs Improvements**: For any changes or improvements to the documentation or workflow system itself, always use the dedicated persistent branch: `docs-workflow-changes-improvements`. Push changes to this branch, create a PR to merge into `main` (do NOT delete the branch upon merge), and then sync any active feature branches from `main`.
 - Do not retroactively convert legacy task-based artifacts into WF artifacts unless explicitly requested.
 - Never commit directly to `main`.
 - WF IDs start after the legacy Task IDs (first WF is `WF-0009`; see `docs/index.md`).
