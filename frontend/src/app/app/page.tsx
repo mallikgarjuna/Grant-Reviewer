@@ -10,6 +10,7 @@ import {
   getOrCreateReviewAttempt,
 } from "@/lib/review-attempt";
 import { resolveCallConfigUiState } from "@/lib/call-config";
+import { deriveReviewFormUiState } from "@/lib/review-form-ui-state";
 import { APP_REVIEWS_ROUTE } from "@/lib/routes";
 import type { ApiError, CallSummary, NodeSummary } from "@/lib/bff/types";
 
@@ -78,6 +79,29 @@ export default function AppSubmitPage() {
   const selectedCall = useMemo(
     () => calls.find((call) => call.id === selectedCallId) ?? null,
     [calls, selectedCallId],
+  );
+  const reviewFormUiState = useMemo(
+    () =>
+      deriveReviewFormUiState({
+        isSubmitting,
+        isLoadingCalls,
+        isLoadingConfig,
+        isLoadingNodes,
+        hasSelectedCall: Boolean(selectedCallId),
+        uiMode,
+        isCallNotFound,
+        configWarning,
+      }),
+    [
+      configWarning,
+      isCallNotFound,
+      isLoadingCalls,
+      isLoadingConfig,
+      isLoadingNodes,
+      isSubmitting,
+      selectedCallId,
+      uiMode,
+    ],
   );
 
   useEffect(() => {
@@ -426,12 +450,7 @@ export default function AppSubmitPage() {
               id="node"
               className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
               disabled={
-                !selectedCallId ||
-                isLoadingNodes ||
-                isSubmitting ||
-                isLoadingConfig ||
-                uiMode !== "legacy_single_snippet" ||
-                isCallNotFound
+                reviewFormUiState.disableNodeSelect
               }
               onChange={(event) => setSelectedNodeId(event.target.value)}
               value={selectedNodeId}
@@ -454,7 +473,7 @@ export default function AppSubmitPage() {
             ) : null}
           </div>
 
-          {uiMode === "structured_nodes" ? (
+          {reviewFormUiState.showStructuredMessage ? (
             <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-3 text-sm text-[var(--color-foreground)]">
               Structured submissions are coming soon for this call. Please switch to a call using the legacy single-snippet mode for now.
             </div>
@@ -470,7 +489,7 @@ export default function AppSubmitPage() {
             <textarea
               id="snippet-text"
               className="min-h-48 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-              disabled={isSubmitting || uiMode !== "legacy_single_snippet" || isCallNotFound}
+              disabled={reviewFormUiState.disableSnippetInput}
               onChange={(event) => setSnippetText(event.target.value)}
               placeholder="Paste the grant section text you want reviewed..."
               value={snippetText}
@@ -487,13 +506,13 @@ export default function AppSubmitPage() {
             ) : null}
           </div>
 
-          {configWarning ? (
+          {reviewFormUiState.showConfigWarning ? (
             <div className="rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               {configWarning}
             </div>
           ) : null}
 
-          {isCallNotFound ? (
+          {reviewFormUiState.showCallNotFoundError ? (
             <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               The selected funding call configuration was not found. Submission is disabled for this call.
             </div>
@@ -527,13 +546,7 @@ export default function AppSubmitPage() {
 
           <button
             className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={
-              isSubmitting ||
-              isLoadingCalls ||
-              isLoadingConfig ||
-              uiMode !== "legacy_single_snippet" ||
-              isCallNotFound
-            }
+            disabled={reviewFormUiState.disableSubmit}
             type="submit"
           >
             {isSubmitting ? "Submitting..." : "Generate Review"}

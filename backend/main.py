@@ -311,6 +311,10 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
     canonical_json = definition.canonical_json
     proposal_nodes = canonical_json.get("proposal_nodes")
     if not isinstance(proposal_nodes, list):
+        logger.warning(
+            "Call config fallback to legacy for %s: canonical_json.proposal_nodes is not a list",
+            call_logical_id,
+        )
         return CallConfigResponse(
             call_logical_id=call_logical_id,
             config_version="1",
@@ -325,6 +329,10 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
         if isinstance(node_id, str) and node_id.strip()
     ]
     if not expected_nodes:
+        logger.warning(
+            "Call config fallback to legacy for %s: no valid proposal node ids in canonical_json.proposal_nodes",
+            call_logical_id,
+        )
         return CallConfigResponse(
             call_logical_id=call_logical_id,
             config_version="1",
