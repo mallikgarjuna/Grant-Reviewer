@@ -83,7 +83,16 @@ After completing Part B, output:
 
 2. Two recommended next actions:
 
-- Run Phase 1 runner: `@docs/workflow/phase-1-run-prd-definition.md`
+- Run Phase 1 runner: `@docs/workflow/phase-12-run-planning.md`
+   - **CRITICAL**: For the recommended next phase, you MUST provide an explicit, copy-pasteable prompt block that the user can run to start it.
+   - Example format for the prompt block:
+     ```text
+     Use @docs/workflow/phase-12-run-planning.md
+     @docs/index.md
+     @docs/INPUT/...
+
+     Run Phase 1 ...
+     ```
 - Sanity-check brainstorm quality/coverage and commit a small doc fix if needed
 
 Keep it concise.

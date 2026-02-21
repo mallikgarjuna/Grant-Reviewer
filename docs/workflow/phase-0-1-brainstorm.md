@@ -276,4 +276,5 @@ Stop when I say the brainstorm is “good enough” for a spec (or if I explicit
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
 1. Run Phase 1.1 (generate spec v0.1): `@docs/workflow/phase-1-1-spec-generate.md`
+   - **Provide an explicit, copy-pasteable prompt block** for the user to start this phase.
 2. Continue Phase 0.1 brainstorming to resolve remaining unknowns (update the brainstorm file; do not generate a spec yet).
