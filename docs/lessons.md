@@ -131,3 +131,8 @@
 **Issue**: Agent skipped branch creation because `run-lifecycle-auto.md` listed "Phase 0.0" as a single bullet without explicit sub-steps.
 **Fix**: Updated runners to explicitly reference `phase-0-0-start-workflow.md`.
 **Prevention**: Always read the detailed phase file referenced in the runner before executing the phase. The runner is a router, not the full protocol.
+
+### L28: Never Push, Merge, or Delete Remote Branches Autonomously
+**Issue**: Agent executed `git push`, created a PR, merged it, and deleted the branch using `gh pr merge --delete-branch` without explicitly waiting for the user's "Ship it" signal.
+**Fix**: Add a hard stop before interacting with remote GitHub states. Pushing, opening PRs, and merging *must* be explicitly commanded or approved by the user.
+**Prevention**: When a Phase 4 walkthrough is done and the branch is ready, the agent must stop and run `notify_user` to ask for permission to merge/push, rather than assuming it has authority to mutate remote repository state on its own.
