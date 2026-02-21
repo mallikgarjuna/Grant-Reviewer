@@ -10,14 +10,14 @@ Create a formal archival mechanism to maintain a clean workspace. All workflows 
 
 ## 2. Tasks
 
-### [ ] Task 1.0: Create Archive Directories
-- [ ] Create `completed/` inside `docs/brainstorms/`.
-- [ ] Create `completed/` inside `docs/specs/features/`.
-- [ ] Create `completed/` inside `docs/specs/pages/`.
-- [ ] Create `completed/` inside `docs/prds/`.
-- [ ] Create `completed/` inside `docs/tasks/`.
-- [ ] Create `completed/` inside `docs/walkthroughs/`.
-- [ ] Add an empty `.gitkeep` implicitly to ensure empty directories are tracked if needed (optional if folders immediately populated).
+### [x] Task 1.0: Create Archive Directories
+- [x] Create `completed/` inside `docs/brainstorms/`.
+- [x] Create `completed/` inside `docs/specs/features/`.
+- [x] Create `completed/` inside `docs/specs/pages/`.
+- [x] Create `completed/` inside `docs/prds/`.
+- [x] Create `completed/` inside `docs/tasks/`.
+- [x] Create `completed/` inside `docs/walkthroughs/`.
+- [x] Add an empty `.gitkeep` implicitly to ensure empty directories are tracked if needed (optional if folders immediately populated).
 
 ### [ ] Task 2.0: Update Workflow System Rules
 - [ ] Edit `docs/workflow/phase-4-run-implement.md`. Add a new bullet in `PART C` commanding the AI to `git mv` the 5 artifacts into their respective `completed/` folders after drafting the walkthrough and before ending the Phase.
