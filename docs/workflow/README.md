@@ -235,6 +235,13 @@ WF-0007: revise PRD risk audit
 
 This keeps implementation traceable to workflow artifacts.
 
+# Glossary / Code Phrases
+
+The following are standard operational code phrases documented in `AGENTS.md` that orchestrate workflows:
+
+- **`verify workflow`**: Complete a verification pass including: status check, git diff review, lint/build execution, and a concise pass/fail summary.
+- **`workflow preflight`**: Complete a critical review of the current WF closure state, artifact synchronization, and readiness to adopt/start the next workflow.
+
 ---
 
 # Guiding Principle

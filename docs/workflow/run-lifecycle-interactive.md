@@ -11,17 +11,19 @@ Reference in chat: `@docs/workflow/run-lifecycle-interactive.md`
 - Title, Type, Slug
 
 ## Execution Flow
+
+> **Context Limit Warning**: If context feels heavy after Phase 3, pause and advise the user to start a new chat for Phase 4.
 1. **Phase 0.0 (Start)**: Initialize -> **Create Branch** (`git checkout -b wf/WF-XXXX-slug`). (Ref: `@docs/workflow/phase-0-0-start-workflow.md`)
    - *Wait for User Signal*
 2. **Phase 0.1 (Brainstorm)**: Interactive session. (Ref: `@docs/workflow/phase-0-1-brainstorm.md`)
    - *Wait for User Signal*
-3. **Phase 1 (Spec)**: Generate -> Review -> Revise. (Ref: `@docs/workflow/phase-1-run-spec.md`)
+3. **Phase 1 (Spec)**: Execute Parts A, B, C exactly. (Ref: `@docs/workflow/phase-1-run-spec.md`)
    - *Wait for User Signal*
-4. **Phase 2 (PRD)**: Generate -> Audit -> Revise. (Ref: `@docs/workflow/phase-2-run-prd.md`)
+4. **Phase 2 (PRD)**: Execute Parts A, B, C exactly. (Ref: `@docs/workflow/phase-2-run-prd.md`)
    - *Wait for User Signal*
-5. **Phase 3 (Tasks)**: Generate -> Review -> Revise. (Ref: `@docs/workflow/phase-3-run-task.md`)
+5. **Phase 3 (Tasks)**: Execute Parts A, B, C exactly. (Ref: `@docs/workflow/phase-3-run-task.md`)
    - *Wait for User Signal*
-6. **Phase 4 (Implement)**: Code -> Verify -> Walkthrough. (Ref: `@docs/workflow/phase-4-1-implement-tasks.md`)
+6. **Phase 4 (Implement)**: Execute Parts A, B, C exactly. (Ref: `@docs/workflow/phase-4-run-implement.md`)
    - *Stop*
 
 ## How to Invoke
