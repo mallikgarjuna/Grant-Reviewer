@@ -18,9 +18,7 @@ Every meaningful initiative is tracked using a Workflow ID (WF-XXXX).
 
 Runner shortcuts:
 - Phase 0: `docs/workflow/phase-0-run-start-and-brainstorm.md`
-- Phase 1: `docs/workflow/phase-1-run-spec.md`
-- Phase 2: `docs/workflow/phase-2-run-prd.md`
-- Phase 3: `docs/workflow/phase-3-run-task.md`
+- Phase 1/2/3: `docs/workflow/phase-123-run-planning.md`
 
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).
