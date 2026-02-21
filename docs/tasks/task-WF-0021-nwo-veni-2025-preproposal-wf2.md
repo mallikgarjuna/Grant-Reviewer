@@ -47,7 +47,7 @@ Last Updated: 2026-02-21
 **Verification Steps:** Run ingestion script twice. The second run should report "skipped" (checksum match) or 0 newly inserted rows. Remove a section from YAML and re-ingest: DB should show `archived_at` populated for that section.
 **Risks (if any):** Complex SQLAlchemy merge logic; transaction rollback edge cases.
 
-### [ ] Task 5 — Single-Read Hydration Service
+### [x] Task 5 — Single-Read Hydration Service
 **Goal:** Provide an internal read interface that fetches the node graph and hydrates configs from the stored JSONB.
 **Files to modify:** `backend/app/services/call_definition_service.py` (new).
 **Acceptance Criteria:**
