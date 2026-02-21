@@ -49,6 +49,7 @@ To execute the granular development tasks defined in Phase 3, rigorously verify 
    - Change the `Status` column for this WF to `Done`.
    - Update the markdown links in this WF's row to point to the new `completed/` paths.
 6. Run a final `git add` and `git commit` for the walkthrough, the file moves, and the index update.
+7. **STOP**: You must strictly await explicit user approval ("Ship it") before autonomously executing `git push`, opening a PR, or merging. Do not push to remote without a direct command.
 
 ---
 

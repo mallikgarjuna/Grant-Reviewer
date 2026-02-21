@@ -132,23 +132,18 @@ End with two suggested next actions.
 
 ---
 
-## Phase 4.1 — Implement Tasks (Inner Loop)
+## Phase 4.2 — Verify & Ship (Post-Implementation)
 
 ```text
-Use @docs/workflow/phase-4-1-implement-tasks.md
+Use @docs/workflow/phase-4-2-verify-and-ship.md
+@docs/index.md
 @docs/tasks/task-<WF-ID>-<slug>.md
 
-Execute tasks sequentially.
-Commit after each with messages like:
-<WF-ID>: <slug> — Task N — <short title>
-
-Continue through all tasks.
-When completed:
-
-* Draft/Update walkthrough in docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md
-* Update docs/index.md Status to Done.
-
-Stop when complete and suggest my next 2 actions.
+Assume implementation tasks are DONE.
+Run Phase 4.2 (Verify & Ship) for <WF-ID>/<slug> using this runner.
+Print what you did in Part B/C.
+Confirm verification evidence before writing the walkthrough.
+End with two suggested next actions.
 ```
 
 ---
