@@ -27,6 +27,7 @@ Grant Reviewer helps researchers improve grant proposals by generating rubric-gr
 ## Git Workflow
 
 - For all *new* non-trivial initiatives, use the WF workflow system in `docs/workflow/README.md`.
+- **Workflow & Docs Improvements**: For any changes or improvements to the documentation or workflow system itself, always use the dedicated persistent branch: `docs-workflow-changes-improvements`. Push changes to this branch, create a PR to merge into `main` (do NOT delete the branch upon merge), and then sync any active feature branches from `main`.
 - Do not retroactively convert legacy task-based artifacts into WF artifacts unless explicitly requested.
 - Never commit directly to `main`.
 - WF IDs start after the legacy Task IDs (first WF is `WF-0009`; see `docs/index.md`).
@@ -107,12 +108,13 @@ Use the WF workflow system for non-trivial work:
 
 During migration, legacy task-based artifacts remain in place unless explicitly mapped to a WF ID.
 
-### Skills (Optional)
+### Skills & Collaboration (Optional)
 
 - If a matching skill exists (a `SKILL.md`), follow it for that phase.
 - **Check skills first**: before starting a new type of task, check `~/.agents/skills` (or ask the user to run `ls ~/.agents/skills`) and follow the most relevant `SKILL.md`.
 - Preferred pipeline skills: `brainstorming` → `spec` → `prd` → `tasks`.
 - Skill index (portable): `docs/reference/skills_index.md`.
+- Multi-Agent Collaboration: For the recommended approach to splitting the workflow across Antigravity and VSCode Codex, see `docs/reference/agent_collaboration_strategy.md`.
 
 ## Task Lifecycle & Tracking (Source of Truth: `docs/index.md`)
 
