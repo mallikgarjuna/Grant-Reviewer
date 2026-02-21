@@ -141,7 +141,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
   2. Create a PR via `gh pr create --fill`.
   3. Merge via `gh pr merge --auto --merge --delete-branch` (or wait for approval if required).
   4. Sync local `main` via `git checkout main && git pull`.
-  Local merges are discouraged.
+  Local merges are discouraged. **CRITICAL**: Never push, merge, or delete remote branches autonomously. You *must* wait for the user's explicit `ship it` command or permission.
 - Be explicit about what you didn’t verify and what to run next.
 - At the end of every response, explicitly tell/ask the user what to do or prompt next.
 - **Workflow chat hygiene**: Before starting a new WF, explicitly state whether to start a new chat or continue in the current chat; if recommending a new chat, provide a ready-to-paste starting prompt that includes the `pick P[x] #[n]` (or WF ID/slug) and the intended workflow runner/action.
