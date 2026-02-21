@@ -634,3 +634,7 @@
 ### 09:20 - WF-0020 Phase 4.1 Implementation Completed
 > User requested: start Phase 4.1 implementation runner for WF-0020 and execute tasks sequentially.
 > Outcome: Completed Task 1-5 with per-task commits; added strict `CallDefinitionV2` schema, implemented V1/V2 detection and DB-free dry-run path in `scripts/ingest_call.py`, added deterministic dry-run JSON summary, improved YAML syntax/schema error messaging, and added dry-run regression test for V1+V2. Updated walkthrough and marked WF-0020 as `Done` in `docs/index.md`.
+
+### 09:55 - Pick P1 #5 → WF-0021 Kickoff (NWO Veni 2025 preproposal WF-2)
+> User requested `pick P1 #5` to start "NWO Veni 2025 preproposal — WF-2" with strict scope: add stable `logical_id` fields/columns for traceability, ingest CallDefinition V2 YAML into DB, and keep V1 compatibility (no structured-config endpoint, no frontend changes, no compliance engine).
+> Outcome: Minted `WF-0021`, created baseline WF artifacts, promoted the parking lot item, and created branch `wf/WF-0021-nwo-veni-2025-preproposal-wf2` in preparation for Phase 0.1 brainstorm.
