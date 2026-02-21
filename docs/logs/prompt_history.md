@@ -626,3 +626,7 @@
 ### 07:55 - WF-0020 Phase 0.1 Brainstorm Completed (recommendations)
 > User requested: “go with your recommendations” for the remaining Phase 0.x decisions.
 > Outcome: Completed brainstorm sections 1–8 for `WF-0020` with a tight scope: V2 YAML parsing + CallDefinition V2 loader + `scripts/ingest_call.py --dry-run` support (offline validation only), and set brainstorm status to `Draft Complete`.
+
+### 08:05 - WF-0020 Phase 0.1 Revision (grounded in NWO Veni YAML)
+> User asked whether Phase 0.0/0.1 considered the actual NWO Veni YAML + design summary; it had not.
+> Outcome: Reviewed `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml` + `backend/data/calls/nwo/nwo_veni_2025_preproposal_design_summary.md`, then revised the WF-0020 brainstorm to reflect concrete V2 fields (schema mismatch vs existing V1 loader) while keeping scope unchanged.

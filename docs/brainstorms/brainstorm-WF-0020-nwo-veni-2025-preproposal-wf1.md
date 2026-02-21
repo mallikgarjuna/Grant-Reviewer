@@ -1,7 +1,7 @@
 # WF-0020 — NWO Veni 2025 preproposal (WF-1): V2 call YAML dry-run loader
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-02-21
 
@@ -11,7 +11,7 @@ Last Updated: 2026-02-21
 
 ### Decisions (Section 1)
 - Primary actor: internal dev/admin running ingestion scripts (not researchers).
-- Core failure mode: both YAML parse issues and a mismatch between current schema/loader and the NWO Veni call definition shape.
+- Core failure mode: the NWO Veni YAML is syntactically valid, but its structure does not match the current CallDefinition (V1) schema/loader.
 - Success definition (dry-run only): `scripts/ingest_call.py --dry-run` validates V2 and prints a clear structured summary of the call definition (proposal structure + evaluation criteria/elements).
 - Scope of support: NWO-focused CallDefinition V2 loader (reusable across NWO calls), not a universal cross-funder loader.
 - Error posture: strict + fail-fast, with precise, actionable error messages (include field path; include location context where available).
@@ -23,7 +23,7 @@ We need to unblock ingesting the NWO Veni 2025 preproposal call definition by ma
 
 ### Decisions (Section 2)
 - CLI outcome: `uv run python scripts/ingest_call.py <nwo_v2_yaml> --dry-run` exits 0 and prints a deterministic summary (no DB writes).
-- Summary must include: call metadata, proposal node tree/sections, evaluation criteria, and evaluation elements per criterion.
+- Summary must include: call metadata, proposal node tree/sections, evaluation criteria, and evaluation elements per criterion (and, where present, compliance/runtime notes counts).
 - Failure UX: validation errors show “what failed + where” (YAML location if possible; schema path always).
 - Compatibility: do not break existing CallDefinition V1 ingest flows (e.g., existing ERC YAML).
 - Acceptance evidence: one “happy path” dry-run and at least one intentional “broken YAML” dry-run that fails with a helpful message.
@@ -46,7 +46,7 @@ This is a dev-experience workflow: faster iteration on evaluation criteria/eleme
 ## 4. Rough Idea (Unstructured Thinking)
 
 ### Decisions (Section 4)
-- Introduce a CallDefinition V2 Pydantic schema (parallel to current definition) with a dedicated loader.
+- Introduce a CallDefinition V2 Pydantic schema (parallel to current definition) that matches the concrete NWO Veni YAML shape, with a dedicated loader.
 - Teach `scripts/ingest_call.py` to detect V2 vs V1 via a version field (or a discriminant key) and route to the correct loader.
 - Add/extend `--dry-run` to validate + print summary without DB writes.
 - Improve YAML parsing error messaging (surface line/column for syntax errors; print context).
@@ -102,3 +102,34 @@ MVP is strictly “validate and summarize call definition V2 offline”; all per
 
 ### Summary
 This WF is a loader + validation utility only; it exists to unblock authoring the NWO Veni call definition safely.
+
+---
+
+## File Reality Check (inputs reviewed)
+
+Reviewed files:
+- `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
+- `backend/data/calls/nwo/nwo_veni_2025_preproposal_design_summary.md`
+
+Key concrete implications for the V2 loader:
+- The YAML is already parseable by `yaml.safe_load` (so “parse fix” is primarily schema/loader mismatch).
+- The YAML uses different keys/types than V1:
+  - `funding_agency.id`, `funding_agency.country` (V1 uses `funding_agency.short_name`, etc.)
+  - `funding_call.title`, `funding_call.stage`, `funding_call.language`, `funding_call.deadlines`, `funding_call.domain_notes` (V1 has `name/aim_objectives/scope/general_guidelines`).
+  - `evaluation_criteria[].weight_percent` and per-element `source_hint`.
+  - `proposal_nodes[].id` and `proposal_nodes[].label` (V1 uses `proposal_nodes[].title`); `proposal_nodes[].node_type` values include `narrative` (V1 expects `SECTION|SUBSECTION`).
+  - V2 includes `content_constraints`, `guidance_text`, `compliance_rules` (with `severity: ERROR|WARNING`), and `runtime_notes`.
+  - `node_expectations[].evaluation_intent` includes `RISK` (in addition to `QUALITY` / `STRATEGIC_FIT`).
+- The design summary confirms the intended semantics: 3 narrative nodes, 1 criterion (“Quality of the researcher”), 8 atomic evaluation elements, plus a compliance layer and runtime notes (alignment + assisted extraction behavior).
+
+V2 dry-run output should therefore be able to summarize at least:
+- Call metadata (title/stage/year)
+- Node list (by `proposal_nodes[].id`/`label`) and key constraints (e.g., word limits, max items)
+- Evaluation criteria + evaluation elements counts
+- Counts of compliance rules and runtime notes
+
+---
+
+## Changelog
+
+- v0.2 (2026-02-21): Revised Phase 0.1 decisions to reflect the concrete structure of the NWO Veni 2025 preproposal YAML and design summary (V2 schema mismatch vs V1).
