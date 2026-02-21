@@ -135,6 +135,96 @@ def resolve_logical_ids(call_def: CallDefinition) -> dict[str, UUID]:
     return id_map
 
 
+def _build_v1_dry_run_summary(call_def: CallDefinition, yaml_path: Path) -> dict[str, Any]:
+    """Build deterministic dry-run summary for V1 call definitions."""
+    return {
+        "dry_run": True,
+        "schema_version": "v1",
+        "source_path": str(yaml_path),
+        "funding_agency": {
+            "short_name": call_def.funding_agency.short_name,
+            "name": call_def.funding_agency.name,
+        },
+        "funding_call": {
+            "code": call_def.funding_call.code,
+            "name": call_def.funding_call.name,
+            "year": call_def.funding_call.year,
+        },
+        "evaluation_criteria": {
+            "count": len(call_def.evaluation_criteria),
+            "items": [
+                {
+                    "id": criterion.id,
+                    "name": criterion.name,
+                    "evaluation_elements_count": len(criterion.evaluation_elements),
+                }
+                for criterion in call_def.evaluation_criteria
+            ],
+        },
+        "proposal_nodes": {"count": _count_nodes(call_def.proposal_nodes)},
+    }
+
+
+def _build_v2_dry_run_summary(
+    call_def: CallDefinitionV2,
+    yaml_path: Path,
+) -> dict[str, Any]:
+    """Build deterministic dry-run summary for V2 call definitions."""
+    compliance_by_severity: dict[str, int] = {}
+    for node in call_def.proposal_nodes:
+        for rule in node.compliance_rules:
+            compliance_by_severity[rule.severity] = (
+                compliance_by_severity.get(rule.severity, 0) + 1
+            )
+
+    return {
+        "dry_run": True,
+        "schema_version": "v2",
+        "source_path": str(yaml_path),
+        "funding_agency": {
+            "id": call_def.funding_agency.id,
+            "name": call_def.funding_agency.name,
+        },
+        "funding_call": {
+            "id": call_def.funding_call.id,
+            "code": call_def.funding_call.code,
+            "title": call_def.funding_call.title,
+            "year": call_def.funding_call.year,
+            "stage": call_def.funding_call.stage,
+        },
+        "evaluation_criteria": {
+            "count": len(call_def.evaluation_criteria),
+            "items": [
+                {
+                    "id": criterion.id,
+                    "name": criterion.name,
+                    "weight_percent": criterion.weight_percent,
+                    "evaluation_elements_count": len(criterion.evaluation_elements),
+                }
+                for criterion in call_def.evaluation_criteria
+            ],
+        },
+        "proposal_nodes": {
+            "count": len(call_def.proposal_nodes),
+            "items": [
+                {
+                    "id": node.id,
+                    "label": node.label,
+                    "node_type": node.node_type,
+                    "constraints": (
+                        node.content_constraints.model_dump(exclude_none=True)
+                        if node.content_constraints
+                        else {}
+                    ),
+                }
+                for node in call_def.proposal_nodes
+            ],
+        },
+        "compliance_rules": {"by_severity": dict(sorted(compliance_by_severity.items()))},
+        "runtime_notes": {"count": len(call_def.runtime_notes)},
+    }
+
+
 # ============================================================================
 # Ingestion Functions
 # ============================================================================
@@ -421,24 +511,9 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
     if dry_run:
         logger.info("=== DRY RUN MODE - No database changes will be made ===")
         if schema_version == "v1":
-            return {
-                "dry_run": True,
-                "schema_version": "v1",
-                "agency": call_def.funding_agency.short_name,
-                "call": call_def.funding_call.code,
-                "criteria_count": len(call_def.evaluation_criteria),
-                "node_count": _count_nodes(call_def.proposal_nodes),
-            }
+            return _build_v1_dry_run_summary(call_def, yaml_path)
 
-        v2_call_def = call_def
-        return {
-            "dry_run": True,
-            "schema_version": "v2",
-            "agency": v2_call_def.funding_agency.id,
-            "call": v2_call_def.funding_call.code,
-            "criteria_count": len(v2_call_def.evaluation_criteria),
-            "node_count": len(v2_call_def.proposal_nodes),
-        }
+        return _build_v2_dry_run_summary(call_def, yaml_path)
 
     if schema_version != "v1":
         raise ValueError(
@@ -520,6 +595,8 @@ def main() -> None:
 
     try:
         result = ingest_call(args.yaml_file, args.dry_run)
+        if args.dry_run:
+            logger.info("Dry-run summary:\n%s", json.dumps(result, indent=2, sort_keys=True))
         logger.info(f"Result: {result}")
     except FileNotFoundError as e:
         logger.error(str(e))
