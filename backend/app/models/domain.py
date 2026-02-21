@@ -123,7 +123,9 @@ class CallDefinition(SQLModel, table=True):
         description="Owning call (1:1 with FundingCall)",
     )
     schema_version: str = Field(description="Version of call-definition schema")
-    checksum: str = Field(description="Deterministic semantic checksum of canonical JSON")
+    checksum: str = Field(
+        description="Deterministic semantic checksum of canonical JSON"
+    )
     raw_yaml: str | None = Field(
         default=None,
         description="Original YAML payload as ingested",

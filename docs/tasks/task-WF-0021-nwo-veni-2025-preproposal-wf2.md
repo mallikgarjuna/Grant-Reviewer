@@ -25,7 +25,7 @@ Last Updated: 2026-02-21
 **Verification Steps:** Run existing pytest suite (`make test` or `pytest`) to ensure no DB queries break and V1 flows remain green.
 **Risks (if any):** Missing a query could resurrect deleted nodes in the AI prompts or UI.
 
-### [ ] Task 3 — Canonical Document Storage & Checksum Logic
+### [x] Task 3 — Canonical Document Storage & Checksum Logic
 **Goal:** Handle the first phase of V2 ingestion: parsing, canonicalizing, validating, and storing the JSONB representation.
 **Files to modify:** `backend/scripts/ingest_call.py` (or new ingestion service module).
 **Acceptance Criteria:**
