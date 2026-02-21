@@ -10,13 +10,13 @@ Create the strict Phase 4 orchestrator, add safety warnings to lifecycles, and d
 
 ## 2. Tasks
 
-### [ ] Task 1.0: Create Phase 4 Runner (`docs/workflow/phase-4-run-implement.md`)
-- [ ] Create `docs/workflow/phase-4-run-implement.md`.
-- [ ] Define Part A (Execution Loop) using the existing `phase-4-1-implement-tasks.md`.
-- [ ] Define Part B (Verification Gate) requiring the agent to stop, run tests/checks, and ask user for a UI manual test signal if applicable.
-- [ ] Define Part C (Walkthrough Gate) requiring the agent to write the walkthrough only *after* Part B is approved.
-- [ ] Add the standard `How to Invoke in Chat` section with the prompt template.
-- [ ] Add this new runner to the `how-to-use-workflow-actions.md` cheat-sheet.
+### [x] Task 1.0: Create Phase 4 Runner (`docs/workflow/phase-4-run-implement.md`)
+- [x] Create `docs/workflow/phase-4-run-implement.md`.
+- [x] Define Part A (Execution Loop) using the existing `phase-4-1-implement-tasks.md`.
+- [x] Define Part B (Verification Gate) requiring the agent to stop, run tests/checks, and ask user for a UI manual test signal if applicable.
+- [x] Define Part C (Walkthrough Gate) requiring the agent to write the walkthrough only *after* Part B is approved.
+- [x] Add the standard `How to Invoke in Chat` section with the prompt template.
+- [x] Add this new runner to the `how-to-use-workflow-actions.md` cheat-sheet.
 
 ### [ ] Task 2.0: Update Lifecycle Runners
 - [ ] Edit `docs/workflow/run-lifecycle-auto.md`:

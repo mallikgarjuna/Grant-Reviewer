@@ -148,7 +148,22 @@ End with two suggested next actions.
 
 ---
 
-## Phase 4.1 — Implement Tasks
+## Phase 4 — Run Implement (End-to-End)
+
+```text
+Use @docs/workflow/phase-4-run-implement.md
+@docs/index.md
+@docs/tasks/task-<WF-ID>-<slug>.md
+
+Run Phase 4 end-to-end for <WF-ID>/<slug> using this runner.
+Print what you did in Part A/B/C.
+Confirm verification evidence before writing the walkthrough.
+End with two suggested next actions.
+```
+
+---
+
+## Phase 4.1 — Implement Tasks (Inner Loop)
 
 ```text
 Use @docs/workflow/phase-4-1-implement-tasks.md
