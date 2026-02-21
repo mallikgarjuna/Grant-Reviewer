@@ -1,7 +1,7 @@
-# Phase 3.2 — Tasks Review (No Edits)
+# Phase 2.2 — Tasks Review (No Edits)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-3-2-task-review.md.
+Reference it in Codex chat using @docs/workflow/phase-2-2-task-review.md.
 Do NOT modify this file during execution.
 
 ---
@@ -28,7 +28,7 @@ Before running the task review gate, ensure the task file being reviewed is **sa
 
 ## Phase Completion — Commit This Phase
 
-Phase 3.2 produces review output in chat only (no file edits). If you made no file changes, there is nothing to commit for this phase.
+Phase 2.2 produces review output in chat only (no file edits). If you made no file changes, there is nothing to commit for this phase.
 
 ---
 

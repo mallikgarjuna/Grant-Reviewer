@@ -1,7 +1,7 @@
-# Phase 2.1 — Generate PRD (v0.1)
+# Phase 1.1 — Generate PRD (v0.1)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-2-1-prd-generate.md.
+Reference it in Codex chat using @docs/workflow/phase-1-1-prd-generate.md.
 Do NOT modify this file during execution.
 
 ---
@@ -34,7 +34,7 @@ Before generating the PRD, ensure the spec you are converting is **saved and com
 
 ## Phase Completion — Commit This Phase
 
-After generating PRD v0.1, **save and commit** the updated PRD file before proceeding to Phase 2.2 risk audit.
+After generating PRD v0.1, **save and commit** the updated PRD file before proceeding to Phase 1.2 risk audit.
 
 ---
 
@@ -114,7 +114,7 @@ Last Updated: <today>
 
 After generating PRD v0.1:
 Update Status column to:
-Phase 2
+Phase 1
 
 Do NOT mark Done.
 
@@ -124,7 +124,7 @@ Do NOT mark Done.
 
 Use:
 
-- @docs/workflow/phase-2-1-prd-generate.md
+- @docs/workflow/phase-1-1-prd-generate.md
 - @docs/specs/<pages|features>/spec-WF-XXXX-<slug>.md
 
 Create:
@@ -139,5 +139,5 @@ Stop after writing v0.1.
 
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
-1. Run Phase 2.2 (PRD risk audit): `@docs/workflow/phase-2-2-prd-risk-audit.md`
+1. Run Phase 1.2 (PRD risk audit): `@docs/workflow/phase-1-2-prd-risk-audit.md`
 2. Do a quick PRD self-review for scope creep and missing flows, then revise PRD v0.1 before running the audit.

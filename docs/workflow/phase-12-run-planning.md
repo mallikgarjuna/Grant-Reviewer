@@ -1,28 +1,25 @@
-# Phase 1/2/3 Unified Runner — Planning
+# Phase 1/2 Unified Runner — Planning
 
 This file is a workflow instruction orchestrator.
-Reference it in chat (Codex, Antigravity, or any coding agent) using `@docs/workflow/phase-123-run-planning.md`.
+Reference it in chat (Codex, Antigravity, or any coding agent) using `@docs/workflow/phase-12-run-planning.md`.
 Do NOT modify this file during execution.
 
 ---
 
 ## Purpose
-Run the specified planning phase (Phase 1, Phase 2, or Phase 3) end-to-end in a single chat session. This runner wraps the Part A (Generate), Part B (Review Gate), and Part C (Revise) sub-phases into one parameterized flow.
+Run the specified planning phase (Phase 1 or Phase 2) end-to-end in a single chat session. This runner wraps the Part A (Generate), Part B (Review Gate), and Part C (Revise) sub-phases into one parameterized flow.
 
 ---
 
 ## Required Parameters
-When invoking this runner, the user MUST specify the **Phase ID** (1, 2, or 3), the **WF-ID**, and the **Slug**.
+When invoking this runner, the user MUST specify the **Phase ID** (1 or 2), the **WF-ID**, and the **Slug**.
 
 Based on the **Phase ID**, use the following matrix to define your Inputs, Targets, and Sub-phase instructions:
 
 | Phase ID | Input Artifact (Read) | Target Output Artifact (Write) | Part A (Generate) | Part B (Review) | Part C (Revise) |
 |---|---|---|---|---|---|
-| **Phase 1** | `brainstorms/brainstorm-WF-XXXX-<slug>.md` | `specs/.../spec-WF-XXXX-<slug>.md` | `@docs/workflow/phase-1-1-spec-generate.md` | `@docs/workflow/phase-1-2-spec-review.md` | `@docs/workflow/phase-1-3-spec-revise.md` |
-| **Phase 2** | `specs/.../spec-WF-XXXX-<slug>.md` | `prds/prd-WF-XXXX-<slug>.md` | `@docs/workflow/phase-2-1-prd-generate.md` | `@docs/workflow/phase-2-2-prd-risk-audit.md` | `@docs/workflow/phase-2-3-prd-revise.md` |
-| **Phase 3** | `prds/prd-WF-XXXX-<slug>.md` | `tasks/task-WF-XXXX-<slug>.md` | `@docs/workflow/phase-3-1-task-generate.md` | `@docs/workflow/phase-3-2-task-review.md` | `@docs/workflow/phase-3-3-task-revise.md` |
-
-*(Note: Spec output path depends on whether it is a page or feature: `docs/specs/pages/` or `docs/specs/features/`)*
+| **Phase 1** (Definition) | `brainstorms/brainstorm-WF-XXXX-<slug>.md` | `prds/prd-WF-XXXX-<slug>.md` | `@docs/workflow/phase-1-1-prd-generate.md` | `@docs/workflow/phase-1-2-prd-risk-audit.md` | `@docs/workflow/phase-1-3-prd-revise.md` |
+| **Phase 2** (Planning) | `prds/prd-WF-XXXX-<slug>.md` | `tasks/task-WF-XXXX-<slug>.md` | `@docs/workflow/phase-2-1-task-generate.md` | `@docs/workflow/phase-2-2-task-review.md` | `@docs/workflow/phase-2-3-task-revise.md` |
 
 ---
 
@@ -103,7 +100,7 @@ After completing Part C, output:
 Use:
 
 ```text
-Use @docs/workflow/phase-123-run-planning.md
+Use @docs/workflow/phase-12-run-planning.md
 @docs/index.md
 @docs/INPUT/artifact-WF-XXXX-<slug>.md
 

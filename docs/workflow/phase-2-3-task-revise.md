@@ -1,7 +1,7 @@
-# Phase 3.3 — Revise Tasks + Bump Version
+# Phase 2.3 — Revise Tasks + Bump Version
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-3-3-task-revise.md.
+Reference it in Codex chat using @docs/workflow/phase-2-3-task-revise.md.
 Do NOT modify this file during execution.
 
 ---
@@ -17,19 +17,19 @@ Finalize task list for implementation.
 ## Required Inputs
 
 - docs/tasks/task-WF-XXXX-<slug>.md
-- Phase 3.2 review output
+- Phase 2.2 review output
 
 ---
 
 ## Phase Gate — Commit Previous Phase
 
-Before revising the task plan, ensure the Phase 3.2 review output has been captured in chat and the current task file is **saved**. After revisions, commit the updated task file before starting Phase 4.
+Before revising the task plan, ensure the Phase 2.2 review output has been captured in chat and the current task file is **saved**. After revisions, commit the updated task file before starting Phase 3.
 
 ---
 
 ## Phase Completion — Commit This Phase
 
-After revising the task file, bumping version, and marking it ready, ensure the updated task file is **saved and committed** before starting Phase 4.
+After revising the task file, bumping version, and marking it ready, ensure the updated task file is **saved and committed** before starting Phase 3.
 
 ---
 
@@ -59,7 +59,7 @@ Optionally bump to v1.0.
 
 When tasks are Ready for Implementation:
 Update Status column to:
-Phase 3 (Ready)
+Phase 2 (Ready)
 
 Do NOT mark Done yet.
 
@@ -69,7 +69,7 @@ Do NOT mark Done yet.
 
 Use:
 
-- @docs/workflow/phase-3-3-task-revise.md
+- @docs/workflow/phase-2-3-task-revise.md
 
 Apply edits to:
 
@@ -86,5 +86,5 @@ Stop.
 
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
-1. Run Phase 4.1 (implement tasks): `@docs/workflow/phase-4-1-implement-tasks.md`
-2. Re-run Phase 3.2 (tasks review gate) to validate the revised task list: `@docs/workflow/phase-3-2-task-review.md`
+1. Run Phase 3.1 (implement tasks): `@docs/workflow/phase-3-1-implement-tasks.md`
+2. Re-run Phase 2.2 (tasks review gate) to validate the revised task list: `@docs/workflow/phase-2-2-task-review.md`
