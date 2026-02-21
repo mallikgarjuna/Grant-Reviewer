@@ -11,6 +11,7 @@ from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.models.domain import (
+    CallDefinition,
     EvaluationCriterion,
     EvaluationElement,
     FundingAgency,
@@ -43,6 +44,19 @@ class ReviewRepository:
     def get_call_by_id(self, call_id: UUID) -> FundingCall | None:
         """Fetch a funding call by ID."""
         return self.session.get(FundingCall, call_id)
+
+    def get_active_call_by_code(self, call_code: str) -> FundingCall | None:
+        """Fetch an active funding call by stable code/logical id."""
+        statement = select(FundingCall).where(
+            FundingCall.code == call_code,
+            FundingCall.is_active,
+        )
+        return self.session.exec(statement).first()
+
+    def get_call_definition_by_call_id(self, call_id: UUID) -> CallDefinition | None:
+        """Fetch canonical call-definition document for a funding call."""
+        statement = select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        return self.session.exec(statement).first()
 
     def get_active_calls(self) -> list[tuple[FundingCall, FundingAgency]]:
         """Fetch active calls with their agencies."""

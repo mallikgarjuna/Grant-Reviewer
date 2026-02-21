@@ -1,6 +1,6 @@
 """Pydantic models for FastAPI request/response contracts."""
 
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -53,6 +53,15 @@ class NodesResponse(BaseModel):
     """Response for GET /calls/{call_id}/nodes."""
 
     nodes: list[NodeSummary]
+
+
+class CallConfigResponse(BaseModel):
+    """Response for GET /api/public/calls/{call_logical_id}/config."""
+
+    call_logical_id: str
+    config_version: str
+    ui_mode: Literal["legacy_single_snippet", "structured_nodes"]
+    expected_nodes: list[str] | None = None
 
 
 class CreateReviewRequest(BaseModel):
