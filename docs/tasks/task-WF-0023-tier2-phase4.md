@@ -26,9 +26,9 @@ Create the strict Phase 4 orchestrator, add safety warnings to lifecycles, and d
   - Enforce `(Parts A, B, C)` on Phases 1, 2, 3, and 4.
   - Add the same bold **Context Limit Warning**.
 
-### [ ] Task 3.0: Document Code Phrases in `AGENTS.md` and `README.md`
-- [ ] In `AGENTS.md` section `Code phrases`, ensure `workflow preflight` and `verify workflow` are mentioned (done in base).
-- [ ] In `docs/workflow/README.md`, under a new `## Glossary / Code Phrases` section (or equivalent), explicitly define:
+### [x] Task 3.0: Document Code Phrases in `AGENTS.md` and `README.md`
+- [x] In `AGENTS.md` section `Code phrases`, ensure `workflow preflight` and `verify workflow` are mentioned (done in base).
+- [x] In `docs/workflow/README.md`, under a new `## Glossary / Code Phrases` section (or equivalent), explicitly define:
   - `verify workflow`: status, diff, lint/build checks, pass/fail summary.
   - `workflow preflight`: review of closure state, artifact bounds, readiness for next WF.
 
