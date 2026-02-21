@@ -5,7 +5,7 @@ import { getCallConfig } from "@/lib/bff/adapter";
 import { apiErrorResponse, requireBffContext } from "@/lib/bff/route-helpers";
 
 type RouteContext = {
-  params: Promise<{ callLogicalId: string }>;
+  params: Promise<{ callId: string }>;
 };
 
 export async function GET(_: Request, context: RouteContext) {
@@ -15,8 +15,8 @@ export async function GET(_: Request, context: RouteContext) {
     return apiErrorResponse(contextResult.error);
   }
 
-  const { callLogicalId } = await context.params;
-  const result = await getCallConfig(contextResult.data, callLogicalId);
+  const { callId } = await context.params;
+  const result = await getCallConfig(contextResult.data, callId);
   if (!result.ok) {
     return apiErrorResponse(result.error);
   }
