@@ -1,8 +1,8 @@
 # WF-0020 — NWO Veni 2025 preproposal (WF-1): V2 call YAML dry-run loader
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-21
 
 ## Task Breakdown (Sequential Order)
@@ -102,7 +102,7 @@ Goal:
 Add a lightweight “smoke” verification step (no DB) that can be run locally/CI to ensure V1 and V2 dry-run both validate.
 
 Files to modify:
-- Prefer adding a small test under existing test framework if present (otherwise document a command-only check in the walkthrough during Phase 4).
+- Prefer adding a small test under existing test framework if present (otherwise document a command-only check in the walkthrough during Phase 4). Do not add new dependencies.
 
 Acceptance Criteria:
 - There is a repeatable command that validates:
@@ -119,3 +119,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-02-21): Initial task breakdown from PRD.
+- v0.2 (2026-02-21): Tightened task wording for MVP; marked Ready for Implementation.
