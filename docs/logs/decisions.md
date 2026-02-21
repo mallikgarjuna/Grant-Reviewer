@@ -1,5 +1,15 @@
 # Architectural Decisions
 
+## Date: 2026-02-21 (WF-0022: Workflow System Upgrade)
+
+### AD 22.1: Consolidate Phase 1/2/3 Runners into Universal Parametric Runner
+- **WF ID**: WF-0022
+- **Context**: The Phase 1, Phase 2, and Phase 3 runners share 90% boilerplate (Part A/B/C logic, trace statements, gates). This causes maintenance debt and file sprawl.
+- **Decision**: Replace `phase-1-run-spec.md`, `phase-2-run-prd.md`, and `phase-3-run-task.md` with a single `universal-phase-runner.md` that uses conditional variables for inputs/outputs based on the phase number.
+- **Why**: Reduces file sprawl and centralizes the "Runners are Routers" logic so any future structural changes to a phase gate only need to be written once.
+- **Tradeoff**: Relies on the AI agent's ability to correctly parse markdown tables/variables to substitute the correct input/output paths for the given phase.
+- **Status**: Approved.
+
 ## Date: 2026-02-20 (Terminology)
 
 ### AD T.1: Standardize on “Evaluation criteria/elements” in product copy
