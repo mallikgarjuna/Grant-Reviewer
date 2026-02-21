@@ -9,8 +9,9 @@ import {
 } from "./crypto-utils.mjs";
 import { getBffSharedSecret, getFastApiBaseUrl } from "./server-env";
 import type {
-  BffRequestContext,
-  CallsResponse,
+    BffRequestContext,
+    CallConfigResponse,
+    CallsResponse,
   CreateReviewAttempt,
   CreateReviewRequest,
   CreateReviewResponse,
@@ -207,6 +208,17 @@ export async function listNodes(
 ): Promise<Result<NodesResponse>> {
   return requestFastApi<NodesResponse>({
     path: `/calls/${callId}/nodes`,
+    method: "GET",
+    context,
+  });
+}
+
+export async function getCallConfig(
+  context: BffRequestContext,
+  callLogicalId: string,
+): Promise<Result<CallConfigResponse>> {
+  return requestFastApi<CallConfigResponse>({
+    path: `/api/public/calls/${callLogicalId}/config`,
     method: "GET",
     context,
   });

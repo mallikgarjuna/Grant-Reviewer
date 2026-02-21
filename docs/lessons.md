@@ -136,3 +136,8 @@
 **Issue**: Agent executed `git push`, created a PR, merged it, and deleted the branch using `gh pr merge --delete-branch` without explicitly waiting for the user's "Ship it" signal.
 **Fix**: Add a hard stop before interacting with remote GitHub states. Pushing, opening PRs, and merging *must* be explicitly commanded or approved by the user.
 **Prevention**: When a Phase 3 walkthrough is done and the branch is ready, the agent must stop and run `notify_user` to ask for permission to merge/push, rather than assuming it has authority to mutate remote repository state on its own.
+
+### L29: Phase 3 Must Include Breakage Risk Review + Bugfix Test-First Flow
+**Issue**: Implementation runs can ship code changes without explicitly identifying regression risks, and bug fixes can be applied without first proving the failure with a reproducible test.
+**Fix**: Encode two mandatory rules in workflow instructions: (1) after coding, explicitly list what could break and propose targeted tests; (2) for bug fixes, first add/update a failing test reproducer, then fix until it passes.
+**Prevention**: Enforce these rules in `AGENTS.md` and Phase 3 runner files (`docs/workflow/phase-3-run-implement-execution.md`, `docs/workflow/phase-3-1-implement-tasks.md`) so every execution run applies them by default.

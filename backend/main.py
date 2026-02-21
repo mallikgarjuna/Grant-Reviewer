@@ -25,6 +25,7 @@ from app.repositories.review_repository import ReviewRepository
 from app.schemas.api import (
     APIErrorBody,
     APIErrorResponse,
+    CallConfigResponse,
     CallsResponse,
     CallSummary,
     CreateReviewRequest,
@@ -284,6 +285,65 @@ def list_calls(repository: RepositoryDep) -> CallsResponse:
             )
             for call, agency in calls
         ],
+    )
+
+
+@app.get(
+    "/api/public/calls/{call_logical_id}/config",
+    response_model=CallConfigResponse,
+    response_model_exclude_none=True,
+    responses=API_ERROR_RESPONSES,
+)
+def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConfigResponse:
+    """Return public call config used by frontend mode gating."""
+    call = repository.get_active_call_by_code(call_logical_id)
+    if call is None:
+        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+
+    definition = repository.get_call_definition_by_call_id(call.id)
+    if definition is None:
+        return CallConfigResponse(
+            call_logical_id=call_logical_id,
+            config_version="1",
+            ui_mode="legacy_single_snippet",
+        )
+
+    canonical_json = definition.canonical_json
+    proposal_nodes = canonical_json.get("proposal_nodes")
+    if not isinstance(proposal_nodes, list):
+        logger.warning(
+            "Call config fallback to legacy for %s: canonical_json.proposal_nodes is not a list",
+            call_logical_id,
+        )
+        return CallConfigResponse(
+            call_logical_id=call_logical_id,
+            config_version="1",
+            ui_mode="legacy_single_snippet",
+        )
+
+    expected_nodes = [
+        node_id
+        for item in proposal_nodes
+        if isinstance(item, dict)
+        for node_id in [item.get("id")]
+        if isinstance(node_id, str) and node_id.strip()
+    ]
+    if not expected_nodes:
+        logger.warning(
+            "Call config fallback to legacy for %s: no valid proposal node ids in canonical_json.proposal_nodes",
+            call_logical_id,
+        )
+        return CallConfigResponse(
+            call_logical_id=call_logical_id,
+            config_version="1",
+            ui_mode="legacy_single_snippet",
+        )
+
+    return CallConfigResponse(
+        call_logical_id=call_logical_id,
+        config_version="1",
+        ui_mode="structured_nodes",
+        expected_nodes=expected_nodes,
     )
 
 

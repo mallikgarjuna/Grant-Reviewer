@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { APP_CREATE_REVIEW_ROUTE } from "@/lib/routes";
+import { shouldUseClerkProxy } from "@/lib/proxy-routes";
 
 const isAppRoute = createRouteMatcher(["/app(.*)"]);
 const isBffApiRoute = createRouteMatcher(["/api/bff(.*)"]);
@@ -40,6 +41,10 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
 });
 
 export default function proxy(req: NextRequest, event: NextFetchEvent) {
+  if (!shouldUseClerkProxy(req.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   if (hasMissingClerkEnv()) {
     if (isAppRoute(req)) {
       const signInUrl = new URL("/sign-in", req.url);

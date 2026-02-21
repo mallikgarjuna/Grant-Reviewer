@@ -9,6 +9,8 @@ import {
   getStoredReviewAttempt,
   getOrCreateReviewAttempt,
 } from "@/lib/review-attempt";
+import { resolveCallConfigUiState } from "@/lib/call-config";
+import { deriveReviewFormUiState } from "@/lib/review-form-ui-state";
 import { APP_REVIEWS_ROUTE } from "@/lib/routes";
 import type { ApiError, CallSummary, NodeSummary } from "@/lib/bff/types";
 
@@ -62,12 +64,45 @@ export default function AppSubmitPage() {
   const [snippetText, setSnippetText] = useState("");
   const [isLoadingCalls, setIsLoadingCalls] = useState(true);
   const [isLoadingNodes, setIsLoadingNodes] = useState(false);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSlowHint, setShowSlowHint] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [uiMode, setUiMode] = useState<"legacy_single_snippet" | "structured_nodes">(
+    "legacy_single_snippet",
+  );
+  const [configWarning, setConfigWarning] = useState<string | null>(null);
+  const [isCallNotFound, setIsCallNotFound] = useState(false);
 
   const snippetCount = useMemo(() => snippetText.length, [snippetText]);
+  const selectedCall = useMemo(
+    () => calls.find((call) => call.id === selectedCallId) ?? null,
+    [calls, selectedCallId],
+  );
+  const reviewFormUiState = useMemo(
+    () =>
+      deriveReviewFormUiState({
+        isSubmitting,
+        isLoadingCalls,
+        isLoadingConfig,
+        isLoadingNodes,
+        hasSelectedCall: Boolean(selectedCallId),
+        uiMode,
+        isCallNotFound,
+        configWarning,
+      }),
+    [
+      configWarning,
+      isCallNotFound,
+      isLoadingCalls,
+      isLoadingConfig,
+      isLoadingNodes,
+      isSubmitting,
+      selectedCallId,
+      uiMode,
+    ],
+  );
 
   useEffect(() => {
     const stored = getStoredReviewAttempt();
@@ -108,9 +143,71 @@ export default function AppSubmitPage() {
   }, []);
 
   useEffect(() => {
-    if (!selectedCallId) {
+    const activeCallCode = selectedCall?.code;
+    if (!activeCallCode) {
+      setUiMode("legacy_single_snippet");
+      setConfigWarning(null);
+      setIsCallNotFound(false);
+      setIsLoadingConfig(false);
       setNodes([]);
       setSelectedNodeId("");
+      return;
+    }
+    const resolvedCallCode = activeCallCode;
+
+    let cancelled = false;
+    async function loadCallConfig() {
+      setIsLoadingConfig(true);
+      const pathCallCode = encodeURIComponent(resolvedCallCode);
+      let state = resolveCallConfigUiState({ kind: "network_error" });
+      try {
+        const response = await fetch(`/api/bff/calls/${pathCallCode}/config`, {
+          method: "GET",
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          state = resolveCallConfigUiState({
+            kind: "http_error",
+            status: response.status,
+          });
+        } else {
+          const payload = (await response.json()) as unknown;
+          state = resolveCallConfigUiState({
+            kind: "success",
+            status: 200,
+            payload,
+          });
+        }
+      } catch {
+        state = resolveCallConfigUiState({ kind: "network_error" });
+      }
+      if (!cancelled) {
+        setUiMode(state.uiMode);
+        setConfigWarning(state.warningMessage);
+        setIsCallNotFound(state.callNotFound);
+        setIsLoadingConfig(false);
+        if (state.uiMode !== "legacy_single_snippet" || state.callNotFound) {
+          setNodes([]);
+          setSelectedNodeId("");
+        }
+      }
+    }
+    void loadCallConfig();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCall]);
+
+  useEffect(() => {
+    if (!selectedCallId || !selectedCall) {
+      setNodes([]);
+      setSelectedNodeId("");
+      return;
+    }
+    if (uiMode !== "legacy_single_snippet" || isCallNotFound || isLoadingConfig) {
+      setNodes([]);
+      setSelectedNodeId("");
+      setIsLoadingNodes(false);
       return;
     }
 
@@ -149,7 +246,7 @@ export default function AppSubmitPage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCallId]);
+  }, [isCallNotFound, isLoadingConfig, selectedCall, selectedCallId, uiMode]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -313,7 +410,7 @@ export default function AppSubmitPage() {
           Run a Grant Review
         </h1>
         <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
-          Choose the call and proposal section, then submit a snippet for rubric-grounded feedback.
+          Choose the call and proposal section, then submit a snippet for evaluation-criteria-grounded feedback.
         </p>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -338,6 +435,11 @@ export default function AppSubmitPage() {
             {fieldErrors.call ? (
               <p className="text-sm text-red-600">{fieldErrors.call}</p>
             ) : null}
+            {isLoadingConfig ? (
+              <p className="text-sm text-[var(--color-muted-foreground)]">
+                Loading call configuration...
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -347,7 +449,9 @@ export default function AppSubmitPage() {
             <select
               id="node"
               className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-              disabled={!selectedCallId || isLoadingNodes || isSubmitting}
+              disabled={
+                reviewFormUiState.disableNodeSelect
+              }
               onChange={(event) => setSelectedNodeId(event.target.value)}
               value={selectedNodeId}
             >
@@ -369,6 +473,12 @@ export default function AppSubmitPage() {
             ) : null}
           </div>
 
+          {reviewFormUiState.showStructuredMessage ? (
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-3 text-sm text-[var(--color-foreground)]">
+              Structured submissions are coming soon for this call. Please switch to a call using the legacy single-snippet mode for now.
+            </div>
+          ) : null}
+
           <div className="space-y-2">
             <label
               className="text-sm font-medium text-[var(--color-foreground)]"
@@ -379,7 +489,7 @@ export default function AppSubmitPage() {
             <textarea
               id="snippet-text"
               className="min-h-48 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-              disabled={isSubmitting}
+              disabled={reviewFormUiState.disableSnippetInput}
               onChange={(event) => setSnippetText(event.target.value)}
               placeholder="Paste the grant section text you want reviewed..."
               value={snippetText}
@@ -395,6 +505,18 @@ export default function AppSubmitPage() {
               <p className="text-sm text-red-600">{fieldErrors.snippet}</p>
             ) : null}
           </div>
+
+          {reviewFormUiState.showConfigWarning ? (
+            <div className="rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              {configWarning}
+            </div>
+          ) : null}
+
+          {reviewFormUiState.showCallNotFoundError ? (
+            <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              The selected funding call configuration was not found. Submission is disabled for this call.
+            </div>
+          ) : null}
 
           {formError ? (
             <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -424,7 +546,7 @@ export default function AppSubmitPage() {
 
           <button
             className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSubmitting || isLoadingCalls}
+            disabled={reviewFormUiState.disableSubmit}
             type="submit"
           >
             {isSubmitting ? "Submitting..." : "Generate Review"}

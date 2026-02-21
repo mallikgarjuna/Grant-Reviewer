@@ -47,6 +47,13 @@ export type NodesResponse = {
   nodes: NodeSummary[];
 };
 
+export type CallConfigResponse = {
+  call_logical_id: string;
+  config_version: string;
+  ui_mode: "legacy_single_snippet" | "structured_nodes";
+  expected_nodes?: string[];
+};
+
 export type CreateReviewRequest = {
   call_id: string;
   node_id: string;
