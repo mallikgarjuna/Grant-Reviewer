@@ -136,7 +136,6 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - Update `docs/` as you go (decisions, Q&A, walkthroughs).
 - Before pushing any branch to a remote, update `docs/` with all relevant work done on that branch (status/index, decisions, Q&A, prompt history, walkthrough/task artifacts as applicable).
 - After each successful push to remote, explicitly print a confirmation that docs/WF artifacts were updated before that push (or explicitly state if none were required).
-- After each successful push to remote, explicitly print a confirmation that docs/WF artifacts were updated before that push (or explicitly state if none were required).
 - **Ship It = PR -> Merge**: To follow industry standards, `ship it` means:
   1. Push feature branch to `origin`.
   2. Create a PR via `gh pr create --fill`.

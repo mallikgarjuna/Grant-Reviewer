@@ -1,7 +1,7 @@
 # Phase 4.1 — Implement Tasks (Sequential + Commit Per Task)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-4-1-implement-tasks.md.
+Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-4-1-implement-tasks.md.
 Do NOT modify this file during execution.
 
 ---
@@ -116,7 +116,7 @@ Walkthrough must include:
 
 ---
 
-## How to Invoke in Codex Chat
+## How to Invoke in Chat
 
 Use:
 

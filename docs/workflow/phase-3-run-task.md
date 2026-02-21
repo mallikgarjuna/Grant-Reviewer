@@ -50,9 +50,9 @@ After completing Phase 3 (including Part C revisions):
 
 1. **Runners are Routers**: You **MUST** read the detailed instruction file referenced in each "PART" section below. Do not guess.
 2. Execute Part A, then Part B, then Part C in order.
-2. Print a short "PART A/B/C" header and a bullet summary of actions taken.
-3. During Part B (review), do NOT edit any files.
-4. If Part B identifies blocking sequencing or missing integration tasks:
+3. Print a short "PART A/B/C" header and a bullet summary of actions taken.
+4. During Part B (review), do NOT edit any files.
+5. If Part B identifies blocking sequencing or missing integration tasks:
    - Ask the user up to 5 clarification questions.
    - For each question: provide 2–3 options + one recommended option.
    - Wait for user answers BEFORE applying revisions.
