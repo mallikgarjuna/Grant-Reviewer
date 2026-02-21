@@ -78,6 +78,7 @@ Update `./docs/lessons.md` for **codebase-specific** pitfalls.
 
 - I must never assume "LGTM" on an artifact means "proceed"; wait for explicit approval.
 - **CRITICAL**: I must ALWAYS wait for the user's explicit signal BEFORE moving to writing code.
+- **CRITICAL**: I must NEVER autonomously push, merge, or delete remote branches without the user's explicit "Ship it" or pushing signal.
 - **Browser Autonomy**: When testing in the Agentic Browser, continue testing without asking for confirmation unless sensitive.
 - **Commit Messages**: Follow `AGENTS.md` format exactly. Do NOT add "assisted by antigravity" or other suffixes.
 - For all project-level rules (phase gates, artifact discipline, Part A/B/C, self-directed scope, etc.), see `AGENTS.md` § "Systemic coordination failures".
