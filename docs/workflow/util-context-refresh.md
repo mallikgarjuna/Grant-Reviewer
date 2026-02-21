@@ -14,6 +14,7 @@ To reliably transfer context when switching between different AI coding agents (
 
 ## Required Inputs
 
+- `docs/workflow/README.md` (to understand project rules, phase definitions, and status meanings)
 - `docs/index.md` (to locate the active WF and its artifacts)
 - The active Phase document (e.g., the PRD or Task file, depending on the current phase)
 
@@ -52,10 +53,13 @@ End your response by asking the user for explicit permission to begin executing 
 
 ## How to Invoke in Chat
 
+## How to Invoke in Chat
+
 Copy and paste this exact prompt into your new coding agent session:
 
 ```text
 Use @docs/workflow/util-context-refresh.md
+@docs/workflow/README.md
 @docs/index.md
 
 Execute a "context refresh" to get up to speed on the current project state.
