@@ -1,7 +1,7 @@
-# Phase 4 — Implement Tasks
+# Phase 3 — Implement Tasks
 
 This file is a workflow instruction.
-Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-4-run-implement.md.
+Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-3-run-implement-execution.md.
 Do NOT modify this file during execution.
 
 ---
@@ -26,7 +26,7 @@ To execute the granular development tasks defined in Phase 3, rigorously verify 
 ---
 
 ### PART A: Execute (The Loop)
-1. Read the execution rules in `docs/workflow/phase-4-1-implement-tasks.md`.
+1. Read the execution rules in `docs/workflow/phase-3-1-implement-tasks.md`.
 2. Following those rules exactly, loop through every task in the provided task file.
 3. Implement each task and commit sequentially as instructed in that file.
 4. Check off (`[x]`) tasks in the task artifact as you go.
@@ -54,7 +54,7 @@ To execute the granular development tasks defined in Phase 3, rigorously verify 
 ---
 
 ## Next Actions
-After completing Phase 4 (including Part C revisions and commits), suggest the following next actions to the user:
+After completing Phase 3 (including Part C revisions and commits), suggest the following next actions to the user:
 
 1. \`ship it\` (See `AGENTS.md` for PR/Merge definition).
 2. Start a new workflow / idea.
@@ -66,11 +66,11 @@ After completing Phase 4 (including Part C revisions and commits), suggest the f
 Use:
 
 ```text
-Use @docs/workflow/phase-4-run-implement.md
+Use @docs/workflow/phase-3-run-implement-execution.md
 @docs/index.md
 @docs/tasks/task-<WF-ID>-<slug>.md
 
-Run Phase 4 end-to-end for <WF-ID>/<slug> using this runner.
+Run Phase 3 end-to-end for <WF-ID>/<slug> using this runner.
 Print what you did in Part A/B/C.
 Confirm verification evidence before writing the walkthrough.
 End with two suggested next actions.

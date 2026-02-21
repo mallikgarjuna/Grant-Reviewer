@@ -1,7 +1,7 @@
-# Phase 4.1 — Implement Tasks (Sequential + Commit Per Task)
+# Phase 3.1 — Implement Tasks (Sequential + Commit Per Task)
 
 This file is a workflow instruction.
-Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-4-1-implement-tasks.md.
+Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-3-1-implement-tasks.md.
 Do NOT modify this file during execution.
 
 ---
@@ -30,7 +30,7 @@ Status: Ready for Implementation
 
 ## Phase Gate — Commit Previous Phase
 
-Before starting Phase 4 implementation, ensure Phase 3 outputs are **saved and committed** on the WF branch:
+Before starting Phase 3 implementation, ensure Phase 2 outputs are **saved and committed** on the WF branch:
 
 - `docs/tasks/task-WF-XXXX-<slug>.md` is committed and marked Ready for Implementation
 - `docs/index.md` Phase 3 status/links are committed if updated
@@ -40,13 +40,13 @@ Before starting Phase 4 implementation, ensure Phase 3 outputs are **saved and c
 ## Phase Return — Stop Processing Here
 When all tasks are implemented, STOP execution.
 Do NOT create the walkthrough here.
-Return control to the `phase-4-run-implement.md` Part B Verification gate.
+Return control to the `phase-3-run-implement-execution.md` Part B Verification gate.
 
 ---
 
 ## Branch Rules (Mandatory for New WF)
 
-All Phase 4 work must occur on a WF branch:
+All Phase 3 work must occur on a WF branch:
 
 wf/WF-XXXX-<slug>
 
@@ -68,7 +68,7 @@ If branch does not exist:
   - Step back ONE phase (usually Phase 2 or 3)
   - Update artifact
   - Bump version
-  - Resume Phase 4
+  - Resume Phase 3
 
 ---
 
@@ -95,10 +95,10 @@ Then continue automatically to the next task.
 
 When all tasks are complete, **STOP**.
 
-Do not update `docs/index.md` or create a walkthrough here. Your job is done. The primary `phase-4-run-implement.md` orchestrator will now take over to enforce Part B (Verify) and Part C (Walkthrough + Ship).
+Do not update `docs/index.md` or create a walkthrough here. Your job is done. The primary `phase-3-run-implement-execution.md` orchestrator will now take over to enforce Part B (Verify) and Part C (Walkthrough + Ship).
 
 ---
 
 ## How to Invoke implicitly
 
-This instructions file is implicitly invoked by `phase-4-run-implement.md` Part A. You do not need a direct prompt cheat-sheet for this file, as it should no longer be run locally or standalone.
+This instructions file is implicitly invoked by `phase-3-run-implement-execution.md` Part A. You do not need a direct prompt cheat-sheet for this file, as it should no longer be run locally or standalone.

@@ -1,7 +1,7 @@
-# Phase 4.2 — Verify & Ship (Post-Implementation)
+# Phase 3.2 — Verify & Ship (Post-Implementation)
 
 This file is a workflow instruction.
-Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-4-2-verify-and-ship.md.
+Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-3-2-verify-and-ship.md.
 Do NOT modify this file during execution.
 
 ---
@@ -46,7 +46,7 @@ To cleanly resume a workflow that has already completed Part A (Implementation) 
 ---
 
 ## Next Actions
-After completing Phase 4.2 (including Part C revisions and commits), suggest the following next actions to the user:
+After completing Phase 3.2 (including Part C revisions and commits), suggest the following next actions to the user:
 
 1. `ship it` (See `AGENTS.md` for PR/Merge definition).
 2. Start a new workflow / idea.
@@ -58,12 +58,12 @@ After completing Phase 4.2 (including Part C revisions and commits), suggest the
 Use:
 
 ```text
-Use @docs/workflow/phase-4-2-verify-and-ship.md
+Use @docs/workflow/phase-3-2-verify-and-ship.md
 @docs/index.md
 @docs/tasks/task-<WF-ID>-<slug>.md
 
 Assume implementation tasks are DONE.
-Run Phase 4.2 (Verify & Ship) for <WF-ID>/<slug> using this runner.
+Run Phase 3.2 (Verify & Ship) for <WF-ID>/<slug> using this runner.
 Print what you did in Part B/C.
 Confirm verification evidence before writing the walkthrough.
 End with two suggested next actions.
