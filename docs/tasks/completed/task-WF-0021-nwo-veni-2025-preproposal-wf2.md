@@ -1,8 +1,8 @@
 # WF-0021 — NWO Veni 2025 preproposal (WF-2): DB logical IDs + V2 ingest Tasks
 
 Artifact: task
-Version: v0.2
-Status: Ready for Implementation
+Version: v0.3
+Status: Completed
 Last Updated: 2026-02-21
 
 ## Task Breakdown (Sequential Order)
@@ -70,3 +70,4 @@ Last Updated: 2026-02-21
 ## Changelog
 - v0.1 (2026-02-21): Initial tasks from PRD.
 - v0.2 (2026-02-21): Applied review edits (made explicit that Task 2 handles the query hardening before ingestion changes; grouped JSON/Checksum and Upsert into separate logical tasks).
+- v0.3 (2026-02-21): Marked Tasks 1-6 completed after Phase 3 implementation and verification.
