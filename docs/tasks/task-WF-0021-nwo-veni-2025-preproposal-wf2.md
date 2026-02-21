@@ -7,7 +7,7 @@ Last Updated: 2026-02-21
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Database Schema & Alembic Migration
+### [x] Task 1 — Database Schema & Alembic Migration
 **Goal:** Introduce the `CallDefinition` table and new metadata columns to the core graph.
 **Files to modify:** `backend/app/models/domain.py`, `backend/alembic/versions/*`
 **Acceptance Criteria:**
