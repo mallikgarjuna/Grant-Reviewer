@@ -130,6 +130,24 @@ Confirm verification evidence before writing the walkthrough.
 End with two suggested next actions.
 ```
 
+---
+
+## Phase 4.2 — Verify & Ship (Post-Implementation)
+
+```text
+Use @docs/workflow/phase-4-2-verify-and-ship.md
+@docs/index.md
+@docs/tasks/task-<WF-ID>-<slug>.md
+
+Assume implementation tasks are DONE.
+Run Phase 4.2 (Verify & Ship) for <WF-ID>/<slug> using this runner.
+Print what you did in Part B/C.
+Confirm verification evidence before writing the walkthrough.
+End with two suggested next actions.
+```
+
+---
+
 ## Quick Tips (Implicit)
 
 - Always supply proper `<WF-ID>` and `<slug>`.
