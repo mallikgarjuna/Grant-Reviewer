@@ -115,5 +115,5 @@ Stop.
 
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
-1. Run Phase 3.1 (generate tasks v0.1): `@docs/workflow/phase-3-1-task-generate.md`
+1. Run Phase 2.1 (generate tasks v0.1): `@docs/workflow/phase-2-1-task-generate.md`
 2. Re-run Phase 1.2 (PRD risk audit) to validate the revised PRD: `@docs/workflow/phase-1-2-prd-risk-audit.md`

@@ -133,7 +133,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - Before starting a new WF phase (or phase runner), ensure the previous phase’s primary artifact(s) are saved and committed (use `git status --short` to confirm a clean boundary).
 - After completing a WF phase, ensure any artifacts edited/created in that phase are saved and committed before starting the next phase.
 - During phase runners, commit at each part boundary: after Part A outputs, after Part C revisions, and after any Part B edits when applicable (if Part B is no-edit by design, explicitly state no commit needed).
-- For Phase 4 implementation, run at least one targeted verification per completed subtask before committing that subtask, and log what was run.
+- For Phase 3 implementation, run at least one targeted verification per completed subtask before committing that subtask, and log what was run.
 - Before any commit, confirm new/changed files are not accidentally ignored: run `git status --ignored --short`. Prefer updating `.gitignore` with narrow allow/deny rules over `git add -f` (never force-add secrets).
 - Update `docs/` as you go (decisions, Q&A, walkthroughs).
 - Before pushing any branch to a remote, update `docs/` with all relevant work done on that branch (status/index, decisions, Q&A, prompt history, walkthrough/task artifacts as applicable).
@@ -150,8 +150,8 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - **Code phrases**: The user has shortcut phrases for frequent actions (see `docs/reference/code_phrases.md`). Key ones: **`park this`** (add to parking lot), **`pick P[x] #[n]`** (promote to WF), **`remember this`** (codify rule in `AGENTS.md` or `docs/lessons.md`), **`log this`** (record in `docs/logs/`), **`status`** / **`what's next`** / **`diff`** / **`verify workflow`** / **`critical review`** / **`workflow preflight`** / **`run phase [N]`** / **`go ahead`** / **`update docs`** / **`docs cleanup`** / **`wrap up`** / **`ship it`**. Recognize and act on these immediately.
 - **Composed phrases**: when a phrase overlaps existing ones, execute it as a composition of existing phrase behaviors first (then add only minimal extra checks/reporting).
 - When reporting completion of a phase/part/action, explicitly list the files and skills/instructions used for that step.
-- For workflow guidance in responses: before Phase 4 completion, present “Next 2 actions” as end-to-end phase runner options (`phase-1-run-spec`, `phase-2-run-prd`, `phase-3-run-task`) rather than split part files.
-- After Phase 4 is completed, replace “Next 2 actions” with “Next 2 WF ideas/features” phrased as candidate follow-up workflows (with suggested Phase 0.0 starts).
+- For workflow guidance in responses: before Phase 3 completion, present “Next 2 actions” as end-to-end phase runner options (`phase-1-run-prd-definition`, `phase-2-run-tasks-planning`) rather than split part files.
+- After Phase 3 is completed, replace “Next 2 actions” with “Next 2 WF ideas/features” phrased as candidate follow-up workflows (with suggested Phase 0.0 starts).
 
 ### Ask first
 
