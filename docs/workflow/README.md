@@ -18,9 +18,7 @@ Every meaningful initiative is tracked using a Workflow ID (WF-XXXX).
 
 Runner shortcuts:
 - Phase 0: `docs/workflow/phase-0-run-start-and-brainstorm.md`
-- Phase 1: `docs/workflow/phase-1-run-spec.md`
-- Phase 2: `docs/workflow/phase-2-run-prd.md`
-- Phase 3: `docs/workflow/phase-3-run-task.md`
+- Phase 1/2/3: `docs/workflow/phase-123-run-planning.md`
 
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).
@@ -90,6 +88,8 @@ Slug rules:
 - docs/logs/decisions.md
 - docs/index.md
 - docs/workflow/
+
+*(Note: Every artifact directory contains a `completed/` subdirectory. When a workflow is marked `Done`, its artifacts must be moved into their respective `completed/` folders to keep the root workspace clean for active workflows).*
 
 ---
 
@@ -234,6 +234,13 @@ WF-0007: add empty state handling
 WF-0007: revise PRD risk audit
 
 This keeps implementation traceable to workflow artifacts.
+
+# Glossary / Code Phrases
+
+The following are standard operational code phrases documented in `AGENTS.md` that orchestrate workflows:
+
+- **`verify workflow`**: Complete a verification pass including: status check, git diff review, lint/build execution, and a concise pass/fail summary.
+- **`workflow preflight`**: Complete a critical review of the current WF closure state, artifact synchronization, and readiness to adopt/start the next workflow.
 
 ---
 
