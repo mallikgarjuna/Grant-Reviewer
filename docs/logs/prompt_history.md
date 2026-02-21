@@ -1,5 +1,19 @@
 # Prompt History
 
+## 2026-02-21
+
+### 17:10 - WF-0021 Context Refresh + Next Phase Prompt
+> User requested context refresh using workflow utility files and asked for a copy-pasteable prompt for the next phase.
+> Outcome: Refreshed WF status from `docs/index.md`, identified WF-0021 as active target, and provided Phase 3 runner prompt.
+
+### 17:15 - WF-0021 Phase 3 End-to-End Execution
+> User requested running `phase-3-run-implement-execution.md` end-to-end for WF-0021.
+> Outcome: Completed Part A/B/C with sequential task commits, verification (`pre-commit`, `pytest`), walkthrough creation, artifact archival, and index status update to `Done`. No push/PR executed.
+
+### 17:40 - WF-0021 General Docs Sync Clarification
+> User asked whether updating general docs logs is optional since rules already encode it.
+> Outcome: Confirmed this is required by AGENTS workflow; proceeded to sync `docs/logs/*` before ship.
+
 ## 2026-02-06
 
 ### 19:33 - Initial Request
@@ -634,3 +648,7 @@
 ### 09:20 - WF-0020 Phase 4.1 Implementation Completed
 > User requested: start Phase 4.1 implementation runner for WF-0020 and execute tasks sequentially.
 > Outcome: Completed Task 1-5 with per-task commits; added strict `CallDefinitionV2` schema, implemented V1/V2 detection and DB-free dry-run path in `scripts/ingest_call.py`, added deterministic dry-run JSON summary, improved YAML syntax/schema error messaging, and added dry-run regression test for V1+V2. Updated walkthrough and marked WF-0020 as `Done` in `docs/index.md`.
+
+### 09:55 - Pick P1 #5 → WF-0021 Kickoff (NWO Veni 2025 preproposal WF-2)
+> User requested `pick P1 #5` to start "NWO Veni 2025 preproposal — WF-2" with strict scope: add stable `logical_id` fields/columns for traceability, ingest CallDefinition V2 YAML into DB, and keep V1 compatibility (no structured-config endpoint, no frontend changes, no compliance engine).
+> Outcome: Minted `WF-0021`, created baseline WF artifacts, promoted the parking lot item, and created branch `wf/WF-0021-nwo-veni-2025-preproposal-wf2` in preparation for Phase 0.1 brainstorm.

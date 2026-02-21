@@ -76,7 +76,7 @@ Last Updated: <today>
 
 For each task include:
 
-### Task 1 — <short title>
+### [ ] Task 1 — <short title>
 
 Goal:
 Files to modify:

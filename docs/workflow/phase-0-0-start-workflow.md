@@ -178,4 +178,5 @@ Steps:
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
 1. Run Phase 0.1 (interactive brainstorm): `@docs/workflow/phase-0-1-brainstorm.md`
+   - **Provide an explicit, copy-pasteable prompt block** for the user to start this phase.
 2. Sanity-check the new baseline artifacts (headers + links in `docs/index.md`), then commit a small fix if needed.

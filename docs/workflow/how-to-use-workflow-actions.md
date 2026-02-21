@@ -138,7 +138,6 @@ End with two suggested next actions.
 ```
 
 ---
-
 ## Quick Tips (Implicit)
 
 - Always supply proper `<WF-ID>` and `<slug>`.

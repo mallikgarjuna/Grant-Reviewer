@@ -9,20 +9,25 @@ Usage:
 """
 
 import argparse
+import hashlib
 import json
 import logging
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
 
-from pydantic import ValidationError
 import yaml
+from pydantic import ValidationError
 from sqlmodel import Session, select
 
 # Add backend to path for imports (per lessons.md L1)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from app.models.domain import (
+    CallDefinition as CallDefinitionRecord,
+)
 from app.models.domain import (
     EvaluationCriterion,
     EvaluationElement,
@@ -35,7 +40,9 @@ from app.models.domain import (
     ProposalNode,
 )
 from app.schemas.call_definitions import (
-    CallDefinition,
+    CallDefinition as CallDefinitionV1,
+)
+from app.schemas.call_definitions import (
     EvaluationCriterionDefinition,
     NodeExpectationDefinition,
     ProposalNodeDefinition,
@@ -115,7 +122,7 @@ def _detect_schema_version(raw_data: dict[str, Any]) -> str:
     )
 
 
-def load_yaml(path: Path) -> tuple[str, CallDefinition | CallDefinitionV2]:
+def load_yaml(path: Path) -> tuple[str, CallDefinitionV1 | CallDefinitionV2, str]:
     """
     Load and validate a YAML file into a CallDefinition.
 
@@ -150,20 +157,20 @@ def load_yaml(path: Path) -> tuple[str, CallDefinition | CallDefinitionV2]:
     schema_version = _detect_schema_version(raw_data)
     try:
         if schema_version == "v1":
-            call_def = CallDefinition.model_validate(raw_data)
+            call_def = CallDefinitionV1.model_validate(raw_data)
         else:
             call_def = CallDefinitionV2.model_validate(raw_data)
     except ValidationError as err:
         raise ValueError(_format_validation_error(err, schema_version)) from err
 
     logger.info(f"YAML validated successfully (schema_version={schema_version})")
-    return schema_version, call_def
+    return schema_version, call_def, raw_text
 
 
 # ============================================================================
 # ID Mapping
 # ============================================================================
-def resolve_logical_ids(call_def: CallDefinition) -> dict[str, UUID]:
+def resolve_logical_ids(call_def: CallDefinitionV1) -> dict[str, UUID]:
     """
     Create a mapping from logical string IDs to UUIDs.
 
@@ -187,7 +194,10 @@ def resolve_logical_ids(call_def: CallDefinition) -> dict[str, UUID]:
     return id_map
 
 
-def _build_v1_dry_run_summary(call_def: CallDefinition, yaml_path: Path) -> dict[str, Any]:
+def _build_v1_dry_run_summary(
+    call_def: CallDefinitionV1,
+    yaml_path: Path,
+) -> dict[str, Any]:
     """Build deterministic dry-run summary for V1 call definitions."""
     return {
         "dry_run": True,
@@ -222,6 +232,8 @@ def _build_v2_dry_run_summary(
     yaml_path: Path,
 ) -> dict[str, Any]:
     """Build deterministic dry-run summary for V2 call definitions."""
+    canonical_json, canonical_json_text = _build_canonical_json(call_def)
+    checksum = _compute_semantic_checksum(canonical_json_text)
     compliance_by_severity: dict[str, int] = {}
     for node in call_def.proposal_nodes:
         for rule in node.compliance_rules:
@@ -233,6 +245,8 @@ def _build_v2_dry_run_summary(
         "dry_run": True,
         "schema_version": "v2",
         "source_path": str(yaml_path),
+        "checksum": checksum,
+        "canonical_json": canonical_json,
         "funding_agency": {
             "id": call_def.funding_agency.id,
             "name": call_def.funding_agency.name,
@@ -272,9 +286,27 @@ def _build_v2_dry_run_summary(
                 for node in call_def.proposal_nodes
             ],
         },
-        "compliance_rules": {"by_severity": dict(sorted(compliance_by_severity.items()))},
+        "compliance_rules": {
+            "by_severity": dict(sorted(compliance_by_severity.items()))
+        },
         "runtime_notes": {"count": len(call_def.runtime_notes)},
     }
+
+
+def _build_canonical_json(call_def: CallDefinitionV2) -> tuple[dict[str, Any], str]:
+    """Create deterministic canonical JSON payload and encoded text."""
+    canonical_json = call_def.model_dump(exclude_none=True)
+    canonical_json_text = json.dumps(
+        canonical_json,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return canonical_json, canonical_json_text
+
+
+def _compute_semantic_checksum(canonical_json_text: str) -> str:
+    """Compute deterministic SHA-256 checksum for canonical JSON payload."""
+    return hashlib.sha256(canonical_json_text.encode("utf-8")).hexdigest()
 
 
 # ============================================================================
@@ -282,7 +314,7 @@ def _build_v2_dry_run_summary(
 # ============================================================================
 def ingest_agency_and_call(
     session: Session,
-    call_def: CallDefinition,
+    call_def: CallDefinitionV1,
 ) -> tuple[FundingAgency, FundingCall]:
     """
     Upsert FundingAgency and FundingCall.
@@ -376,6 +408,7 @@ def ingest_rubric(
             select(EvaluationCriterion).where(
                 EvaluationCriterion.funding_call_id == call_id,
                 EvaluationCriterion.name == crit_def.name,
+                EvaluationCriterion.archived_at.is_(None),
             )
         ).first()
 
@@ -406,6 +439,7 @@ def ingest_rubric(
                 select(EvaluationElement).where(
                     EvaluationElement.evaluation_criterion_id == criterion.id,
                     EvaluationElement.name == elem_def.name,
+                    EvaluationElement.archived_at.is_(None),
                 )
             ).first()
 
@@ -452,6 +486,7 @@ def ingest_nodes_recursive(
         query = select(ProposalNode).where(
             ProposalNode.funding_call_id == call_id,
             ProposalNode.title == node_def.title,
+            ProposalNode.archived_at.is_(None),
         )
         if parent_id is None:
             # NOTE: Use is_(None) instead of == None for SQL NULL comparisons.
@@ -544,6 +579,301 @@ def _replace_expectations(
 
 
 # ============================================================================
+# V2 Ingestion Functions
+# ============================================================================
+def _map_v2_node_type(node_type: str) -> NodeType:
+    """Map V2 node type labels to existing NodeType enum."""
+    if node_type.upper() == "SUBSECTION":
+        return NodeType.SUBSECTION
+    return NodeType.SECTION
+
+
+def _upsert_agency_and_call_v2(
+    session: Session,
+    call_def: CallDefinitionV2,
+) -> tuple[FundingAgency, FundingCall]:
+    """Upsert FundingAgency/FundingCall metadata for V2 ingestion."""
+    agency_def = call_def.funding_agency
+    call_meta = call_def.funding_call
+
+    agency = session.exec(
+        select(FundingAgency).where(FundingAgency.short_name == agency_def.id)
+    ).first()
+    if agency is None:
+        agency = FundingAgency(
+            name=agency_def.name,
+            short_name=agency_def.id,
+            description=f"Country: {agency_def.country}",
+        )
+        session.add(agency)
+        session.flush()
+    else:
+        agency.name = agency_def.name
+        agency.description = f"Country: {agency_def.country}"
+        session.add(agency)
+
+    call = session.exec(
+        select(FundingCall).where(FundingCall.code == call_meta.code)
+    ).first()
+    if call is None:
+        call = FundingCall(
+            funding_agency_id=agency.id,
+            name=call_meta.title,
+            code=call_meta.code,
+            call_year=call_meta.year,
+            general_guidelines=f"Stage={call_meta.stage}; Language={call_meta.language}",
+        )
+        session.add(call)
+        session.flush()
+    else:
+        call.funding_agency_id = agency.id
+        call.name = call_meta.title
+        call.call_year = call_meta.year
+        call.general_guidelines = (
+            f"Stage={call_meta.stage}; Language={call_meta.language}"
+        )
+        session.add(call)
+
+    return agency, call
+
+
+def _upsert_call_definition_document(
+    session: Session,
+    *,
+    funding_call_id: UUID,
+    schema_version: str,
+    checksum: str,
+    raw_yaml: str,
+    canonical_json: dict[str, Any],
+    source_path: str,
+) -> CallDefinitionRecord:
+    """Insert/update canonical call-definition JSON document."""
+    now = datetime.now(UTC)
+    existing = session.exec(
+        select(CallDefinitionRecord).where(
+            CallDefinitionRecord.funding_call_id == funding_call_id
+        )
+    ).first()
+    if existing is None:
+        record = CallDefinitionRecord(
+            funding_call_id=funding_call_id,
+            schema_version=schema_version,
+            checksum=checksum,
+            raw_yaml=raw_yaml,
+            canonical_json=canonical_json,
+            source_path=source_path,
+            created_at=now,
+            updated_at=now,
+        )
+        session.add(record)
+        return record
+
+    existing.schema_version = schema_version
+    existing.checksum = checksum
+    existing.raw_yaml = raw_yaml
+    existing.canonical_json = canonical_json
+    existing.source_path = source_path
+    existing.updated_at = now
+    session.add(existing)
+    return existing
+
+
+def _upsert_projection_v2(
+    session: Session,
+    *,
+    call_id: UUID,
+    call_def: CallDefinitionV2,
+) -> dict[str, int]:
+    """Upsert nodes/criteria/elements by logical_id and soft-delete orphaned rows."""
+    now = datetime.now(UTC)
+    counters = {
+        "criteria_upserted": 0,
+        "elements_upserted": 0,
+        "nodes_upserted": 0,
+        "criteria_archived": 0,
+        "elements_archived": 0,
+        "nodes_archived": 0,
+        "expectations_replaced": 0,
+    }
+
+    existing_criteria = {
+        criterion.logical_id: criterion
+        for criterion in session.exec(
+            select(EvaluationCriterion).where(
+                EvaluationCriterion.funding_call_id == call_id,
+                EvaluationCriterion.archived_at.is_(None),
+            )
+        ).all()
+        if criterion.logical_id is not None
+    }
+    seen_criteria: set[str] = set()
+    criterion_by_logical_id: dict[str, EvaluationCriterion] = {}
+    for order_idx, criterion_def in enumerate(call_def.evaluation_criteria, start=1):
+        criterion_description = f"stage={criterion_def.stage}; weight_percent={criterion_def.weight_percent}"
+        criterion = existing_criteria.get(criterion_def.id)
+        if criterion is None:
+            criterion = EvaluationCriterion(
+                funding_call_id=call_id,
+                logical_id=criterion_def.id,
+                name=criterion_def.name,
+                description=criterion_description,
+                order_index=order_idx,
+                archived_at=None,
+            )
+            session.add(criterion)
+        else:
+            criterion.logical_id = criterion_def.id
+            criterion.name = criterion_def.name
+            criterion.description = criterion_description
+            criterion.order_index = order_idx
+            criterion.archived_at = None
+            session.add(criterion)
+        counters["criteria_upserted"] += 1
+        seen_criteria.add(criterion_def.id)
+        criterion_by_logical_id[criterion_def.id] = criterion
+
+    for criterion in existing_criteria.values():
+        if criterion.logical_id not in seen_criteria:
+            criterion.archived_at = now
+            session.add(criterion)
+            counters["criteria_archived"] += 1
+
+    session.flush()
+
+    existing_elements = {
+        element.logical_id: element
+        for element in session.exec(
+            select(EvaluationElement)
+            .join(
+                EvaluationCriterion,
+                EvaluationElement.evaluation_criterion_id == EvaluationCriterion.id,
+            )
+            .where(EvaluationCriterion.funding_call_id == call_id)
+            .where(EvaluationCriterion.archived_at.is_(None))
+            .where(EvaluationElement.archived_at.is_(None))
+        ).all()
+        if element.logical_id is not None
+    }
+    seen_elements: set[str] = set()
+    element_uuid_by_logical_id: dict[str, UUID] = {}
+    for criterion_def in call_def.evaluation_criteria:
+        criterion = criterion_by_logical_id[criterion_def.id]
+        for element_def in criterion_def.evaluation_elements:
+            element = existing_elements.get(element_def.id)
+            if element is None:
+                element = EvaluationElement(
+                    evaluation_criterion_id=criterion.id,
+                    logical_id=element_def.id,
+                    name=element_def.name,
+                    description=element_def.description,
+                    archived_at=None,
+                )
+                session.add(element)
+            else:
+                element.evaluation_criterion_id = criterion.id
+                element.logical_id = element_def.id
+                element.name = element_def.name
+                element.description = element_def.description
+                element.archived_at = None
+                session.add(element)
+            counters["elements_upserted"] += 1
+            seen_elements.add(element_def.id)
+            session.flush()
+            element_uuid_by_logical_id[element_def.id] = element.id
+
+    for element in existing_elements.values():
+        if element.logical_id not in seen_elements:
+            element.archived_at = now
+            session.add(element)
+            counters["elements_archived"] += 1
+
+    existing_nodes = {
+        node.logical_id: node
+        for node in session.exec(
+            select(ProposalNode).where(
+                ProposalNode.funding_call_id == call_id,
+                ProposalNode.archived_at.is_(None),
+            )
+        ).all()
+        if node.logical_id is not None
+    }
+    seen_nodes: set[str] = set()
+    node_by_logical_id: dict[str, ProposalNode] = {}
+    for order_idx, node_def in enumerate(call_def.proposal_nodes, start=1):
+        node = existing_nodes.get(node_def.id)
+        if node is None:
+            node = ProposalNode(
+                funding_call_id=call_id,
+                parent_node_id=None,
+                logical_id=node_def.id,
+                node_type=_map_v2_node_type(node_def.node_type),
+                title=node_def.label,
+                order_index=order_idx,
+                guidance_text=node_def.guidance_text,
+                archived_at=None,
+            )
+            session.add(node)
+        else:
+            node.parent_node_id = None
+            node.logical_id = node_def.id
+            node.node_type = _map_v2_node_type(node_def.node_type)
+            node.title = node_def.label
+            node.order_index = order_idx
+            node.guidance_text = node_def.guidance_text
+            node.archived_at = None
+            session.add(node)
+        counters["nodes_upserted"] += 1
+        seen_nodes.add(node_def.id)
+        session.flush()
+        node_by_logical_id[node_def.id] = node
+
+    for node in existing_nodes.values():
+        if node.logical_id not in seen_nodes:
+            node.archived_at = now
+            session.add(node)
+            counters["nodes_archived"] += 1
+
+    for node in node_by_logical_id.values():
+        existing_expectations = session.exec(
+            select(NodeExpectation).where(NodeExpectation.proposal_node_id == node.id)
+        ).all()
+        counters["expectations_replaced"] += len(existing_expectations)
+        for expectation in existing_expectations:
+            session.delete(expectation)
+
+    for node_def in call_def.proposal_nodes:
+        node = node_by_logical_id[node_def.id]
+        for order_idx, expectation_def in enumerate(
+            node_def.node_expectations, start=1
+        ):
+            element_id = element_uuid_by_logical_id.get(
+                expectation_def.evaluation_element_id
+            )
+            if element_id is None:
+                raise ValueError(
+                    "Missing evaluation element during expectation projection: "
+                    f"{expectation_def.evaluation_element_id}"
+                )
+            session.add(
+                NodeExpectation(
+                    proposal_node_id=node.id,
+                    evaluation_element_id=element_id,
+                    expectation_strength=ExpectationStrength(
+                        expectation_def.expectation_strength
+                    ),
+                    evaluation_intent=EvaluationIntent(
+                        expectation_def.evaluation_intent
+                    ),
+                    guidance_note=expectation_def.guidance_note,
+                    order_index=order_idx,
+                )
+            )
+            counters["expectations_replaced"] += 1
+
+    return counters
+
+
+# ============================================================================
 # Main Ingestion Pipeline
 # ============================================================================
 def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
@@ -558,7 +888,7 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
         Summary dictionary with ingested IDs.
     """
     # Load and validate
-    schema_version, call_def = load_yaml(yaml_path)
+    schema_version, call_def, raw_yaml = load_yaml(yaml_path)
 
     if dry_run:
         logger.info("=== DRY RUN MODE - No database changes will be made ===")
@@ -566,11 +896,6 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
             return _build_v1_dry_run_summary(call_def, yaml_path)
 
         return _build_v2_dry_run_summary(call_def, yaml_path)
-
-    if schema_version != "v1":
-        raise ValueError(
-            "V2 call-definition ingestion is currently supported in --dry-run only."
-        )
 
     # Import DB wiring only for non-dry-run execution.
     from app.db import create_db_and_tables, get_session
@@ -580,34 +905,82 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
     session = get_session()
 
     try:
-        # Resolve logical IDs
-        v1_call_def = call_def
-        id_map = resolve_logical_ids(v1_call_def)
+        if schema_version == "v1":
+            # Resolve logical IDs
+            v1_call_def = call_def
+            id_map = resolve_logical_ids(v1_call_def)
 
-        # Ingest in order
-        agency, call = ingest_agency_and_call(session, v1_call_def)
+            # Ingest in order
+            agency, call = ingest_agency_and_call(session, v1_call_def)
 
-        ingest_rubric(session, call.id, v1_call_def.evaluation_criteria, id_map)
+            ingest_rubric(session, call.id, v1_call_def.evaluation_criteria, id_map)
 
-        ingest_nodes_recursive(
-            session,
-            call.id,
-            v1_call_def.proposal_nodes,
-            None,
-            id_map,
-        )
+            ingest_nodes_recursive(
+                session,
+                call.id,
+                v1_call_def.proposal_nodes,
+                None,
+                id_map,
+            )
 
-        logger.info("=== Ingestion completed successfully ===")
+            logger.info("=== Ingestion completed successfully ===")
 
-        # Capture result IDs before closing session (per lessons.md L2)
-        result = {
-            "dry_run": False,
-            "schema_version": "v1",
-            "agency_id": str(agency.id),
-            "call_id": str(call.id),
-            "criteria_count": len(v1_call_def.evaluation_criteria),
-            "node_count": _count_nodes(v1_call_def.proposal_nodes),
-        }
+            # Capture result IDs before closing session (per lessons.md L2)
+            result = {
+                "dry_run": False,
+                "schema_version": "v1",
+                "agency_id": str(agency.id),
+                "call_id": str(call.id),
+                "criteria_count": len(v1_call_def.evaluation_criteria),
+                "node_count": _count_nodes(v1_call_def.proposal_nodes),
+            }
+        else:
+            v2_call_def = call_def
+            canonical_json, canonical_json_text = _build_canonical_json(v2_call_def)
+            checksum = _compute_semantic_checksum(canonical_json_text)
+
+            with session.begin():
+                agency, call = _upsert_agency_and_call_v2(session, v2_call_def)
+                existing_definition = session.exec(
+                    select(CallDefinitionRecord).where(
+                        CallDefinitionRecord.funding_call_id == call.id
+                    )
+                ).first()
+                if existing_definition and existing_definition.checksum == checksum:
+                    return {
+                        "dry_run": False,
+                        "schema_version": "v2",
+                        "skipped": True,
+                        "reason": "checksum_match",
+                        "call_id": str(call.id),
+                        "checksum": checksum,
+                    }
+
+                _upsert_call_definition_document(
+                    session,
+                    funding_call_id=call.id,
+                    schema_version="v2",
+                    checksum=checksum,
+                    raw_yaml=raw_yaml,
+                    canonical_json=canonical_json,
+                    source_path=str(yaml_path),
+                )
+                counters = _upsert_projection_v2(
+                    session,
+                    call_id=call.id,
+                    call_def=v2_call_def,
+                )
+                logger.info("V2 projection upsert counters: %s", counters)
+
+            result = {
+                "dry_run": False,
+                "schema_version": "v2",
+                "skipped": False,
+                "agency_id": str(agency.id),
+                "call_id": str(call.id),
+                "checksum": checksum,
+                **counters,
+            }
 
     finally:
         session.close()
@@ -648,7 +1021,9 @@ def main() -> None:
     try:
         result = ingest_call(args.yaml_file, args.dry_run)
         if args.dry_run:
-            logger.info("Dry-run summary:\n%s", json.dumps(result, indent=2, sort_keys=True))
+            logger.info(
+                "Dry-run summary:\n%s", json.dumps(result, indent=2, sort_keys=True)
+            )
         logger.info(f"Result: {result}")
     except FileNotFoundError as e:
         logger.error(str(e))

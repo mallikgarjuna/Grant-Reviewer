@@ -34,7 +34,11 @@ class ReviewRepository:
 
     def get_node_by_id(self, node_id: UUID) -> ProposalNode | None:
         """Fetch a proposal node by ID."""
-        return self.session.get(ProposalNode, node_id)
+        statement = select(ProposalNode).where(
+            ProposalNode.id == node_id,
+            ProposalNode.archived_at.is_(None),
+        )
+        return self.session.exec(statement).first()
 
     def get_call_by_id(self, call_id: UUID) -> FundingCall | None:
         """Fetch a funding call by ID."""
@@ -57,7 +61,10 @@ class ReviewRepository:
         """Fetch call nodes and whether they currently have expectations."""
         statement = (
             select(ProposalNode)
-            .where(ProposalNode.funding_call_id == call_id)
+            .where(
+                ProposalNode.funding_call_id == call_id,
+                ProposalNode.archived_at.is_(None),
+            )
             .order_by(ProposalNode.order_index, ProposalNode.title)
         )
         nodes = list(self.session.exec(statement).all())
@@ -254,6 +261,8 @@ class ReviewRepository:
                 EvaluationElement.evaluation_criterion_id == EvaluationCriterion.id,
             )
             .where(ReviewCard.review_id == review_id)
+            .where(EvaluationElement.archived_at.is_(None))
+            .where(EvaluationCriterion.archived_at.is_(None))
             .order_by(NodeExpectation.order_index, ReviewCard.id)
         )
         return list(self.session.exec(statement).all())
@@ -336,6 +345,7 @@ class ReviewRepository:
                 ProposalSnippet.proposal_node_id == ProposalNode.id,
             )
             .where(Review.external_user_id == external_user_id)
+            .where(ProposalNode.archived_at.is_(None))
             .order_by(Review.created_at.desc())
             .limit(capped_limit)
         )

@@ -6,10 +6,11 @@ Domain models for Grant Reviewer MVP.
 
 import enum
 from datetime import UTC, datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import JSON, Column, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -104,20 +105,68 @@ class FundingCall(SQLModel, table=True):
 
     # Relationships
     agency: FundingAgency | None = Relationship(back_populates="calls")
+    call_definition: Optional["CallDefinition"] = Relationship(back_populates="call")
     nodes: list["ProposalNode"] = Relationship(back_populates="call")
     criteria: list["EvaluationCriterion"] = Relationship(back_populates="call")
 
 
-# 3. ProposalNode
+# 3. CallDefinition
+class CallDefinition(SQLModel, table=True):
+    """Canonical source document (YAML/JSON) for a single funding call."""
+
+    __tablename__ = "call_definitions"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    funding_call_id: UUID = Field(
+        foreign_key="funding_calls.id",
+        unique=True,
+        description="Owning call (1:1 with FundingCall)",
+    )
+    schema_version: str = Field(description="Version of call-definition schema")
+    checksum: str = Field(
+        description="Deterministic semantic checksum of canonical JSON"
+    )
+    raw_yaml: str | None = Field(
+        default=None,
+        description="Original YAML payload as ingested",
+    )
+    canonical_json: dict[str, Any] = Field(
+        sa_column=Column(
+            JSON().with_variant(JSONB, "postgresql"),
+            nullable=False,
+        ),
+        description="Canonical parsed representation of call definition",
+    )
+    source_path: str = Field(description="Source path used during ingestion")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+    # Relationships
+    call: FundingCall | None = Relationship(back_populates="call_definition")
+
+
+# 4. ProposalNode
 class ProposalNode(SQLModel, table=True):
     """Structural section or subsection of a proposal for anchoring reviews."""
 
     __tablename__ = "proposal_nodes"
 
+    __table_args__ = (
+        UniqueConstraint(
+            "funding_call_id",
+            "logical_id",
+            name="uq_proposal_nodes_call_logical_id",
+        ),
+    )
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     funding_call_id: UUID = Field(
         foreign_key="funding_calls.id",
         description="Owning call",
+    )
+    logical_id: str | None = Field(
+        default=None,
+        description="Stable logical identifier from call definition",
     )
     parent_node_id: UUID | None = Field(
         default=None,
@@ -131,6 +180,10 @@ class ProposalNode(SQLModel, table=True):
         default=None,
         description="Guidance provided to the applicant",
     )
+    archived_at: datetime | None = Field(
+        default=None,
+        description="Soft-delete timestamp; NULL means active",
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -139,16 +192,28 @@ class ProposalNode(SQLModel, table=True):
     expectations: list["NodeExpectation"] = Relationship(back_populates="node")
 
 
-# 4. EvaluationCriterion
+# 5. EvaluationCriterion
 class EvaluationCriterion(SQLModel, table=True):
     """Top-level assessment dimension (e.g., Excellence, Impact) for a call."""
 
     __tablename__ = "evaluation_criteria"
 
+    __table_args__ = (
+        UniqueConstraint(
+            "funding_call_id",
+            "logical_id",
+            name="uq_evaluation_criteria_call_logical_id",
+        ),
+    )
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     funding_call_id: UUID = Field(
         foreign_key="funding_calls.id",
         description="Owning call",
+    )
+    logical_id: str | None = Field(
+        default=None,
+        description="Stable logical identifier from call definition",
     )
     name: str = Field(description="Name of the assessment dimension")
     description: str | None = Field(
@@ -156,6 +221,10 @@ class EvaluationCriterion(SQLModel, table=True):
         description="Brief explanation of the criterion",
     )
     order_index: int = Field(default=0, description="Display order for the rubric")
+    archived_at: datetime | None = Field(
+        default=None,
+        description="Soft-delete timestamp; NULL means active",
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -164,21 +233,37 @@ class EvaluationCriterion(SQLModel, table=True):
     elements: list["EvaluationElement"] = Relationship(back_populates="criterion")
 
 
-# 5. EvaluationElement
+# 6. EvaluationElement
 class EvaluationElement(SQLModel, table=True):
     """Atomic reviewable concern explicitly evaluated within a criterion."""
 
     __tablename__ = "evaluation_elements"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "evaluation_criterion_id",
+            "logical_id",
+            name="uq_evaluation_elements_criterion_logical_id",
+        ),
+    )
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     evaluation_criterion_id: UUID = Field(
         foreign_key="evaluation_criteria.id",
         description="Owning criterion",
     )
+    logical_id: str | None = Field(
+        default=None,
+        description="Stable logical identifier from call definition",
+    )
     name: str = Field(description="Name of the specific reviewable concern")
     description: str | None = Field(
         default=None,
         description="What the element explicitly evaluates",
+    )
+    archived_at: datetime | None = Field(
+        default=None,
+        description="Soft-delete timestamp; NULL means active",
     )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

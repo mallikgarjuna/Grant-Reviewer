@@ -87,4 +87,5 @@ Stop.
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
 1. Run Phase 3.1 (implement tasks): `@docs/workflow/phase-3-1-implement-tasks.md`
+   - **Provide an explicit, copy-pasteable prompt block** for the user to start this phase.
 2. Re-run Phase 2.2 (tasks review gate) to validate the revised task list: `@docs/workflow/phase-2-2-task-review.md`
