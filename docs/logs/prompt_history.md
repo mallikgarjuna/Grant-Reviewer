@@ -616,3 +616,21 @@
 ### 16:49 - New Code Phrase Added: verify workflow
 > User asked for a predefined phrase to verify current-workflow outcomes and requested a future-reference rule for composing phrases from existing ones.
 > Outcome: Added `verify workflow` to `docs/reference/code_phrases.md` as a composed verification bundle (`status` + `diff` + targeted checks + pass/fail summary), added composition guideline in code-phrases doc, and updated `AGENTS.md` to recognize `verify workflow` + composed-phrase execution rule.
+
+## 2026-02-21
+
+### 07:48 - Pick P1 #5 → WF-0020 Kickoff (NWO Veni 2025 preproposal WF-1)
+> User requested `pick P1 #5` to start "NWO Veni 2025 preproposal — WF-1" with a strict scope: fix YAML parse issues, add CallDefinition V2 schema/loader, and support `scripts/ingest_call.py --dry-run` for V2 YAML (no DB schema, no API endpoints, no frontend changes).
+> Outcome: Minted `WF-0020`, created baseline WF artifacts, promoted the parking lot item, created branch `wf/WF-0020-nwo-veni-2025-preproposal-wf1`, and prepared to run Phase 0.1 interactive brainstorm.
+
+### 07:55 - WF-0020 Phase 0.1 Brainstorm Completed (recommendations)
+> User requested: “go with your recommendations” for the remaining Phase 0.x decisions.
+> Outcome: Completed brainstorm sections 1–8 for `WF-0020` with a tight scope: V2 YAML parsing + CallDefinition V2 loader + `scripts/ingest_call.py --dry-run` support (offline validation only), and set brainstorm status to `Draft Complete`.
+
+### 08:05 - WF-0020 Phase 0.1 Revision (grounded in NWO Veni YAML)
+> User asked whether Phase 0.0/0.1 considered the actual NWO Veni YAML + design summary; it had not.
+> Outcome: Reviewed `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml` + `backend/data/calls/nwo/nwo_veni_2025_preproposal_design_summary.md`, then revised the WF-0020 brainstorm to reflect concrete V2 fields (schema mismatch vs existing V1 loader) while keeping scope unchanged.
+
+### 09:20 - WF-0020 Phase 4.1 Implementation Completed
+> User requested: start Phase 4.1 implementation runner for WF-0020 and execute tasks sequentially.
+> Outcome: Completed Task 1-5 with per-task commits; added strict `CallDefinitionV2` schema, implemented V1/V2 detection and DB-free dry-run path in `scripts/ingest_call.py`, added deterministic dry-run JSON summary, improved YAML syntax/schema error messaging, and added dry-run regression test for V1+V2. Updated walkthrough and marked WF-0020 as `Done` in `docs/index.md`.
