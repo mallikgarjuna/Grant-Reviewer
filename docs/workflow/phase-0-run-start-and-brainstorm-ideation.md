@@ -83,7 +83,7 @@ After completing Part B, output:
 
 2. Two recommended next actions:
 
-- Run Phase 1 runner: `@docs/workflow/phase-1-run-spec.md`
+- Run Phase 1 runner: `@docs/workflow/phase-1-run-prd-definition.md`
 - Sanity-check brainstorm quality/coverage and commit a small doc fix if needed
 
 Keep it concise.
