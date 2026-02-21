@@ -1,7 +1,7 @@
-# Phase 2.2 — PRD Risk Audit (No Edits)
+# Phase 1.2 — PRD Risk Audit (No Edits)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-2-2-prd-risk-audit.md.
+Reference it in Codex chat using @docs/workflow/phase-1-2-prd-risk-audit.md.
 Do NOT modify this file during execution.
 
 ---
@@ -28,7 +28,7 @@ Before running the risk audit, ensure the PRD draft being audited is **saved and
 
 ## Phase Completion — Commit This Phase
 
-Phase 2.2 produces audit output in chat only (no file edits). If you made no file changes, there is nothing to commit for this phase.
+Phase 1.2 produces audit output in chat only (no file edits). If you made no file changes, there is nothing to commit for this phase.
 
 ---
 

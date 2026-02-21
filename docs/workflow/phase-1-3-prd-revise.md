@@ -1,7 +1,7 @@
-# Phase 2.3 — Revise PRD + Bump Version + Log Decisions
+# Phase 1.3 — Revise PRD + Bump Version + Log Decisions
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-2-3-prd-revise.md.
+Reference it in Codex chat using @docs/workflow/phase-1-3-prd-revise.md.
 Do NOT modify this file during execution.
 
 ---
@@ -18,13 +18,13 @@ Stabilize PRD for Task phase.
 ## Required Inputs
 
 - docs/prds/prd-WF-XXXX-<slug>.md
-- Phase 2.2 review output
+- Phase 1.2 review output
 
 ---
 
 ## Phase Gate — Commit Previous Phase
 
-Before revising the PRD, ensure the Phase 2.2 audit output has been captured in chat and the current PRD is **saved**. After revisions, commit the updated PRD (and any logged decisions) before moving to Phase 3.
+Before revising the PRD, ensure the Phase 1.2 audit output has been captured in chat and the current PRD is **saved**. After revisions, commit the updated PRD (and any logged decisions) before moving to Phase 2.
 
 ---
 
@@ -84,7 +84,7 @@ Log only decisions that affect:
 
 When PRD becomes Ready for Tasks:
 Update Status column to:
-Phase 2 (Ready)
+Phase 1 (Ready)
 
 Do NOT advance to Phase 3 until you explicitly generate Tasks.
 
@@ -94,7 +94,7 @@ Do NOT advance to Phase 3 until you explicitly generate Tasks.
 
 Use:
 
-- @docs/workflow/phase-2-3-prd-revise.md
+- @docs/workflow/phase-1-3-prd-revise.md
 
 Apply edits to:
 
@@ -116,4 +116,4 @@ Stop.
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
 1. Run Phase 3.1 (generate tasks v0.1): `@docs/workflow/phase-3-1-task-generate.md`
-2. Re-run Phase 2.2 (PRD risk audit) to validate the revised PRD: `@docs/workflow/phase-2-2-prd-risk-audit.md`
+2. Re-run Phase 1.2 (PRD risk audit) to validate the revised PRD: `@docs/workflow/phase-1-2-prd-risk-audit.md`
