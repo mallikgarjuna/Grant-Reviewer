@@ -68,3 +68,36 @@ test("falls back with warning for unsupported config version", () => {
   assert.ok(state.warningMessage);
   assert.equal(state.callNotFound, false);
 });
+
+test("falls back with warning for unknown ui_mode", () => {
+  const state = resolveCallConfigUiState({
+    kind: "success",
+    status: 200,
+    payload: {
+      call_logical_id: "nwo_veni_2025_preproposal",
+      config_version: "1",
+      ui_mode: "future_mode",
+    },
+  });
+
+  assert.equal(state.uiMode, "legacy_single_snippet");
+  assert.ok(state.warningMessage);
+  assert.equal(state.callNotFound, false);
+});
+
+test("falls back with warning when structured payload has invalid expected_nodes", () => {
+  const state = resolveCallConfigUiState({
+    kind: "success",
+    status: 200,
+    payload: {
+      call_logical_id: "nwo_veni_2025_preproposal",
+      config_version: "1",
+      ui_mode: "structured_nodes",
+      expected_nodes: ["academic_profile", ""],
+    },
+  });
+
+  assert.equal(state.uiMode, "legacy_single_snippet");
+  assert.ok(state.warningMessage);
+  assert.equal(state.callNotFound, false);
+});

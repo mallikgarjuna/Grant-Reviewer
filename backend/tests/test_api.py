@@ -368,6 +368,12 @@ def test_get_call_config_returns_structured_mode(monkeypatch) -> None:
             "scientific_proposal",
         ],
     }
+    assert set(response.json().keys()) == {
+        "call_logical_id",
+        "config_version",
+        "ui_mode",
+        "expected_nodes",
+    }
 
 
 def test_get_call_config_legacy_omits_expected_nodes(monkeypatch) -> None:
@@ -381,6 +387,7 @@ def test_get_call_config_legacy_omits_expected_nodes(monkeypatch) -> None:
     assert payload["config_version"] == "1"
     assert payload["ui_mode"] == "legacy_single_snippet"
     assert "expected_nodes" not in payload
+    assert set(payload.keys()) == {"call_logical_id", "config_version", "ui_mode"}
 
 
 def test_get_call_config_unknown_call_returns_404(monkeypatch) -> None:
