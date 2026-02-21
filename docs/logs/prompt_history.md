@@ -622,3 +622,7 @@
 ### 07:48 - Pick P1 #5 → WF-0020 Kickoff (NWO Veni 2025 preproposal WF-1)
 > User requested `pick P1 #5` to start "NWO Veni 2025 preproposal — WF-1" with a strict scope: fix YAML parse issues, add CallDefinition V2 schema/loader, and support `scripts/ingest_call.py --dry-run` for V2 YAML (no DB schema, no API endpoints, no frontend changes).
 > Outcome: Minted `WF-0020`, created baseline WF artifacts, promoted the parking lot item, created branch `wf/WF-0020-nwo-veni-2025-preproposal-wf1`, and prepared to run Phase 0.1 interactive brainstorm.
+
+### 07:55 - WF-0020 Phase 0.1 Brainstorm Completed (recommendations)
+> User requested: “go with your recommendations” for the remaining Phase 0.x decisions.
+> Outcome: Completed brainstorm sections 1–8 for `WF-0020` with a tight scope: V2 YAML parsing + CallDefinition V2 loader + `scripts/ingest_call.py --dry-run` support (offline validation only), and set brainstorm status to `Draft Complete`.
