@@ -29,8 +29,9 @@ When the user invokes the `"context refresh"` code phrase or references this uti
 - Identify the explicit paths to its artifact files (PRD, Tasks, Walkthrough).
 
 ### 2. Read the Active Artifacts
-- **If in Phase 1 or 2**: Read the active PRD (`docs/prds/prd-WF-XXXX-<slug>.md`).
-- **If in Phase 3**: Read the active Task file (`docs/tasks/task-WF-XXXX-<slug>.md`).
+- **If status is Phase 0 or Phase 1**: Read the active Brainstorm (`docs/brainstorms/brainstorm-WF-XXXX-<slug>.md`).
+- **If status is Phase 1 (Ready) or Phase 2 (in progress)**: Read the active PRD (`docs/prds/prd-WF-XXXX-<slug>.md`).
+- **If status is Phase 2 (Ready) or Phase 3**: Read the active Task file (`docs/tasks/task-WF-XXXX-<slug>.md`).
 - *Note: You must use the actual file path found in `docs/index.md`.*
 
 ### 3. Analyze the State
