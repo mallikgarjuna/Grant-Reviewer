@@ -630,3 +630,7 @@
 ### 08:05 - WF-0020 Phase 0.1 Revision (grounded in NWO Veni YAML)
 > User asked whether Phase 0.0/0.1 considered the actual NWO Veni YAML + design summary; it had not.
 > Outcome: Reviewed `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml` + `backend/data/calls/nwo/nwo_veni_2025_preproposal_design_summary.md`, then revised the WF-0020 brainstorm to reflect concrete V2 fields (schema mismatch vs existing V1 loader) while keeping scope unchanged.
+
+### 09:20 - WF-0020 Phase 4.1 Implementation Completed
+> User requested: start Phase 4.1 implementation runner for WF-0020 and execute tasks sequentially.
+> Outcome: Completed Task 1-5 with per-task commits; added strict `CallDefinitionV2` schema, implemented V1/V2 detection and DB-free dry-run path in `scripts/ingest_call.py`, added deterministic dry-run JSON summary, improved YAML syntax/schema error messaging, and added dry-run regression test for V1+V2. Updated walkthrough and marked WF-0020 as `Done` in `docs/index.md`.
