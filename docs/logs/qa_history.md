@@ -187,3 +187,8 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Where is the “official-aligned” ERC-COG-2026 YAML?
 **A:** `backend/data/calls/erc_cog_2026_full_official.yaml` (excellence-only rubric + Part B1/B2 nodes shaped to fit the current two-level selector UI).
+
+## 2026-02-21
+
+### Q: Are `docs/logs/decisions.md` and `docs/logs/prompt_history.md` optional at WF completion?
+**A:** No. Workflow/AGENTS rules require docs synchronization as part of completion. `decisions.md` is required when there are architecture/scope-impacting decisions; `prompt_history.md` should capture the workflow interaction trail.

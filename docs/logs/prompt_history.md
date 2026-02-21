@@ -1,5 +1,19 @@
 # Prompt History
 
+## 2026-02-21
+
+### 17:10 - WF-0021 Context Refresh + Next Phase Prompt
+> User requested context refresh using workflow utility files and asked for a copy-pasteable prompt for the next phase.
+> Outcome: Refreshed WF status from `docs/index.md`, identified WF-0021 as active target, and provided Phase 3 runner prompt.
+
+### 17:15 - WF-0021 Phase 3 End-to-End Execution
+> User requested running `phase-3-run-implement-execution.md` end-to-end for WF-0021.
+> Outcome: Completed Part A/B/C with sequential task commits, verification (`pre-commit`, `pytest`), walkthrough creation, artifact archival, and index status update to `Done`. No push/PR executed.
+
+### 17:40 - WF-0021 General Docs Sync Clarification
+> User asked whether updating general docs logs is optional since rules already encode it.
+> Outcome: Confirmed this is required by AGENTS workflow; proceeded to sync `docs/logs/*` before ship.
+
 ## 2026-02-06
 
 ### 19:33 - Initial Request

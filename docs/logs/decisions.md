@@ -17,6 +17,14 @@
 - **Why**: Safest way to handle dropped YAML sections without destroying historical review data that might reference them (orphan handling).
 - **Tradeoff**: High risk of bugs if a query forgets the filter; requires auditing all existing read paths.
 - **Status**: Approved.
+
+### AD 21.3: Derive criterion description text for V2 projection
+- **WF ID**: WF-0021
+- **Context**: V2 `evaluation_criteria` schema does not include a free-text `description`, while the relational projection table requires one.
+- **Decision**: Persist a deterministic derived description in projection format: `stage=<stage>; weight_percent=<weight_percent>`.
+- **Why**: Preserves V2 metadata in the existing table contract without schema-expansion of `EvaluationCriterion`.
+- **Tradeoff**: This is synthesized text, not original narrative guidance; richer criterion-level prose can be added in a future schema revision.
+- **Status**: Implemented.
 ## Date: 2026-02-21 (WF-0022: Workflow System Upgrade)
 
 ### AD 22.1: Consolidate Phase 1/2/3 Runners into Universal Parametric Runner
