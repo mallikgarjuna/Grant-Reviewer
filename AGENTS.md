@@ -145,6 +145,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
   Local merges are discouraged.
 - Be explicit about what you didn’t verify and what to run next.
 - At the end of every response, explicitly tell/ask the user what to do or prompt next.
+- **Workflow chat hygiene**: Before starting a new WF, explicitly state whether to start a new chat or continue in the current chat; if recommending a new chat, provide a ready-to-paste starting prompt that includes the `pick P[x] #[n]` (or WF ID/slug) and the intended workflow runner/action.
 - **Code phrases**: The user has shortcut phrases for frequent actions (see `docs/reference/code_phrases.md`). Key ones: **`park this`** (add to parking lot), **`pick P[x] #[n]`** (promote to WF), **`remember this`** (codify rule in `AGENTS.md` or `docs/lessons.md`), **`log this`** (record in `docs/logs/`), **`status`** / **`what's next`** / **`diff`** / **`verify workflow`** / **`critical review`** / **`workflow preflight`** / **`run phase [N]`** / **`go ahead`** / **`update docs`** / **`docs cleanup`** / **`wrap up`** / **`ship it`**. Recognize and act on these immediately.
 - **Composed phrases**: when a phrase overlaps existing ones, execute it as a composition of existing phrase behaviors first (then add only minimal extra checks/reporting).
 - When reporting completion of a phase/part/action, explicitly list the files and skills/instructions used for that step.
