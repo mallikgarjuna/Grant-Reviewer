@@ -102,45 +102,14 @@ End with two suggested next actions.
 
 ---
 
-## Phase 1 — Run Spec (End-to-End)
+## Phase 1/2/3 — Run Planning (End-to-End)
 
 ```text
-Use @docs/workflow/phase-1-run-spec.md
+Use @docs/workflow/phase-123-run-planning.md
 @docs/index.md
-@docs/brainstorms/brainstorm-<WF-ID>-<slug>.md
+@docs/<INPUT_FOLDER>/<artifact>-<WF-ID>-<slug>.md
 
-Run Phase 1 end-to-end for <WF-ID>/<slug> using this runner.
-Print what you did in Part A/B/C.
-Ask me questions if needed (options + recommendation).
-End with two suggested next actions.
-```
-
----
-
-## Phase 2 — Run PRD (End-to-End)
-
-```text
-Use @docs/workflow/phase-2-run-prd.md
-@docs/index.md
-@docs/specs/<pages|features>/spec-<WF-ID>-<slug>.md
-@docs/logs/decisions.md
-
-Run Phase 2 end-to-end for <WF-ID>/<slug> using this runner.
-Print what you did in Part A/B/C.
-Ask me questions if needed (options + recommendation).
-End with two suggested next actions.
-```
-
----
-
-## Phase 3 — Run Tasks (End-to-End)
-
-```text
-Use @docs/workflow/phase-3-run-task.md
-@docs/index.md
-@docs/prds/prd-<WF-ID>-<slug>.md
-
-Run Phase 3 end-to-end for <WF-ID>/<slug> using this runner.
+Run Phase [ID] end-to-end for <WF-ID>/<slug> using this unified runner.
 Print what you did in Part A/B/C.
 Ask me questions if needed (options + recommendation).
 End with two suggested next actions.
