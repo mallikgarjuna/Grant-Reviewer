@@ -28,7 +28,7 @@ Acceptance Criteria:
 Verification Steps: Run targeted backend endpoint tests and report which tests were added/updated, including initial failing reproducer evidence.
 Risks (if any): False confidence if tests assert only status codes but not exact payload keys/types.
 
-### [ ] Task 3 — Frontend API Client & Validation (Fail-safe)
+### [x] Task 3 — Frontend API Client & Validation (Fail-safe)
 Goal: Fetch the config on call selection and validate the payload.
 Files to modify: Frontend API client or React hook responsible for call selection.
 Acceptance Criteria: Payload must be validated (`config_version` required and currently supported, `ui_mode` in enum, `expected_nodes` present only for `structured_nodes`). If malformed (even on HTTP 200) or fetch fails, fallback to legacy mode + non-blocking warning. If HTTP 404, trigger call-not-found state.
