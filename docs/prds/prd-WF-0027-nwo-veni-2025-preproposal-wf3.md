@@ -1,8 +1,8 @@
 # WF-0027 — nwo-veni-2025-preproposal-wf3 PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-21
 
 ## 1. In Scope
@@ -75,6 +75,7 @@ Last Updated: 2026-02-21
 ## 7. Edge Cases
 - **Call ID doesn't exist**: Backend returns HTTP 404, frontend fallback defaults to legacy.
 - **Missing `logical_id` on legacy calls**: Fall back to legacy rendering.
+- **Route Collision**: Ensure `GET /api/public/calls/{call_logical_id}/config` does not conflict with any existing `GET /api/public/calls/{id}` routes in FastAPI (e.g., by placing the generic `{id}` route *after* static string routes, though `{call_logical_id}` is dynamic, so type hinting/path ordering must be verified).
 
 ## 8. Telemetry (Minimal)
 - Track hits on the `/config` endpoint (standard server logs).
@@ -90,3 +91,4 @@ Last Updated: 2026-02-21
 ## Changelog
 
 - v0.1 (2026-02-21): Initial PRD from brainstorm v0.2
+- v0.2 (2026-02-21): Applied risk audit edits (added route collision edge case) and marked Ready for Tasks
