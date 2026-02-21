@@ -29,7 +29,7 @@ Before revising the task plan, ensure the Phase 2.2 review output has been captu
 
 ## Phase Completion — Commit This Phase
 
-After revising the task file, bumping version, and marking it ready, ensure the updated task file is **saved and committed** before starting Phase 4.
+After revising the task file, bumping version, and marking it ready, ensure the updated task file is **saved and committed** before starting Phase 3.
 
 ---
 
