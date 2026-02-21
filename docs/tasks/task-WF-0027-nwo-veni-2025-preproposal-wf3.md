@@ -35,7 +35,7 @@ Acceptance Criteria: Payload must be validated (`config_version` required and cu
 Verification Steps: Mock API responses (200 malformed, 500 error, 404, unsupported `config_version`) and verify the client/hook returns the correct state objects/errors.
 Risks (if any): Silently ignoring errors instead of showing the required warning or error states.
 
-### [ ] Task 4 — Frontend UI Gating & Rendering
+### [x] Task 4 — Frontend UI Gating & Rendering
 Goal: Render the correct UI mode based on the validated config state.
 Files to modify: Frontend evaluation viewer component.
 Acceptance Criteria:
