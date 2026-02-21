@@ -42,6 +42,7 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF-0021 | nwo-veni-2025-preproposal-wf2 | [Brainstorm](brainstorms/brainstorm-WF-0021-nwo-veni-2025-preproposal-wf2.md) | [Spec](specs/features/spec-WF-0021-nwo-veni-2025-preproposal-wf2.md) | [PRD](prds/prd-WF-0021-nwo-veni-2025-preproposal-wf2.md) | [Tasks](tasks/task-WF-0021-nwo-veni-2025-preproposal-wf2.md) | [Walkthrough](walkthroughs/walkthrough-WF-0021-nwo-veni-2025-preproposal-wf2.md) | Phase 0 |
 | WF-0022 | workflow-system-upgrade | [Brainstorm](brainstorms/brainstorm-WF-0022-workflow-system-upgrade.md) | [Spec](specs/features/spec-WF-0022-workflow-system-upgrade.md) | [PRD](prds/prd-WF-0022-workflow-system-upgrade.md) | [Tasks](tasks/task-WF-0022-workflow-system-upgrade.md) | [Walkthrough](walkthroughs/walkthrough-WF-0022-workflow-system-upgrade.md) | Done |
 | WF-0023 | tier2-phase4 | [Brainstorm](brainstorms/brainstorm-WF-0023-tier2-phase4.md) | [Spec](specs/features/spec-WF-0023-tier2-phase4.md) | [PRD](prds/prd-WF-0023-tier2-phase4.md) | [Tasks](tasks/task-WF-0023-tier2-phase4.md) | [Walkthrough](walkthroughs/walkthrough-WF-0023-tier2-phase4.md) | Done |
+| WF-0024 | tier3-refactor | [Brainstorm](brainstorms/brainstorm-WF-0024-tier3-refactor.md) | [Spec](specs/features/spec-WF-0024-tier3-refactor.md) | [PRD](prds/prd-WF-0024-tier3-refactor.md) | [Tasks](tasks/task-WF-0024-tier3-refactor.md) | [Walkthrough](walkthroughs/walkthrough-WF-0024-tier3-refactor.md) | Phase 0 |
 ---
 
 ## Research & Market Analysis
