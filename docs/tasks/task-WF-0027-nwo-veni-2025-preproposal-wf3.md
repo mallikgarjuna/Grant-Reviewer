@@ -14,7 +14,7 @@ Acceptance Criteria: Returns HTTP 200 with proper schema for valid calls. Return
 Verification Steps: Call the endpoint manually or via tests for a known `logical_id` and verify exact JSON payload matches PRD v0.3.
 Risks (if any): Route collision with `GET /api/public/calls/{id}`. Ensure the new route is placed correctly or typing correctly differentiates them.
 
-### [ ] Task 2 — Backend Verification (Tests)
+### [x] Task 2 — Backend Verification (Tests)
 Goal: Add automated tests to lock in the endpoint contract and routing behavior.
 Files to modify: Test files for public call endpoints.
 Acceptance Criteria:

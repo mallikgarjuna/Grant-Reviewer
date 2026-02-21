@@ -291,6 +291,7 @@ def list_calls(repository: RepositoryDep) -> CallsResponse:
 @app.get(
     "/api/public/calls/{call_logical_id}/config",
     response_model=CallConfigResponse,
+    response_model_exclude_none=True,
     responses=API_ERROR_RESPONSES,
 )
 def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConfigResponse:

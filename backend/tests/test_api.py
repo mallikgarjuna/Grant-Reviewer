@@ -12,6 +12,7 @@ from sqlmodel import SQLModel, select
 
 from app.db import engine, get_session, normalize_database_url
 from app.models.domain import (
+    CallDefinition,
     EvaluationCriterion,
     EvaluationElement,
     EvaluationIntent,
@@ -43,6 +44,7 @@ class SeededIDs:
     section_without_expectations_id: UUID
     other_call_id: UUID
     other_call_node_id: UUID
+    structured_call_code: str
 
 
 def reset_database() -> None:
@@ -79,9 +81,38 @@ def seed_api_data() -> SeededIDs:
         )
         session.add(call)
         session.add(other_call)
+        structured_call = FundingCall(
+            funding_agency_id=agency.id,
+            name="NWO Talent Programme — Veni 2025 — Pre-proposal",
+            code="nwo_veni_2025_preproposal",
+            call_year=2025,
+            is_active=True,
+        )
+        session.add(structured_call)
         session.commit()
         session.refresh(call)
         session.refresh(other_call)
+        session.refresh(structured_call)
+
+        call_definition = CallDefinition(
+            funding_call_id=structured_call.id,
+            schema_version="v2",
+            checksum="test-checksum",
+            canonical_json={
+                "funding_call": {
+                    "id": "nwo_talent_veni_2025_preproposal",
+                    "code": "nwo_veni_2025_preproposal",
+                },
+                "proposal_nodes": [
+                    {"id": "academic_profile"},
+                    {"id": "knowledge_utilisation"},
+                    {"id": "scientific_proposal"},
+                ],
+            },
+            source_path="data/calls/nwo/nwo_veni_2025_preproposal.yaml",
+        )
+        session.add(call_definition)
+        session.commit()
 
         section_with_expectations = ProposalNode(
             funding_call_id=call.id,
@@ -156,6 +187,7 @@ def seed_api_data() -> SeededIDs:
             section_without_expectations_id=section_without_expectations.id,
             other_call_id=other_call.id,
             other_call_node_id=other_call_node.id,
+            structured_call_code=structured_call.code,
         )
     finally:
         session.close()
@@ -315,6 +347,62 @@ def test_list_nodes_includes_has_expectations(monkeypatch) -> None:
     assert (
         by_id[seeded_ids.section_without_expectations_id]["has_expectations"] is False
     )
+
+
+def test_get_call_config_returns_structured_mode(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    response = client.get(
+        f"/api/public/calls/{seeded_ids.structured_call_code}/config"
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "call_logical_id": "nwo_veni_2025_preproposal",
+        "config_version": "1",
+        "ui_mode": "structured_nodes",
+        "expected_nodes": [
+            "academic_profile",
+            "knowledge_utilisation",
+            "scientific_proposal",
+        ],
+    }
+
+
+def test_get_call_config_legacy_omits_expected_nodes(monkeypatch) -> None:
+    client, _ = create_client_with_seed(monkeypatch)
+
+    response = client.get("/api/public/calls/ERC-2026-COG/config")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["call_logical_id"] == "ERC-2026-COG"
+    assert payload["config_version"] == "1"
+    assert payload["ui_mode"] == "legacy_single_snippet"
+    assert "expected_nodes" not in payload
+
+
+def test_get_call_config_unknown_call_returns_404(monkeypatch) -> None:
+    client, _ = create_client_with_seed(monkeypatch)
+
+    response = client.get("/api/public/calls/unknown_call/config")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": {
+            "code": "CALL_NOT_FOUND",
+            "message": "Funding call not found.",
+            "details": {},
+        },
+    }
+
+
+def test_nodes_route_unchanged_for_existing_call_id(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    response = client.get(f"/calls/{seeded_ids.call_id}/nodes")
+
+    assert response.status_code == 200
 
 
 def test_create_review_success_with_stub_mode(monkeypatch) -> None:
