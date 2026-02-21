@@ -61,4 +61,6 @@ Use @docs/workflow/util-context-refresh.md
 @docs/index.md
 
 Execute a "context refresh" to get up to speed on the current project state.
+
+Once you are refreshed, give me the explicit, copy-pasteable prompt to start the next phase.
 ```
