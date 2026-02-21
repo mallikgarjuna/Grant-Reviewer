@@ -9,6 +9,7 @@ Usage:
 """
 
 import argparse
+import json
 import logging
 import sys
 from pathlib import Path
@@ -21,7 +22,6 @@ from sqlmodel import Session, select
 # Add backend to path for imports (per lessons.md L1)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.db import create_db_and_tables, get_session
 from app.models.domain import (
     EvaluationCriterion,
     EvaluationElement,
@@ -39,6 +39,7 @@ from app.schemas.call_definitions import (
     NodeExpectationDefinition,
     ProposalNodeDefinition,
 )
+from app.schemas.call_definitions_v2 import CallDefinitionV2
 
 # Configure logging
 logging.basicConfig(
@@ -51,7 +52,31 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 # Load & Parse
 # ============================================================================
-def load_yaml(path: Path) -> CallDefinition:
+def _detect_schema_version(raw_data: dict[str, Any]) -> str:
+    """Detect call-definition schema version from funding_agency keys."""
+    funding_agency = raw_data.get("funding_agency")
+    if not isinstance(funding_agency, dict):
+        raise ValueError("Missing or invalid 'funding_agency' object in YAML")
+
+    has_v1_key = "short_name" in funding_agency
+    has_v2_key = "id" in funding_agency
+
+    if has_v1_key and has_v2_key:
+        raise ValueError(
+            "Ambiguous schema version: 'funding_agency' contains both "
+            "'short_name' (v1) and 'id' (v2). Keep only one."
+        )
+    if has_v1_key:
+        return "v1"
+    if has_v2_key:
+        return "v2"
+    raise ValueError(
+        "Unable to detect schema version: funding_agency must contain either "
+        "'short_name' (v1) or 'id' (v2)."
+    )
+
+
+def load_yaml(path: Path) -> tuple[str, CallDefinition | CallDefinitionV2]:
     """
     Load and validate a YAML file into a CallDefinition.
 
@@ -59,7 +84,7 @@ def load_yaml(path: Path) -> CallDefinition:
         path: Path to the YAML file.
 
     Returns:
-        Validated CallDefinition instance.
+        Tuple of (schema_version, validated call definition instance).
 
     Raises:
         FileNotFoundError: If the file doesn't exist.
@@ -73,10 +98,14 @@ def load_yaml(path: Path) -> CallDefinition:
     with open(path, encoding="utf-8") as f:
         raw_data: dict[str, Any] = yaml.safe_load(f)
 
-    # Pydantic will validate and raise if invalid
-    call_def = CallDefinition.model_validate(raw_data)
-    logger.info("YAML validated successfully")
-    return call_def
+    schema_version = _detect_schema_version(raw_data)
+    if schema_version == "v1":
+        call_def = CallDefinition.model_validate(raw_data)
+    else:
+        call_def = CallDefinitionV2.model_validate(raw_data)
+
+    logger.info(f"YAML validated successfully (schema_version={schema_version})")
+    return schema_version, call_def
 
 
 # ============================================================================
@@ -387,18 +416,37 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
         Summary dictionary with ingested IDs.
     """
     # Load and validate
-    call_def = load_yaml(yaml_path)
+    schema_version, call_def = load_yaml(yaml_path)
 
     if dry_run:
         logger.info("=== DRY RUN MODE - No database changes will be made ===")
-        # Return summary without DB interaction
+        if schema_version == "v1":
+            return {
+                "dry_run": True,
+                "schema_version": "v1",
+                "agency": call_def.funding_agency.short_name,
+                "call": call_def.funding_call.code,
+                "criteria_count": len(call_def.evaluation_criteria),
+                "node_count": _count_nodes(call_def.proposal_nodes),
+            }
+
+        v2_call_def = call_def
         return {
             "dry_run": True,
-            "agency": call_def.funding_agency.short_name,
-            "call": call_def.funding_call.code,
-            "criteria_count": len(call_def.evaluation_criteria),
-            "node_count": _count_nodes(call_def.proposal_nodes),
+            "schema_version": "v2",
+            "agency": v2_call_def.funding_agency.id,
+            "call": v2_call_def.funding_call.code,
+            "criteria_count": len(v2_call_def.evaluation_criteria),
+            "node_count": len(v2_call_def.proposal_nodes),
         }
+
+    if schema_version != "v1":
+        raise ValueError(
+            "V2 call-definition ingestion is currently supported in --dry-run only."
+        )
+
+    # Import DB wiring only for non-dry-run execution.
+    from app.db import create_db_and_tables, get_session
 
     # Initialize database
     create_db_and_tables()
@@ -406,24 +454,32 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
 
     try:
         # Resolve logical IDs
-        id_map = resolve_logical_ids(call_def)
+        v1_call_def = call_def
+        id_map = resolve_logical_ids(v1_call_def)
 
         # Ingest in order
-        agency, call = ingest_agency_and_call(session, call_def)
+        agency, call = ingest_agency_and_call(session, v1_call_def)
 
-        ingest_rubric(session, call.id, call_def.evaluation_criteria, id_map)
+        ingest_rubric(session, call.id, v1_call_def.evaluation_criteria, id_map)
 
-        ingest_nodes_recursive(session, call.id, call_def.proposal_nodes, None, id_map)
+        ingest_nodes_recursive(
+            session,
+            call.id,
+            v1_call_def.proposal_nodes,
+            None,
+            id_map,
+        )
 
         logger.info("=== Ingestion completed successfully ===")
 
         # Capture result IDs before closing session (per lessons.md L2)
         result = {
             "dry_run": False,
+            "schema_version": "v1",
             "agency_id": str(agency.id),
             "call_id": str(call.id),
-            "criteria_count": len(call_def.evaluation_criteria),
-            "node_count": _count_nodes(call_def.proposal_nodes),
+            "criteria_count": len(v1_call_def.evaluation_criteria),
+            "node_count": _count_nodes(v1_call_def.proposal_nodes),
         }
 
     finally:
