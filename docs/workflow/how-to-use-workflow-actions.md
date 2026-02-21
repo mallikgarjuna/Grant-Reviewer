@@ -102,9 +102,28 @@ End with two suggested next actions.
 
 ---
 
-## Phase 3.2 — Verify & Ship (Post-Implementation, Split Agent)
+## Phase 3.1 — Implement Only (Split Agent)
 
-Use when implementation was done by a different agent (e.g., Codex) and you need to verify and ship.
+Use when handing the implementation inner loop to a fast-typing IDE agent (e.g., Codex, Cursor).
+See [Agent Collaboration Strategy](../reference/agent_collaboration_strategy.md) for the recommended split.
+
+```text
+Use @docs/workflow/phase-3-1-implement-tasks.md
+@docs/index.md
+@docs/tasks/task-<WF-ID>-<slug>.md
+
+Implement all tasks sequentially for <WF-ID>/<slug>.
+For each task: implement, run local tests, commit.
+Check off each task as [x] in the task file.
+When ALL tasks are done, STOP. Do NOT write the walkthrough or update docs/index.md.
+```
+
+---
+
+## Phase 3.2 — Verify & Ship (Split Agent)
+
+Use when implementation was done by a different agent (e.g., Codex) and you need Antigravity to verify and ship.
+See [Agent Collaboration Strategy](../reference/agent_collaboration_strategy.md) for the recommended split.
 
 ```text
 Use @docs/workflow/phase-3-2-verify-and-ship.md
