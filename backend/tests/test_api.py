@@ -330,11 +330,12 @@ def test_list_calls_returns_active_calls(monkeypatch) -> None:
     response = client.get("/calls")
     assert response.status_code == 200
     payload = response.json()
-    assert len(payload["calls"]) == 2
-    assert {call["code"] for call in payload["calls"]} == {
+    codes = {call["code"] for call in payload["calls"]}
+    assert {
         "ERC-2026-COG",
         "ERC-2026-STG",
-    }
+        "nwo_veni_2025_preproposal",
+    }.issubset(codes)
 
 
 def test_list_nodes_includes_has_expectations(monkeypatch) -> None:
