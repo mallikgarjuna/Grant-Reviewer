@@ -57,7 +57,7 @@ Last Updated: 2026-02-21
 **Verification Steps:** Write a unit test that provisions a mock `CallDefinition` and `ProposalNode` and verifies the returned object has the hydrated config.
 **Risks (if any):** Potential N+1 query traps if not loaded eagerly.
 
-### [ ] Task 6 — V1 Compatibility & Full Verification
+### [x] Task 6 — V1 Compatibility & Full Verification
 **Goal:** Ensure V1 ingestion still works perfectly and the entire V2 flow operates end-to-end.
 **Files to modify:** `tests/test_ingestion*.py` (or similar test files).
 **Acceptance Criteria:**
