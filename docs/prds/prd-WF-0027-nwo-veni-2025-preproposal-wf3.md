@@ -1,6 +1,92 @@
-# WF-0027 — NWO Veni 2025 preproposal — WF-3
+# WF-0027 — nwo-veni-2025-preproposal-wf3 PRD
 
 Artifact: prd
-Version: v0.0
-Status: Not started
+Version: v0.1
+Status: Draft
 Last Updated: 2026-02-21
+
+## 1. In Scope
+- Add a new public API endpoint `GET /api/public/calls/{call_logical_id}/config` that returns a fixed, minimal payload for UI mode gating.
+- Endpoint response contract must include: `call_logical_id`, `config_version`, `ui_mode`, and `expected_nodes`.
+- `ui_mode` enum restricted to `legacy_single_snippet` and `structured_nodes`.
+- Frontend conditionally renders a disabled placeholder state for `structured_nodes` (indicating "Structured submissions coming soon") without an active submit path.
+- Frontend fallback logic to `legacy_single_snippet` with a non-blocking warning if the config fetch fails.
+- Replacing occurrences of the term "rubric" with "evaluation criteria/evaluation elements" in researcher-facing text.
+
+## 2. Out of Scope
+- Any database schema changes (`POST /api/reviews/submit` and `Review` schema remain untouched).
+- Implementation of the actual React components for the 3 distinct NWO nodes.
+- Handling file uploads (PDF/Docx).
+- The compliance engine (word counts, item limits).
+- Automatically determining NOT_ASSESSABLE status based on missing inputs.
+
+## 3. User / System Flow
+
+- **Happy path**:
+  1. Researcher (applicant) selects the NWO Veni 2025 preproposal call on the frontend.
+  2. Frontend makes a `GET` request to `/api/public/calls/nwo_veni_2025_preproposal/config`.
+  3. Backend returns the configuration with `ui_mode: "structured_nodes"`.
+  4. Frontend disables the legacy layout and renders a blocked state indicating that structured submissions are coming soon, with clear next step text.
+
+- **Failure path 1 (Network/Server Error)**:
+  1. Researcher selects a call.
+  2. Frontend fails to fetch the config from `/api/public/calls/{call_logical_id}/config`.
+  3. Frontend gracefully falls back to `legacy_single_snippet` mode.
+  4. Frontend displays a non-blocking warning stating that structured mode could not be loaded, keeping the page usable.
+
+- **Failure path 2 (Legacy Call Selected)**:
+  1. Researcher selects an older call.
+  2. Frontend successfully fetches config which returns `ui_mode: "legacy_single_snippet"` (or omits `expected_nodes`).
+  3. Frontend renders the standard single-snippet format as usual.
+
+## 4. Functional Requirements
+1. **API Endpoint**: `GET /api/public/calls/{call_logical_id}/config` must exist and return HTTP 200 for known calls.
+2. **Lookup Key**: The endpoint lookup key is `call_logical_id`.
+3. **Payload Contract**: Response explicitly matches the locked format in version `1`.
+4. **Data Isolation**: Response excludes internal/private fields beyond the explicit allowlist.
+5. **Frontend Defaulting**: The frontend defaults to `legacy_single_snippet` processing.
+6. **Frontend Gating UX**: When `ui_mode=structured_nodes` is detected, the frontend rendering path swaps to a disabled placeholder state with no active submission paths.
+
+## 5. Data & API Contracts
+
+### Request Shape
+`GET /api/public/calls/{call_logical_id}/config`
+
+### Success Response Shape (HTTP 200)
+```json
+{
+  "call_logical_id": "nwo_veni_2025_preproposal",
+  "config_version": "1",
+  "ui_mode": "structured_nodes",
+  "expected_nodes": ["academic_profile", "knowledge_utilisation", "scientific_proposal"]
+}
+```
+
+### Validation Rules & Constraints
+- `ui_mode` is limited to `legacy_single_snippet | structured_nodes`.
+- `config_version` is required for forward-compatible frontend parsing.
+- Only the allow-listed public fields are included in the payload.
+
+## 6. Components / Modules
+
+- **Backend API Layer**: New public route `GET /urls/calls/{call_logical_id}/config`. Responsible for retrieving the CallDefinition and shaping the public response.
+- **Frontend Evaluation Viewer**: React component responsible for fetching the config upon call selection and toggling the UI mode. Must include explicit boundary states for fetch failure.
+
+## 7. Edge Cases
+- **Call ID doesn't exist**: Backend returns HTTP 404, frontend fallback defaults to legacy.
+- **Missing `logical_id` on legacy calls**: Fall back to legacy rendering.
+
+## 8. Telemetry (Minimal)
+- Track hits on the `/config` endpoint (standard server logs).
+- Track instances of config fetch failures triggering the fallback state on the client.
+
+## Deferred / Not in MVP
+- Handling of actual structured data submission.
+- Dynamic React layout generators.
+
+## Open Questions
+- None.
+
+## Changelog
+
+- v0.1 (2026-02-21): Initial PRD from brainstorm v0.2
