@@ -89,6 +89,15 @@ After completing Part C, output:
 
 1. **Current Status**: Target Artifact version and readiness state.
 2. **Two recommended next actions**, keeping it concise (e.g., Proceed to the next Phase, re-run this Phase, or update index).
+   - **CRITICAL**: For the recommended next phase, you MUST provide an explicit, copy-pasteable prompt block that the user can run to start it.
+   - Example format for the prompt block:
+     ```text
+     Use @docs/workflow/phase-X-run-Y.md
+     @docs/index.md
+     @docs/INPUT/...
+
+     Run Phase X ...
+     ```
 3. **Traceability Statement (Required)**:
    - Part A output reviewed in Part B: `<yes/no>` + `<path/version>`
    - Part B feedback applied in Part C: `<yes/no>` + `<key edits>`
