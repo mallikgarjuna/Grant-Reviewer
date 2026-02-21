@@ -107,12 +107,13 @@ Use the WF workflow system for non-trivial work:
 
 During migration, legacy task-based artifacts remain in place unless explicitly mapped to a WF ID.
 
-### Skills (Optional)
+### Skills & Collaboration (Optional)
 
 - If a matching skill exists (a `SKILL.md`), follow it for that phase.
 - **Check skills first**: before starting a new type of task, check `~/.agents/skills` (or ask the user to run `ls ~/.agents/skills`) and follow the most relevant `SKILL.md`.
 - Preferred pipeline skills: `brainstorming` → `spec` → `prd` → `tasks`.
 - Skill index (portable): `docs/reference/skills_index.md`.
+- Multi-Agent Collaboration: For the recommended approach to splitting the workflow across Antigravity and VSCode Codex, see `docs/reference/agent_collaboration_strategy.md`.
 
 ## Task Lifecycle & Tracking (Source of Truth: `docs/index.md`)
 
