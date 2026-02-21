@@ -29,7 +29,21 @@ WF-0021 must make call-definition persistence robust to schema evolution by intr
 
 ## 2. Desired Outcome
 
-TBD (Phase 0.1 Section 2)
+### Decisions (Section 2)
+
+Q1 (canonical storage “done” criteria): **A** — Store validated JSONB + `schema_version` + `checksum` + `source_path` (optional `raw_yaml`) per call; re-ingest updates the stored doc only if checksum changes.
+
+Q2 (projection re-ingest behavior): **A** — Idempotent upsert by `logical_id`; update mutable fields (`name`/`description`/`guidance_text`/`order_index`) and replace expectations deterministically.
+
+Q3 (minimum projection for robust review): **A** — Project nodes/criteria/elements/expectations + `guidance_text`; keep constraints/rules/notes in JSONB and access by `logical_id` when needed.
+
+Q4 (runtime read path for prompt-building): **A** — Add an internal service that loads the projection and hydrates per-node config from JSONB via `(call_code, node_logical_id)`.
+
+Q5 (verification definition): **A** — Add targeted commands/tests proving: V2 ingests to DB, re-ingest is idempotent (`logical_id` => stable UUID), V1 ingest still works, and JSONB doc is stored with `schema_version` + checksum.
+
+### Summary
+
+After WF-0021, call definitions are stored canonically as versioned/validated JSONB for robustness against schema evolution, while the stable relational projection enables efficient querying and traceability for reviews. Verification must include a real DB round-trip and an idempotent re-ingest check.
 
 ---
 
