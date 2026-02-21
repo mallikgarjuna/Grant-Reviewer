@@ -970,6 +970,7 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
                     call_id=call.id,
                     call_def=v2_call_def,
                 )
+                logger.info("V2 projection upsert counters: %s", counters)
 
             result = {
                 "dry_run": False,

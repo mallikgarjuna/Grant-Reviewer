@@ -36,7 +36,7 @@ Last Updated: 2026-02-21
 **Verification Steps:** Run dry-run ingestion on V2 YAML fixture. Ensure it correctly reports the deterministic JSON summary and checksum.
 **Risks (if any):** Determinism failures if dictionary ordering varies during checksum computation.
 
-### [ ] Task 4 — Idempotent Projection Upsert & Orphan Handling
+### [x] Task 4 — Idempotent Projection Upsert & Orphan Handling
 **Goal:** Handle the second phase of V2 ingestion: upserting the relational graph and soft-deleting orphans.
 **Files to modify:** `backend/scripts/ingest_call.py` (or new ingestion service module).
 **Acceptance Criteria:**
