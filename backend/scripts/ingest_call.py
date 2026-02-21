@@ -376,6 +376,7 @@ def ingest_rubric(
             select(EvaluationCriterion).where(
                 EvaluationCriterion.funding_call_id == call_id,
                 EvaluationCriterion.name == crit_def.name,
+                EvaluationCriterion.archived_at.is_(None),
             )
         ).first()
 
@@ -406,6 +407,7 @@ def ingest_rubric(
                 select(EvaluationElement).where(
                     EvaluationElement.evaluation_criterion_id == criterion.id,
                     EvaluationElement.name == elem_def.name,
+                    EvaluationElement.archived_at.is_(None),
                 )
             ).first()
 
@@ -452,6 +454,7 @@ def ingest_nodes_recursive(
         query = select(ProposalNode).where(
             ProposalNode.funding_call_id == call_id,
             ProposalNode.title == node_def.title,
+            ProposalNode.archived_at.is_(None),
         )
         if parent_id is None:
             # NOTE: Use is_(None) instead of == None for SQL NULL comparisons.

@@ -85,6 +85,7 @@ def get_or_create_nodes(
             ProposalNode.funding_call_id == call_id,
             ProposalNode.title == "Part B1",
             ProposalNode.parent_node_id.is_(None),
+            ProposalNode.archived_at.is_(None),
         )
     ).first()
 
@@ -108,6 +109,7 @@ def get_or_create_nodes(
         select(ProposalNode).where(
             ProposalNode.funding_call_id == call_id,
             ProposalNode.title == "Section 1: Extended Synopsis",
+            ProposalNode.archived_at.is_(None),
         )
     ).first()
 
@@ -132,6 +134,7 @@ def get_or_create_nodes(
         select(ProposalNode).where(
             ProposalNode.funding_call_id == call_id,
             ProposalNode.title == "Section 2: Scientific Proposal",
+            ProposalNode.archived_at.is_(None),
         )
     ).first()
 
@@ -158,7 +161,8 @@ def get_or_create_expectations(session: Session, call_id: UUID, node_id: UUID) -
     # Check if criteria already exist for this call
     existing_criteria = session.exec(
         select(EvaluationCriterion).where(
-            EvaluationCriterion.funding_call_id == call_id
+            EvaluationCriterion.funding_call_id == call_id,
+            EvaluationCriterion.archived_at.is_(None),
         )
     ).first()
 

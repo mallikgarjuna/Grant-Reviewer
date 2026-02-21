@@ -17,7 +17,7 @@ Last Updated: 2026-02-21
 **Verification Steps:** Run `alembic upgrade head`. Check DB schema in psql to ensure columns exist.
 **Risks (if any):** Migration issues if `logical_id` uniqueness constraint conflicts with existing V1 data (make sure uniqueness constraint handles NULLs or is scoped properly).
 
-### [ ] Task 2 — Hardening Application Read Queries
+### [x] Task 2 — Hardening Application Read Queries
 **Goal:** Ensure all existing queries filter out soft-deleted entities before we introduce soft-deletion mechanics.
 **Files to modify:** `backend/app/services/*.py`, `backend/app/api/endpoints/*.py` (wherever queries on nodes/criteria/elements are made).
 **Acceptance Criteria:**
