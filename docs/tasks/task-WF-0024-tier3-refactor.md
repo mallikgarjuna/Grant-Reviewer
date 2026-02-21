@@ -22,11 +22,11 @@ Create the singular Phase 1-3 orchestrator (`phase-123-run-planning.md`), update
 - [x] **`run-lifecycle-interactive.md`**: Update steps 3, 4, and 5 to point to `phase-123-run-planning.md`.
 - [x] **`docs/workflow/README.md`**: Update the `Runner shortcuts:` list to point to `phase-123-run-planning.md`.
 
-### [ ] Task 3.0: Excise Legacy Runners (The Deletion)
-- [ ] Delete `docs/workflow/phase-1-run-spec.md`.
-- [ ] Delete `docs/workflow/phase-2-run-prd.md`.
-- [ ] Delete `docs/workflow/phase-3-run-task.md`.
-- [ ] Run `git diff` and search for any dangling references to the deleted files.
+### [x] Task 3.0: Excise Legacy Runners (The Deletion)
+- [x] Delete `docs/workflow/phase-1-run-spec.md`.
+- [x] Delete `docs/workflow/phase-2-run-prd.md`.
+- [x] Delete `docs/workflow/phase-3-run-task.md`.
+- [x] Run `git diff` and search for any dangling references to the deleted files.
 
 ## Traceability Statement
 - Derived directly from `prd-WF-0024-tier3-refactor.md` v1.0.
