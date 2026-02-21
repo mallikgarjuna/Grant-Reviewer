@@ -18,11 +18,11 @@ Create the strict Phase 4 orchestrator, add safety warnings to lifecycles, and d
 - [x] Add the standard `How to Invoke in Chat` section with the prompt template.
 - [x] Add this new runner to the `how-to-use-workflow-actions.md` cheat-sheet.
 
-### [ ] Task 2.0: Update Lifecycle Runners
-- [ ] Edit `docs/workflow/run-lifecycle-auto.md`:
+### [x] Task 2.0: Update Lifecycle Runners
+- [x] Edit `docs/workflow/run-lifecycle-auto.md`:
   - Enforce `(Parts A, B, C)` on Phases 1, 2, 3, and 4.
   - Add bold warning: **Context Limit Warning**: If context feels heavy after Phase 3, stop and advise user to start a new chat for Phase 4.
-- [ ] Edit `docs/workflow/run-lifecycle-interactive.md`:
+- [x] Edit `docs/workflow/run-lifecycle-interactive.md`:
   - Enforce `(Parts A, B, C)` on Phases 1, 2, 3, and 4.
   - Add the same bold **Context Limit Warning**.
 
