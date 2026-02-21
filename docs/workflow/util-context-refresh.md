@@ -53,8 +53,6 @@ End your response by asking the user for explicit permission to begin executing 
 
 ## How to Invoke in Chat
 
-## How to Invoke in Chat
-
 Copy and paste this exact prompt into your new coding agent session:
 
 ```text
