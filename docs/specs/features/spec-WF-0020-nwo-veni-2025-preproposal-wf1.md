@@ -1,8 +1,8 @@
 # WF-0020 — NWO Veni 2025 preproposal (WF-1): V2 call YAML dry-run loader
 
 Artifact: spec
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for PRD
 Last Updated: 2026-02-21
 
 ## 1. Purpose
@@ -24,7 +24,7 @@ This unblocks authoring and iterating on “evaluation criteria” / “evaluati
 
 When running:
 
-- `uv run python scripts/ingest_call.py backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
+- `cd backend && uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
 
 The system must:
 
@@ -69,18 +69,23 @@ Failure behavior:
 
 - YAML parsing: `yaml.safe_load` (PyYAML).
 - Validation: Pydantic models (current repo uses Pydantic-based ingestion schemas).
-- CLI entry point: `backend/scripts/ingest_call.py`.
+- CLI entry point: `backend/scripts/ingest_call.py` (run from `backend/`).
 - V1 schema: `backend/app/schemas/call_definitions.py` (must remain supported).
 - V2 schema: new Pydantic models co-located under `backend/app/schemas/` (exact file path TBD during implementation, but must be importable by the script).
 
 ## 7. Edge Considerations
 
-- **Version detection**: NWO V2 YAML currently does not declare an explicit version field; detection must be via a stable discriminant (e.g., presence of `funding_agency.id` vs `funding_agency.short_name`, `proposal_nodes[].id` vs `proposal_nodes[].title`, etc.). The rule must be documented in code.
+- **Version detection**: NWO V2 YAML currently does not declare an explicit version field; detection must be via a stable discriminant. Proposed rule:
+  - V1 if `funding_agency.short_name` exists
+  - V2 if `funding_agency.id` exists
+  - otherwise: fail with a clear error explaining how to make the file unambiguous
 - **Terminology**: any user-facing output should prefer “evaluation criteria / evaluation elements” (avoid “rubric” in CLI copy).
-- **Strictness vs brittleness**: schema should be strict enough to catch mistakes, but must not reject valid YAML due to harmless extra keys unless that’s intentional (decision to be made during implementation).
+- **Strictness vs brittleness**: default to forbidding unknown keys in V2 to catch authoring mistakes early; revisit only if the call-definition format evolves faster than the code.
 - **Deterministic summary**: ordering should be stable across runs (avoid unordered dict/set output).
-- **Non-DB dry-run**: ensure dry-run does not import/initialize DB session paths that require `DATABASE_URL`.
+- **Non-DB dry-run**: the CLI must run without `DATABASE_URL`. Today, importing `app.db` raises when `DATABASE_URL` is unset; the script must avoid importing DB modules until after the dry-run early-return.
+- **Summary format**: prefer a JSON-formatted summary with stable key ordering (e.g., `json.dumps(..., sort_keys=True)`), plus a short human-readable headline.
 
 ## Changelog
 
 - v0.1 (2026-02-21): Initial spec from brainstorm.
+- v0.2 (2026-02-21): Clarified backend invocation paths, V1/V2 detection rule, dry-run requirement to run without `DATABASE_URL`, and deterministic summary expectations.
