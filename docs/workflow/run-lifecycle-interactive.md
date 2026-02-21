@@ -4,8 +4,8 @@ Reference in chat: `@docs/workflow/run-lifecycle-interactive.md`
 
 ## When to Use
 - **Complex Features**: High risk, new patterns, or unclear requirements.
-- **Strict Oversignt**: When you want to review/approve every artifact (Spec, PRD, Tasks).
-- **Standard Protocol**: This is the default recommmended flow.
+- **Strict Oversight**: When you want to review/approve every artifact (Spec, PRD, Tasks).
+- **Standard Protocol**: This is the default recommended flow.
 
 ## Required Inputs
 - Title, Type, Slug
