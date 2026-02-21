@@ -23,12 +23,12 @@ Create a formal archival mechanism to maintain a clean workspace. All workflows 
 - [x] Edit `docs/workflow/phase-4-run-implement.md`. Add a new bullet in `PART C` commanding the AI to `git mv` the 5 artifacts into their respective `completed/` folders after drafting the walkthrough and before ending the Phase.
 - [x] Edit `docs/workflow/README.md`. Add a new section under "Artifacts" documenting the `completed/` directory archival convention.
 
-### [ ] Task 3.0: Retroactive Cleanup Execution
-- [ ] Identify all workflows in `docs/index.md` marked explicitly as `| Done |`.
-- [ ] Extract the list of markdown file paths mapped to those Done workflows.
-- [ ] Execute `git mv` to shift each of those physical files into its respective `completed/` subdirectory.
-- [ ] In the same commit, run a search/replace over `docs/index.md` to update all the links for those artifacts to include the `completed/` subpath.
-- [ ] Verify `docs/index.md` syntax and link integrity.
+### [x] Task 3.0: Retroactive Cleanup Execution
+- [x] Identify all workflows in `docs/index.md` marked explicitly as `| Done |`.
+- [x] Extract the list of markdown file paths mapped to those Done workflows.
+- [x] Execute `git mv` to shift each of those physical files into its respective `completed/` subdirectory.
+- [x] In the same commit, run a search/replace over `docs/index.md` to update all the links for those artifacts to include the `completed/` subpath.
+- [x] Verify `docs/index.md` syntax and link integrity.
 
 ## Traceability Statement
 - Derived directly from `prd-WF-0025-archiving-convention.md` v1.0.
