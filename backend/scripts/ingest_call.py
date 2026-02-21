@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
 
+from pydantic import ValidationError
 import yaml
 from sqlmodel import Session, select
 
@@ -47,6 +48,44 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+
+def _format_validation_error(err: ValidationError, schema_version: str) -> str:
+    """Render concise validation errors with field paths."""
+    details: list[str] = []
+    for entry in err.errors():
+        loc = ".".join(str(item) for item in entry["loc"])
+        msg = entry["msg"]
+        details.append(f"{loc}: {msg}")
+
+    joined = "\n  - ".join(details)
+    return (
+        f"Schema validation failed for {schema_version}:\n  - {joined}"
+        if details
+        else f"Schema validation failed for {schema_version}"
+    )
+
+
+def _format_yaml_syntax_error(err: yaml.YAMLError, path: Path, raw_text: str) -> str:
+    """Render actionable YAML syntax errors with location context."""
+    message = [f"YAML syntax error in {path}"]
+    mark = getattr(err, "problem_mark", None)
+    if mark is not None:
+        line = mark.line + 1
+        column = mark.column + 1
+        message.append(f"at line {line}, column {column}")
+
+        lines = raw_text.splitlines()
+        if 0 <= mark.line < len(lines):
+            source_line = lines[mark.line]
+            message.append(f"  {source_line}")
+            message.append(f"  {' ' * mark.column}^")
+
+    problem = getattr(err, "problem", None)
+    if problem:
+        message.append(str(problem))
+
+    return ": ".join(message)
 
 
 # ============================================================================
@@ -96,13 +135,26 @@ def load_yaml(path: Path) -> tuple[str, CallDefinition | CallDefinitionV2]:
     logger.info(f"Loading YAML from: {path}")
 
     with open(path, encoding="utf-8") as f:
-        raw_data: dict[str, Any] = yaml.safe_load(f)
+        raw_text = f.read()
+
+    try:
+        loaded = yaml.safe_load(raw_text)
+    except yaml.YAMLError as err:
+        raise ValueError(_format_yaml_syntax_error(err, path, raw_text)) from err
+
+    if not isinstance(loaded, dict):
+        raise ValueError("YAML root must be a mapping/object")
+
+    raw_data: dict[str, Any] = loaded
 
     schema_version = _detect_schema_version(raw_data)
-    if schema_version == "v1":
-        call_def = CallDefinition.model_validate(raw_data)
-    else:
-        call_def = CallDefinitionV2.model_validate(raw_data)
+    try:
+        if schema_version == "v1":
+            call_def = CallDefinition.model_validate(raw_data)
+        else:
+            call_def = CallDefinitionV2.model_validate(raw_data)
+    except ValidationError as err:
+        raise ValueError(_format_validation_error(err, schema_version)) from err
 
     logger.info(f"YAML validated successfully (schema_version={schema_version})")
     return schema_version, call_def
