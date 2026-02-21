@@ -1,5 +1,9 @@
-# Sample ERC Consolidator Grant 2026 Call Definition
-# This is a valid sample for testing the ingestion pipeline.
+# Sample ERC Consolidator Grant 2026 Call Definition (DEMO FIXTURE)
+#
+# Important: This YAML is a simplified, proposal-snippet-oriented fixture for our ingestion + review demo.
+# It is NOT a faithful transcription of ERC "Application Forms" (admin forms like general info, participants,
+# budget, ethics, etc.) and it is NOT a faithful encoding of the official ERC peer-review evaluation model
+# (which treats scientific excellence as the sole criterion).
 
 funding_agency:
   name: "European Research Council"

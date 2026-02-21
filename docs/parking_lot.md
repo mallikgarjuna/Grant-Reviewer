@@ -65,6 +65,14 @@ When you pick an item to start work:
 | 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
 | 3 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
 | 4 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
+| 5 | NWO Veni 2025 preproposal — WF-1: Fix YAML parse + add CallDefinition V2 loader (dry-run only) | tech-debt | Unblock NWO Veni call definition by making YAML parseable and loadable (no DB/UI changes yet). | 2026-02-21 |
+| 6 | NWO Veni 2025 preproposal — WF-2: Add `logical_id` columns + ingest V2 YAML into DB | tech-debt | Ensure proposal nodes / evaluation criteria / evaluation elements retain stable logical IDs for traceability. | 2026-02-21 |
+| 7 | NWO Veni 2025 preproposal — WF-3: Add `structured-config` endpoint + frontend mode gating | product | Ship call-aware structured contract without changing review submission yet (safe incremental UX). | 2026-02-21 |
+| 8 | NWO Veni 2025 preproposal — WF-4: Implement compliance engine + persist findings | product | Add deterministic ERROR/WARNING findings separate from scoring; expose in review detail. | 2026-02-21 |
+| 9 | NWO Veni 2025 preproposal — WF-5: Add structured reviews API + NOT_ASSESSABLE alignment | product | Persist structured submission and enforce “missing context → NOT_ASSESSABLE” (never fabricate alignment). | 2026-02-21 |
+| 10 | NWO Veni 2025 preproposal — WF-6: Build frontend structured form + compliance UI + idempotent drafts | product | Replace single snippet textarea with 3-node structured input for this call; render compliance separately. | 2026-02-21 |
+| 11 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. | 2026-02-21 |
+| 12 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). | 2026-02-21 |
 
 ---
 

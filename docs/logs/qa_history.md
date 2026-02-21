@@ -179,3 +179,11 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: What should the assistant say after pushing to remote regarding docs updates?
 **A:** After every successful push, explicitly confirm that docs/WF artifacts were updated before push (or explicitly state that no docs updates were required).
+
+## 2026-02-19
+
+### Q: Why does `backend/data/calls/erc_cog_2026_full.yaml` look different from the official ERC-COG-2026 “Application Forms” PDF and the “Guide for Peer Reviewers” PDF?
+**A:** Because our YAML is a **demo fixture** designed to support proposal-snippet review UX (select a call, select a proposal node, paste a snippet, get rubric-grounded feedback). The “Application Forms” PDF is the administrative form set (general info, participants, budget, ethics, etc.), which is not the same artifact as the narrative proposal section structure we review in-app. Also, the official peer-review guide treats **scientific excellence as the sole evaluation criterion**, whereas the current YAML includes additional placeholder criteria (Impact/Implementation) for demo coverage. If we want the YAML to be “officially aligned”, we should either (1) keep this file explicitly marked as a demo fixture and create a separate “official-aligned” call YAML, or (2) replace the rubric/structure in this file to match the official model (larger change that can affect demo behavior).
+
+### Q: Where is the “official-aligned” ERC-COG-2026 YAML?
+**A:** `backend/data/calls/erc_cog_2026_full_official.yaml` (excellence-only rubric + Part B1/B2 nodes shaped to fit the current two-level selector UI).
