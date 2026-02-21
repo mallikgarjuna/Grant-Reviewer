@@ -1,8 +1,8 @@
 # WF-0020 — NWO Veni 2025 preproposal (WF-1): V2 call YAML dry-run loader
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-21
 
 ## 1. In Scope
@@ -53,6 +53,7 @@ Last Updated: 2026-02-21
 1. Developer runs dry-run with YAML that parses but violates V2 schema.
 2. Script fails fast with:
    - schema path(s) to offending field(s)
+   - note: line/column is not required for schema errors (only for YAML parse errors)
    - concise per-error messages (avoid huge dumps)
 3. Exits non-zero.
 
@@ -70,6 +71,7 @@ Last Updated: 2026-02-21
 - Implement deterministic detection:
   - V1 if `funding_agency.short_name` exists
   - V2 if `funding_agency.id` exists
+  - if both exist: fail with a clear error (avoid silent precedence)
   - otherwise: fail with a clear error
 - Route validation to the correct schema (existing V1 models; new V2 models).
 
@@ -91,6 +93,16 @@ Last Updated: 2026-02-21
     - `node_expectations` (including `evaluation_element_id`, `expectation_strength`, `evaluation_intent`, `guidance_note`)
   - `runtime_notes` (id + description)
 
+Concrete V2 sub-structures that must validate (as present in the NWO YAML today):
+- `funding_call.deadlines`: mapping of deadline keys → `{ datetime_local: str, timezone: str }`
+- `funding_call.domain_notes`: list of `{ domain_id: str, note: str }`
+- `proposal_nodes[].content_constraints` variants:
+  - `total_word_limit`: `{ min_words?: int, max_words?: int, includes?: list[str], excludes?: list[str] }`
+  - `max_items`: `int`
+  - `word_limit_by_domain`: `{ default_max_words: int, science_enw_max_words?: int }`
+- `proposal_nodes[].compliance_rules[]`: `{ id: str, severity: "ERROR"|"WARNING", rule_type: str, description: str }`
+- `runtime_notes[]`: `{ id: str, description: str }`
+
 ### FR3 — Dry-run must not require DB
 
 - Dry-run must not import/initialize modules that raise when `DATABASE_URL` is missing.
@@ -103,6 +115,7 @@ Last Updated: 2026-02-21
   - avoid unordered set/dict representations
 - Preferred format:
   - single JSON object (pretty-printed) with `sort_keys=True`, plus a short human-readable headline.
+  - include `source_path` and `schema_version` in the JSON so logs are self-describing.
 
 ### FR5 — Compatibility with existing V1 ingestion
 
@@ -135,6 +148,7 @@ Last Updated: 2026-02-21
   - `evaluation_criteria` (count + element counts)
   - `compliance_rules` (counts by severity, when present)
   - `runtime_notes` (count, when present)
+  - `source_path` (string path input)
 
 ## 6. Components / Modules
 
@@ -146,7 +160,7 @@ Suggested minimal boundaries (no refactors):
   - V2 Pydantic models aligned to the NWO YAML structure.
 - `backend/scripts/ingest_call.py`
   - Add V1/V2 detection
-  - Ensure dry-run code path avoids DB imports/initialization
+  - Ensure dry-run code path avoids DB imports/initialization (in particular: avoid importing `app.db` before the dry-run early return)
   - Implement summary formatting for V2 dry-run
 
 ## 7. Edge Cases
@@ -177,3 +191,4 @@ Suggested minimal boundaries (no refactors):
 ## Changelog
 
 - v0.1 (2026-02-21): Initial PRD from spec.
+- v0.2 (2026-02-21): Applied risk-audit revisions (explicit V2 sub-structures, ambiguous detection handling, clarify schema-vs-parse error expectations, and self-describing dry-run summary).

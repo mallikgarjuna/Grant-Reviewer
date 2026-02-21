@@ -8,6 +8,35 @@
 - **Notes (variations observed)**: NWO commonly uses “Assessment criteria”; Horizon Europe commonly uses “Evaluation criteria”; some people use “Review criteria”.
 - **Status**: Approved.
 
+## Date: 2026-02-21 (WF-0020: NWO Veni 2025 preproposal WF-1)
+
+### AD 20.1: V1 vs V2 call-definition detection by `funding_agency` discriminant
+- **WF ID**: WF-0020
+- **Context**: Existing V1 call YAML uses `funding_agency.short_name`, while the NWO Veni V2 YAML uses `funding_agency.id`. V2 YAML does not currently declare an explicit schema version.
+- **Decision**: Detect schema version via:
+  - V1 if `funding_agency.short_name` exists
+  - V2 if `funding_agency.id` exists
+  - If both/neither exist: fail with a clear error (avoid silent precedence).
+- **Why**: Deterministic routing is required to keep existing V1 ingest stable while enabling V2 validation for NWO.
+- **Tradeoff**: This is a heuristic, not a formal version field; a future WF may add an explicit `schema_version` key if needed.
+- **Status**: Approved.
+
+### AD 20.2: `--dry-run` must run without `DATABASE_URL`
+- **WF ID**: WF-0020
+- **Context**: `backend/app/db.py` raises at import time if `DATABASE_URL` is unset. Today, `backend/scripts/ingest_call.py` imports DB code at module import time, which blocks dry-run validation on machines without DB configuration.
+- **Decision**: Require that the dry-run path validates + prints a summary without importing/initializing DB connectivity code (defer DB imports until the non-dry-run path).
+- **Why**: “Validate-only” should be safe, fast, and usable while authoring call YAML without provisioning Postgres.
+- **Tradeoff**: Script structure must be slightly refactored (lazy imports) to avoid import-time DB resolution.
+- **Status**: Approved.
+
+### AD 20.3: Strict V2 schema (fail on unknown keys) + deterministic JSON summary output
+- **WF ID**: WF-0020
+- **Context**: Call-definition YAML authoring benefits from catching typos/unknown keys early. Dry-run output must be stable for repeated iteration and troubleshooting.
+- **Decision**: Default to forbidding unknown keys in V2 validation, and print a self-describing, deterministic JSON summary in dry-run (include `schema_version` and `source_path`, stable ordering).
+- **Why**: Reduces silent drift/typos in YAML and makes it easy to compare runs while editing.
+- **Tradeoff**: Adding new YAML fields will require code/schema updates rather than being silently accepted.
+- **Status**: Approved.
+
 ## Date: 2026-02-18 (WF-0019: Add Loading & Empty States)
 
 ### AD 19.1: Frontend-only state UX improvements
