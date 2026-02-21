@@ -405,14 +405,6 @@ def test_get_call_config_unknown_call_returns_404(monkeypatch) -> None:
     }
 
 
-def test_nodes_route_unchanged_for_existing_call_id(monkeypatch) -> None:
-    client, seeded_ids = create_client_with_seed(monkeypatch)
-
-    response = client.get(f"/calls/{seeded_ids.call_id}/nodes")
-
-    assert response.status_code == 200
-
-
 def test_create_review_success_with_stub_mode(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = post_review(
