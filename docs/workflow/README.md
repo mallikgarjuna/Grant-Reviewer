@@ -9,16 +9,16 @@ Every meaningful initiative is tracked using a Workflow ID (WF-XXXX).
 
 # Workflow Phases
 
-- Phase 0 — Brainstorm
-- Phase 1 — Brainstorm → Spec
-- Phase 2 — Spec → PRD
-- Phase 3 — PRD → Tasks
-- Phase 4 — Task Implementation
+- Phase 0 — Ideation (Brainstorm)
+- Phase 1 — Definition (Brainstorm → PRD)
+- Phase 2 — Planning (PRD → Tasks)
+- Phase 3 — Execution (Task Implementation)
 - Done
 
 Runner shortcuts:
-- Phase 0: `docs/workflow/phase-0-run-start-and-brainstorm.md`
-- Phase 1/2/3: `docs/workflow/phase-123-run-planning.md`
+- Phase 0: `docs/workflow/phase-0-run-start-and-brainstorm-ideation.md`
+- Phase 1/2: `docs/workflow/phase-12-run-planning.md`
+- Phase 3: `docs/workflow/phase-3-run-implement-execution.md`
 
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).
@@ -110,7 +110,6 @@ Rules:
   - Phase 1
   - Phase 2
   - Phase 3
-  - Phase 4
   - Done
 - Update status only when phase changes.
 
@@ -151,7 +150,7 @@ Phase 0.0 must:
 
 ## Merging Policy
 
-When Phase 4 is complete and Status = Done:
+When Phase 3 is complete and Status = Done:
 
 - Merge wf/WF-XXXX-<slug> into main.
 - Optionally delete the workflow branch.
@@ -179,11 +178,11 @@ Git history is the snapshot system.
 
 # Artifact Hierarchy (Source of Truth Order)
 
-Brainstorm → Spec → PRD → Tasks → Implementation
+Brainstorm → PRD → Tasks → Implementation
 
 Rules:
 
-- PRD must be derived ONLY from Spec.
+- PRD must be derived ONLY from Brainstorm.
 - Tasks must be derived ONLY from PRD.
 - Do NOT regenerate downward artifacts from older phases.
 - Do NOT skip upward in the chain.

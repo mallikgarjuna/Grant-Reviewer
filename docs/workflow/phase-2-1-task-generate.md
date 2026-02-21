@@ -1,7 +1,7 @@
-# Phase 3.1 — Generate Tasks (v0.1)
+# Phase 2.1 — Generate Tasks (v0.1)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-3-1-task-generate.md.
+Reference it in Codex chat using @docs/workflow/phase-2-1-task-generate.md.
 Do NOT modify this file during execution.
 
 ---
@@ -34,7 +34,7 @@ Before generating the task file, ensure the PRD you are converting is **saved an
 
 ## Phase Completion — Commit This Phase
 
-After generating task v0.1, **save and commit** the updated task file before proceeding to Phase 3.2 review.
+After generating task v0.1, **save and commit** the updated task file before proceeding to Phase 2.2 review.
 
 ---
 
@@ -103,7 +103,7 @@ Max 5–15 tasks.
 
 After generating tasks v0.1:
 Update Status column to:
-Phase 3
+Phase 2
 
 ---
 
@@ -111,7 +111,7 @@ Phase 3
 
 Use:
 
-- @docs/workflow/phase-3-1-task-generate.md
+- @docs/workflow/phase-2-1-task-generate.md
 - @docs/prds/prd-WF-XXXX-<slug>.md
 
 Create:
@@ -126,5 +126,5 @@ Stop after writing v0.1.
 
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
-1. Run Phase 3.2 (tasks review gate): `@docs/workflow/phase-3-2-task-review.md`
-2. If tasks are already crisp and minimal, proceed to Phase 4.1 (implementation): `@docs/workflow/phase-4-1-implement-tasks.md`
+1. Run Phase 2.2 (tasks review gate): `@docs/workflow/phase-2-2-task-review.md`
+2. If tasks are already crisp and minimal, proceed to Phase 3.1 (implementation): `@docs/workflow/phase-3-1-implement-tasks.md`

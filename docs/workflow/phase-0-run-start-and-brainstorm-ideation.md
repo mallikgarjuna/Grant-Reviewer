@@ -1,7 +1,7 @@
 # Phase 0 Runner — Start Workflow + Brainstorm (0.0 + 0.1)
 
 This file is a workflow instruction.
-Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-0-run-start-and-brainstorm.md.
+Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-0-run-start-and-brainstorm-ideation.md.
 Do NOT modify this file during execution.
 
 ---
@@ -83,7 +83,7 @@ After completing Part B, output:
 
 2. Two recommended next actions:
 
-- Run Phase 1 runner: `@docs/workflow/phase-1-run-spec.md`
+- Run Phase 1 runner: `@docs/workflow/phase-1-run-prd-definition.md`
 - Sanity-check brainstorm quality/coverage and commit a small doc fix if needed
 
 Keep it concise.
@@ -101,7 +101,7 @@ Also output this final block:
 
 Use:
 
-- @docs/workflow/phase-0-run-start-and-brainstorm.md
+- @docs/workflow/phase-0-run-start-and-brainstorm-ideation.md
 - @docs/index.md
 - @docs/templates/brainstorm-template.md
 

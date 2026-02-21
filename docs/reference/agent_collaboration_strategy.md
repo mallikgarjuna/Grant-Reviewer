@@ -29,21 +29,24 @@ To maximize velocity without sacrificing architectural integrity, isolate the "T
 - Use Antigravity to ingest user goals, cross-reference them against project constraints (`AGENTS.md`, lessons learned), and run the interactive brainstorming phase.
 - Let Antigravity generate bulletproof, architecturally sound Specs, PRDs, and the final granular Task Checklist.
 - **Output**: A locked, high-quality `docs/tasks/task-WF-XXXX-<slug>.md` file.
+- **Cheat Sheet**: See `docs/workflow/how-to-use-workflow-actions.md` — Phase 0, Phase 1, Phase 2 templates.
 
-### 2. Phase 4.1 (Implementation / Inner Loop)
+### 2. Phase 3.1 (Implementation / Inner Loop)
 **Agent**: VSCode Codex / Cursor
 **Role**: Junior Developer
 
 - Once the Task Checklist is locked, the global "thinking" is done. Switch to your IDE.
-- Feed the Task file to your IDE agent. Use it as a high-speed typist to execute the `docs/workflow/phase-4-1-implement-tasks.md` loop (Write code -> Run local tests -> Commit).
+- Feed the Task file to your IDE agent. Use it as a high-speed typist to execute the `docs/workflow/phase-3-1-implement-tasks.md` loop (Write code -> Run local tests -> Commit).
 - Benefit from zero-latency intellisense and inline file editing.
 - **Output**: Sequentially implemented and committed task features on the local branch.
+- **Cheat Sheet**: See `docs/workflow/how-to-use-workflow-actions.md` — Phase 3.1 (Implement Only) template.
 
-### 3. Phase 4.2 (Verify & Ship)
+### 3. Phase 3.2 (Verify & Ship)
 **Agent**: Antigravity (Gemini)
 **Role**: Staff Architect / Reviewer
 
 - When the IDE agent finishes the task checklist, return control to Antigravity.
-- Invoke `docs/workflow/phase-4-2-verify-and-ship.md`.
+- Invoke `docs/workflow/phase-3-2-verify-and-ship.md`.
 - Antigravity will review the Git diffs, ensure the IDE agent didn't break global architecture or introduce lint debt, run the test suites, draft the final Walkthrough, and prepare the `Ship it` gate.
 - **Output**: A thoroughly verified PR, aligned with the original Phase 1 PRD.
+- **Cheat Sheet**: See `docs/workflow/how-to-use-workflow-actions.md` — Phase 3.2 (Verify & Ship) template.
