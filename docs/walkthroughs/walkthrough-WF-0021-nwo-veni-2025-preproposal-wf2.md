@@ -13,11 +13,11 @@ Crucially, all entity retrieval queries have been updated to filter out soft-del
 
 ## What Was Changed
 
-- **Database Schema**: 
+- **Database Schema**:
   - Added new `CallDefinition` table with `canonical_json`, `schema_version`, and `checksum` fields, linked 1:1 to `FundingCall`.
   - Added `logical_id` (String) and `archived_at` (DateTime) to `ProposalNode`, `EvaluationCriterion`, and `EvaluationElement`.
   - Generated and ran Alembic migrations.
-- **Query Hardening**: 
+- **Query Hardening**:
   - Updated all read queries across `backend/app/services/` to explicitly append `.where(Model.archived_at.is_(None))`.
 - **V2 Ingestion Engine**:
   - Implemented logic to parse and compute semantic checksums for incoming calls.

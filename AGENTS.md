@@ -134,6 +134,8 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - After completing a WF phase, ensure any artifacts edited/created in that phase are saved and committed before starting the next phase.
 - During phase runners, commit at each part boundary: after Part A outputs, after Part C revisions, and after any Part B edits when applicable (if Part B is no-edit by design, explicitly state no commit needed).
 - For Phase 3 implementation, run at least one targeted verification per completed subtask before committing that subtask, and log what was run.
+- After writing code, explicitly list potential breakage risks and propose targeted tests that cover those risks.
+- For bug fixes, follow test-first debugging: write or update a failing test that reproduces the bug first, then implement the fix until that test passes.
 - Before any commit, confirm new/changed files are not accidentally ignored: run `git status --ignored --short`. Prefer updating `.gitignore` with narrow allow/deny rules over `git add -f` (never force-add secrets).
 - Update `docs/` as you go (decisions, Q&A, walkthroughs).
 - Before pushing any branch to a remote, update `docs/` with all relevant work done on that branch (status/index, decisions, Q&A, prompt history, walkthrough/task artifacts as applicable).

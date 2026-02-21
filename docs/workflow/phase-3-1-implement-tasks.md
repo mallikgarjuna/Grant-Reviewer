@@ -81,12 +81,16 @@ For each task:
    - If NO skill exists for a **complex** task (e.g., new DB, new API, complex refactor), **ask the user** if they want to create a skill first or proceed.
 2. Implement the task.
 3. Run verification steps listed under the task.
-3. Fix until verification passes.
-4. Commit using this format:
+4. Fix until verification passes.
+5. After coding and verification, explicitly report:
+   - what could break from this task's changes
+   - targeted tests to add/run for that breakage risk
+6. If the task is a bug fix, first add/update a failing test that reproduces the bug, then implement until the reproducer passes.
+7. Commit using this format:
 
    WF-XXXX: <slug> — Task <N> — <short title>
 
-5. Optionally mark task complete inside tasks file (checkbox).
+8. Optionally mark task complete inside tasks file (checkbox).
    Do NOT bump version unless the task plan itself changed.
 
 Then continue automatically to the next task.
