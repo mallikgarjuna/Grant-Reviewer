@@ -76,6 +76,8 @@ When you pick an item to start work:
 
 ---
 
+Reference for starting each chunk chat: `docs/reference/nwo_veni_2025_preproposal_north_star.md`.
+
 ## 🟢 P2 — Must-fix before scaling
 
 | # | Task | Type | Recommendation | Date |
