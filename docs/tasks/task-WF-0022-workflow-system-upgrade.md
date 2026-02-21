@@ -11,6 +11,7 @@ Execute the 3-tier upgrade for the `docs/workflow/` system as defined in the PRD
 ## 2. Tasks
 
 ### [ ] Task 1.0: Tier 1 (Quick Wins & Cheat Sheet)
+*Note: This task will be executed on the current branch `wf/WF-0022-workflow-system-upgrade` and merged as PR #1.*
 - [ ] Fix formatting/numbering gaps in `phase-1-run-spec.md`, `phase-2-run-prd.md`, `phase-3-run-task.md` (if they are to be kept momentarily before replacement).
 - [ ] Fix typos ("Oversignt", "recommmended") in `run-lifecycle-interactive.md`.
 - [ ] Standardize terminology to "Codex or Antigravity or any coding agent" across `phase-4-1-implement-tasks.md`.
@@ -19,12 +20,14 @@ Execute the 3-tier upgrade for the `docs/workflow/` system as defined in the PRD
 - **Verify**: `git diff` shows only markdown cleanup. No broken links.
 
 ### [ ] Task 2.0: Tier 2 (Risk Mitigation: Phase 4 & Lifecycles)
+*Note: Before starting this task, we will create a NEW branch (e.g., `wf/WF-0022-tier2-phase4`) from the merged `main` to isolate this work for PR #2.*
 - [ ] Create `docs/workflow/phase-4-run-implement.md` enforcing Part A (Implement), Part B (Verify/Integrate), Part C (Walkthrough + Ship).
 - [ ] Update `run-lifecycle-auto.md` and `run-lifecycle-interactive.md` to reference explicit A/B/C gates and add context-window warnings.
 - [ ] Add `workflow preflight` and `verify workflow` checklist stubs to `docs/workflow/README.md`.
 - **Verify**: The new Phase 4 runner reads similarly to Phases 1-3 in its strictness.
 
 ### [ ] Task 3.0: Tier 3 (Refactoring & Archival)
+*Note: Before starting this task, we will create a NEW branch (e.g., `wf/WF-0022-tier3-refactor`) from the merged `main` to isolate this work for PR #3.*
 - [ ] Create `docs/workflow/universal-phase-runner.md` defining variables for Phase 1, Phase 2, and Phase 3.
 - [ ] Delete `phase-1-run-spec.md`, `phase-2-run-prd.md`, `phase-3-run-task.md`.
 - [ ] Update `how-to-use-workflow-actions.md`, `README.md`, and lifecycle runners to point to `universal-phase-runner.md`.
