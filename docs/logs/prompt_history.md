@@ -616,3 +616,9 @@
 ### 16:49 - New Code Phrase Added: verify workflow
 > User asked for a predefined phrase to verify current-workflow outcomes and requested a future-reference rule for composing phrases from existing ones.
 > Outcome: Added `verify workflow` to `docs/reference/code_phrases.md` as a composed verification bundle (`status` + `diff` + targeted checks + pass/fail summary), added composition guideline in code-phrases doc, and updated `AGENTS.md` to recognize `verify workflow` + composed-phrase execution rule.
+
+## 2026-02-21
+
+### 07:48 - Pick P1 #5 → WF-0020 Kickoff (NWO Veni 2025 preproposal WF-1)
+> User requested `pick P1 #5` to start "NWO Veni 2025 preproposal — WF-1" with a strict scope: fix YAML parse issues, add CallDefinition V2 schema/loader, and support `scripts/ingest_call.py --dry-run` for V2 YAML (no DB schema, no API endpoints, no frontend changes).
+> Outcome: Minted `WF-0020`, created baseline WF artifacts, promoted the parking lot item, created branch `wf/WF-0020-nwo-veni-2025-preproposal-wf1`, and prepared to run Phase 0.1 interactive brainstorm.
