@@ -19,9 +19,9 @@ Create a formal archival mechanism to maintain a clean workspace. All workflows 
 - [x] Create `completed/` inside `docs/walkthroughs/`.
 - [x] Add an empty `.gitkeep` implicitly to ensure empty directories are tracked if needed (optional if folders immediately populated).
 
-### [ ] Task 2.0: Update Workflow System Rules
-- [ ] Edit `docs/workflow/phase-4-run-implement.md`. Add a new bullet in `PART C` commanding the AI to `git mv` the 5 artifacts into their respective `completed/` folders after drafting the walkthrough and before ending the Phase.
-- [ ] Edit `docs/workflow/README.md`. Add a new section under "Artifacts" documenting the `completed/` directory archival convention.
+### [x] Task 2.0: Update Workflow System Rules
+- [x] Edit `docs/workflow/phase-4-run-implement.md`. Add a new bullet in `PART C` commanding the AI to `git mv` the 5 artifacts into their respective `completed/` folders after drafting the walkthrough and before ending the Phase.
+- [x] Edit `docs/workflow/README.md`. Add a new section under "Artifacts" documenting the `completed/` directory archival convention.
 
 ### [ ] Task 3.0: Retroactive Cleanup Execution
 - [ ] Identify all workflows in `docs/index.md` marked explicitly as `| Done |`.
