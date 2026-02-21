@@ -1,5 +1,22 @@
 # Architectural Decisions
 
+## Date: 2026-02-21 (WF-0021: NWO Veni 2025 preproposal WF-2)
+
+### AD 21.1: 1:1 FundingCall to CallDefinition Relationship
+- **WF ID**: WF-0021
+- **Context**: The canonical JSONB document needs to link to existing funding calls in the system.
+- **Decision**: Introduce a `CallDefinition` table with a 1:1 foreign key to `FundingCall` containing the canonical JSONB.
+- **Why**: Keeps the new document storage cleanly separated from the high-level call metadata while enforcing exactly one canonical definition per call.
+- **Tradeoff**: Requires an extra join if querying both simultaneously, but read service hydrates this efficiently.
+- **Status**: Approved.
+
+### AD 21.2: Mandatory `archived_at IS NULL` Query Filters
+- **WF ID**: WF-0021
+- **Context**: Re-ingesting calls with missing logical IDs soft-deletes the missing entities. Existing read queries would return these deleted entities and prompt them to the AI or UI.
+- **Decision**: Enforce that all application read queries for nodes, criteria, and elements explicitly filter `archived_at IS NULL`.
+- **Why**: Safest way to handle dropped YAML sections without destroying historical review data that might reference them (orphan handling).
+- **Tradeoff**: High risk of bugs if a query forgets the filter; requires auditing all existing read paths.
+- **Status**: Approved.
 ## Date: 2026-02-21 (WF-0022: Workflow System Upgrade)
 
 ### AD 22.1: Consolidate Phase 1/2/3 Runners into Universal Parametric Runner
