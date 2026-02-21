@@ -37,9 +37,10 @@ Before starting Phase 4 implementation, ensure Phase 3 outputs are **saved and c
 
 ---
 
-## Phase Completion — Commit This Phase
-
-After completing Phase 4 (all tasks implemented, walkthrough updated, and `docs/index.md` set to Done), ensure those final docs changes are **saved and committed**.
+## Phase Return — Stop Processing Here
+When all tasks are implemented, STOP execution.
+Do NOT create the walkthrough here.
+Return control to the `phase-4-run-implement.md` Part B Verification gate.
 
 ---
 
@@ -90,54 +91,14 @@ For each task:
 
 Then continue automatically to the next task.
 
----
+## Completion Return
 
-## Completion
+When all tasks are complete, **STOP**.
 
-When all tasks are complete:
-
-1. Update docs/index.md Status to:
-   Done
-
-2. Create or update walkthrough file:
-   docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md
-
-3. Update project documentation (README.md, docs/reference/, etc.)
-   - If the task added new features, update `README.md`.
-   - If the task changed architecture, update `docs/reference/`.
-   - Commit these updates with:
-     WF-XXXX: <slug> — update docs
-
-Walkthrough must include:
-
-- How to run
-- How to verify
-- Known limitations (if any)
+Do not update `docs/index.md` or create a walkthrough here. Your job is done. The primary `phase-4-run-implement.md` orchestrator will now take over to enforce Part B (Verify) and Part C (Walkthrough + Ship).
 
 ---
 
-## How to Invoke in Chat
+## How to Invoke implicitly
 
-Use:
-
-- @docs/workflow/phase-4-1-implement-tasks.md
-- @docs/tasks/task-WF-XXXX-<slug>.md
-
-Instruction:
-
-"Execute all tasks sequentially. Commit after each task using the required commit format. Continue automatically until all tasks are complete."
-
----
-
-## Stop Condition
-
-Stop when all tasks are completed, the walkthrough is drafted/updated, and `docs/index.md` is updated to Status `Done`.
-
----
-
-## After You Finish (Next 2 Actions)
-
-In your final chat message, suggest the next 2 actions (so I can choose what to do next):
-
-1. Open a PR for the WF branch and merge it to `main` (then update local `main`).
-2. Start the next workflow (Phase 0.0) for the next idea/feature.
+This instructions file is implicitly invoked by `phase-4-run-implement.md` Part A. You do not need a direct prompt cheat-sheet for this file, as it should no longer be run locally or standalone.
