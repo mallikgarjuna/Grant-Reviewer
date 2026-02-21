@@ -140,7 +140,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - After each successful push to remote, explicitly print a confirmation that docs/WF artifacts were updated before that push (or explicitly state if none were required).
 - **Ship It = PR -> Merge**: To follow industry standards, `ship it` means:
   1. Push feature branch to `origin`.
-  2. Create a PR via `gh pr create --fill`.
+  2. Create a PR via `gh pr create` with a **descriptive title and body** summarizing what changed, why, and verification results. Do NOT use `--fill` alone — always provide a meaningful PR description.
   3. Merge via `gh pr merge --auto --merge --delete-branch` (or wait for approval if required).
   4. Sync local `main` via `git checkout main && git pull`.
   Local merges are discouraged. **CRITICAL**: Never push, merge, or delete remote branches autonomously. You *must* wait for the user's explicit `ship it` command or permission.
