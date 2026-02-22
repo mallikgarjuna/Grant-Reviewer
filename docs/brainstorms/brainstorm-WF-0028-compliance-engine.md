@@ -59,3 +59,22 @@ The primary user interacting with the compliance engine is the **Researcher**. T
   - **A:** Yes, researchers (fixing their drafts) and admins (defining the rules in the YAML).
 - **Q4:** What is the researcher's core frustration with the current state that this solves?
   - **A:** Both: Waiting for a full AI review only to be told "You forgot the word count in section C", and the AI hallucinating feedback on missing sections instead of focusing on the science.
+
+---
+
+## 4. Rough Idea (Unstructured Thinking)
+
+**Summary / Decisions:**
+The simplest implementation direction is to read the compliance rules directly from the V2 database model (specifically looking at constraints like `word_limit`, `mandatory`, `compliance_rules`, and `guidance_text` on `EvaluationElement`). The frontend will save the draft to the database first, then call a `/check-compliance/{draft_id}` API endpoint. This endpoint will return an HTTP 200 with a structured JSON payload containing lists of `errors` and `warnings`, including the specific underlying reason/rule that failed so the UI can display *why* it failed. The engine will be strictly read-only and will *not* auto-fix answers (leaving scientific nuance to the researcher). The biggest technical risk is standardizing accurate word counting between the frontend editor and backend validator, so the UI must include a clear disclaimer about word count approximations.
+
+**Brainstorming Q&A:**
+- **Q1:** Where does the "source of truth" for compliance rules live?
+  - **A:** In the database, populated from the funding call YAML definitions (including `word_limit`, `mandatory`, `compliance_rules`, and `guidance_text`).
+- **Q2:** What should the compliance engine API endpoint return?
+  - **A:** HTTP 200 with a detailed JSON object containing lists of `errors` and `warnings` and the specific reasons/rules that failed, allowing the frontend to display exactly *why* an error was flagged.
+- **Q3:** How is the proposal data passed to the compliance engine for checking?
+  - **A:** The frontend first saves the draft to the database, then calls a `/check-compliance/{draft_id}` endpoint.
+- **Q4:** Should the compliance engine support "auto-fixing" issues?
+  - **A:** No, it should strictly be read-only and return feedback. It is up to the researcher to fix it.
+- **Q5:** What is the highest technical risk for this rough idea?
+  - **A:** Word counting accurately (e.g., handling markdown, HTML, or LaTeX rendering artifacts). We must include a disclaimer on the UI about word counts.
