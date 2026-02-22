@@ -1,8 +1,8 @@
 # WF-0029 — NWO Veni 2025 Preproposal Structured AI Review PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-22
 
 ## 1. In Scope
@@ -69,7 +69,10 @@ Last Updated: 2026-02-22
 - **F6 (Persistence):** One `Review` per structured submission. `review_type="structured"`. All `ReviewCard`s have `node_logical_id` set for grouping.
 - **F7 (Quota):** Structured review counts as 1 review against daily quota (not N per node).
 - **F8 (Idempotency):** Client-provided `idempotency_key` works the same as single-node reviews. One key = one structured review.
-- **F9 (History integration):** Structured reviews appear in `GET /reviews` list. `ReviewListItem` shows `review_type` and the first node title (or "Structured review (3 nodes)").
+- **F9 (History integration):** Structured reviews appear in `GET /reviews` list. `ReviewListItem` shows `review_type` and a display title like `"Structured review (3 nodes)"`. **⚠️ Implementation landmine:** The existing `list_reviews_for_external_user()` query uses an INNER JOIN on `Review.proposal_snippet_id → ProposalSnippet` (review_repository.py line 351). Structured reviews have `proposal_snippet_id=NULL`. The query MUST be adapted (LEFT JOIN or UNION) to include structured reviews, or they will be silently excluded from the list.
+- **F10 (Ownership check):** `get_review_owner_external_user_id()` (review_repository.py line 238) also INNER JOINs through `ProposalSnippet`. Must be adapted for structured reviews where ownership is resolved via `StructuredSubmission.user_id` instead.
+- **F11 (Delete cascade):** `delete_review_hard()` (review_repository.py line 284) assumes a single snippet. For structured reviews, it must cascade-delete all associated `ProposalSnippet` rows via `StructuredSubmission`, plus the `StructuredSubmission` row itself.
+- **F12 (Prompt builder contract):** `build_review_prompt()` must accept an optional `cross_node_context: dict[str, str]` parameter (mapping `node_logical_id → text`). When present, context texts are appended to the prompt under a `"## Cross-Node Context"` section. The existing single-node call path passes `cross_node_context=None` (no change to legacy behavior).
 
 ## 5. Data & API Contracts
 
@@ -167,8 +170,9 @@ Last Updated: 2026-02-22
 | **Domain models** | `StructuredSubmission` table, updated `Review`/`ReviewCard`/`NodeExpectation` | `app/models/domain.py` |
 | **Migration** | Alembic migration for all schema changes | `migrations/versions/xxx_add_structured_review.py` |
 | **Router** | FastAPI route `POST /api/structured-review` | `main.py` (existing pattern) |
-| **Prompt builder** | Extended to accept cross-node context texts | `app/services/prompt_builder.py` |
+| **Prompt builder** | Extended to accept optional `cross_node_context` dict | `app/services/prompt_builder.py` |
 | **YAML + Ingestion** | `requires_context_from` field on `node_expectations` entries | `data/calls/nwo/*.yaml` + `scripts/ingest_call.py` |
+| **Repository (adapted)** | `list_reviews`, `get_review_owner`, `delete_review_hard` must handle `proposal_snippet_id=NULL` | `app/repositories/review_repository.py` |
 
 ## 7. Edge Cases
 
@@ -178,7 +182,9 @@ Last Updated: 2026-02-22
 - **All LLM calls fail:** `Review` persisted with `status=FAILED`. Zero cards. Review appears in history as failed.
 - **Node with zero expectations:** Logged warning. No cards generated for that node. Node still appears in response with empty `cards[]`.
 - **Idempotency key collision:** Same behavior as existing single-node: return the existing review without re-processing.
-- **Review history listing:** Structured reviews show `review_type="structured"` and `node_title="Structured review (N nodes)"` in `ReviewListItem`.
+- **Review history listing:** `list_reviews_for_external_user()` INNER JOINs through `ProposalSnippet`. Structured reviews have `proposal_snippet_id=NULL`. Query must be adapted to LEFT JOIN or use a UNION to include both review types. Display title for structured reviews: `"Structured review (N nodes)"`.
+- **Review deletion:** `delete_review_hard()` must cascade through all `ProposalSnippet` rows linked via `StructuredSubmission`, not just a single snippet.
+- **Review detail:** `get_review_cards_with_criteria()` works unchanged (cards still link to `NodeExpectation`). But the response must group cards by `node_logical_id`. The new `StructuredReviewDetailResponse` replaces flat `cards[]` with `nodes[].cards[]`.
 
 ## 8. Telemetry (Minimal)
 
@@ -204,3 +210,4 @@ Last Updated: 2026-02-22
 ## Changelog
 
 - v0.1 (2026-02-22): Initial PRD generated from brainstorm v1.2.
+- v0.2 (2026-02-22): Applied self-audit (Part B). Added F10–F12 (ownership check, delete cascade, prompt builder contract). Flagged `list_reviews` INNER JOIN landmine. Added repository adaptation to components. Expanded edge cases for review listing/deletion/detail. Marked Ready for Tasks.
