@@ -125,9 +125,32 @@ The primary actor is a researcher who has an existing proposal draft and wants a
 
 ---
 
-## 4. Rough Idea (Unstructured Thinking)
+## 4. Rough Idea Exploration
 
-*(To be filled during Phase 0.1 brainstorm)*
+The MVP approach is a single form containing three distinct `<textarea>` fields representing the Veni nodes. Word counts are calculated client-side in real-time to provide immediate compliance feedback without network overhead. The form includes an ENW/Science pilot toggle to dynamically adjust the research idea word limit (100 vs 500). Draft idempotency is guaranteed by a frontend-generated UUID. If a user bypasses the soft-warning for an oversized (or missing) node, they must confirm via a modal popup.
+
+**Brainstorming Q&A:**
+
+**Q1: How should we technically capture the 3 structured nodes from the user?**
+- A) A single `<form>` element containing 3 distinct `<textarea>` fields, submitted as a single JSON payload.
+- B) Three separate forms that the user must submit one by one.
+- C) A complex rich-text editor (like Quill or TipTap) that forces the user to use specific headers for each node.
+> Recommendation: **A** — Delivering a single form with 3 `<textarea>` fields is the simplest, most reliable way to map directly to the `VeniPreproposalParams` schema expected by the backend. (Alternative B creates unnecessary friction and state-management issues. Alternative C is drastically over-engineered for plain text ingestion).
+> **Selected: A**
+> *User Comment*: "are we considering into account when the researcher does not fill all nodes/textareas before submission? We should."
+> *System Note*: Yes, this is a critical flow. The frontend must allow submission of partial drafts (e.g., if a user only wants to review their Academic Profile). If a node is completely empty, it will not trigger a word-count maximum error, but the backend AI evaluation will cleanly mark alignment criteria dependent on that missing node as `NOT_ASSESSABLE` (as implemented in WF-0029). The frontend validation must not strictly require all three fields to be populated to submit.
+
+**Q2: How should the live compliance engine (word counts) be implemented on the frontend?**
+> **Selected: B** — Implement a lightweight Javascript utility on the frontend that mimics the backend's word count logic for real-time feedback.
+
+**Q3: We need to implement the "Soft enforce" bypass you requested in Section 2. How should this flow work?**
+> **Selected: B** — If there is an `ERROR`, the "Submit" button remains active. Clicking it opens a modal showing the exact errors and requiring a second "Confirm Submission" click.
+
+**Q4: How should the frontend handle the `logical_id` (draft ID) to ensure idempotency?**
+> **Selected: A** — The frontend generates a UUID (v4) when the page loads to uniquely identify the draft session.
+
+**Q5: For the NWO Veni "Research Idea" node, there is a special case: default is max 100 words, but the ENW/Science pilot allows 500 words. How should the frontend handle this?**
+> **Selected: A** — Add a checkbox: `[ ] Applying for ENW/Science pilot`. If checked, the UI word limit indicator changes from 100 to 500.
 
 ---
 
