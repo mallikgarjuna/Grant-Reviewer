@@ -92,7 +92,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 5 — Repository read-path adaptation (F9, F10, F11)
+### [x] Task 5 — Repository read-path adaptation (F9, F10, F11)
 
 **Goal:** Adapt `list_reviews_for_external_user()`, `get_review_owner_external_user_id()`, and `delete_review_hard()` to handle `proposal_snippet_id=NULL`.
 

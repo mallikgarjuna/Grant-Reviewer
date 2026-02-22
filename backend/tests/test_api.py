@@ -537,6 +537,66 @@ def test_review_repository_supports_structured_write_path(monkeypatch) -> None:
         session.close()
 
 
+def test_review_repository_read_paths_support_structured_reviews(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    single_response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Legacy single review text.",
+        },
+    )
+    assert single_response.status_code == 200
+
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        expectation = session.exec(select(NodeExpectation)).first()
+
+        assert template is not None
+        assert expectation is not None
+
+        structured_review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"structured-read-smoke-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={"academic_profile": "profile text"},
+        )
+        repository.create_review_card(
+            review_id=structured_review.id,
+            expectation_id=expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback="Not assessable due to missing context",
+            assessment_status=AssessmentStatus.NOT_ASSESSABLE,
+            not_assessable_reason="missing key_outputs",
+        )
+
+        rows = repository.list_reviews_for_external_user(TEST_USER_ID)
+        node_titles = [node_title for _, _, node_title in rows]
+        assert "Structured review" in node_titles
+        assert any(title != "Structured review" for title in node_titles)
+
+        owner = repository.get_review_owner_external_user_id(structured_review.id)
+        assert owner == TEST_USER_ID
+
+        deleted = repository.delete_review_hard(structured_review.id)
+        assert deleted is True
+        assert repository.get_review_by_id(structured_review.id) is None
+        remaining_cards = list(
+            session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == structured_review.id)
+            ).all()
+        )
+        assert remaining_cards == []
+    finally:
+        session.close()
+
+
 def test_snippet_too_long_returns_domain_error(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = post_review(

@@ -242,6 +242,12 @@ class ReviewRepository:
 
     def get_review_owner_external_user_id(self, review_id: UUID) -> str | None:
         """Fetch owning external user id for a review."""
+        review = self.get_review_by_id(review_id)
+        if review is None:
+            return None
+        if review.proposal_snippet_id is None:
+            return review.external_user_id
+
         statement = (
             select(User.email)
             .join(ProposalSnippet, ProposalSnippet.user_id == User.id)
@@ -292,7 +298,9 @@ class ReviewRepository:
         if review is None:
             return False
 
-        snippet = self.session.get(ProposalSnippet, review.proposal_snippet_id)
+        snippet = None
+        if review.proposal_snippet_id is not None:
+            snippet = self.session.get(ProposalSnippet, review.proposal_snippet_id)
         cards = self.get_review_cards_ordered(review_id)
 
         for card in cards:
@@ -354,18 +362,25 @@ class ReviewRepository:
         """
         capped_limit = min(max(limit, 1), 100)
         statement = (
-            select(Review, FundingCall.name, ProposalNode.title)
+            select(
+                Review,
+                func.coalesce(FundingCall.name, "Structured review"),
+                func.coalesce(ProposalNode.title, "Structured review"),
+            )
             .join(
                 ProposalSnippet,
                 Review.proposal_snippet_id == ProposalSnippet.id,
+                isouter=True,
             )
             .join(
                 FundingCall,
                 ProposalSnippet.funding_call_id == FundingCall.id,
+                isouter=True,
             )
             .join(
                 ProposalNode,
                 ProposalSnippet.proposal_node_id == ProposalNode.id,
+                isouter=True,
             )
             .where(Review.external_user_id == external_user_id)
             .where(ProposalNode.archived_at.is_(None))
