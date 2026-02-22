@@ -310,7 +310,13 @@ The following features will explicitly *not* be built during WF-0030 to protect 
 
 ---
 
-## 9. Parked / Non-Scoped Items
+## 10. Extended Brainstorming (Dynamic Forms & UX)
+
+*(To be filled during extended Phase 0.1 brainstorm)*
+
+---
+
+## 11. Parked / Non-Scoped Items
 
 The following items arose during brainstorming but were explicitly parked to keep the MVP scope constrained. They are logged in `docs/parking_lot.md` for future prioritization:
 
