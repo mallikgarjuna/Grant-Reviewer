@@ -205,3 +205,4 @@ Last Updated: 2026-02-22
 - v0.1 (2026-02-22): Initial task breakdown from PRD v0.4.
 - v0.2 (2026-02-22): Applied self-audit. Reordered repo adaptation before wiring.
 - v0.3 (2026-02-22): Per Codex audit. Added Task 4 (repo write-path glue). Merged old T4+T7 into T7 (endpoint + wiring, no stub). Demoted T9 to optional. Fixed T1 acceptance criteria (removed false "existing tests pass unchanged"). Added explicit alignment rule AC to T6. Added backward-compat and mapping tests to T5/T8. Consolidated tests in `test_api.py` (no fragmented test files). Renumbered all tasks.
+- v0.4 (2026-02-22): Post-implementation critical fixes: corrected structured-review visibility in `list_reviews_for_external_user` (LEFT JOIN + NULL-safe archived filter), restored structured call name from persisted payload metadata, and explicitly documented NOTE-only rating behavior for structured cards as intentional MVP scope.

@@ -5,9 +5,10 @@ Rule: Only repositories talk to the database directly.
 """
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlmodel import Session, select
 
 from app.models.domain import (
@@ -168,7 +169,7 @@ class ReviewRepository:
         request_payload_sha256: str | None = None,
         idempotency_expires_at: datetime | None = None,
         review_type: str = "single",
-        structured_payload: dict[str, str] | None = None,
+        structured_payload: dict[str, Any] | None = None,
     ) -> Review:
         """Create a new review record."""
         review = Review(
@@ -364,8 +365,9 @@ class ReviewRepository:
         statement = (
             select(
                 Review,
-                func.coalesce(FundingCall.name, "Structured review"),
+                FundingCall.name,
                 func.coalesce(ProposalNode.title, "Structured review"),
+                Review.structured_payload,
             )
             .join(
                 ProposalSnippet,
@@ -383,8 +385,31 @@ class ReviewRepository:
                 isouter=True,
             )
             .where(Review.external_user_id == external_user_id)
-            .where(ProposalNode.archived_at.is_(None))
+            .where(
+                or_(
+                    ProposalNode.archived_at.is_(None),
+                    ProposalNode.id.is_(None),
+                )
+            )
             .order_by(Review.created_at.desc())
             .limit(capped_limit)
         )
-        return list(self.session.exec(statement).all())
+        rows = list(self.session.exec(statement).all())
+
+        normalized_rows: list[tuple[Review, str, str]] = []
+        for review, call_name, node_title, structured_payload in rows:
+            resolved_call_name = call_name
+            if resolved_call_name is None and isinstance(structured_payload, dict):
+                payload_call_name = structured_payload.get("call_name")
+                if isinstance(payload_call_name, str) and payload_call_name.strip():
+                    resolved_call_name = payload_call_name.strip()
+
+            normalized_rows.append(
+                (
+                    review,
+                    resolved_call_name or "Structured review",
+                    node_title,
+                )
+            )
+
+        return normalized_rows

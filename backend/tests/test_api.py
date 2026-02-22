@@ -646,7 +646,11 @@ def test_review_repository_read_paths_support_structured_reviews(monkeypatch) ->
             external_user_id=TEST_USER_ID,
             idempotency_key=f"structured-read-smoke-{time.time_ns()}",
             review_type="structured",
-            structured_payload={"academic_profile": "profile text"},
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+                "nodes": {"academic_profile": "profile text"},
+            },
         )
         repository.create_review_card(
             review_id=structured_review.id,
@@ -658,7 +662,9 @@ def test_review_repository_read_paths_support_structured_reviews(monkeypatch) ->
         )
 
         rows = repository.list_reviews_for_external_user(TEST_USER_ID)
+        call_names = [call_name for _, call_name, _ in rows]
         node_titles = [node_title for _, _, node_title in rows]
+        assert "NWO Talent Programme — Veni 2025 — Pre-proposal" in call_names
         assert "Structured review" in node_titles
         assert any(title != "Structured review" for title in node_titles)
 
@@ -750,7 +756,11 @@ def test_create_structured_review_success_persists_structured_fields(monkeypatch
         assert review is not None
         assert review.review_type == "structured"
         assert review.proposal_snippet_id is None
-        assert review.structured_payload == {"academic_profile": "profile text"}
+        assert review.structured_payload == {
+            "call_id": str(seeded_ids.structured_call_id),
+            "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+            "nodes": {"academic_profile": "profile text"},
+        }
 
         cards = list(
             session.exec(select(ReviewCard).where(ReviewCard.review_id == review.id)).all()

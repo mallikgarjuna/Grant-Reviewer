@@ -75,6 +75,14 @@ class StructuredReviewerService:
             if isinstance(node.logical_id, str) and node.logical_id
         }
         submitted_text_by_node = {node_logical_id: text for node_logical_id, text in nodes}
+        call = self.repository.get_call_by_id(call_id)
+        if call is None:
+            raise ValueError("Funding call not found.")
+        structured_payload = {
+            "call_id": str(call_id),
+            "call_name": call.name,
+            "nodes": submitted_text_by_node,
+        }
 
         review = self.repository.create_review(
             template_id=template.id,
@@ -84,7 +92,7 @@ class StructuredReviewerService:
             request_payload_sha256=request_payload_sha256,
             idempotency_expires_at=idempotency_expires_at,
             review_type="structured",
-            structured_payload=submitted_text_by_node,
+            structured_payload=structured_payload,
         )
         review.llm_model = self.llm_client.get_model_name()
         self.repository.update_review(review)
@@ -117,6 +125,8 @@ class StructuredReviewerService:
                 card = self.repository.create_review_card(
                     review_id=review.id,
                     expectation_id=expectation.id,
+                    # MVP: keep deterministic card severity neutral while typed status
+                    # communicates assessability.
                     rating=ReviewRating.NOTE,
                     feedback="Not assessable due to missing cross-node context.",
                     assessment_status=AssessmentStatus.NOT_ASSESSABLE,
@@ -185,6 +195,7 @@ class StructuredReviewerService:
                 card = self.repository.create_review_card(
                     review_id=review.id,
                     expectation_id=expectation.id,
+                    # MVP: severity mapping remains NOTE-only for structured reviews.
                     rating=ReviewRating.NOTE,
                     feedback=feedback_item.feedback,
                     assessment_status=AssessmentStatus.ASSESSED,
