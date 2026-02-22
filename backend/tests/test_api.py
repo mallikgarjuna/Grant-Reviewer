@@ -3,6 +3,7 @@
 import hashlib
 import hmac
 import json
+import re
 import time
 from dataclasses import dataclass
 from uuid import UUID
@@ -12,6 +13,7 @@ from sqlmodel import SQLModel, select
 
 from app.db import engine, get_session, normalize_database_url
 from app.models.domain import (
+    AssessmentStatus,
     CallDefinition,
     EvaluationCriterion,
     EvaluationElement,
@@ -26,8 +28,10 @@ from app.models.domain import (
     ProposalSnippet,
     Review,
     ReviewCard,
+    ReviewRating,
     ReviewStatus,
 )
+from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import StubLLMClient
 from main import ERROR_STATUS_BY_CODE, app
 
@@ -218,6 +222,59 @@ def seed_api_data() -> SeededIDs:
         session.add(expectation)
         session.commit()
 
+        structured_criterion = EvaluationCriterion(
+            funding_call_id=structured_call.id,
+            logical_id="crit_structured_quality",
+            name="Structured quality",
+            description="Structured quality criterion.",
+            order_index=1,
+        )
+        session.add(structured_criterion)
+        session.commit()
+        session.refresh(structured_criterion)
+
+        structured_element = EvaluationElement(
+            evaluation_criterion_id=structured_criterion.id,
+            logical_id="elem_structured_node_quality",
+            name="Structured node quality",
+            description="Assess structured node quality",
+        )
+        session.add(structured_element)
+        session.commit()
+        session.refresh(structured_element)
+
+        structured_expectation = NodeExpectation(
+            proposal_node_id=structured_node_1.id,
+            evaluation_element_id=structured_element.id,
+            expectation_strength=ExpectationStrength.MANDATORY,
+            evaluation_intent=EvaluationIntent.QUALITY,
+            guidance_note="Assess structured academic profile quality",
+            order_index=1,
+        )
+        session.add(structured_expectation)
+        session.commit()
+
+        structured_element_node3 = EvaluationElement(
+            evaluation_criterion_id=structured_criterion.id,
+            logical_id="elem_structured_node_quality_2",
+            name="Structured node quality 2",
+            description="Assess structured node quality 2",
+        )
+        session.add(structured_element_node3)
+        session.commit()
+        session.refresh(structured_element_node3)
+
+        structured_expectation_node3 = NodeExpectation(
+            proposal_node_id=structured_node_3.id,
+            evaluation_element_id=structured_element_node3.id,
+            expectation_strength=ExpectationStrength.MANDATORY,
+            evaluation_intent=EvaluationIntent.QUALITY,
+            guidance_note="Assess structured scientific proposal quality",
+            order_index=1,
+        )
+        session.add(structured_expectation_node3)
+        session.commit()
+
         template = PromptTemplate(
             name="Test Template",
             template_text="Template",
@@ -246,6 +303,162 @@ def create_client_with_seed(monkeypatch) -> tuple[TestClient, SeededIDs]:
     reset_database()
     seeded_ids = seed_api_data()
     return TestClient(app), seeded_ids
+
+
+def seed_structured_alignment_api_data() -> UUID:
+    """Insert NWO-like structured graph with alignment dependencies."""
+    session = get_session()
+    try:
+        agency = FundingAgency(name="NWO", short_name="NWO")
+        session.add(agency)
+        session.commit()
+        session.refresh(agency)
+
+        call = FundingCall(
+            funding_agency_id=agency.id,
+            name="NWO Talent Programme — Veni 2025 — Pre-proposal",
+            code="nwo_veni_2025_preproposal",
+            call_year=2025,
+            is_active=True,
+        )
+        session.add(call)
+        session.commit()
+        session.refresh(call)
+
+        nodes_by_logical_id: dict[str, ProposalNode] = {}
+        for order_index, logical_id in enumerate(
+            ["academic_profile", "key_outputs", "research_idea"], start=1
+        ):
+            node = ProposalNode(
+                funding_call_id=call.id,
+                parent_node_id=None,
+                logical_id=logical_id,
+                node_type=NodeType.SECTION,
+                title=logical_id,
+                order_index=order_index,
+            )
+            session.add(node)
+            session.commit()
+            session.refresh(node)
+            nodes_by_logical_id[logical_id] = node
+
+        criterion = EvaluationCriterion(
+            funding_call_id=call.id,
+            logical_id="crit_quality_of_researcher",
+            name="Quality",
+            description="Quality criterion",
+            order_index=1,
+        )
+        session.add(criterion)
+        session.commit()
+        session.refresh(criterion)
+
+        elements = {
+            "profile": EvaluationElement(
+                evaluation_criterion_id=criterion.id,
+                logical_id="elem_profile_quality",
+                name="Profile quality",
+                description="Profile quality",
+            ),
+            "outputs": EvaluationElement(
+                evaluation_criterion_id=criterion.id,
+                logical_id="elem_outputs_quality",
+                name="Outputs quality",
+                description="Outputs quality",
+            ),
+            "alignment": EvaluationElement(
+                evaluation_criterion_id=criterion.id,
+                logical_id="elem_cv_idea_alignment",
+                name="Alignment",
+                description="Alignment",
+            ),
+            "alignment_plan": EvaluationElement(
+                evaluation_criterion_id=criterion.id,
+                logical_id="elem_alignment_plan_credibility",
+                name="Alignment plan",
+                description="Alignment plan",
+            ),
+            "idea_other": EvaluationElement(
+                evaluation_criterion_id=criterion.id,
+                logical_id="elem_innovative_ideas_capability",
+                name="Innovative ideas",
+                description="Innovative ideas",
+            ),
+        }
+        for element in elements.values():
+            session.add(element)
+        session.commit()
+        for element in elements.values():
+            session.refresh(element)
+
+        expectations = [
+            NodeExpectation(
+                proposal_node_id=nodes_by_logical_id["academic_profile"].id,
+                evaluation_element_id=elements["profile"].id,
+                expectation_strength=ExpectationStrength.MANDATORY,
+                evaluation_intent=EvaluationIntent.QUALITY,
+                guidance_note="Test expectation",
+                order_index=1,
+            ),
+            NodeExpectation(
+                proposal_node_id=nodes_by_logical_id["key_outputs"].id,
+                evaluation_element_id=elements["outputs"].id,
+                expectation_strength=ExpectationStrength.MANDATORY,
+                evaluation_intent=EvaluationIntent.QUALITY,
+                guidance_note="Test expectation",
+                order_index=1,
+            ),
+            NodeExpectation(
+                proposal_node_id=nodes_by_logical_id["research_idea"].id,
+                evaluation_element_id=elements["alignment"].id,
+                expectation_strength=ExpectationStrength.MANDATORY,
+                evaluation_intent=EvaluationIntent.QUALITY,
+                guidance_note="Test expectation",
+                order_index=1,
+            ),
+            NodeExpectation(
+                proposal_node_id=nodes_by_logical_id["research_idea"].id,
+                evaluation_element_id=elements["alignment_plan"].id,
+                expectation_strength=ExpectationStrength.MANDATORY,
+                evaluation_intent=EvaluationIntent.QUALITY,
+                guidance_note="Test expectation",
+                order_index=2,
+            ),
+            NodeExpectation(
+                proposal_node_id=nodes_by_logical_id["research_idea"].id,
+                evaluation_element_id=elements["idea_other"].id,
+                expectation_strength=ExpectationStrength.MANDATORY,
+                evaluation_intent=EvaluationIntent.QUALITY,
+                guidance_note="Test expectation",
+                order_index=3,
+            ),
+        ]
+        for expectation in expectations:
+            session.add(expectation)
+        session.commit()
+
+        template = PromptTemplate(
+            name="Structured test template",
+            template_text="Template",
+            is_active=True,
+        )
+        session.add(template)
+        session.commit()
+
+        return call.id
+    finally:
+        session.close()
+
+
+def create_client_with_structured_alignment_seed(
+    monkeypatch,
+) -> tuple[TestClient, UUID]:
+    """Create test client with graph suitable for structured alignment E2E."""
+    monkeypatch.setenv("LLM_MODE", "stub")
+    monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    reset_database()
+    call_id = seed_structured_alignment_api_data()
+    return TestClient(app), call_id
 
 
 def build_signature_headers(
@@ -293,6 +506,31 @@ def post_review(
     headers["Idempotency-Key"] = request_idempotency_key
     headers["Content-Type"] = "application/json"
     return client.post("/reviews", content=body, headers=headers)
+
+
+def post_structured_review(
+    *,
+    client: TestClient,
+    payload: dict[str, object],
+    user_id: str = TEST_USER_ID,
+    idempotency_key: str | None = None,
+    timestamp: int | None = None,
+    shared_secret: str = TEST_BFF_SHARED_SECRET,
+) -> object:
+    """Call POST /api/structured-review with signed headers."""
+    body = json.dumps(payload).encode("utf-8")
+    headers = build_signature_headers(
+        body=body,
+        user_id=user_id,
+        timestamp=timestamp,
+        shared_secret=shared_secret,
+    )
+    request_idempotency_key = (
+        f"idem-{time.time_ns()}" if idempotency_key is None else idempotency_key
+    )
+    headers["Idempotency-Key"] = request_idempotency_key
+    headers["Content-Type"] = "application/json"
+    return client.post("/api/structured-review", content=body, headers=headers)
 
 
 def post_compliance(
@@ -495,6 +733,326 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
         == "Scientific excellence of the proposal section."
     )
     assert detail_payload["cards"][0]["rating"] == "NOTE"
+    assert detail_payload["cards"][0]["assessment_status"] is None
+    assert detail_payload["cards"][0]["not_assessable_reason"] is None
+
+
+def test_review_repository_supports_structured_write_path(monkeypatch) -> None:
+    _, seeded_ids = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        expectation = session.exec(select(NodeExpectation)).first()
+
+        assert template is not None
+        assert expectation is not None
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"structured-write-smoke-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={"academic_profile": "profile text"},
+        )
+        assert review.proposal_snippet_id is None
+        assert review.review_type == "structured"
+        assert review.structured_payload == {"academic_profile": "profile text"}
+
+        card = repository.create_review_card(
+            review_id=review.id,
+            expectation_id=expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback="Not assessable due to missing context",
+            assessment_status=AssessmentStatus.NOT_ASSESSABLE,
+            not_assessable_reason="missing key_outputs",
+        )
+        assert card.assessment_status == AssessmentStatus.NOT_ASSESSABLE
+        assert card.not_assessable_reason == "missing key_outputs"
+    finally:
+        session.close()
+
+
+def test_review_repository_read_paths_support_structured_reviews(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    single_response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Legacy single review text.",
+        },
+    )
+    assert single_response.status_code == 200
+
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        expectation = session.exec(select(NodeExpectation)).first()
+
+        assert template is not None
+        assert expectation is not None
+
+        structured_review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"structured-read-smoke-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+                "nodes": {"academic_profile": "profile text"},
+            },
+        )
+        repository.create_review_card(
+            review_id=structured_review.id,
+            expectation_id=expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback="Not assessable due to missing context",
+            assessment_status=AssessmentStatus.NOT_ASSESSABLE,
+            not_assessable_reason="missing key_outputs",
+        )
+
+        rows = repository.list_reviews_for_external_user(TEST_USER_ID)
+        call_names = [call_name for _, call_name, _ in rows]
+        node_titles = [node_title for _, _, node_title in rows]
+        assert "NWO Talent Programme — Veni 2025 — Pre-proposal" in call_names
+        assert "Structured review" in node_titles
+        assert any(title != "Structured review" for title in node_titles)
+
+        owner = repository.get_review_owner_external_user_id(structured_review.id)
+        assert owner == TEST_USER_ID
+
+        deleted = repository.delete_review_hard(structured_review.id)
+        assert deleted is True
+        assert repository.get_review_by_id(structured_review.id) is None
+        remaining_cards = list(
+            session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == structured_review.id)
+            ).all()
+        )
+        assert remaining_cards == []
+    finally:
+        session.close()
+
+
+def test_create_structured_review_empty_nodes_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={"call_id": str(seeded_ids.structured_call_id), "nodes": []},
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "STRUCTURED_NODES_REQUIRED"
+
+
+def test_create_structured_review_unknown_node_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "unknown_node", "text": "abc"}],
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "UNKNOWN_NODE_ID"
+
+
+def test_create_structured_review_duplicate_node_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "one two"},
+                {"node_logical_id": "academic_profile", "text": "three four"},
+            ],
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "DUPLICATE_NODE_ID"
+
+
+def test_create_structured_review_payload_too_large_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "x" * 10_001}],
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "STRUCTURED_PAYLOAD_TOO_LARGE"
+
+
+def test_create_structured_review_success_persists_structured_fields(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "profile text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    review_id = response.json()["review_id"]
+
+    session = get_session()
+    try:
+        review = session.get(Review, UUID(review_id))
+        assert review is not None
+        assert review.review_type == "structured"
+        assert review.proposal_snippet_id is None
+        assert review.structured_payload == {
+            "call_id": str(seeded_ids.structured_call_id),
+            "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+            "nodes": {"academic_profile": "profile text"},
+        }
+
+        cards = list(
+            session.exec(select(ReviewCard).where(ReviewCard.review_id == review.id)).all()
+        )
+        assert cards
+        assert all(card.assessment_status == AssessmentStatus.ASSESSED for card in cards)
+    finally:
+        session.close()
+
+
+def test_structured_review_e2e_happy_path_three_nodes(monkeypatch) -> None:
+    client, call_id = create_client_with_structured_alignment_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "Academic profile text"},
+                {"node_logical_id": "key_outputs", "text": "Key outputs text"},
+                {"node_logical_id": "research_idea", "text": "Research idea text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "COMPLETED"
+
+    detail = get_review_detail(client=client, review_id=payload["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    assert len(cards) == 5
+    assert all(card["assessment_status"] == "ASSESSED" for card in cards)
+    assert all(card["not_assessable_reason"] is None for card in cards)
+
+
+def test_structured_review_e2e_partial_submission_marks_alignment_not_assessable(
+    monkeypatch,
+) -> None:
+    client, call_id = create_client_with_structured_alignment_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "nodes": [
+                {"node_logical_id": "key_outputs", "text": "Key outputs text"},
+                {"node_logical_id": "research_idea", "text": "Research idea text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "COMPLETED"
+
+    detail = get_review_detail(client=client, review_id=payload["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    not_assessable_cards = [
+        card for card in cards if card["assessment_status"] == "NOT_ASSESSABLE"
+    ]
+    assert len(not_assessable_cards) == 2
+    assert all(
+        "academic_profile" in (card["not_assessable_reason"] or "")
+        for card in not_assessable_cards
+    )
+
+
+def test_failed_structured_review_detail_returns_partial_cards(monkeypatch) -> None:
+    monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.001")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    call_counter = {"count": 0}
+
+    def slow_second_generate(_: StubLLMClient, prompt: str) -> str:
+        call_counter["count"] += 1
+        if call_counter["count"] == 2:
+            time.sleep(0.05)
+        expectation_ids = re.findall(r"ID:\s*([0-9a-fA-F-]{36})", prompt)
+        return json.dumps(
+            {
+                "feedbacks": [
+                    {
+                        "node_expectation_id": expectation_id,
+                        "feedback": f"Feedback for {expectation_id}",
+                    }
+                    for expectation_id in expectation_ids
+                ]
+            }
+        )
+
+    monkeypatch.setattr(StubLLMClient, "generate", slow_second_generate)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "profile text"},
+                {"node_logical_id": "scientific_proposal", "text": "proposal text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "FAILED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    assert cards
+    assert cards[0]["assessment_status"] == "ASSESSED"
+    assert cards[0]["not_assessable_reason"] is None
+
+
+def test_cross_endpoint_idempotency_collision_returns_409(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    idempotency_key = "shared-idempotency-key"
+
+    first = post_review(
+        client=client,
+        idempotency_key=idempotency_key,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Legacy request payload",
+        },
+    )
+    assert first.status_code == 200
+
+    second = post_structured_review(
+        client=client,
+        idempotency_key=idempotency_key,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert second.status_code == 409
+    assert second.json()["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
 
 
 def test_snippet_too_long_returns_domain_error(monkeypatch) -> None:
@@ -884,6 +1442,8 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "DUPLICATE_NODE_ID": 422,
         "DOMAIN_REQUIRED": 422,
         "DOMAIN_INVALID": 422,
+        "STRUCTURED_NODES_REQUIRED": 422,
+        "STRUCTURED_PAYLOAD_TOO_LARGE": 422,
         "VALIDATION_ERROR": 400,
         "INTERNAL_ERROR": 500,
     }

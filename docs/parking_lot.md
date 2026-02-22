@@ -65,10 +65,9 @@ When you pick an item to start work:
 | 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
 | 3 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
 | 4 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
-| 5 | NWO Veni 2025 preproposal — WF-5: Add structured reviews API + NOT_ASSESSABLE alignment | product | Persist structured submission and enforce “missing context → NOT_ASSESSABLE” (never fabricate alignment). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 6 | NWO Veni 2025 preproposal — WF-6: Build frontend structured form + compliance UI + idempotent drafts | product | Replace single snippet textarea with 3-node structured input for this call; render compliance separately. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 7 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 8 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 5 | NWO Veni 2025 preproposal — WF-6: Build frontend structured form + compliance UI + idempotent drafts | product | Replace single snippet textarea with 3-node structured input for this call; render compliance separately. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 6 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 7 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 
 ---
 
@@ -80,6 +79,15 @@ When you pick an item to start work:
 | 2 | Add error monitoring (Sentry) | ops | Zero error tracking in production; blind to LLM timeouts, BFF failures, and client crashes with real users. | 2026-02-16 |
 | 3 | Prompt quality tuning | product | Test AI output quality with real ERC/NWO proposals; tune `PromptTemplate` for actionable, criteria-specific feedback. | 2026-02-16 |
 | 4 | Production hardening | ops | Lock CORS, verify rate limiting beyond daily quota, add custom 404 page, tune Vercel/Render timeout alignment. | 2026-02-16 |
+| 5 | Structured review: single mega-prompt optimization | product | Replace per-node sequential LLM calls with a single mega-prompt for all nodes — fewer API calls, lower latency. Directly mitigates the 3× latency risk (15–45s) identified in WF-0029 brainstorm S6 Q4. Requires new prompt template + parser. (Ref: WF-0029 brainstorm Q4.2 option B) | 2026-02-22 |
+| 6 | Structured review: LLM-generated overall summary | product | After per-node reviews, add an additional LLM call to synthesize a holistic cross-node summary (alignment, strengths, gaps). (Ref: WF-0029 brainstorm Q4.4 option A) | 2026-02-22 |
+| 7 | Review prompt revision for V2 expectations structure | product | Revise `build_review_prompt()` to optimally reference V2 `EvaluationCriterion` / `EvaluationElement` fields from updated YAML ingestion. Current prompt functions but isn't tuned for V2. (Ref: WF-0029 brainstorm S4 Q2 note) | 2026-02-22 |
+| 8 | Structured review: parallel per-node LLM calls | product | Fire LLM calls concurrently instead of sequentially — faster wall-clock time but adds rate-limiting and error-handling complexity. May be unnecessary if mega-prompt (P2 #5) is adopted instead. (Ref: WF-0029 brainstorm S4 Q2 option C, S8 Q5) | 2026-02-22 |
+| 9 | Structured review: batch submission of multiple proposals | product | Allow submitting multiple proposals or revisions in one request. May not be needed depending on app evolution. (Ref: WF-0029 brainstorm S8 Q5) | 2026-02-22 |
+| 10 | Structured review: async processing / polling | product | Synchronous MVP may hit 90s worst-case latency. Async would POST → return review_id → poll for completion. Adds WebSocket/polling complexity. (Ref: WF-0029 PRD v0.3 deferral) | 2026-02-22 |
+| 11 | Structured review: `StructuredSubmission` aggregate table | tech-debt | Replace JSONB `structured_payload` on Review with a proper normalized aggregate table linking multiple `ProposalSnippet` rows to one Review. Enables per-node audit history and replay. (Ref: WF-0029 brainstorm §9.1 option A, deferred in PRD v0.3) | 2026-02-22 |
+| 12 | Structured review: `requires_context_from` dependency engine | product | Add `requires_context_from: list[str]` field to YAML `node_expectations` + V2 schema + `NodeExpectation` model + ingestion pipeline. Replaces hardcoded NWO Veni rules with generalized cross-node context resolution. (Ref: WF-0029 brainstorm §9.4, deferred in PRD v0.3) | 2026-02-22 |
+| 13 | Structured review: per-node grouped detail endpoint | product | New `/reviews/{id}/structured` endpoint returning `nodes[].cards[]` grouped response. Current MVP uses flat `cards[]` from existing detail endpoint. (Ref: WF-0029 PRD v0.3 deferral) | 2026-02-22 |
 
 ---
 
@@ -98,6 +106,7 @@ When you pick an item to start work:
 | 9 | P1 | NWO Veni 2025 preproposal — WF-2: Add `logical_id` columns + ingest V2 YAML into DB | [WF-0021](tasks/task-WF-0021-nwo-veni-2025-preproposal-wf2.md) | 2026-02-21 |
 | 10 | P1 | NWO Veni 2025 preproposal — WF-3: Add `structured-config` endpoint + frontend mode gating | [WF-0027](tasks/task-WF-0027-nwo-veni-2025-preproposal-wf3.md) | 2026-02-21 |
 | 11 | P1 | NWO Veni 2025 preproposal — WF-4: Implement compliance engine + persist findings | [WF-0028](tasks/task-WF-0028-compliance-engine.md) | 2026-02-22 |
+| 12 | P1 | NWO Veni 2025 preproposal — WF-5: Add structured reviews API + NOT_ASSESSABLE alignment | [WF-0029](tasks/task-WF-0029-nwo-veni-2025-preproposal-wf5-structured-review.md) | 2026-02-22 |
 
 ---
 
@@ -106,3 +115,5 @@ When you pick an item to start work:
 - **v0.1** (2026-02-13): Created as a dedicated parking place for snapshot + priorities + non-urgent TODOs.
 - **v0.2** (2026-02-16): Restructured into P0/P1/P2 priority tables with independent numbering, code phrase (`park this`), and promotion mechanics. Pre-populated 15 MVP readiness items from deep frontend + infra audit.
 - **v0.3** (2026-02-22): Promoted WF-4 (compliance engine) to `WF-0028`, moved it to Promoted Items, and renumbered remaining P1 items.
+- **v0.4** (2026-02-22): Promoted WF-5 (structured reviews API) to `WF-0029`, moved it to Promoted Items, and renumbered remaining P1 items.
+- **v0.5** (2026-02-22): Added P2 #5 (mega-prompt), P2 #6 (overall summary), P2 #7 (prompt revision for V2) from WF-0029 brainstorm.

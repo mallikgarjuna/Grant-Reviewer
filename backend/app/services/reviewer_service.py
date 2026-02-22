@@ -4,14 +4,11 @@ Reviewer service - business logic layer.
 Rule: Services call Repositories. Controllers call Services.
 """
 
-import json
 import logging
 import os
-from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from concurrent.futures import TimeoutError
 from datetime import datetime
 from uuid import UUID
-
-from pydantic import ValidationError
 
 from app.models.domain import (
     NodeExpectation,
@@ -23,6 +20,7 @@ from app.models.domain import (
 from app.repositories.review_repository import ReviewRepository
 from app.schemas.llm_response import LLMReviewResponse
 from app.services.llm_client import LLMClientError, LLMClientProtocol, OpenAIClient
+from app.services.llm_helpers import generate_with_timeout, parse_llm_response
 from app.services.prompt_builder import build_review_prompt
 
 logger = logging.getLogger(__name__)
@@ -141,7 +139,11 @@ class ReviewerService:
         # 8. Call LLM
         try:
             logger.info("[Review] Calling LLM...")
-            raw_response = self._generate_with_timeout(prompt)
+            raw_response = generate_with_timeout(
+                llm_client=self.llm_client,
+                prompt=prompt,
+                timeout_seconds=self._timeout_seconds,
+            )
             review.raw_llm_response = raw_response
             logger.info("[Review] LLM call successful")
         except TimeoutError:
@@ -164,7 +166,7 @@ class ReviewerService:
         # 9. Parse and validate response
         try:
             logger.debug("[Review] Parsing LLM response...")
-            llm_response = self._parse_llm_response(raw_response)
+            llm_response = parse_llm_response(raw_response)
             logger.debug(
                 f"[Review] Parsed {len(llm_response.feedbacks)} feedback items"
             )
@@ -203,24 +205,6 @@ class ReviewerService:
 
         logger.info(f"[Review] ✓ Review {review.id} COMPLETED with {len(cards)} cards")
         return review, cards
-
-    def _generate_with_timeout(self, prompt: str) -> str:
-        """Run blocking LLM call with service-level timeout."""
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(self.llm_client.generate, prompt)
-            return future.result(timeout=self._timeout_seconds)
-
-    def _parse_llm_response(self, raw_response: str) -> LLMReviewResponse:
-        """Parse raw LLM response into structured format."""
-        try:
-            data = json.loads(raw_response)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON from LLM: {e}") from e
-
-        try:
-            return LLMReviewResponse.model_validate(data)
-        except ValidationError as e:
-            raise ValueError(f"LLM response schema validation failed: {e}") from e
 
     def _validate_response(
         self,

@@ -20,10 +20,9 @@ Quick links:
 | 8.0C | Deployment Wiring | [prd-8.0C](prds/completed/prd-8.0C-deployment-wiring.md) | [task-8.0C](tasks/completed/task-8.0C-deployment-wiring.md) | [walkthrough](walkthroughs/completed/walkthrough_task_8.0C_deployment_wiring.md) | [x] |
 | 8.1 | Lint Baseline Cleanup | [prd-8.1](prds/completed/prd-8.1-lint-baseline-cleanup.md) | [task-8.1](tasks/completed/task-8.1-lint-baseline-cleanup.md) | - | [x] |
 
-## WF Registry (new work)
+## WF Registry (Legacy with Spec)
 
-This table tracks new WF-based initiatives. Legacy task-ID artifacts remain above during migration.
-WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
+Historical WF initiatives that used a Spec artifact. Keep for reference only.
 
 | WF ID | Slug / Feature | Brainstorm | Spec | PRD | Task File | Walkthrough | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -42,9 +41,18 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF-0023 | tier2-phase4 | [Brainstorm](brainstorms/completed/brainstorm-WF-0023-tier2-phase4.md) | [Spec](specs/features/completed/spec-WF-0023-tier2-phase4.md) | [PRD](prds/completed/prd-WF-0023-tier2-phase4.md) | [Tasks](tasks/completed/task-WF-0023-tier2-phase4.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0023-tier2-phase4.md) | Done |
 | WF-0024 | tier3-refactor | [Brainstorm](brainstorms/completed/brainstorm-WF-0024-tier3-refactor.md) | [Spec](specs/features/completed/spec-WF-0024-tier3-refactor.md) | [PRD](prds/completed/prd-WF-0024-tier3-refactor.md) | [Tasks](tasks/completed/task-WF-0024-tier3-refactor.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0024-tier3-refactor.md) | Done |
 | WF-0025 | archiving-convention | [Brainstorm](brainstorms/completed/brainstorm-WF-0025-archiving-convention.md) | [Spec](specs/features/completed/spec-WF-0025-archiving-convention.md) | [PRD](prds/completed/prd-WF-0025-archiving-convention.md) | [Tasks](tasks/completed/task-WF-0025-archiving-convention.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0025-archiving-convention.md) | Done |
-| WF-0026 | sdlc-4-phase-refactor | [Brainstorm](brainstorms/completed/brainstorm-WF-0026-sdlc-4-phase-refactor.md) | - | [PRD](prds/completed/prd-WF-0026-sdlc-4-phase-refactor.md) | [Tasks](tasks/completed/task-WF-0026-sdlc-4-phase-refactor.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0026-sdlc-4-phase-refactor.md) | Done |
-| WF-0027 | nwo-veni-2025-preproposal-wf3 | [Brainstorm](brainstorms/completed/brainstorm-WF-0027-nwo-veni-2025-preproposal-wf3.md) | - | [PRD](prds/completed/prd-WF-0027-nwo-veni-2025-preproposal-wf3.md) | [Tasks](tasks/completed/task-WF-0027-nwo-veni-2025-preproposal-wf3.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0027-nwo-veni-2025-preproposal-wf3.md) | Done |
-| WF-0028 | compliance-engine | [Brainstorm](brainstorms/completed/brainstorm-WF-0028-compliance-engine.md) | - | [PRD](prds/completed/prd-WF-0028-compliance-engine.md) | [Tasks](tasks/completed/task-WF-0028-compliance-engine.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0028-compliance-engine.md) | Done |
+
+## WF Registry (No Spec — Active Standard)
+
+Use this table for all new WF initiatives going forward.
+WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
+
+| WF ID | Slug / Feature | Brainstorm | PRD | Task File | Walkthrough | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| WF-0026 | sdlc-4-phase-refactor | [Brainstorm](brainstorms/completed/brainstorm-WF-0026-sdlc-4-phase-refactor.md) | [PRD](prds/completed/prd-WF-0026-sdlc-4-phase-refactor.md) | [Tasks](tasks/completed/task-WF-0026-sdlc-4-phase-refactor.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0026-sdlc-4-phase-refactor.md) | Done |
+| WF-0027 | nwo-veni-2025-preproposal-wf3 | [Brainstorm](brainstorms/completed/brainstorm-WF-0027-nwo-veni-2025-preproposal-wf3.md) | [PRD](prds/completed/prd-WF-0027-nwo-veni-2025-preproposal-wf3.md) | [Tasks](tasks/completed/task-WF-0027-nwo-veni-2025-preproposal-wf3.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0027-nwo-veni-2025-preproposal-wf3.md) | Done |
+| WF-0028 | compliance-engine | [Brainstorm](brainstorms/completed/brainstorm-WF-0028-compliance-engine.md) | [PRD](prds/completed/prd-WF-0028-compliance-engine.md) | [Tasks](tasks/completed/task-WF-0028-compliance-engine.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0028-compliance-engine.md) | Done |
+| WF-0029 | nwo-veni-2025-preproposal-wf5-structured-review | [Brainstorm](brainstorms/completed/brainstorm-WF-0029-nwo-veni-2025-preproposal-wf5-structured-review.md) | [PRD](prds/completed/prd-WF-0029-nwo-veni-2025-preproposal-wf5-structured-review.md) | [Tasks](tasks/completed/task-WF-0029-nwo-veni-2025-preproposal-wf5-structured-review.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0029-nwo-veni-2025-preproposal-wf5-structured-review.md) | Done |
 ---
 
 ## Research & Market Analysis

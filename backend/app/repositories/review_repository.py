@@ -5,12 +5,14 @@ Rule: Only repositories talk to the database directly.
 """
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlmodel import Session, select
 
 from app.models.domain import (
+    AssessmentStatus,
     CallDefinition,
     EvaluationCriterion,
     EvaluationElement,
@@ -159,13 +161,15 @@ class ReviewRepository:
 
     def create_review(
         self,
-        snippet_id: UUID,
         template_id: UUID,
+        snippet_id: UUID | None = None,
         *,
         external_user_id: str | None = None,
         idempotency_key: str | None = None,
         request_payload_sha256: str | None = None,
         idempotency_expires_at: datetime | None = None,
+        review_type: str = "single",
+        structured_payload: dict[str, Any] | None = None,
     ) -> Review:
         """Create a new review record."""
         review = Review(
@@ -175,6 +179,8 @@ class ReviewRepository:
             idempotency_key=idempotency_key,
             request_payload_sha256=request_payload_sha256,
             idempotency_expires_at=idempotency_expires_at,
+            review_type=review_type,
+            structured_payload=structured_payload,
         )
         self.session.add(review)
         self.session.commit()
@@ -237,6 +243,12 @@ class ReviewRepository:
 
     def get_review_owner_external_user_id(self, review_id: UUID) -> str | None:
         """Fetch owning external user id for a review."""
+        review = self.get_review_by_id(review_id)
+        if review is None:
+            return None
+        if review.proposal_snippet_id is None:
+            return review.external_user_id
+
         statement = (
             select(User.email)
             .join(ProposalSnippet, ProposalSnippet.user_id == User.id)
@@ -287,7 +299,9 @@ class ReviewRepository:
         if review is None:
             return False
 
-        snippet = self.session.get(ProposalSnippet, review.proposal_snippet_id)
+        snippet = None
+        if review.proposal_snippet_id is not None:
+            snippet = self.session.get(ProposalSnippet, review.proposal_snippet_id)
         cards = self.get_review_cards_ordered(review_id)
 
         for card in cards:
@@ -305,6 +319,8 @@ class ReviewRepository:
         expectation_id: UUID,
         rating: ReviewRating,
         feedback: str,
+        assessment_status: AssessmentStatus = AssessmentStatus.ASSESSED,
+        not_assessable_reason: str | None = None,
     ) -> ReviewCard:
         """Create a new review card."""
         card = ReviewCard(
@@ -312,6 +328,8 @@ class ReviewRepository:
             node_expectation_id=expectation_id,
             rating=rating,
             feedback_text=feedback,
+            assessment_status=assessment_status,
+            not_assessable_reason=not_assessable_reason,
         )
         self.session.add(card)
         self.session.commit()
@@ -345,22 +363,53 @@ class ReviewRepository:
         """
         capped_limit = min(max(limit, 1), 100)
         statement = (
-            select(Review, FundingCall.name, ProposalNode.title)
+            select(
+                Review,
+                FundingCall.name,
+                func.coalesce(ProposalNode.title, "Structured review"),
+                Review.structured_payload,
+            )
             .join(
                 ProposalSnippet,
                 Review.proposal_snippet_id == ProposalSnippet.id,
+                isouter=True,
             )
             .join(
                 FundingCall,
                 ProposalSnippet.funding_call_id == FundingCall.id,
+                isouter=True,
             )
             .join(
                 ProposalNode,
                 ProposalSnippet.proposal_node_id == ProposalNode.id,
+                isouter=True,
             )
             .where(Review.external_user_id == external_user_id)
-            .where(ProposalNode.archived_at.is_(None))
+            .where(
+                or_(
+                    ProposalNode.archived_at.is_(None),
+                    ProposalNode.id.is_(None),
+                )
+            )
             .order_by(Review.created_at.desc())
             .limit(capped_limit)
         )
-        return list(self.session.exec(statement).all())
+        rows = list(self.session.exec(statement).all())
+
+        normalized_rows: list[tuple[Review, str, str]] = []
+        for review, call_name, node_title, structured_payload in rows:
+            resolved_call_name = call_name
+            if resolved_call_name is None and isinstance(structured_payload, dict):
+                payload_call_name = structured_payload.get("call_name")
+                if isinstance(payload_call_name, str) and payload_call_name.strip():
+                    resolved_call_name = payload_call_name.strip()
+
+            normalized_rows.append(
+                (
+                    review,
+                    resolved_call_name or "Structured review",
+                    node_title,
+                )
+            )
+
+        return normalized_rows

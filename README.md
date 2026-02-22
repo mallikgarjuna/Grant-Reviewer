@@ -31,7 +31,7 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 ### Notes
 - MVP stack (current): **Neon** (Postgres) + **Render** (FastAPI) + **Vercel** (Next.js) + **Clerk** (auth).
 - Production bootstrap runs from a developer machine (Render free tier has no shell). See `docs/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md`.
-- Workflow status: `WF-0018` is complete (`docs/index.md` marked `Done`).
+- Workflow status: See `docs/index.md` WF registry for current active/completed workflow state.
 
 ## Quick Start
 

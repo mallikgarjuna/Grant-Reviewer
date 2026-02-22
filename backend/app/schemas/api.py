@@ -97,6 +97,8 @@ class ReviewCardSummary(BaseModel):
     criterion_description: str | None
     rating: ReviewRating
     feedback_text: str
+    assessment_status: str | None = None
+    not_assessable_reason: str | None = None
 
 
 class ReviewDetailResponse(BaseModel):

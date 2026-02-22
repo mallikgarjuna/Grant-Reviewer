@@ -46,6 +46,11 @@ class ReviewStatus(enum.StrEnum):
     FAILED = "FAILED"
 
 
+class AssessmentStatus(enum.StrEnum):
+    ASSESSED = "ASSESSED"
+    NOT_ASSESSABLE = "NOT_ASSESSABLE"
+
+
 # 1. FundingAgency
 class FundingAgency(SQLModel, table=True):
     """Organization defining the rules, criteria, and philosophy for grant calls."""
@@ -395,7 +400,8 @@ class Review(SQLModel, table=True):
     )
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    proposal_snippet_id: UUID = Field(
+    proposal_snippet_id: UUID | None = Field(
+        default=None,
         foreign_key="proposal_snippets.id",
         description="Evaluated text source",
     )
@@ -445,6 +451,18 @@ class Review(SQLModel, table=True):
         default=None,
         description="Expiry timestamp after which the idempotency key can be reused",
     )
+    review_type: str = Field(
+        default="single",
+        description="Review type: single or structured",
+    )
+    structured_payload: dict[str, Any] | None = Field(
+        default=None,
+        sa_column=Column(
+            JSON().with_variant(JSONB, "postgresql"),
+            nullable=True,
+        ),
+        description="Raw structured submission payload for multi-node reviews",
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships
@@ -469,6 +487,14 @@ class ReviewCard(SQLModel, table=True):
         description="Computed severity (e.g., SUCCESS, CRITICAL)",
     )
     feedback_text: str = Field(description="Markdown content of the AI assessment")
+    assessment_status: AssessmentStatus = Field(
+        default=AssessmentStatus.ASSESSED,
+        description="Whether this card was assessed by the LLM or marked not assessable",
+    )
+    not_assessable_reason: str | None = Field(
+        default=None,
+        description="Reason for NOT_ASSESSABLE cards",
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Relationships

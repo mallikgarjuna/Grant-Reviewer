@@ -40,10 +40,16 @@ from app.schemas.api import (
     ReviewSummary,
 )
 from app.schemas.compliance import ComplianceCheckRequest, ComplianceCheckResponse
+from app.schemas.structured_review import (
+    MAX_NODE_TEXT_CHARS,
+    MAX_STRUCTURED_PAYLOAD_CHARS,
+    StructuredReviewRequest,
+)
 from app.services.call_definition_service import CallDefinitionService
 from app.services.compliance_engine import evaluate_compliance
 from app.services.llm_client import build_llm_client
 from app.services.reviewer_service import ReviewerService
+from app.services.structured_reviewer_service import StructuredReviewerService
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +80,8 @@ ERROR_STATUS_BY_CODE = {
     "DUPLICATE_NODE_ID": 422,
     "DOMAIN_REQUIRED": 422,
     "DOMAIN_INVALID": 422,
+    "STRUCTURED_NODES_REQUIRED": 422,
+    "STRUCTURED_PAYLOAD_TOO_LARGE": 422,
     "VALIDATION_ERROR": 400,
     "INTERNAL_ERROR": 500,
 }
@@ -514,6 +522,172 @@ def check_compliance(
 
 
 @app.post(
+    "/api/structured-review",
+    response_model=CreateReviewResponse,
+    responses=API_ERROR_RESPONSES,
+)
+def create_structured_review(
+    payload: StructuredReviewRequest,
+    repository: RepositoryDep,
+    external_user_id: Annotated[str, Depends(require_bff_user_id)],
+    request: Request,
+) -> CreateReviewResponse:
+    """Create a structured multi-node review synchronously."""
+    idempotency_key = request.headers.get("Idempotency-Key", "").strip()
+    if not idempotency_key:
+        raise APIException(
+            code="VALIDATION_ERROR",
+            message="Missing required Idempotency-Key header.",
+        )
+
+    payload_json = json.dumps(
+        payload.model_dump(mode="json"),
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    request_payload_sha256 = hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
+    now = datetime.now(UTC)
+
+    existing_review = repository.get_active_review_by_idempotency(
+        external_user_id=external_user_id,
+        idempotency_key=idempotency_key,
+        at_time=now,
+    )
+    if existing_review is not None:
+        if existing_review.request_payload_sha256 != request_payload_sha256:
+            raise APIException(
+                code="IDEMPOTENCY_PAYLOAD_MISMATCH",
+                message="Idempotency key was already used with a different payload.",
+            )
+        return CreateReviewResponse(
+            review_id=existing_review.id,
+            status=existing_review.status,
+        )
+
+    if not _is_reviews_enabled():
+        raise APIException(
+            code="REVIEWS_DISABLED",
+            message="Reviews are temporarily disabled.",
+        )
+
+    day_start = datetime(now.year, now.month, now.day, tzinfo=UTC)
+    day_end = day_start + timedelta(days=1)
+    free_daily_limit = _get_free_daily_review_limit()
+    used_today = repository.count_reviews_for_external_user_between(
+        external_user_id=external_user_id,
+        start_time=day_start,
+        end_time=day_end,
+    )
+    if used_today >= free_daily_limit:
+        raise APIException(
+            code="QUOTA_EXCEEDED",
+            message="Daily review quota exceeded.",
+            details={
+                "limit": free_daily_limit,
+                "remaining": 0,
+                "reset_at": day_end.isoformat(),
+            },
+        )
+
+    call = repository.get_call_by_id(payload.call_id)
+    if call is None:
+        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+
+    if not payload.nodes:
+        raise APIException(
+            code="STRUCTURED_NODES_REQUIRED",
+            message="At least one node is required.",
+        )
+
+    total_chars = 0
+    duplicates: set[str] = set()
+    seen: set[str] = set()
+    for node in payload.nodes:
+        total_chars += len(node.text)
+        if len(node.text) > MAX_NODE_TEXT_CHARS:
+            raise APIException(
+                code="STRUCTURED_PAYLOAD_TOO_LARGE",
+                message=(
+                    f"Node '{node.node_logical_id}' exceeds max length of "
+                    f"{MAX_NODE_TEXT_CHARS} characters."
+                ),
+            )
+        if node.node_logical_id in seen:
+            duplicates.add(node.node_logical_id)
+        else:
+            seen.add(node.node_logical_id)
+    if duplicates:
+        raise APIException(
+            code="DUPLICATE_NODE_ID",
+            message="Duplicate node_logical_id values are not allowed.",
+            details={"node_logical_ids": sorted(duplicates)},
+        )
+    if total_chars > MAX_STRUCTURED_PAYLOAD_CHARS:
+        raise APIException(
+            code="STRUCTURED_PAYLOAD_TOO_LARGE",
+            message=(
+                "Structured payload exceeds max total length of "
+                f"{MAX_STRUCTURED_PAYLOAD_CHARS} characters."
+            ),
+            details={"max_chars": MAX_STRUCTURED_PAYLOAD_CHARS},
+        )
+
+    available_node_ids = {
+        node.logical_id
+        for node, _ in repository.get_nodes_for_call(payload.call_id)
+        if isinstance(node.logical_id, str)
+    }
+    submitted_node_ids = [node.node_logical_id for node in payload.nodes]
+    unknown_ids = sorted(set(submitted_node_ids) - available_node_ids)
+    if unknown_ids:
+        raise APIException(
+            code="UNKNOWN_NODE_ID",
+            message="One or more node_logical_id values are unknown for this call.",
+            details={"node_logical_ids": unknown_ids},
+        )
+
+    reviewer_service = StructuredReviewerService(
+        repository=repository,
+        llm_client=build_llm_client(),
+    )
+    try:
+        review, _ = reviewer_service.generate_structured_review(
+            call_id=payload.call_id,
+            nodes=[(node.node_logical_id, node.text) for node in payload.nodes],
+            external_user_id=external_user_id,
+            idempotency_key=idempotency_key,
+            request_payload_sha256=request_payload_sha256,
+            idempotency_expires_at=now + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
+        )
+    except IntegrityError as err:
+        repository.rollback()
+        existing_on_conflict = (
+            repository.get_review_by_external_user_and_idempotency_key(
+                external_user_id=external_user_id,
+                idempotency_key=idempotency_key,
+            )
+        )
+        if existing_on_conflict is None:
+            raise APIException(
+                code="INTERNAL_ERROR",
+                message="Idempotency conflict handling failed.",
+            ) from err
+        if existing_on_conflict.request_payload_sha256 != request_payload_sha256:
+            raise APIException(
+                code="IDEMPOTENCY_PAYLOAD_MISMATCH",
+                message="Idempotency key was already used with a different payload.",
+            ) from err
+        return CreateReviewResponse(
+            review_id=existing_on_conflict.id,
+            status=existing_on_conflict.status,
+        )
+    except ValueError as err:
+        raise APIException(code="VALIDATION_ERROR", message=str(err)) from err
+
+    return CreateReviewResponse(review_id=review.id, status=review.status)
+
+
+@app.post(
     "/reviews",
     response_model=CreateReviewResponse,
     responses=API_ERROR_RESPONSES,
@@ -701,7 +875,9 @@ def get_review(
         raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
 
     cards_with_criteria = []
-    if review.status == ReviewStatus.COMPLETED:
+    if review.status == ReviewStatus.COMPLETED or (
+        review.status == ReviewStatus.FAILED and review.review_type == "structured"
+    ):
         cards_with_criteria = repository.get_review_cards_with_criteria(review_id)
 
     return ReviewDetailResponse(
@@ -719,6 +895,14 @@ def get_review(
                 criterion_description=criterion_desc,
                 rating=card.rating,
                 feedback_text=card.feedback_text,
+                assessment_status=(
+                    card.assessment_status if review.review_type == "structured" else None
+                ),
+                not_assessable_reason=(
+                    card.not_assessable_reason
+                    if review.review_type == "structured"
+                    else None
+                ),
             )
             for card, criterion_name, criterion_desc in cards_with_criteria
         ],

@@ -69,7 +69,7 @@ Determine next ID by:
 
 All artifacts must follow:
 
-<brainstorm/spec/prd/task/walkthrough>-WF-XXXX-<slug>.md
+<brainstorm/prd/task/walkthrough>-WF-XXXX-<slug>.md
 
 ---
 

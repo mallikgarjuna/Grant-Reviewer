@@ -1,9 +1,13 @@
-# Feature Specs (WF)
+# Feature Specs (WF) — Deprecated For New Work
 
-This folder is for WF-based feature specs.
+This folder is retained for historical WF spec artifacts only.
 
-- Naming: `spec-<WF-ID>-<slug>.md`
-- Workflow reference: `docs/workflow/README.md`
+- No new files should be created in `docs/specs/features/`.
+- Existing files remain as immutable historical references.
+- For active workflows, use the no-spec pipeline:
+  - `docs/brainstorms/brainstorm-WF-XXXX-<slug>.md`
+  - `docs/prds/prd-WF-XXXX-<slug>.md`
+  - `docs/tasks/task-WF-XXXX-<slug>.md`
+  - `docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md`
 
-Migration note:
-- Legacy, task-based planning docs remain in `docs/tasks/` until mapped to WF IDs.
+Reference: `docs/specs/DEPRECATED.md`
