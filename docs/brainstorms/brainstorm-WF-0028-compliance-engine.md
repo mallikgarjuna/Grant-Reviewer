@@ -1,7 +1,7 @@
 # WF-0028 — NWO Veni 2025 preproposal Compliance Engine (WF-4 Phase)
 
 Artifact: brainstorm
-Version: v0.0
+Version: v0.1
 Status: Draft Complete
 Last Updated: 2026-02-22
 
@@ -75,19 +75,17 @@ Last Updated: 2026-02-22
 ## 4. Rough Idea (Unstructured Thinking)
 
 **Summary / Decisions:**
-- The simplest implementation direction is to read the compliance rules directly from the V2 database model (specifically looking at constraints like `word_limit`, `mandatory`, `compliance_rules`, and `guidance_text` on `EvaluationElement`).
-- The frontend will save the draft to the database first, then call a `/check-compliance/{draft_id}` API endpoint.
-- This endpoint will return an HTTP 200 with a structured JSON payload containing lists of `errors` and `warnings`, including the specific underlying reason/rule that failed so the UI can display *why* it failed.
-- The engine will be strictly read-only and will *not* auto-fix answers (leaving scientific nuance to the researcher).
-- The biggest technical risk is standardizing accurate word counting between the frontend editor and backend validator, so the UI must include a clear disclaimer about word count approximations.
+- The simplest implementation direction is to read the compliance rules directly from the canonical call definition JSON (hydrated via `CallDefinitionService.get_hydrated_nodes`), as constraints do *not* live on the `EvaluationElement` table directly. The frontend will pass a payload containing `call_id`, `domain` (required for domain-specific word limits), and a list of `draft_nodes` (pairing `node_id` with `snippet_text`), as no persisted multi-node "Draft" aggregate exists in the DB yet. This `/check-compliance` endpoint will return an HTTP 200 with a structured JSON payload containing lists of `errors` and `warnings`, explicitly defining fields like `node_logical_id`, `rule_id`, `severity`, `actual`, `expected`, `message`, and `is_blocking` so the UI can display *why* it failed.
+
+The engine will be strictly read-only and will *not* auto-fix answers (leaving scientific nuance to the researcher). The biggest technical risk is standardizing accurate word counting between the frontend editor and backend validator, so the UI must include a clear disclaimer about word count approximations.
 
 **Brainstorming Q&A:**
 - **Q1:** Where does the "source of truth" for compliance rules live?
-  - **A:** In the database, populated from the funding call YAML definitions (including `word_limit`, `mandatory`, `compliance_rules`, and `guidance_text`).
+  - **A:** In the canonical `CallDefinition` JSON (specifically `content_constraints` mapped to nodes), hydrated at runtime.
 - **Q2:** What should the compliance engine API endpoint return?
-  - **A:** HTTP 200 with a detailed JSON object containing lists of `errors` and `warnings` and the specific reasons/rules that failed, allowing the frontend to display exactly *why* an error was flagged.
+  - **A:** HTTP 200 with a detailed JSON object containing lists of `errors` and `warnings` (with exact fields: `node_logical_id`, `rule_id`, `severity`, `actual`, `expected`, `message`, `is_blocking`).
 - **Q3:** How is the proposal data passed to the compliance engine for checking?
-  - **A:** The frontend first saves the draft to the database, then calls a `/check-compliance/{draft_id}` endpoint.
+  - **A:** The frontend sends a transient payload with `call_id`, user `domain`, and a list of `draft_nodes` (`node_id` + `text`), because no persisted draft aggregate exists yet.
 - **Q4:** Should the compliance engine support "auto-fixing" issues?
   - **A:** No, it should strictly be read-only and return feedback. It is up to the researcher to fix it.
 - **Q5:** What is the highest technical risk for this rough idea?
@@ -99,12 +97,12 @@ Last Updated: 2026-02-22
 
 **Summary / Decisions:**
 - The system must be built as a purely data-driven, local backend Python service with no hardcoded AI calls or third-party dependencies.
-- It relies exclusively on the PostgreSQL `EvaluationElement` definitions.
+- It relies exclusively on the canonical call definition JSON (hydrated config) rather than hardcoded logic.
 - Because this is a blocking necessity for the upcoming frontend work (WF-6), the time constraint is strict: it must be shipped immediately.
 
 **Brainstorming Q&A:**
 - **Q1:** What is the primary technical constraint for the compliance engine?
-  - **A:** It must rely exclusively on the `EvaluationElement` definitions in the PostgreSQL database, meaning no hardcoded rules per funding call in the code.
+  - **A:** It must rely exclusively on the canonical call definition JSON configs, meaning no hardcoded rules per funding call in the code.
 - **Q2:** What is the time constraint for building this MVP?
   - **A:** Must be fully shipped today/tomorrow so we can unblock WF-6 (the complex frontend form).
 - **Q3:** Are there any external dependencies to worry about?
@@ -115,15 +113,15 @@ Last Updated: 2026-02-22
 ## 6. Risks / Unknowns
 
 **Summary / Decisions:**
-- The most fragile assumption is that the drafted `ProposalNode` tree structure perfectly aligns with the `EvaluationElement` tree; if they drift, the compliance traversal will break or return false positives.
-- Another major risk is aggregate constraints (e.g., a word limit on a parent section spanning multiple child subsections), which must be handled explicitly.
+- The most fragile assumption was that the `ProposalNode` tree structure was fully hierarchical; however, the V2 ingestion currently flattens nodes, meaning parent-child aggregate word counts cannot be natively supported from the DB projection as-is without re-inferring hierarchy.
+- Another major risk is ensuring the API payload explicitly includes the user's `domain`, as NWO word limits depend on the domain choice. Without it, domain-specific rules will fail.
 - To prevent future rework, the core validation logic must be built as a decoupled, purely testable Python function (`def evaluate_compliance(draft_id)`) separate from the FastAPI transport layer.
 
 **Brainstorming Q&A:**
 - **Q1:** What is the most fragile assumption we are making?
-  - **A:** That the `ProposalNode` tree structure in the database exactly matches the expected shape defined by the `EvaluationElement` tree for every call.
+  - **A:** That we can do parent/child aggregation easily. We cannot currently, because V2 ingestion flattens nodes with `parent_node_id=None`.
 - **Q2:** What edge case needs validation early?
-  - **A:** What happens if a constraint applies to a parent section but the drafted text is split among 5 child subsections? (e.g., aggregate word counts).
+  - **A:** Handling domain-specific rules (like NWO word limits) by ensuring the API payload explicitly requires a `domain` string.
 - **Q3:** What could cause the most rework later?
   - **A:** Tying the validation logic too tightly to the API transport layer instead of keeping it as a pure, testable internal Python service/function.
 
@@ -132,17 +130,17 @@ Last Updated: 2026-02-22
 ## 7. MVP Definition
 
 **Summary / Decisions:**
-- For the MVP, shipping within 2 days, the engine MUST evaluate word limits and mandatory field presence for all drafted text nodes against their corresponding YAML-defined `EvaluationElement` constraints.
-- This evaluation must correctly aggregate word counts from child nodes up to a parent node if the limit is defined on the parent (as is the case with NWO Veni's "Academic Profile").
-- Parsing complex string-based `compliance_rules` and `guidance_text` deterministically is explicitly excluded from the MVP computation; these will just be surfaced read-only to the UI.
+- For the MVP, shipping within 2 days, the engine MUST evaluate deterministic checks directly backed by the current schema: node-level text presence (requires a strict definition of 'mandatory' config in the PRD), `word_limit_by_domain` min/max limits (after adding domain input), and `max_items` (only if input format supports it).
+- Because hierarchy is currently flattened, hierarchical aggregation is explicitly excluded from the MVP.
+- Parsing complex natural-language string-based `compliance_rules` and `guidance_text` deterministically is explicitly excluded; these will just be surfaced read-only to the UI if at all.
 
 **Brainstorming Q&A:**
 - **Q1:** If we had to ship in 2 days, what MUST the compliance engine do?
-  - **A:** Evaluate word limits and mandatory field presence for all drafted text nodes against their corresponding YAML-defined `EvaluationElement` constraints.
+  - **A:** Evaluate deterministic `content_constraints` (e.g., `word_limit_by_domain` min/max) and node-level presence, relying purely on the hydrated canonical JSON config.
 - **Q2:** Which constraint check can explicitly wait for a future version?
-  - **A:** `compliance_rules` and `guidance_text` parsing (where rules are described in text rather than strict integers).
+  - **A:** Hierarchical parent-child aggregation, `compliance_rules` natural-language parsing, and `guidance_text`.
 - **Q3:** How deep should the hierarchical rule evaluation go for MVP?
-  - **A:** It must correctly aggregate word counts from child nodes up to a parent node if the limit is defined on the parent.
+  - **A:** It only evaluates 1:1 mappings (flat list of nodes) because V2 ingestion currently flattens the node tree. No aggregation up the tree for MVP.
 
 ---
 
