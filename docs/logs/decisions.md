@@ -696,3 +696,19 @@
 - **Why**: Prevents split-brain validation where the client interface counts 500 words, but the backend rejects over 100.
 - **Tradeoff**: Minimal constraint mapping required in the Next.js client.
 - **Status**: Implemented in PRD v0.3.
+
+### AD 30.7: Revert Universal Form Pivot (Veni-Only Scope)
+- **WF ID**: WF-0030
+- **Context**: Second Codex adversarial review flagged the "Universal Form" + "New Node Metadata DTO" as high-risk platform work that expands the MVP scope unsafely.
+- **Decision**: Revert AD 30.1 and AD 30.5. The WF-0030 MVP will be a hardcoded 3-node Veni form. No dynamic schema fetch. No backend DTO route.
+- **Why**: Protects the delivery timeline and guarantees we ship the end-to-end V2 experience quickly. Universal rendering will be tackled in a future, dedicated workflow.
+- **Tradeoff**: Adding the next funding call (e.g., ERC) will require a new React component until the universal form is built.
+- **Status**: Implemented in PRD v0.4.
+
+### AD 30.8: Explicit 422 Hard Block for Form Submission
+- **WF ID**: WF-0030
+- **Context**: The "Submit Anyway" bypass modal is designed for 200 OK `errors[]` (compliance warnings). If the payload is completely malformed (e.g., missing mandatory nodes, unknown IDs), the backend returns a 422.
+- **Decision**: The frontend must explicitly differentiate handling: Trap 422s to hard-block submission and show the exact error message WITHOUT the bypass modal. Trap 200 `errors[]` to show the bypass modal.
+- **Why**: Avoids invalid bypass UX and confusing retry loops.
+- **Tradeoff**: None. Strict compliance with backend API design.
+- **Status**: Implemented in PRD v0.4.
