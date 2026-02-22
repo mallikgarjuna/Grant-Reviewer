@@ -13,14 +13,15 @@ import hashlib
 import json
 import logging
 import sys
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 from pydantic import ValidationError
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 # Add backend to path for imports (per lessons.md L1)
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -47,7 +48,10 @@ from app.schemas.call_definitions import (
     NodeExpectationDefinition,
     ProposalNodeDefinition,
 )
-from app.schemas.call_definitions_v2 import CallDefinitionV2
+from app.schemas.call_definitions_v2 import (
+    CallDefinitionV2,
+    ProposalNodeDefinitionV2,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -155,6 +159,7 @@ def load_yaml(path: Path) -> tuple[str, CallDefinitionV1 | CallDefinitionV2, str
     raw_data: dict[str, Any] = loaded
 
     schema_version = _detect_schema_version(raw_data)
+    call_def: CallDefinitionV1 | CallDefinitionV2
     try:
         if schema_version == "v1":
             call_def = CallDefinitionV1.model_validate(raw_data)
@@ -408,7 +413,7 @@ def ingest_rubric(
             select(EvaluationCriterion).where(
                 EvaluationCriterion.funding_call_id == call_id,
                 EvaluationCriterion.name == crit_def.name,
-                EvaluationCriterion.archived_at.is_(None),
+                col(EvaluationCriterion.archived_at).is_(None),
             )
         ).first()
 
@@ -439,7 +444,7 @@ def ingest_rubric(
                 select(EvaluationElement).where(
                     EvaluationElement.evaluation_criterion_id == criterion.id,
                     EvaluationElement.name == elem_def.name,
-                    EvaluationElement.archived_at.is_(None),
+                    col(EvaluationElement.archived_at).is_(None),
                 )
             ).first()
 
@@ -486,13 +491,13 @@ def ingest_nodes_recursive(
         query = select(ProposalNode).where(
             ProposalNode.funding_call_id == call_id,
             ProposalNode.title == node_def.title,
-            ProposalNode.archived_at.is_(None),
+            col(ProposalNode.archived_at).is_(None),
         )
         if parent_id is None:
             # NOTE: Use is_(None) instead of == None for SQL NULL comparisons.
             # In SQL, you must use "IS NULL" not "= NULL". SQLAlchemy's is_()
             # method generates the correct "WHERE column IS NULL" clause.
-            query = query.where(ProposalNode.parent_node_id.is_(None))
+            query = query.where(col(ProposalNode.parent_node_id).is_(None))
         else:
             query = query.where(ProposalNode.parent_node_id == parent_id)
 
@@ -701,7 +706,7 @@ def _upsert_projection_v2(
         for criterion in session.exec(
             select(EvaluationCriterion).where(
                 EvaluationCriterion.funding_call_id == call_id,
-                EvaluationCriterion.archived_at.is_(None),
+                col(EvaluationCriterion.archived_at).is_(None),
             )
         ).all()
         if criterion.logical_id is not None
@@ -744,13 +749,10 @@ def _upsert_projection_v2(
         element.logical_id: element
         for element in session.exec(
             select(EvaluationElement)
-            .join(
-                EvaluationCriterion,
-                EvaluationElement.evaluation_criterion_id == EvaluationCriterion.id,
-            )
+            .join(EvaluationCriterion)
             .where(EvaluationCriterion.funding_call_id == call_id)
-            .where(EvaluationCriterion.archived_at.is_(None))
-            .where(EvaluationElement.archived_at.is_(None))
+            .where(col(EvaluationCriterion.archived_at).is_(None))
+            .where(col(EvaluationElement.archived_at).is_(None))
         ).all()
         if element.logical_id is not None
     }
@@ -792,7 +794,7 @@ def _upsert_projection_v2(
         for node in session.exec(
             select(ProposalNode).where(
                 ProposalNode.funding_call_id == call_id,
-                ProposalNode.archived_at.is_(None),
+                col(ProposalNode.archived_at).is_(None),
             )
         ).all()
         if node.logical_id is not None
@@ -892,7 +894,7 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
 
     if dry_run:
         logger.info("=== DRY RUN MODE - No database changes will be made ===")
-        if schema_version == "v1":
+        if isinstance(call_def, CallDefinitionV1):
             return _build_v1_dry_run_summary(call_def, yaml_path)
 
         return _build_v2_dry_run_summary(call_def, yaml_path)
@@ -905,7 +907,7 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
     session = get_session()
 
     try:
-        if schema_version == "v1":
+        if isinstance(call_def, CallDefinitionV1):
             # Resolve logical IDs
             v1_call_def = call_def
             id_map = resolve_logical_ids(v1_call_def)
@@ -988,11 +990,15 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
     return result
 
 
-def _count_nodes(nodes: list[ProposalNodeDefinition]) -> int:
+def _count_nodes(
+    nodes: Sequence[ProposalNodeDefinition | ProposalNodeDefinitionV2],
+) -> int:
     """Recursively count total nodes."""
     count = len(nodes)
     for node in nodes:
-        count += _count_nodes(node.children)
+        children = getattr(node, "children", [])
+        if isinstance(children, list):
+            count += _count_nodes(children)
     return count
 
 

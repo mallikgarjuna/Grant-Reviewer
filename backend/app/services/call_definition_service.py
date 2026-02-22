@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.models.domain import CallDefinition, ProposalNode
 
@@ -34,8 +34,8 @@ class CallDefinitionService:
             self.session.exec(
                 select(ProposalNode)
                 .where(ProposalNode.funding_call_id == call_id)
-                .where(ProposalNode.archived_at.is_(None))
-                .order_by(ProposalNode.order_index)
+                .where(col(ProposalNode.archived_at).is_(None))
+                .order_by(col(ProposalNode.order_index))
             ).all()
         )
 
