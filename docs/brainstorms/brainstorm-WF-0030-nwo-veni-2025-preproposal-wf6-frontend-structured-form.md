@@ -282,10 +282,40 @@ The primary UX risk is rendering a complex, deeply nested YAML structure elegant
 
 ## 7. MVP Definition
 
-*(To be filled during Phase 0.1 brainstorm)*
+The frontend MVP for WF-0030 is a universal, dynamically rendered submission form at a single route (e.g., `/app/submit`). The frontend fetches the schema for the user-selected funding call from the backend API, iterates over the `proposal_structure` definition, and dynamically renders the appropriate number of `<textarea>` fields (3 nodes for Veni, 5 for ERC, etc.). It implements a purely local JavaScript equivalent of the backend's word-counting logic to provide zero-latency compliance UI. It generates a deterministic UUID `logical_id` to ensure idempotency. It includes a frontend-only soft-bypass mechanism via a confirmation modal, which appends a `force=true` (or equivalent) parameter to the backend request.
+
+**Brainstorming Q&A:**
+
+**Q1: Based on our discussions, which of the following best defines the strict frontend MVP for WF-0030?**
+- A) A single page at `/app/submit` that dynamically fetches the selected `FundingCall` schema, renders `<textarea>` fields for each `ProposalNode`, provides real-time word-count feedback using local JS, manages idempotency via a UUID `logical_id`, and includes a modal to allow users to bypass compliance warnings (`force=true`). Document parsing and WYSIWYG formatting are explicitly excluded.
+- B) A set of hardcoded pages for each funding call (e.g., `/app/submit/nwo-veni`, `/app/submit/erc-cog`) with real-time validation and document upload capabilities.
+- C) A wizard-style interface that guides the user through the nodes one by one, saving to the database at every step.
+> Recommendation: **A** — This perfectly encapsulates the "universal form" constraint, the UX safety mechanisms (idempotency, warnings), and the agreed-upon deferrals (no doc parsing). It represents the smallest slice of value that unlocks the V2 backend. (Alternative B violates the dynamic schema architecture. Alternative C is drastically over-engineered for the MVP).
+> **Selected: A**
 
 ---
 
 ## 8. Explicit Non-Goals
 
-*(To be filled during Phase 0.1 brainstorm)*
+The following features will explicitly *not* be built during WF-0030 to protect the delivery timeline of the MVP slice.
+
+**Brainstorming Q&A:**
+
+**Q1: To strictly fence the scope of this frontend work, which of the following is an explicit NON-goal for WF-0030?**
+- A) Real-time word counting.
+- B) Extracting tables, images, or semantic formatting from uploaded `.docx` or `.pdf` files.
+- C) Generating a UUID for idempotency.
+> Recommendation: **B** — Document parsing (MarkItDown/MCP) is highly valuable but was explicitly parked as P2 #15. We must actively avoid building any file-upload or rich-text parsing logic in this chunk to ensure rapid delivery. (Alternatives A and C are explicit requirements, not non-goals).
+> **Selected: B**
+
+---
+
+## 9. Parked / Non-Scoped Items
+
+The following items arose during brainstorming but were explicitly parked to keep the MVP scope constrained. They are logged in `docs/parking_lot.md` for future prioritization:
+
+1.  **Assisted Extraction via Document Upload (P2 #14)**: Building a backend service (e.g., using MarkItDown) to parse uploaded `.docx` or `.pdf` files and automatically populate the structured `<textarea>` inputs on the frontend, gracefully handling or stripping images/tables to reduce copy-paste friction.
+2.  **Rich Text / WYSIWYG Editor Support**: Permitting markdown/HTML pasting to preserve lists, bolds, and italics natively within the text areas (Currently deferred to maintain strict plain-text token counting parity).
+3.  **Cross-Node Context Dependency Engine (P1 #12)**: While the backend handles `NOT_ASSESSABLE`, the frontend MVP will not attempt to visualize complex cross-node dependencies.
+
+---
