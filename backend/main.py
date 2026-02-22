@@ -875,7 +875,9 @@ def get_review(
         raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
 
     cards_with_criteria = []
-    if review.status == ReviewStatus.COMPLETED:
+    if review.status == ReviewStatus.COMPLETED or (
+        review.status == ReviewStatus.FAILED and review.review_type == "structured"
+    ):
         cards_with_criteria = repository.get_review_cards_with_criteria(review_id)
 
     return ReviewDetailResponse(
@@ -893,6 +895,14 @@ def get_review(
                 criterion_description=criterion_desc,
                 rating=card.rating,
                 feedback_text=card.feedback_text,
+                assessment_status=(
+                    card.assessment_status if review.review_type == "structured" else None
+                ),
+                not_assessable_reason=(
+                    card.not_assessable_reason
+                    if review.review_type == "structured"
+                    else None
+                ),
             )
             for card, criterion_name, criterion_desc in cards_with_criteria
         ],

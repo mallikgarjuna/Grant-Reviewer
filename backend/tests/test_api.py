@@ -3,6 +3,7 @@
 import hashlib
 import hmac
 import json
+import re
 import time
 from dataclasses import dataclass
 from uuid import UUID
@@ -251,6 +252,27 @@ def seed_api_data() -> SeededIDs:
             order_index=1,
         )
         session.add(structured_expectation)
+        session.commit()
+
+        structured_element_node3 = EvaluationElement(
+            evaluation_criterion_id=structured_criterion.id,
+            logical_id="elem_structured_node_quality_2",
+            name="Structured node quality 2",
+            description="Assess structured node quality 2",
+        )
+        session.add(structured_element_node3)
+        session.commit()
+        session.refresh(structured_element_node3)
+
+        structured_expectation_node3 = NodeExpectation(
+            proposal_node_id=structured_node_3.id,
+            evaluation_element_id=structured_element_node3.id,
+            expectation_strength=ExpectationStrength.MANDATORY,
+            evaluation_intent=EvaluationIntent.QUALITY,
+            guidance_note="Assess structured scientific proposal quality",
+            order_index=1,
+        )
+        session.add(structured_expectation_node3)
         session.commit()
 
         template = PromptTemplate(
@@ -555,6 +577,8 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
         == "Scientific excellence of the proposal section."
     )
     assert detail_payload["cards"][0]["rating"] == "NOTE"
+    assert detail_payload["cards"][0]["assessment_status"] is None
+    assert detail_payload["cards"][0]["not_assessable_reason"] is None
 
 
 def test_review_repository_supports_structured_write_path(monkeypatch) -> None:
@@ -735,6 +759,51 @@ def test_create_structured_review_success_persists_structured_fields(monkeypatch
         assert all(card.assessment_status == AssessmentStatus.ASSESSED for card in cards)
     finally:
         session.close()
+
+
+def test_failed_structured_review_detail_returns_partial_cards(monkeypatch) -> None:
+    monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.001")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    call_counter = {"count": 0}
+
+    def slow_second_generate(_: StubLLMClient, prompt: str) -> str:
+        call_counter["count"] += 1
+        if call_counter["count"] == 2:
+            time.sleep(0.05)
+        expectation_ids = re.findall(r"ID:\s*([0-9a-fA-F-]{36})", prompt)
+        return json.dumps(
+            {
+                "feedbacks": [
+                    {
+                        "node_expectation_id": expectation_id,
+                        "feedback": f"Feedback for {expectation_id}",
+                    }
+                    for expectation_id in expectation_ids
+                ]
+            }
+        )
+
+    monkeypatch.setattr(StubLLMClient, "generate", slow_second_generate)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "profile text"},
+                {"node_logical_id": "scientific_proposal", "text": "proposal text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "FAILED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    assert cards
+    assert cards[0]["assessment_status"] == "ASSESSED"
+    assert cards[0]["not_assessable_reason"] is None
 
 
 def test_cross_endpoint_idempotency_collision_returns_409(monkeypatch) -> None:
