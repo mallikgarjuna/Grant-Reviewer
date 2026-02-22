@@ -56,8 +56,12 @@ After completing Part C revisions, ensure the **Target Output Artifact** (and an
 
 1. Identify the Phase ID.
 2. Follow the corresponding **Part A (Generate)** sub-phase instructions from the matrix exactly.
-3. Output the v0.1 draft of the Target Output Artifact.
-4. Print the artifact path, version, and a 5-bullet summary of what it contains.
+3. If Phase ID = 2, enforce atomic task planning:
+   - Prefer each task to touch <=3 files.
+   - Split larger tasks into additional dependent tasks instead of broad tasks.
+   - Use as many tasks as needed to keep tasks independently testable/verifiable.
+4. Output the v0.1 draft of the Target Output Artifact.
+5. Print the artifact path, version, and a 5-bullet summary of what it contains.
 
 ---
 
@@ -77,7 +81,8 @@ After completing Part C revisions, ensure the **Target Output Artifact** (and an
 2. Follow the corresponding **Part C (Revise)** sub-phase instructions from the matrix exactly.
 3. Apply edits from Part B, bump the version (v0.1 -> v0.2), update the changelog, and update the status marker (Ready for PRD/Tasks/Implementation).
 4. If the user answered blocking questions, incorporate their decisions.
-5. Before ending Part C, print:
+5. If Phase ID = 2, ensure final tasks remain atomic (<=3 files preferred per task) and independently testable before marking Ready for Implementation.
+6. Before ending Part C, print:
    - `Applied feedback from Part B: yes/no`
    - If yes, list 3–5 exact edits mapped to Part B findings.
 

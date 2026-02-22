@@ -90,8 +90,13 @@ Tasks must:
 - Respect dependencies
 - Avoid scope expansion
 - Be minimal for MVP
+- Be atomic and implementation-ready:
+  - Prefer each task to touch no more than 3 files.
+  - If a task would exceed ~3 files, split it into smaller dependent tasks.
+  - Use as many tasks as needed to keep each task testable, verifiable, and easy to implement.
+  - Each task must have concrete acceptance criteria and explicit verification steps tied only to that task.
 
-Max 5–15 tasks.
+No fixed task-count cap: optimize for atomicity and clarity over brevity.
 
 ## Changelog
 
