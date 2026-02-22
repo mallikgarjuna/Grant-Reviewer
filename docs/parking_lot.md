@@ -88,6 +88,7 @@ When you pick an item to start work:
 | 12 | Structured review: `requires_context_from` dependency engine | product | Add `requires_context_from: list[str]` field to YAML `node_expectations` + V2 schema + `NodeExpectation` model + ingestion pipeline. Replaces hardcoded NWO Veni rules with generalized cross-node context resolution. (Ref: WF-0029 brainstorm §9.4, deferred in PRD v0.3) | 2026-02-22 |
 | 13 | Structured review: per-node grouped detail endpoint | product | New `/reviews/{id}/structured` endpoint returning `nodes[].cards[]` grouped response. Current MVP uses flat `cards[]` from existing detail endpoint. (Ref: WF-0029 PRD v0.3 deferral) | 2026-02-22 |
 | 14 | Assisted extraction via document upload (.docx / .pdf) | product | Use a service like MarkItDown or an MCP tool to parse uploaded documents and auto-populate the structured UI inputs (reducing copy-paste friction with tables/images). (Ref: WF-0030 S1 Q2) | 2026-02-22 |
+| 15 | Universal Form: Recursive UI components for nested schemas | product | Some funding calls (e.g., ERC) contain nested `ProposalNode` structures. The current MVP (`WF-0030`) assumes flat arrays. To support complex calls, the frontend requires recursive component rendering and the backend `/calls/{id}/nodes` endpoint must serve deep structures. (Ref: WF-0030 S13 Q7 / Codex Audit) | 2026-02-22 |
 
 ---
 
@@ -120,3 +121,4 @@ When you pick an item to start work:
 - **v0.5** (2026-02-22): Added P2 #5 (mega-prompt), P2 #6 (overall summary), P2 #7 (prompt revision for V2) from WF-0029 brainstorm.
 - **v0.6** (2026-02-22): Promoted WF-6 (frontend structured form) to `WF-0030`, moved it to Promoted Items, and renumbered remaining P1 items.
 - **v0.7** (2026-02-22): Promoted P2 #14 (Dynamic frontend forms) into scope for WF-0030 based on Senior Architectural mandate. Renumbered P2.
+- **v0.8** (2026-02-22): Added P2 #15 (Recursive UI components) from WF-0030 post-Codex adversarial review.

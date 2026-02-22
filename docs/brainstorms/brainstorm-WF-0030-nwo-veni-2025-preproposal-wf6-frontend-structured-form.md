@@ -388,6 +388,30 @@ Following a critical "Senior Principal Engineer" audit, several assumptions rega
 **Q5: LocalStorage Schema Drift**
 > **Selected: A (Schema Fingerprint Keying)** — To prevent stale data restoration if a schema changes, `localStorage` drafts will be keyed using a composite ID: `draft_${call_id}_${schema_hash}` (or version).
 
+**Q6: Domain-Specific Limits (The ENW Toggle)**
+- A) Expand the backend `/api/structured-review` payload to accept `domain` or specific rule toggles.
+- B) Since the frontend orchestrates the compliance check first (via `/api/check-compliance` which *does* accept domain/rules), the structured review endpoint doesn't need to know about the toggle. The frontend simply passes the toggle state to the `check-compliance` request.
+> Recommendation: **B** — Aligning with our earlier frontend orchestration decision, the `check-compliance` endpoint handles the rules. The `structured-review` endpoint just evaluates the finalized text. No backend changes required for the toggle.
+> **Selected: B**
+
+**Q7: "Universal Form" Nested Structure Dead-End**
+- A) Expand WF-0030 backend scope to fully flatten or recursively serve nested node structures in the API response, AND build recursive React rendering components.
+- B) Restrict the WF-0030 MVP to only support flat, top-level node structures. If a selected call has nested structures, the UI shows a graceful "Call not supported in this version" error.
+> Recommendation: **B** — Building a recursive nested UI generator in React (and updating the backend to serve it) is massive scope creep. Restricting the MVP to flat schema definitions (like NWO Veni) keeps delivery fast while establishing the universal platform.
+> **Selected: B** (Moved recursive support to parking lot)
+
+**Q8: Silent Degradation Policy for Non-Text Nodes**
+- A) Continue to ignore them; it's an edge case.
+- B) Fail-fast. If the frontend UI encounters a node type it doesn't recognize (not a text format), it must render an explicit "Unsupported Input Type" bounding error for that node, warning the user.
+> Recommendation: **B** — Silent data loss is the worst possible UX. Showing a clear "unsupported" state maintains trust and explicitly defines the MVP's functional limits.
+> **Selected: B**
+
+**Q9: Error-Shape Misalignment (`violations` vs `FeedbackCard`)**
+- A) Rewrite the backend compliance engine to return `FeedbackCard` objects.
+- B) Update the frontend design to map the existing `errors[]/warnings[]` array into the UI's summary alert box.
+> Recommendation: **B** — The backend compliance API contract is already established and functioning. The frontend is the adapter and should map the existing violation shapes into its summary UI without requiring backend rewrites.
+> **Selected: B**
+
 ---
 
 ## 14. Parked / Non-Scoped Items
