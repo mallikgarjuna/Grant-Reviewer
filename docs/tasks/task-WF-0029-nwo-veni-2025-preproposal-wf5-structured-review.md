@@ -53,7 +53,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 3 — Extend prompt builder with cross-node context
+### [x] Task 3 — Extend prompt builder with cross-node context
 
 **Goal:** Add optional `cross_node_context` parameter to `build_review_prompt()`.
 

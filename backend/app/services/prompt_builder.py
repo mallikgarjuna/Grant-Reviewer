@@ -18,6 +18,7 @@ Guidance: {guidance_text}
 
 ## Evaluation Criteria
 {expectations_block}
+{cross_node_context_block}
 
 ## Instructions
 1. For EACH criterion listed above, provide constructive, specific feedback based on the Submitted Text.
@@ -52,6 +53,7 @@ def build_review_prompt(
     node: ProposalNode,
     snippet_text: str,
     expectations: list[NodeExpectation],
+    cross_node_context: dict[str, str] | None = None,
 ) -> str:
     """
     Build the complete prompt for LLM review.
@@ -60,6 +62,7 @@ def build_review_prompt(
         node: The ProposalNode being reviewed
         snippet_text: The researcher's submitted text
         expectations: List of NodeExpectations to evaluate against
+        cross_node_context: Optional mapping of related node ids to text
 
     Returns:
         Complete prompt string ready to send to LLM
@@ -70,10 +73,18 @@ def build_review_prompt(
         expectations_lines.append(_format_expectation(exp, i))
 
     expectations_block = "\n".join(expectations_lines)
+    cross_node_context_block = ""
+    if cross_node_context:
+        context_lines = ["## Cross-Node Context"]
+        for logical_id, text in cross_node_context.items():
+            context_lines.append(f"- {logical_id}:")
+            context_lines.append(text)
+        cross_node_context_block = "\n" + "\n".join(context_lines)
 
     return REVIEW_PROMPT_TEMPLATE.format(
         node_title=node.title,
         guidance_text=node.guidance_text or "No guidance provided",
         snippet_text=snippet_text,
         expectations_block=expectations_block,
+        cross_node_context_block=cross_node_context_block,
     )
