@@ -1,9 +1,15 @@
 # WF-0030 — NWO Veni 2025 Preproposal Structured AI Review (WF-6 Phase) Brainstorm
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.8
 Status: Draft
 Last Updated: 2026-02-22
+
+## Revision History
+- **v0.5** (2026-02-22): Initial interactive session for WF-0030 (Frontend Structured Form).
+- **v0.6** (2026-02-22): Restored full A/B/C options and rationales to all brainstorm Q&A sections based on Senior Designer feedback.
+- **v0.7** (2026-02-22): Added Extended Brainstorming (Dynamic Forms & UX) following the architectural pivot to dynamic schema rendering.
+- **v0.8** (2026-02-22): Integrated Codex Adversarial Review resolutions, explicitly expanding backend scope to support universal forms and correcting API orchestration.
 
 ---
 
@@ -361,7 +367,30 @@ The UI will rely on minimalist, non-blocking text counters for word limits. The 
 
 ---
 
-## 12. Parked / Non-Scoped Items
+## 13. Codex Adversarial Review Resolutions (Architecture Corrections)
+
+Following a critical "Senior Principal Engineer" audit, several assumptions regarding the backend API contracts and MVP scope were found to be contradictory or hallucinated. The following resolutions explicitly correct those assumptions and expand the required backend scope for WF-0030 to ensure the Universal Form MVP is deliverable.
+
+**Brainstorming Q&A:**
+
+**Q1: The MVP Scope Contradiction (Universal vs. Veni-Only)**
+> **Selected: B (MVP-B: Universal + Backend Scope)** — We stick with the Universal Form architecture, but explicitly *expand* the scope of WF-0030 to include updating the backend endpoints (`/calls/{id}/nodes`) to serve `logical_id`, constraints, and instructions so the frontend can actually render them dynamically.
+
+**Q2: The "force=true" Bypass Fiction**
+> **Selected: B (Frontend Orchestration)** — The backend does not need a `force=true` flag. The frontend will call `/api/check-compliance` first. If errors exist, it shows the bypass modal. If the user clicks "Submit Anyway", the frontend simply calls `/api/structured-review` (which naturally ignores compliance).
+
+**Q3: Erroneous Idempotency Model**
+> **Selected: A (Header-based UUID)** — The frontend will generate a UUID v4 upon submission and strictly pass it in the `Idempotency-Key` HTTP header for the `/api/structured-review` POST request, matching existing backend idempotency architecture.
+
+**Q4: Compliance Engine Reality Check**
+> **Selected: B (Narrowed Compliance)** — The MVP will strictly enforce **Word Counts** and **Mandatory Presence** only. Complex list counting (like `max_items` for tables) is deferred, aligning the UI promise with the actual backend engine capability.
+
+**Q5: LocalStorage Schema Drift**
+> **Selected: A (Schema Fingerprint Keying)** — To prevent stale data restoration if a schema changes, `localStorage` drafts will be keyed using a composite ID: `draft_${call_id}_${schema_hash}` (or version).
+
+---
+
+## 14. Parked / Non-Scoped Items
 
 The following items arose during brainstorming but were explicitly parked to keep the MVP scope constrained. They are logged in `docs/parking_lot.md` for future prioritization:
 
