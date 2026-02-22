@@ -221,6 +221,38 @@ def seed_api_data() -> SeededIDs:
         session.add(expectation)
         session.commit()
 
+        structured_criterion = EvaluationCriterion(
+            funding_call_id=structured_call.id,
+            logical_id="crit_structured_quality",
+            name="Structured quality",
+            description="Structured quality criterion.",
+            order_index=1,
+        )
+        session.add(structured_criterion)
+        session.commit()
+        session.refresh(structured_criterion)
+
+        structured_element = EvaluationElement(
+            evaluation_criterion_id=structured_criterion.id,
+            logical_id="elem_structured_node_quality",
+            name="Structured node quality",
+            description="Assess structured node quality",
+        )
+        session.add(structured_element)
+        session.commit()
+        session.refresh(structured_element)
+
+        structured_expectation = NodeExpectation(
+            proposal_node_id=structured_node_1.id,
+            evaluation_element_id=structured_element.id,
+            expectation_strength=ExpectationStrength.MANDATORY,
+            evaluation_intent=EvaluationIntent.QUALITY,
+            guidance_note="Assess structured academic profile quality",
+            order_index=1,
+        )
+        session.add(structured_expectation)
+        session.commit()
+
         template = PromptTemplate(
             name="Test Template",
             template_text="Template",
@@ -296,6 +328,31 @@ def post_review(
     headers["Idempotency-Key"] = request_idempotency_key
     headers["Content-Type"] = "application/json"
     return client.post("/reviews", content=body, headers=headers)
+
+
+def post_structured_review(
+    *,
+    client: TestClient,
+    payload: dict[str, object],
+    user_id: str = TEST_USER_ID,
+    idempotency_key: str | None = None,
+    timestamp: int | None = None,
+    shared_secret: str = TEST_BFF_SHARED_SECRET,
+) -> object:
+    """Call POST /api/structured-review with signed headers."""
+    body = json.dumps(payload).encode("utf-8")
+    headers = build_signature_headers(
+        body=body,
+        user_id=user_id,
+        timestamp=timestamp,
+        shared_secret=shared_secret,
+    )
+    request_idempotency_key = (
+        f"idem-{time.time_ns()}" if idempotency_key is None else idempotency_key
+    )
+    headers["Idempotency-Key"] = request_idempotency_key
+    headers["Content-Type"] = "application/json"
+    return client.post("/api/structured-review", content=body, headers=headers)
 
 
 def post_compliance(
@@ -595,6 +652,116 @@ def test_review_repository_read_paths_support_structured_reviews(monkeypatch) ->
         assert remaining_cards == []
     finally:
         session.close()
+
+
+def test_create_structured_review_empty_nodes_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={"call_id": str(seeded_ids.structured_call_id), "nodes": []},
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "STRUCTURED_NODES_REQUIRED"
+
+
+def test_create_structured_review_unknown_node_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "unknown_node", "text": "abc"}],
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "UNKNOWN_NODE_ID"
+
+
+def test_create_structured_review_duplicate_node_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "one two"},
+                {"node_logical_id": "academic_profile", "text": "three four"},
+            ],
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "DUPLICATE_NODE_ID"
+
+
+def test_create_structured_review_payload_too_large_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "x" * 10_001}],
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "STRUCTURED_PAYLOAD_TOO_LARGE"
+
+
+def test_create_structured_review_success_persists_structured_fields(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "profile text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    review_id = response.json()["review_id"]
+
+    session = get_session()
+    try:
+        review = session.get(Review, UUID(review_id))
+        assert review is not None
+        assert review.review_type == "structured"
+        assert review.proposal_snippet_id is None
+        assert review.structured_payload == {"academic_profile": "profile text"}
+
+        cards = list(
+            session.exec(select(ReviewCard).where(ReviewCard.review_id == review.id)).all()
+        )
+        assert cards
+        assert all(card.assessment_status == AssessmentStatus.ASSESSED for card in cards)
+    finally:
+        session.close()
+
+
+def test_cross_endpoint_idempotency_collision_returns_409(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    idempotency_key = "shared-idempotency-key"
+
+    first = post_review(
+        client=client,
+        idempotency_key=idempotency_key,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Legacy request payload",
+        },
+    )
+    assert first.status_code == 200
+
+    second = post_structured_review(
+        client=client,
+        idempotency_key=idempotency_key,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert second.status_code == 409
+    assert second.json()["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
 
 
 def test_snippet_too_long_returns_domain_error(monkeypatch) -> None:
@@ -984,6 +1151,8 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "DUPLICATE_NODE_ID": 422,
         "DOMAIN_REQUIRED": 422,
         "DOMAIN_INVALID": 422,
+        "STRUCTURED_NODES_REQUIRED": 422,
+        "STRUCTURED_PAYLOAD_TOO_LARGE": 422,
         "VALIDATION_ERROR": 400,
         "INTERNAL_ERROR": 500,
     }
