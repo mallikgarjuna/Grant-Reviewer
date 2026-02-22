@@ -305,6 +305,162 @@ def create_client_with_seed(monkeypatch) -> tuple[TestClient, SeededIDs]:
     return TestClient(app), seeded_ids
 
 
+def seed_structured_alignment_api_data() -> UUID:
+    """Insert NWO-like structured graph with alignment dependencies."""
+    session = get_session()
+    try:
+        agency = FundingAgency(name="NWO", short_name="NWO")
+        session.add(agency)
+        session.commit()
+        session.refresh(agency)
+
+        call = FundingCall(
+            funding_agency_id=agency.id,
+            name="NWO Talent Programme — Veni 2025 — Pre-proposal",
+            code="nwo_veni_2025_preproposal",
+            call_year=2025,
+            is_active=True,
+        )
+        session.add(call)
+        session.commit()
+        session.refresh(call)
+
+        nodes_by_logical_id: dict[str, ProposalNode] = {}
+        for order_index, logical_id in enumerate(
+            ["academic_profile", "key_outputs", "research_idea"], start=1
+        ):
+            node = ProposalNode(
+                funding_call_id=call.id,
+                parent_node_id=None,
+                logical_id=logical_id,
+                node_type=NodeType.SECTION,
+                title=logical_id,
+                order_index=order_index,
+            )
+            session.add(node)
+            session.commit()
+            session.refresh(node)
+            nodes_by_logical_id[logical_id] = node
+
+        criterion = EvaluationCriterion(
+            funding_call_id=call.id,
+            logical_id="crit_quality_of_researcher",
+            name="Quality",
+            description="Quality criterion",
+            order_index=1,
+        )
+        session.add(criterion)
+        session.commit()
+        session.refresh(criterion)
+
+        elements = {
+            "profile": EvaluationElement(
+                evaluation_criterion_id=criterion.id,
+                logical_id="elem_profile_quality",
+                name="Profile quality",
+                description="Profile quality",
+            ),
+            "outputs": EvaluationElement(
+                evaluation_criterion_id=criterion.id,
+                logical_id="elem_outputs_quality",
+                name="Outputs quality",
+                description="Outputs quality",
+            ),
+            "alignment": EvaluationElement(
+                evaluation_criterion_id=criterion.id,
+                logical_id="elem_cv_idea_alignment",
+                name="Alignment",
+                description="Alignment",
+            ),
+            "alignment_plan": EvaluationElement(
+                evaluation_criterion_id=criterion.id,
+                logical_id="elem_alignment_plan_credibility",
+                name="Alignment plan",
+                description="Alignment plan",
+            ),
+            "idea_other": EvaluationElement(
+                evaluation_criterion_id=criterion.id,
+                logical_id="elem_innovative_ideas_capability",
+                name="Innovative ideas",
+                description="Innovative ideas",
+            ),
+        }
+        for element in elements.values():
+            session.add(element)
+        session.commit()
+        for element in elements.values():
+            session.refresh(element)
+
+        expectations = [
+            NodeExpectation(
+                proposal_node_id=nodes_by_logical_id["academic_profile"].id,
+                evaluation_element_id=elements["profile"].id,
+                expectation_strength=ExpectationStrength.MANDATORY,
+                evaluation_intent=EvaluationIntent.QUALITY,
+                guidance_note="Test expectation",
+                order_index=1,
+            ),
+            NodeExpectation(
+                proposal_node_id=nodes_by_logical_id["key_outputs"].id,
+                evaluation_element_id=elements["outputs"].id,
+                expectation_strength=ExpectationStrength.MANDATORY,
+                evaluation_intent=EvaluationIntent.QUALITY,
+                guidance_note="Test expectation",
+                order_index=1,
+            ),
+            NodeExpectation(
+                proposal_node_id=nodes_by_logical_id["research_idea"].id,
+                evaluation_element_id=elements["alignment"].id,
+                expectation_strength=ExpectationStrength.MANDATORY,
+                evaluation_intent=EvaluationIntent.QUALITY,
+                guidance_note="Test expectation",
+                order_index=1,
+            ),
+            NodeExpectation(
+                proposal_node_id=nodes_by_logical_id["research_idea"].id,
+                evaluation_element_id=elements["alignment_plan"].id,
+                expectation_strength=ExpectationStrength.MANDATORY,
+                evaluation_intent=EvaluationIntent.QUALITY,
+                guidance_note="Test expectation",
+                order_index=2,
+            ),
+            NodeExpectation(
+                proposal_node_id=nodes_by_logical_id["research_idea"].id,
+                evaluation_element_id=elements["idea_other"].id,
+                expectation_strength=ExpectationStrength.MANDATORY,
+                evaluation_intent=EvaluationIntent.QUALITY,
+                guidance_note="Test expectation",
+                order_index=3,
+            ),
+        ]
+        for expectation in expectations:
+            session.add(expectation)
+        session.commit()
+
+        template = PromptTemplate(
+            name="Structured test template",
+            template_text="Template",
+            is_active=True,
+        )
+        session.add(template)
+        session.commit()
+
+        return call.id
+    finally:
+        session.close()
+
+
+def create_client_with_structured_alignment_seed(
+    monkeypatch,
+) -> tuple[TestClient, UUID]:
+    """Create test client with graph suitable for structured alignment E2E."""
+    monkeypatch.setenv("LLM_MODE", "stub")
+    monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    reset_database()
+    call_id = seed_structured_alignment_api_data()
+    return TestClient(app), call_id
+
+
 def build_signature_headers(
     *,
     body: bytes,
@@ -769,6 +925,62 @@ def test_create_structured_review_success_persists_structured_fields(monkeypatch
         assert all(card.assessment_status == AssessmentStatus.ASSESSED for card in cards)
     finally:
         session.close()
+
+
+def test_structured_review_e2e_happy_path_three_nodes(monkeypatch) -> None:
+    client, call_id = create_client_with_structured_alignment_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "Academic profile text"},
+                {"node_logical_id": "key_outputs", "text": "Key outputs text"},
+                {"node_logical_id": "research_idea", "text": "Research idea text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "COMPLETED"
+
+    detail = get_review_detail(client=client, review_id=payload["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    assert len(cards) == 5
+    assert all(card["assessment_status"] == "ASSESSED" for card in cards)
+    assert all(card["not_assessable_reason"] is None for card in cards)
+
+
+def test_structured_review_e2e_partial_submission_marks_alignment_not_assessable(
+    monkeypatch,
+) -> None:
+    client, call_id = create_client_with_structured_alignment_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "nodes": [
+                {"node_logical_id": "key_outputs", "text": "Key outputs text"},
+                {"node_logical_id": "research_idea", "text": "Research idea text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "COMPLETED"
+
+    detail = get_review_detail(client=client, review_id=payload["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    not_assessable_cards = [
+        card for card in cards if card["assessment_status"] == "NOT_ASSESSABLE"
+    ]
+    assert len(not_assessable_cards) == 2
+    assert all(
+        "academic_profile" in (card["not_assessable_reason"] or "")
+        for card in not_assessable_cards
+    )
 
 
 def test_failed_structured_review_detail_returns_partial_cards(monkeypatch) -> None:

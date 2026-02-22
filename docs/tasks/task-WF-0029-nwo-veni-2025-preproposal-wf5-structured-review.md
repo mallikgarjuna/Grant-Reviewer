@@ -1,8 +1,8 @@
 # WF-0029 — NWO Veni 2025 Preproposal Structured AI Review Tasks
 
 Artifact: task
-Version: v0.3
-Status: Ready for Implementation
+Version: v0.5
+Status: Implemented
 Last Updated: 2026-02-22
 
 ## Task Breakdown (Sequential Order)
@@ -184,7 +184,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 9 — (Optional) E2E smoke test
+### [x] Task 9 — (Optional) E2E smoke test
 
 **Goal:** Thin smoke test verifying the complete structured review flow against ingested NWO Veni data. **Not on critical path — run after Tasks 1–8 pass.**
 
@@ -206,3 +206,4 @@ Last Updated: 2026-02-22
 - v0.2 (2026-02-22): Applied self-audit. Reordered repo adaptation before wiring.
 - v0.3 (2026-02-22): Per Codex audit. Added Task 4 (repo write-path glue). Merged old T4+T7 into T7 (endpoint + wiring, no stub). Demoted T9 to optional. Fixed T1 acceptance criteria (removed false "existing tests pass unchanged"). Added explicit alignment rule AC to T6. Added backward-compat and mapping tests to T5/T8. Consolidated tests in `test_api.py` (no fragmented test files). Renumbered all tasks.
 - v0.4 (2026-02-22): Post-implementation critical fixes: corrected structured-review visibility in `list_reviews_for_external_user` (LEFT JOIN + NULL-safe archived filter), restored structured call name from persisted payload metadata, and explicitly documented NOTE-only rating behavior for structured cards as intentional MVP scope.
+- v0.5 (2026-02-22): Completed optional Task 9 by adding thin API E2E smoke coverage in `backend/tests/test_api.py` for (a) 3-node happy path and (b) partial submission producing alignment `NOT_ASSESSABLE` cards.
