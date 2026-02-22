@@ -66,7 +66,23 @@ After completing a Phase 0.1 brainstorm session:
 8. Avoid architecture design.
 9. After each section:
    - Summarize decisions clearly as a bulleted list (not a paragraph).
-   - Append the explicit Q&A block directly below the summary (e.g. `**Summary:**\n- bullet 1...` followed by `**Brainstorming Q&A:** ...`). This preserves the reasoning behind the decisions.
+   - Append the explicit Q&A block directly below the summary. The Q&A block **must** include:
+     - The **full question text** (not just a label).
+     - **All options** (A, B, C, etc.) with their descriptions.
+     - The **model's recommendation** with reasoning: why the recommended option is preferred **and** why the alternatives are dismissed.
+     - The **user's selected answer** (or custom answer).
+   - This preserves the full reasoning chain for traceability and future reference.
+   - Example format:
+     ```
+     **Brainstorming Q&A:**
+
+     **Q1: What is the primary gap this endpoint fills?**
+     - A) Option A description.
+     - B) Option B description.
+     - C) Option C description.
+     > Recommendation: A — Rationale for why A is preferred. B is dismissed because… C is partially true but…
+     > **Selected: A**
+     ```
    - Update brainstorm file.
 10. Do NOT overwrite previous brainstorm content.
    - Append refinements or clarifications.

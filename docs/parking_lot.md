@@ -79,6 +79,11 @@ When you pick an item to start work:
 | 2 | Add error monitoring (Sentry) | ops | Zero error tracking in production; blind to LLM timeouts, BFF failures, and client crashes with real users. | 2026-02-16 |
 | 3 | Prompt quality tuning | product | Test AI output quality with real ERC/NWO proposals; tune `PromptTemplate` for actionable, criteria-specific feedback. | 2026-02-16 |
 | 4 | Production hardening | ops | Lock CORS, verify rate limiting beyond daily quota, add custom 404 page, tune Vercel/Render timeout alignment. | 2026-02-16 |
+| 5 | Structured review: single mega-prompt optimization | product | Replace per-node sequential LLM calls with a single mega-prompt for all nodes — fewer API calls, lower latency. Directly mitigates the 3× latency risk (15–45s) identified in WF-0029 brainstorm S6 Q4. Requires new prompt template + parser. (Ref: WF-0029 brainstorm Q4.2 option B) | 2026-02-22 |
+| 6 | Structured review: LLM-generated overall summary | product | After per-node reviews, add an additional LLM call to synthesize a holistic cross-node summary (alignment, strengths, gaps). (Ref: WF-0029 brainstorm Q4.4 option A) | 2026-02-22 |
+| 7 | Review prompt revision for V2 expectations structure | product | Revise `build_review_prompt()` to optimally reference V2 `EvaluationCriterion` / `EvaluationElement` fields from updated YAML ingestion. Current prompt functions but isn't tuned for V2. (Ref: WF-0029 brainstorm S4 Q2 note) | 2026-02-22 |
+| 8 | Structured review: parallel per-node LLM calls | product | Fire LLM calls concurrently instead of sequentially — faster wall-clock time but adds rate-limiting and error-handling complexity. May be unnecessary if mega-prompt (P2 #5) is adopted instead. (Ref: WF-0029 brainstorm S4 Q2 option C, S8 Q5) | 2026-02-22 |
+| 9 | Structured review: batch submission of multiple proposals | product | Allow submitting multiple proposals or revisions in one request. May not be needed depending on app evolution. (Ref: WF-0029 brainstorm S8 Q5) | 2026-02-22 |
 
 ---
 
@@ -107,3 +112,4 @@ When you pick an item to start work:
 - **v0.2** (2026-02-16): Restructured into P0/P1/P2 priority tables with independent numbering, code phrase (`park this`), and promotion mechanics. Pre-populated 15 MVP readiness items from deep frontend + infra audit.
 - **v0.3** (2026-02-22): Promoted WF-4 (compliance engine) to `WF-0028`, moved it to Promoted Items, and renumbered remaining P1 items.
 - **v0.4** (2026-02-22): Promoted WF-5 (structured reviews API) to `WF-0029`, moved it to Promoted Items, and renumbered remaining P1 items.
+- **v0.5** (2026-02-22): Added P2 #5 (mega-prompt), P2 #6 (overall summary), P2 #7 (prompt revision for V2) from WF-0029 brainstorm.
