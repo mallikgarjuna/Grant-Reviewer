@@ -42,3 +42,20 @@ A successful compliance engine MVP blocks 100% of malformed submissions from rea
   - **A:** Skip them entirely in this deterministic pass and leave them exclusively for the LLM evaluation phase.
 - **Q5:** What happens in the UI when a proposal is 100% compliant?
   - **A:** It returns a clean "All Checks Passed" payload and WAITS for the researcher to explicitly click "Submit for AI Review".
+
+---
+
+## 3. Target User / Actor
+
+**Summary / Decisions:**
+The primary user interacting with the compliance engine is the **Researcher**. The engine acts as a bridge enforcing rules defined by **Admins** via YAML. The engine must interact directly with the researcher, providing a structured error response that maps exactly to UI fields (e.g., "Section B is over the 400-word limit by 12 words"). This solves the twofold frustration of waiting for a slow AI review only to get formatting feedback, and AI hallucinating structural feedback instead of focusing on the science.
+
+**Brainstorming Q&A:**
+- **Q1:** Is the compliance engine interacting directly with the researcher, or running invisibly?
+  - **A:** Directly with the researcher (provides a clear list of pass/fails in the UI before they can submit).
+- **Q2:** How does the researcher discover the constraints they are violating?
+  - **A:** The compliance engine generates a structured error response that maps exactly to the fields in the UI, pointing out what to fix (e.g., "Section B is over the 400-word limit by 12 words").
+- **Q3:** Are there different types of target users for this feature?
+  - **A:** Yes, researchers (fixing their drafts) and admins (defining the rules in the YAML).
+- **Q4:** What is the researcher's core frustration with the current state that this solves?
+  - **A:** Both: Waiting for a full AI review only to be told "You forgot the word count in section C", and the AI hallucinating feedback on missing sections instead of focusing on the science.
