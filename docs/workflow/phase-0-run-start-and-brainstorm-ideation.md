@@ -36,7 +36,7 @@ This runner removes manual handoff errors between 0.0 and 0.1.
    - ask one question block at a time
    - provide 2-3 options + one recommended option
    - wait for user reply before continuing
-5. Keep scope within the selected WF item; do not jump to Spec/PRD generation in this runner.
+5. Keep scope within the selected WF item; do not jump to PRD generation in this runner.
 6. Ensure Phase 0.0 artifacts are committed before continuing to Part B.
 7. At the end of the run, print an explicit **Traceability Statement** confirming:
    - Part B used the WF ID/slug created in Part A

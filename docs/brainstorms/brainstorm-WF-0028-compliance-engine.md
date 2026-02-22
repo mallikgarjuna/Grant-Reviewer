@@ -10,7 +10,11 @@ Last Updated: 2026-02-22
 ## 1. Problem Statement
 
 **Summary:**
-The compliance engine provides immediate, deterministic feedback to researchers about strict rule violations (e.g., word count, missing mandatory sections) prior to LLM evaluation. The researcher is the primary beneficiary. The check runs when explicitly requested ("Check Compliance"). Failures are categorized into Errors (blocking) and Warnings (non-blocking). We build the backend engine first (before the frontend form) to establish the API contract for validation errors so the frontend knows exactly what shape of error data to natively display.
+- The compliance engine provides immediate, deterministic feedback to researchers about strict rule violations (e.g., word count, missing mandatory sections) prior to LLM evaluation.
+- The researcher is the primary beneficiary.
+- The check runs when explicitly requested ("Check Compliance").
+- Failures are categorized into Errors (blocking) and Warnings (non-blocking).
+- We build the backend engine first (before the frontend form) to establish the API contract for validation errors so the frontend knows exactly what shape of error data to natively display.
 
 **Brainstorming Q&A:**
 - **Q1:** What is the primary problem the compliance engine solves?
@@ -29,7 +33,10 @@ The compliance engine provides immediate, deterministic feedback to researchers 
 ## 2. Desired Outcome
 
 **Summary / Decisions:**
-A successful compliance engine MVP blocks 100% of malformed submissions from reaching the LLM evaluation step, saving API costs and improving feedback quality. We expect researchers to fix formatting and structural issues locally before seeing AI feedback. For the MVP, it's sufficient to deterministically validate basic word counts, section presence, and data types, while leaving subjective rules (like tone) exclusively for the LLM evaluation phase. Once a proposal passes all compliance checks, the UI should return a clean "All Checks Passed" payload and wait for the researcher to explicitly click "Submit for AI Review".
+- A successful compliance engine MVP blocks 100% of malformed submissions from reaching the LLM evaluation step, saving API costs and improving feedback quality.
+- We expect researchers to fix formatting and structural issues locally before seeing AI feedback.
+- For the MVP, it's sufficient to deterministically validate basic word counts, section presence, and data types, while leaving subjective rules (like tone) exclusively for the LLM evaluation phase.
+- Once a proposal passes all compliance checks, the UI should return a clean "All Checks Passed" payload and wait for the researcher to explicitly click "Submit for AI Review".
 
 **Brainstorming Q&A:**
 - **Q1:** What measurable change defines success for the compliance engine MVP?
@@ -48,7 +55,10 @@ A successful compliance engine MVP blocks 100% of malformed submissions from rea
 ## 3. Target User / Actor
 
 **Summary / Decisions:**
-The primary user interacting with the compliance engine is the **Researcher**. The engine acts as a bridge enforcing rules defined by **Admins** via YAML. The engine must interact directly with the researcher, providing a structured error response that maps exactly to UI fields (e.g., "Section B is over the 400-word limit by 12 words"). This solves the twofold frustration of waiting for a slow AI review only to get formatting feedback, and AI hallucinating structural feedback instead of focusing on the science.
+- The primary user interacting with the compliance engine is the **Researcher**.
+- The engine acts as a bridge enforcing rules defined by **Admins** via YAML.
+- The engine must interact directly with the researcher, providing a structured error response that maps exactly to UI fields (e.g., "Section B is over the 400-word limit by 12 words").
+- This solves the twofold frustration of waiting for a slow AI review only to get formatting feedback, and AI hallucinating structural feedback instead of focusing on the science.
 
 **Brainstorming Q&A:**
 - **Q1:** Is the compliance engine interacting directly with the researcher, or running invisibly?
@@ -65,7 +75,11 @@ The primary user interacting with the compliance engine is the **Researcher**. T
 ## 4. Rough Idea (Unstructured Thinking)
 
 **Summary / Decisions:**
-The simplest implementation direction is to read the compliance rules directly from the V2 database model (specifically looking at constraints like `word_limit`, `mandatory`, `compliance_rules`, and `guidance_text` on `EvaluationElement`). The frontend will save the draft to the database first, then call a `/check-compliance/{draft_id}` API endpoint. This endpoint will return an HTTP 200 with a structured JSON payload containing lists of `errors` and `warnings`, including the specific underlying reason/rule that failed so the UI can display *why* it failed. The engine will be strictly read-only and will *not* auto-fix answers (leaving scientific nuance to the researcher). The biggest technical risk is standardizing accurate word counting between the frontend editor and backend validator, so the UI must include a clear disclaimer about word count approximations.
+- The simplest implementation direction is to read the compliance rules directly from the V2 database model (specifically looking at constraints like `word_limit`, `mandatory`, `compliance_rules`, and `guidance_text` on `EvaluationElement`).
+- The frontend will save the draft to the database first, then call a `/check-compliance/{draft_id}` API endpoint.
+- This endpoint will return an HTTP 200 with a structured JSON payload containing lists of `errors` and `warnings`, including the specific underlying reason/rule that failed so the UI can display *why* it failed.
+- The engine will be strictly read-only and will *not* auto-fix answers (leaving scientific nuance to the researcher).
+- The biggest technical risk is standardizing accurate word counting between the frontend editor and backend validator, so the UI must include a clear disclaimer about word count approximations.
 
 **Brainstorming Q&A:**
 - **Q1:** Where does the "source of truth" for compliance rules live?
@@ -84,7 +98,9 @@ The simplest implementation direction is to read the compliance rules directly f
 ## 5. Constraints
 
 **Summary / Decisions:**
-The system must be built as a purely data-driven, local backend Python service with no hardcoded AI calls or third-party dependencies, relying exclusively on the PostgreSQL `EvaluationElement` definitions. Because this is a blocking necessity for the upcoming frontend work (WF-6), the time constraint is strict: it must be shipped immediately.
+- The system must be built as a purely data-driven, local backend Python service with no hardcoded AI calls or third-party dependencies.
+- It relies exclusively on the PostgreSQL `EvaluationElement` definitions.
+- Because this is a blocking necessity for the upcoming frontend work (WF-6), the time constraint is strict: it must be shipped immediately.
 
 **Brainstorming Q&A:**
 - **Q1:** What is the primary technical constraint for the compliance engine?
@@ -99,7 +115,9 @@ The system must be built as a purely data-driven, local backend Python service w
 ## 6. Risks / Unknowns
 
 **Summary / Decisions:**
-The most fragile assumption is that the drafted `ProposalNode` tree structure perfectly aligns with the `EvaluationElement` tree; if they drift, the compliance traversal will break or return false positives. Another major risk is aggregate constraints (e.g., a word limit on a parent section spanning multiple child subsections), which must be handled explicitly. To prevent future rework, the core validation logic must be built as a decoupled, purely testable Python function (`def evaluate_compliance(draft_id)`) separate from the FastAPI transport layer.
+- The most fragile assumption is that the drafted `ProposalNode` tree structure perfectly aligns with the `EvaluationElement` tree; if they drift, the compliance traversal will break or return false positives.
+- Another major risk is aggregate constraints (e.g., a word limit on a parent section spanning multiple child subsections), which must be handled explicitly.
+- To prevent future rework, the core validation logic must be built as a decoupled, purely testable Python function (`def evaluate_compliance(draft_id)`) separate from the FastAPI transport layer.
 
 **Brainstorming Q&A:**
 - **Q1:** What is the most fragile assumption we are making?
@@ -114,7 +132,9 @@ The most fragile assumption is that the drafted `ProposalNode` tree structure pe
 ## 7. MVP Definition
 
 **Summary / Decisions:**
-For the MVP, shipping within 2 days, the engine MUST evaluate word limits and mandatory field presence for all drafted text nodes against their corresponding YAML-defined `EvaluationElement` constraints. This evaluation must correctly aggregate word counts from child nodes up to a parent node if the limit is defined on the parent (as is the case with NWO Veni's "Academic Profile"). Parsing complex string-based `compliance_rules` and `guidance_text` deterministically is explicitly excluded from the MVP computation; these will just be surfaced read-only to the UI.
+- For the MVP, shipping within 2 days, the engine MUST evaluate word limits and mandatory field presence for all drafted text nodes against their corresponding YAML-defined `EvaluationElement` constraints.
+- This evaluation must correctly aggregate word counts from child nodes up to a parent node if the limit is defined on the parent (as is the case with NWO Veni's "Academic Profile").
+- Parsing complex string-based `compliance_rules` and `guidance_text` deterministically is explicitly excluded from the MVP computation; these will just be surfaced read-only to the UI.
 
 **Brainstorming Q&A:**
 - **Q1:** If we had to ship in 2 days, what MUST the compliance engine do?
@@ -129,7 +149,8 @@ For the MVP, shipping within 2 days, the engine MUST evaluate word limits and ma
 ## 8. Explicit Non-Goals
 
 **Summary / Decisions:**
-We explicitly will NOT use a local LLM or any AI to evaluate subjective guidelines (like "Is the abstract written for a lay audience?") during this pass; this is a strictly deterministic compliance check. We also explicitly exclude building the UI form that displays these errors (which is deferred to WF-6).
+- We explicitly will NOT use a local LLM or any AI to evaluate subjective guidelines (like "Is the abstract written for a lay audience?") during this pass; this is a strictly deterministic compliance check.
+- We also explicitly exclude building the UI form that displays these errors (which is deferred to WF-6).
 
 **Brainstorming Q&A:**
 - **Q1:** What tempting feature must be postponed?
