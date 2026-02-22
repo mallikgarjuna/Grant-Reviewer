@@ -455,9 +455,13 @@ def check_compliance(
     }
 
     submitted_ids = [item.node_logical_id for item in payload.draft_nodes]
-    duplicates = {
-        node_id for node_id in submitted_ids if submitted_ids.count(node_id) > 1
-    }
+    seen_ids: set[str] = set()
+    duplicates: set[str] = set()
+    for node_id in submitted_ids:
+        if node_id in seen_ids:
+            duplicates.add(node_id)
+        else:
+            seen_ids.add(node_id)
     if duplicates:
         raise APIException(
             code="DUPLICATE_NODE_ID",
