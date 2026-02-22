@@ -1,8 +1,8 @@
 # WF-0029 — NWO Veni 2025 Preproposal Structured AI Review Tasks
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-22
 
 ## Task Breakdown (Sequential Order)
@@ -126,9 +126,31 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 6 — Wire endpoint to service + integration test
+### [ ] Task 6 — Repository adaptation (F9, F10, F11)
 
-**Goal:** Remove service stub from Task 4, wire `POST /api/structured-review` to `StructuredReviewerService`. Add integration test.
+**Goal:** Adapt `list_reviews_for_external_user()`, `get_review_owner_external_user_id()`, and `delete_review_hard()` to handle `proposal_snippet_id=NULL`. Must be done BEFORE wiring integration test (Task 7) so queries work for structured reviews.
+
+**Files to modify:**
+1. `backend/app/repositories/review_repository.py` — Adapt 3 methods: LEFT JOIN for listing (with `COALESCE` for structured title), direct `external_user_id` fallback for ownership, NULL-safe snippet handling for delete.
+2. `backend/tests/test_review_repository.py` — **[NEW or extend]** Tests for each adapted method with both single-node and structured review fixtures.
+
+**Acceptance Criteria:**
+- `list_reviews_for_external_user()` returns both single and structured reviews. Structured reviews show `node_title="Structured review"`.
+- `get_review_owner_external_user_id()` resolves ownership for structured reviews via `Review.external_user_id`.
+- `delete_review_hard()` safely handles `proposal_snippet_id=NULL` (skip snippet delete).
+- Legacy single-node behavior unchanged for all three methods.
+
+**Verification Steps:**
+- Run repository tests — all pass.
+- Run full test suite — all pass (existing tests confirm no regression).
+
+**Risks:** LEFT JOIN change in list query may alter result ordering or duplicate rows — verify with test.
+
+---
+
+### [ ] Task 7 — Wire endpoint to service + integration test
+
+**Goal:** Remove service stub from Task 4, wire `POST /api/structured-review` to `StructuredReviewerService`. Add integration test (repository already adapted in Task 6).
 
 **Files to modify:**
 1. `backend/main.py` — Replace `NotImplementedError` stub with actual `StructuredReviewerService` call. Wire repository + LLM client.
@@ -144,28 +166,6 @@ Last Updated: 2026-02-22
 - Run full test suite — all pass.
 
 **Risks:** None — wiring task only.
-
----
-
-### [ ] Task 7 — Repository adaptation (F9, F10, F11)
-
-**Goal:** Adapt `list_reviews_for_external_user()`, `get_review_owner_external_user_id()`, and `delete_review_hard()` to handle `proposal_snippet_id=NULL`.
-
-**Files to modify:**
-1. `backend/app/repositories/review_repository.py` — Adapt 3 methods: LEFT JOIN for listing, direct `external_user_id` fallback for ownership, NULL-safe snippet handling for delete.
-2. `backend/tests/test_review_repository.py` — **[NEW or extend]** Tests for each adapted method with both single-node and structured review fixtures.
-
-**Acceptance Criteria:**
-- `list_reviews_for_external_user()` returns both single and structured reviews. Structured reviews show `node_title="Structured review"`.
-- `get_review_owner_external_user_id()` resolves ownership for structured reviews via `Review.external_user_id`.
-- `delete_review_hard()` safely handles `proposal_snippet_id=NULL` (skip snippet delete).
-- Legacy single-node behavior unchanged for all three methods.
-
-**Verification Steps:**
-- Run repository tests — all pass.
-- Run full test suite — all pass (existing tests confirm no regression).
-
-**Risks:** LEFT JOIN change in list query may alter result ordering or duplicate rows — verify with test.
 
 ---
 
@@ -216,3 +216,4 @@ Last Updated: 2026-02-22
 ## Changelog
 
 - v0.1 (2026-02-22): Initial task breakdown from PRD v0.4.
+- v0.2 (2026-02-22): Applied self-audit. Reordered: repo adaptation (T6) before wiring (T7) so integration test has adapted queries. Marked Ready for Implementation.
