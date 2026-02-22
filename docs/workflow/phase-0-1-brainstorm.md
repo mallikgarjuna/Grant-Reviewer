@@ -66,6 +66,7 @@ After completing a Phase 0.1 brainstorm session:
 8. Avoid architecture design.
 9. After each section:
    - Summarize decisions clearly.
+   - Append the explicit Q&A block directly below the summary (e.g. `**Summary:** ...` followed by `**Brainstorming Q&A:** ...`). This preserves the reasoning behind the decisions.
    - Update brainstorm file.
 10. Do NOT overwrite previous brainstorm content.
    - Append refinements or clarifications.
