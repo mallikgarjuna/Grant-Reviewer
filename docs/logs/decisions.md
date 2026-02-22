@@ -622,3 +622,27 @@
 - **Why**: Fastest low-risk path to improve user trust in wait-state behavior before real-user rollout.
 - **Tradeoff**: Long-running reviews may still require manual follow-up after the polling cap, and this does not provide real-time push semantics.
 - **Status**: Approved.
+
+## Date: 2026-02-22 (WF-0028: Compliance Engine)
+
+### AD 28.1: Deterministic Mandatory Field Definition
+- **WF ID**: WF-0028
+- **Context**: The V2 DB schema lacks an explicit `mandatory: boolean` flag on proposal nodes. The compliance engine needs a deterministic way to flag missing required text.
+- **Decision**: A node is considered mandatory if its `CallDefinition` canonical JSON `content_constraints` block contains a `word_limit` (min or max) OR an explicit `mandatory: true` flag.
+- **Why**: Safest heuristic given the current schema. Future YAML ingestion can simply add `mandatory: true` to bypass word-limit heuristics if needed.
+- **Tradeoff**: Heuristics are loose; if a real mandatory field has no word limit and no explicit flag in the YAML, it won't be blocked.
+- **Status**: Approved.
+
+### AD 28.2: Phase 1.2 Risk Audit Feedback on PRD v0.3
+- **WF ID**: WF-0028
+- **Context**: Codex adversarial review flagged high risks in the v0.2 PRD draft regarding schema alignment, domain constraints, input structure, and router placement.
+- **Decision**:
+  1. Removed `mandatory: true` and `word_limit` flat fields, aligning F4 to use V2 schema (`total_word_limit.min_words` or Expectation `MANDATORY` strength).
+  2. Made `domain` optional in request payload, enforcing it via 422 only when a call config defines `word_limit_by_domain`.
+  3. Added explicit 422 handling for unknown `node_logical_id`s and missing mandatory nodes.
+  4. Dropped `max_items` entirely from MVP scope to avoid NLP/fragile parsing heuristics on plain text input.
+  5. Affirmed single tokenization strategy for MVP, explicitly ignoring semantic exclusions (e.g. "excludes references").
+  6. Clarified routing placement in `main.py` (or explicit refactor action) to prevent architectural drift.
+- **Why**: Protects MVP delivery speed by strictly aligning the PRD with database/JSON reality and stripping under-defined parsing heuristics.
+- **Tradeoff**: Word counts remain approximate (ignoring semantic rules like "exclude references"); users must manually verify exact lengths against Funder PDFs.
+- **Status**: Implemented in PRD v0.3.

@@ -44,6 +44,7 @@ class SeededIDs:
     section_without_expectations_id: UUID
     other_call_id: UUID
     other_call_node_id: UUID
+    structured_call_id: UUID
     structured_call_code: str
 
 
@@ -104,14 +105,58 @@ def seed_api_data() -> SeededIDs:
                     "code": "nwo_veni_2025_preproposal",
                 },
                 "proposal_nodes": [
-                    {"id": "academic_profile"},
-                    {"id": "knowledge_utilisation"},
-                    {"id": "scientific_proposal"},
+                    {
+                        "id": "academic_profile",
+                        "content_constraints": {
+                            "total_word_limit": {"min_words": 2, "max_words": 5},
+                        },
+                    },
+                    {
+                        "id": "knowledge_utilisation",
+                        "content_constraints": {
+                            "word_limit_by_domain": {
+                                "science_enw_max_words": 5,
+                            }
+                        },
+                    },
+                    {
+                        "id": "scientific_proposal",
+                        "content_constraints": {},
+                    },
                 ],
             },
             source_path="data/calls/nwo/nwo_veni_2025_preproposal.yaml",
         )
         session.add(call_definition)
+        session.commit()
+
+        structured_node_1 = ProposalNode(
+            funding_call_id=structured_call.id,
+            parent_node_id=None,
+            logical_id="academic_profile",
+            node_type=NodeType.SECTION,
+            title="Academic profile",
+            order_index=1,
+        )
+        structured_node_2 = ProposalNode(
+            funding_call_id=structured_call.id,
+            parent_node_id=None,
+            logical_id="knowledge_utilisation",
+            node_type=NodeType.SECTION,
+            title="Knowledge utilisation",
+            order_index=2,
+        )
+        structured_node_3 = ProposalNode(
+            funding_call_id=structured_call.id,
+            parent_node_id=None,
+            logical_id="scientific_proposal",
+            node_type=NodeType.SECTION,
+            title="Scientific proposal",
+            order_index=3,
+        )
+        session.add(structured_node_1)
+        session.add(structured_node_2)
+        session.add(structured_node_3)
         session.commit()
 
         section_with_expectations = ProposalNode(
@@ -187,6 +232,7 @@ def seed_api_data() -> SeededIDs:
             section_without_expectations_id=section_without_expectations.id,
             other_call_id=other_call.id,
             other_call_node_id=other_call_node.id,
+            structured_call_id=structured_call.id,
             structured_call_code=structured_call.code,
         )
     finally:
@@ -247,6 +293,25 @@ def post_review(
     headers["Idempotency-Key"] = request_idempotency_key
     headers["Content-Type"] = "application/json"
     return client.post("/reviews", content=body, headers=headers)
+
+
+def post_compliance(
+    *,
+    client: TestClient,
+    payload: dict[str, object],
+    user_id: str = TEST_USER_ID,
+    timestamp: int | None = None,
+    shared_secret: str = TEST_BFF_SHARED_SECRET,
+) -> object:
+    """Call POST /api/check-compliance with signed headers."""
+    body = json.dumps(payload).encode("utf-8")
+    headers = build_signature_headers(
+        body=body,
+        user_id=user_id,
+        timestamp=timestamp,
+        shared_secret=shared_secret,
+    )
+    return client.post("/api/check-compliance", content=body, headers=headers)
 
 
 def get_review_detail(
@@ -815,6 +880,10 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "REVIEWS_DISABLED": 503,
         "DB_UNAVAILABLE": 503,
         "SNIPPET_TOO_LONG": 400,
+        "UNKNOWN_NODE_ID": 422,
+        "DUPLICATE_NODE_ID": 422,
+        "DOMAIN_REQUIRED": 422,
+        "DOMAIN_INVALID": 422,
         "VALIDATION_ERROR": 400,
         "INTERNAL_ERROR": 500,
     }
@@ -910,5 +979,124 @@ def test_list_reviews_excludes_other_users(monkeypatch) -> None:
 def test_list_reviews_unauthenticated_returns_401(monkeypatch) -> None:
     client, _ = create_client_with_seed(monkeypatch)
     response = client.get("/reviews")
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "UNAUTHORIZED"
+
+
+# ── POST /api/check-compliance ──────────────────────────────────────────────
+
+
+def test_check_compliance_valid_payload_returns_200(monkeypatch) -> None:
+    """Endpoint should return compliance report for valid structured payload."""
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_compliance(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "domain": "science_enw",
+            "draft_nodes": [
+                {"node_logical_id": "academic_profile", "text": "one two three"},
+                {
+                    "node_logical_id": "knowledge_utilisation",
+                    "text": "one two three four",
+                },
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["is_compliant"] is True
+    assert payload["errors"] == []
+    assert payload["warnings"] == []
+
+
+def test_check_compliance_unknown_node_returns_422(monkeypatch) -> None:
+    """Unknown node ids should fail with UNKNOWN_NODE_ID."""
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_compliance(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "domain": "science_enw",
+            "draft_nodes": [
+                {"node_logical_id": "unknown_node", "text": "abc"},
+            ],
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "UNKNOWN_NODE_ID"
+
+
+def test_check_compliance_duplicate_node_returns_422(monkeypatch) -> None:
+    """Duplicate node ids should fail with DUPLICATE_NODE_ID."""
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_compliance(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "domain": "science_enw",
+            "draft_nodes": [
+                {"node_logical_id": "academic_profile", "text": "one two"},
+                {"node_logical_id": "academic_profile", "text": "three four"},
+            ],
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "DUPLICATE_NODE_ID"
+
+
+def test_check_compliance_missing_domain_returns_422(monkeypatch) -> None:
+    """Missing domain should fail when node config has no default fallback."""
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_compliance(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "draft_nodes": [
+                {"node_logical_id": "academic_profile", "text": "one two three"},
+            ],
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "DOMAIN_REQUIRED"
+
+
+def test_check_compliance_empty_draft_nodes_returns_blocking_errors(
+    monkeypatch,
+) -> None:
+    """Empty draft nodes should return mandatory_presence error for required node."""
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_compliance(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "domain": "science_enw",
+            "draft_nodes": [],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["is_compliant"] is False
+    assert payload["errors"][0]["rule_id"] == "mandatory_presence"
+    assert payload["errors"][0]["is_blocking"] is True
+
+
+def test_check_compliance_unauthenticated_returns_401(monkeypatch) -> None:
+    """Missing BFF signature headers should return unauthorized."""
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = client.post(
+        "/api/check-compliance",
+        json={
+            "call_id": str(seeded_ids.structured_call_id),
+            "domain": "science_enw",
+            "draft_nodes": [],
+        },
+    )
+
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "UNAUTHORIZED"

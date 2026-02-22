@@ -78,11 +78,7 @@ All artifacts must follow:
 Brainstorm:
 docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
 
-Spec:
-If Type = page:
-docs/specs/pages/spec-WF-XXXX-<slug>.md
-If Type = feature:
-docs/specs/features/spec-WF-XXXX-<slug>.md
+
 
 PRD:
 docs/prds/prd-WF-XXXX-<slug>.md
@@ -99,7 +95,7 @@ docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md
 
 # WF-XXXX — <Title>
 
-Artifact: brainstorm | spec | prd | task | walkthrough
+Artifact: brainstorm | prd | task | walkthrough
 Version: v0.0
 Status: Not started
 Last Updated: YYYY-MM-DD
@@ -138,11 +134,11 @@ This establishes clean branch baseline.
 
 Table format:
 
-| WF ID | Slug / Feature | Brainstorm | Spec | PRD | Task File | Walkthrough | Status |
+| WF ID | Slug / Feature | Brainstorm | PRD | Task File | Walkthrough | Status |
 
 Add new row:
 
-| WF-XXXX | <slug> | [Brainstorm](relative-path) | [Spec](relative-path) | [PRD](relative-path) | [Tasks](relative-path) | [Walkthrough](relative-path) | Phase 0 |
+| WF-XXXX | <slug> | [Brainstorm](relative-path) | [PRD](relative-path) | [Tasks](relative-path) | [Walkthrough](relative-path) | Phase 0 |
 
 Rules:
 

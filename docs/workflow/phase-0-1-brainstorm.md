@@ -65,7 +65,8 @@ After completing a Phase 0.1 brainstorm session:
 7. Avoid implementation details.
 8. Avoid architecture design.
 9. After each section:
-   - Summarize decisions clearly.
+   - Summarize decisions clearly as a bulleted list (not a paragraph).
+   - Append the explicit Q&A block directly below the summary (e.g. `**Summary:**\n- bullet 1...` followed by `**Brainstorming Q&A:** ...`). This preserves the reasoning behind the decisions.
    - Update brainstorm file.
 10. Do NOT overwrite previous brainstorm content.
    - Append refinements or clarifications.
@@ -275,6 +276,6 @@ Stop when I say the brainstorm is “good enough” for a spec (or if I explicit
 
 In your final chat message, suggest the next 2 actions (so I can choose what to do next):
 
-1. Run Phase 1.1 (generate spec v0.1): `@docs/workflow/phase-1-1-spec-generate.md`
+1. Run Phase 1.1 (generate PRD v0.1): `@docs/workflow/phase-1-1-prd-generate.md`
    - **Provide an explicit, copy-pasteable prompt block** for the user to start this phase.
-2. Continue Phase 0.1 brainstorming to resolve remaining unknowns (update the brainstorm file; do not generate a spec yet).
+2. Continue Phase 0.1 brainstorming to resolve remaining unknowns (update the brainstorm file; do not generate a PRD yet).

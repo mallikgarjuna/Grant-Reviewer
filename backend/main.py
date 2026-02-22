@@ -39,6 +39,9 @@ from app.schemas.api import (
     ReviewsListResponse,
     ReviewSummary,
 )
+from app.schemas.compliance import ComplianceCheckRequest, ComplianceCheckResponse
+from app.services.call_definition_service import CallDefinitionService
+from app.services.compliance_engine import evaluate_compliance
 from app.services.llm_client import build_llm_client
 from app.services.reviewer_service import ReviewerService
 
@@ -67,6 +70,10 @@ ERROR_STATUS_BY_CODE = {
     "REVIEWS_DISABLED": 503,
     "DB_UNAVAILABLE": 503,
     "SNIPPET_TOO_LONG": 400,
+    "UNKNOWN_NODE_ID": 422,
+    "DUPLICATE_NODE_ID": 422,
+    "DOMAIN_REQUIRED": 422,
+    "DOMAIN_INVALID": 422,
     "VALIDATION_ERROR": 400,
     "INTERNAL_ERROR": 500,
 }
@@ -76,6 +83,7 @@ API_ERROR_RESPONSES = {
     409: {"model": APIErrorResponse},
     429: {"model": APIErrorResponse},
     400: {"model": APIErrorResponse},
+    422: {"model": APIErrorResponse},
     404: {"model": APIErrorResponse},
     500: {"model": APIErrorResponse},
     503: {"model": APIErrorResponse},
@@ -247,6 +255,54 @@ def map_review_failure_to_api_error(error: ValueError) -> APIException:
     return APIException(code="INTERNAL_ERROR", message="Review generation failed.")
 
 
+def _normalize_domain(domain: str | None) -> str | None:
+    """Normalize domain string to canonical lowercase identifier."""
+    if domain is None:
+        return None
+    normalized = domain.strip().lower()
+    return normalized or None
+
+
+def _is_domain_limited_node(node_config: dict[str, Any]) -> bool:
+    """Return True when node has domain-specific word limit configuration."""
+    constraints = node_config.get("content_constraints")
+    if not isinstance(constraints, dict):
+        return False
+    by_domain = constraints.get("word_limit_by_domain")
+    return isinstance(by_domain, dict)
+
+
+def _has_domain_default_fallback(node_config: dict[str, Any]) -> bool:
+    """Return True if node has usable default_max_words fallback."""
+    constraints = node_config.get("content_constraints")
+    if not isinstance(constraints, dict):
+        return False
+    by_domain = constraints.get("word_limit_by_domain")
+    if not isinstance(by_domain, dict):
+        return False
+    return isinstance(by_domain.get("default_max_words"), int)
+
+
+def _extract_known_domains(node_config: dict[str, Any]) -> set[str]:
+    """Extract canonical domain ids from word_limit_by_domain keys."""
+    constraints = node_config.get("content_constraints")
+    if not isinstance(constraints, dict):
+        return set()
+    by_domain = constraints.get("word_limit_by_domain")
+    if not isinstance(by_domain, dict):
+        return set()
+
+    domains: set[str] = set()
+    for key in by_domain:
+        if not isinstance(key, str):
+            continue
+        if key == "default_max_words":
+            continue
+        if key.endswith("_max_words"):
+            domains.add(key[: -len("_max_words")])
+    return domains
+
+
 RepositoryDep = Annotated[ReviewRepository, Depends(get_repository)]
 
 
@@ -372,6 +428,89 @@ def list_call_nodes(call_id: UUID, repository: RepositoryDep) -> NodesResponse:
             for node, has_expectations in nodes
         ],
     )
+
+
+@app.post(
+    "/api/check-compliance",
+    response_model=ComplianceCheckResponse,
+    responses=API_ERROR_RESPONSES,
+)
+def check_compliance(
+    payload: ComplianceCheckRequest,
+    repository: RepositoryDep,
+    _: Annotated[str, Depends(require_bff_user_id)],
+) -> ComplianceCheckResponse:
+    """Run deterministic compliance checks for a structured draft payload."""
+    call = repository.get_call_by_id(payload.call_id)
+    if call is None:
+        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+
+    hydrated_nodes = CallDefinitionService(repository.session).get_hydrated_nodes(
+        payload.call_id
+    )
+    available_node_ids = {
+        node.node.logical_id
+        for node in hydrated_nodes
+        if isinstance(node.node.logical_id, str)
+    }
+
+    submitted_ids = [item.node_logical_id for item in payload.draft_nodes]
+    seen_ids: set[str] = set()
+    duplicates: set[str] = set()
+    for node_id in submitted_ids:
+        if node_id in seen_ids:
+            duplicates.add(node_id)
+        else:
+            seen_ids.add(node_id)
+    if duplicates:
+        raise APIException(
+            code="DUPLICATE_NODE_ID",
+            message="Duplicate node_logical_id values are not allowed.",
+            details={"node_logical_ids": sorted(duplicates)},
+        )
+
+    unknown_ids = sorted(set(submitted_ids) - available_node_ids)
+    if unknown_ids:
+        raise APIException(
+            code="UNKNOWN_NODE_ID",
+            message="One or more node_logical_id values are unknown for this call.",
+            details={"node_logical_ids": unknown_ids},
+        )
+
+    normalized_domain = _normalize_domain(payload.domain)
+    domain_limited_nodes = [
+        node for node in hydrated_nodes if _is_domain_limited_node(node.config)
+    ]
+    requires_domain = any(
+        not _has_domain_default_fallback(node.config) for node in domain_limited_nodes
+    )
+    if requires_domain and normalized_domain is None:
+        raise APIException(
+            code="DOMAIN_REQUIRED",
+            message="domain is required for this call.",
+        )
+
+    known_domains: set[str] = set()
+    for hydrated in domain_limited_nodes:
+        known_domains.update(_extract_known_domains(hydrated.config))
+    if normalized_domain and known_domains and normalized_domain not in known_domains:
+        raise APIException(
+            code="DOMAIN_INVALID",
+            message="domain is not recognized for this call.",
+            details={"domain": normalized_domain, "allowed": sorted(known_domains)},
+        )
+
+    normalized_payload = ComplianceCheckRequest(
+        call_id=payload.call_id,
+        domain=normalized_domain,
+        draft_nodes=payload.draft_nodes,
+    )
+    started = time.perf_counter()
+    report = evaluate_compliance(normalized_payload, hydrated_nodes)
+    elapsed_ms = (time.perf_counter() - started) * 1000.0
+    if elapsed_ms > 500:
+        logger.warning("Compliance evaluation took %.2fms", elapsed_ms)
+    return report
 
 
 @app.post(

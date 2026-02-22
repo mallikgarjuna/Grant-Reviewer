@@ -88,16 +88,17 @@ After completing Part C revisions, ensure the **Target Output Artifact** (and an
 After completing Part C, output:
 
 1. **Current Status**: Target Artifact version and readiness state.
-2. **Two recommended next actions**, keeping it concise (e.g., Proceed to the next Phase, re-run this Phase, or update index).
-   - **CRITICAL**: For the recommended next phase, you MUST provide an explicit, copy-pasteable prompt block that the user can run to start it.
-   - Example format for the prompt block:
-     ```text
-     Use @docs/workflow/phase-X-run-Y.md
-     @docs/index.md
-     @docs/INPUT/...
+2. **Two recommended next actions**:
+   - **Proceed to Next Phase:** Provide an explicit, copy-pasteable prompt block that the user can run to start the next phase runner.
+     - Example format for the prompt block:
+       ```text
+       Use @docs/workflow/phase-X-run-Y.md
+       @docs/index.md
+       @docs/INPUT/...
 
-     Run Phase X ...
-     ```
+       Run Phase X ...
+       ```
+   - **Cross-Agent Collaborative Review:** Provide an explicit prompt the user can copy-paste into *another* coding agent (like Codex/Cursor) to perform an adversarial review of the newly created artifact. Detail which workflow review file to reference (e.g., "Use `@docs/workflow/phase-1-2-prd-risk-audit.md` to run a critical risk audit on the PRD" or for Tasks: `@docs/workflow/phase-2-2-task-review.md`).
 3. **Traceability Statement (Required)**:
    - Part A output reviewed in Part B: `<yes/no>` + `<path/version>`
    - Part B feedback applied in Part C: `<yes/no>` + `<key edits>`
