@@ -113,7 +113,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 6 — StructuredReviewerService core logic (F2–F7, F13)
+### [x] Task 6 — StructuredReviewerService core logic (F2–F7, F13)
 
 **Goal:** Implement `StructuredReviewerService` with full orchestration. Depends on T2 (helpers), T3 (prompt builder), T4 (write-path).
 
