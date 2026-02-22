@@ -144,3 +144,22 @@ End with two suggested next actions.
 - Use branch naming: `wf/<WF-ID>-<slug>` to protect main.
 - Artifact files should follow the `<artifact>-<WF-ID>-<slug>.md` naming rule.
 - These prompts should map directly to your workflow instructions in `docs/workflow/`.
+
+---
+
+## Add-On: Optional Codex Review (During Part B)
+
+If you want an adversarial review during Phase 1 or 2 Planning gates:
+
+1. Stop Antigravity at the end of Part B.
+2. In VS Code (Codex), run:
+```text
+Use @docs/workflow/phase-1-2-prd-risk-audit.md (or phase-2-2-task-review.md)
+@<draft_artifact_path>
+
+Run a critical risk audit on this draft in chat. Do not edit the file.
+```
+3. Copy the output and paste it back to Antigravity:
+```text
+Here is Codex's adversarial review. Merge this feedback into your Part B feedback, answer the questions, and proceed to Part C.
+```

@@ -50,3 +50,26 @@ To maximize velocity without sacrificing architectural integrity, isolate the "T
 - Antigravity will review the Git diffs, ensure the IDE agent didn't break global architecture or introduce lint debt, run the test suites, draft the final Walkthrough, and prepare the `Ship it` gate.
 - **Output**: A thoroughly verified PR, aligned with the original Phase 1 PRD.
 - **Cheat Sheet**: See `docs/workflow/how-to-use-workflow-actions.md` — Phase 3.2 (Verify & Ship) template.
+
+## Optional "Adversarial Review" (Option 2)
+
+If you want Codex's input on high-risk planning phases (Phase 0, 1, or 2), inject it safely into **Part B (Review Gate)** without breaking the pipeline.
+
+1. **In Antigravity:** Run the phase normally (e.g., Phase 1). Antigravity will pause after Part B to ask if you approve the draft before revising (Part C).
+2. **In VS Code (Codex):** While Antigravity is paused, point Codex at the exact same review instruction file:
+   > "Use `@docs/workflow/phase-1-2-prd-risk-audit.md` to run a critical risk audit on the current PRD draft. Output the findings in chat."
+3. **Back to Antigravity:** Paste Codex's findings into Antigravity:
+   > "Here is Codex's adversarial review. Merge this feedback into your own Part B feedback, answer the open questions, and proceed to Part C to apply revisions."
+
+*Why this works:* It uses the existing "Part B" architecture as a no-edit review gate, forcing Codex to follow strict project rules rather than hallucinating unstructured criticism.
+
+---
+### When Antigravity Does Not Pause (Auto-Pass)
+Antigravity's unified runners are designed to automatically proceed to Part C if Part B finds only minor, non-blocking issues.
+
+**If Antigravity finishes Part C and completes the phase before you can run Codex:**
+1. **Do not panic:** The artifact is still fully valid.
+2. **Run Codex anyway:** You can still run the Codex review on the final Part C artifact:
+   > "Use `@docs/workflow/phase-1-2-prd-risk-audit.md` to run a critical risk audit on the finalized PRD."
+3. **Handle feedback via a "Point Revision":** If Codex finds a major flaw that Antigravity missed, do *not* run the entire phase again. Instead, paste the Codex feedback back to Antigravity and say:
+   > "Codex reviewed your final artifact and found these issues. Please apply a point-revision to the draft to address them, bump the version, and update the changelog."
