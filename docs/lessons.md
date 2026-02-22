@@ -146,3 +146,4 @@
 **Issue**: Brainstorming artifacts contained only summaries of decisions, making it harder to understand the reasoning.
 **Fix**: Append the explicit Q&A block for each section directly into the brainstorm artifact `docs/brainstorms/brainstorm-WF-...`.
 **Prevention**: Always include the Q&A text alongside the section summary when updating brainstorm artifacts during Phase 0.1.
+- Make sure to explicitly document user rationale and constraints within the brainstorm Q&A blocks when they select a non-recommended option or add custom context. [2026-02-22]
