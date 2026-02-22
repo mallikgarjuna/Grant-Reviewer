@@ -108,7 +108,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 5 — Add integration tests for `/api/check-compliance`
+### [x] Task 5 — Add integration tests for `/api/check-compliance`
 
 **Goal:** End-to-end integration tests hitting the FastAPI endpoint via TestClient, verifying the full request→hydrate→evaluate→respond pipeline. Add tests to existing `test_api.py` if it exists, otherwise create a new file.
 
