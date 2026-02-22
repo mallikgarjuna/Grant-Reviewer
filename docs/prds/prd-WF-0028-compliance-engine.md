@@ -1,8 +1,8 @@
 # WF-0028 — NWO Veni 2025 preproposal Compliance Engine PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-22
 
 ## 1. In Scope
@@ -48,7 +48,7 @@ Last Updated: 2026-02-22
 - **F1 (Hydration):** The engine MUST load constraints using `CallDefinitionService.get_hydrated_nodes(call_id)`.
 - **F2 (Word Counting):** The engine MUST implement a standard, predictable word-counting algorithm (e.g., splitting by whitespace after stripping basic markdown/HTML) to compare against limits. Note: The UI must display a disclaimer that counts are approximate.
 - **F3 (Domain-Awareness):** The engine MUST accept a `domain` string to correctly resolve `word_limit_by_domain` constraints found in the NWO Veni `content_constraints` JSON block.
-- **F4 (Mandatory Evaluation):** The engine MUST determine "mandatory" status deterministically. *(Note: The PRD Needs to explicitly define the source of 'mandatory' since V2 schema relies on Expectation Strength. We will define a node as mandatory if it has ANY constraints or expectations defined, OR if we explicitly add a 'mandatory: true' flag to the JSON config).*
+- **F4 (Mandatory Evaluation):** The engine MUST determine "mandatory" status deterministically. A node is considered mandatory if its canonical JSON `content_constraints` block contains a `word_limit` (min or max) OR an explicit `mandatory: true` flag. If a node is mandatory but the user text is empty/missing, it fails validation.
 - **F5 (Decoupled Logic):** The core compliance evaluation MUST be a pure Python function (`def evaluate_compliance(payload) -> ComplianceReport`) decoupled from the FastAPI transport layer to enable exhaustive unit testing without HTTP overhead.
 
 ## 5. Data & API Contracts
@@ -120,8 +120,9 @@ Last Updated: 2026-02-22
 
 ## Open Questions
 
-- **Mandatory Source:** How exactly do we determine if a node is mandatory given the V2 schema lacks an explicit boolean? (Recommendation: We assume a node is mandatory if it has a `content_constraints.word_limit` defined, or we must update the YAML ingestion to include an explicit `mandatory: true` flag in `content_constraints`).
+- None. (Resolved: Mandatory source defined as presence of word limits or explicit `mandatory: true` flag).
 
 ## Changelog
 
 - v0.1 (2026-02-22): Initial PRD generated directly from Brainstorm v0.1.
+- v0.2 (2026-02-22): Applied Risk Audit refinements (F4 mandatory definition, resolved 'Open Questions'). Status to Ready for Tasks.
