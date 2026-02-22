@@ -1,19 +1,19 @@
 # WF-0029 — NWO Veni 2025 Preproposal Structured AI Review PRD
 
 Artifact: prd
-Version: v0.3
+Version: v0.4
 Status: Ready for Tasks
 Last Updated: 2026-02-22
 
 ## 1. In Scope (MVP-Now)
 
-- New `POST /api/structured-review` endpoint accepting multi-node payload (`call_id` + `nodes[]` with `node_logical_id` + `text`), returning per-node AI feedback cards.
+- New `POST /api/structured-review` endpoint accepting multi-node payload (`call_id` + `nodes[]` with `node_logical_id` + `text`), returning `CreateReviewResponse` (same shape as single-node). Per-node grouping in response is deferred to frontend (WF-6).
 - New `StructuredReviewerService` orchestrating: multi-node validation → per-node LLM review with cross-node context → deterministic `NOT_ASSESSABLE` card generation → single `Review` record persistence.
 - **Extracted LLM helpers module** (`app/services/llm_helpers.py`): `parse_llm_response()` and `generate_with_timeout()` extracted from `ReviewerService` private methods into standalone functions. Both `ReviewerService` and `StructuredReviewerService` import from here.
 - Schema additions on `Review`: `review_type` (str, default `"single"`), `structured_payload` (JSONB, nullable — stores `{node_logical_id: text}` for audit/replay), make `proposal_snippet_id` nullable.
 - Schema additions on `ReviewCard`: `assessment_status` (enum, default `ASSESSED`), `not_assessable_reason` (str, nullable).
 - New `AssessmentStatus` enum (`ASSESSED` / `NOT_ASSESSABLE`).
-- **Hardcoded NWO Veni cross-node context rules** in `StructuredReviewerService`: for `elem_cv_idea_alignment` and `elem_alignment_plan_credibility`, include `academic_profile` text as cross-node context when building the prompt. No generalized dependency metadata for MVP.
+- **Hardcoded NWO Veni cross-node context rules** in `StructuredReviewerService`: for `elem_cv_idea_alignment` and `elem_alignment_plan_credibility` on the `research_idea` node, include BOTH `academic_profile` AND `key_outputs` text as cross-node context when building the prompt. If either is missing or empty → NOT_ASSESSABLE. No generalized dependency metadata for MVP.
 - Adapt existing repository queries (`list_reviews`, `get_review_owner`, `delete_review_hard`) to handle `proposal_snippet_id=NULL` for structured reviews.
 - Alembic migration for all schema changes.
 - Integration with existing review history listing and detail endpoints (reuse existing response shapes).
@@ -56,7 +56,7 @@ Last Updated: 2026-02-22
 
 1. LLM call for one node times out (30s per-call timeout).
 2. `Review` is set to `status=FAILED`. Cards from successful prior nodes are persisted (non-atomic). Error message indicates which node failed via `overall_summary`.
-3. Frontend receives HTTP 200 with `status=FAILED` and partial cards.
+3. Frontend receives HTTP 200 with `status=FAILED`. Client calls `GET /reviews/{review_id}` to retrieve partial cards.
 
 ### Failure Path 3 — Empty Payload
 
@@ -67,17 +67,20 @@ Last Updated: 2026-02-22
 
 - **F1 (Endpoint):** `POST /api/structured-review` accepts `StructuredReviewRequest`, returns `CreateReviewResponse` (existing shape: `review_id` + `status`). Requires `X-GR-User-Id` header + `Idempotency-Key` header (matching existing auth/idempotency pattern from `POST /reviews`).
 - **F2 (Service):** New `StructuredReviewerService`. Does NOT call `ReviewerService.generate_review()`. Imports `parse_llm_response()` and `generate_with_timeout()` from `app/services/llm_helpers.py` (extracted from `ReviewerService` private methods). Also imports `build_review_prompt()` from prompt_builder.
-- **F3 (Cross-node context):** Hardcoded in `StructuredReviewerService` for NWO Veni: when building a prompt for `research_idea` node, if `elem_cv_idea_alignment` or `elem_alignment_plan_credibility` expectations exist, include `academic_profile` text as context. Uses element `logical_id` matching against known IDs.
-- **F4 (NOT_ASSESSABLE):** If a hardcoded cross-node dependency references a node that was NOT submitted (or has empty text), that expectation's `ReviewCard` is created deterministically with `assessment_status=NOT_ASSESSABLE` and `not_assessable_reason` explaining the missing context. The LLM is NOT asked to evaluate it.
+- **F3 (Cross-node context):** Hardcoded in `StructuredReviewerService` for NWO Veni: when building a prompt for `research_idea` node, if `elem_cv_idea_alignment` or `elem_alignment_plan_credibility` expectations exist, include BOTH `academic_profile` AND `key_outputs` text as context. Uses element `logical_id` matching against known IDs. If EITHER upstream node is missing or has empty text → those expectations are NOT_ASSESSABLE.
+- **F4 (NOT_ASSESSABLE):** If a hardcoded cross-node dependency references a node that was NOT submitted (or has empty text), that expectation's `ReviewCard` is created deterministically with `assessment_status=NOT_ASSESSABLE` and `not_assessable_reason` explaining which specific upstream node is missing. The LLM is NOT asked to evaluate it.
 - **F5 (Cardinality):** LLM response validation enforces 1:1 cardinality ONLY for assessable expectations sent to the LLM (exclude NOT_ASSESSABLE expectations from the count).
 - **F6 (Persistence):** One `Review` per structured submission. `review_type="structured"`. `proposal_snippet_id=NULL`. Raw input stored in `structured_payload` JSONB.
 - **F7 (Quota):** Structured review counts as 1 review against daily quota (not N per node).
-- **F8 (Idempotency):** `Idempotency-Key` header (same transport as existing `POST /reviews`). One key = one structured review. Payload mismatch behavior: if key exists with different payload hash, return HTTP 409 Conflict (same as existing semantics).
-- **F9 (History integration):** Structured reviews appear in `GET /reviews` list. `list_reviews_for_external_user()` must be adapted: use LEFT JOIN or UNION to include reviews with `proposal_snippet_id=NULL`. Display title: `"Structured review"` for structured reviews.
-- **F10 (Ownership check):** `get_review_owner_external_user_id()` must handle structured reviews: resolve ownership via `Review.external_user_id` directly (already stored on Review) instead of the snippet join chain.
-- **F11 (Delete cascade):** `delete_review_hard()` for structured reviews: delete cards + review only (no snippet to cascade since `proposal_snippet_id=NULL`). Structured payload is lost on delete (acceptable for MVP).
-- **F12 (Prompt builder contract):** `build_review_prompt()` accepts optional `cross_node_context: dict[str, str]` parameter. When present, context texts are appended under a "Cross-Node Context" section. Existing call path passes `None` (no legacy behavior change).
-- **F13 (Transaction model):** Non-atomic. Repository commits per-row (existing pattern). On partial LLM failure: `Review.status=FAILED`, successfully generated cards are kept, `overall_summary` reports which node failed. No automatic retry. Client may retry with same idempotency key after expiry.
+- **F8 (Idempotency):** `Idempotency-Key` header (same transport as existing `POST /reviews`). One key = one structured review. Payload mismatch: HTTP 409 Conflict. **Permanent key uniqueness** — constraint `(external_user_id, idempotency_key)` is permanent in DB. Retries require a new idempotency key (no retry-after-expiry).
+- **F9 (History integration):** Structured reviews appear in `GET /reviews` list. `list_reviews_for_external_user()` adapted with LEFT JOIN to include reviews with `proposal_snippet_id=NULL`. Display title: `"Structured review"` for structured reviews.
+- **F10 (Ownership check):** `get_review_owner_external_user_id()` adapted: for structured reviews (where `proposal_snippet_id=NULL`), resolve ownership via `Review.external_user_id` directly. Legacy single-node reviews continue using snippet join chain.
+- **F11 (Delete cascade):** `delete_review_hard()` for structured reviews: delete cards + review only. Handle `proposal_snippet_id=NULL` safely (skip snippet fetch/delete).
+- **F12 (Prompt builder contract):** `build_review_prompt()` accepts optional `cross_node_context: dict[str, str]` parameter. When present, context texts appended under "Cross-Node Context" section. Legacy call path passes `None`.
+- **F13 (Transaction model):** Non-atomic. Repository commits per-row (existing pattern). On partial LLM failure: `Review.status=FAILED`, successfully generated cards are kept, `overall_summary` reports which node failed. No automatic retry. Client must use a new `Idempotency-Key` for a new attempt.
+- **F14 (Review detail — partial failure visibility):** `GET /reviews/{review_id}` MUST return cards for BOTH `COMPLETED` and `FAILED` reviews when cards exist. Current behavior only loads cards for `COMPLETED` (main.py line 704) — must be changed to also load cards when `status=FAILED` and `review_type="structured"`.
+- **F15 (API model — assessment_status exposure):** `ReviewCardSummary` schema extended with two optional fields: `assessment_status: str | None` (default `None` for backward compat), `not_assessable_reason: str | None`. Old single-node review cards return `None` for both (no data change). Structured review cards return the actual values.
+- **F16 (Payload size bounds):** Per-node text capped at `MAX_SNIPPET_CHARS` (10,000 chars, matching existing `/reviews` guard). Total payload across all nodes capped at `MAX_STRUCTURED_PAYLOAD_CHARS` (30,000 chars). Validation returns 422 with field-level error if exceeded.
 
 ## 5. Data & API Contracts
 
@@ -98,8 +101,9 @@ Last Updated: 2026-02-22
 
 **Validation:**
 - `call_id`: required UUID, must exist in DB.
-- `nodes`: non-empty list. Each: `node_logical_id` (string, must match `ProposalNode.logical_id` for that call), `text` (string, may be empty — triggers NOT_ASSESSABLE for cross-node dependent expectations).
+- `nodes`: non-empty list. Each: `node_logical_id` (string, must match `ProposalNode.logical_id` for that call), `text` (string, max 10,000 chars, may be empty — triggers NOT_ASSESSABLE for cross-node dependent expectations).
 - Duplicate `node_logical_id` → 422.
+- Total text across all nodes > 30,000 chars → 422.
 
 ### Response (`HTTP 200`)
 
@@ -161,11 +165,14 @@ Card → node grouping is derived at query time via: `ReviewCard.node_expectatio
 - **Node with zero expectations:** Logged warning. No cards generated for that node.
 - **Idempotency key collision (same payload):** Return existing review without re-processing.
 - **Idempotency key collision (different payload):** HTTP 409 Conflict.
+- **Idempotency retries:** Permanent key uniqueness. Client must use a new `Idempotency-Key` for each new attempt.
 - **Review history listing:** `list_reviews_for_external_user()` adapted with LEFT JOIN. Structured reviews show `node_title="Structured review"`.
 - **Review deletion:** Structured reviews have no snippet to cascade. Delete cards + review only.
 - **Review detail:** Existing `GET /reviews/{review_id}` returns flat `cards[]` for both single and structured reviews. Per-node grouping deferred to frontend (WF-6).
-- **Partial LLM failure (transaction model):** Non-atomic. Node-1 cards committed successfully, node-2 LLM times out. `Review.status=FAILED`, `overall_summary` reports failed node. Cards from node-1 are retained. Client may retry after idempotency key expiry.
-- **Cross-endpoint idempotency collision:** `Idempotency-Key` is scoped to `(external_user_id, idempotency_key)`. Keys are shared across `/reviews` and `/structured-review`. Clients must use distinct keys per endpoint to avoid collisions.
+- **Partial LLM failure (transaction model):** Non-atomic. Node-1 cards committed, node-2 LLM times out. `Review.status=FAILED`, `overall_summary` reports failed node. Cards from node-1 retained. Client retries with new `Idempotency-Key`.
+- **Cross-endpoint idempotency collision:** Keys shared across `/reviews` and `/structured-review`. Clients must use distinct keys per endpoint.
+- **Partial failure card visibility:** `GET /reviews/{id}` returns cards for FAILED structured reviews when cards exist (behavior change from current COMPLETED-only loading).
+- **Payload size exceeded:** Per-node > 10,000 chars or total > 30,000 chars → HTTP 422 with field-level error.
 
 ## 8. Telemetry (Minimal)
 
@@ -190,11 +197,11 @@ Card → node grouping is derived at query time via: `ReviewCard.node_expectatio
 
 ## Open Questions
 
-1. **Cross-endpoint idempotency collision risk:** Should structured endpoint use a separate unique constraint namespace, or is shared `(external_user_id, idempotency_key)` acceptable? **Default: shared, document that clients use distinct keys.**
-2. **Review list display title:** Should structured reviews show "Structured review" or "Structured review (N nodes)"? Node count requires parsing `structured_payload` JSONB. **Default: static "Structured review" for MVP, avoid JSONB parsing in list query.**
+None. All decisions locked.
 
 ## Changelog
 
 - v0.1 (2026-02-22): Initial PRD generated from brainstorm v1.2.
 - v0.2 (2026-02-22): Applied self-audit (Part B). Added F10–F12, flagged INNER JOIN landmine.
-- v0.3 (2026-02-22): Per Codex adversarial review — tightened MVP scope. Removed `StructuredSubmission` table (→ JSONB on Review). Deferred `requires_context_from` DB persistence (→ hardcoded NWO rules). Extracted LLM helpers to shared module (F2 fix). Removed `node_logical_id` from ReviewCard (derive at query time). Defined transaction model (non-atomic, partial persistence). Specified idempotency transport (`Idempotency-Key` header). Added backward-compatible response strategy (reuse existing shapes). Moved 4 items to parking lot (P2 #10–#13). Schema reduced from 9 changes + 1 new table to 5 column changes + 0 new tables.
+- v0.3 (2026-02-22): Tightened MVP per Codex audit. Removed StructuredSubmission table, deferred requires_context_from. Schema reduced to 5 columns + 0 tables.
+- v0.4 (2026-02-22): Per Codex audit #2. Fixed response shape ambiguity (CreateReviewResponse, per-node grouping deferred). Added `key_outputs` to alignment dependency (was missing). Removed retry-after-expiry claim (permanent key uniqueness). Added F14 (partial-failure card visibility for FAILED reviews). Added F15 (assessment_status/not_assessable_reason exposed in ReviewCardSummary). Added F16 (payload size bounds: 10K/node, 30K total). Locked all open questions.
