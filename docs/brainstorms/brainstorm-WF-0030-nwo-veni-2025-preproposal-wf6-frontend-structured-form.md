@@ -92,7 +92,36 @@ The desired outcome is to capture 100% compliant structured inputs (preventing w
 
 ## 3. Target User / Actor
 
-*(To be filled during Phase 0.1 brainstorm)*
+The primary actor is a researcher who has an existing proposal draft and wants actionable, criteria-driven feedback. They will predominantly copy-paste their draft into the UI. The application is strictly a review tool, not a co-writer; it evaluates against funding criteria but does not rewrite text for the user. Text extraction from complex formats (images/tables) is a known friction point to be addressed in future document-parsing work (P2 #15).
+
+**Brainstorming Q&A:**
+
+**Q1: For this specific structural update (WF-6), who is the primary target persona?**
+- A) A first-time user who is completely unfamiliar with the NWO Veni call and needs heavy guidance.
+- B) A researcher who already has a draft proposal (often constructed offline in Word) and wants to evaluate it against the rubric.
+- C) A grant office administrator submitting on behalf of a researcher.
+> Recommendation: **B** — The core use-case we've observed is researchers pasting in existing drafts to get feedback. (Alternative A requires too much heavy inline hand-holding for an MVP. Alternative C is a secondary persona that behaves identically to B for the purposes of pasting text).
+> **Selected: B**
+> *User Comment*: "but what if the text also has images/tables? how do we handle them? We need to consider/brainstorm solution to these."
+> *System Note*: In the MVP (copy-paste textareas), images and rich tables will be lost as plain text. This validates the importance of the parked P2 #15 item (document upload via MarkItDown), which can extract markdown tables and image alt-text/captions. For this WF-6 MVP, we must rely on the user pasting plain text and accept that visual context is lost until P2 #15 is implemented.
+
+**Q2: How does the target user typically interact with the input fields?**
+> **Selected: B** — They copy-paste large chunks of text from an external document into the text areas.
+
+**Q3: When the user sees a compliance warning (e.g., "Word count exceeded: 450/400"), what is their expected reaction?**
+- A) They will immediately edit the text within our UI to fix the issue before submitting.
+- B) They will ignore it and submit anyway, expecting the AI to help them cut down the text.
+- C) They will go back to their Word document, fix it there, and re-paste it.
+> Recommendation: **A & B** — Based on your previous choice for "Soft enforce", users will likely do a mix of A and B.
+> **Selected: A & B (with a critical correction)**
+> *User Context/Constraint*: "but we are not helping them to rewrite their proposal, right? Our goal is to review their proposal as per the evaluation/assessment/review criteria of the funding call. But not to write the proposal. Let's reconsider this."
+> *Correction*: You are absolutely correct. The tool evaluates; it does not rewrite or compress. Therefore, if a user submits an over-length proposal, the AI review should note the compliance violation in its evaluation, but the tool is *not* an active editing assistant. The frontend compliance warning exists purely to alert them that their draft breaks the rules *before* they ask for a review.
+
+**Q4: How should we treat a user who attempts to bypass the compliance warnings?**
+> **Selected: B** — Show a simple, dismissible confirmation modal ("Your draft exceeds official limits. Proceed?").
+
+**Q5: What level of UI density does this user expect?**
+> **Selected: B** — Medium density: clean, modern forms with clear distinct sections and inline validation.
 
 ---
 
