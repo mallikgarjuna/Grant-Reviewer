@@ -138,7 +138,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 7 — Endpoint + service wiring + integration tests (F1, F8, F16)
+### [x] Task 7 — Endpoint + service wiring + integration tests (F1, F8, F16)
 
 **Goal:** Add `POST /api/structured-review` route with full validation, idempotency, quota, and wired to `StructuredReviewerService`. No stub.
 
@@ -161,7 +161,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 8 — API model extension + detail endpoint fix (F14, F15)
+### [x] Task 8 — API model extension + detail endpoint fix (F14, F15)
 
 **Goal:** Extend `ReviewCardSummary` with `assessment_status` and `not_assessable_reason`. Fix `GET /reviews/{id}` to return cards for FAILED structured reviews.
 
