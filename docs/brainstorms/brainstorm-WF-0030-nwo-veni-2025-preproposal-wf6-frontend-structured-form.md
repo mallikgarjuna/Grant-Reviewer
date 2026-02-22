@@ -239,7 +239,44 @@ The primary constraint is that the frontend must be built within the existing Ne
 
 ## 6. Risks / Unknowns
 
-*(To be filled during Phase 0.1 brainstorm)*
+The primary UX risk is rendering a complex, deeply nested YAML structure elegantly as flat HTML textareas. Additionally, bypassing warnings (`force=true`) risks degrading LLM output quality due to excessive token ingestion. A key usability gap currently is the inability to process rich text/tables during a copy-paste action, which must be clearly communicated to users via an upfront disclaimer.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the biggest UX risk of moving to a dynamic, schema-driven multi-node form?**
+- A) The UI logic becomes too complex and brittle, making it hard to maintain.
+- B) We fail to render complex nested YAML structures beautifully, resulting in a confusing or ugly layout for the researcher.
+- C) The user gets overwhelmed by seeing too many input boxes at once and abandons the form.
+> Recommendation: **B** — The backend `proposal_structure` can theoretically define deeply nested nodes, but rendering them elegantly as flat or minimally-nested HTML `<textarea>` components requires careful spacing, typography, and clear labeling (the "Ink+Parchment" aesthetic). (Alternative A is a standard React challenge, not unique here. Alternative C is unlikely if the grouping is clear).
+> **Selected: B**
+
+**Q2: How should the frontend handle the specific `message` strings returned by the backend compliance engine (e.g., "Word count exceeded: 450/400")?**
+- A) Just show a generic red glow. The user will figure it out.
+- B) Directly render the exact `message` string returned by the backend (or mirrored by the local JS) beneath the relevant textarea in red text.
+- C) Ignore the backend message and write our own custom error strings in the frontend codebase.
+> Recommendation: **B** — Directly rendering the deterministic strings from the compliance engine ensures total consistency between what the user sees and what the system actually evaluates. (Alternative A is terrible UX. Alternative C creates a frustrating split-brain where the UI says one thing, and the evaluation cards say another).
+> **Selected: B**
+
+**Q3: What happens if a funding call YAML definition is updated on the backend *after* a user has saved a draft in `localStorage`?**
+- A) The frontend crashes trying to map old keys to new schema inputs.
+- B) The frontend silently ignores the `localStorage` and loads the new schema completely empty.
+- C) The frontend attempts a "best-effort" mapping based on the node IDs (e.g., `academic_profile`), restoring what it can and dropping the rest.
+> Recommendation: **C** — Since the `localStorage` draft will be keyed by the stable `id` of each `ProposalNode`, a best-effort mapping ensures the user retains most of their work, even if the schema evolved slightly. (Alternative A is unacceptable. Alternative B destroys user data unnecessarily).
+> **Selected: C**
+
+**Q4: The `force=true` bypass allows users to submit non-compliant drafts. What is the primary downstream risk of this?**
+- A) The LLM might aggressively hallucinate or truncate the review if the text is massively over length.
+- B) The database will become corrupted.
+- C) The cost per evaluation will increase exponentially without limits.
+> Recommendation: **A** — If a user pastes 5,000 words into a 100-word box and forces it through, the LLM context window might stretch or the model might lose focus, resulting in a poor quality evaluation. (Alternative B is false; text is just text. Alternative C is a risk, but capped by the model's max tokens).
+> **Selected: A**
+
+**Q5: Since we parked document upload parsing (P2 #15), researchers pasting highly formatted tables into a plain `<textarea>` will destroy their formatting. How do we mitigate this UX risk for the MVP?**
+- A) We must build a complex WYSIWYG editor anyway, violating MVP scope.
+- B) Add a clear, dismissible UI disclaimer above the form: "Please paste plain text. Complex formatting like tables/images are not currently supported."
+- C) Let the user figure it out when the evaluation comes back garbled.
+> Recommendation: **B** — A clear, upfront disclaimer manages expectations perfectly without requiring complex engineering. (Alternative A destroys the timeline. Alternative C damages trust in the AI's capability).
+> **Selected: B**
 
 ---
 
