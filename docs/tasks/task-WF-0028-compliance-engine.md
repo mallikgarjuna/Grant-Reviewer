@@ -29,7 +29,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 2 — Implement pure `evaluate_compliance()` engine
+### [x] Task 2 — Implement pure `evaluate_compliance()` engine
 
 **Goal:** Build the core compliance evaluation logic as a pure Python function, decoupled from FastAPI transport (PRD F5). This function ONLY returns domain-level violation/result objects; all HTTP semantics (422, error codes) belong to Task 4.
 
