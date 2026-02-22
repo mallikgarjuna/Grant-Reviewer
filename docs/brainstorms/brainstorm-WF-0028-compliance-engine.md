@@ -78,3 +78,33 @@ The simplest implementation direction is to read the compliance rules directly f
   - **A:** No, it should strictly be read-only and return feedback. It is up to the researcher to fix it.
 - **Q5:** What is the highest technical risk for this rough idea?
   - **A:** Word counting accurately (e.g., handling markdown, HTML, or LaTeX rendering artifacts). We must include a disclaimer on the UI about word counts.
+
+---
+
+## 5. Constraints
+
+**Summary / Decisions:**
+The system must be built as a purely data-driven, local backend Python service with no hardcoded AI calls or third-party dependencies, relying exclusively on the PostgreSQL `EvaluationElement` definitions. Because this is a blocking necessity for the upcoming frontend work (WF-6), the time constraint is strict: it must be shipped immediately.
+
+**Brainstorming Q&A:**
+- **Q1:** What is the primary technical constraint for the compliance engine?
+  - **A:** It must rely exclusively on the `EvaluationElement` definitions in the PostgreSQL database, meaning no hardcoded rules per funding call in the code.
+- **Q2:** What is the time constraint for building this MVP?
+  - **A:** Must be fully shipped today/tomorrow so we can unblock WF-6 (the complex frontend form).
+- **Q3:** Are there any external dependencies to worry about?
+  - **A:** No, this should be a purely deterministic, local backend operation using only the database and standard Python string manipulation.
+
+---
+
+## 6. Risks / Unknowns
+
+**Summary / Decisions:**
+The most fragile assumption is that the drafted `ProposalNode` tree structure perfectly aligns with the `EvaluationElement` tree; if they drift, the compliance traversal will break or return false positives. Another major risk is aggregate constraints (e.g., a word limit on a parent section spanning multiple child subsections), which must be handled explicitly. To prevent future rework, the core validation logic must be built as a decoupled, purely testable Python function (`def evaluate_compliance(draft_id)`) separate from the FastAPI transport layer.
+
+**Brainstorming Q&A:**
+- **Q1:** What is the most fragile assumption we are making?
+  - **A:** That the `ProposalNode` tree structure in the database exactly matches the expected shape defined by the `EvaluationElement` tree for every call.
+- **Q2:** What edge case needs validation early?
+  - **A:** What happens if a constraint applies to a parent section but the drafted text is split among 5 child subsections? (e.g., aggregate word counts).
+- **Q3:** What could cause the most rework later?
+  - **A:** Tying the validation logic too tightly to the API transport layer instead of keeping it as a pure, testable internal Python service/function.
