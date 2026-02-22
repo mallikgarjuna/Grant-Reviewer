@@ -148,3 +148,4 @@
 **Prevention**: Always include the Q&A text alongside the section summary when updating brainstorm artifacts during Phase 0.1.
 - Make sure to explicitly document user rationale and constraints within the brainstorm Q&A blocks when they select a non-recommended option or add custom context. [2026-02-22]
 - **Target User Assumption Correction**: The application is strictly a review tool, not an AI co-writer. Avoid assumptions that the tool exists to rewrite or shrink proposals for the user; its sole purpose is to evaluate against funding criteria. [2026-02-22]
+- **Tech Stack Assumption Correction**: The frontend is a Next.js SPA, not a Jinja2 template application. Always verify the `frontend` directory structure before assuming the rendering technology. [2026-02-22]

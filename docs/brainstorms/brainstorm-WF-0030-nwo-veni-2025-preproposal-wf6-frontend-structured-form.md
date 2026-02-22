@@ -156,7 +156,24 @@ The MVP approach is a single form containing three distinct `<textarea>` fields 
 
 ## 5. Constraints
 
-*(To be filled during Phase 0.1 brainstorm)*
+The primary constraint is that the frontend must be built within the existing Next.js React application, interfacing with the backend FastAPI endpoints. The real-time word count logic must perfectly mirror the Python backend's custom whitespace-splitting rule. The draft ID (`logical_id`) for idempotency must be stored transiently on the client (e.g. `localStorage` or session state) since there is no server-side user mapping. Finally, the strict compliance engine on the backend must be accommodated with a `force=true` (or equivalent) bypass flag to allow soft-enforced submissions.
+
+**Brainstorming Q&A:**
+
+**Q1: What is our primary architectural constraint for the frontend (WF-6) currently?**
+*(To be re-evaluated)*
+
+**Q2: What is the primary technical limitation for the real-time word count utility?**
+> **Selected: B** — It only needs to match the Python backend's custom whitespace-splitting logic (as defined in `utils.compliance`).
+
+**Q3: We need to store the `logical_id` (draft ID) securely to ensure idempotency. What is the constraint here?**
+> **Selected: C** — It is a transient session token; it can live in the JS memory/DOM or `localStorage` just long enough to prevent double-clicks or accidental resubmissions of the exact same draft state.
+
+**Q4: Regarding the "Soft enforce" warning bypass, what is the backend constraint?**
+> **Selected: A** — Because the backend was built to strictly reject errors (WF-0028/29), we must introduce a "force" flag in the frontend payload and make a tiny update to the backend endpoint to downgrade ERRORs to WARNINGs when this flag is present.
+
+**Q5: What is our primary time/effort constraint for this specific chunk?**
+> **Selected: B** — We are keeping this scoped to the absolute minimal functional slice to close the loop between the user and the newly built V2 data models / AI evaluation backend.
 
 ---
 
