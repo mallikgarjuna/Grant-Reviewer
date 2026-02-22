@@ -33,7 +33,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 2 — Extract LLM helpers module
+### [x] Task 2 — Extract LLM helpers module
 
 **Goal:** Extract `_parse_llm_response()` and `_generate_with_timeout()` from `ReviewerService` into standalone functions in `llm_helpers.py`. Refactor `ReviewerService` to import from there.
 
