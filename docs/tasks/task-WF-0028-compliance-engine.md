@@ -1,8 +1,8 @@
 # WF-0028 — NWO Veni 2025 preproposal Compliance Engine Tasks
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-22
 
 ## Task Breakdown (Sequential Order)
@@ -41,6 +41,7 @@ Last Updated: 2026-02-22
 - Function signature: `def evaluate_compliance(request: ComplianceCheckRequest, hydrated_nodes: list[HydratedNode]) -> ComplianceCheckResponse`.
 - Implements word counting via whitespace splitting (PRD F2).
 - Implements domain-aware limit resolution: if `domain` is provided AND `word_limit_by_domain` exists on a node config, use domain-specific max; otherwise fallback to `total_word_limit.max_words` (PRD F3).
+- Accepts only canonical lowercase domain IDs (e.g., `science_enw`); rejects unrecognized aliases with a clear error.
 - Implements mandatory detection: node is mandatory if `total_word_limit.min_words > 0` or node has a `MANDATORY` expectation strength (PRD F4).
 - Flags missing mandatory nodes (not sent in `draft_nodes`) as blocking errors (PRD Edge Case).
 - Returns 422-equivalent error info for unknown `node_logical_id`s submitted by the caller.
@@ -94,6 +95,7 @@ Last Updated: 2026-02-22
 - Route validates all submitted `node_logical_id`s exist in hydrated config; returns 422 for unknowns.
 - Route delegates to `evaluate_compliance()` and returns `ComplianceCheckResponse`.
 - Route inherits existing BFF auth dependency (`require_bff_user_id`).
+- Route logs a warning if `evaluate_compliance()` takes longer than 500ms (PRD §8 Telemetry).
 - Consistent error responses using existing `APIException` / `build_error_response` patterns.
 
 **Verification Steps:**
@@ -152,3 +154,4 @@ Last Updated: 2026-02-22
 ## Changelog
 
 - v0.1 (2026-02-22): Initial task breakdown from PRD v0.3.
+- v0.2 (2026-02-22): Applied Part B review feedback (domain normalization AC, telemetry AC). Status to Ready for Implementation.
