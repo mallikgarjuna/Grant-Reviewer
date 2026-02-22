@@ -32,13 +32,25 @@ The single text area submission input does not align with the strict 3-node stru
 > *Follow-up Action*: Parked as P2 #15 (Assisted extraction via document upload) as this introduces new backend dependencies and parsing/security considerations that extend beyond the immediate strict-MVP slice, but is a great UX improvement for the backlog.
 
 **Q3: When should the compliance UI (word limits, max outputs) be calculated and displayed to the user?**
-> **Selected: B** — Real-time on the frontend as the user types/pastes.
+- A) Only after the user clicks "Submit", handled as a validation error returned from the backend.
+- B) Real-time on the frontend as the user types/pastes into the input fields, before submission.
+- C) As a distinct intermediate step after submission but before calling the LLM.
+> Recommendation: **B** — Real-time validation provides the best user experience, preventing unnecessary backend roundtrips and aligning with the expectation to surface compliance before submission. (Alternative A is a poor UX. Alternative C adds unnecessary friction steps).
+> **Selected: B**
 
 **Q4: How should we strictly handle draft reviews (idempotent drafts) to prevent accidental duplicate submissions?**
-> **Selected: B** — The frontend generates a deterministic `logical_id` (draft ID), passes it to the backend, and locks the UI.
+- A) Rely solely on backend logic; the frontend just sends requests.
+- B) The frontend should generate and store a deterministic `logical_id` (or draft ID) for the review, pass it to the backend, and lock the UI while processing.
+- C) The frontend doesn't need to worry about duplicate submissions for the MVP.
+> Recommendation: **B** — The frontend needs to participate by generating or managing a stable ID (like a draft session) and locking the UI to prevent double-clicks, perfectly complementing backend idempotency. (Alternative A leads to race conditions. Alternative C wastes expensive LLM calls.)
+> **Selected: B**
 
 **Q5: What is the scope of styling and layout changes for this feature?**
-> **Selected: B** — Reusing existing forms/components but adjusting them for three inputs and inline warnings.
+- A) A complete redesign of the submission page using entirely new components.
+- B) Reusing existing forms and UI components but adjusting them to accommodate three inputs and inline compliance warnings.
+- C) No styling changes; just raw HTML inputs to get it working.
+> Recommendation: **B** — Reusing existing components (buttons, textareas, alerts) maintains consistency and speeds up development, adhering to the "smallest functional slice" constraint. (Alternative A is out of scope. Alternative C looks broken.)
+> **Selected: B**
 
 ---
 
@@ -106,7 +118,11 @@ The primary actor is a researcher who has an existing proposal draft and wants a
 > *System Note*: In the MVP (copy-paste textareas), images and rich tables will be lost as plain text. This validates the importance of the parked P2 #15 item (document upload via MarkItDown), which can extract markdown tables and image alt-text/captions. For this WF-6 MVP, we must rely on the user pasting plain text and accept that visual context is lost until P2 #15 is implemented.
 
 **Q2: How does the target user typically interact with the input fields?**
-> **Selected: B** — They copy-paste large chunks of text from an external document into the text areas.
+- A) They type their proposal from scratch directly into our UI.
+- B) They copy-paste large chunks of text from an external document into the text areas.
+- C) They upload a file and expect it to automatically populate.
+> Recommendation: **B** — Copy-pasting is the dominant behavior based on the current architecture. (Alternative A is rare for 1500+ word grants. Alternative C is highly desirable but was already explicitly parked as P2 #15 for future development).
+> **Selected: B**
 
 **Q3: When the user sees a compliance warning (e.g., "Word count exceeded: 450/400"), what is their expected reaction?**
 - A) They will immediately edit the text within our UI to fix the issue before submitting.
@@ -118,10 +134,18 @@ The primary actor is a researcher who has an existing proposal draft and wants a
 > *Correction*: You are absolutely correct. The tool evaluates; it does not rewrite or compress. Therefore, if a user submits an over-length proposal, the AI review should note the compliance violation in its evaluation, but the tool is *not* an active editing assistant. The frontend compliance warning exists purely to alert them that their draft breaks the rules *before* they ask for a review.
 
 **Q4: How should we treat a user who attempts to bypass the compliance warnings?**
-> **Selected: B** — Show a simple, dismissible confirmation modal ("Your draft exceeds official limits. Proceed?").
+- A) Force them to type an explicit confirmation word (e.g., "IGNORE") before the submit button unlocks.
+- B) Show a simple, dismissible confirmation modal ("Your draft exceeds official limits. Proceed?").
+- C) We don't need a modal; if the button is active and they click it despite the red text, just let it through.
+> Recommendation: **B** — A simple confirmation modal adds exactly one intentional click, confirming they saw the warning without creating excessive friction. (Alternative A is too punishing. Alternative C is too passive and might lead to accidental submissions of malformed pastes).
+> **Selected: B**
 
 **Q5: What level of UI density does this user expect?**
-> **Selected: B** — Medium density: clean, modern forms with clear distinct sections and inline validation.
+- A) High density: lots of small text, tight margins, showing all rules simultaneously (Academic style).
+- B) Medium density: clean, modern forms with clear distinct sections and inline validation.
+- C) Low density: massive text areas taking up the whole screen, hiding all instructions behind tooltips.
+> Recommendation: **B** — Clean, modern, distinct sections match the PeerLens brand guidelines while keeping the interface focused on the content. (Alternative A is overwhelming. Alternative C hides too much crucial context).
+> **Selected: B**
 
 ---
 
@@ -141,16 +165,32 @@ The MVP approach is a single form containing three distinct `<textarea>` fields 
 > *System Note*: Yes, this is a critical flow. The frontend must allow submission of partial drafts (e.g., if a user only wants to review their Academic Profile). If a node is completely empty, it will not trigger a word-count maximum error, but the backend AI evaluation will cleanly mark alignment criteria dependent on that missing node as `NOT_ASSESSABLE` (as implemented in WF-0029). The frontend validation must not strictly require all three fields to be populated to submit.
 
 **Q2: How should the live compliance engine (word counts) be implemented on the frontend?**
-> **Selected: B** — Implement a lightweight Javascript utility on the frontend that mimics the backend's word count logic for real-time feedback.
+- A) Send a debounce API request to the backend `/compliance` endpoint on every keystroke to get the exact counts.
+- B) Implement a lightweight Javascript utility on the frontend that mimics the backend's word count logic for real-time feedback.
+- C) Don't show real-time counts; only count when they click a "Check Compliance" button.
+> Recommendation: **B** — A local JS utility provides zero-latency feedback without hammering the backend, keeping the UI highly responsive. Since word counts are deterministic (split by whitespace), maintaining parity between frontend JS and backend Python is trivial. (Alternative A wastes network requests. Alternative C is a poor user experience).
+> **Selected: B**
 
 **Q3: We need to implement the "Soft enforce" bypass you requested in Section 2. How should this flow work?**
-> **Selected: B** — If there is an `ERROR`, the "Submit" button remains active. Clicking it opens a modal showing the exact errors and requiring a second "Confirm Submission" click.
+- A) If there is an `ERROR`, the "Submit" button turns yellow and says "Submit with Warnings". Clicking it immediately submits with a `force=true` flag.
+- B) If there is an `ERROR`, the "Submit" button remains active. Clicking it opens a modal showing the exact errors and requiring a second "Confirm Submission" click.
+- C) The frontend quietly changes all `ERROR` severity levels to `WARNING` severity levels so the backend accepts them natively.
+> Recommendation: **B** — A modal with a second confirmation click ensures the user explicitly acknowledges the rule violations before wasting LLM tokens. It serves as an intentional friction point. (Alternative A is too easy to click accidentally. Alternative C requires altering the backend's strict NWO logic, which weakens the integrity of the compliance engine).
+> **Selected: B**
 
 **Q4: How should the frontend handle the `logical_id` (draft ID) to ensure idempotency?**
-> **Selected: A** — The frontend generates a UUID (v4) when the page loads to uniquely identify the draft session.
+- A) The frontend generates a UUID (v4) when the page loads to uniquely identify the draft session.
+- B) The frontend hashes the content of the three text areas. If the content hasn't changed, it doesn't allow a second submission.
+- C) The backend handles it entirely; the frontend just disables the submit button while the request is in-flight.
+> Recommendation: **A** — Generating a UUID on page load (or upon first text entry) is the standard, safest way to ensure a unique operational token for the draft session, perfectly matching the backend's `logical_id` design. (Alternative B is overly complex. Alternative C doesn't protect against network retries or fast double-clicks before the JS disables the button).
+> **Selected: A**
 
 **Q5: For the NWO Veni "Research Idea" node, there is a special case: default is max 100 words, but the ENW/Science pilot allows 500 words. How should the frontend handle this?**
-> **Selected: A** — Add a checkbox: `[ ] Applying for ENW/Science pilot`. If checked, the UI word limit indicator changes from 100 to 500.
+- A) Add a checkbox: `[ ] Applying for ENW/Science pilot`. If checked, the UI word limit indicator changes from 100 to 500.
+- B) Always show 500 words as the limit to be safe.
+- C) Always show 100 words as the limit and let ENW users figure out the warning bypass themselves.
+> Recommendation: **A** — A simple toggle checkbox perfectly models the domain requirement without confusing standard applicants, and maps cleanly to the backend compliance engine rules. (Alternative B encourages non-ENW applicants to write too much. Alternative C creates a frustrating experience for valid ENW applicants).
+> **Selected: A**
 
 ---
 
@@ -160,20 +200,40 @@ The primary constraint is that the frontend must be built within the existing Ne
 
 **Brainstorming Q&A:**
 
-**Q1: What is our primary architectural constraint for the frontend (WF-6) currently?**
-*(To be re-evaluated)*
+**Q1: To achieve a universal, schema-driven form, how should the frontend fetch the required node structure?**
+- A) When the user selects a funding call from the dropdown, the frontend Next.js client fetches the full Call definition from the backend, parses the `proposal_structure` nodes, and dynamically renders the corresponding textareas on the fly.
+- B) The backend should serve a pre-rendered HTML form for each call so the frontend doesn't need to parse schemas.
+- C) We should hardcode a giant map of every known funding call's structure directly in the frontend Next.js codebase.
+> Recommendation: **A** — Fetching the schema dynamically as JSON is the standard SPA approach. The Next.js frontend simply maps over the `proposal_structure` array returned by the API to render the `<textarea>` components. This keeps the frontend entirely agnostic to specific funders. (Alternative B violates the strict API/SPA separation. Alternative C requires a frontend release every time a new YAML is ingested, completely defeating the purpose of the data-driven architecture).
+> **Selected: A**
 
 **Q2: What is the primary technical limitation for the real-time word count utility?**
-> **Selected: B** — It only needs to match the Python backend's custom whitespace-splitting logic (as defined in `utils.compliance`).
+- A) It must perfectly match the exact hidden tokenization logic of OpenAI's models.
+- B) It only needs to match the Python backend's custom whitespace-splitting logic (as defined in `utils.compliance`).
+- C) It must parse HTML and Markdown tags perfectly to exclude them from the count.
+> Recommendation: **B** — The backend compliance engine uses a very specific RegEx/whitespace splitting logic to count "words". The frontend JS must simply mirror this logic exactly so they never disagree. (Alternative A is impossible as we count words, not tokens, for NWO compliance. Alternative C complicates the MVP for an edge case, especially since users are pasting plain text).
+> **Selected: B**
 
 **Q3: We need to store the `logical_id` (draft ID) securely to ensure idempotency. What is the constraint here?**
-> **Selected: C** — It is a transient session token; it can live in the JS memory/DOM or `localStorage` just long enough to prevent double-clicks or accidental resubmissions of the exact same draft state.
+- A) It must be stored in a secure HttpOnly cookie.
+- B) It must be stored in the database immediately upon page load.
+- C) It is a transient session token; it can live in the JS memory/DOM or `localStorage` just long enough to prevent double-clicks or accidental resubmissions of the exact same draft state.
+> Recommendation: **C** — The draft `logical_id` exists purely to deduplicate submissions on the backend during the 90-second wait. Storing it in an HTML hidden input or `localStorage` during the session is completely sufficient and doesn't require complex session cryptography. (Alternative A is overkill for an MVP without full user auth. Alternative B wastes database writes for drafts that might be abandoned immediately).
+> **Selected: C**
 
 **Q4: Regarding the "Soft enforce" warning bypass, what is the backend constraint?**
-> **Selected: A** — Because the backend was built to strictly reject errors (WF-0028/29), we must introduce a "force" flag in the frontend payload and make a tiny update to the backend endpoint to downgrade ERRORs to WARNINGs when this flag is present.
+- A) The backend currently rejects any compliance `ERROR` with a 400 Bad Request immediately. Therefore, the frontend MUST pass a specific flag (e.g., `?force_bypass=true`) when submitting if the user bypassed the warning, and the backend must be updated to accept this flag.
+- B) The backend already accepts everything; we don't need to change anything.
+- C) We should just remove the strict compliance checks from the backend entirely.
+> Recommendation: **A** — Because the backend was built to strictly reject errors (WF-0028/29), we must introduce a "force" flag in the frontend payload and make a tiny update to the backend endpoint to downgrade ERRORs to WARNINGs when this flag is present. (Alternative B is factually incorrect based on the current codebase. Alternative C ruins the core value proposition of the compliance engine).
+> **Selected: A**
 
 **Q5: What is our primary time/effort constraint for this specific chunk?**
-> **Selected: B** — We are keeping this scoped to the absolute minimal functional slice to close the loop between the user and the newly built V2 data models / AI evaluation backend.
+- A) We have months to build a perfect drafting experience.
+- B) We are keeping this scoped to the absolute minimal functional slice to close the loop between the user and the newly built V2 data models / AI evaluation backend.
+- C) We must finish this in exactly 2 hours, no matter what corners we cut.
+> Recommendation: **B** — The goal is to rapidly ship the frontend that "unlocks" all the backend work completed in WFs 2-5, proving the end-to-end value of the structured AI review. (Alternative A invites scope-creep. Alternative C sacrifices quality and test coverage).
+> **Selected: B**
 
 ---
 
