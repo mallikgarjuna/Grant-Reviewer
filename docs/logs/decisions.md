@@ -646,3 +646,29 @@
 - **Why**: Protects MVP delivery speed by strictly aligning the PRD with database/JSON reality and stripping under-defined parsing heuristics.
 - **Tradeoff**: Word counts remain approximate (ignoring semantic rules like "exclude references"); users must manually verify exact lengths against Funder PDFs.
 - **Status**: Implemented in PRD v0.3.
+
+## Date: 2026-02-22 (WF-0030: Frontend Structured Form)
+
+### AD 30.1: Universal Form Over Hardcoded Routes
+- **WF ID**: WF-0030
+- **Context**: The frontend needs to support Veni's 3-node structure, but hardcoding `/app/submit/veni` reduces extensibility for future schemas (like ERC).
+- **Decision**: The submit route `/app/submit` dynamically fetches the call schema and renders flat `<textarea>` elements mapped to `ProposalNode`s. Non-text nodes degrade visibly to "Unsupported Input Type". Nested nodes are explicitly unsupported in MVP.
+- **Why**: Proves the value of a data-driven UI without over-engineering recursive structure rendering.
+- **Tradeoff**: Less custom UI polish per funder, but radically faster ingestion of new calls.
+- **Status**: Implemented in PRD v0.2.
+
+### AD 30.2: Purely Local Word Counting
+- **WF ID**: WF-0030
+- **Context**: Real-time compliance feedback is needed, but bouncing every keystroke to `/api/check-compliance` is wasteful.
+- **Decision**: Frontend implements a local JS equivalent of backend's `\s+` regex tokenization for zero-latency UI word counts.
+- **Why**: Fastest, cheapest UX.
+- **Tradeoff**: Requires developers to keep the JS and Python tokenization logic in perfect sync.
+- **Status**: Implemented in PRD v0.2.
+
+### AD 30.3: Client-Side Idempotency via UUID v4
+- **WF ID**: WF-0030
+- **Context**: Double-clicks during 90-second evaluations waste expensive LLM tokens.
+- **Decision**: Frontend generates a UUID v4 session identifier and passes it as `Idempotency-Key` header on submission.
+- **Why**: Explicitly maps to the backend draft deduplication contract.
+- **Tradeoff**: None. Safe and standard pattern.
+- **Status**: Implemented in PRD v0.2.
