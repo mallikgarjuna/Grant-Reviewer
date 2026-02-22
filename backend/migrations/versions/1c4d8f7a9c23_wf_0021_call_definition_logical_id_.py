@@ -5,17 +5,17 @@ Revises: abf608dc18b6
 Create Date: 2026-02-21 17:27:18.531568
 
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '1c4d8f7a9c23'
-down_revision: Union[str, Sequence[str], None] = 'abf608dc18b6'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision: str = "1c4d8f7a9c23"
+down_revision: str | Sequence[str] | None = "abf608dc18b6"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
