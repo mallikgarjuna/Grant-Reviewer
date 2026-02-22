@@ -7,7 +7,7 @@ Last Updated: 2026-02-22
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Domain model changes + Alembic migration
+### [x] Task 1 — Domain model changes + Alembic migration
 
 **Goal:** Add `AssessmentStatus` enum, extend `Review` and `ReviewCard` models, generate migration.
 
