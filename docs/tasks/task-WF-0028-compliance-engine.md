@@ -80,7 +80,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 4 — Wire FastAPI endpoint in `main.py`
+### [x] Task 4 — Wire FastAPI endpoint in `main.py`
 
 **Goal:** Expose `POST /api/check-compliance` in the existing `main.py` router, delegating to the compliance engine service. This layer owns ALL request validation and HTTP error semantics.
 
