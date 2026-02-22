@@ -672,3 +672,27 @@
 - **Why**: Explicitly maps to the backend draft deduplication contract.
 - **Tradeoff**: None. Safe and standard pattern.
 - **Status**: Implemented in PRD v0.2.
+
+### AD 30.4: Universal Form + Fail Fast on Nested Nodes
+- **WF ID**: WF-0030
+- **Context**: PRD v0.2 excluded recursive rendering but kept a dynamic universal form. Actual test fixtures (e.g. ERC) have nested structures.
+- **Decision**: Keep the universal dynamic renderer, but strictly fail-fast on any call with nested nodes, presenting a blocking error that the call is unsupported in the current MVP rather than rendering a broken form.
+- **Why**: Protects the MVP delivery timeline while still proving the dynamic concept on flat schemas (like Veni).
+- **Tradeoff**: Calls with nested structures cannot be supported until P2.
+- **Status**: Implemented in PRD v0.3.
+
+### AD 30.5: Backend Node Metadata DTO (`GET /calls/{id}/form-schema`)
+- **WF ID**: WF-0030
+- **Context**: `/calls/{call_id}/nodes` does not serve `logical_id`, labels, or constraints required to accurately render a dynamic UI form, making frontend logic impossible without hardcoding.
+- **Decision**: Add a minimal DTO route for `/calls/{call_id}/form-schema` to serve `logical_id`, labels, and constraints explicitly for form rendering.
+- **Why**: Establishes a clean API contract for dynamic UIs rather than forcing the frontend to read raw canonical JSON documents.
+- **Tradeoff**: Expands the backend scope slightly to build the new route.
+- **Status**: Implemented in PRD v0.3.
+
+### AD 30.6: Enforce Domain String on Client
+- **WF ID**: WF-0030
+- **Context**: The NWO Veni call has an ENW/Science "pilot" altering word counts.
+- **Decision**: The "ENW Toggle" directly specifies the exact backend domain string required by `/api/check-compliance`. The domain is persisted in the local draft and passed explicitly in proxy requests.
+- **Why**: Prevents split-brain validation where the client interface counts 500 words, but the backend rejects over 100.
+- **Tradeoff**: Minimal constraint mapping required in the Next.js client.
+- **Status**: Implemented in PRD v0.3.
