@@ -133,6 +133,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - Before starting a new WF phase (or phase runner), ensure the previous phase’s primary artifact(s) are saved and committed (use `git status --short` to confirm a clean boundary).
 - After completing a WF phase, ensure any artifacts edited/created in that phase are saved and committed before starting the next phase.
 - During phase runners, commit at each part boundary: after Part A outputs, after Part C revisions, and after any Part B edits when applicable (if Part B is no-edit by design, explicitly state no commit needed).
+- During Phase 2 task planning, enforce atomic tasks (prefer `<=3` files touched per task) and split aggressively for independent testability; see `docs/workflow/phase-2-1-task-generate.md`, `docs/workflow/phase-2-2-task-review.md`, and `docs/workflow/phase-12-run-planning.md`.
 - For Phase 3 implementation, run at least one targeted verification per completed subtask before committing that subtask, and log what was run.
 - After writing code, explicitly list potential breakage risks and propose targeted tests that cover those risks.
 - For bug fixes, follow test-first debugging: write or update a failing test that reproduces the bug first, then implement the fix until that test passes.

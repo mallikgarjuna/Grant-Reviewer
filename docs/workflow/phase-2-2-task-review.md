@@ -37,13 +37,15 @@ Phase 2.2 produces review output in chat only (no file edits). If you made no fi
 Return:
 
 1. Task sequencing issues
-2. Missing integration/glue tasks
-3. Over-engineering warnings
-4. Redundant or mergeable tasks
-5. Exact edits required (task number + change)
-6. Next 2 actions I should take (choose one)
+2. Atomicity violations (tasks too large; >3 files changed; unclear boundaries)
+3. Missing integration/glue tasks
+4. Over-engineering warnings
+5. Redundant or mergeable tasks
+6. Exact edits required (task number + change)
+7. Next 2 actions I should take (choose one)
 
 Max 100 lines.
 Be strict about MVP.
+Be strict about atomic tasks: prefer tasks that are independently testable/verifiable and touch <=3 files when feasible.
 
 Do NOT edit files.
