@@ -108,3 +108,31 @@ The most fragile assumption is that the drafted `ProposalNode` tree structure pe
   - **A:** What happens if a constraint applies to a parent section but the drafted text is split among 5 child subsections? (e.g., aggregate word counts).
 - **Q3:** What could cause the most rework later?
   - **A:** Tying the validation logic too tightly to the API transport layer instead of keeping it as a pure, testable internal Python service/function.
+
+---
+
+## 7. MVP Definition
+
+**Summary / Decisions:**
+For the MVP, shipping within 2 days, the engine MUST evaluate word limits and mandatory field presence for all drafted text nodes against their corresponding YAML-defined `EvaluationElement` constraints. This evaluation must correctly aggregate word counts from child nodes up to a parent node if the limit is defined on the parent (as is the case with NWO Veni's "Academic Profile"). Parsing complex string-based `compliance_rules` and `guidance_text` deterministically is explicitly excluded from the MVP computation; these will just be surfaced read-only to the UI.
+
+**Brainstorming Q&A:**
+- **Q1:** If we had to ship in 2 days, what MUST the compliance engine do?
+  - **A:** Evaluate word limits and mandatory field presence for all drafted text nodes against their corresponding YAML-defined `EvaluationElement` constraints.
+- **Q2:** Which constraint check can explicitly wait for a future version?
+  - **A:** `compliance_rules` and `guidance_text` parsing (where rules are described in text rather than strict integers).
+- **Q3:** How deep should the hierarchical rule evaluation go for MVP?
+  - **A:** It must correctly aggregate word counts from child nodes up to a parent node if the limit is defined on the parent.
+
+---
+
+## 8. Explicit Non-Goals
+
+**Summary / Decisions:**
+We explicitly will NOT use a local LLM or any AI to evaluate subjective guidelines (like "Is the abstract written for a lay audience?") during this pass; this is a strictly deterministic compliance check. We also explicitly exclude building the UI form that displays these errors (which is deferred to WF-6).
+
+**Brainstorming Q&A:**
+- **Q1:** What tempting feature must be postponed?
+  - **A:** Using a local/cheap LLM (like GPT-4o-mini) to evaluate subjective guidelines like "Is the abstract written for a lay audience?" during the deterministic compliance pass.
+- **Q2:** What belongs to a future workflow?
+  - **A:** The UI form that displays these errors (WF-6).
