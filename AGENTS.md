@@ -72,7 +72,7 @@ Update these immediately after decisions/clarifications (“zero-latency logging
     ├── workflow/            # WF workflow instructions + prompt templates (SSOT)
     ├── templates/           # WF templates used by workflow phases
     ├── brainstorms/         # brainstorming notes (legacy + WF during migration)
-    ├── specs/               # WF specs (pages/features)
+    ├── specs/               # Deprecated for new WFs; historical WF specs only
     ├── prds/                # PRDs (legacy + WF during migration)
     ├── tasks/               # tasks (legacy + WF during migration)
     ├── walkthroughs/        # walkthrough notes (legacy + WF during migration)
@@ -101,7 +101,6 @@ Use the WF workflow system for non-trivial work:
 - Chat prompt templates (cheat sheet): `docs/workflow/how-to-use-workflow-actions.md`
 - WF artifact filename convention (note singular *task* prefix):
   - `docs/brainstorms/brainstorm-WF-XXXX-<slug>.md`
-  - `docs/specs/<pages|features>/spec-WF-XXXX-<slug>.md`
   - `docs/prds/prd-WF-XXXX-<slug>.md`
   - `docs/tasks/task-WF-XXXX-<slug>.md`
   - `docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md`
@@ -112,7 +111,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 
 - If a matching skill exists (a `SKILL.md`), follow it for that phase.
 - **Check skills first**: before starting a new type of task, check `~/.agents/skills` (or ask the user to run `ls ~/.agents/skills`) and follow the most relevant `SKILL.md`.
-- Preferred pipeline skills: `brainstorming` → `spec` → `prd` → `tasks`.
+- Preferred pipeline skills: `brainstorming` → `prd` → `tasks`.
 - Skill index (portable): `docs/reference/skills_index.md`.
 - Multi-Agent Collaboration: For the recommended approach to splitting the workflow across Antigravity and VSCode Codex, see `docs/reference/agent_collaboration_strategy.md`.
 
@@ -193,7 +192,7 @@ Guideline:
 - Don’t skip phase gates for non-trivial features; keep artifacts (PRD/task/walkthrough) in sync with `docs/index.md`.
 - Don’t block MVP progress on pre-existing repo-wide lint debt; enforce lint on changed files/touched modules and track full cleanup as a separate task.
 - Before starting the next major task (especially without a remote), create a local integration milestone: merge completed task branches into one branch, tag it, and create a `git bundle` backup.
-- Never treat an external agent's `implementation_plan.md` (e.g. Antigravity) as a substitute for WF artifacts (brainstorm/spec/PRD/tasks). Always create and commit proper WF artifacts before writing code.
+- Never treat an external agent's `implementation_plan.md` (e.g. Antigravity) as a substitute for WF artifacts (brainstorm/PRD/tasks/walkthrough). Always create and commit proper WF artifacts before writing code.
 - When the user explicitly grants self-directed execution for small-scope WFs, proceed through all phases using own best recommendations without waiting for signals. Default: wait for signals at each phase gate.
 - Always execute Part A (generate), Part B (review, no edits), and Part C (revise) explicitly in every phase runner — even in self-directed mode. Print PART headers, document findings, and output the traceability statement. No compression into a single step (see `docs/lessons.md` L23).
 - **AGENTS.md is the SSOT for project rules and lessons.** Any coding agent (Antigravity, Codex, etc.) must update `AGENTS.md` — never agent-specific files like `GEMINI.md` — for project-level rules. Agent-specific files should reference `AGENTS.md`.
