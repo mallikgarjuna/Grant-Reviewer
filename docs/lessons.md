@@ -141,3 +141,8 @@
 **Issue**: Implementation runs can ship code changes without explicitly identifying regression risks, and bug fixes can be applied without first proving the failure with a reproducible test.
 **Fix**: Encode two mandatory rules in workflow instructions: (1) after coding, explicitly list what could break and propose targeted tests; (2) for bug fixes, first add/update a failing test reproducer, then fix until it passes.
 **Prevention**: Enforce these rules in `AGENTS.md` and Phase 3 runner files (`docs/workflow/phase-3-run-implement-execution.md`, `docs/workflow/phase-3-1-implement-tasks.md`) so every execution run applies them by default.
+
+### L30: Append Q&A to Brainstorm Artifacts
+**Issue**: Brainstorming artifacts contained only summaries of decisions, making it harder to understand the reasoning.
+**Fix**: Append the explicit Q&A block for each section directly into the brainstorm artifact `docs/brainstorms/brainstorm-WF-...`.
+**Prevention**: Always include the Q&A text alongside the section summary when updating brainstorm artifacts during Phase 0.1.
