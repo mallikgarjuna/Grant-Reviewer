@@ -12,8 +12,6 @@ from app.schemas.compliance import (
 )
 from app.services.call_definition_service import HydratedNode
 
-_REQUEST_NODE_ID = "__request__"
-
 
 @dataclass(frozen=True)
 class _ResolvedLimits:
@@ -38,34 +36,6 @@ def _as_int(value: Any) -> int | None:
     if isinstance(value, int):
         return value
     return None
-
-
-def _canonical_domain_from_limit_key(key: str) -> str | None:
-    """Map keys like science_enw_max_words -> science_enw."""
-    if not key.endswith("_max_words"):
-        return None
-    if key == "default_max_words":
-        return None
-    return key[: -len("_max_words")]
-
-
-def _derive_domain_catalog(hydrated_nodes: list[HydratedNode]) -> set[str]:
-    """Collect canonical domain ids referenced by node constraints."""
-    domains: set[str] = set()
-    for hydrated in hydrated_nodes:
-        constraints = hydrated.config.get("content_constraints")
-        if not isinstance(constraints, dict):
-            continue
-        by_domain = constraints.get("word_limit_by_domain")
-        if not isinstance(by_domain, dict):
-            continue
-        for key in by_domain:
-            if not isinstance(key, str):
-                continue
-            domain = _canonical_domain_from_limit_key(key)
-            if domain:
-                domains.add(domain)
-    return domains
 
 
 def _resolve_limits(
@@ -126,19 +96,6 @@ def evaluate_compliance(
     warnings: list[ComplianceViolation] = []
 
     normalized_domain = request.domain.strip().lower() if request.domain else None
-    known_domains = _derive_domain_catalog(hydrated_nodes)
-    if normalized_domain and known_domains and normalized_domain not in known_domains:
-        errors.append(
-            _error(
-                node_logical_id=_REQUEST_NODE_ID,
-                rule_id="domain_invalid",
-                actual=normalized_domain,
-                expected=f"one of: {', '.join(sorted(known_domains))}",
-                message=(
-                    f"Domain '{normalized_domain}' is not recognized for this call."
-                ),
-            )
-        )
 
     text_by_node: dict[str, str] = {
         node.node_logical_id: node.text for node in request.draft_nodes

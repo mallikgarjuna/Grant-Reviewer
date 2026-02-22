@@ -236,8 +236,8 @@ def test_node_with_no_constraints_passes_silently() -> None:
     assert response.errors == []
 
 
-def test_unrecognized_domain_alias_returns_violation() -> None:
-    """Non-canonical domain aliases should raise domain_invalid violation."""
+def test_unrecognized_domain_alias_uses_default_fallback() -> None:
+    """Engine should not validate domain aliases; route layer owns that validation."""
     nodes = [
         _hydrated_node(
             "research_idea",
@@ -258,6 +258,5 @@ def test_unrecognized_domain_alias_returns_violation() -> None:
 
     response = evaluate_compliance(request, nodes)
 
-    assert response.is_compliant is False
-    assert len(response.errors) == 1
-    assert response.errors[0].rule_id == "domain_invalid"
+    assert response.is_compliant is True
+    assert response.errors == []
