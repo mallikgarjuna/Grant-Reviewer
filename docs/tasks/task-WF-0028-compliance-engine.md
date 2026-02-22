@@ -132,7 +132,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 6 — Verify end-to-end and update docs
+### [x] Task 6 — Verify end-to-end and update docs
 
 **Goal:** Final verification pass and documentation updates.
 
