@@ -1,7 +1,7 @@
 # WF-0029 — NWO Veni 2025 Preproposal Structured AI Review
 
 Artifact: brainstorm
-Version: v1.0
+Version: v1.1
 Status: Draft Complete
 Last Updated: 2026-02-22
 
@@ -61,9 +61,9 @@ Last Updated: 2026-02-22
 **Summary:**
 - Primary measurable outcome: a researcher submits all 3 nodes in one request and receives per-node AI feedback cards with alignment awareness.
 - Behavior change: researchers shift from fragmented per-node reviews to holistic all-at-once submission with alignment-aware feedback.
-- MVP "good enough": endpoint accepts 3-node payload, runs per-node LLM review using V2 expectations/criteria/elements, returns per-node feedback cards + overall summary. Alignment-dependent elements respect `NOT_ASSESSABLE`. Response is persisted for review history.
+- MVP "good enough": endpoint accepts 3-node payload, runs per-node LLM review, returns per-node feedback cards. Alignment-dependent elements respect `NOT_ASSESSABLE`. Response is persisted for review history. **No overall summary in MVP** (resolved: see S4 Q4 decision).
 - After this ships: unblocks WF-6 (frontend structured form) + enables structured-vs-single review quality comparison for prompt tuning.
-- Response structure: per-node feedback cards (reuse existing `ReviewCard` model shape), grouped under each node, plus overall review summary. Each card maps to a `NodeExpectation`.
+- Response structure: per-node feedback cards (reuse existing `ReviewCard` model shape), grouped under each node. Each card maps to a `NodeExpectation`.
 
 **Brainstorming Q&A:**
 
@@ -155,11 +155,13 @@ Last Updated: 2026-02-22
 ## 4. Rough Idea Exploration
 
 **Summary:**
-- Implementation direction: new `/api/structured-review` endpoint, separate from legacy `/reviews`. Accepts multi-node payload, iterates per node using existing `ReviewerService`, persists as one `Review` record with grouped `ReviewCard` sets.
-- LLM invocation: per-node sequential using existing prompt builder/parser. The existing `build_review_prompt()` functions with V2 data (reads from same `NodeExpectation` records). Prompt quality tuning is parked separately (P2 #7).
-- Persistence: one `Review` record per structured submission, with `review_type` field to distinguish `"single"` vs `"structured"`.
-- Overall summary: **skipped for MVP** — return per-node cards only. LLM-generated holistic summary is deferred (parked).
-- `NOT_ASSESSABLE`: per-card granularity. Each `ReviewCard` includes an `assessable` status. Cards for alignment-dependent elements with missing context show `not_assessable` with explanation.
+- Implementation direction: new `/api/structured-review` endpoint, separate from legacy `/reviews`. Accepts multi-node payload, runs per-node LLM review, persists as one `Review` record with grouped `ReviewCard` sets.
+- **⚠️ Structural blocker (Codex finding #2):** The existing `ReviewerService.generate_review()` cannot simply be looped per node — it atomically creates a `ProposalSnippet`, a `Review`, calls LLM, creates cards, and finalizes status in one method (reviewer_service.py lines 108–205). Looping it would create multiple Review/Snippet rows, conflicting with "1 submission = 1 review" and the idempotency unique constraint (domain.py lines 390–394). **Decision required: refactor `ReviewerService` or introduce `StructuredReviewerService`.** (See Pre-Phase-1 Decisions §9.3)
+- LLM invocation: per-node sequential using existing prompt builder/parser. The existing `build_review_prompt()` functions with V2 data. Prompt quality tuning parked (P2 #7).
+- Persistence: one `Review` record per structured submission, with `review_type` field. **⚠️ Structural blocker (Codex finding #3):** Current `Review` requires a single `proposal_snippet_id` FK, and `ProposalSnippet` stores exactly one `proposal_node_id` + one text blob (domain.py lines 346–351). Multi-node submission needs a design for storing all node texts for audit/history/replay. **Decision required: aggregate storage model.** (See Pre-Phase-1 Decisions §9.1)
+- Overall summary: **skipped for MVP** — return per-node cards only. LLM-generated summary deferred (parked).
+- `NOT_ASSESSABLE`: per-card granularity. **⚠️ Structural blocker (Codex finding #1):** Current `ReviewCard` only has `rating` + `feedback_text` (domain.py line 462). There is no `assessment_status` field. Need typed `assessment_status` (ASSESSED/NOT_ASSESSABLE) + optional reason text. **Decision required: NOT_ASSESSABLE storage contract.** (See Pre-Phase-1 Decisions §9.2)
+- **⚠️ (Codex finding #6):** Current `_validate_response` enforces strict 1:1 cardinality between LLM feedbacks and expectations (reviewer_service.py lines 231–250). For NOT_ASSESSABLE, some cards would be generated deterministically (not by LLM), which conflicts with this validator. Must be addressed in the service design.
 
 **Parked for future:**
 - 🅿️ Single mega-prompt strategy (Q2 option B) → P2 #5.
@@ -256,11 +258,12 @@ Last Updated: 2026-02-22
 ## 6. Risks / Unknowns
 
 **Summary:**
-- Most fragile assumption: 3 sequential LLM calls = 3× latency (15–45 seconds per structured review). This is the biggest latency risk. Accepted for MVP; the mega-prompt optimization (P2 #5) directly mitigates this.
+- Most fragile assumption: 3 sequential LLM calls = 3× latency. **⚠️ Corrected estimate (Codex finding #7):** Service timeout is 30s per call (reviewer_service.py line 41). 3 sequential nodes = **up to ~90s worst-case** excluding DB overhead, not 15–45s as originally estimated. This likely exceeds common ingress/proxy timeout thresholds. Accepted for MVP but must validate Render gateway timeout.
 - Must validate early: (1) confirm NWO Veni YAML has complete `evaluation_criteria` + `evaluation_elements` for all 3 nodes, and (2) smoke-test `ReviewerService.generate_review()` against each node using V2 data.
-- Rework risk: existing `Review` has single `node_id` FK and `ReviewCard` has no node-level grouping. Structured reviews need schema additions: multi-node association + per-card node tagging. Must plan for this from the start.
-- Latency strategy: accept synchronous 15–45s for MVP. Frontend (WF-6) will need a loading spinner. Safety net: existing `ThreadPoolExecutor` timeout per LLM call.
-- Conflict risk: minimal. New endpoint is separate URL/schema but shares `ReviewerService`. Good test coverage on shared service is the mitigation.
+- Rework risk: existing `Review` has single `proposal_snippet_id` FK and `ReviewCard` has no node-level grouping or assessment status. Structured reviews need: multi-node persistence model, per-card assessment status, and either service refactor or new service class.
+- Latency strategy: accept synchronous for MVP. **Must verify Render/ingress timeout ≥ 90s.** If not, consider per-node timeout reduction or early-exit strategy.
+- Conflict risk: minimal. New endpoint is separate URL/schema. If introducing `StructuredReviewerService`, no shared mutation path.
+- **⚠️ (Codex finding #5):** Cross-node alignment dependency is currently a prose runtime note in YAML (lines 275–280), not a machine-readable typed dependency map. `call_definition_service.py` (lines 60–63) only returns `constraints`/`compliance`/`source_section`. Risk: brittle string-matching logic to determine which nodes need cross-context. **Decision required: typed cross-node dependency metadata.** (See Pre-Phase-1 Decisions §9.4)
 
 **Brainstorming Q&A:**
 
@@ -304,10 +307,16 @@ Last Updated: 2026-02-22
 ## 7. MVP Definition
 
 **Summary:**
-- MVP must include: new `POST /api/structured-review` endpoint, per-node LLM review using existing `ReviewerService`, persistence as one `Review` record, review history integration, and `NOT_ASSESSABLE` handling.
-- **Critical**: cross-node alignment evaluation elements (e.g., `elem_cv_idea_alignment`) require the prompt for a node to include context from other submitted nodes. This is NOT a separate "alignment report" — it's passing cross-node text into each per-node prompt so the LLM can evaluate alignment elements. This IS in-scope for MVP.
+- MVP must include: new `POST /api/structured-review` endpoint, per-node LLM review, persistence as one `Review` record, review history integration, and `NOT_ASSESSABLE` handling.
+- **Critical**: cross-node alignment evaluation elements (e.g., `elem_cv_idea_alignment`) require the prompt for a node to include context from other submitted nodes. This is a prompt-level change, NOT a separate "alignment report." This IS in-scope for MVP.
 - Excluded from MVP: LLM-generated overall summary (P2 #6), mega-prompt optimization (P2 #5), prompt quality tuning (P2 #7), async polling, frontend changes.
-- Minimum schema change: add `review_type` to `Review` model + `node_logical_id` to `ReviewCard` model. No new tables.
+- **⚠️ Revised minimum schema changes (Codex findings #1, #3, #4):**
+  - Add `review_type` to `Review` model (`"single"` / `"structured"`).
+  - Add `node_logical_id` to `ReviewCard` model (nullable, for per-node grouping).
+  - Add `assessment_status` enum (ASSESSED / NOT_ASSESSABLE) + `not_assessable_reason` text to `ReviewCard`.
+  - Design multi-node text persistence: current `ProposalSnippet` stores one `proposal_node_id` + one text blob. Structured review needs all submitted node texts stored for audit/replay.
+  - Redesign `ReviewDetailResponse` for per-node grouped output (current is flat `cards[]` with no node grouping/status).
+  - **These are structural, not cosmetic.** Must be locked in Pre-Phase-1 Decisions (§9).
 - Single-node structured submissions are valid (≥1 node). `review_type` is always `"structured"`.
 
 **Brainstorming Q&A:**
@@ -419,3 +428,61 @@ Confirmed by YAML `runtime_notes` (line 276): _"Alignment elements require both 
 | `compliance_rules` | Consumed by compliance engine (WF-0028, `/api/check-compliance`). Drives deterministic checks (word limits, prohibited metrics, completeness). | ❌ No — separate deterministic pipeline |
 
 `compliance_rules` are stored in `CallDefinition.canonical_json` (JSONB). They were never part of the LLM review prompt — they're deterministic rules, not qualitative evaluation criteria.
+
+---
+
+## 9. Pre-Phase-1 Decisions (Must Lock)
+
+> Added in v1.1 per Codex adversarial review. These structural blockers must be resolved before writing the PRD.
+
+### 9.1 Canonical persistence shape for multi-node submission
+
+**Problem:** Current `Review` requires a single `proposal_snippet_id` FK. `ProposalSnippet` stores exactly one `proposal_node_id` + one `pasted_text` blob (domain.py lines 346–351). There is no aggregate for multi-node input.
+
+**Options:**
+- **A)** Create multiple `ProposalSnippet` rows (one per node) + a new `StructuredSubmission` aggregate table linking them to one `Review`.
+- **B)** Make `proposal_snippet_id` on `Review` nullable; add a new `structured_payload` JSONB column on `Review` storing all node texts.
+- **C)** Replace the single FK with a new `StructuredSnippet` model (1:N to `ProposalSnippet`).
+
+**Must decide before PRD.**
+
+### 9.2 NOT_ASSESSABLE storage contract (DB + API)
+
+**Problem:** `ReviewCard` only has `rating` (ReviewRating enum) + `feedback_text` (domain.py line 462). No field to represent ASSESSED vs NOT_ASSESSABLE status or reason.
+
+**Options:**
+- **A)** Add `assessment_status: AssessmentStatus` enum (ASSESSED / NOT_ASSESSABLE) + `not_assessable_reason: str | None` to `ReviewCard`.
+- **B)** Overload `rating` field with a new `NOT_ASSESSABLE` enum value (breaks existing assumption that all cards are assessed).
+- **C)** Use `feedback_text` to convey NOT_ASSESSABLE (no schema change, but not machine-readable).
+
+**Must decide before PRD.**
+
+### 9.3 Service design: refactor ReviewerService or introduce StructuredReviewerService
+
+**Problem:** `ReviewerService.generate_review()` atomically creates Snippet → Review → LLM call → Cards → finalize status (lines 108–205). It cannot be looped per node without creating multiple Reviews and Snippets, violating the "1 submission = 1 review" invariant and the idempotency unique constraint.
+
+Additionally, `_validate_response()` enforces strict 1:1 cardinality between LLM feedbacks and expectations (lines 231–250). NOT_ASSESSABLE cards would be deterministic (not from LLM), breaking this validator.
+
+**Options:**
+- **A)** Introduce `StructuredReviewerService` — new service class that orchestrates: create submission aggregate → for each assessable node, build prompt with cross-node context → call LLM → generate NOT_ASSESSABLE cards deterministically → create single Review + all cards.
+- **B)** Refactor `ReviewerService.generate_review()` to accept a mode flag that changes persistence behavior. Higher coupling risk.
+
+**Must decide before PRD.**
+
+### 9.4 Machine-readable cross-node dependency metadata
+
+**Problem:** Cross-node alignment dependency (e.g., `elem_cv_idea_alignment` requires both `academic_profile` and `research_idea` context) is currently a prose runtime note in YAML (lines 275–280). `call_definition_service.py` (lines 60–63) only returns `constraints`/`compliance`/`source_section` — no typed dependency map.
+
+**Options:**
+- **A)** Add a `requires_context_from: list[str]` field to each `node_expectations` entry in the YAML (e.g., `requires_context_from: ["academic_profile"]`). Ingest into a new `context_dependencies` field on `NodeExpectation` model.
+- **B)** Hard-code the dependency map in the prompt builder based on element IDs (fragile, call-specific).
+- **C)** Add a top-level `cross_node_dependencies` section to the YAML with explicit source→target mappings.
+
+**Must decide before PRD.**
+
+---
+
+## Revision History
+
+- **v1.0** (2026-02-22): All 8 brainstorm sections completed via interactive Q&A. 5 items parked (P2 #5–#9). Clarification notes added.
+- **v1.1** (2026-02-22): Point-revision per Codex adversarial review. Fixed S2/S4 overall summary inconsistency. Corrected latency estimate (30s × 3 = 90s worst-case). Flagged 4 structural blockers: multi-node persistence model, NOT_ASSESSABLE storage contract, service design (loop vs. new service), typed cross-node dependency metadata. Added Section 9 (Pre-Phase-1 Decisions). Added cardinality validator conflict note.
