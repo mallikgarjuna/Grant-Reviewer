@@ -338,7 +338,30 @@ The universal form will handle loading states gracefully with pre-rendered skele
 
 ---
 
-## 11. Parked / Non-Scoped Items
+## 11. Edge Cases & UI Polish
+
+The UI will rely on minimalist, non-blocking text counters for word limits. The bypass modal for `force=true` will be a low-friction "Submit Anyway" confirmation rather than requiring textual confirmation. To prevent accidental data loss, there will be no dedicated "Clear Form" button; users can delete text manually. Switching funding calls via the dropdown will instantly load the new schema, relying on the already-agreed isolated `localStorage` to preserve the previous draft implicitly. If the backend is unavailable and schemas cannot load, the form will present a clear inline error state rather than crashing or using useless hardcoded fallbacks.
+
+**Brainstorming Q&A:**
+
+**Q1: Word Count Visualization**: How should the real-time word count be displayed to the user for each node?
+> **Selected: A** — A simple text counter (e.g., "450 / 400 words") that turns red when the limit is exceeded.
+
+**Q2: Warning Bypass Modal UX**: When a user attempts to submit a form with compliance warnings (triggering the `force=true` bypass), what should the modal action be?
+> **Selected: A** — A simple "Submit Anyway" button below a list of the warnings, optimizing for a frictionless researcher experience.
+
+**Q3: Form Reset / Draft Clearing**: Should there be a dedicated "Clear Form" button to wipe the current inputs and delete the associated `localStorage` draft?
+> **Selected: B** — No, rely on the user manually selecting and deleting the text in the textareas if they want to start over to avoid accidental clicks.
+
+**Q4: Funding Call Dropdown UX**: If a user is actively typing a draft for Veni, and clicks the dropdown to switch the form to ERC, what should happen immediately?
+> **Selected: C** — Instantly switch the form and rely on them understanding that their Veni draft is saved securely in the background.
+
+**Q5: Backend Unavailability**: What should the `/app/submit` page display if the backend API is completely offline and the dynamic `FundingCall` schema list cannot be fetched?
+> **Selected: B** — Show the standard layout with a disabled dropdown and a clear error state in the main content area (e.g., "Cannot load funding schemas at this time. Please try again later.")
+
+---
+
+## 12. Parked / Non-Scoped Items
 
 The following items arose during brainstorming but were explicitly parked to keep the MVP scope constrained. They are logged in `docs/parking_lot.md` for future prioritization:
 
