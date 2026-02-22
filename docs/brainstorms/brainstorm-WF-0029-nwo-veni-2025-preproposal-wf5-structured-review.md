@@ -1,7 +1,7 @@
 # WF-0029 — NWO Veni 2025 Preproposal Structured AI Review
 
 Artifact: brainstorm
-Version: v1.1
+Version: v1.2
 Status: Draft Complete
 Last Updated: 2026-02-22
 
@@ -439,50 +439,57 @@ Confirmed by YAML `runtime_notes` (line 276): _"Alignment elements require both 
 
 **Problem:** Current `Review` requires a single `proposal_snippet_id` FK. `ProposalSnippet` stores exactly one `proposal_node_id` + one `pasted_text` blob (domain.py lines 346–351). There is no aggregate for multi-node input.
 
-**Options:**
-- **A)** Create multiple `ProposalSnippet` rows (one per node) + a new `StructuredSubmission` aggregate table linking them to one `Review`.
-- **B)** Make `proposal_snippet_id` on `Review` nullable; add a new `structured_payload` JSONB column on `Review` storing all node texts.
-- **C)** Replace the single FK with a new `StructuredSnippet` model (1:N to `ProposalSnippet`).
+**Brainstorming Q&A:**
 
-**Must decide before PRD.**
+**§9.1: How should multi-node submission texts be persisted?**
+- A) Create multiple `ProposalSnippet` rows (one per node) + a new `StructuredSubmission` aggregate table linking them to one `Review`. Keeps `ProposalSnippet` as canonical text store. Adds one new table.
+- B) Make `proposal_snippet_id` on `Review` nullable. Add `structured_payload: JSONB` column on `Review` storing `{node_logical_id: text}`. No new tables, but breaks single-FK assumption.
+- C) New `StructuredSnippet` model (1:N to `ProposalSnippet`). `Review` points to `StructuredSnippet`. Two new tables.
+> Recommendation: A — Most normalized and auditable. Each node text lives in its own `ProposalSnippet` (already the canonical text entity), and a lightweight `StructuredSubmission` table links them. Clean FK chains, full replay/audit capability. B is tempting (zero new tables) but JSONB is harder to query for per-node history and breaks the snippet-as-source-of-truth pattern. C over-engineers the junction.
+> **Selected: A**
 
 ### 9.2 NOT_ASSESSABLE storage contract (DB + API)
 
 **Problem:** `ReviewCard` only has `rating` (ReviewRating enum) + `feedback_text` (domain.py line 462). No field to represent ASSESSED vs NOT_ASSESSABLE status or reason.
 
-**Options:**
-- **A)** Add `assessment_status: AssessmentStatus` enum (ASSESSED / NOT_ASSESSABLE) + `not_assessable_reason: str | None` to `ReviewCard`.
-- **B)** Overload `rating` field with a new `NOT_ASSESSABLE` enum value (breaks existing assumption that all cards are assessed).
-- **C)** Use `feedback_text` to convey NOT_ASSESSABLE (no schema change, but not machine-readable).
+**Brainstorming Q&A:**
 
-**Must decide before PRD.**
+**§9.2: How should NOT_ASSESSABLE be represented in `ReviewCard`?**
+- A) Add `assessment_status: AssessmentStatus` enum (ASSESSED / NOT_ASSESSABLE) + `not_assessable_reason: str | None` to `ReviewCard`. Existing cards default to `ASSESSED`. Machine-readable, queryable, backward-compatible.
+- B) Add `NOT_ASSESSABLE` as new value in existing `ReviewRating` enum. Fewer changes but conflates severity with assessment status — semantically wrong.
+- C) Use `feedback_text` to convey NOT_ASSESSABLE. Zero schema change but not machine-readable.
+> Recommendation: A — Cleanest separation: `assessment_status` answers "was this assessed?" while `rating` answers "how severe?" Two orthogonal concerns, two fields. Default `ASSESSED` for existing cards = backward-compatible migration. B conflates meanings. C invites brittle string matching.
+> **Selected: A**
 
 ### 9.3 Service design: refactor ReviewerService or introduce StructuredReviewerService
 
-**Problem:** `ReviewerService.generate_review()` atomically creates Snippet → Review → LLM call → Cards → finalize status (lines 108–205). It cannot be looped per node without creating multiple Reviews and Snippets, violating the "1 submission = 1 review" invariant and the idempotency unique constraint.
+**Problem:** `ReviewerService.generate_review()` atomically creates Snippet → Review → LLM call → Cards → finalize status (lines 108–205). Cannot be looped per node without violating "1 submission = 1 review" and idempotency constraint. Additionally, `_validate_response()` enforces strict 1:1 cardinality (lines 231–250), conflicting with deterministic NOT_ASSESSABLE cards.
 
-Additionally, `_validate_response()` enforces strict 1:1 cardinality between LLM feedbacks and expectations (lines 231–250). NOT_ASSESSABLE cards would be deterministic (not from LLM), breaking this validator.
+**Brainstorming Q&A:**
 
-**Options:**
-- **A)** Introduce `StructuredReviewerService` — new service class that orchestrates: create submission aggregate → for each assessable node, build prompt with cross-node context → call LLM → generate NOT_ASSESSABLE cards deterministically → create single Review + all cards.
-- **B)** Refactor `ReviewerService.generate_review()` to accept a mode flag that changes persistence behavior. Higher coupling risk.
-
-**Must decide before PRD.**
+**§9.3: Refactor existing service or introduce new service class?**
+- A) New `StructuredReviewerService` — separate class that orchestrates: create `StructuredSubmission` aggregate → for each assessable node, build prompt with cross-node context → call LLM → generate NOT_ASSESSABLE cards deterministically → create single `Review` + all cards. Legacy `ReviewerService` untouched.
+- B) Refactor `generate_review()` — add `mode` parameter (`"single"` / `"structured"`) changing persistence and validation behavior. Shared code, shared test surface.
+> Recommendation: A — Clean separation prevents regressions in legacy flow. Structured path has fundamentally different orchestration (multiple LLM calls, cross-node context, deterministic NOT_ASSESSABLE cards, different validation logic). Mode flag (B) would create a 300-line conditional monster. `StructuredReviewerService` can reuse low-level helpers (`build_review_prompt`, `_parse_llm_response`, `_generate_with_timeout`) via import without coupling orchestration.
+> **Selected: A**
 
 ### 9.4 Machine-readable cross-node dependency metadata
 
-**Problem:** Cross-node alignment dependency (e.g., `elem_cv_idea_alignment` requires both `academic_profile` and `research_idea` context) is currently a prose runtime note in YAML (lines 275–280). `call_definition_service.py` (lines 60–63) only returns `constraints`/`compliance`/`source_section` — no typed dependency map.
+**Problem:** Cross-node alignment dependency is prose in YAML `runtime_notes` (lines 275–280). `call_definition_service.py` (lines 60–63) only returns `constraints`/`compliance`/`source_section` — no typed dependency map.
 
-**Options:**
-- **A)** Add a `requires_context_from: list[str]` field to each `node_expectations` entry in the YAML (e.g., `requires_context_from: ["academic_profile"]`). Ingest into a new `context_dependencies` field on `NodeExpectation` model.
-- **B)** Hard-code the dependency map in the prompt builder based on element IDs (fragile, call-specific).
-- **C)** Add a top-level `cross_node_dependencies` section to the YAML with explicit source→target mappings.
+**Brainstorming Q&A:**
 
-**Must decide before PRD.**
+**§9.4: How should cross-node dependencies become machine-readable?**
+- A) Add `requires_context_from: list[str]` to each `node_expectations` entry in the YAML. Ingest into a new JSON/list field on `NodeExpectation` model. Most granular — expresses which specific expectation needs context from which specific node.
+- B) Hard-code dependency map in prompt builder based on element IDs. Quickest but fragile and call-specific.
+- C) Top-level `cross_node_dependencies` section in YAML with explicit node→node mappings. Simpler but less granular.
+> Recommendation: A — Most future-proof. Each `node_expectations` entry already has `evaluation_element_id`, `expectation_strength`, `evaluation_intent`, and `guidance_note`. Adding `requires_context_from: ["academic_profile"]` fits naturally. Service checks this field and injects relevant node texts into prompt. B creates tech debt per call definition. C wastes the granularity already available at expectation level.
+> **Selected: A**
 
 ---
 
 ## Revision History
 
 - **v1.0** (2026-02-22): All 8 brainstorm sections completed via interactive Q&A. 5 items parked (P2 #5–#9). Clarification notes added.
-- **v1.1** (2026-02-22): Point-revision per Codex adversarial review. Fixed S2/S4 overall summary inconsistency. Corrected latency estimate (30s × 3 = 90s worst-case). Flagged 4 structural blockers: multi-node persistence model, NOT_ASSESSABLE storage contract, service design (loop vs. new service), typed cross-node dependency metadata. Added Section 9 (Pre-Phase-1 Decisions). Added cardinality validator conflict note.
+- **v1.1** (2026-02-22): Point-revision per Codex adversarial review. Fixed S2/S4 inconsistency. Corrected latency (90s worst-case). Flagged 4 structural blockers. Added Section 9 (Pre-Phase-1 Decisions).
+- **v1.2** (2026-02-22): Locked Pre-Phase-1 Decisions: §9.1:A (StructuredSubmission aggregate), §9.2:A (assessment_status enum), §9.3:A (new StructuredReviewerService), §9.4:A (requires_context_from per expectation). All structural blockers resolved — ready for Phase 1.
