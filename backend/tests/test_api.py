@@ -12,6 +12,7 @@ from sqlmodel import SQLModel, select
 
 from app.db import engine, get_session, normalize_database_url
 from app.models.domain import (
+    AssessmentStatus,
     CallDefinition,
     EvaluationCriterion,
     EvaluationElement,
@@ -26,8 +27,10 @@ from app.models.domain import (
     ProposalSnippet,
     Review,
     ReviewCard,
+    ReviewRating,
     ReviewStatus,
 )
+from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import StubLLMClient
 from main import ERROR_STATUS_BY_CODE, app
 
@@ -495,6 +498,43 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
         == "Scientific excellence of the proposal section."
     )
     assert detail_payload["cards"][0]["rating"] == "NOTE"
+
+
+def test_review_repository_supports_structured_write_path(monkeypatch) -> None:
+    _, seeded_ids = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        expectation = session.exec(select(NodeExpectation)).first()
+
+        assert template is not None
+        assert expectation is not None
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"structured-write-smoke-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={"academic_profile": "profile text"},
+        )
+        assert review.proposal_snippet_id is None
+        assert review.review_type == "structured"
+        assert review.structured_payload == {"academic_profile": "profile text"}
+
+        card = repository.create_review_card(
+            review_id=review.id,
+            expectation_id=expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback="Not assessable due to missing context",
+            assessment_status=AssessmentStatus.NOT_ASSESSABLE,
+            not_assessable_reason="missing key_outputs",
+        )
+        assert card.assessment_status == AssessmentStatus.NOT_ASSESSABLE
+        assert card.not_assessable_reason == "missing key_outputs"
+    finally:
+        session.close()
 
 
 def test_snippet_too_long_returns_domain_error(monkeypatch) -> None:

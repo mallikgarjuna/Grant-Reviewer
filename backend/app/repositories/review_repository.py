@@ -11,6 +11,7 @@ from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.models.domain import (
+    AssessmentStatus,
     CallDefinition,
     EvaluationCriterion,
     EvaluationElement,
@@ -159,13 +160,15 @@ class ReviewRepository:
 
     def create_review(
         self,
-        snippet_id: UUID,
         template_id: UUID,
+        snippet_id: UUID | None = None,
         *,
         external_user_id: str | None = None,
         idempotency_key: str | None = None,
         request_payload_sha256: str | None = None,
         idempotency_expires_at: datetime | None = None,
+        review_type: str = "single",
+        structured_payload: dict[str, str] | None = None,
     ) -> Review:
         """Create a new review record."""
         review = Review(
@@ -175,6 +178,8 @@ class ReviewRepository:
             idempotency_key=idempotency_key,
             request_payload_sha256=request_payload_sha256,
             idempotency_expires_at=idempotency_expires_at,
+            review_type=review_type,
+            structured_payload=structured_payload,
         )
         self.session.add(review)
         self.session.commit()
@@ -305,6 +310,8 @@ class ReviewRepository:
         expectation_id: UUID,
         rating: ReviewRating,
         feedback: str,
+        assessment_status: AssessmentStatus = AssessmentStatus.ASSESSED,
+        not_assessable_reason: str | None = None,
     ) -> ReviewCard:
         """Create a new review card."""
         card = ReviewCard(
@@ -312,6 +319,8 @@ class ReviewRepository:
             node_expectation_id=expectation_id,
             rating=rating,
             feedback_text=feedback,
+            assessment_status=assessment_status,
+            not_assessable_reason=not_assessable_reason,
         )
         self.session.add(card)
         self.session.commit()

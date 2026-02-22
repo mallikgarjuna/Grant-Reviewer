@@ -72,7 +72,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 4 — Repository write-path adaptation for structured reviews
+### [x] Task 4 — Repository write-path adaptation for structured reviews
 
 **Goal:** Adapt `create_review()` and `create_review_card()` to accept the new structured review fields. Must be done BEFORE `StructuredReviewerService` (Task 6).
 
