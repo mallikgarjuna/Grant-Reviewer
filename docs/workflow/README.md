@@ -59,12 +59,11 @@ WF ID starting point (migration rule):
 
 All artifacts must follow this format:
 
-<brainstorm/spec/prd/task/walkthrough>-WF-XXXX-<slug>.md
+<brainstorm/prd/task/walkthrough>-WF-XXXX-<slug>.md
 
 Examples:
 
 brainstorm-WF-0007-landing-page.md
-spec-WF-0007-landing-page.md
 prd-WF-0007-landing-page.md
 task-WF-0007-landing-page.md
 walkthrough-WF-0007-landing-page.md
@@ -80,8 +79,6 @@ Slug rules:
 # Folder Structure
 
 - docs/brainstorms/
-- docs/specs/pages/
-- docs/specs/features/
 - docs/prds/
 - docs/tasks/
 - docs/walkthroughs/
@@ -99,7 +96,7 @@ The index is a link registry, not a narrative log.
 
 Table format (WF registry):
 
-| WF ID | Slug / Feature | Brainstorm | Spec | PRD | Task File | Walkthrough | Status |
+| WF ID | Slug / Feature | Brainstorm | PRD | Task File | Walkthrough | Status |
 
 Rules:
 

@@ -22,7 +22,7 @@ No review in this step.
 PRD must have:
 Status: Ready for Tasks
 
-Do NOT derive tasks from spec or brainstorm.
+Do NOT derive tasks directly from brainstorm.
 
 ---
 

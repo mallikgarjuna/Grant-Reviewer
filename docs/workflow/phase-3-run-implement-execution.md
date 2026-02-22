@@ -48,7 +48,7 @@ To execute the granular development tasks defined in Phase 3, rigorously verify 
 1. Read the artifact file: `docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md`.
 2. Follow the template and instructions inside that file (or create it using a standard format if it's empty).
 3. Draft the walkthrough summarizing what was changed, what was verified, and the next steps.
-4. Execute `git mv` via terminal to move the 5 active artifacts (Brainstorm, Spec, PRD, Tasks, Walkthrough) for this `<WF-ID>` into their respective `completed/` subdirectories.
+4. Execute `git mv` via terminal to move the active artifacts (Brainstorm, PRD, Tasks, Walkthrough) for this `<WF-ID>` into their respective `completed/` subdirectories.
 5. Update `docs/index.md`:
    - Change the `Status` column for this WF to `Done`.
    - Update the markdown links in this WF's row to point to the new `completed/` paths.

@@ -8,7 +8,7 @@ Do NOT modify this file during execution.
 
 ## Purpose
 
-Convert an approved Spec into a structured PRD (v0.1).
+Convert an approved Brainstorm into a structured PRD (v0.1).
 
 STOP after writing PRD v0.1.
 No review in this step.
@@ -17,18 +17,16 @@ No review in this step.
 
 ## Required Input
 
-- docs/specs/<pages|features>/spec-WF-XXXX-<slug>.md
+- docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
 
-Spec must have:
-Status: Ready for PRD
-
-Do NOT use brainstorm files.
+Brainstorm must have:
+Status: Draft Complete
 
 ---
 
 ## Phase Gate — Commit Previous Phase
 
-Before generating the PRD, ensure the spec you are converting is **saved and committed** (so PRD v0.1 is traceable to a stable spec input).
+Before generating the PRD, ensure the brainstorm you are converting is **saved and committed** (so PRD v0.1 is traceable to a stable brainstorm input).
 
 ---
 
@@ -60,7 +58,7 @@ Include:
 
 ## Changelog
 
-- v0.1 (YYYY-MM-DD): Initial PRD from spec
+- v0.1 (YYYY-MM-DD): Initial PRD from brainstorm
 
 ---
 
@@ -106,7 +104,7 @@ Last Updated: <today>
 
 ## Changelog
 
-- v0.1 (<today>): Initial PRD from spec
+- v0.1 (<today>): Initial PRD from brainstorm
 
 ---
 
@@ -125,7 +123,7 @@ Do NOT mark Done.
 Use:
 
 - @docs/workflow/phase-1-1-prd-generate.md
-- @docs/specs/<pages|features>/spec-WF-XXXX-<slug>.md
+- @docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
 
 Create:
 

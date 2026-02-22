@@ -38,7 +38,7 @@ This is NOT auto-generation.
 
 Before running Phase 0.1, ensure Phase 0.0 outputs are **saved and committed** on the WF branch:
 
-- Baseline WF artifacts exist (brainstorm/spec/prd/task/walkthrough placeholders).
+- Baseline WF artifacts exist (brainstorm/prd/task/walkthrough placeholders).
 - `docs/index.md` has the WF row.
 
 ---
@@ -284,7 +284,7 @@ Update the brainstorm file incrementally."
 
 ## Stop Condition
 
-Stop when I say the brainstorm is “good enough” for a spec (or if I explicitly pause the workflow).
+Stop when I say the brainstorm is “good enough” for PRD generation (or if I explicitly pause the workflow).
 
 ---
 
