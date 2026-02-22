@@ -84,6 +84,10 @@ When you pick an item to start work:
 | 7 | Review prompt revision for V2 expectations structure | product | Revise `build_review_prompt()` to optimally reference V2 `EvaluationCriterion` / `EvaluationElement` fields from updated YAML ingestion. Current prompt functions but isn't tuned for V2. (Ref: WF-0029 brainstorm S4 Q2 note) | 2026-02-22 |
 | 8 | Structured review: parallel per-node LLM calls | product | Fire LLM calls concurrently instead of sequentially — faster wall-clock time but adds rate-limiting and error-handling complexity. May be unnecessary if mega-prompt (P2 #5) is adopted instead. (Ref: WF-0029 brainstorm S4 Q2 option C, S8 Q5) | 2026-02-22 |
 | 9 | Structured review: batch submission of multiple proposals | product | Allow submitting multiple proposals or revisions in one request. May not be needed depending on app evolution. (Ref: WF-0029 brainstorm S8 Q5) | 2026-02-22 |
+| 10 | Structured review: async processing / polling | product | Synchronous MVP may hit 90s worst-case latency. Async would POST → return review_id → poll for completion. Adds WebSocket/polling complexity. (Ref: WF-0029 PRD v0.3 deferral) | 2026-02-22 |
+| 11 | Structured review: `StructuredSubmission` aggregate table | tech-debt | Replace JSONB `structured_payload` on Review with a proper normalized aggregate table linking multiple `ProposalSnippet` rows to one Review. Enables per-node audit history and replay. (Ref: WF-0029 brainstorm §9.1 option A, deferred in PRD v0.3) | 2026-02-22 |
+| 12 | Structured review: `requires_context_from` dependency engine | product | Add `requires_context_from: list[str]` field to YAML `node_expectations` + V2 schema + `NodeExpectation` model + ingestion pipeline. Replaces hardcoded NWO Veni rules with generalized cross-node context resolution. (Ref: WF-0029 brainstorm §9.4, deferred in PRD v0.3) | 2026-02-22 |
+| 13 | Structured review: per-node grouped detail endpoint | product | New `/reviews/{id}/structured` endpoint returning `nodes[].cards[]` grouped response. Current MVP uses flat `cards[]` from existing detail endpoint. (Ref: WF-0029 PRD v0.3 deferral) | 2026-02-22 |
 
 ---
 
