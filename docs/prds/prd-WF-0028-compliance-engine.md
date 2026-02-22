@@ -1,7 +1,7 @@
 # WF-0028 — NWO Veni 2025 preproposal Compliance Engine PRD
 
 Artifact: prd
-Version: v0.3
+Version: v0.4
 Status: Ready for Tasks
 Last Updated: 2026-02-22
 
@@ -41,7 +41,9 @@ Last Updated: 2026-02-22
 
 - **Failure Path 2 (Schema/Validation Error):**
   1. The frontend POSTs a payload with a `node_logical_id` that does not exist in the hydrated `CallDefinition` for that `call_id`, OR it omits the `domain` field when a call requires a domain-specific check.
-  2. The backend returns HTTP 422 Unprocessable Entity, requiring precisely which payload field/ID is invalid or missing.
+  2. The backend returns HTTP 422 Unprocessable Entity, specifying which payload field/ID is invalid or missing.
+
+- **Error Taxonomy:** HTTP 422 is reserved for payload/schema validation failures (unknown node IDs, missing required `domain`, malformed request). HTTP 200 is always returned for business-rule evaluation results, with violations reported inside `errors[]`/`warnings[]`.
 
 ## 4. Functional Requirements
 
@@ -84,7 +86,7 @@ Last Updated: 2026-02-22
   ],
   "warnings": [
     {
-      "node_logical_id": "key_output_1",
+      "node_logical_id": "key_outputs",
       "rule_id": "mandatory_presence",
       "severity": "WARNING",
       "actual": "Missing",
@@ -106,6 +108,7 @@ Last Updated: 2026-02-22
 
 - **Missing Expected Nodes:** If the `CallDefinition` declares a node as mandatory, but the frontend omits its `node_logical_id` from the `draft_nodes` array entirely, it must be flagged identically to submitting empty text (Blocking Error).
 - **Unknown Node IDs:** If the frontend submits a `node_logical_id` not present in the call configuration, return a 422 Unprocessable Entity immediately to fail fast.
+- **Duplicate Node IDs:** If the frontend submits the same `node_logical_id` more than once in `draft_nodes`, return a 422 with a field-level error (`draft_nodes[i].node_logical_id: duplicate`).
 - **Precedence of Limits:** If both `total_word_limit` and `word_limit_by_domain` exist on a node, the domain-specific limit strictly overrides the default total.
 - **Auth Contract:** The compliance endpoint does NOT persist `User` review history, but it SHOULD inherit the same API authentication dependencies (`X-GR-User-Id` BFF boundaries) as the rest of the application to prevent unauthenticated scraping.
 - **Word Counting Artifacts:** LaTeX equations or Markdown syntax (`**bold**`) artificially inflating word counts. The engine will use a single standard tokenization strategy and ignore complex semantic exclusions (e.g. "excludes references") for MVP.
@@ -128,3 +131,4 @@ Last Updated: 2026-02-22
 
 - v0.1 (2026-02-22): Initial PRD generated directly from Brainstorm v0.1.
 - v0.3 (2026-02-22): Addressed Phase 1.2 risk audit: switched to `node_logical_id`, dropped `max_items` MVP scope, defined mandatory heuristics, added 422 edge cases, clarified domain overriding.
+- v0.4 (2026-02-22): Fixed response example logical ID (`key_outputs`), added error taxonomy (422 vs 200), added duplicate node ID handling.
