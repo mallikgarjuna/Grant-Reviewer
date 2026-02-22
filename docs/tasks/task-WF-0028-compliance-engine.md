@@ -54,7 +54,7 @@ Last Updated: 2026-02-22
 
 ---
 
-### [ ] Task 3 — Add unit tests for compliance engine
+### [x] Task 3 — Add unit tests for compliance engine
 
 **Goal:** Targeted unit test suite for the pure `evaluate_compliance()` function covering deterministic critical paths.
 
