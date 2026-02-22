@@ -1,13 +1,14 @@
 # WF-0030 — NWO Veni 2025 Preproposal (WF-6 Phase) Tasks
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v1.0
+Status: Ready for Implementation
 Last Updated: 2026-02-22
 
 ## Changelog
 
 - v0.1 (2026-02-22): Initial task breakdown from PRD
+- v1.0 (2026-02-22): Applied review edits and marked Ready for Implementation
 
 ## Task Breakdown (Sequential Order)
 
