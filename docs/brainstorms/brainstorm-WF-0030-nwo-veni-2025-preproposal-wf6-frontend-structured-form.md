@@ -1,15 +1,15 @@
 # WF-0030 — NWO Veni 2025 Preproposal Structured AI Review (WF-6 Phase) Brainstorm
 
-Artifact: brainstorm
-Version: v0.8
-Status: Draft
-Last Updated: 2026-02-22
+**Document Status:** Final
+**Version:** v1.0 (Phase 0.1 Complete)
 
 ## Revision History
 - **v0.5** (2026-02-22): Initial interactive session for WF-0030 (Frontend Structured Form).
 - **v0.6** (2026-02-22): Restored full A/B/C options and rationales to all brainstorm Q&A sections based on Senior Designer feedback.
 - **v0.7** (2026-02-22): Added Extended Brainstorming (Dynamic Forms & UX) following the architectural pivot to dynamic schema rendering.
 - **v0.8** (2026-02-22): Integrated Codex Adversarial Review resolutions, explicitly expanding backend scope to support universal forms and correcting API orchestration.
+- **v0.9** (2026-02-22): Finalized Codex Adversarial Review resolutions, deferring nested component rendering to P2 and mapping existing error shapes.
+- **v1.0** (2026-02-22): Finalized Submission Lifecycle UX, including latency overlays, auth expiration handling, and robust post-submission state clearing.
 
 ---
 
@@ -414,7 +414,30 @@ Following a critical "Senior Principal Engineer" audit, several assumptions rega
 
 ---
 
-## 14. Parked / Non-Scoped Items
+## 14. Submission Lifecycle & UX
+
+The submission process handles inherent LLM latency, network unreliability, and authentication expirations to protect the user's data. A full-screen blocking overlay explicitly sets the 90-second wait expectation. Upon success, the UI instantly routes to the generated review and clears the isolated `localStorage` draft. On network timeouts, the UX fails gracefully, retaining the draft and advising the user. If the Clerk session expires during drafting, the frontend catches the 401, locks the draft locally, and redirects to sign-in.
+
+**Brainstorming Q&A:**
+
+**Q1: Submission Latency UX**
+> **Selected: B** — A full-screen blocking overlay prevents the user from editing the form while it submits, explicitly sets the latency expectation, and stops panic-refreshing.
+
+**Q2: Post-Submission Routing**
+> **Selected: B** — The frontend extracts the newly created `review_id` from the response and immediately redirects the user to the detailed review results page (e.g., `/app/reviews/{review_id}`).
+
+**Q3: Post-Submission Draft Lifecycle**
+> **Selected: B** — We automatically clear the `localStorage` draft for that specific call upon a successful response, ensuring their next session starts clean.
+
+**Q4: Network Timeout/Failure Handling**
+> **Selected: B** — Show a clear error toast: "The review timed out or failed. Your draft is still saved..." The blocking overlay dismisses, and the draft remains intact in the form/storage.
+
+**Q5: Unauthenticated User Handling (Auth Expiration)**
+> **Selected: A** — Catching the 401 explicitly and leveraging our robust `localStorage` draft mechanism ensures zero data loss. The UI redirects to the Clerk sign-in page so they can resume after re-authenticating.
+
+---
+
+## 15. Parked / Non-Scoped Items
 
 The following items arose during brainstorming but were explicitly parked to keep the MVP scope constrained. They are logged in `docs/parking_lot.md` for future prioritization:
 
