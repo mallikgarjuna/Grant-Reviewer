@@ -7,7 +7,7 @@ Last Updated: 2026-02-22
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Define Pydantic request/response schemas
+### [x] Task 1 — Define Pydantic request/response schemas
 
 **Goal:** Create the `ComplianceCheckRequest` and `ComplianceCheckResponse` Pydantic models that lock down the API contract for the compliance endpoint.
 
