@@ -83,7 +83,7 @@ After completing Part B, output:
 
 2. Two recommended next actions:
 
-- Run Phase 1 runner: `@docs/workflow/phase-12-run-planning.md`
+- **Run Phase 1 runner**: `@docs/workflow/phase-12-run-planning.md`
    - **CRITICAL**: For the recommended next phase, you MUST provide an explicit, copy-pasteable prompt block that the user can run to start it.
    - Example format for the prompt block:
      ```text
@@ -93,9 +93,7 @@ After completing Part B, output:
 
      Run Phase 1 ...
      ```
-- Sanity-check brainstorm quality/coverage and commit a small doc fix if needed
-
-Keep it concise.
+- **Cross-Agent Collaborative Review:** Provide an explicit prompt the user can copy-paste into *another* coding agent (like Codex/Cursor) to critically review the newly created Brainstorm artifact. For example: "Review `@docs/brainstorms/brainstorm-WF-XXXX-...md` for completeness, risks, and edge cases before we proceed to Phase 1. Output your findings in chat."
 
 Also output this final block:
 
