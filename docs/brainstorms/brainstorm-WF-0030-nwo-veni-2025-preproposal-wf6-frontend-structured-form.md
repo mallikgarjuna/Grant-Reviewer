@@ -312,7 +312,29 @@ The following features will explicitly *not* be built during WF-0030 to protect 
 
 ## 10. Extended Brainstorming (Dynamic Forms & UX)
 
-*(To be filled during extended Phase 0.1 brainstorm)*
+The universal form will handle loading states gracefully with pre-rendered skeleton textareas to prevent layout shift. Essential instructions will be shown as muted subtext above the inputs, preserving a clean aesthetic without hiding requirements. The MVP will force-render all `ProposalNode` entities as `<textarea>` fields, assuming purely textual data for now. Backend validation errors will be surfaced as a unified summary alert at the top of the form, mapping standard `FeedbackCard` messages. Drafts in `localStorage` will be safely isolated by keying them against the `funding_call_id`.
+
+**Brainstorming Q&A:**
+
+**Q1: How should the frontend handle the loading state while fetching the dynamic `proposal_structure` for a selected funding call?**
+> **Selected: B** — Render skeleton (shimmering) textareas that match the expected layout, then swap them out when the schema loads.
+
+**Q2: The backend `ProposalNode` schema has fields like `id`, `title`, and `instructions`. How much of this should be rendered above each textarea?**
+> **Selected: B** — The `title` as a clear header, and the `instructions` as a smaller, muted subtext directly above or below the textarea to guide the user.
+
+**Q3: Because the form is now dynamic, we must map the frontend React state to the required backend JSON payload (`nodes: [{ node_id: "...", text: "..." }]`). What happens if a particular call introduces a schema node that is *not* a text area?**
+> **Selected: B** — For this MVP, we strictly assume all `ProposalNode` entities are text-based and render them as `<textarea>` components. If a non-text node is encountered, we ignore it or gracefully degrade to text.
+
+**Q4: When the dynamic form submits, how should we handle backend validation errors that might be tied to specific nodes?**
+> **Selected: B** — The backend currently returns a flat list of `FeedbackCard` objects for compliance errors. We should simply display these cards at the top of the form, similar to a standard summary alert.
+
+**Q5: `localStorage` draft saving becomes slightly trickier with dynamic forms. If a user was drafting a Veni proposal (3 nodes), then selects an ERC proposal (5 nodes) from the dropdown, what happens to their draft?**
+> **Selected: B** — The draft state is keyed by a composite ID: `draft_${funding_call_id}`. If the user switches calls, they see a fresh empty form for the new call. If they switch back, their original Veni draft is restored.
+
+**User Specific Question: How do we allow a researcher to paste the "key_outputs" ("max 10 outputs")? which are basically a table per each output in the application form and not easy to copy-paste in the textarea?**
+> **Analysis:** This gets to the heart of why P2 #15 (Document Parsing) is so valuable, but for the WF-0030 MVP, we are constrained to textareas. When a user copies a Word table into a `<textarea>`, the browser natively strips the table structure and pastes the cell contents separated by tabs or newlines. While this looks ugly to the human eye, the **backend LLM (gpt-4o) is exceptionally good at reading tab-delimited or newline-delimited tabular data**.
+>
+> **Recommendation:** For the MVP, we rely on the LLM's robustness. We should add to the `instructions` subtext for that specific node: *"Note: Pasting tables will remove formatting, but the AI will still correctly interpret the data."* This manages user panic without requiring us to build a custom Markdown table-converter or rich-text `.docx` parser in the frontend immediately.
 
 ---
 
