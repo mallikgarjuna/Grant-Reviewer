@@ -76,7 +76,7 @@ Verification Steps:
 - Mock a 422 response with specific error codes, verify the hard-block behavior.
 Risks: State race conditions between the compliance check and the final submission.
 
-### [ ] Task 4 — Submission Lifecycle & UX Handling
+### [x] Task 4 — Submission Lifecycle & UX Handling
 
 Goal: Complete the submission lifecycle by wiring 90-second blocking overlay, timeouts, 401 redirect handling, and cleanup.
 Files to modify:

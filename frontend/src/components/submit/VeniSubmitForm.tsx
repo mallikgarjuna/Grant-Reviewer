@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
+import { ComplianceBypassModal } from "@/components/submit/ComplianceBypassModal";
+import { BlockingOverlay } from "@/components/ui/BlockingOverlay";
 import { useLocalStorageDraft } from "@/hooks/useLocalStorageDraft";
 import type {
   ApiError,
@@ -10,9 +13,10 @@ import type {
   ComplianceViolation,
   StructuredReviewNodeInput,
 } from "@/lib/bff/types";
-import { ComplianceBypassModal } from "@/components/submit/ComplianceBypassModal";
+import { buildReviewDetailRoute, SIGN_IN_ROUTE } from "@/lib/routes";
 
 const VENI_CALL_CODE = "nwo_veni_2025_preproposal";
+const SUBMISSION_TIMEOUT_MS = 90_000;
 
 type VeniDraft = {
   academic_profile: string;
@@ -94,6 +98,7 @@ function buildDraftNodes(draft: VeniDraft): StructuredReviewNodeInput[] {
 }
 
 export function VeniSubmitForm() {
+  const router = useRouter();
   const [calls, setCalls] = useState<CallSummary[]>([]);
   const [isLoadingCalls, setIsLoadingCalls] = useState(true);
   const [callError, setCallError] = useState<string | null>(null);
@@ -103,7 +108,7 @@ export function VeniSubmitForm() {
   const [complianceWarnings, setComplianceWarnings] = useState<ComplianceViolation[]>([]);
   const [isBypassModalOpen, setIsBypassModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastSubmittedReviewId, setLastSubmittedReviewId] = useState<string | null>(null);
+  const [showTimeoutHint, setShowTimeoutHint] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,7 +157,7 @@ export function VeniSubmitForm() {
 
   const storageKey = "draft_nwo_veni_2025_preproposal_v1";
 
-  const { value: draft, setValue: setDraft } = useLocalStorageDraft<VeniDraft>(
+  const { value: draft, setValue: setDraft, clear } = useLocalStorageDraft<VeniDraft>(
     storageKey,
     INITIAL_DRAFT,
   );
@@ -175,30 +180,49 @@ export function VeniSubmitForm() {
     }
 
     setIsSubmitting(true);
+    setShowTimeoutHint(false);
     setFormError(null);
 
-    const response = await fetch("/api/bff/structured-review", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Idempotency-Key": crypto.randomUUID(),
-      },
-      body: JSON.stringify({
-        call_id: selectedCallId,
-        nodes: buildDraftNodes(draft),
-      }),
-    });
+    const timeoutHandle = window.setTimeout(() => {
+      setShowTimeoutHint(true);
+    }, SUBMISSION_TIMEOUT_MS);
 
-    if (!response.ok) {
-      const apiError = await parseApiError(response);
-      setFormError(apiError.message);
+    try {
+      const response = await fetch("/api/bff/structured-review", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          call_id: selectedCallId,
+          nodes: buildDraftNodes(draft),
+        }),
+      });
+
+      if (!response.ok) {
+        const apiError = await parseApiError(response);
+        if (apiError.status === 401) {
+          router.push(SIGN_IN_ROUTE);
+          return;
+        }
+        setFormError(apiError.message);
+        return;
+      }
+
+      const payload = (await response.json()) as { review_id?: string };
+      if (!payload.review_id) {
+        setFormError("Review submitted but no review id was returned.");
+        return;
+      }
+
+      clear();
+      router.push(buildReviewDetailRoute(payload.review_id));
+    } finally {
+      window.clearTimeout(timeoutHandle);
       setIsSubmitting(false);
-      return;
+      setShowTimeoutHint(false);
     }
-
-    const payload = (await response.json()) as { review_id?: string };
-    setLastSubmittedReviewId(payload.review_id ?? null);
-    setIsSubmitting(false);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -207,7 +231,6 @@ export function VeniSubmitForm() {
     setHardBlockErrors([]);
     setComplianceWarnings([]);
     setIsBypassModalOpen(false);
-    setLastSubmittedReviewId(null);
 
     if (!selectedCallId) {
       setFormError("Funding call is required before submission.");
@@ -244,6 +267,9 @@ export function VeniSubmitForm() {
 
     const compliance = (await response.json()) as ComplianceCheckResponse;
     if (compliance.errors.length > 0) {
+      console.info("Compliance warnings shown", {
+        warning_count: compliance.errors.length,
+      });
       setComplianceWarnings(compliance.errors);
       setIsBypassModalOpen(true);
       return;
@@ -253,6 +279,7 @@ export function VeniSubmitForm() {
   }
 
   async function handleBypassConfirm() {
+    console.info("Compliance bypass confirmed");
     setIsBypassModalOpen(false);
     await submitStructuredReview();
   }
@@ -281,7 +308,7 @@ export function VeniSubmitForm() {
             <select
               id="call"
               className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-              disabled={isLoadingCalls || calls.length === 0}
+              disabled={isLoadingCalls || calls.length === 0 || isSubmitting}
               onChange={(event) => setSelectedCallId(event.target.value)}
               value={selectedCallId}
             >
@@ -396,12 +423,6 @@ export function VeniSubmitForm() {
             </div>
           ) : null}
 
-          {lastSubmittedReviewId ? (
-            <div className="rounded-[var(--radius-md)] border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
-              Structured review submitted: {lastSubmittedReviewId}
-            </div>
-          ) : null}
-
           <button
             className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={Boolean(callError) || isLoadingCalls || isSubmitting}
@@ -421,6 +442,7 @@ export function VeniSubmitForm() {
         }}
         warnings={complianceWarnings}
       />
+      <BlockingOverlay isVisible={isSubmitting} showTimeoutHint={showTimeoutHint} />
     </main>
   );
 }
