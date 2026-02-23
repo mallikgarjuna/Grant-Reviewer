@@ -109,10 +109,16 @@ export type ReviewSummary = {
 export type ReviewCardSummary = {
   id: string;
   node_expectation_id: string;
+  node_logical_id?: string | null;
+  node_title: string;
   criterion: string;
   criterion_description?: string | null;
+  evaluation_element_name: string;
+  expectation_guidance_note?: string | null;
   rating: ReviewRating;
   feedback_text: string;
+  assessment_status?: "ASSESSED" | "NOT_ASSESSABLE" | null;
+  not_assessable_reason?: string | null;
 };
 
 export type ReviewDetailResponse = {

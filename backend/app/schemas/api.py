@@ -93,8 +93,12 @@ class ReviewCardSummary(BaseModel):
 
     id: UUID
     node_expectation_id: UUID
+    node_logical_id: str | None
+    node_title: str
     criterion: str
     criterion_description: str | None
+    evaluation_element_name: str
+    expectation_guidance_note: str | None
     rating: ReviewRating
     feedback_text: str
     assessment_status: str | None = None

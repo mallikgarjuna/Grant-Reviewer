@@ -732,6 +732,10 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
         detail_payload["cards"][0]["criterion_description"]
         == "Scientific excellence of the proposal section."
     )
+    assert detail_payload["cards"][0]["node_logical_id"] is None
+    assert detail_payload["cards"][0]["node_title"] == "Section 1"
+    assert detail_payload["cards"][0]["evaluation_element_name"] == "Clarity of Objectives"
+    assert detail_payload["cards"][0]["expectation_guidance_note"] == "Check clarity"
     assert detail_payload["cards"][0]["rating"] == "NOTE"
     assert detail_payload["cards"][0]["assessment_status"] is None
     assert detail_payload["cards"][0]["not_assessable_reason"] is None
@@ -948,6 +952,10 @@ def test_structured_review_e2e_happy_path_three_nodes(monkeypatch) -> None:
     assert detail.status_code == 200
     cards = detail.json()["cards"]
     assert len(cards) == 5
+    ordered_nodes = [card["node_logical_id"] for card in cards]
+    assert ordered_nodes[0] == "academic_profile"
+    assert ordered_nodes[1] == "key_outputs"
+    assert ordered_nodes[2:] == ["research_idea", "research_idea", "research_idea"]
     assert all(card["assessment_status"] == "ASSESSED" for card in cards)
     assert all(card["not_assessable_reason"] is None for card in cards)
 
@@ -976,6 +984,7 @@ def test_structured_review_e2e_partial_submission_marks_alignment_not_assessable
     not_assessable_cards = [
         card for card in cards if card["assessment_status"] == "NOT_ASSESSABLE"
     ]
+    assert all(isinstance(card["node_title"], str) and card["node_title"] for card in cards)
     assert len(not_assessable_cards) == 2
     assert all(
         "academic_profile" in (card["not_assessable_reason"] or "")

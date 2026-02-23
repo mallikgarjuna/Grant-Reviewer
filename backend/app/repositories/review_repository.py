@@ -262,22 +262,30 @@ class ReviewRepository:
         statement = (
             select(ReviewCard)
             .join(NodeExpectation, ReviewCard.node_expectation_id == NodeExpectation.id)
+            .join(ProposalNode, NodeExpectation.proposal_node_id == ProposalNode.id)
             .where(ReviewCard.review_id == review_id)
-            .order_by(NodeExpectation.order_index, ReviewCard.id)
+            .order_by(ProposalNode.order_index, NodeExpectation.order_index, ReviewCard.id)
         )
         return list(self.session.exec(statement).all())
 
     def get_review_cards_with_criteria(
         self, review_id: UUID
-    ) -> list[tuple[ReviewCard, str, str | None]]:
-        """Fetch review cards with criterion names and descriptions ordered by expectation index."""
+    ) -> list[
+        tuple[ReviewCard, str, str | None, str, str | None, str | None, str]
+    ]:
+        """Fetch review cards with criterion and expectation metadata ordered by expectation index."""
         statement = (
             select(
                 ReviewCard,
                 EvaluationCriterion.name,
                 EvaluationCriterion.description,
+                EvaluationElement.name,
+                NodeExpectation.guidance_note,
+                ProposalNode.logical_id,
+                ProposalNode.title,
             )
             .join(NodeExpectation, ReviewCard.node_expectation_id == NodeExpectation.id)
+            .join(ProposalNode, NodeExpectation.proposal_node_id == ProposalNode.id)
             .join(
                 EvaluationElement,
                 NodeExpectation.evaluation_element_id == EvaluationElement.id,
@@ -289,7 +297,7 @@ class ReviewRepository:
             .where(ReviewCard.review_id == review_id)
             .where(EvaluationElement.archived_at.is_(None))
             .where(EvaluationCriterion.archived_at.is_(None))
-            .order_by(NodeExpectation.order_index, ReviewCard.id)
+            .order_by(ProposalNode.order_index, NodeExpectation.order_index, ReviewCard.id)
         )
         return list(self.session.exec(statement).all())
 
