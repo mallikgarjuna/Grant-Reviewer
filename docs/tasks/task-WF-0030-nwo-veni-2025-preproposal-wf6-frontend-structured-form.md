@@ -96,7 +96,7 @@ Verification Steps:
 - Mock successful success, verify routing to new review and verify `localStorage` draft is removed.
 Risks: Timeout issues causing infinite spinners.
 
-### [ ] Task 5 — Automated Frontend Testing
+### [x] Task 5 — Automated Frontend Testing
 
 Goal: Construct independent integration/unit tests for the submission and API orchestration.
 Files to modify:
