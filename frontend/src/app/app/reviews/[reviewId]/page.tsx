@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -16,6 +16,11 @@ import { ReviewSummary } from "@/components/review/ReviewSummary";
 
 const POLL_INTERVAL_MS = 3_000;
 const POLL_MAX_DURATION_MS = 90_000;
+const VENI_NODE_LABELS: Record<string, string> = {
+  academic_profile: "2a. Academic Profile",
+  key_outputs: "2b. Key Outputs",
+  research_idea: "3. Research Idea",
+};
 
 type ApiErrorEnvelope = {
   error?: {
@@ -121,6 +126,7 @@ function buildSignInRedirectHref(path: string): string {
 
 export default function ReviewDetailPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const params = useParams<{ reviewId: string }>();
   const reviewId = params.reviewId;
 
@@ -446,6 +452,15 @@ export default function ReviewDetailPage() {
   const isFailed = reviewDetail.review.status === "FAILED";
   const isPending = isPendingReview(reviewDetail.review.status);
   const hasOverallSummary = Boolean(reviewDetail.review.overall_summary?.trim());
+  const submittedNodesParam = searchParams.get("submitted_nodes") ?? "";
+  const submittedNodes = submittedNodesParam
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+  const reviewedNodeLabels = submittedNodes.map((nodeId) => VENI_NODE_LABELS[nodeId]).filter(Boolean);
+  const notReviewedNodeLabels = Object.entries(VENI_NODE_LABELS)
+    .filter(([nodeId]) => !submittedNodes.includes(nodeId))
+    .map(([, label]) => label);
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-12 md:px-10">
@@ -474,6 +489,18 @@ export default function ReviewDetailPage() {
                 overall_summary: reviewDetail.review.overall_summary,
               }}
             />
+          </div>
+        ) : null}
+
+        {submittedNodes.length > 0 ? (
+          <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)]">
+            <p className="font-medium">Coverage summary</p>
+            <p className="mt-1">
+              Reviewed sections: {reviewedNodeLabels.length > 0 ? reviewedNodeLabels.join(", ") : "None"}
+            </p>
+            <p className="mt-1 text-[var(--color-muted-foreground)]">
+              Not reviewed sections: {notReviewedNodeLabels.length > 0 ? notReviewedNodeLabels.join(", ") : "None"}
+            </p>
           </div>
         ) : null}
 

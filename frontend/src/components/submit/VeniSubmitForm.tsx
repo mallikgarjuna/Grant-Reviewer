@@ -194,6 +194,7 @@ export function VeniSubmitForm() {
     }, SUBMISSION_TIMEOUT_MS);
 
     try {
+      const submittedNodeIds = buildNonEmptyDraftNodes(draft).map((node) => node.node_logical_id);
       const response = await fetch("/api/bff/structured-review", {
         method: "POST",
         headers: {
@@ -223,7 +224,8 @@ export function VeniSubmitForm() {
       }
 
       clear();
-      router.push(buildReviewDetailRoute(payload.review_id));
+      const query = new URLSearchParams({ submitted_nodes: submittedNodeIds.join(",") });
+      router.push(`${buildReviewDetailRoute(payload.review_id)}?${query.toString()}`);
     } finally {
       window.clearTimeout(timeoutHandle);
       setIsSubmitting(false);
