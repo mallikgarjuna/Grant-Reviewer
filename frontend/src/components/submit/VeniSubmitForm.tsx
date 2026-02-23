@@ -81,7 +81,7 @@ function countWords(text: string): number {
 }
 
 function buildDraftNodes(draft: VeniDraft): StructuredReviewNodeInput[] {
-  return [
+  const nodes: StructuredReviewNodeInput[] = [
     {
       node_logical_id: "academic_profile",
       text: draft.academic_profile,
@@ -95,6 +95,12 @@ function buildDraftNodes(draft: VeniDraft): StructuredReviewNodeInput[] {
       text: draft.research_idea,
     },
   ];
+
+  return nodes;
+}
+
+function buildNonEmptyDraftNodes(draft: VeniDraft): StructuredReviewNodeInput[] {
+  return buildDraftNodes(draft).filter((node) => node.text.trim().length > 0);
 }
 
 export function VeniSubmitForm() {
@@ -194,10 +200,10 @@ export function VeniSubmitForm() {
           "Content-Type": "application/json",
           "Idempotency-Key": crypto.randomUUID(),
         },
-        body: JSON.stringify({
-          call_id: selectedCallId,
-          nodes: buildDraftNodes(draft),
-        }),
+      body: JSON.stringify({
+        call_id: selectedCallId,
+        nodes: buildNonEmptyDraftNodes(draft),
+      }),
       });
 
       if (!response.ok) {

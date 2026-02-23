@@ -272,4 +272,73 @@ describe("VeniSubmitForm orchestration", () => {
     });
     expect(window.localStorage.getItem(storageKey)).not.toBeNull();
   });
+
+  it("submitting only academic_profile sends only non-empty nodes to structured-review", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes("/api/bff/calls")) {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "veni-call-id",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.includes("/api/bff/check-compliance")) {
+        return new Response(
+          JSON.stringify({
+            is_compliant: false,
+            errors: [
+              {
+                node_logical_id: "key_outputs",
+                rule_id: "mandatory_presence",
+                severity: "ERROR",
+                actual: "missing",
+                expected: "present",
+                message: "Mandatory section is missing text.",
+                is_blocking: true,
+              },
+            ],
+            warnings: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.includes("/api/bff/structured-review")) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as { nodes?: Array<{ node_logical_id: string }> };
+        expect(body.nodes).toEqual([{ node_logical_id: "academic_profile", text: "profile text only" }]);
+        return new Response(JSON.stringify({ review_id: "review-999", status: "COMPLETED" }), {
+          status: 200,
+        });
+      }
+      return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }), {
+        status: 404,
+      });
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+    render(<VeniSubmitForm />);
+
+    const academicProfile = await screen.findByLabelText("Academic Profile");
+    fireEvent.change(academicProfile, { target: { value: "profile text only" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+    await screen.findByText("Submit with warnings?");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Anyway" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/bff/structured-review",
+        expect.objectContaining({ method: "POST" }),
+      );
+    });
+  });
 });
