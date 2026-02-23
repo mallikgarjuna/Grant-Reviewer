@@ -1,5 +1,45 @@
 # Architectural Decisions
 
+## Date: 2026-02-23 (WF-0030: Local QA/Test DB Isolation Hardening)
+
+### AD 30.1: Dedicated test database is required for DB-backed backend tests
+- **WF ID**: WF-0030
+- **Context**: Running `backend/tests/test_api.py` against the same `DATABASE_URL` used by local app QA overwrote call-definition projection data, causing false UI regressions (e.g., `academic_profile` dropping to one expectation).
+- **Decision**: Enforce a hard safety policy:
+  - DB-backed tests must run only when `DATABASE_URL` points to a test database whose name includes `test`.
+  - Add pytest guardrails in `backend/tests/conftest.py` to fail fast for unsafe DB URLs.
+  - Keep DB-less tests explicitly marked (`@pytest.mark.no_db`) to bypass DB checks safely.
+- **Why**: Prevents accidental mutation of the local QA dataset and removes a recurring source of workflow confusion.
+- **Tradeoff**: Developers must set `DATABASE_URL` explicitly for backend test runs, which adds one setup step but avoids costly debugging.
+- **Status**: Implemented.
+
+### AD 30.2: Separate Docker stacks for dev DB and test DB
+- **WF ID**: WF-0030
+- **Context**: A single Postgres stack encouraged accidental sharing between manual app testing and test fixtures.
+- **Decision**:
+  - Keep `backend/docker-compose.dev.yml` for local app development (`grant_reviewer_dev`, port `5432`).
+  - Add `backend/docker-compose.test.yml` for backend tests (`grant_reviewer_test`, port `5433`).
+- **Why**: Environment-level separation is simpler and more reliable than relying on developer memory.
+- **Tradeoff**: Slightly more local setup overhead (one extra compose file), but much safer operationally.
+- **Status**: Implemented.
+
+### AD 30.3: Standardized reset scripts for deterministic local state
+- **WF ID**: WF-0030
+- **Context**: Repeated manual reset sequences were error-prone and inconsistently applied.
+- **Decision**:
+  - Add `backend/scripts/reset_dev_db.sh` to reset dev DB + ensure active prompt template + ingest canonical Veni definition.
+  - Add `backend/scripts/reset_test_db.sh` to reset isolated test DB with safety checks.
+- **Why**: One-command recovery reduces mistakes and makes state transitions explicit before QA/test runs.
+- **Tradeoff**: Local data is intentionally wiped during reset workflows; this is acceptable for deterministic development.
+- **Status**: Implemented.
+
+### AD 30.4: Carry-forward rule for future funding call workflows
+- **WF ID**: WF-0030
+- **Context**: Additional funding calls will amplify the risk of accidental fixture contamination.
+- **Decision**: Treat DB isolation + reset scripts as mandatory preflight for every new funding-call WF before Phase 3 QA.
+- **Why**: This preserves reproducibility as multi-call complexity increases.
+- **Status**: Approved (always-on policy).
+
 ## Date: 2026-02-21 (WF-0021: NWO Veni 2025 preproposal WF-2)
 
 ### AD 21.1: 1:1 FundingCall to CallDefinition Relationship

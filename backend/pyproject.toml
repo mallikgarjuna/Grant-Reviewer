@@ -54,3 +54,8 @@ ignore = []
 # Script intentionally mutates sys.path before app imports for CLI execution.
 "scripts/run_review.py" = ["E402"]
 "backend/app/db.py" = ["F401"] # init file often has unused imports
+
+[tool.pytest.ini_options]
+markers = [
+    "no_db: test does not require a database connection",
+]

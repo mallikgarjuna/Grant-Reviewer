@@ -174,11 +174,13 @@ Warning:
 
 ```bash
 cd backend
-docker compose -f docker-compose.dev.yml down -v
-docker compose -f docker-compose.dev.yml up -d
-uv run python scripts/ensure_prompt_template.py
-uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml
+./scripts/reset_dev_db.sh
 ```
+
+Default behavior of `scripts/reset_dev_db.sh`:
+- Resets `docker-compose.dev.yml` volumes
+- Ensures active prompt template
+- Ingests canonical NWO Veni 2025 preproposal YAML
 
 No-Docker fallback (secondary path only):
 - Use a local native Postgres instance that matches the same `DATABASE_URL` contract.
@@ -301,7 +303,21 @@ Copy `.env.example` to `.env` for local development.
 ## Tests
 
 ```bash
-uv run pytest -q
+# Test DB safety policy:
+# - DATABASE_URL must point to a test DB (name contains "test")
+# - pytest refuses to run DB-backed tests otherwise
+
+# 1) Start/reset isolated test DB (port 5433)
+./scripts/reset_test_db.sh
+
+# 2) Run tests against test DB explicitly
+DATABASE_URL=postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable uv run pytest -q
+```
+
+If you only need dry-run ingest tests (no DB), run:
+
+```bash
+uv run pytest -q tests/test_ingest_call_dry_run.py
 ```
 
 Recent API coverage includes:

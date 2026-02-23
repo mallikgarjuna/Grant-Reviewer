@@ -1,5 +1,11 @@
 # Prompt History
 
+## 2026-02-23
+
+### 08:35 - WF-0030 Local DB/Test Isolation Hardening
+> User asked for a permanent fix so local UI QA does not regress after backend test runs, with proper commits and decisions logged for future funding-call workflows.
+> Outcome: Added DB safety guard in pytest (`backend/tests/conftest.py`), introduced isolated test DB compose stack (`backend/docker-compose.test.yml`), added deterministic reset scripts (`backend/scripts/reset_dev_db.sh`, `backend/scripts/reset_test_db.sh`), updated backend README runbook, and recorded architectural decisions/lessons for carry-forward.
+
 ## 2026-02-21
 
 ### 17:10 - WF-0021 Context Refresh + Next Phase Prompt

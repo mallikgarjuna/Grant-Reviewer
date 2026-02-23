@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from scripts.ingest_call import ingest_call
 
 
+@pytest.mark.no_db
 def test_dry_run_supports_v1_and_v2_without_database_url(
     monkeypatch,
 ) -> None:
