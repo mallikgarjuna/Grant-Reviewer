@@ -46,7 +46,7 @@ Verification Steps:
 - Add a dummy test or use `curl`/Postman to hit the new BFF endpoints locally and verify they forward headers (Clerk auth, Idempotency-Key) correctly to a mock backend.
 Risks: Header proxying mistakes (like dropping the auth or idempotency key).
 
-### [ ] Task 2B — Wire BFF Adapter & Types
+### [x] Task 2B — Wire BFF Adapter & Types
 
 Goal: Update client types and wire the client adapter to use the new BFF routes.
 Files to modify:

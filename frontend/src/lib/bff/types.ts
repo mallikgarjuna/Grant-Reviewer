@@ -65,6 +65,40 @@ export type CreateReviewResponse = {
   status: ReviewStatus;
 };
 
+export type StructuredReviewNodeInput = {
+  node_logical_id: string;
+  text: string;
+};
+
+export type StructuredReviewRequest = {
+  call_id: string;
+  nodes: StructuredReviewNodeInput[];
+};
+
+export type ComplianceCheckRequest = {
+  call_id: string;
+  domain?: string | null;
+  draft_nodes: StructuredReviewNodeInput[];
+};
+
+export type ViolationSeverity = "ERROR" | "WARNING";
+
+export type ComplianceViolation = {
+  node_logical_id: string;
+  rule_id: string;
+  severity: ViolationSeverity;
+  actual: string;
+  expected: string;
+  message: string;
+  is_blocking: boolean;
+};
+
+export type ComplianceCheckResponse = {
+  is_compliant: boolean;
+  errors: ComplianceViolation[];
+  warnings: ComplianceViolation[];
+};
+
 export type ReviewSummary = {
   id: string;
   status: ReviewStatus;
