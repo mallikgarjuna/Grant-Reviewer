@@ -3,7 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useLocalStorageDraft } from "@/hooks/useLocalStorageDraft";
-import type { CallSummary } from "@/lib/bff/types";
+import type {
+  ApiError,
+  CallSummary,
+  ComplianceCheckResponse,
+  ComplianceViolation,
+  StructuredReviewNodeInput,
+} from "@/lib/bff/types";
+import { ComplianceBypassModal } from "@/components/submit/ComplianceBypassModal";
 
 const VENI_CALL_CODE = "nwo_veni_2025_preproposal";
 
@@ -21,6 +28,46 @@ const INITIAL_DRAFT: VeniDraft = {
   domain: null,
 };
 
+type ApiErrorEnvelope = {
+  error?: {
+    code?: unknown;
+    message?: unknown;
+    details?: unknown;
+  };
+};
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+async function parseApiError(response: Response): Promise<ApiError> {
+  const fallback: ApiError = {
+    code: "INTERNAL_ERROR",
+    message: "Unexpected API error.",
+    details: {},
+    status: response.status,
+  };
+
+  try {
+    const parsed = (await response.json()) as ApiErrorEnvelope;
+    if (
+      parsed.error &&
+      typeof parsed.error.code === "string" &&
+      typeof parsed.error.message === "string"
+    ) {
+      return {
+        code: parsed.error.code,
+        message: parsed.error.message,
+        details: isObject(parsed.error.details) ? parsed.error.details : {},
+        status: response.status,
+      };
+    }
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function countWords(text: string): number {
   const normalized = text.trim();
   if (!normalized) {
@@ -29,11 +76,34 @@ function countWords(text: string): number {
   return normalized.split(/\s+/).length;
 }
 
+function buildDraftNodes(draft: VeniDraft): StructuredReviewNodeInput[] {
+  return [
+    {
+      node_logical_id: "academic_profile",
+      text: draft.academic_profile,
+    },
+    {
+      node_logical_id: "key_outputs",
+      text: draft.key_outputs,
+    },
+    {
+      node_logical_id: "research_idea",
+      text: draft.research_idea,
+    },
+  ];
+}
+
 export function VeniSubmitForm() {
   const [calls, setCalls] = useState<CallSummary[]>([]);
   const [isLoadingCalls, setIsLoadingCalls] = useState(true);
   const [callError, setCallError] = useState<string | null>(null);
   const [selectedCallId, setSelectedCallId] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+  const [hardBlockErrors, setHardBlockErrors] = useState<string[]>([]);
+  const [complianceWarnings, setComplianceWarnings] = useState<ComplianceViolation[]>([]);
+  const [isBypassModalOpen, setIsBypassModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastSubmittedReviewId, setLastSubmittedReviewId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,6 +168,95 @@ export function VeniSubmitForm() {
 
   const researchIdeaLimit = draft.domain === "science_enw" ? 500 : 100;
 
+  async function submitStructuredReview() {
+    if (!selectedCallId) {
+      setFormError("Funding call is required before submission.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError(null);
+
+    const response = await fetch("/api/bff/structured-review", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": crypto.randomUUID(),
+      },
+      body: JSON.stringify({
+        call_id: selectedCallId,
+        nodes: buildDraftNodes(draft),
+      }),
+    });
+
+    if (!response.ok) {
+      const apiError = await parseApiError(response);
+      setFormError(apiError.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    const payload = (await response.json()) as { review_id?: string };
+    setLastSubmittedReviewId(payload.review_id ?? null);
+    setIsSubmitting(false);
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormError(null);
+    setHardBlockErrors([]);
+    setComplianceWarnings([]);
+    setIsBypassModalOpen(false);
+    setLastSubmittedReviewId(null);
+
+    if (!selectedCallId) {
+      setFormError("Funding call is required before submission.");
+      return;
+    }
+
+    const response = await fetch("/api/bff/check-compliance", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        call_id: selectedCallId,
+        domain: draft.domain,
+        draft_nodes: buildDraftNodes(draft),
+      }),
+    });
+
+    if (!response.ok) {
+      const apiError = await parseApiError(response);
+      if (apiError.status === 422) {
+        const detailNodeIds = Array.isArray(apiError.details.node_logical_ids)
+          ? apiError.details.node_logical_ids.filter((item) => typeof item === "string")
+          : [];
+
+        const errorLines = [apiError.message, ...detailNodeIds];
+        setHardBlockErrors(errorLines);
+        return;
+      }
+
+      setFormError(apiError.message);
+      return;
+    }
+
+    const compliance = (await response.json()) as ComplianceCheckResponse;
+    if (compliance.errors.length > 0) {
+      setComplianceWarnings(compliance.errors);
+      setIsBypassModalOpen(true);
+      return;
+    }
+
+    await submitStructuredReview();
+  }
+
+  async function handleBypassConfirm() {
+    setIsBypassModalOpen(false);
+    await submitStructuredReview();
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col px-6 py-12 md:px-10">
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-sm">
@@ -114,7 +273,7 @@ export function VeniSubmitForm() {
           this MVP.
         </p>
 
-        <form className="mt-8 space-y-6" onSubmit={(event) => event.preventDefault()}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--color-foreground)]" htmlFor="call">
               Funding Call
@@ -220,15 +379,48 @@ export function VeniSubmitForm() {
             </p>
           </div>
 
+          {hardBlockErrors.length > 0 ? (
+            <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p className="font-medium">Submission blocked</p>
+              <ul className="mt-1 list-disc pl-5">
+                {hardBlockErrors.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {formError ? (
+            <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {formError}
+            </div>
+          ) : null}
+
+          {lastSubmittedReviewId ? (
+            <div className="rounded-[var(--radius-md)] border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
+              Structured review submitted: {lastSubmittedReviewId}
+            </div>
+          ) : null}
+
           <button
             className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={Boolean(callError) || isLoadingCalls}
+            disabled={Boolean(callError) || isLoadingCalls || isSubmitting}
             type="submit"
           >
-            Submit
+            {isSubmitting ? "Submitting..." : "Submit"}
           </button>
         </form>
       </div>
+
+      <ComplianceBypassModal
+        isOpen={isBypassModalOpen}
+        isSubmitting={isSubmitting}
+        onCancel={() => setIsBypassModalOpen(false)}
+        onConfirm={() => {
+          void handleBypassConfirm();
+        }}
+        warnings={complianceWarnings}
+      />
     </main>
   );
 }

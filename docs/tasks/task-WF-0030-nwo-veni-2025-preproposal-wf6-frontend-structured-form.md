@@ -59,7 +59,7 @@ Verification Steps:
 - Verify types compile correctly against the components when imported.
 Risks: Type desync between frontend adapter and backend shapes.
 
-### [ ] Task 3 — Form Orchestration & Compliance Bypass Logic
+### [x] Task 3 — Form Orchestration & Compliance Bypass Logic
 
 Goal: Implement the core API flow orchestration within `VeniSubmitForm`, specifically owning the compliance call, bypass modal, and "submit anyway" branch.
 Files to modify:
