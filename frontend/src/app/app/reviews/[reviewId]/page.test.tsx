@@ -73,7 +73,8 @@ describe("ReviewDetailPage", () => {
       "Not reviewed sections: 3. Research Idea",
     );
     expect(screen.getAllByText("Finding 1")).toHaveLength(2);
-    expect(screen.getByText("Evaluation element: Peer-exceeding quality")).toBeInTheDocument();
+    expect(screen.getByText("Peer-exceeding quality")).toBeInTheDocument();
+    expect(screen.getAllByText("Evaluation criterion: Quality")).toHaveLength(2);
     expect(screen.getByText("Reviewer focus: Provide concrete evidence.")).toBeInTheDocument();
     expect(screen.getByText("Reviewed section: 2a. Academic Profile")).toBeInTheDocument();
     expect(screen.getByText("Reviewed section: 2b. Key Outputs")).toBeInTheDocument();

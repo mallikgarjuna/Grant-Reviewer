@@ -32,16 +32,16 @@ export function ReviewCard({
             Finding {index}
           </p>
           <h3 className="text-lg font-semibold text-[var(--color-foreground)]">
-            {criterion}
+            {evaluationElementName}
           </h3>
-          {description && (
+          <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
+            Evaluation criterion: {criterion}
+          </p>
+          {description && criterion !== description && (
             <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">
               {description}
             </p>
           )}
-          <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
-            Evaluation element: {evaluationElementName}
-          </p>
           {expectationGuidanceNote ? (
             <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
               Reviewer focus: {expectationGuidanceNote}
