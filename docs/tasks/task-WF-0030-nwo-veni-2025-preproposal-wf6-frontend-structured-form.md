@@ -33,7 +33,7 @@ Verification Steps:
 - Refresh the page and verify text is restored from local storage.
 Risks: Local storage quota limits (unlikely for plain text).
 
-### [ ] Task 2A — Implement BFF API Routes
+### [x] Task 2A — Implement BFF API Routes
 
 Goal: Create Next.js API route handlers (BFF) to proxy requests to the FastAPI backend.
 Files to modify:
