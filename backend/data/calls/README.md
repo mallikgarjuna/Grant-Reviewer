@@ -19,8 +19,8 @@ Guidelines for authoring call YAML that validates/ingests correctly:
 | `stage` | `pre` or `full` | `pre` (pre-proposal), `full` (full proposal) |
 
 **Examples:**
-- `erc_cog_2026_full.yaml` - ERC Consolidator Grant 2026, full proposal
-- `nwo_vici_2026_pre.yaml` - NWO Vici 2026, pre-proposal
+- `erc_cog_2026_full_official.yaml` - ERC Consolidator Grant 2026, full proposal
+- `nwo_veni_2025_preproposal.yaml` - NWO Veni 2025, pre-proposal
 - `msca_pf_2026_full.yaml` - MSCA Postdoctoral Fellowship 2026, full
 - `nsf_career_2026_full.yaml` - NSF CAREER Award 2026, full
 
@@ -34,8 +34,8 @@ These files are for testing validation logic and are not real funding calls:
 
 ```bash
 # Validate a call definition (dry run)
-uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml --dry-run
+uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full_official.yaml --dry-run
 
 # Ingest to database
-uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml
+uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full_official.yaml
 ```
