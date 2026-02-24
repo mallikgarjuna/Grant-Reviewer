@@ -89,4 +89,55 @@ describe("ReviewDetailPage", () => {
       pageText.indexOf("Reviewed section: 2b. Key Outputs"),
     );
   });
+
+  it("renders NOT_ASSESSABLE status with reason and reviewer focus", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify({
+              review: {
+                id: "review-1",
+                status: "COMPLETED",
+                overall_rating: "GOOD",
+                overall_summary: "Structured review completed with findings.",
+              },
+              cards: [
+                {
+                  id: "card-1",
+                  node_expectation_id: "exp-1",
+                  node_logical_id: "research_idea",
+                  node_title: "Research idea",
+                  criterion: "Quality",
+                  criterion_description: "Quality criterion",
+                  evaluation_element_name: "CV-idea alignment",
+                  expectation_guidance_note: "Make alignment explicit.",
+                  rating: "GOOD",
+                  feedback_text: "Not assessable due to missing context.",
+                  assessment_status: "NOT_ASSESSABLE",
+                  not_assessable_reason: "Missing required context from: academic_profile",
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }), {
+          status: 404,
+        });
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("CV-idea alignment")).toBeInTheDocument();
+    expect(screen.getByText("Reviewer focus: Make alignment explicit.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Status: Not assessable (Missing required context from: academic_profile)",
+      ),
+    ).toBeInTheDocument();
+  });
 });

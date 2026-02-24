@@ -273,7 +273,12 @@ class ReviewRepository:
     ) -> list[
         tuple[ReviewCard, str, str | None, str, str | None, str | None, str]
     ]:
-        """Fetch review cards with criterion and expectation metadata ordered by expectation index."""
+        """Fetch review cards with criterion and expectation metadata ordered by expectation index.
+
+        Historical review rendering should remain stable even if evaluation elements/criteria
+        are archived after the review was created, so this query intentionally does not filter
+        on archived flags for those tables.
+        """
         statement = (
             select(
                 ReviewCard,
@@ -295,8 +300,6 @@ class ReviewRepository:
                 EvaluationElement.evaluation_criterion_id == EvaluationCriterion.id,
             )
             .where(ReviewCard.review_id == review_id)
-            .where(EvaluationElement.archived_at.is_(None))
-            .where(EvaluationCriterion.archived_at.is_(None))
             .order_by(ProposalNode.order_index, NodeExpectation.order_index, ReviewCard.id)
         )
         return list(self.session.exec(statement).all())
