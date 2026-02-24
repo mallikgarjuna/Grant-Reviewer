@@ -245,6 +245,11 @@ export function VeniSubmitForm() {
       return;
     }
 
+    if (buildNonEmptyDraftNodes(draft).length === 0) {
+      setFormError("You must fill out at least one section before submitting.");
+      return;
+    }
+
     const response = await fetch("/api/bff/check-compliance", {
       method: "POST",
       headers: {

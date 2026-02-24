@@ -1,3 +1,4 @@
+import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -149,6 +150,9 @@ describe("VeniSubmitForm orchestration", () => {
 
     render(<VeniSubmitForm />);
 
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "profile text" },
+    });
     const submit = await screen.findByRole("button", { name: "Submit" });
     fireEvent.click(submit);
 
@@ -211,6 +215,9 @@ describe("VeniSubmitForm orchestration", () => {
 
     render(<VeniSubmitForm />);
 
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "profile text" },
+    });
     const submit = await screen.findByRole("button", { name: "Submit" });
     fireEvent.click(submit);
 
@@ -485,5 +492,41 @@ describe("VeniSubmitForm orchestration", () => {
     await waitFor(() => {
       expect(push).toHaveBeenCalledWith("/app/reviews/review-1001?submitted_nodes=research_idea");
     });
+  });
+
+  it("empty submission is blocked before compliance check", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/bff/calls")) {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "veni-call-id",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }), {
+        status: 404,
+      });
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+    render(<VeniSubmitForm />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Submit" }));
+    expect(
+      await screen.findByText("You must fill out at least one section before submitting."),
+    ).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/check-compliance")),
+    ).toBe(false);
   });
 });

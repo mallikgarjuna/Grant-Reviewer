@@ -4,16 +4,64 @@ import { describe, expect, it, vi } from "vitest";
 
 import ReviewDetailPage from "./page";
 
+let submittedNodesParam = "academic_profile,key_outputs";
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
   useParams: () => ({ reviewId: "review-1" }),
   useSearchParams: () => ({
-    get: (key: string) => (key === "submitted_nodes" ? "academic_profile,key_outputs" : null),
+    get: (key: string) => (key === "submitted_nodes" ? submittedNodesParam : null),
   }),
 }));
 
 describe("ReviewDetailPage", () => {
+  it("hides coverage summary when submitted_nodes query is missing", async () => {
+    submittedNodesParam = "";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify({
+              review: {
+                id: "review-1",
+                status: "COMPLETED",
+                overall_rating: "GOOD",
+                overall_summary: "Structured review completed with findings.",
+              },
+              cards: [
+                {
+                  id: "card-1",
+                  node_expectation_id: "exp-1",
+                  node_logical_id: "academic_profile",
+                  node_title: "Academic profile",
+                  criterion: "Quality",
+                  criterion_description: "Quality criterion",
+                  evaluation_element_name: "Peer-exceeding quality",
+                  expectation_guidance_note: "Provide concrete evidence.",
+                  rating: "GOOD",
+                  feedback_text: "Feedback text",
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }), {
+          status: 404,
+        });
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Reviewed section: 2a. Academic Profile")).toBeInTheDocument();
+    expect(screen.queryByText("Coverage summary")).not.toBeInTheDocument();
+  });
+
   it("shows coverage summary for reviewed and not reviewed sections", async () => {
+    submittedNodesParam = "academic_profile,key_outputs";
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL) => {
@@ -91,6 +139,7 @@ describe("ReviewDetailPage", () => {
   });
 
   it("renders NOT_ASSESSABLE status with reason and reviewer focus", async () => {
+    submittedNodesParam = "academic_profile,key_outputs";
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL) => {

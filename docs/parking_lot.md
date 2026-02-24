@@ -91,6 +91,7 @@ When you pick an item to start work:
 | 15 | Universal Form: Dynamic UI renderer | product | The frontend submission form is currently hardcoded for NWO Veni. Build a dynamic UI renderer that consumes flattened backend schemas to support diverse program intakes without new frontend code. (Ref: WF-0030 PRD v0.4 deferral) | 2026-02-22 |
 | 16 | Universal Form: Node Metadata DTO Route (`/calls/{id}/form-schema`) | tech-debt | To support the Dynamic UI Renderer (P2 #15), the backend must supply `node_logical_id`, UI labels, and constraints (not just the raw `nodes` JSON). (Ref: WF-0030 PRD v0.4 deferral) | 2026-02-22 |
 | 17 | Universal Form: Recursive UI components for nested schemas | product | Some funding calls (e.g., ERC) contain nested `ProposalNode` structures. To support complex calls, the dynamic frontend requires recursive component rendering and the backend must serve deep structures. (Ref: WF-0030 S13 Q7 / Codex Audit) | 2026-02-22 |
+| 18 | Review detail page: remove hardcoded Veni node mapping | tech-debt | `/app/reviews/[reviewId]` currently uses hardcoded Veni labels/order. Refactor to call-aware node metadata so section headings/grouping remain correct for future funding calls. | 2026-02-23 |
 
 ---
 
@@ -124,3 +125,4 @@ When you pick an item to start work:
 - **v0.6** (2026-02-22): Promoted WF-6 (frontend structured form) to `WF-0030`, moved it to Promoted Items, and renumbered remaining P1 items.
 - **v0.7** (2026-02-22): Promoted P2 #14 (Dynamic frontend forms) into scope for WF-0030 based on Senior Architectural mandate. Renumbered P2.
 - **v0.8** (2026-02-22): Added P2 #15 (Recursive UI components) from WF-0030 post-Codex adversarial review.
+- **v0.9** (2026-02-23): Added P2 #18 to track review-detail node label/order refactor beyond hardcoded Veni mappings.

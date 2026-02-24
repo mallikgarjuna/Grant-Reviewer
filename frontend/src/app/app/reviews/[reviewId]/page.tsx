@@ -21,6 +21,7 @@ const VENI_NODE_LABELS: Record<string, string> = {
   key_outputs: "2b. Key Outputs",
   research_idea: "3. Research Idea",
 };
+// TODO(WF-followup): Replace this hardcoded Veni mapping with call-aware metadata for multi-call support.
 const VENI_NODE_ORDER = ["academic_profile", "key_outputs", "research_idea"] as const;
 
 type ApiErrorEnvelope = {
