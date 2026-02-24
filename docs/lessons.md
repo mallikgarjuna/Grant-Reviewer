@@ -146,3 +146,14 @@
 **Issue**: Brainstorming artifacts contained only summaries of decisions, making it harder to understand the reasoning.
 **Fix**: Append the explicit Q&A block for each section directly into the brainstorm artifact `docs/brainstorms/brainstorm-WF-...`.
 **Prevention**: Always include the Q&A text alongside the section summary when updating brainstorm artifacts during Phase 0.1.
+- Make sure to explicitly document user rationale and constraints within the brainstorm Q&A blocks when they select a non-recommended option or add custom context. [2026-02-22]
+- **Target User Assumption Correction**: The application is strictly a review tool, not an AI co-writer. Avoid assumptions that the tool exists to rewrite or shrink proposals for the user; its sole purpose is to evaluate against funding criteria. [2026-02-22]
+- **Tech Stack Assumption Correction**: The frontend is a Next.js SPA, not a Jinja2 template application. Always verify the `frontend` directory structure before assuming the rendering technology. [2026-02-22]
+- **Senior Engineering Stance on UX / Form Design**: Always challenge legacy UX constraints if they restrict the product vision. Replacing a generic single-textarea form with a dynamically constructed multi-node form based on the selected Funding Call is the correct, scalable architectural choice. Do not default to "easy" or "safe" routes if they create UX debt. [2026-02-22]
+- **Complete Artifact Brainstorming**: Always record the full list of options (A/B/C) alongside the recommended and selected rationales for every question in the brainstorm artifact. Summaries lose the context of the roads not taken. [2026-02-22]
+- **Next Actions at Phase Completion**: At the end of every workflow chunk execution (e.g., finishing Phase 0.1), always explicitly suggest the next 2 actions with copy-pasteable prompt blocks as defined in the phase runner documentation. [2026-02-22]
+
+### L31: Never Run DB-backed Tests Against Dev DB
+**Issue**: Running backend API tests against the same Postgres DB used for local app QA replaced call expectations with seeded test fixtures, which made UI behavior look inconsistent (for example, `academic_profile` unexpectedly showing one finding instead of five).
+**Fix**: Enforce test DB isolation with a pytest safety guard (`backend/tests/conftest.py`) that fails if `DATABASE_URL` does not include `test`, and run test DB on a dedicated compose stack (`backend/docker-compose.test.yml`).
+**Prevention**: Use `backend/scripts/reset_test_db.sh` before backend tests and `backend/scripts/reset_dev_db.sh` before manual local app QA. Treat this as mandatory for all future funding-call workflows.

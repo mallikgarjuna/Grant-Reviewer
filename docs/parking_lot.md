@@ -65,9 +65,8 @@ When you pick an item to start work:
 | 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
 | 3 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
 | 4 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
-| 5 | NWO Veni 2025 preproposal — WF-6: Build frontend structured form + compliance UI + idempotent drafts | product | Replace single snippet textarea with 3-node structured input for this call; render compliance separately. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 6 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 7 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 5 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 6 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 
 ---
 
@@ -88,6 +87,11 @@ When you pick an item to start work:
 | 11 | Structured review: `StructuredSubmission` aggregate table | tech-debt | Replace JSONB `structured_payload` on Review with a proper normalized aggregate table linking multiple `ProposalSnippet` rows to one Review. Enables per-node audit history and replay. (Ref: WF-0029 brainstorm §9.1 option A, deferred in PRD v0.3) | 2026-02-22 |
 | 12 | Structured review: `requires_context_from` dependency engine | product | Add `requires_context_from: list[str]` field to YAML `node_expectations` + V2 schema + `NodeExpectation` model + ingestion pipeline. Replaces hardcoded NWO Veni rules with generalized cross-node context resolution. (Ref: WF-0029 brainstorm §9.4, deferred in PRD v0.3) | 2026-02-22 |
 | 13 | Structured review: per-node grouped detail endpoint | product | New `/reviews/{id}/structured` endpoint returning `nodes[].cards[]` grouped response. Current MVP uses flat `cards[]` from existing detail endpoint. (Ref: WF-0029 PRD v0.3 deferral) | 2026-02-22 |
+| 14 | Assisted extraction via document upload (.docx / .pdf) | product | Use a service like MarkItDown or an MCP tool to parse uploaded documents and auto-populate the structured UI inputs (reducing copy-paste friction with tables/images). (Ref: WF-0030 S1 Q2) | 2026-02-22 |
+| 15 | Universal Form: Dynamic UI renderer | product | The frontend submission form is currently hardcoded for NWO Veni. Build a dynamic UI renderer that consumes flattened backend schemas to support diverse program intakes without new frontend code. (Ref: WF-0030 PRD v0.4 deferral) | 2026-02-22 |
+| 16 | Universal Form: Node Metadata DTO Route (`/calls/{id}/form-schema`) | tech-debt | To support the Dynamic UI Renderer (P2 #15), the backend must supply `node_logical_id`, UI labels, and constraints (not just the raw `nodes` JSON). (Ref: WF-0030 PRD v0.4 deferral) | 2026-02-22 |
+| 17 | Universal Form: Recursive UI components for nested schemas | product | Some funding calls (e.g., ERC) contain nested `ProposalNode` structures. To support complex calls, the dynamic frontend requires recursive component rendering and the backend must serve deep structures. (Ref: WF-0030 S13 Q7 / Codex Audit) | 2026-02-22 |
+| 18 | Review detail page: remove hardcoded Veni node mapping | tech-debt | `/app/reviews/[reviewId]` currently uses hardcoded Veni labels/order. Refactor to call-aware node metadata so section headings/grouping remain correct for future funding calls. | 2026-02-23 |
 
 ---
 
@@ -107,6 +111,7 @@ When you pick an item to start work:
 | 10 | P1 | NWO Veni 2025 preproposal — WF-3: Add `structured-config` endpoint + frontend mode gating | [WF-0027](tasks/task-WF-0027-nwo-veni-2025-preproposal-wf3.md) | 2026-02-21 |
 | 11 | P1 | NWO Veni 2025 preproposal — WF-4: Implement compliance engine + persist findings | [WF-0028](tasks/task-WF-0028-compliance-engine.md) | 2026-02-22 |
 | 12 | P1 | NWO Veni 2025 preproposal — WF-5: Add structured reviews API + NOT_ASSESSABLE alignment | [WF-0029](tasks/task-WF-0029-nwo-veni-2025-preproposal-wf5-structured-review.md) | 2026-02-22 |
+| 13 | P1 | NWO Veni 2025 preproposal — WF-6: Build frontend structured form + compliance UI + idempotent drafts | [WF-0030](tasks/task-WF-0030-nwo-veni-2025-preproposal-wf6-frontend-structured-form.md) | 2026-02-22 |
 
 ---
 
@@ -117,3 +122,7 @@ When you pick an item to start work:
 - **v0.3** (2026-02-22): Promoted WF-4 (compliance engine) to `WF-0028`, moved it to Promoted Items, and renumbered remaining P1 items.
 - **v0.4** (2026-02-22): Promoted WF-5 (structured reviews API) to `WF-0029`, moved it to Promoted Items, and renumbered remaining P1 items.
 - **v0.5** (2026-02-22): Added P2 #5 (mega-prompt), P2 #6 (overall summary), P2 #7 (prompt revision for V2) from WF-0029 brainstorm.
+- **v0.6** (2026-02-22): Promoted WF-6 (frontend structured form) to `WF-0030`, moved it to Promoted Items, and renumbered remaining P1 items.
+- **v0.7** (2026-02-22): Promoted P2 #14 (Dynamic frontend forms) into scope for WF-0030 based on Senior Architectural mandate. Renumbered P2.
+- **v0.8** (2026-02-22): Added P2 #15 (Recursive UI components) from WF-0030 post-Codex adversarial review.
+- **v0.9** (2026-02-23): Added P2 #18 to track review-detail node label/order refactor beyond hardcoded Veni mappings.

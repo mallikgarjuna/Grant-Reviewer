@@ -891,8 +891,12 @@ def get_review(
             ReviewCardSummary(
                 id=card.id,
                 node_expectation_id=card.node_expectation_id,
+                node_logical_id=node_logical_id,
+                node_title=node_title,
                 criterion=criterion_name,
                 criterion_description=criterion_desc,
+                evaluation_element_name=element_name,
+                expectation_guidance_note=guidance_note,
                 rating=card.rating,
                 feedback_text=card.feedback_text,
                 assessment_status=(
@@ -904,7 +908,15 @@ def get_review(
                     else None
                 ),
             )
-            for card, criterion_name, criterion_desc in cards_with_criteria
+            for (
+                card,
+                criterion_name,
+                criterion_desc,
+                element_name,
+                guidance_note,
+                node_logical_id,
+                node_title,
+            ) in cards_with_criteria
         ],
     )
 

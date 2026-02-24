@@ -6,6 +6,7 @@ import json
 import re
 import time
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi.testclient import TestClient
@@ -732,6 +733,10 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
         detail_payload["cards"][0]["criterion_description"]
         == "Scientific excellence of the proposal section."
     )
+    assert detail_payload["cards"][0]["node_logical_id"] is None
+    assert detail_payload["cards"][0]["node_title"] == "Section 1"
+    assert detail_payload["cards"][0]["evaluation_element_name"] == "Clarity of Objectives"
+    assert detail_payload["cards"][0]["expectation_guidance_note"] == "Check clarity"
     assert detail_payload["cards"][0]["rating"] == "NOTE"
     assert detail_payload["cards"][0]["assessment_status"] is None
     assert detail_payload["cards"][0]["not_assessable_reason"] is None
@@ -948,6 +953,10 @@ def test_structured_review_e2e_happy_path_three_nodes(monkeypatch) -> None:
     assert detail.status_code == 200
     cards = detail.json()["cards"]
     assert len(cards) == 5
+    ordered_nodes = [card["node_logical_id"] for card in cards]
+    assert ordered_nodes[0] == "academic_profile"
+    assert ordered_nodes[1] == "key_outputs"
+    assert ordered_nodes[2:] == ["research_idea", "research_idea", "research_idea"]
     assert all(card["assessment_status"] == "ASSESSED" for card in cards)
     assert all(card["not_assessable_reason"] is None for card in cards)
 
@@ -976,11 +985,127 @@ def test_structured_review_e2e_partial_submission_marks_alignment_not_assessable
     not_assessable_cards = [
         card for card in cards if card["assessment_status"] == "NOT_ASSESSABLE"
     ]
+    assert all(isinstance(card["node_title"], str) and card["node_title"] for card in cards)
     assert len(not_assessable_cards) == 2
     assert all(
         "academic_profile" in (card["not_assessable_reason"] or "")
         for card in not_assessable_cards
     )
+
+
+def test_structured_review_single_node_submission_academic_profile(monkeypatch) -> None:
+    client, call_id = create_client_with_structured_alignment_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "Academic profile text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "COMPLETED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    assert len(cards) == 1
+    assert cards[0]["node_logical_id"] == "academic_profile"
+    assert cards[0]["assessment_status"] == "ASSESSED"
+    assert cards[0]["not_assessable_reason"] is None
+
+
+def test_structured_review_single_node_submission_key_outputs(monkeypatch) -> None:
+    client, call_id = create_client_with_structured_alignment_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "nodes": [
+                {"node_logical_id": "key_outputs", "text": "Key outputs text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "COMPLETED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    assert len(cards) == 1
+    assert cards[0]["node_logical_id"] == "key_outputs"
+    assert cards[0]["assessment_status"] == "ASSESSED"
+    assert cards[0]["not_assessable_reason"] is None
+
+
+def test_structured_review_single_node_submission_research_idea(monkeypatch) -> None:
+    client, call_id = create_client_with_structured_alignment_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "nodes": [
+                {"node_logical_id": "research_idea", "text": "Research idea text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "COMPLETED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    assert len(cards) == 3
+    not_assessable_cards = [
+        card for card in cards if card["assessment_status"] == "NOT_ASSESSABLE"
+    ]
+    assessed_cards = [card for card in cards if card["assessment_status"] == "ASSESSED"]
+    assert len(not_assessable_cards) == 2
+    assert len(assessed_cards) == 1
+    assert all(
+        "academic_profile" in (card["not_assessable_reason"] or "")
+        or "key_outputs" in (card["not_assessable_reason"] or "")
+        for card in not_assessable_cards
+    )
+
+
+def test_review_detail_retains_cards_when_evaluation_element_is_archived(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Archival stability test.",
+        },
+    )
+    assert response.status_code == 200
+    review_id = response.json()["review_id"]
+
+    session = get_session()
+    try:
+        expectation = session.exec(
+            select(NodeExpectation).where(
+                NodeExpectation.proposal_node_id == seeded_ids.section_with_expectations_id
+            )
+        ).first()
+        assert expectation is not None
+        element = session.get(EvaluationElement, expectation.evaluation_element_id)
+        assert element is not None
+        element.archived_at = datetime.now(UTC)
+        session.add(element)
+        session.commit()
+    finally:
+        session.close()
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert len(detail_payload["cards"]) == 1
+    assert detail_payload["cards"][0]["evaluation_element_name"] == "Clarity of Objectives"
 
 
 def test_failed_structured_review_detail_returns_partial_cards(monkeypatch) -> None:

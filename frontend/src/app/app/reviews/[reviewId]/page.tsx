@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -16,6 +16,13 @@ import { ReviewSummary } from "@/components/review/ReviewSummary";
 
 const POLL_INTERVAL_MS = 3_000;
 const POLL_MAX_DURATION_MS = 90_000;
+const VENI_NODE_LABELS: Record<string, string> = {
+  academic_profile: "2a. Academic Profile",
+  key_outputs: "2b. Key Outputs",
+  research_idea: "3. Research Idea",
+};
+// TODO(WF-followup): Replace this hardcoded Veni mapping with call-aware metadata for multi-call support.
+const VENI_NODE_ORDER = ["academic_profile", "key_outputs", "research_idea"] as const;
 
 type ApiErrorEnvelope = {
   error?: {
@@ -121,6 +128,7 @@ function buildSignInRedirectHref(path: string): string {
 
 export default function ReviewDetailPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const params = useParams<{ reviewId: string }>();
   const reviewId = params.reviewId;
 
@@ -446,6 +454,42 @@ export default function ReviewDetailPage() {
   const isFailed = reviewDetail.review.status === "FAILED";
   const isPending = isPendingReview(reviewDetail.review.status);
   const hasOverallSummary = Boolean(reviewDetail.review.overall_summary?.trim());
+  const submittedNodesParam = searchParams.get("submitted_nodes") ?? "";
+  const submittedNodes = submittedNodesParam
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+  const reviewedNodeLabels = submittedNodes.map((nodeId) => VENI_NODE_LABELS[nodeId]).filter(Boolean);
+  const notReviewedNodeIds = VENI_NODE_ORDER.filter((nodeId) => !submittedNodes.includes(nodeId));
+  const notReviewedNodeLabels = notReviewedNodeIds.map((nodeId) => VENI_NODE_LABELS[nodeId]);
+  const cardsByNodeMap = reviewDetail.cards.reduce<
+    Map<string, { key: string; title: string; cards: ReviewDetailResponse["cards"] }>
+  >((groups, card) => {
+    const key = card.node_logical_id ?? `node:${card.node_title}`;
+    const existingGroup = groups.get(key);
+    if (existingGroup) {
+      existingGroup.cards.push(card);
+      return groups;
+    }
+
+    groups.set(key, {
+      key,
+      title: VENI_NODE_LABELS[card.node_logical_id ?? ""] ?? card.node_title,
+      cards: [card],
+    });
+    return groups;
+  }, new Map());
+  const orderedCardGroups = [
+    ...VENI_NODE_ORDER.flatMap((nodeId) => {
+      const group = cardsByNodeMap.get(nodeId);
+      if (!group) {
+        return [];
+      }
+      cardsByNodeMap.delete(nodeId);
+      return [group];
+    }),
+    ...Array.from(cardsByNodeMap.values()),
+  ];
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-12 md:px-10">
@@ -474,6 +518,18 @@ export default function ReviewDetailPage() {
                 overall_summary: reviewDetail.review.overall_summary,
               }}
             />
+          </div>
+        ) : null}
+
+        {submittedNodes.length > 0 ? (
+          <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)]">
+            <p className="font-medium">Coverage summary</p>
+            <p className="mt-1">
+              Reviewed sections: {reviewedNodeLabels.length > 0 ? reviewedNodeLabels.join(", ") : "None"}
+            </p>
+            <p className="mt-1 text-[var(--color-muted-foreground)]">
+              Not reviewed sections: {notReviewedNodeLabels.length > 0 ? notReviewedNodeLabels.join(", ") : "None"}
+            </p>
           </div>
         ) : null}
 
@@ -605,15 +661,47 @@ export default function ReviewDetailPage() {
 
       {reviewDetail.cards.length > 0 ? (
         <section className="grid gap-4">
-          {reviewDetail.cards.map((card) => (
-            <ReviewCard
-              key={card.id}
-              criterion={card.criterion}
-              description={card.criterion_description}
-              rating={card.rating}
-              feedback={card.feedback_text}
-            />
+          {orderedCardGroups.map((group) => (
+            <section
+              className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+              key={group.key}
+            >
+              <h2 className="text-base font-semibold text-[var(--color-foreground)]">
+                Reviewed section: {group.title}
+              </h2>
+              <div className="mt-3 grid gap-4">
+                {group.cards.map((card, index) => (
+                  <ReviewCard
+                    key={card.id}
+                    index={index + 1}
+                    criterion={card.criterion}
+                    description={card.criterion_description}
+                    evaluationElementName={card.evaluation_element_name}
+                    expectationGuidanceNote={card.expectation_guidance_note}
+                    rating={card.rating}
+                    feedback={card.feedback_text}
+                    assessmentStatus={card.assessment_status}
+                    notAssessableReason={card.not_assessable_reason}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
+          {submittedNodes.length > 0
+            ? notReviewedNodeIds.map((nodeId) => (
+                <section
+                  className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                  key={`not-reviewed-${nodeId}`}
+                >
+                  <h2 className="text-base font-semibold text-[var(--color-foreground)]">
+                    Not reviewed section: {VENI_NODE_LABELS[nodeId]}
+                  </h2>
+                  <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
+                    No text was submitted for this section in this review, so no evaluation cards were generated.
+                  </div>
+                </section>
+              ))
+            : null}
         </section>
       ) : (
         <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-sm text-[var(--color-muted-foreground)]">

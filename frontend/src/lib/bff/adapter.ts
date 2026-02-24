@@ -10,16 +10,19 @@ import {
 import { getBffSharedSecret, getFastApiBaseUrl } from "./server-env";
 import type {
     BffRequestContext,
+    ComplianceCheckRequest,
+    ComplianceCheckResponse,
     CallConfigResponse,
     CallsResponse,
   CreateReviewAttempt,
-  CreateReviewRequest,
-  CreateReviewResponse,
+    CreateReviewRequest,
+    CreateReviewResponse,
   DeleteReviewResponse,
-  NodesResponse,
-  Result,
-  ReviewDetailResponse,
-  ReviewsListResponse,
+    NodesResponse,
+    Result,
+    ReviewDetailResponse,
+    StructuredReviewRequest,
+    ReviewsListResponse,
 } from "./types";
 
 type BackendApiErrorShape = {
@@ -233,6 +236,34 @@ export async function createReview(
   const bodyText = JSON.stringify(normalizedPayload);
   return requestFastApi<CreateReviewResponse>({
     path: "/reviews",
+    method: "POST",
+    context,
+    bodyText,
+    idempotencyKey: attempt.idempotencyKey,
+  });
+}
+
+export async function checkCompliance(
+  context: BffRequestContext,
+  payload: ComplianceCheckRequest,
+): Promise<Result<ComplianceCheckResponse>> {
+  const bodyText = JSON.stringify(payload);
+  return requestFastApi<ComplianceCheckResponse>({
+    path: "/api/check-compliance",
+    method: "POST",
+    context,
+    bodyText,
+  });
+}
+
+export async function createStructuredReview(
+  context: BffRequestContext,
+  payload: StructuredReviewRequest,
+  attempt: Pick<CreateReviewAttempt, "idempotencyKey">,
+): Promise<Result<CreateReviewResponse>> {
+  const bodyText = JSON.stringify(payload);
+  return requestFastApi<CreateReviewResponse>({
+    path: "/api/structured-review",
     method: "POST",
     context,
     bodyText,

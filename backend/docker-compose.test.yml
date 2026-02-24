@@ -1,0 +1,21 @@
+services:
+  postgres_test:
+    image: postgres:16-alpine
+    container_name: grant-reviewer-postgres-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: grant
+      POSTGRES_PASSWORD: grant
+      POSTGRES_DB: grant_reviewer_test
+    ports:
+      - "5433:5432"
+    volumes:
+      - grant_reviewer_postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grant -d grant_reviewer_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  grant_reviewer_postgres_test_data:

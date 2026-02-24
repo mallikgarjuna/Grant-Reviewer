@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:ui": "vitest run src/app/app/page.test.tsx",
+    "test:ui": "vitest run src/app/app/page.test.tsx src/components/submit/VeniSubmitForm.test.tsx src/app/app/reviews/[reviewId]/page.test.tsx",
     "check:bff": "node scripts/bff-invariant-check.mjs",
     "check:seo": "node scripts/check-seo-guardrails.mjs"
   },

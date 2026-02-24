@@ -1,5 +1,45 @@
 # Architectural Decisions
 
+## Date: 2026-02-23 (WF-0030: Local QA/Test DB Isolation Hardening)
+
+### AD 30.1: Dedicated test database is required for DB-backed backend tests
+- **WF ID**: WF-0030
+- **Context**: Running `backend/tests/test_api.py` against the same `DATABASE_URL` used by local app QA overwrote call-definition projection data, causing false UI regressions (e.g., `academic_profile` dropping to one expectation).
+- **Decision**: Enforce a hard safety policy:
+  - DB-backed tests must run only when `DATABASE_URL` points to a test database whose name includes `test`.
+  - Add pytest guardrails in `backend/tests/conftest.py` to fail fast for unsafe DB URLs.
+  - Keep DB-less tests explicitly marked (`@pytest.mark.no_db`) to bypass DB checks safely.
+- **Why**: Prevents accidental mutation of the local QA dataset and removes a recurring source of workflow confusion.
+- **Tradeoff**: Developers must set `DATABASE_URL` explicitly for backend test runs, which adds one setup step but avoids costly debugging.
+- **Status**: Implemented.
+
+### AD 30.2: Separate Docker stacks for dev DB and test DB
+- **WF ID**: WF-0030
+- **Context**: A single Postgres stack encouraged accidental sharing between manual app testing and test fixtures.
+- **Decision**:
+  - Keep `backend/docker-compose.dev.yml` for local app development (`grant_reviewer_dev`, port `5432`).
+  - Add `backend/docker-compose.test.yml` for backend tests (`grant_reviewer_test`, port `5433`).
+- **Why**: Environment-level separation is simpler and more reliable than relying on developer memory.
+- **Tradeoff**: Slightly more local setup overhead (one extra compose file), but much safer operationally.
+- **Status**: Implemented.
+
+### AD 30.3: Standardized reset scripts for deterministic local state
+- **WF ID**: WF-0030
+- **Context**: Repeated manual reset sequences were error-prone and inconsistently applied.
+- **Decision**:
+  - Add `backend/scripts/reset_dev_db.sh` to reset dev DB + ensure active prompt template + ingest canonical Veni definition.
+  - Add `backend/scripts/reset_test_db.sh` to reset isolated test DB with safety checks.
+- **Why**: One-command recovery reduces mistakes and makes state transitions explicit before QA/test runs.
+- **Tradeoff**: Local data is intentionally wiped during reset workflows; this is acceptable for deterministic development.
+- **Status**: Implemented.
+
+### AD 30.4: Carry-forward rule for future funding call workflows
+- **WF ID**: WF-0030
+- **Context**: Additional funding calls will amplify the risk of accidental fixture contamination.
+- **Decision**: Treat DB isolation + reset scripts as mandatory preflight for every new funding-call WF before Phase 3 QA.
+- **Why**: This preserves reproducibility as multi-call complexity increases.
+- **Status**: Approved (always-on policy).
+
 ## Date: 2026-02-21 (WF-0021: NWO Veni 2025 preproposal WF-2)
 
 ### AD 21.1: 1:1 FundingCall to CallDefinition Relationship
@@ -646,3 +686,69 @@
 - **Why**: Protects MVP delivery speed by strictly aligning the PRD with database/JSON reality and stripping under-defined parsing heuristics.
 - **Tradeoff**: Word counts remain approximate (ignoring semantic rules like "exclude references"); users must manually verify exact lengths against Funder PDFs.
 - **Status**: Implemented in PRD v0.3.
+
+## Date: 2026-02-22 (WF-0030: Frontend Structured Form)
+
+### AD 30.1: Universal Form Over Hardcoded Routes
+- **WF ID**: WF-0030
+- **Context**: The frontend needs to support Veni's 3-node structure, but hardcoding `/app/submit/veni` reduces extensibility for future schemas (like ERC).
+- **Decision**: The submit route `/app/submit` dynamically fetches the call schema and renders flat `<textarea>` elements mapped to `ProposalNode`s. Non-text nodes degrade visibly to "Unsupported Input Type". Nested nodes are explicitly unsupported in MVP.
+- **Why**: Proves the value of a data-driven UI without over-engineering recursive structure rendering.
+- **Tradeoff**: Less custom UI polish per funder, but radically faster ingestion of new calls.
+- **Status**: Implemented in PRD v0.2.
+
+### AD 30.2: Purely Local Word Counting
+- **WF ID**: WF-0030
+- **Context**: Real-time compliance feedback is needed, but bouncing every keystroke to `/api/check-compliance` is wasteful.
+- **Decision**: Frontend implements a local JS equivalent of backend's `\s+` regex tokenization for zero-latency UI word counts.
+- **Why**: Fastest, cheapest UX.
+- **Tradeoff**: Requires developers to keep the JS and Python tokenization logic in perfect sync.
+- **Status**: Implemented in PRD v0.2.
+
+### AD 30.3: Client-Side Idempotency via UUID v4
+- **WF ID**: WF-0030
+- **Context**: Double-clicks during 90-second evaluations waste expensive LLM tokens.
+- **Decision**: Frontend generates a UUID v4 session identifier and passes it as `Idempotency-Key` header on submission.
+- **Why**: Explicitly maps to the backend draft deduplication contract.
+- **Tradeoff**: None. Safe and standard pattern.
+- **Status**: Implemented in PRD v0.2.
+
+### AD 30.4: Universal Form + Fail Fast on Nested Nodes
+- **WF ID**: WF-0030
+- **Context**: PRD v0.2 excluded recursive rendering but kept a dynamic universal form. Actual test fixtures (e.g. ERC) have nested structures.
+- **Decision**: Keep the universal dynamic renderer, but strictly fail-fast on any call with nested nodes, presenting a blocking error that the call is unsupported in the current MVP rather than rendering a broken form.
+- **Why**: Protects the MVP delivery timeline while still proving the dynamic concept on flat schemas (like Veni).
+- **Tradeoff**: Calls with nested structures cannot be supported until P2.
+- **Status**: Implemented in PRD v0.3.
+
+### AD 30.5: Backend Node Metadata DTO (`GET /calls/{id}/form-schema`)
+- **WF ID**: WF-0030
+- **Context**: `/calls/{call_id}/nodes` does not serve `logical_id`, labels, or constraints required to accurately render a dynamic UI form, making frontend logic impossible without hardcoding.
+- **Decision**: Add a minimal DTO route for `/calls/{call_id}/form-schema` to serve `logical_id`, labels, and constraints explicitly for form rendering.
+- **Why**: Establishes a clean API contract for dynamic UIs rather than forcing the frontend to read raw canonical JSON documents.
+- **Tradeoff**: Expands the backend scope slightly to build the new route.
+- **Status**: Implemented in PRD v0.3.
+
+### AD 30.6: Enforce Domain String on Client
+- **WF ID**: WF-0030
+- **Context**: The NWO Veni call has an ENW/Science "pilot" altering word counts.
+- **Decision**: The "ENW Toggle" directly specifies the exact backend domain string required by `/api/check-compliance`. The domain is persisted in the local draft and passed explicitly in proxy requests.
+- **Why**: Prevents split-brain validation where the client interface counts 500 words, but the backend rejects over 100.
+- **Tradeoff**: Minimal constraint mapping required in the Next.js client.
+- **Status**: Implemented in PRD v0.3.
+
+### AD 30.7: Revert Universal Form Pivot (Veni-Only Scope)
+- **WF ID**: WF-0030
+- **Context**: Second Codex adversarial review flagged the "Universal Form" + "New Node Metadata DTO" as high-risk platform work that expands the MVP scope unsafely.
+- **Decision**: Revert AD 30.1 and AD 30.5. The WF-0030 MVP will be a hardcoded 3-node Veni form. No dynamic schema fetch. No backend DTO route.
+- **Why**: Protects the delivery timeline and guarantees we ship the end-to-end V2 experience quickly. Universal rendering will be tackled in a future, dedicated workflow.
+- **Tradeoff**: Adding the next funding call (e.g., ERC) will require a new React component until the universal form is built.
+- **Status**: Implemented in PRD v0.4.
+
+### AD 30.8: Explicit 422 Hard Block for Form Submission
+- **WF ID**: WF-0030
+- **Context**: The "Submit Anyway" bypass modal is designed for 200 OK `errors[]` (compliance warnings). If the payload is completely malformed (e.g., missing mandatory nodes, unknown IDs), the backend returns a 422.
+- **Decision**: The frontend must explicitly differentiate handling: Trap 422s to hard-block submission and show the exact error message WITHOUT the bypass modal. Trap 200 `errors[]` to show the bypass modal.
+- **Why**: Avoids invalid bypass UX and confusing retry loops.
+- **Tradeoff**: None. Strict compliance with backend API design.
+- **Status**: Implemented in PRD v0.4.
