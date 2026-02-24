@@ -1,8 +1,8 @@
 # WF-0030 — NWO Veni 2025 Preproposal (WF-6 Phase) Tasks
 
 Artifact: task
-Version: v1.2
-Status: Ready for Implementation
+Version: v1.3
+Status: Implemented (Hardening Complete)
 Last Updated: 2026-02-23
 
 ## Changelog
@@ -11,6 +11,7 @@ Last Updated: 2026-02-23
 - v1.0 (2026-02-22): Applied review edits and marked Ready for Implementation
 - v1.1 (2026-02-23): Addressed Codex review: refined atomic boundaries, folded UI shell into existing page.tsx, grouped API bindings, and extracted testing orchestrations.
 - v1.2 (2026-02-23): Addressed Codex review: split BFF API routes and adapter wiring, clarified boundaries between Task 3 and 4, corrected file paths, and specified exact test scripts.
+- v1.3 (2026-02-23): Added post-implementation hardening coverage: single-node structured-review integration tests, archived evaluation-element historical-card retention test, and NOT_ASSESSABLE frontend rendering test.
 
 ## Task Breakdown (Sequential Order)
 
@@ -110,3 +111,14 @@ Verification Steps:
 - Execute `npm run test:ui` (or existing configured UI test script). All orchestrations test cases must pass.
 - Verification requires at least one automated test (not only manual mocks).
 Risks: Difficulty mocking API headers correctly in test environment.
+
+## Post-Implementation Hardening (Completed)
+
+- [x] Backend integration coverage for single-node structured submissions:
+  - `academic_profile` submission returns expected card count/content.
+  - `key_outputs` submission returns expected card count/content.
+  - `research_idea` submission returns expected assessed/not-assessable split.
+- [x] Backend historical rendering guardrail:
+  - Added test ensuring review-detail cards remain visible when `EvaluationElement` is archived after review creation.
+- [x] Frontend NOT_ASSESSABLE rendering guardrail:
+  - Added test asserting `not_assessable_reason` and `expectation_guidance_note` are shown together.
