@@ -38,7 +38,7 @@ Verification Steps:
 4. Verify CSS `:focus` or `:focus-visible` is clearly visible on each active component.
 Risks: Conflicting component-level focus styles vs global styles.
 
-### [ ] Task 2 — Implement focus trapping for validation errors
+### [x] Task 2 — Implement focus trapping for validation errors
 Goal: Programmatically shift focus to the first invalid field upon a failed form submission.
 Slice: Error Recovery
 User Stories: US2
