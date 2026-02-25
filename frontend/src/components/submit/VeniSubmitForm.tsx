@@ -99,7 +99,9 @@ function buildDraftNodes(draft: VeniDraft): StructuredReviewNodeInput[] {
   return nodes;
 }
 
-function buildNonEmptyDraftNodes(draft: VeniDraft): StructuredReviewNodeInput[] {
+function buildNonEmptyDraftNodes(
+  draft: VeniDraft,
+): StructuredReviewNodeInput[] {
   return buildDraftNodes(draft).filter((node) => node.text.trim().length > 0);
 }
 
@@ -111,7 +113,9 @@ export function VeniSubmitForm() {
   const [selectedCallId, setSelectedCallId] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [hardBlockErrors, setHardBlockErrors] = useState<string[]>([]);
-  const [complianceWarnings, setComplianceWarnings] = useState<ComplianceViolation[]>([]);
+  const [complianceWarnings, setComplianceWarnings] = useState<
+    ComplianceViolation[]
+  >([]);
   const [isBypassModalOpen, setIsBypassModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showTimeoutHint, setShowTimeoutHint] = useState(false);
@@ -136,7 +140,9 @@ export function VeniSubmitForm() {
 
         const payload = (await response.json()) as { calls?: CallSummary[] };
         const allCalls = Array.isArray(payload.calls) ? payload.calls : [];
-        const veniCalls = allCalls.filter((item) => item.code === VENI_CALL_CODE);
+        const veniCalls = allCalls.filter(
+          (item) => item.code === VENI_CALL_CODE,
+        );
 
         if (!cancelled) {
           setCalls(veniCalls);
@@ -163,10 +169,11 @@ export function VeniSubmitForm() {
 
   const storageKey = "draft_nwo_veni_2025_preproposal_v1";
 
-  const { value: draft, setValue: setDraft, clear } = useLocalStorageDraft<VeniDraft>(
-    storageKey,
-    INITIAL_DRAFT,
-  );
+  const {
+    value: draft,
+    setValue: setDraft,
+    clear,
+  } = useLocalStorageDraft<VeniDraft>(storageKey, INITIAL_DRAFT);
 
   const counters = useMemo(
     () => ({
@@ -194,17 +201,19 @@ export function VeniSubmitForm() {
     }, SUBMISSION_TIMEOUT_MS);
 
     try {
-      const submittedNodeIds = buildNonEmptyDraftNodes(draft).map((node) => node.node_logical_id);
+      const submittedNodeIds = buildNonEmptyDraftNodes(draft).map(
+        (node) => node.node_logical_id,
+      );
       const response = await fetch("/api/bff/structured-review", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Idempotency-Key": crypto.randomUUID(),
         },
-      body: JSON.stringify({
-        call_id: selectedCallId,
-        nodes: buildNonEmptyDraftNodes(draft),
-      }),
+        body: JSON.stringify({
+          call_id: selectedCallId,
+          nodes: buildNonEmptyDraftNodes(draft),
+        }),
       });
 
       if (!response.ok) {
@@ -224,8 +233,12 @@ export function VeniSubmitForm() {
       }
 
       clear();
-      const query = new URLSearchParams({ submitted_nodes: submittedNodeIds.join(",") });
-      router.push(`${buildReviewDetailRoute(payload.review_id)}?${query.toString()}`);
+      const query = new URLSearchParams({
+        submitted_nodes: submittedNodeIds.join(","),
+      });
+      router.push(
+        `${buildReviewDetailRoute(payload.review_id)}?${query.toString()}`,
+      );
     } finally {
       window.clearTimeout(timeoutHandle);
       setIsSubmitting(false);
@@ -266,7 +279,9 @@ export function VeniSubmitForm() {
       const apiError = await parseApiError(response);
       if (apiError.status === 422) {
         const detailNodeIds = Array.isArray(apiError.details.node_logical_ids)
-          ? apiError.details.node_logical_ids.filter((item) => typeof item === "string")
+          ? apiError.details.node_logical_ids.filter(
+              (item) => typeof item === "string",
+            )
           : [];
 
         const errorLines = [apiError.message, ...detailNodeIds];
@@ -304,23 +319,26 @@ export function VeniSubmitForm() {
           Run a Grant Review
         </h1>
         <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
-          Complete the NWO Veni 2025 preproposal sections for evaluation criteria-grounded
-          feedback.
+          Complete the NWO Veni 2025 preproposal sections for evaluation
+          criteria-grounded feedback.
         </p>
 
         <p className="mt-4 rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          Please paste plain text. Complex formatting such as tables and images is not supported in
-          this MVP.
+          Please paste plain text. Complex formatting such as tables and images
+          is not supported in this MVP.
         </p>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--color-foreground)]" htmlFor="call">
+            <label
+              className="text-sm font-medium text-[var(--color-foreground)]"
+              htmlFor="call"
+            >
               Funding Call
             </label>
             <select
               id="call"
-              className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+              className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:outline-none"
               disabled={isLoadingCalls || calls.length === 0 || isSubmitting}
               onChange={(event) => setSelectedCallId(event.target.value)}
               value={selectedCallId}
@@ -331,7 +349,9 @@ export function VeniSubmitForm() {
                 </option>
               ))}
             </select>
-            {callError ? <p className="text-sm text-red-600">{callError}</p> : null}
+            {callError ? (
+              <p className="text-sm text-red-600">{callError}</p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -343,9 +363,12 @@ export function VeniSubmitForm() {
             </label>
             <textarea
               id="academic-profile"
-              className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+              className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:outline-none"
               onChange={(event) =>
-                setDraft((current) => ({ ...current, academic_profile: event.target.value }))
+                setDraft((current) => ({
+                  ...current,
+                  academic_profile: event.target.value,
+                }))
               }
               value={draft.academic_profile}
             />
@@ -355,14 +378,20 @@ export function VeniSubmitForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--color-foreground)]" htmlFor="key-outputs">
+            <label
+              className="text-sm font-medium text-[var(--color-foreground)]"
+              htmlFor="key-outputs"
+            >
               Key Outputs
             </label>
             <textarea
               id="key-outputs"
-              className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+              className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:outline-none"
               onChange={(event) =>
-                setDraft((current) => ({ ...current, key_outputs: event.target.value }))
+                setDraft((current) => ({
+                  ...current,
+                  key_outputs: event.target.value,
+                }))
               }
               value={draft.key_outputs}
             />
@@ -372,13 +401,17 @@ export function VeniSubmitForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--color-foreground)]" htmlFor="science-enw">
+            <label
+              className="text-sm font-medium text-[var(--color-foreground)]"
+              htmlFor="science-enw"
+            >
               ENW/Science Pilot
             </label>
             <div className="flex items-center gap-2">
               <input
                 checked={draft.domain === "science_enw"}
                 id="science-enw"
+                className="outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-offset-2"
                 onChange={(event) =>
                   setDraft((current) => ({
                     ...current,
@@ -402,9 +435,12 @@ export function VeniSubmitForm() {
             </label>
             <textarea
               id="research-idea"
-              className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+              className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:outline-none"
               onChange={(event) =>
-                setDraft((current) => ({ ...current, research_idea: event.target.value }))
+                setDraft((current) => ({
+                  ...current,
+                  research_idea: event.target.value,
+                }))
               }
               value={draft.research_idea}
             />
@@ -415,7 +451,8 @@ export function VeniSubmitForm() {
                   : "text-[var(--color-muted-foreground)]"
               }`}
             >
-              {counters.research_idea.toLocaleString()} / {researchIdeaLimit.toLocaleString()} words
+              {counters.research_idea.toLocaleString()} /{" "}
+              {researchIdeaLimit.toLocaleString()} words
             </p>
           </div>
 
@@ -437,7 +474,7 @@ export function VeniSubmitForm() {
           ) : null}
 
           <button
-            className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white transition hover:brightness-105 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={Boolean(callError) || isLoadingCalls || isSubmitting}
             type="submit"
           >
@@ -455,7 +492,10 @@ export function VeniSubmitForm() {
         }}
         warnings={complianceWarnings}
       />
-      <BlockingOverlay isVisible={isSubmitting} showTimeoutHint={showTimeoutHint} />
+      <BlockingOverlay
+        isVisible={isSubmitting}
+        showTimeoutHint={showTimeoutHint}
+      />
     </main>
   );
 }

@@ -12,7 +12,7 @@ Last Updated: 2026-02-25
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1.1 — Add visual focus states to form UI global CSS (Tracer Bullet)
+### [x] Task 1.1 — Add visual focus states to form UI global CSS (Tracer Bullet)
 Goal: Ensure global focus-visible utilities are defined and not swallowed by existing resets.
 Slice: Keyboard Navigation
 User Stories: US1
@@ -24,7 +24,7 @@ Verification Steps:
 2. Inspect CSS output to ensure `focus-visible` rule is active.
 Risks: Overriding existing Tailwind `focus:ring` utilities.
 
-### [ ] Task 1.2 — Apply visual focus states to form components
+### [x] Task 1.2 — Apply visual focus states to form components
 Goal: Ensure all interactive elements on the `/app` submission form utilize the global focus state and logical tab order.
 Slice: Keyboard Navigation
 User Stories: US1
