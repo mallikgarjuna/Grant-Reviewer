@@ -759,3 +759,13 @@
 - Decision: Defer automated a11y testing (Playwright) and rely on manual VoiceOver/keyboard verification for MVP.
 - Why: Keeps scope tight and focused strictly on the most critical user flows (submission and reviewing results) for launch blocker resolution.
 - Tradeoff: Risk of future regressions without automated regression tests, but significantly speeds up time-to-market for the required fix.
+
+## Date: 2026-02-25 (WF-0032: ERC 2026 STG YAML & Hierarchical Ingestion)
+
+### AD 32.1: Hierarchical Modeling via `parent_logical_id` in YAML
+- **WF ID**: WF-0032
+- **Context**: The ERC 2026 StG call has deep nesting (Parts B1, B2, CV) which our current V2 schema does not map to the database `proposal_node` hierarchy.
+- **Decision**: Update `CallDefinitionV2` to support `parent_logical_id` (str) on nodes, which the ingestion script resolves to the DB's `parent_node_id` (UUID). `max_pages` will be stored in `canonical_json` as UI guidance without a DB column schema change.
+- **Why**: Keeps the ingestion payload simple and avoids Alembic migration thrash while correctly expanding the schema for hierarchical data.
+- **Tradeoff**: Ingestion script must perform topological sorting/two-pass insertion to construct the tree and defend against cycle loops.
+- **Status**: Approved in PRD v0.2.
