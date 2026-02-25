@@ -752,3 +752,10 @@
 - **Why**: Avoids invalid bypass UX and confusing retry loops.
 - **Tradeoff**: None. Strict compliance with backend API design.
 - **Status**: Implemented in PRD v0.4.
+
+- Date: 2026-02-25
+- WF ID: WF-0031
+- Context: PRD generation and risk audit for accessibility pass.
+- Decision: Defer automated a11y testing (Playwright) and rely on manual VoiceOver/keyboard verification for MVP.
+- Why: Keeps scope tight and focused strictly on the most critical user flows (submission and reviewing results) for launch blocker resolution.
+- Tradeoff: Risk of future regressions without automated regression tests, but significantly speeds up time-to-market for the required fix.

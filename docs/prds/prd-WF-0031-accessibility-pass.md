@@ -1,13 +1,14 @@
 # WF-0031 — Accessibility pass (forms + results) PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-25
 
 ## Changelog
 
 - v0.1 (2026-02-25): Initial PRD from brainstorm
+- v0.2 (2026-02-25): Applied risk audit (added missing traceability, tightened TDD/QA requirements)
 
 ## 0. User Stories (MVP)
 
@@ -77,15 +78,17 @@ Last Updated: 2026-02-25
 
 ## 7. Edge Cases
 
-- **Edge Case 1 (US2)**: If the first invalid field is inside a closed/hidden or virtually scrolled container, `.focus()` may fail or cause erratic scrolling. (Mitigation: ensure the form MVP does not hide invalid fields at submission time).
-- **Edge Case 2 (US4)**: Markdown renderer outputs arbitrary HTML that might conflict with or duplicate wrapper landmarks. (Mitigation: carefully inspect the DOM output of the markdown component to ensure the wrapper semantics remain valid).
+- **Edge Case 1 (US2)**: If the first invalid field is inside a closed/hidden or virtually scrolled container, `.focus()` may fail or cause erratic scrolling. (Mitigation: ensure the form MVP does not hide invalid fields at submission time - verify in codebase).
+- **Edge Case 2 (US4)**: Markdown renderer outputs arbitrary HTML that might conflict with or duplicate wrapper landmarks. (Mitigation: carefully inspect the DOM output of the markdown component to ensure the wrapper semantics remain valid - verify via browser dev tools).
 
 ## 8. Testing Decisions (TDD)
 
-- **Manual Verification**: Since automated a11y tooling is out of scope (OOS), developers must verify the behavior locally:
+- **Manual Verification (Mandatory)**: Since automated a11y tooling is out of scope (OOS), developers must verify the behavior locally using a screen reader (e.g., Mac VoiceOver or NVDA) and keyboard:
   - Press `Tab` repeatedly to ensure all fields are reachable and focus is visible (FR1, FR2).
   - Submit an empty form and ensure focus jumps to the first required field (FR3).
-- **Component Tests (Optional/If existing)**: If existing React testing library tests exist for the form, assert that `aria-invalid` is applied correctly. Do not write an entirely new suite if none exists, as the primary verification is manual keyboard checking.
+  - Listen to error announcements for validation failures (FR4, FR5).
+  - Navigate the results page using VoiceOver Rotor (or equivalent) to verify heading and landmark hierarchy (FR6).
+- **Component Tests (Optional/If existing)**: If existing React testing library tests exist for the form, assert that `aria-invalid` is applied correctly. Do not write an entirely new suite if none exists, as the primary verification is manual keyboard/screen reader checking.
 
 ## 9. Telemetry (Minimal)
 
@@ -103,3 +106,4 @@ Last Updated: 2026-02-25
 ## 12. Changelog
 
 - v0.1 (2026-02-25): Initial PRD from brainstorm
+- v0.2 (2026-02-25): Applied risk audit (added missing traceability, tightened TDD/QA requirements)
