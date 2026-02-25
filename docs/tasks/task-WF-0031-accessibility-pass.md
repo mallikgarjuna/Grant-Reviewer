@@ -1,29 +1,42 @@
 # WF-0031 — Accessibility pass (forms + results) Tasks
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-25
 
 ## Changelog
 
 - v0.1 (2026-02-25): Initial task breakdown from PRD
+- v0.2 (2026-02-25): Applied task review (split Task 1 for atomicity)
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Add visual focus states to form elements (Tracer Bullet)
-Goal: Ensure all interactive elements on the `/app` submission form have a visible focus state and logical tab order.
+### [ ] Task 1.1 — Add visual focus states to form UI global CSS (Tracer Bullet)
+Goal: Ensure global focus-visible utilities are defined and not swallowed by existing resets.
 Slice: Keyboard Navigation
 User Stories: US1
 PRD Requirements: FR1, FR2
-Files to modify: `frontend/src/components/ui/input.tsx`, `frontend/src/components/ui/textarea.tsx`, `frontend/src/components/ui/button.tsx` (or global CSS)
+Files to modify: `frontend/src/app/globals.css` (or equivalent global stylesheet)
+Acceptance Criteria: A clear, high-contrast `:focus-visible` ring is defined globally for interactive elements.
+Verification Steps:
+1. Run local dev server.
+2. Inspect CSS output to ensure `focus-visible` rule is active.
+Risks: Overriding existing Tailwind `focus:ring` utilities.
+
+### [ ] Task 1.2 — Apply visual focus states to form components
+Goal: Ensure all interactive elements on the `/app` submission form utilize the global focus state and logical tab order.
+Slice: Keyboard Navigation
+User Stories: US1
+PRD Requirements: FR1, FR2
+Files to modify: `frontend/src/components/ui/input.tsx`, `frontend/src/components/ui/textarea.tsx`, `frontend/src/components/ui/button.tsx`
 Acceptance Criteria: Pressing `Tab` visibly highlights every input, button, and select element in sequence on the `/app` form.
 Verification Steps:
 1. Run local dev server.
 2. Navigate to `/app` without using a mouse.
 3. Verify `Tab` moves through all fields in logical order.
-4. Verify CSS `:focus` or `:focus-visible` is clearly visible on each active element.
-Risks: Overriding existing focus utility classes (e.g., Tailwind `focus:ring` vs `focus-visible:ring`).
+4. Verify CSS `:focus` or `:focus-visible` is clearly visible on each active component.
+Risks: Conflicting component-level focus styles vs global styles.
 
 ### [ ] Task 2 — Implement focus trapping for validation errors
 Goal: Programmatically shift focus to the first invalid field upon a failed form submission.
