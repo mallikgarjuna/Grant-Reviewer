@@ -80,7 +80,7 @@ Verification Steps:
 3. (Manual) Listen with VoiceOver/NVDA to ensure the error is announced immediately without needing to move focus.
 Risks: `aria-live` region must exist in the DOM *before* the error is injected for screen readers to notice the change.
 
-### [ ] Task 5 — Add semantic landmarks to results page
+### [x] Task 5 — Add semantic landmarks to results page
 Goal: Wrap the `/app/reviews/[id]` results in proper HTML landmarks (`<main>`, `<section>`, etc.) without breaking markdown.
 Slice: Results Readability
 User Stories: US4
