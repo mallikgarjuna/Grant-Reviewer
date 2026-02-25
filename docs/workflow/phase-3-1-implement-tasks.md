@@ -79,6 +79,7 @@ For each task:
 1. Check available skills (`ls ~/.agents/skills` or `docs/reference/skills_index.md`).
    - If a relevant skill exists, **read it**.
    - If NO skill exists for a **complex** task (e.g., new DB, new API, complex refactor), **ask the user** if they want to create a skill first or proceed.
+   - Trigger: if task changes behavior or is a bug fix, follow repo-local TDD: `docs/guides/tdd/README.md` (red/green/refactor; mock only boundaries).
 2. Implement the task.
 3. Run verification steps listed under the task.
 4. Fix until verification passes.
