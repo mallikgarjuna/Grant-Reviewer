@@ -13,6 +13,7 @@
 - **SSOT tasks:** use `docs/index.md`; add tasks under `docs/tasks/`. (Trigger: any work request.)
 - **Terms:** say **evaluation criteria/elements** (not "rubric") in researcher-facing text; canonical: `backend/app/schemas/call_definitions_v2.py`. (Trigger: UI/docs/copy.)
 - **Runtime:** Python `3.12` (see `backend/.python-version`, `uv`), Node `22.17.0` (see `.nvmrc`, `npm`). (Trigger: env/tooling issues.)
+- **Code phrases:** `verify workflow` = run verification pass; `workflow preflight` = check WF closure readiness. (Trigger: user says phrase.)
 
 **Read these only if needed:**
 - WF phases/branches/artifacts -> `docs/guides/workflow-system.md`

@@ -4,6 +4,8 @@ Replace placeholders like `<WF-ID>` and `<slug>` with your current workflow valu
 
 This is a minimal "cheat sheet" of verbatim chat prompt templates for each workflow action.
 
+Note: phases are 0/1/2/3; Phase 1 + Phase 2 share one unified runner (`phase-12-run-planning.md`, Phase ID selects 1 vs 2).
+
 ---
 
 ## Lifecycle: Auto (End-to-End)
@@ -141,9 +143,26 @@ End with two suggested next actions.
 ## Quick Tips (Implicit)
 
 - Always supply proper `<WF-ID>` and `<slug>`.
-- Use branch naming: `wf/<WF-ID>-<slug>` to protect main.
+- For WF initiatives, use branch naming: `wf/<WF-ID>-<slug>` (expanded: `wf/WF-XXXX-<slug>`).
+- For non-WF maintenance, use `fix/<slug>` or `chore/<slug>` (no WF ID).
 - Artifact files should follow the `<artifact>-<WF-ID>-<slug>.md` naming rule.
 - These prompts should map directly to your workflow instructions in `docs/workflow/`.
+
+---
+
+## Maintenance — Quick Fix (Non-WF)
+
+Use for repo hygiene/docs/tooling changes that should NOT mint a WF ID and should NOT touch WF artifacts.
+
+```text
+Use @docs/workflow/util-maintenance-quick-fix.md
+
+Goal: <1 sentence>
+Scope: <2-4 bullets>
+Constraints: non-WF maintenance; do not touch docs/index.md WF rows; commit after changes.
+
+Run the maintenance quick-fix runner end-to-end.
+```
 
 ---
 
