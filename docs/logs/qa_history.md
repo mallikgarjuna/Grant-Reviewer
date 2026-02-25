@@ -204,5 +204,11 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 ### Q: Will the call YAML guidelines and ingestion scripts be expanded to handle any funding call (NWO, ERC, MSCA)?
 **A:** Yes. The current schemas and scripts are biased toward flat structures (like NWO Veni). When ingesting deep/complex calls (like ERC), the `CallDefinitionV2` python models, `ingest_call.py` script, and authoring guidelines will be expanded to support recursive/nested properties natively, making the V2 infrastructure truly universal.
 
+### Q: Are we aiming for a single YAML structure for all types of funding calls (NWO, ERC, MSCA), or separate YAML structures for different types of funding calls?
+**A:** We are explicitly aiming for a single, universal YAML structure for all calls. Building separate YAML shapes or bespoke frontend logic per funding agency is an anti-pattern we are strictly avoiding. The system must adapt dynamically based on the universal data payload.
+
+### Q: Are we expanding the V2 YAML structure to accommodate the ERC call, or creating a new version (V3)?
+**A:** We are expanding the existing `CallDefinitionV2` structure. The goal of this workflow is to stress-test the V2 schema with deep nesting (ERC) in order to flush out and safely implement the necessary recursive properties (like `parent_id` and `max_pages`) into the V2 baseline, maintaining backward compatibility with flat calls (NWO).
+
 ### Q: If a workflow is scoped to backend-only work, what does "thin vertical slices" (Phase 2.1) mean? Does it still include the frontend?
 **A:** Normally, a pure feature vertical slice is "backend + frontend together." However, if a workflow's explicit strict scope is backend-only (e.g., stress-testing data structures before UI work starts), a "vertical slice" means building the *backend stack iteratively* rather than bulk-authoring everything at once. For example: Task 1: Author Section A -> ingest to DB -> expose in API. Task 2: Author Section B with new `max_pages` constraint -> ingest to DB -> expose in API. This proves the data pipeline works piecemeal without horizontal batching.
