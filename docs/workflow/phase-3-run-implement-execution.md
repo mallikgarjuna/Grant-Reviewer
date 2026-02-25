@@ -1,7 +1,7 @@
 # Phase 3 — Implement Tasks
 
 This file is a workflow instruction.
-Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-3-run-implement-execution.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-3-run-implement-execution.md.
 Do NOT modify this file during execution.
 
 ---
@@ -25,6 +25,7 @@ To execute the granular development tasks defined in Phase 3, rigorously verify 
 5. After any code-writing step in Part A or Part B, explicitly report:
    - what could break because of the change
    - which tests were run and which additional tests are recommended to cover those breakage risks
+6. TDD is mandatory for behavior changes/bug fixes. Enforce red/green/refactor and boundary-only mocking via `docs/guides/tdd/README.md`.
 
 ---
 

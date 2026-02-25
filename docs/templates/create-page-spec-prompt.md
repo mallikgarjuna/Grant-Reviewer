@@ -66,12 +66,13 @@ It prevents premature implementation.
 
 ## Output Location
 
-The generated spec must be saved to:
+The generated spec must be appended to the active WF brainstorm:
 
-docs/pages/<page-name>-spec.md
+- `docs/brainstorms/brainstorm-WF-XXXX-<slug>.md`
 
-One page = one spec file.
-No mixing multiple pages into one spec.
+Append as a new section named: `## Appendix — Page Spec (MVP)`
+
+Trigger: use for `Type: page` workflows when UX/state/positioning is non-trivial and you want more structure before PRD.
 
 ---
 
@@ -84,7 +85,7 @@ Copy the block below into Codex chat while your brainstorm/notes file is open.
 You are acting as a senior product strategist and UX designer.
 
 I have a brainstorm or notes file open in the editor.
-Your task is to synthesize it into ONE definitive source-of-truth page specification file.
+Your task is to synthesize it into ONE definitive source-of-truth page spec appendix inside the WF brainstorm (not a new file).
 
 Instructions:
 
@@ -93,7 +94,7 @@ Instructions:
 3. Do NOT invent new features.
 4. Do NOT expand scope.
 5. Optimize for clarity, usability, and implementation-readiness.
-6. Create a new file: docs/pages/<page-name>-spec.md
+6. Append a new `## Appendix — Page Spec (MVP)` section into the brainstorm file.
 7. Keep it concise but complete.
 8. This file must be usable to generate PRD, tasks, and components later.
 

@@ -4,9 +4,13 @@ Replace placeholders like `<WF-ID>` and `<slug>` with your current workflow valu
 
 This is a minimal "cheat sheet" of verbatim chat prompt templates for each workflow action.
 
+Note: phases are 0/1/2/3; Phase 1 + Phase 2 share one unified runner (`phase-12-run-planning.md`, Phase ID selects 1 vs 2).
+
 ---
 
 ## Lifecycle: Auto (End-to-End)
+
+Warning: use only if `run-lifecycle-*.md` is kept in sync with `docs/workflow/README.md` invariants (US#/FR#/Slice, mandatory TDD). If unsure, use the phase runners below.
 
 ```text
 Use @docs/workflow/run-lifecycle-auto.md
@@ -22,6 +26,8 @@ Run the end-to-end auto lifecycle for this initiative.
 ---
 
 ## Lifecycle: Interactive (End-to-End)
+
+Warning: use only if `run-lifecycle-*.md` is kept in sync with `docs/workflow/README.md` invariants (US#/FR#/Slice, mandatory TDD). If unsure, use the phase runners below.
 
 ```text
 Use @docs/workflow/run-lifecycle-interactive.md
@@ -57,7 +63,24 @@ End with two suggested next actions.
 
 ---
 
+## Optional Add-On (Type: page) — Page Spec Appendix (Before PRD)
+
+Use when `Type: page` and the workflow needs explicit page states/wireframe before PRD. Writes into the brainstorm (no new artifact type).
+
+```text
+Use @docs/templates/create-page-spec-prompt.md (or `create-page-spec-prompt-lite.md`)
+@docs/brainstorms/brainstorm-<WF-ID>-<slug>.md
+
+Append a `## Appendix — Page Spec (MVP)` to the brainstorm for <WF-ID>/<slug>.
+Then commit and proceed to Phase 1 runner.
+```
+
+---
+
 ## Phase 1 — Definition: Brainstorm → PRD
+
+Phase 1 output requirements (enforced by runner):
+- PRD includes `User Stories (MVP)` + `Deferred Stories`, `FR#` requirement IDs linked to `US#`, `Testing Decisions (TDD)`, and US# traceability in flows/contracts.
 
 ```text
 Use @docs/workflow/phase-12-run-planning.md
@@ -73,6 +96,9 @@ End with two suggested next actions.
 ---
 
 ## Phase 2 — Planning: PRD → Tasks
+
+Phase 2 output requirements (enforced by runner):
+- Each task includes `Slice`, `User Stories (US#)`, `PRD Requirements (FR#)`, and an early tracer-bullet task; TDD is mandatory for behavior changes/bug fixes.
 
 ```text
 Use @docs/workflow/phase-12-run-planning.md
@@ -102,10 +128,7 @@ End with two suggested next actions.
 
 ---
 
-## Phase 3.1 — Implement Only (Split Agent)
-
-Use when handing the implementation inner loop to a fast-typing IDE agent (e.g., Codex, Cursor).
-See [Agent Collaboration Strategy](../reference/agent_collaboration_strategy.md) for the recommended split.
+## Phase 3.1 — Implement Only
 
 ```text
 Use @docs/workflow/phase-3-1-implement-tasks.md
@@ -120,10 +143,7 @@ When ALL tasks are done, STOP. Do NOT write the walkthrough or update docs/index
 
 ---
 
-## Phase 3.2 — Verify & Ship (Split Agent)
-
-Use when implementation was done by a different agent (e.g., Codex) and you need Antigravity to verify and ship.
-See [Agent Collaboration Strategy](../reference/agent_collaboration_strategy.md) for the recommended split.
+## Phase 3.2 — Verify & Ship
 
 ```text
 Use @docs/workflow/phase-3-2-verify-and-ship.md
@@ -141,25 +161,30 @@ End with two suggested next actions.
 ## Quick Tips (Implicit)
 
 - Always supply proper `<WF-ID>` and `<slug>`.
-- Use branch naming: `wf/<WF-ID>-<slug>` to protect main.
+- For WF initiatives, use branch naming: `wf/<WF-ID>-<slug>` (expanded: `wf/WF-XXXX-<slug>`).
+- For non-WF maintenance, use `fix/<slug>` or `chore/<slug>` (no WF ID).
 - Artifact files should follow the `<artifact>-<WF-ID>-<slug>.md` naming rule.
 - These prompts should map directly to your workflow instructions in `docs/workflow/`.
+- TDD is mandatory for behavior changes/bug fixes: see `docs/guides/tdd/README.md`.
 
 ---
 
-## Add-On: Optional Codex Review (During Part B)
+## Maintenance — Quick Fix (Non-WF)
 
-If you want an adversarial review during Phase 1 or 2 Planning gates:
+Use for repo hygiene/docs/tooling changes that should NOT mint a WF ID and should NOT touch WF artifacts.
 
-1. Stop Antigravity at the end of Part B.
-2. In VS Code (Codex), run:
 ```text
-Use @docs/workflow/phase-1-2-prd-risk-audit.md (or phase-2-2-task-review.md)
-@<draft_artifact_path>
+Use @docs/workflow/util-maintenance-quick-fix.md
 
-Run a critical risk audit on this draft in chat. Do not edit the file.
+Goal: <1 sentence>
+Scope: <2-4 bullets>
+Constraints: non-WF maintenance; do not touch docs/index.md WF rows; commit after changes.
+
+Run the maintenance quick-fix runner end-to-end.
 ```
-3. Copy the output and paste it back to Antigravity:
-```text
-Here is Codex's adversarial review. Merge this feedback into your Part B feedback, answer the questions, and proceed to Part C.
-```
+
+---
+
+## Add-On: Optional Adversarial Re-Run (Same Session)
+
+If you want an extra check during Phase 1 or 2 gates: just re-run Part B in the same session and compare findings (no edits).

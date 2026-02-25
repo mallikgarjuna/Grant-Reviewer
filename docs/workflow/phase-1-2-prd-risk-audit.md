@@ -41,7 +41,11 @@ Return:
 3. Scope creep warnings
 4. Implementation landmines
 5. Exact edits required (section + change)
-6. Next 2 actions I should take (choose one)
+6. User story coverage gaps (missing/unclear stories; stories not covered by flow/reqs)
+7. Testing gaps (missing TDD seams, boundary mocking, missing “prove it” tests)
+8. Traceability gaps (missing US# references in flows/reqs/contracts; orphan requirements)
+9. Requirement ID gaps (missing FR# IDs; duplicates; FRs not linked to US#; contracts not linked to FR#)
+10. Next 2 actions I should take (choose one)
 
 Max 120 lines.
 Be strict about MVP and fast shipping.

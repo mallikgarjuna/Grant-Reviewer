@@ -17,11 +17,22 @@ Every meaningful initiative is tracked using a Workflow ID (WF-XXXX).
 
 Runner shortcuts:
 - Phase 0: `docs/workflow/phase-0-run-start-and-brainstorm-ideation.md`
-- Phase 1/2: `docs/workflow/phase-12-run-planning.md`
+- Phase 1/2: `docs/workflow/phase-12-run-planning.md` (one unified runner; Phase ID = 1 or 2)
 - Phase 3: `docs/workflow/phase-3-run-implement-execution.md`
 
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).
+
+## What “Good” Looks Like (Quick)
+
+Trigger: read before starting a phase; ensures artifacts are implementable.
+
+- Brainstorm: tight MVP + non-goals; for `Type: page`, may include `## Appendix — Page Spec (MVP)` (optional).
+- PRD: includes **User Stories (MVP)** + **Deferred Stories**, plus a short **Testing Decisions (TDD)** section.
+- PRD: functional requirements use stable IDs (`FR1`, `FR2`, ...) and are referenced by contracts/tasks.
+- PRD: deep modules called out (small interface, lots hidden; stable seams).
+- Tasks: each task includes `Slice:` + `User Stories:` + `PRD Requirements:` mapping (or `N/A`), and there is an early tracer-bullet task.
+- Implementation: TDD is mandatory for behavior changes/bug fixes (red/green/refactor; mock boundaries only): `docs/guides/tdd/README.md`.
 
 ## Phase Gate (Always)
 
@@ -122,9 +133,19 @@ Migration note:
 ## Rule
 
 - NEVER commit directly to `main`.
-- All work must occur on a workflow branch:
-  wf/WF-XXXX-<slug>
-- `main` is updated only by merging completed workflow branches.
+- WF initiative work occurs on a WF branch: `wf/WF-XXXX-<slug>`.
+- Non-WF maintenance work occurs on a maintenance branch: `fix/<slug>` or `chore/<slug>` (no WF ID).
+- `main` is updated only by merging branches (WF or maintenance).
+
+## When To Use Maintenance Branches (Trigger)
+
+Use a maintenance branch when the change:
+
+- is repo hygiene / docs / tooling / refactor with no WF artifact chain
+- does not need a new `docs/index.md` WF row
+- should not mint a WF ID
+
+If unsure, ask: "Is this a WF initiative or a maintenance change?"
 
 ## Workflow Branch Naming
 
@@ -152,6 +173,11 @@ When Phase 3 is complete and Status = Done:
 - Merge wf/WF-XXXX-<slug> into main.
 - Optionally delete the workflow branch.
 - Do NOT squash away meaningful task commits.
+
+For maintenance branches:
+
+- Merge via PR as usual.
+- Keep commits readable; squashing OK if you prefer.
 
 ---
 
@@ -223,7 +249,7 @@ Do NOT log minor wording or cosmetic edits.
 
 # Commit Convention (Required)
 
-All commits must start with WF ID:
+WF initiative commits must start with WF ID:
 
 WF-0007: implement hero section
 WF-0007: add empty state handling
@@ -231,12 +257,22 @@ WF-0007: revise PRD risk audit
 
 This keeps implementation traceable to workflow artifacts.
 
+Maintenance commits do NOT need WF IDs (use normal prefixes, e.g. `docs:`, `chore:`, `fix:`).
+
 # Glossary / Code Phrases
 
 The following are standard operational code phrases documented in `AGENTS.md` that orchestrate workflows:
 
-- **`verify workflow`**: Complete a verification pass including: status check, git diff review, lint/build execution, and a concise pass/fail summary.
-- **`workflow preflight`**: Complete a critical review of the current WF closure state, artifact synchronization, and readiness to adopt/start the next workflow.
+- **`verify workflow`**: verification pass (status check, git diff review, lint/build execution, pass/fail summary). Trigger: user says "verify workflow".
+- **`workflow preflight`**: WF closure readiness review (artifacts synced, phase gates met, next phase ready). Trigger: user says "workflow preflight".
+
+---
+
+# Maintenance Runner (Optional)
+
+Trigger: small non-WF change; want a safe, consistent loop.
+
+Use: `docs/workflow/util-maintenance-quick-fix.md`
 
 ---
 

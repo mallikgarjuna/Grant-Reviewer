@@ -32,6 +32,13 @@ You can also add items manually. Each row should have:
 
 Say **`pick P0 #1`** (or any P[x] #[n] reference) and the agent will promote that item into a new WF.
 
+### Promotion Gate (Mandatory Before `pick`)
+
+Before promoting any item, verify against the latest rationale snapshot in this file:
+1. Confirm the item still matches current architecture and isn't superseded.
+2. Confirm dependency items are either already done or included in the same WF.
+3. Confirm launch-critical ordering is preserved unless the user explicitly overrides it.
+
 ### Promoting Items (What Happens When Picked)
 
 When you pick an item to start work:
@@ -61,12 +68,22 @@ When you pick an item to start work:
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Add node hierarchy selector | product | Group flat node `<select>` by parent sections (cascade or grouped optgroups) — current flat list is confusing for 10+ nodes. | 2026-02-16 |
-| 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
-| 3 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
-| 4 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
-| 5 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 1 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
+| 2 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
+| 3 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 4 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 5 | Add node hierarchy selector | product | Defer until universal form architecture is active; implement as part of dynamic renderer UX (depends on P2 #15/#16/#18) to avoid one-off UI debt. | 2026-02-16 |
 | 6 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+
+### P1 Rationale Snapshot (2026-02-24)
+
+- Launch risk is currently dominated by content coverage, accessibility, and legal readiness; these are ordered first.
+- Assisted extraction (paste-only) is high-value but not a launch blocker, so it follows launch-readiness essentials.
+- Node hierarchy selector is intentionally deprioritized until dynamic universal forms are implemented; doing it now would optimize a UX path the current hardcoded Veni form does not use.
+- `.docx`/`.pdf` extraction remains explicitly deferred due additional dependency/security complexity.
+
+Promotion dependency note:
+- If promoting P1 #5, first verify status of P2 #15, P2 #16, and P2 #18, or bundle required dependency work into the same WF.
 
 ---
 
@@ -126,3 +143,4 @@ When you pick an item to start work:
 - **v0.7** (2026-02-22): Promoted P2 #14 (Dynamic frontend forms) into scope for WF-0030 based on Senior Architectural mandate. Renumbered P2.
 - **v0.8** (2026-02-22): Added P2 #15 (Recursive UI components) from WF-0030 post-Codex adversarial review.
 - **v0.9** (2026-02-23): Added P2 #18 to track review-detail node label/order refactor beyond hardcoded Veni mappings.
+- **v1.0** (2026-02-24): Reordered P1 for launch-readiness sequencing, added mandatory promotion gate, and recorded dependency-aware rationale snapshot.

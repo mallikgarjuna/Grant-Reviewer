@@ -24,8 +24,8 @@ Grant Reviewer frontend (Next.js App Router). This app is the product boundary (
 
 ### Prerequisites
 
-- Node.js `22.17.0`
-- If you use `nvm`: `nvm use v22.17.0`
+- Node.js `22.17.0` (pinned in repo `.nvmrc`)
+- If you use `nvm`: `nvm use`
 - Clerk application keys
 - Backend API running (FastAPI), with matching `BFF_SHARED_SECRET`
 
@@ -33,7 +33,7 @@ Grant Reviewer frontend (Next.js App Router). This app is the product boundary (
 
 ```bash
 source ~/.nvm/nvm.sh
-nvm use v22.17.0
+nvm use
 
 npm install
 cp .env.local.example .env.local

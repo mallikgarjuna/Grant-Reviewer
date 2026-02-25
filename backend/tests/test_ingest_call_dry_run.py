@@ -25,9 +25,9 @@ def test_dry_run_supports_v1_and_v2_without_database_url(
     assert v2_result["source_path"] == "data/calls/nwo/nwo_veni_2025_preproposal.yaml"
 
     v1_result = ingest_call(
-        Path("data/calls/erc_cog_2026_full.yaml"),
+        Path("tests/fixtures/edge_case_call.yaml"),
         dry_run=True,
     )
     assert v1_result["dry_run"] is True
     assert v1_result["schema_version"] == "v1"
-    assert v1_result["source_path"] == "data/calls/erc_cog_2026_full.yaml"
+    assert v1_result["source_path"] == "tests/fixtures/edge_case_call.yaml"

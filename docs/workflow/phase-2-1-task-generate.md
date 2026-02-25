@@ -74,11 +74,21 @@ Last Updated: <today>
 
 ## Task Breakdown (Sequential Order)
 
+Task planning rules:
+
+- Prefer thin vertical slices (end-to-end tracer bullet early).
+- Keep tasks atomic (<=3 files preferred) but maintain slice coherence using `Slice:`.
+- Every behavior change/bug fix MUST be implemented with TDD (red/green/refactor).
+- Avoid horizontal slicing (do not plan "all tests first, all code later"). Prefer `RED->GREEN` per slice increment.
+
 For each task include:
 
 ### [ ] Task 1 — <short title>
 
 Goal:
+Slice: <tracer-bullet|slice-name>
+User Stories: <US1, US2> (from PRD) or `N/A`
+PRD Requirements: <FR1, FR2> (from PRD) or `N/A`
 Files to modify:
 Acceptance Criteria:
 Verification Steps:
@@ -97,6 +107,10 @@ Tasks must:
   - Each task must have concrete acceptance criteria and explicit verification steps tied only to that task.
 
 No fixed task-count cap: optimize for atomicity and clarity over brevity.
+
+Tracer bullet requirement:
+
+- Task 1 (or Task 2) should be a tracer bullet that proves the end-to-end path for at least one MVP story.
 
 ## Changelog
 

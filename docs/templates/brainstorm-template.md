@@ -82,3 +82,11 @@ What can be explicitly excluded?
 What are we NOT solving in this workflow?
 
 What future ideas should be postponed?
+
+---
+
+## Appendix — Page Spec (MVP) (Optional; Type: page)
+
+Trigger: only for `Type: page` workflows when UX/state/positioning is non-trivial.
+
+Use `docs/templates/create-page-spec-prompt.md` to generate this appendix.

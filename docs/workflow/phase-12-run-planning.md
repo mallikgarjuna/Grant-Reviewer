@@ -1,7 +1,7 @@
 # Phase 1/2 Unified Runner — Planning
 
 This file is a workflow instruction orchestrator.
-Reference it in chat (Codex, Antigravity, or any coding agent) using `@docs/workflow/phase-12-run-planning.md`.
+Reference it in chat (any coding agent) using `@docs/workflow/phase-12-run-planning.md`.
 Do NOT modify this file during execution.
 
 ---
@@ -103,7 +103,7 @@ After completing Part C, output:
 
        Run Phase X ...
        ```
-   - **Cross-Agent Collaborative Review:** Provide an explicit prompt the user can copy-paste into *another* coding agent (like Codex/Cursor) to perform an adversarial review of the newly created artifact. Detail which workflow review file to reference (e.g., "Use `@docs/workflow/phase-1-2-prd-risk-audit.md` to run a critical risk audit on the PRD" or for Tasks: `@docs/workflow/phase-2-2-task-review.md`).
+   - **Optional Adversarial Pass (Same Session, No Edits):** If the user asks for an extra check, re-run the relevant Part B review gate (PRD risk audit or tasks review) and summarize deltas; do not involve additional agents.
 3. **Traceability Statement (Required)**:
    - Part A output reviewed in Part B: `<yes/no>` + `<path/version>`
    - Part B feedback applied in Part C: `<yes/no>` + `<key edits>`

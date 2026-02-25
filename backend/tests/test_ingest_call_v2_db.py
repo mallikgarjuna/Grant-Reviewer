@@ -40,7 +40,7 @@ def test_v1_ingest_preserves_nullable_logical_ids() -> None:
     """V1 ingest should still succeed with NULL logical IDs."""
     reset_database()
 
-    result = ingest_call(Path("data/calls/erc_cog_2026_full.yaml"), dry_run=False)
+    result = ingest_call(Path("tests/fixtures/edge_case_call.yaml"), dry_run=False)
 
     assert result["schema_version"] == "v1"
     session = get_session()

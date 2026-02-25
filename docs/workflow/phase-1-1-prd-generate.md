@@ -22,6 +22,9 @@ No review in this step.
 Brainstorm must have:
 Status: Draft Complete
 
+Optional input (Type: page):
+- If the brainstorm contains `## Appendix — Page Spec (MVP)`, incorporate it into the PRD flow/states/edge cases (do not expand scope beyond it).
+
 ---
 
 ## Phase Gate — Commit Previous Phase
@@ -71,6 +74,17 @@ Version: v0.1
 Status: Draft
 Last Updated: <today>
 
+## 0. User Stories (MVP)
+
+MVP only. Keep short but complete.
+
+Format:
+- US1: As a <user>, I want <capability>, so that <outcome>.
+
+Also include:
+
+## Deferred Stories (Not in MVP)
+
 ## 1. In Scope
 
 ## 2. Out of Scope
@@ -80,7 +94,20 @@ Last Updated: <today>
 - Happy path
 - 2–3 failure paths
 
+Traceability rule:
+
+- Every flow step should reference at least one story: `(US1)` / `(US2)` etc.
+
 ## 4. Functional Requirements
+
+Traceability rule:
+
+- Every requirement must reference the story(ies) it serves: `(US1)` / `(US2)` etc.
+- Every requirement must have a stable ID: `FR1`, `FR2`, ...
+
+Format:
+
+- FR1 (US1): <requirement>
 
 ## 5. Data & API Contracts
 
@@ -88,21 +115,40 @@ Last Updated: <today>
 - validation rules
 - state transitions
 
+Traceability rule:
+
+- Contracts should reference the story(ies) that require them: `(US1)` / `(US2)` etc.
+- Contracts should reference the requirement IDs they implement when feasible: `(FR1)` / `(FR2)` etc.
+
 ## 6. Components / Modules
 
 - boundaries
 - responsibilities
-- suggested file paths
+- design tree (dependencies + ordering)
+- deep modules (small interface, lots hidden; stable public seams + responsibilities)
+- suggested file paths (coarse; avoid per-line detail)
 
 ## 7. Edge Cases
 
-## 8. Telemetry (Minimal)
+Traceability rule:
 
-## Deferred / Not in MVP
+- Edge cases should reference the impacted story/flow step when feasible: `(US1)` etc.
 
-## Open Questions (if any)
+## 8. Testing Decisions (TDD)
 
-## Changelog
+TDD is required for behavior changes/bug fixes:
+
+- test seams (public interfaces)
+- what to mock (boundaries only)
+- minimal test types per story/requirement (unit vs integration-ish)
+
+## 9. Telemetry (Minimal)
+
+## 10. Deferred / Not in MVP
+
+## 11. Open Questions (if any)
+
+## 12. Changelog
 
 - v0.1 (<today>): Initial PRD from brainstorm
 
