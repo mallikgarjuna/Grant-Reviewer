@@ -57,6 +57,7 @@ Optionally bump to v1.0 if fully locked.
 Stability checklist (must be true before Ready for Tasks):
 
 - User Stories (MVP) exist and map to flows/requirements
+- US# traceability exists in flows/reqs/contracts (no orphan requirements)
 - Design tree + deep modules are plausible (no hand-wavy “magic modules”)
 - Testing Decisions exist (TDD seams + boundary mocking rules)
 

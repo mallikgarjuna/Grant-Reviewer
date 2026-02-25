@@ -44,7 +44,8 @@ Return:
 6. Exact edits required (task number + change)
 7. Missing traceability (tasks missing Slice/User Stories; tracer bullet missing/late)
 8. Testing gaps (tasks missing TDD intent; verification steps not proving acceptance criteria)
-9. Next 2 actions I should take (choose one)
+9. PRD alignment gaps (tasks reference non-existent US#; tasks missing US# where PRD says MVP)
+10. Next 2 actions I should take (choose one)
 
 Max 100 lines.
 Be strict about MVP.

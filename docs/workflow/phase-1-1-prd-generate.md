@@ -94,13 +94,25 @@ Also include:
 - Happy path
 - 2–3 failure paths
 
+Traceability rule:
+
+- Every flow step should reference at least one story: `(US1)` / `(US2)` etc.
+
 ## 4. Functional Requirements
+
+Traceability rule:
+
+- Every requirement must reference the story(ies) it serves: `(US1)` / `(US2)` etc.
 
 ## 5. Data & API Contracts
 
 - request/response shapes
 - validation rules
 - state transitions
+
+Traceability rule:
+
+- Contracts should reference the story(ies) that require them: `(US1)` / `(US2)` etc.
 
 ## 6. Components / Modules
 
@@ -111,6 +123,10 @@ Also include:
 - suggested file paths (coarse; avoid per-line detail)
 
 ## 7. Edge Cases
+
+Traceability rule:
+
+- Edge cases should reference the impacted story/flow step when feasible: `(US1)` etc.
 
 ## 8. Testing Decisions (TDD)
 
