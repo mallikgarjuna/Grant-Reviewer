@@ -255,11 +255,17 @@ export function VeniSubmitForm() {
 
     if (!selectedCallId) {
       setFormError("Funding call is required before submission.");
+      setTimeout(() => {
+        document.getElementById("call")?.focus();
+      }, 0);
       return;
     }
 
     if (buildNonEmptyDraftNodes(draft).length === 0) {
       setFormError("You must fill out at least one section before submitting.");
+      setTimeout(() => {
+        document.getElementById("academic-profile")?.focus();
+      }, 0);
       return;
     }
 
@@ -286,6 +292,17 @@ export function VeniSubmitForm() {
 
         const errorLines = [apiError.message, ...detailNodeIds];
         setHardBlockErrors(errorLines);
+
+        // Focus the first invalid field based on node_logical_ids if available
+        if (detailNodeIds.length > 0) {
+          const firstInvalidId = (detailNodeIds[0] as string).replace(
+            /_/g,
+            "-",
+          );
+          setTimeout(() => {
+            document.getElementById(firstInvalidId)?.focus();
+          }, 0);
+        }
         return;
       }
 
