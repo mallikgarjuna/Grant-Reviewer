@@ -212,3 +212,6 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: If a workflow is scoped to backend-only work, what does "thin vertical slices" (Phase 2.1) mean? Does it still include the frontend?
 **A:** Normally, a pure feature vertical slice is "backend + frontend together." However, if a workflow's explicit strict scope is backend-only (e.g., stress-testing data structures before UI work starts), a "vertical slice" means building the *backend stack iteratively* rather than bulk-authoring everything at once. For example: Task 1: Author Section A -> ingest to DB -> expose in API. Task 2: Author Section B with new `max_pages` constraint -> ingest to DB -> expose in API. This proves the data pipeline works piecemeal without horizontal batching.
+
+### Q: Do we need to start a new chat for the next phase (e.g. moving from Phase 0 to Phase 1)?
+**A:** You are not strictly required by the workflow rules to start a new chat, but it is highly recommended as a best practice to manage AI context length window limits. Phase 0 brainstorms (with all the options, Q&As, and critical reviews) generate a lot of text. Starting a fresh chat specifically for Phase 1 (PRD Generation) keeps the context clean and focused purely on the final approved brainstorm artifact.
