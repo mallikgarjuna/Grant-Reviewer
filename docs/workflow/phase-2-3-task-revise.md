@@ -53,6 +53,13 @@ Set:
 Status: Ready for Implementation
 Optionally bump to v1.0.
 
+Stability checklist (must be true before Ready for Implementation):
+
+- Tracer bullet exists early (Task 1 or 2) and is verifiable
+- Every task has Slice + User Stories (or `N/A`)
+- Verification steps prove acceptance criteria (not just “run tests”)
+- TDD intent is clear for behavior-change tasks
+
 ---
 
 ## docs/index.md Update

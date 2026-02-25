@@ -1,7 +1,7 @@
 # Utility Runner — Context Refresh
 
 This file is a workflow instruction.
-Reference it in chat (Codex, Antigravity, or any coding agent) using `@docs/workflow/util-context-refresh.md`.
+Reference it in chat (any coding agent) using `@docs/workflow/util-context-refresh.md`.
 Do NOT modify this file during execution.
 
 ---

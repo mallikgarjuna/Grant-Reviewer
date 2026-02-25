@@ -74,6 +74,17 @@ Version: v0.1
 Status: Draft
 Last Updated: <today>
 
+## 0. User Stories (MVP)
+
+MVP only. Keep short but complete.
+
+Format:
+- US1: As a <user>, I want <capability>, so that <outcome>.
+
+Also include:
+
+## Deferred Stories (Not in MVP)
+
 ## 1. In Scope
 
 ## 2. Out of Scope
@@ -95,9 +106,19 @@ Last Updated: <today>
 
 - boundaries
 - responsibilities
-- suggested file paths
+- design tree (dependencies + ordering)
+- deep modules (stable public seams + responsibilities)
+- suggested file paths (coarse; avoid per-line detail)
 
 ## 7. Edge Cases
+
+## 8. Testing Decisions (TDD)
+
+TDD is required for behavior changes/bug fixes:
+
+- test seams (public interfaces)
+- what to mock (boundaries only)
+- minimal test types per story/requirement (unit vs integration-ish)
 
 ## 8. Telemetry (Minimal)
 

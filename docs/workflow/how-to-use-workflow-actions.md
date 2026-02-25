@@ -118,10 +118,7 @@ End with two suggested next actions.
 
 ---
 
-## Phase 3.1 — Implement Only (Split Agent)
-
-Use when handing the implementation inner loop to a fast-typing IDE agent (e.g., Codex, Cursor).
-See [Agent Collaboration Strategy](../reference/agent_collaboration_strategy.md) for the recommended split.
+## Phase 3.1 — Implement Only
 
 ```text
 Use @docs/workflow/phase-3-1-implement-tasks.md
@@ -136,10 +133,7 @@ When ALL tasks are done, STOP. Do NOT write the walkthrough or update docs/index
 
 ---
 
-## Phase 3.2 — Verify & Ship (Split Agent)
-
-Use when implementation was done by a different agent (e.g., Codex) and you need Antigravity to verify and ship.
-See [Agent Collaboration Strategy](../reference/agent_collaboration_strategy.md) for the recommended split.
+## Phase 3.2 — Verify & Ship
 
 ```text
 Use @docs/workflow/phase-3-2-verify-and-ship.md
@@ -180,19 +174,6 @@ Run the maintenance quick-fix runner end-to-end.
 
 ---
 
-## Add-On: Optional Codex Review (During Part B)
+## Add-On: Optional Adversarial Re-Run (Same Session)
 
-If you want an adversarial review during Phase 1 or 2 Planning gates:
-
-1. Stop Antigravity at the end of Part B.
-2. In VS Code (Codex), run:
-```text
-Use @docs/workflow/phase-1-2-prd-risk-audit.md (or phase-2-2-task-review.md)
-@<draft_artifact_path>
-
-Run a critical risk audit on this draft in chat. Do not edit the file.
-```
-3. Copy the output and paste it back to Antigravity:
-```text
-Here is Codex's adversarial review. Merge this feedback into your Part B feedback, answer the questions, and proceed to Part C.
-```
+If you want an extra check during Phase 1 or 2 gates: just re-run Part B in the same session and compare findings (no edits).

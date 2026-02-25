@@ -1,7 +1,7 @@
 # Phase 0 Runner — Start Workflow + Brainstorm (0.0 + 0.1)
 
 This file is a workflow instruction.
-Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-0-run-start-and-brainstorm-ideation.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-0-run-start-and-brainstorm-ideation.md.
 Do NOT modify this file during execution.
 
 ---
@@ -93,7 +93,7 @@ After completing Part B, output:
 
      Run Phase 1 ...
      ```
-- **Cross-Agent Collaborative Review:** Provide an explicit prompt the user can copy-paste into *another* coding agent (like Codex/Cursor) to critically review the newly created Brainstorm artifact. For example: "Review `@docs/brainstorms/brainstorm-WF-XXXX-...md` for completeness, risks, and edge cases before we proceed to Phase 1. Output your findings in chat."
+- **Optional Adversarial Pass (Same Session, No Edits):** Re-summarize the brainstorm and list the top 5 scope/ambiguity risks + exact edits to tighten it before Phase 1.
 
 If `Type: page` and UX/state/positioning is non-trivial, you MAY recommend this optional add-on before Phase 1:
 

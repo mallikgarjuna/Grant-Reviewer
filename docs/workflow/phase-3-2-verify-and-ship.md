@@ -1,13 +1,13 @@
 # Phase 3.2 — Verify & Ship (Post-Implementation)
 
 This file is a workflow instruction.
-Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-3-2-verify-and-ship.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-3-2-verify-and-ship.md.
 Do NOT modify this file during execution.
 
 ---
 
 ## Purpose
-To cleanly resume a workflow that has already completed Part A (Implementation) via another agent (like VSCode Codex). This runner explicitly skips task implementation and jumps straight into Verification and Walkthrough generation.
+To cleanly resume a workflow that has already completed Part A (Implementation) in a prior session. This runner explicitly skips task implementation and jumps straight into Verification and Walkthrough generation.
 
 ## Inputs Required
 1. A completed Tasks artifact representing the current WF scope (e.g., `docs/tasks/task-<WF-ID>-<slug>.md`) where ALL tasks are marked as `[x]`.
@@ -22,6 +22,7 @@ To cleanly resume a workflow that has already completed Part A (Implementation) 
 2. Note that there is no Part A (Execute) in this instruction, because the implementation is already complete.
 3. Print a short "PART B/C" header and a bullet summary of actions taken at the end of each part.
 4. If Part B identifies regressions or test failures, you must fix them before proceeding to Part C.
+5. If fixes require behavior changes, TDD is mandatory (red/green/refactor; mock boundaries only): `docs/guides/tdd/README.md`.
 
 ---
 

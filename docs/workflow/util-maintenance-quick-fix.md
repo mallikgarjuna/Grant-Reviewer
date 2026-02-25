@@ -1,7 +1,7 @@
 # Utility Runner — Maintenance Quick Fix (Non-WF)
 
 This file is a workflow instruction.
-Reference it in chat (Codex, Antigravity, or any coding agent) using `@docs/workflow/util-maintenance-quick-fix.md`.
+Reference it in chat (any coding agent) using `@docs/workflow/util-maintenance-quick-fix.md`.
 Do NOT modify this file during execution.
 
 ---

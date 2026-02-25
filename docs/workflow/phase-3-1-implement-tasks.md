@@ -1,7 +1,7 @@
 # Phase 3.1 — Implement Tasks (Sequential + Commit Per Task)
 
 This file is a workflow instruction.
-Reference it in chat (Codex or Antigravity or any coding agent) using @docs/workflow/phase-3-1-implement-tasks.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-3-1-implement-tasks.md.
 Do NOT modify this file during execution.
 
 ---
@@ -79,14 +79,15 @@ For each task:
 1. Check available skills (`ls ~/.agents/skills` or `docs/reference/skills_index.md`).
    - If a relevant skill exists, **read it**.
    - If NO skill exists for a **complex** task (e.g., new DB, new API, complex refactor), **ask the user** if they want to create a skill first or proceed.
-   - Trigger: if task changes behavior or is a bug fix, follow repo-local TDD: `docs/guides/tdd/README.md` (red/green/refactor; mock only boundaries).
+   - If task changes behavior or is a bug fix: TDD is mandatory. Follow `docs/guides/tdd/README.md` (red/green/refactor; mock boundaries only).
+   - If TDD is not feasible for a task, STOP and ask the user for an explicit exception + alternative verification evidence.
 2. Implement the task.
 3. Run verification steps listed under the task.
 4. Fix until verification passes.
 5. After coding and verification, explicitly report:
    - what could break from this task's changes
    - targeted tests to add/run for that breakage risk
-6. If the task is a bug fix, first add/update a failing test that reproduces the bug, then implement until the reproducer passes.
+6. If the task is a behavior change or a bug fix, first add/update a failing test that proves the acceptance criteria, then implement until it passes.
 7. Commit using this format:
 
    WF-XXXX: <slug> — Task <N> — <short title>

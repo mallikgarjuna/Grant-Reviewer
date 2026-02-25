@@ -42,7 +42,9 @@ Return:
 4. Over-engineering warnings
 5. Redundant or mergeable tasks
 6. Exact edits required (task number + change)
-7. Next 2 actions I should take (choose one)
+7. Missing traceability (tasks missing Slice/User Stories; tracer bullet missing/late)
+8. Testing gaps (tasks missing TDD intent; verification steps not proving acceptance criteria)
+9. Next 2 actions I should take (choose one)
 
 Max 100 lines.
 Be strict about MVP.

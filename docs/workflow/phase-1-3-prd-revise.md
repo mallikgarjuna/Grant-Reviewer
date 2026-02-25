@@ -54,6 +54,12 @@ Set:
 Status: Ready for Tasks
 Optionally bump to v1.0 if fully locked.
 
+Stability checklist (must be true before Ready for Tasks):
+
+- User Stories (MVP) exist and map to flows/requirements
+- Design tree + deep modules are plausible (no hand-wavy “magic modules”)
+- Testing Decisions exist (TDD seams + boundary mocking rules)
+
 ---
 
 ## Decision Logging
