@@ -16,15 +16,15 @@ Last Updated: 2026-02-25
 **Step 1 — Long-Form Problem Intake**
 User provided the following pain points & constraints:
 - **Concrete examples**: The ERC 2026 StG has deep nesting (Parts B1, B2, CV, Track Record), cross-part contextual logic, and word limits defined per-part/subsection (sometimes pages instead of words). Evaluation is two-step: Step 1 evaluates B1 only; Step 2 evaluates both B1 and B2.
-- **Constraints & Non-goals**: Exclude purely administrative fields, budget upload, Appendix (Current/On-going grants), Commitment Letters.
+- **Constraints & Non-goals**: Exclude non-evaluated admin uploads (like budget upload, Appendix, Commitment Letters). Include evaluated narrative admin sections (like Section C. Resources).
 - **Quirks**: B1 = Summary (2000 chars) + Part I (5 pages) + CV/Track Record (4 pages). B2 = Part II (7 pages). Admin form "Section C. Resources" (8000 chars) is evaluated during Step 2.
 
 ### Section 1 — Problem Statement
 
 **Decisions:**
-- The primary problem is breaking the backend's flat-list assumption to expose missing relational validation/storage rules.
-- We will model a single YAML containing the full structure, mapping elements unconditionally, deferring step-gating to backend execution logic.
-- We will add machine-enforceable constraints like `max_pages` or `max_chars` to `content_constraints`.
+- The primary problem is exposing missing YAML-to-DB mapping rules for hierarchical nodes. (Note: `proposal_node` table already supports hierarchy via `parent_node_id` and `order_index`; the gap is in `CallDefinitionV2` ingestion).
+- We will model a single YAML containing the full structure, mapping elements unconditionally, but encoding stage applicability metadata (e.g., `stage: Literal["STEP_1", "STEP_2", "BOTH"]`) now to avoid reverse-engineering it later, even though execution gating is deferred.
+- We will add `max_pages` to `content_constraints` as UI-only guidance for this MVP (machine enforcement is deferred).
 - The deepest nesting boundary is cross-part (B1/B2/CV/Track Record/Resources), meaning complexity is in breadth and conditional context, not just depth.
 - We will strictly follow conservative Node↔Element mapping justified by funder documentation.
 
@@ -32,24 +32,24 @@ User provided the following pain points & constraints:
 
 **Q1: What is the primary problem we are solving by ingesting the ERC 2026 StG call?**
 - A) Providing users to immediately generate ERC reviews on the frontend.
-- B) Breaking our backend's current assumption that all proposal structures are flat lists, exposing missing relational validation/storage rules.
+- B) Upgrading the V2 YAML schema and ingestion mapping to correctly populate the existing `parent_node_id` and `order_index` fields in the database.
 - C) Making sure our system knows about pages vs word counts.
-> Recommendation: B — While A and C are true, the mandate from the architectural overview specifically states that the pain of deep nodes breaking our backend is the forcing function for the upcoming recursive UI changes.
+> Recommendation: B — The DB table already supports hierarchy. The gap is the V2 schema (`CallDefinitionV2`) and the ingestion script failing to map nested YAML structures to these existing fields.
 > **Selected: B**
 
 **Q2: How should our MVP address the Two-Step Evaluation (Step 1 = B1 only; Step 2 = B1+B2+Resources)?**
-- A) Model two separate Call Definition YAMLs: one for `erc-2026-stg-step1` and one for `erc-2026-stg-step2`.
-- B) Model one YAML containing the full structure, but add metadata tags to elements noting which step they belong to.
-- C) Model one YAML containing the full structure, mapping elements unconditionally, and handle the evaluation gating logic later in backend evaluation execution workflows.
-> Recommendation: C — Keeping it contained in a single YAML without introducing bespoke evaluation lifecycle metadata allows us to focus entirely on structural/nesting complexities right now, deferring the business logic of multi-step evaluation routing until necessary.
-> **Selected: C**
+- A) Model two separate Call Definition YAMLs: one for `erc_stg_2026_step1.yaml` and one for `erc_stg_2026_step2.yaml`.
+- B) Model one YAML containing the full structure, mapping elements unconditionally, but encode stage applicability metadata (e.g., `stage: "STEP_1"`) now because evaluation staging is a first-class semantic, deferring only the execution logic.
+- C) Model one YAML containing the full structure, mapping elements unconditionally, and handle the evaluation gating logic completely later (no metadata).
+> Recommendation: B — Encoding stage metadata now avoids brittle reverse-engineering later. Execution gating can wait, but the semantic structural truth must be captured during YAML authoring.
+> **Selected: B**
 
 **Q3: How should we represent "Page Limits" vs "Word/Character Limits" in our `content_constraints` modeling?**
-- A) Convert page limits roughly to words (e.g., 5 pages = ~2000 words) using existing `max_words`.
+- A) Treat `max_pages` purely as non-enforceable UI guidance for now, explicitely prioritizing UX over backend validation blocks (since we only have pasted text).
 - B) Introduce a new machine-enforceable constraint like `max_pages` or `max_chars`.
-- C) Add it solely as a `guidance_text` warning and rely on the UI/user to enforce it for MVP, stick to existing constraints schema if strictly necessary.
-> Recommendation: B — The workflow spec says all limits must be machine-enforceable. Adding `max_pages` or `max_chars` explicitly forces the schema to evolve logically rather than hacking word counts into existence.
-> **Selected: B**
+- C) Define an explicit enforceable proxy (e.g. 1 page = 4000 chars) and accept false positives/negatives.
+> Recommendation: A — We cannot enforce `max_pages` from pasted text reliably without PDF parsing. We will treat it as non-enforceable UI guidance in this MVP and defer heuristic proxies.
+> **Selected: A**
 
 **Q4: Which piece of the proposal serves as the absolute deepest nesting boundary we must survive for this authoring?**
 - A) `Part B1` -> `Section 1a`
@@ -68,8 +68,8 @@ User provided the following pain points & constraints:
 ### Section 2 — Desired Outcome
 
 **Decisions:**
-- Success is defined purely backend and data-driven: The ingestion script must successfully parse the deep ERC 2026 StG YAML, gracefully updating the database schema if necessary, and populating the DB without errors.
-- We expect the backend data model to explicitly add official support for hierarchical `proposal_nodes` (e.g., `parent_id` foreign key) and new machine-enforceable constraints (`max_pages`).
+- Success is defined purely backend and data-driven: The ingestion script must successfully parse the deep ERC 2026 StG YAML and correctly map to the existing DB hierarchy fields.
+- We expect the backend data model to explicitly add official support for hierarchical `proposal_nodes` in the YAML via `parent_logical_id` (a string UUID/ID referencing other nodes in the YAML), which resolves to the DB's `parent_node_id` during ingestion. We add `max_pages` as UI guidance.
 - MVP is achieved when the complete ERC 2026 StG call (B1, B2, CV, up to Resources) is authored per spec, ingested successfully, and the `GET /calls/{id}/nodes` endpoint returns the tree structure correctly.
 - Pre-WF-0033 validation demands an automated backend integration test to prove the hierarchical data structural integrity in both ingestion and API retrieval.
 - Backward compatibility is strictly required: the changes must not break the existing flat NWO Veni YAML ingestion.
@@ -84,10 +84,10 @@ User provided the following pain points & constraints:
 > **Selected: B**
 
 **Q2: What behavior change do we expect from the backend's data model?**
-- A) The backend adds official support for hierarchical `proposal_nodes` (e.g., via a `parent_id` self-referential foreign key) and new `max_pages`/`max_chars` constraints.
+- A) The `CallDefinitionV2` schema is updated to support hierarchical `proposal_nodes` via a string `parent_logical_id` field (which maps to the DB's existing `parent_node_id` UUID) along with new guidance-only constraints.
 - B) The backend flattens all nested children during ingestion to keep the DB simple.
 - C) The backend ignores nested children to avoid breaking the frontend.
-> Recommendation: A — We explicitly want to break the flat-list assumption. Supporting a true recursive node hierarchy requires updating SQLModel tables properly.
+> Recommendation: A — We explicitly want to break the flat-list assumption by fixing the V2 schema and ingestion mapping.
 > **Selected: A**
 
 **Q3: What would make this “good enough” for an MVP finish?**
@@ -159,41 +159,87 @@ User provided the following pain points & constraints:
 ### Section 4 — Rough Idea Exploration
 
 **Decisions:**
-- We will support the new `max_pages` constraint by adding it to `ContentConstraintsDefinitionV2` and updating the JSONB constraints in the `proposal_node` table, keeping rules machine-enforceable.
-- The hierarchical node structure will be represented relationally using a `parent_id` self-referential foreign key in the backend `CallDefinitionV2` schema and the `proposal_node` database table.
-- We will defer the frontend/UX gating of Step 1 (B1 only) vs Step 2 (B1 + B2 + CV + Track Record + Resources) and simply map the relevant evaluation elements accurately to their respective nodes in the full YAML structure.
-- We will strictly preserve backward compatibility: the NWO Veni YAML will remain a flat list (`parent_id: None`), proving the schema supports both flat and deep topologies transparently.
-- We must implement a recursive check (e.g., in the Pydantic `model_validator` or ingest script) to explicitly reject circular references in the `parent_id` chains.
+- We will support the new `max_pages` constraint by adding it to `ContentConstraintsDefinitionV2` and storing it inside `CallDefinition.canonical_json` rather than as a normalized JSONB column on the `proposal_node` table, to avoid unnecessary DB migration thrash. It remains UI-guidance only for now.
+- The hierarchical node structure will be represented relationally in the YAML using a `parent_logical_id` string, which the ingestion script resolves and stores in the DB `proposal_node.parent_node_id` column.
+- We will add stage metadata (e.g. `stage: "STEP_2"`) to evaluation elements now to preserve the ERC's first-class evaluation semantics, even though execution gating is deferred.
+- We will strictly preserve backward compatibility: the NWO Veni YAML will remain a flat list (`parent_logical_id: None`), proving the schema supports both flat and deep topologies transparently.
+- We must implement a recursive check (e.g., in the Pydantic `model_validator` or ingest script) to explicitly reject circular references in the `parent_logical_id` chains.
 
 **Brainstorming Q&A:**
 
 **Q1: What is the simplest implementation direction to support the new `max_pages` constraint?**
-- A) Add `max_pages: int | None = None` to `ContentConstraintsDefinitionV2`, alongside a migration to add this column to the `proposal_node` table's JSONB constraints object.
-- B) Calculate `max_pages * 400` locally and just write `max_words: 2000` into the YAML, pretending page limits don't exist.
+- A) Add `max_pages: int | None = None` to `ContentConstraintsDefinitionV2`, and store it purely within `CallDefinition.canonical_json` without modifying `proposal_node` normalized columns, treating it as UI guidance.
+- B) Make a JSONB column on `proposal_node` requiring an Alembic migration for constraints.
 - C) Create a whole new `PageConstraintDefinition` schema parallel to `TotalWordLimitDefinition`.
-> Recommendation: A — Modifying the existing `ContentConstraintsDefinitionV2` is the most direct and least disruptive path that still gives us machine-enforceable rules specifically for pages.
+> Recommendation: A — Storing constraints inside the existing canonical JSON payload avoids DB migration thrash while correctly expanding the V2 schema for frontend consumption.
 > **Selected: A**
 
 **Q2: How should we represent the nested Node hierarchy in the backend's `CallDefinitionV2` python schema?**
 - A) Change `proposal_nodes: list[ProposalNodeDefinitionV2]` to a nested tree structure (e.g., `children: list[ProposalNodeDefinitionV2]`).
-- B) Keep `list[ProposalNodeDefinitionV2]` flat in the YAML and schema, but add a `parent_id: str | None = None` field to each node to establish the relationships relationally.
+- B) Keep `list[ProposalNodeDefinitionV2]` flat in the YAML and schema, but add a `parent_logical_id: str | None = None` field to each node to establish the relationships relationally inside the YAML, which then resolves to the DB's `parent_node_id`.
 - C) Create a separate grouping schema (e.g., `NodeGroupDefinition`) that points to flat nodes.
-> Recommendation: B — A self-referential `parent_id` foreign key is the standard SQL/relational way to represent hierarchies. It keeps the ingestion payload simple (a flat list of nodes where some point to others) while allowing recursive queries in the database and API.
+> Recommendation: B — A `parent_logical_id` correctly separates YAML string identifiers from DB UUIDs while keeping the ingestion payload simple.
 > **Selected: B**
 
 **Q3: How do we handle the "Step 1" vs "Step 2" evaluation logic for this MVP?**
 - A) We write a complex rule engine into the backend now.
-- B) We defer evaluating Step 1 vs Step 2 entirely. We just map elements correctly (B1 elements to B1 nodes, Step 2 extra elements to B2/B1/Resources) and assume the UI/Execution phase will handle what gets shown when.
-- C) We add a `stage: Literal["STEP_1", "STEP_2"]` to each node in the schema.
-> Recommendation: B — Following the "simplest implementation" rule, simply associating the correct elements to their respective node targets is sufficient for the data layer. (User emphasis: Step 2 evaluates BOTH B1 and B2, so correct data modeling is crucial, but UX gating happens later).
+- B) We encode the metadata in the YAML schema now (e.g. `stage: "STEP_2"`), mapping elements correctly, preventing later reverse-engineering, but we defer the execution/UX gating.
+- C) We map elements unconditionally without metadata.
+> Recommendation: B — Encode stage applicability metadata now because ERC's evaluation process is a first-class semantic, deferring only the execution logic.
 > **Selected: B**
 
-**Q4: Should we refactor the existing `nwo_veni` YAML right now to use `parent_id`?**
+**Q4: Should we refactor the existing `nwo_veni` YAML right now to use `parent_logical_id`?**
 - A) Yes, rewrite the old YAML to match the new hierarchical structure exactly so everything is identical.
-- B) No. Let `parent_id` default to `None`. The NWO YAML stays flat (as it naturally is), proving our new schema handles both topologies gracefully.
+- B) No. Let `parent_logical_id` default to `None`. The NWO YAML stays flat (as it naturally is), proving our new schema handles both topologies gracefully.
 - C) Yes, but do it in a separate workflow.
 > Recommendation: B — The whole point of backward compatibility is that a feature like nesting should be strictly opt-in based on the data.
 > **Selected: B**
+
+**Q5: What is the external dependency constraint for this workflow?**
+- A) We depend on the NWO giving us their API schema.
+- B) We depend *only* on the official ERC StG 2026 funder PDFs (Application Forms + Guide for Peer Reviewers) to define our structural and evaluation truth.
+- C) We depend on the frontend being ready.
+> Recommendation: B — Funder documentation is our single source of truth. We must not hallucinate structure or criteria.
+> **Selected: B**
+
+### Section 5 — Constraints
+
+**Decisions:**
+- We strictly limit this workflow to authoring the YAML and proving backend ingestion/API handling, deferring all UI work.
+- We will rely on SQLModel dev behavior (or local DB reset) for schema changes since Alembic is not yet wired up.
+- To protect against infinite loops, we will enforce a reasonable maximum depth (configurable per call or validated on actual ERC structure first) during ingestion validation along with strict acyclic checks on the `parent_logical_id` references.
+- We will completely ignore formatting constraints (fonts, margins) and not even codify them in guidance; we aim exclusively to enforce boundaries (words/pages/chars) to evaluate textual content and avoid cluttering the database.
+- We depend only on the official ERC StG 2026 funder PDFs (Application Forms + Guide for Peer Reviewers) to define structural and evaluation truth.
+
+**Brainstorming Q&A:**
+
+**Q1: What is our primary time/scope constraint for this workflow?**
+- A) We must build the full frontend to prove it works before closing WF-0032.
+- B) We must limit this workflow strictly to authoring the YAML and proving the backend ingestion/API can handle it, deferring all UI work.
+- C) We need to ingest this call into production immediately.
+> Recommendation: B — As established, keeping this slice thin (backend only) minimizes risk before we tackle the dynamic UI.
+> **Selected: B**
+
+**Q2: What is our primary technical constraint regarding database migrations (Alembic)?**
+- A) We must write a full Alembic migration for the new `parent_logical_id` schema mapping and `max_pages` field.
+- B) Since Parking Lot P2 #1 (Set up Alembic migration baseline) is not yet done, we are still relying on SQLModel `create_all()`. We will drop/recreate local tables or ensure the new columns are nullable/have defaults so SQLModel can handle them in development safely.
+- C) We shouldn't change the database schema at all.
+> Recommendation: B — We don't have Alembic wired up yet. Assuming we are testing locally, relying on SQLModel's dev behavior (or a local DB reset) is our current technical constraint for schema changes.
+> **Selected: B**
+
+**Q3: What constraint MUST we apply to the `parent_logical_id` relationships?**
+- A) Nodes can be nested infinitely deep.
+- B) To protect against runaway recursive queries (CTEs) or infinite loops, we must set a depth limit configurable per call (or validate on actual ERC structure first) and enforce strict acyclic checks.
+- C) Nodes can only have one level of nesting (a parent and a child).
+> Recommendation: B — Bounded recursion protects the backend from both malicious payloads and simple authoring mistakes, but it shouldn't be blindly hardcoded to 5.
+> **Selected: B**
+
+**Q4: How do we handle `content_constraints` that we *cannot* easily machine-enforce (like "font size 11pt, 1.5 spacing, 2cm margins")?**
+- A) We build a PDF parser into the backend to check margins and fonts.
+- B) We ignore them completely.
+- C) We encode them strictly as `guidance_text` on the node so the user is aware, but we do not attempt to machine-validate them in the `content_constraints` block.
+> Recommendation: C — Separation of concerns: the backend only enforces what it has the data to enforce.
+> **Selected: B** — (User override: Ignore formatting constraints entirely so as not to clutter the backend; PeerLens focuses on textual content evaluation).
 
 **Q5: What is the external dependency constraint for this workflow?**
 - A) We depend on the NWO giving us their API schema.
@@ -206,9 +252,9 @@ User provided the following pain points & constraints:
 
 **Decisions:**
 - The biggest technical risk is that the ingestion script's YAML parser (Pydantic) might throw massive, unreadable validation errors on deep nesting, making debugging painful.
-- Validating the actual `parent_id` foreign key constraint in the `proposal_node` table during SQLite/Postgres creation is the foundational risk and must be tested early.
+- Validating the ingestion script's ability to map the YAML `parent_logical_id` correctly to the DB's `parent_node_id` constraint without dropping existing data is the foundational risk and must be tested early.
 - Immediate rework could be caused if we discover an ERC evaluation criterion applies to weird slices of multiple nodes, breaking our conservative mapping strategy.
-- We will explicitly mitigate the `parent_id` circular reference risk by writing unit tests for `CallDefinitionV2` that catch loops during Pydantic validation.
+- We will explicitly mitigate the `parent_logical_id` circular reference risk by writing unit tests for `CallDefinitionV2` that catch loops during Pydantic validation.
 - We cannot physically enforce `max_pages` limits via text extraction alone. We will treat `max_pages` purely as a schema field intended for UI guidance, and explicitly defer "rough heuristic conversion to machine-enforceable character limits" to a future task/parking lot item.
 
 **Brainstorming Q&A:**
@@ -222,19 +268,19 @@ User provided the following pain points & constraints:
 
 **Q2: What must be validated earliest in the implementation phase?**
 - A) That the backend API (`GET /calls/{id}/nodes`) returns the data fast enough.
-- B) The actual `parent_id` foreign key constraint in the `proposal_node` table, ensuring SQLModel creates it correctly without dropping existing data.
+- B) The ingestion script's logic for mapping the YAML's `parent_logical_id` string to the correct `parent_node_id` UUID in the `proposal_node` table, ensuring proper tree reconstruction.
 - C) That the LLM prompt still works.
-> Recommendation: B — The database migration/schema update is the foundational risk. If the table doesn't build correctly, nothing else matters.
+> Recommendation: B — The YAML-to-DB mapping is the foundational risk. If the tree doesn't build correctly, nothing else matters.
 > **Selected: B**
 
 **Q3: What could cause immediate rework?**
-- A) The frontend team deciding they don't like `parent_id` and want a nested JSON array instead.
+- A) The frontend team deciding they don't like `parent_node_id` and want a nested JSON array instead.
 - B) Discovering that an ERC evaluation criterion applies to *half* of a node, rather than the whole node, forcing us to break the nodes down further than the PDF defines.
 - C) Finding out another funding agency uses a completely different way of nesting.
 > Recommendation: B — The "conservative Node↔Element mapping" principle is strict. If the ERC rubric assesses "impact" across a weird slice of B1 and B2, we might have to redesign where the nodes break.
 > **Selected: B**
 
-**Q4: How do we mitigate the risk of the `parent_id` circular reference loop?**
+**Q4: How do we mitigate the risk of the `parent_logical_id` circular reference loop?**
 - A) Wait for it to crash in production and fix the data.
 - B) Write a unit test for `CallDefinitionV2` that explicitly passes a circular YAML and expects a `ValueError`.
 - C) Rely on Postgres foreign key constraints.
@@ -245,21 +291,21 @@ User provided the following pain points & constraints:
 - A) Yes, `max_pages` is inherently subjective (font size, margins) whereas characters are absolute, meaning our backend validation of `max_pages` is physically impossible until we parse the PDF.
 - B) No, pages are easy to count.
 - C) We should enforce `max_chars` instead.
-> Recommendation: A — This is a critical unknown. If we only have raw text pasted from a UI (which is how the MVP works), we *cannot* count pages. We can only store the constraint for the UI to display as guidance, or we must introduce a rough conversion heuristic (e.g., 1 page = 4000 chars) for the backend to enforce.
-> **Selected: A and B** — Defer the "rough heuristic text conversion" to a Parked/Deferred item. `max_pages` remains purely a schema transfer artifact for frontend UI display.
+> Recommendation: A — This is a critical unknown. If we only have raw text pasted from a UI (which is how the MVP works), we *cannot* count pages. We can only store the constraint for the UI to display as guidance.
+> **Selected: A** — Defer the "rough heuristic text conversion" to a Parked/Deferred item. `max_pages` remains purely a schema transfer artifact for frontend UI display.
 
 ### Section 7 & 8 — MVP Definition and Non-Goals
 
 **Decisions:**
-- MVP requires a newly authored `erc_stg_2026_full.yaml` with the exact ERC B1/B2/Resources structure, correctly mapped criteria, successful ingestion, and automated API tests proving querying capability.
+- MVP requires a newly authored `erc_stg_2026_step1.yaml` with the exact ERC B1/B2/Resources structure, correctly mapped criteria, successful ingestion, and automated API tests proving querying capability.
 - Existing features, explicitly the dynamic frontend rendering and the backend multi-step evaluation engine mapping, will be untouched.
 - We will definitely NOT include PDF parsing or specialized Step 1 vs Step 2 data endpoints.
 
 **Brainstorming Q&A:**
 
 **Q1: If we had to finish this workflow today, what absolute minimum must exist?**
-- A) The `CallDefinitionV2` Pydantic models must have `parent_id` and `max_pages`, the database table must be updated, and `erc_cog_2026_full_official.yaml` must ingest without crashing.
-- B) A newly authored `erc_stg_2026_full.yaml` with the exact ERC B1/B2/Resources structure and its criteria mapped, successfully ingested, with automated tests proving it can be queried via API.
+- A) The `CallDefinitionV2` Pydantic models must have `parent_logical_id` and `max_pages`, the mapping logic updated, and `erc_cog_2026_full_official.yaml` must ingest without crashing.
+- B) A newly authored `erc_stg_2026_step1.yaml` with the exact ERC B1/B2/Resources structure and its criteria mapped, successfully ingested, with automated tests proving it can be queried via API.
 - C) Both the ERC and NWO YAMLs ingested successfully via the CLI tool.
 > Recommendation: B (with C implied) — Authoring the *real* ERC StG 2026 structure (not the old demo COG one) and proving it ingested correctly via tests is the exact MVP definition. Since backward compatibility is a constraint, C happens naturally.
 > **Selected: B (and C)**
@@ -288,49 +334,3 @@ The following items were explicitly identified during brainstorm as scope-creep 
 2.  **`max_pages` text-to-page heuristic conversion**: Because we only extract plain text from the UI, we cannot effectively validate page counts blindly. We are ignoring formatting semantics (font, margins) during ingestion, and leaving `max_pages` strictly as a UI informational field. Heuristic constraint checking (e.g. 1 page = 4000 characters) is deferred.
 3.  **Two-Step Evaluation Execution/UX gating**: We are authoring the full ERC structure conceptually encompassing both B1 and B2, mapping evaluation elements correctly. However, building the frontend UX or backend LLM-routing engine to conditionally execute "Step 1" vs "Step 2" is deferred to future evaluation features.
 4.  **PDF Uploads / Parsing**: We will not build a PDF ingestor to enforce constraints automatically; we continue relying on User-guided snippet pasting.
-
-### Section 5 — Constraints
-
-**Decisions:**
-- We strictly limit this workflow to authoring the YAML and proving backend ingestion/API handling, deferring all UI work.
-- We will rely on SQLModel dev behavior (or local DB reset) for schema changes since Alembic is not yet wired up.
-- To protect against infinite loops, we will enforce a reasonable maximum depth during ingestion validation along with strict acyclic checks on the `parent_id` foreign key.
-- We will completely ignore formatting constraints (fonts, margins) and not even codify them in guidance; we aim exclusively to enforce boundaries (words/pages/chars) to evaluate textual content and avoid cluttering the database.
-- We depend only on the official ERC StG 2026 funder PDFs (Application Forms + Guide for Peer Reviewers) to define structural and evaluation truth.
-
-**Brainstorming Q&A:**
-
-**Q1: What is our primary time/scope constraint for this workflow?**
-- A) We must build the full frontend to prove it works before closing WF-0032.
-- B) We must limit this workflow strictly to authoring the YAML and proving the backend ingestion/API can handle it, deferring all UI work.
-- C) We need to ingest this call into production immediately.
-> Recommendation: B — As established, keeping this slice thin (backend only) minimizes risk before we tackle the dynamic UI.
-> **Selected: B**
-
-**Q2: What is our primary technical constraint regarding database migrations (Alembic)?**
-- A) We must write a full Alembic migration for the new `parent_id` and `max_pages` columns.
-- B) Since Parking Lot P2 #1 (Set up Alembic migration baseline) is not yet done, we are still relying on SQLModel `create_all()`. We will drop/recreate local tables or ensure the new columns are nullable/have defaults so SQLModel can handle them in development safely.
-- C) We shouldn't change the database schema at all.
-> Recommendation: B — We don't have Alembic wired up yet. Assuming we are testing locally, relying on SQLModel's dev behavior (or a local DB reset) is our current technical constraint for schema changes.
-> **Selected: B**
-
-**Q3: What constraint MUST we apply to the `parent_id` foreign key relationships?**
-- A) Nodes can be nested infinitely deep.
-- B) To protect against runaway recursive queries (CTEs) or infinite loops, we must enforce a reasonable maximum depth (e.g., max 5 levels) during ingestion validation, alongside strict acyclic checks.
-- C) Nodes can only have one level of nesting (a parent and a child).
-> Recommendation: B — Bounded recursion protects the backend from both malicious payloads and simple authoring mistakes.
-> **Selected: B**
-
-**Q4: How do we handle `content_constraints` that we *cannot* easily machine-enforce (like "font size 11pt, 1.5 spacing, 2cm margins")?**
-- A) We build a PDF parser into the backend to check margins and fonts.
-- B) We ignore them completely.
-- C) We encode them strictly as `guidance_text` on the node so the user is aware, but we do not attempt to machine-validate them in the `content_constraints` block.
-> Recommendation: C — Separation of concerns: the backend only enforces what it has the data to enforce.
-> **Selected: B** — (User override: Ignore formatting constraints entirely so as not to clutter the backend; PeerLens focuses on textual content evaluation).
-
-**Q5: What is the external dependency constraint for this workflow?**
-- A) We depend on the NWO giving us their API schema.
-- B) We depend *only* on the official ERC StG 2026 funder PDFs (Application Forms + Guide for Peer Reviewers) to define our structural and evaluation truth.
-- C) We depend on the frontend being ready.
-> Recommendation: B — Funder documentation is our single source of truth. We must not hallucinate structure or criteria.
-> **Selected: B**
