@@ -16,6 +16,28 @@ Avoid “write all tests first then all code” (horizontal slicing). Prefer thi
 
 ---
 
+## Anti-Pattern: Horizontal Slices (Wrong)
+
+Wrong: treat RED as "write all tests" and GREEN as "write all code".
+
+Failure mode: you design signatures/data shapes in tests before proving behavior, then fight the mismatch.
+
+Prefer vertical slices via tracer bullets:
+
+```text
+WRONG (horizontal):
+RED:   test1, test2, test3, ...
+GREEN: impl1, impl2, impl3, ...
+
+RIGHT (vertical):
+RED->GREEN: test1 -> impl1
+RED->GREEN: test2 -> impl2
+RED->GREEN: test3 -> impl3
+...
+```
+
+---
+
 ## What To Test
 
 Test behavior through the most public stable interface available:

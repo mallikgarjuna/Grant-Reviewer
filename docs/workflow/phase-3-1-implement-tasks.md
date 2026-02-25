@@ -88,6 +88,7 @@ For each task:
    - what could break from this task's changes
    - targeted tests to add/run for that breakage risk
 6. If the task is a behavior change or a bug fix, first add/update a failing test that proves the acceptance criteria, then implement until it passes.
+   - Do NOT do horizontal slicing (all tests first, all code later). Do `RED->GREEN` per increment.
 7. Commit using this format:
 
    WF-XXXX: <slug> — Task <N> — <short title>

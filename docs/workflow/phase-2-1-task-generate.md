@@ -79,6 +79,7 @@ Task planning rules:
 - Prefer thin vertical slices (end-to-end tracer bullet early).
 - Keep tasks atomic (<=3 files preferred) but maintain slice coherence using `Slice:`.
 - Every behavior change/bug fix MUST be implemented with TDD (red/green/refactor).
+- Avoid horizontal slicing (do not plan "all tests first, all code later"). Prefer `RED->GREEN` per slice increment.
 
 For each task include:
 
