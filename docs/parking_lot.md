@@ -110,6 +110,7 @@ Promotion dependency note:
 | 18 | Review detail page: remove hardcoded Veni node mapping | tech-debt | `/app/reviews/[reviewId]` currently uses hardcoded Veni labels/order. Refactor to call-aware node metadata so section headings/grouping remain correct for future funding calls. | 2026-02-23 |
 | 19 | Machine validation of page-based constraints (`max_pages`) | product | `max_pages` is currently authored merely as a UI signaling field. Since the MVP uses plain text strings rather than PDF uploads, we cannot physically count pages. Add a rough heuristic (e.g., 1 page = 4000 chars) or PDF parsing to strictly enforce this in the backend. (Ref: WF-0032 Brainstorm Section 6) | 2026-02-25 |
 | 20 | Multi-step Evaluation Gating (ERC Step 1 vs Step 2) | product | The ERC StG evaluates B1 in Step 1, and both B1+B2+Resources in Step 2. We authored the full schema combined. We must build a UX/Execution routing rule engine to conditionally trigger subsets of node evaluations based on the chosen Step. (Ref: WF-0032 Brainstorm Section 3) | 2026-02-25 |
+| 21 | Tree-shaped API response for node hierarchies | tech-debt | Update `GET /calls/{id}/nodes` to return a natively nested tree (e.g., NodeResponse with `children[]`) instead of a flat list where the frontend has to rebuild the hierarchy. (Ref: WF-0032 PRD v0.3 post-audit) | 2026-02-25 |
 
 ---
 
