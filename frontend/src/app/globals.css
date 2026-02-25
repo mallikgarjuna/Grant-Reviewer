@@ -2,7 +2,8 @@
 
 :root {
   --font-heading-fallback: "Times New Roman", Georgia, serif;
-  --font-body-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body-fallback:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-body: var(--font-inter), var(--font-body-fallback);
   --font-heading: var(--font-lora), var(--font-heading-fallback);
   --background: #fcfbf7;

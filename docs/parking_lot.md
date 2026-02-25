@@ -69,11 +69,10 @@ When you pick an item to start work:
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
 | 1 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
-| 2 | Accessibility pass (forms + results) | product | Ensure errors are announced (`aria-live`), focus lands on first invalid field, buttons/alerts are keyboard + screen-reader friendly. | 2026-02-16 |
-| 3 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
-| 4 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 5 | Add node hierarchy selector | product | Defer until universal form architecture is active; implement as part of dynamic renderer UX (depends on P2 #15/#16/#18) to avoid one-off UI debt. | 2026-02-16 |
-| 6 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 3 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 4 | Add node hierarchy selector | product | Defer until universal form architecture is active; implement as part of dynamic renderer UX (depends on P2 #15/#16/#18) to avoid one-off UI debt. | 2026-02-16 |
+| 5 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 
 ### P1 Rationale Snapshot (2026-02-24)
 
@@ -129,6 +128,7 @@ Promotion dependency note:
 | 11 | P1 | NWO Veni 2025 preproposal — WF-4: Implement compliance engine + persist findings | [WF-0028](tasks/task-WF-0028-compliance-engine.md) | 2026-02-22 |
 | 12 | P1 | NWO Veni 2025 preproposal — WF-5: Add structured reviews API + NOT_ASSESSABLE alignment | [WF-0029](tasks/task-WF-0029-nwo-veni-2025-preproposal-wf5-structured-review.md) | 2026-02-22 |
 | 13 | P1 | NWO Veni 2025 preproposal — WF-6: Build frontend structured form + compliance UI + idempotent drafts | [WF-0030](tasks/task-WF-0030-nwo-veni-2025-preproposal-wf6-frontend-structured-form.md) | 2026-02-22 |
+| 14 | P1 | Accessibility pass (forms + results) | [WF-0031](tasks/task-WF-0031-accessibility-pass.md) | 2026-02-25 |
 
 ---
 
@@ -144,3 +144,4 @@ Promotion dependency note:
 - **v0.8** (2026-02-22): Added P2 #15 (Recursive UI components) from WF-0030 post-Codex adversarial review.
 - **v0.9** (2026-02-23): Added P2 #18 to track review-detail node label/order refactor beyond hardcoded Veni mappings.
 - **v1.0** (2026-02-24): Reordered P1 for launch-readiness sequencing, added mandatory promotion gate, and recorded dependency-aware rationale snapshot.
+- **v1.1** (2026-02-25): Promoted P1 #2 (Accessibility pass) to WF-0031 and renumbered remaining P1 items.

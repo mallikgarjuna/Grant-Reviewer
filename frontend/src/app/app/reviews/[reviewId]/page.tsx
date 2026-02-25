@@ -22,7 +22,11 @@ const VENI_NODE_LABELS: Record<string, string> = {
   research_idea: "3. Research Idea",
 };
 // TODO(WF-followup): Replace this hardcoded Veni mapping with call-aware metadata for multi-call support.
-const VENI_NODE_ORDER = ["academic_profile", "key_outputs", "research_idea"] as const;
+const VENI_NODE_ORDER = [
+  "academic_profile",
+  "key_outputs",
+  "research_idea",
+] as const;
 
 type ApiErrorEnvelope = {
   error?: {
@@ -134,13 +138,19 @@ export default function ReviewDetailPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isRetrying, setIsRetrying] = useState(false);
-  const [reviewDetail, setReviewDetail] = useState<ReviewDetailResponse | null>(null);
+  const [reviewDetail, setReviewDetail] = useState<ReviewDetailResponse | null>(
+    null,
+  );
   const [error, setError] = useState<ApiError | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [exportFeedback, setExportFeedback] = useState<ExportFeedback | null>(null);
+  const [exportFeedback, setExportFeedback] = useState<ExportFeedback | null>(
+    null,
+  );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(
+    null,
+  );
   const [hasPollingCapReached, setHasPollingCapReached] = useState(false);
   const [pollingNotice, setPollingNotice] = useState<string | null>(null);
   const reviewStatus = reviewDetail?.review.status;
@@ -211,14 +221,17 @@ export default function ReviewDetailPage() {
           const apiError = await parseApiError(response);
           if (
             !cancelled &&
-            (apiError.code === "UNAUTHORIZED" || apiError.code === "REVIEW_NOT_FOUND")
+            (apiError.code === "UNAUTHORIZED" ||
+              apiError.code === "REVIEW_NOT_FOUND")
           ) {
             setError(apiError);
             stopped = true;
             return;
           }
           if (!cancelled) {
-            setPollingNotice("Temporary issue checking status. Retrying automatically...");
+            setPollingNotice(
+              "Temporary issue checking status. Retrying automatically...",
+            );
           }
           return;
         }
@@ -238,7 +251,9 @@ export default function ReviewDetailPage() {
         }
       } catch {
         if (!cancelled) {
-          setPollingNotice("Network issue while checking status. Retrying automatically...");
+          setPollingNotice(
+            "Network issue while checking status. Retrying automatically...",
+          );
         }
       } finally {
         requestInFlight = false;
@@ -261,7 +276,9 @@ export default function ReviewDetailPage() {
   async function retryFailedReview() {
     const stored = getStoredReviewAttempt();
     if (!stored) {
-      setStatusMessage("No saved draft found. Return to /app and submit again.");
+      setStatusMessage(
+        "No saved draft found. Return to /app and submit again.",
+      );
       return;
     }
 
@@ -284,7 +301,9 @@ export default function ReviewDetailPage() {
       if (!response.ok) {
         const apiError = await parseApiError(response);
         if (apiError.code === "QUOTA_EXCEEDED") {
-          setStatusMessage("Daily review limit reached. Try again after reset.");
+          setStatusMessage(
+            "Daily review limit reached. Try again after reset.",
+          );
           return;
         }
         if (apiError.code === "REVIEWS_DISABLED") {
@@ -453,17 +472,28 @@ export default function ReviewDetailPage() {
 
   const isFailed = reviewDetail.review.status === "FAILED";
   const isPending = isPendingReview(reviewDetail.review.status);
-  const hasOverallSummary = Boolean(reviewDetail.review.overall_summary?.trim());
+  const hasOverallSummary = Boolean(
+    reviewDetail.review.overall_summary?.trim(),
+  );
   const submittedNodesParam = searchParams.get("submitted_nodes") ?? "";
   const submittedNodes = submittedNodesParam
     .split(",")
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
-  const reviewedNodeLabels = submittedNodes.map((nodeId) => VENI_NODE_LABELS[nodeId]).filter(Boolean);
-  const notReviewedNodeIds = VENI_NODE_ORDER.filter((nodeId) => !submittedNodes.includes(nodeId));
-  const notReviewedNodeLabels = notReviewedNodeIds.map((nodeId) => VENI_NODE_LABELS[nodeId]);
+  const reviewedNodeLabels = submittedNodes
+    .map((nodeId) => VENI_NODE_LABELS[nodeId])
+    .filter(Boolean);
+  const notReviewedNodeIds = VENI_NODE_ORDER.filter(
+    (nodeId) => !submittedNodes.includes(nodeId),
+  );
+  const notReviewedNodeLabels = notReviewedNodeIds.map(
+    (nodeId) => VENI_NODE_LABELS[nodeId],
+  );
   const cardsByNodeMap = reviewDetail.cards.reduce<
-    Map<string, { key: string; title: string; cards: ReviewDetailResponse["cards"] }>
+    Map<
+      string,
+      { key: string; title: string; cards: ReviewDetailResponse["cards"] }
+    >
   >((groups, card) => {
     const key = card.node_logical_id ?? `node:${card.node_title}`;
     const existingGroup = groups.get(key);
@@ -492,12 +522,18 @@ export default function ReviewDetailPage() {
   ];
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-12 md:px-10">
+    <article
+      className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-12 md:px-10"
+      aria-labelledby="review-title"
+    >
       <header className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
           Review
         </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--color-foreground)]">
+        <h1
+          id="review-title"
+          className="mt-2 text-3xl font-semibold tracking-tight text-[var(--color-foreground)]"
+        >
           {reviewDetail.review.status === "COMPLETED"
             ? "Feedback Ready"
             : reviewDetail.review.status === "FAILED"
@@ -525,15 +561,21 @@ export default function ReviewDetailPage() {
           <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)]">
             <p className="font-medium">Coverage summary</p>
             <p className="mt-1">
-              Reviewed sections: {reviewedNodeLabels.length > 0 ? reviewedNodeLabels.join(", ") : "None"}
+              Reviewed sections:{" "}
+              {reviewedNodeLabels.length > 0
+                ? reviewedNodeLabels.join(", ")
+                : "None"}
             </p>
             <p className="mt-1 text-[var(--color-muted-foreground)]">
-              Not reviewed sections: {notReviewedNodeLabels.length > 0 ? notReviewedNodeLabels.join(", ") : "None"}
+              Not reviewed sections:{" "}
+              {notReviewedNodeLabels.length > 0
+                ? notReviewedNodeLabels.join(", ")
+                : "None"}
             </p>
           </div>
         ) : null}
 
-        <div className="mt-4 flex flex-wrap gap-3">
+        <nav aria-label="Review actions" className="mt-4 flex flex-wrap gap-3">
           <button
             className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white transition hover:brightness-105"
             onClick={copyReviewAsText}
@@ -561,7 +603,7 @@ export default function ReviewDetailPage() {
           >
             My reviews
           </Link>
-        </div>
+        </nav>
         {exportFeedback ? (
           <p
             className={`mt-3 text-sm ${
@@ -627,7 +669,9 @@ export default function ReviewDetailPage() {
               You can keep waiting, open My reviews, or start a new review.
             </p>
             {pollingNotice ? (
-              <p className="text-sm text-[var(--color-muted-foreground)]">{pollingNotice}</p>
+              <p className="text-sm text-[var(--color-muted-foreground)]">
+                {pollingNotice}
+              </p>
             ) : null}
           </div>
         ) : null}
@@ -654,19 +698,29 @@ export default function ReviewDetailPage() {
                 Start new review
               </button>
             </div>
-            {statusMessage ? <p className="text-sm text-red-600">{statusMessage}</p> : null}
+            {statusMessage ? (
+              <p className="text-sm text-red-600">{statusMessage}</p>
+            ) : null}
           </div>
         ) : null}
       </header>
 
       {reviewDetail.cards.length > 0 ? (
-        <section className="grid gap-4">
+        <div
+          role="region"
+          aria-label="Review Feedback Cards"
+          className="grid gap-4"
+        >
           {orderedCardGroups.map((group) => (
             <section
               className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
               key={group.key}
+              aria-labelledby={`heading-group-${group.key}`}
             >
-              <h2 className="text-base font-semibold text-[var(--color-foreground)]">
+              <h2
+                id={`heading-group-${group.key}`}
+                className="text-base font-semibold text-[var(--color-foreground)]"
+              >
                 Reviewed section: {group.title}
               </h2>
               <div className="mt-3 grid gap-4">
@@ -692,22 +746,27 @@ export default function ReviewDetailPage() {
                 <section
                   className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
                   key={`not-reviewed-${nodeId}`}
+                  aria-labelledby={`heading-not-reviewed-${nodeId}`}
                 >
-                  <h2 className="text-base font-semibold text-[var(--color-foreground)]">
+                  <h2
+                    id={`heading-not-reviewed-${nodeId}`}
+                    className="text-base font-semibold text-[var(--color-foreground)]"
+                  >
                     Not reviewed section: {VENI_NODE_LABELS[nodeId]}
                   </h2>
                   <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
-                    No text was submitted for this section in this review, so no evaluation cards were generated.
+                    No text was submitted for this section in this review, so no
+                    evaluation cards were generated.
                   </div>
                 </section>
               ))
             : null}
-        </section>
+        </div>
       ) : (
         <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-sm text-[var(--color-muted-foreground)]">
           No review cards available yet.
         </section>
       )}
-    </main>
+    </article>
   );
 }
