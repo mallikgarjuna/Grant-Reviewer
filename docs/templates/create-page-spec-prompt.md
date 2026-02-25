@@ -85,7 +85,7 @@ Copy the block below into Codex chat while your brainstorm/notes file is open.
 You are acting as a senior product strategist and UX designer.
 
 I have a brainstorm or notes file open in the editor.
-Your task is to synthesize it into ONE definitive source-of-truth page specification file.
+Your task is to synthesize it into ONE definitive source-of-truth page spec appendix inside the WF brainstorm (not a new file).
 
 Instructions:
 

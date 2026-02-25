@@ -120,13 +120,13 @@ TDD is required for behavior changes/bug fixes:
 - what to mock (boundaries only)
 - minimal test types per story/requirement (unit vs integration-ish)
 
-## 8. Telemetry (Minimal)
+## 9. Telemetry (Minimal)
 
-## Deferred / Not in MVP
+## 10. Deferred / Not in MVP
 
-## Open Questions (if any)
+## 11. Open Questions (if any)
 
-## Changelog
+## 12. Changelog
 
 - v0.1 (<today>): Initial PRD from brainstorm
 

@@ -65,6 +65,8 @@ The generated spec should be appended to the active WF brainstorm:
 
 Append as a new section named: `## Appendix — Page Spec (MVP)`
 
+Trigger: use when a page needs explicit states/layout before PRD, but the full spec template is overkill.
+
 ---
 
 ## Prompt Template

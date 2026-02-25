@@ -23,6 +23,15 @@ Runner shortcuts:
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).
 
+## What “Good” Looks Like (Quick)
+
+Trigger: read before starting a phase; ensures artifacts are implementable.
+
+- Brainstorm: tight MVP + non-goals; for `Type: page`, may include `## Appendix — Page Spec (MVP)` (optional).
+- PRD: includes **User Stories (MVP)** + **Deferred Stories**, plus a short **Testing Decisions (TDD)** section.
+- Tasks: each task includes `Slice:` + `User Stories:` mapping (or `N/A`), and there is an early tracer-bullet task.
+- Implementation: TDD is mandatory for behavior changes/bug fixes (red/green/refactor; mock boundaries only): `docs/guides/tdd/README.md`.
+
 ## Phase Gate (Always)
 
 Before starting a new phase, ensure the previous phase’s primary artifact(s) are **saved and committed** on the WF branch. This prevents running later phases against uncommitted or half-edited inputs.

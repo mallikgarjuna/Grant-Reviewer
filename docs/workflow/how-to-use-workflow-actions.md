@@ -155,6 +155,7 @@ End with two suggested next actions.
 - For non-WF maintenance, use `fix/<slug>` or `chore/<slug>` (no WF ID).
 - Artifact files should follow the `<artifact>-<WF-ID>-<slug>.md` naming rule.
 - These prompts should map directly to your workflow instructions in `docs/workflow/`.
+- TDD is mandatory for behavior changes/bug fixes: see `docs/guides/tdd/README.md`.
 
 ---
 

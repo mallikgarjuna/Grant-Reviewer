@@ -44,7 +44,7 @@ Print a concise summary to the user containing:
 1. **Active Workflow**: WF ID + Title
 2. **Current Phase**: (e.g., Phase 3 - Implementation)
 3. **Progress**: X/Y tasks completed.
-4. **Next Action**: State the exact title and goal of the next uncompleted `[ ]` task.
+4. **Next Action**: State the exact title and goal of the next uncompleted `[ ]` task (include Slice/User Stories if present).
 
 ### 5. Request Permission to Proceed
 End your response by asking the user for explicit permission to begin executing the identified next action. Do NOT begin writing code or editing files until the user says "go ahead" or otherwise confirms.
