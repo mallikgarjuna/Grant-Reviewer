@@ -59,11 +59,11 @@ It prevents premature coding.
 
 ## Output Location
 
-The generated spec should be saved to:
+The generated spec should be appended to the active WF brainstorm:
 
-docs/pages/<page-name>-spec.md
+- `docs/brainstorms/brainstorm-WF-XXXX-<slug>.md`
 
-One page = one spec file.
+Append as a new section named: `## Appendix — Page Spec (MVP)`
 
 ---
 
@@ -85,7 +85,7 @@ Instructions:
 3. Do NOT invent features.
 4. Do NOT expand scope.
 5. Optimize for clarity and fast implementation.
-6. Create or update: docs/pages/<page-name>-spec.md
+6. Append/update: `## Appendix — Page Spec (MVP)` in the brainstorm file
 7. Keep it short. This is a lightweight spec.
 
 Use EXACTLY this structure:

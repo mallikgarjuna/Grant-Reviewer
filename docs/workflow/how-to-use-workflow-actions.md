@@ -59,6 +59,20 @@ End with two suggested next actions.
 
 ---
 
+## Optional Add-On (Type: page) — Page Spec Appendix (Before PRD)
+
+Use when `Type: page` and the workflow needs explicit page states/wireframe before PRD. Writes into the brainstorm (no new artifact type).
+
+```text
+Use @docs/templates/create-page-spec-prompt.md (or `create-page-spec-prompt-lite.md`)
+@docs/brainstorms/brainstorm-<WF-ID>-<slug>.md
+
+Append a `## Appendix — Page Spec (MVP)` to the brainstorm for <WF-ID>/<slug>.
+Then commit and proceed to Phase 1 runner.
+```
+
+---
+
 ## Phase 1 — Definition: Brainstorm → PRD
 
 ```text

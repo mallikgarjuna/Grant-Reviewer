@@ -95,6 +95,10 @@ After completing Part B, output:
      ```
 - **Cross-Agent Collaborative Review:** Provide an explicit prompt the user can copy-paste into *another* coding agent (like Codex/Cursor) to critically review the newly created Brainstorm artifact. For example: "Review `@docs/brainstorms/brainstorm-WF-XXXX-...md` for completeness, risks, and edge cases before we proceed to Phase 1. Output your findings in chat."
 
+If `Type: page` and UX/state/positioning is non-trivial, you MAY recommend this optional add-on before Phase 1:
+
+- Use `@docs/templates/create-page-spec-prompt.md` (or `create-page-spec-prompt-lite.md`) to append `## Appendix — Page Spec (MVP)` into the brainstorm, commit, then proceed to Phase 1.
+
 Also output this final block:
 
 ## Traceability Statement (Required)

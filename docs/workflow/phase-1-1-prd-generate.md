@@ -22,6 +22,9 @@ No review in this step.
 Brainstorm must have:
 Status: Draft Complete
 
+Optional input (Type: page):
+- If the brainstorm contains `## Appendix — Page Spec (MVP)`, incorporate it into the PRD flow/states/edge cases (do not expand scope beyond it).
+
 ---
 
 ## Phase Gate — Commit Previous Phase
