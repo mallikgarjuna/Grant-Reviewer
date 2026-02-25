@@ -20,6 +20,9 @@ describe("VeniSubmitForm orchestration", () => {
     push.mockReset();
     window.localStorage.clear();
 
+    // jsdom doesn't implement scrollIntoView
+    window.HTMLElement.prototype.scrollIntoView = vi.fn();
+
     Object.defineProperty(globalThis, "crypto", {
       value: {
         ...originalCrypto,
@@ -218,10 +221,22 @@ describe("VeniSubmitForm orchestration", () => {
     fireEvent.change(await screen.findByLabelText("Academic Profile"), {
       target: { value: "profile text" },
     });
+
+    // initially not invalid
+    const researchIdeaField = screen.getByLabelText("Research Idea");
+    expect(researchIdeaField).not.toHaveAttribute("aria-invalid", "true");
+
     const submit = await screen.findByRole("button", { name: "Submit" });
     fireEvent.click(submit);
 
     await screen.findByText("Submission blocked");
+
+    // Focus should be shifted and aria-invalid should be applied
+    await waitFor(() => {
+      expect(researchIdeaField).toHaveAttribute("aria-invalid", "true");
+      expect(researchIdeaField).toHaveFocus();
+    });
+
     expect(
       fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/structured-review")),
     ).toBe(false);
@@ -525,6 +540,12 @@ describe("VeniSubmitForm orchestration", () => {
     expect(
       await screen.findByText("You must fill out at least one section before submitting."),
     ).toBeInTheDocument();
+
+    // Academic profile is the default fallback for complete emptiness
+    await waitFor(() => {
+      expect(screen.getByLabelText("Academic Profile")).toHaveFocus();
+    });
+
     expect(
       fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/check-compliance")),
     ).toBe(false);
