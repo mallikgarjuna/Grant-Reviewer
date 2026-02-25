@@ -52,7 +52,7 @@ Verification Steps:
 4. Verify focus is placed inside the first invalid field.
 Risks: React refs not being properly forwarded to generic UI components (`forwardRef`).
 
-### [ ] Task 3 — Add `aria` attributes for form validation
+### [x] Task 3 — Add `aria` attributes for form validation
 Goal: Ensure screen readers announce validation errors associated with specific fields.
 Slice: Screen Reader Announcements
 User Stories: US3
