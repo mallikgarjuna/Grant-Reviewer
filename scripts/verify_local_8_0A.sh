@@ -12,7 +12,7 @@ echo
 if [[ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]]; then
   # shellcheck disable=SC1090
   source "${NVM_DIR:-$HOME/.nvm}/nvm.sh"
-  nvm use v22.17.0 >/dev/null
+  nvm use >/dev/null
 fi
 
 echo "Node: $(node -v)"

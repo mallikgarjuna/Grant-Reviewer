@@ -39,7 +39,7 @@ Grant Reviewer helps researchers improve their grant proposals by providing AI-g
 - Python 3.12+
 - [UV package manager](https://github.com/astral-sh/uv)
 - OpenAI API key (only needed for `LLM_MODE=openai`)
-- Node.js 22.17.0 (for `frontend/`; if using `nvm`, run `nvm use v22.17.0`)
+- Node.js 22.17.0 (for `frontend/`; pinned in `.nvmrc`; if using `nvm`, run `nvm use`)
 
 ### Setup
 
@@ -99,7 +99,7 @@ Prereqs:
 
 ```bash
 source ~/.nvm/nvm.sh
-nvm use v22.17.0
+nvm use
 
 cd frontend
 npm install
@@ -130,7 +130,7 @@ bash scripts/verify_local_8_0A.sh
    - `cd backend`
    - `LLM_MODE=stub uv run uvicorn main:app --reload`
 2. Start frontend in a second terminal:
-   - `source ~/.nvm/nvm.sh && nvm use v22.17.0`
+   - `source ~/.nvm/nvm.sh && nvm use`
    - `cd frontend && npm run dev`
 3. Open `http://localhost:3000/` and confirm landing page loads.
 4. Open `http://localhost:3000/app` while signed out and confirm redirect to `/sign-in`.
