@@ -16,7 +16,12 @@ Avoid “write all tests first then all code” (horizontal slicing). Prefer thi
 
 ---
 
-## Anti-Pattern: Horizontal Slices (Wrong)
+## TDD Philosophy
+
+TDD is a way to discover design by proving behavior incrementally.
+The unit of progress is a tiny `RED->GREEN` loop that delivers behavior, not a big batch of tests followed by a big batch of implementation.
+
+### Anti-Pattern: Horizontal Slices (Wrong)
 
 Wrong: treat RED as "write all tests" and GREEN as "write all code".
 
