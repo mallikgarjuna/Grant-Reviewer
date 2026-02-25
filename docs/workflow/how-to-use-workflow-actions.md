@@ -10,6 +10,8 @@ Note: phases are 0/1/2/3; Phase 1 + Phase 2 share one unified runner (`phase-12-
 
 ## Lifecycle: Auto (End-to-End)
 
+Warning: use only if `run-lifecycle-*.md` is kept in sync with `docs/workflow/README.md` invariants (US#/FR#/Slice, mandatory TDD). If unsure, use the phase runners below.
+
 ```text
 Use @docs/workflow/run-lifecycle-auto.md
 @docs/index.md
@@ -24,6 +26,8 @@ Run the end-to-end auto lifecycle for this initiative.
 ---
 
 ## Lifecycle: Interactive (End-to-End)
+
+Warning: use only if `run-lifecycle-*.md` is kept in sync with `docs/workflow/README.md` invariants (US#/FR#/Slice, mandatory TDD). If unsure, use the phase runners below.
 
 ```text
 Use @docs/workflow/run-lifecycle-interactive.md
@@ -75,6 +79,9 @@ Then commit and proceed to Phase 1 runner.
 
 ## Phase 1 — Definition: Brainstorm → PRD
 
+Phase 1 output requirements (enforced by runner):
+- PRD includes `User Stories (MVP)` + `Deferred Stories`, `FR#` requirement IDs linked to `US#`, `Testing Decisions (TDD)`, and US# traceability in flows/contracts.
+
 ```text
 Use @docs/workflow/phase-12-run-planning.md
 @docs/index.md
@@ -89,6 +96,9 @@ End with two suggested next actions.
 ---
 
 ## Phase 2 — Planning: PRD → Tasks
+
+Phase 2 output requirements (enforced by runner):
+- Each task includes `Slice`, `User Stories (US#)`, `PRD Requirements (FR#)`, and an early tracer-bullet task; TDD is mandatory for behavior changes/bug fixes.
 
 ```text
 Use @docs/workflow/phase-12-run-planning.md
