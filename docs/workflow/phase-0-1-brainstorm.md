@@ -25,6 +25,55 @@ This is NOT auto-generation.
 
 ---
 
+## Preflight Checklist (Steps 1–3)
+
+Before running the section-by-section brainstorm flow, do this short preflight to ensure you and the user share the same reality and vocabulary.
+
+### Step 1 — Long-Form Problem Intake (User Narrative)
+
+Ask the user for a long, detailed description (free-form) covering:
+
+- The problem/pain and who experiences it
+- Concrete examples (inputs/outputs, current vs desired behavior)
+- Constraints (time, UX, data, compliance), non-goals
+- Any solution ideas they’re considering (including “maybe universalize it”)
+
+Do not “solve” anything yet. Treat this as raw material you will tighten during the interview.
+
+### Step 2 — Repo Reality Snapshot (Timeboxed, Read-Only, Non-Architectural)
+
+Purpose: lightly ground the brainstorm in the current repo state so you can:
+
+- Verify any critical assertions the user made (“we already have X”, “this is hardcoded”, “we have only one example”, etc.)
+- Avoid premature universalization when there aren’t enough real exemplars
+- Ask sharper questions and steer toward an MVP that is least likely to overfit
+
+Rules:
+
+- Timebox: 5–10 minutes.
+- Read-only: do not edit files.
+- Non-architectural: do not propose modules, data models, or implementation plans here.
+- Output: a 5-bullet “repo snapshot” summary + 3–5 key open questions this snapshot suggests.
+
+Suggested inputs to scan (pick only what’s relevant):
+
+- `docs/index.md` (active initiatives + related artifacts)
+- `docs/workflow/README.md` (phase meanings / constraints)
+- Any existing PRDs/tasks/brainstorms that look adjacent
+- A quick `rg` over likely terms to find existing seams and hardcoded paths
+
+Optional (recommended): append a short section to the brainstorm artifact:
+
+- `## Repo Reality Snapshot (Read-Only)` with date + 5 bullets
+
+### Step 3 — Relentless Interview to Shared Understanding
+
+Now run the structured brainstorm sections below.
+
+Goal: walk down the decision tree one dependency at a time until you can state the MVP, its boundaries, and its highest-risk unknowns without ambiguity.
+
+---
+
 ## Required Inputs
 
 - docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
@@ -53,6 +102,7 @@ After completing a Phase 0.1 brainstorm session:
 
 ## Core Facilitation Rules
 
+0. Run the **Preflight Checklist (Steps 1–3)** above before Section 1.
 1. Work section-by-section.
 2. Ask **exactly 5** important questions per section (unless fewer are genuinely needed).
 3. Ask questions **in a single batch** (5 at a time), not one-by-one.

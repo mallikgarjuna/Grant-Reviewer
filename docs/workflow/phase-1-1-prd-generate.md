@@ -22,6 +22,10 @@ No review in this step.
 Brainstorm must have:
 Status: Draft Complete
 
+Repo grounding note:
+- If the PRD will rely on assumptions about the *current repo state* (existing endpoints, hardcoded flows, available exemplars, etc.), the brainstorm should already include a short `## Repo Reality Snapshot (Read-Only)` section produced during Phase 0.1 preflight.
+- If that snapshot is missing *and* repo grounding is needed, STOP and route back to Phase 0.1 to add it to the brainstorm (then commit) before generating PRD v0.1. Do not “sneak in” new repo-derived facts directly into the PRD without capturing them upstream in the brainstorm.
+
 Optional input (Type: page):
 - If the brainstorm contains `## Appendix — Page Spec (MVP)`, incorporate it into the PRD flow/states/edge cases (do not expand scope beyond it).
 

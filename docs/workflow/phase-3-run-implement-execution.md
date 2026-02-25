@@ -25,7 +25,8 @@ To execute the granular development tasks defined in Phase 3, rigorously verify 
 5. After any code-writing step in Part A or Part B, explicitly report:
    - what could break because of the change
    - which tests were run and which additional tests are recommended to cover those breakage risks
-6. TDD is mandatory for behavior changes/bug fixes. Enforce red/green/refactor and boundary-only mocking via `docs/guides/tdd/README.md`.
+6. For any behavior change or bug fix implemented during Part A, ensure the chat log contains explicit TDD loop labels (`RED`, `GREEN`, `REFACTOR`) as required by `phase-3-1-implement-tasks.md`.
+7. TDD is mandatory for behavior changes/bug fixes. Enforce red/green/refactor and boundary-only mocking via `docs/guides/tdd/README.md`.
 
 ---
 

@@ -80,6 +80,7 @@ Task planning rules:
 - Keep tasks atomic (<=3 files preferred) but maintain slice coherence using `Slice:`.
 - Every behavior change/bug fix MUST be implemented with TDD (red/green/refactor).
 - Avoid horizontal slicing (do not plan "all tests first, all code later"). Prefer `RED->GREEN` per slice increment.
+- Tasks MUST be written so Phase 3 can execute and *log* a recognizable TDD loop per task (labels: `RED`, `GREEN`, `REFACTOR`).
 
 For each task include:
 
@@ -91,6 +92,7 @@ User Stories: <US1, US2> (from PRD) or `N/A`
 PRD Requirements: <FR1, FR2> (from PRD) or `N/A`
 Files to modify:
 Acceptance Criteria:
+TDD Plan: <required: `N/A` or explicit `RED/GREEN/REFACTOR` plan>
 Verification Steps:
 Risks (if any):
 
@@ -105,6 +107,11 @@ Tasks must:
   - If a task would exceed ~3 files, split it into smaller dependent tasks.
   - Use as many tasks as needed to keep each task testable, verifiable, and easy to implement.
   - Each task must have concrete acceptance criteria and explicit verification steps tied only to that task.
+  - If the task changes behavior or fixes a bug, `TDD Plan` MUST:
+    - name the intended failing test (or test location) for **RED**
+    - name the minimal implementation change for **GREEN**
+    - name any cleanup target for **REFACTOR** (or `skip` if none)
+  - `Verification Steps` MUST include at least one concrete automated command (test/lint/typecheck/etc.) that proves the acceptance criteria for that task.
 
 No fixed task-count cap: optimize for atomicity and clarity over brevity.
 
