@@ -197,3 +197,12 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Given the recent changes (WF-0028/WF-0029/WF-0031), should the next workflow author another funding call (ERC/MSCA) before building more universal form features?
 **A:** Yes. The next mandatory phase (P2 #15: Universal Form Dynamic UI) cannot be built effectively until the system has ingested a second, structurally complex funding call (like ERC with nested nodes). Authoring and ingesting a new V2 YAML will flush out hardcoded assumptions in the backend ingestion and frontend `/app/reviews/[id]` logic, acting as the forcing function for the true dynamic form requirements.
+
+### Q: When using the "remember this" phrase, does the agent actually save the rule somewhere?
+**A:** Yes. When explicitly asked to "remember this", the agent permanently codifies it. Workflow/agent rules are logged in `AGENTS.md` (or specific `docs/workflow/` runner files). Project/codebase gotchas are logged in `docs/lessons.md`.
+
+### Q: Will the call YAML guidelines and ingestion scripts be expanded to handle any funding call (NWO, ERC, MSCA)?
+**A:** Yes. The current schemas and scripts are biased toward flat structures (like NWO Veni). When ingesting deep/complex calls (like ERC), the `CallDefinitionV2` python models, `ingest_call.py` script, and authoring guidelines will be expanded to support recursive/nested properties natively, making the V2 infrastructure truly universal.
+
+### Q: If a workflow is scoped to backend-only work, what does "thin vertical slices" (Phase 2.1) mean? Does it still include the frontend?
+**A:** Normally, a pure feature vertical slice is "backend + frontend together." However, if a workflow's explicit strict scope is backend-only (e.g., stress-testing data structures before UI work starts), a "vertical slice" means building the *backend stack iteratively* rather than bulk-authoring everything at once. For example: Task 1: Author Section A -> ingest to DB -> expose in API. Task 2: Author Section B with new `max_pages` constraint -> ingest to DB -> expose in API. This proves the data pipeline works piecemeal without horizontal batching.
