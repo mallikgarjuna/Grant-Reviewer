@@ -1,8 +1,8 @@
 # WF-0032 — ERC Starting Grant 2026
 
 Artifact: brainstorm
-Version: v0.0
-Status: Not started
+Version: v0.9
+Status: Draft Complete
 Last Updated: 2026-02-25
 
 ## Repo Reality Snapshot (Read-Only)
@@ -334,3 +334,9 @@ The following items were explicitly identified during brainstorm as scope-creep 
 2.  **`max_pages` text-to-page heuristic conversion**: Because we only extract plain text from the UI, we cannot effectively validate page counts blindly. We are ignoring formatting semantics (font, margins) during ingestion, and leaving `max_pages` strictly as a UI informational field. Heuristic constraint checking (e.g. 1 page = 4000 characters) is deferred.
 3.  **Two-Step Evaluation Execution/UX gating**: We are authoring the full ERC structure conceptually encompassing both B1 and B2, mapping evaluation elements correctly. However, building the frontend UX or backend LLM-routing engine to conditionally execute "Step 1" vs "Step 2" is deferred to future evaluation features.
 4.  **PDF Uploads / Parsing**: We will not build a PDF ingestor to enforce constraints automatically; we continue relying on User-guided snippet pasting.
+
+---
+
+## Changelog
+
+- v0.9 (2026-02-25): Revised Phase 0.1 decisions after critical review to clarify DB mapping reality vs JSONB schema additions, explicitly transition `max_pages` to UI guidance, adopt `parent_logical_id` inside YAML over DB UUIDs, encode stage metadata, and remove incorrect hardcoded depth limits.
