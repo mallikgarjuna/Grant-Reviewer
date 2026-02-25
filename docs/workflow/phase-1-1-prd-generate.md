@@ -125,7 +125,7 @@ Traceability rule:
 - boundaries
 - responsibilities
 - design tree (dependencies + ordering)
-- deep modules (stable public seams + responsibilities)
+- deep modules (small interface, lots hidden; stable public seams + responsibilities)
 - suggested file paths (coarse; avoid per-line detail)
 
 ## 7. Edge Cases
