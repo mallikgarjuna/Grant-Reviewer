@@ -67,7 +67,7 @@ Verification Steps:
 5. (Manual) Listen with VoiceOver/NVDA to ensure the error text is read when the field receives focus.
 Risks: ID collisions if multiple forms exist; ensure unique IDs for error messages.
 
-### [ ] Task 4 — Add `aria-live` regions for submission status
+### [x] Task 4 — Add `aria-live` regions for submission status
 Goal: Ensure screen readers announce high-priority application alerts (e.g., "Submission failed").
 Slice: Screen Reader Announcements
 User Stories: US3
