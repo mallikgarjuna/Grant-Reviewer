@@ -87,6 +87,7 @@ For each task include:
 Goal:
 Slice: <tracer-bullet|slice-name>
 User Stories: <US1, US2> (from PRD) or `N/A`
+PRD Requirements: <FR1, FR2> (from PRD) or `N/A`
 Files to modify:
 Acceptance Criteria:
 Verification Steps:

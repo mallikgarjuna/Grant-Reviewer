@@ -29,7 +29,8 @@ Trigger: read before starting a phase; ensures artifacts are implementable.
 
 - Brainstorm: tight MVP + non-goals; for `Type: page`, may include `## Appendix — Page Spec (MVP)` (optional).
 - PRD: includes **User Stories (MVP)** + **Deferred Stories**, plus a short **Testing Decisions (TDD)** section.
-- Tasks: each task includes `Slice:` + `User Stories:` mapping (or `N/A`), and there is an early tracer-bullet task.
+- PRD: functional requirements use stable IDs (`FR1`, `FR2`, ...) and are referenced by contracts/tasks.
+- Tasks: each task includes `Slice:` + `User Stories:` + `PRD Requirements:` mapping (or `N/A`), and there is an early tracer-bullet task.
 - Implementation: TDD is mandatory for behavior changes/bug fixes (red/green/refactor; mock boundaries only): `docs/guides/tdd/README.md`.
 
 ## Phase Gate (Always)

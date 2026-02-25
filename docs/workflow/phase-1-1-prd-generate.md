@@ -103,6 +103,11 @@ Traceability rule:
 Traceability rule:
 
 - Every requirement must reference the story(ies) it serves: `(US1)` / `(US2)` etc.
+- Every requirement must have a stable ID: `FR1`, `FR2`, ...
+
+Format:
+
+- FR1 (US1): <requirement>
 
 ## 5. Data & API Contracts
 
@@ -113,6 +118,7 @@ Traceability rule:
 Traceability rule:
 
 - Contracts should reference the story(ies) that require them: `(US1)` / `(US2)` etc.
+- Contracts should reference the requirement IDs they implement when feasible: `(FR1)` / `(FR2)` etc.
 
 ## 6. Components / Modules
 
