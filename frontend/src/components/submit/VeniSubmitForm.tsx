@@ -516,7 +516,11 @@ export function VeniSubmitForm() {
           </div>
 
           {hardBlockErrors.length > 0 ? (
-            <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div
+              className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              aria-live="assertive"
+              role="alert"
+            >
               <p className="font-medium">Submission blocked</p>
               <ul className="mt-1 list-disc pl-5">
                 {hardBlockErrors.map((line) => (
@@ -527,7 +531,11 @@ export function VeniSubmitForm() {
           ) : null}
 
           {formError ? (
-            <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div
+              className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              aria-live="assertive"
+              role="alert"
+            >
               {formError}
             </div>
           ) : null}
