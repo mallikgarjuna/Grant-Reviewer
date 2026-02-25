@@ -388,7 +388,21 @@ export function VeniSubmitForm() {
                 }))
               }
               value={draft.academic_profile}
+              aria-invalid={hardBlockErrors.includes("academic_profile")}
+              aria-describedby={
+                hardBlockErrors.includes("academic_profile")
+                  ? "error-academic-profile"
+                  : undefined
+              }
             />
+            {hardBlockErrors.includes("academic_profile") && (
+              <p
+                id="error-academic-profile"
+                className="text-sm text-red-600 font-medium"
+              >
+                Academic Profile is required.
+              </p>
+            )}
             <p className="text-sm text-[var(--color-muted-foreground)]">
               {counters.academic_profile.toLocaleString()} words
             </p>
@@ -411,7 +425,21 @@ export function VeniSubmitForm() {
                 }))
               }
               value={draft.key_outputs}
+              aria-invalid={hardBlockErrors.includes("key_outputs")}
+              aria-describedby={
+                hardBlockErrors.includes("key_outputs")
+                  ? "error-key-outputs"
+                  : undefined
+              }
             />
+            {hardBlockErrors.includes("key_outputs") && (
+              <p
+                id="error-key-outputs"
+                className="text-sm text-red-600 font-medium"
+              >
+                Key Outputs is required.
+              </p>
+            )}
             <p className="text-sm text-[var(--color-muted-foreground)]">
               {counters.key_outputs.toLocaleString()} words
             </p>
@@ -460,7 +488,21 @@ export function VeniSubmitForm() {
                 }))
               }
               value={draft.research_idea}
+              aria-invalid={hardBlockErrors.includes("research_idea")}
+              aria-describedby={
+                hardBlockErrors.includes("research_idea")
+                  ? "error-research-idea"
+                  : undefined
+              }
             />
+            {hardBlockErrors.includes("research_idea") && (
+              <p
+                id="error-research-idea"
+                className="text-sm text-red-600 font-medium"
+              >
+                Research Idea is required.
+              </p>
+            )}
             <p
               className={`text-sm ${
                 counters.research_idea > researchIdeaLimit
