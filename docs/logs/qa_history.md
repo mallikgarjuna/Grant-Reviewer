@@ -192,3 +192,8 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Are `docs/logs/decisions.md` and `docs/logs/prompt_history.md` optional at WF completion?
 **A:** No. Workflow/AGENTS rules require docs synchronization as part of completion. `decisions.md` is required when there are architecture/scope-impacting decisions; `prompt_history.md` should capture the workflow interaction trail.
+
+## 2026-02-25
+
+### Q: Given the recent changes (WF-0028/WF-0029/WF-0031), should the next workflow author another funding call (ERC/MSCA) before building more universal form features?
+**A:** Yes. The next mandatory phase (P2 #15: Universal Form Dynamic UI) cannot be built effectively until the system has ingested a second, structurally complex funding call (like ERC with nested nodes). Authoring and ingesting a new V2 YAML will flush out hardcoded assumptions in the backend ingestion and frontend `/app/reviews/[id]` logic, acting as the forcing function for the true dynamic form requirements.

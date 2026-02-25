@@ -89,11 +89,17 @@ For each task:
    - targeted tests to add/run for that breakage risk
 6. If the task is a behavior change or a bug fix, first add/update a failing test that proves the acceptance criteria, then implement until it passes.
    - Do NOT do horizontal slicing (all tests first, all code later). Do `RED->GREEN` per increment.
-7. Commit using this format:
+7. **Per-task TDD logging (Required for behavior change / bug fix tasks)**:
+   - Print an explicit labeled block in the chat log so the user can recognize the loop:
+     - `RED:` what test you wrote/updated + command run + pass/fail
+     - `GREEN:` what minimal code change you made + command run + pass/fail
+     - `REFACTOR:` what cleanup you did (or `skip`) + command run + pass/fail
+   - If the task is not a behavior change/bug fix, print: `TDD: N/A (no behavior change)`
+8. Commit using this format:
 
    WF-XXXX: <slug> — Task <N> — <short title>
 
-8. Optionally mark task complete inside tasks file (checkbox).
+9. Optionally mark task complete inside tasks file (checkbox).
    Do NOT bump version unless the task plan itself changed.
 
 Then continue automatically to the next task.

@@ -27,7 +27,7 @@ Backtracking is allowed (see below).
 
 Trigger: read before starting a phase; ensures artifacts are implementable.
 
-- Brainstorm: tight MVP + non-goals; for `Type: page`, may include `## Appendix — Page Spec (MVP)` (optional).
+- Brainstorm: tight MVP + non-goals; include a short, timeboxed **Repo Reality Snapshot** when repo context will prevent overfitting or verify key assertions; for `Type: page`, may include `## Appendix — Page Spec (MVP)` (optional).
 - PRD: includes **User Stories (MVP)** + **Deferred Stories**, plus a short **Testing Decisions (TDD)** section.
 - PRD: functional requirements use stable IDs (`FR1`, `FR2`, ...) and are referenced by contracts/tasks.
 - PRD: deep modules called out (small interface, lots hidden; stable seams).

@@ -43,7 +43,7 @@ Return:
 5. Redundant or mergeable tasks
 6. Exact edits required (task number + change)
 7. Missing traceability (tasks missing Slice/User Stories; tracer bullet missing/late)
-8. Testing gaps (tasks missing TDD intent; verification steps not proving acceptance criteria)
+8. Testing gaps (tasks missing explicit `RED/GREEN/REFACTOR` TDD Plan where required; verification steps missing concrete automated commands; verification steps not proving acceptance criteria)
 9. PRD alignment gaps (tasks reference non-existent US#; tasks missing US# where PRD says MVP)
 10. PRD requirement alignment gaps (tasks reference non-existent FR#; tasks missing FR# where PRD defines requirements)
 11. Next 2 actions I should take (choose one)
