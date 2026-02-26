@@ -7,7 +7,7 @@ Do NOT modify this file during execution.
 ---
 
 ## Purpose
-To execute the granular development tasks defined in Phase 3, rigorously verify the implementation, and synthesize the results into a walkthrough document.
+To execute the granular development tasks defined in Phase 3, run a strict review + verification gate, and synthesize the results into a walkthrough document.
 
 ## Inputs Required
 1. A completed and approved Tasks artifact representing the current WF scope (e.g., `docs/tasks/task-<WF-ID>-<slug>.md`).
@@ -38,14 +38,16 @@ To execute the granular development tasks defined in Phase 3, rigorously verify 
 4. Check off (`[x]`) tasks in the task artifact as you go.
 5. Do not proceed to Part B until all tasks are implemented.
 
-### PART B: Verify [GATE]
+### PART B: Review + Verify [GATE]
 1. Stop implementing features.
-2. Run `pre-commit run --all-files` (or the equivalent linter/formatter).
-3. Run the project's test suite (if applicable) and explicitly print the results.
-4. If the work touched UI/Frontend, ask the user if they wish to perform a manual visual validation or if you should use an Agentic Browser to verify the UI.
-5. For any bug discovered during verification, write/update a failing test that reproduces it before fixing code; only proceed once the reproducer passes.
-6. If any verification fails, drop back to Part A to implement the fix, then return to Part B.
-7. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C.
+2. Run a focused review pass (code review mindset): identify regressions, behavioral drift from PRD/tasks, missing tests, and scope creep.
+3. If review finds issues, drop back to Part A to implement fixes, then restart Part B.
+4. Run `pre-commit run --all-files` (or the equivalent linter/formatter).
+5. Run the project's test suite (if applicable) and explicitly print the results.
+6. If the work touched UI/Frontend, ask the user if they wish to perform a manual visual validation or if you should use an Agentic Browser to verify the UI.
+7. For any bug discovered during verification, write/update a failing test that reproduces it before fixing code; only proceed once the reproducer passes.
+8. If any verification fails, drop back to Part A to implement the fix, then return to Part B.
+9. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C.
 
 ### PART C: Walkthrough + Ship [GATE]
 1. Read the artifact file: `docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md`.
