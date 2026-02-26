@@ -16,7 +16,7 @@ Last Updated: 2026-02-26
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Update Core Schemas & Validation
+### [x] Task 1 — Update Core Schemas & Validation
 Goal: Add `parent_logical_id`, `max_pages`, and `stage` to the V2 schemas. Apply pre-validation for duplicate node IDs. Add defense-in-depth duplicate check in ingestion loop.
 Slice: Core Schema Definitions
 User Stories: US1, US4, US5

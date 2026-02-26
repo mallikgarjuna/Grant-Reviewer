@@ -64,6 +64,7 @@ class EvaluationElementDefinitionV2(StrictBaseModel):
     name: str = Field(min_length=1)
     description: str = Field(min_length=1)
     source_hint: str | None = None
+    stage: Literal["STEP_1", "STEP_2", "BOTH"] | None = "BOTH"
 
 
 class EvaluationCriterionDefinitionV2(StrictBaseModel):
@@ -99,6 +100,7 @@ class ContentConstraintsDefinitionV2(StrictBaseModel):
 
     total_word_limit: TotalWordLimitDefinitionV2 | None = None
     max_items: int | None = None
+    max_pages: int | None = None
     word_limit_by_domain: WordLimitByDomainDefinitionV2 | None = None
     note: str | None = None
 
@@ -125,6 +127,7 @@ class ProposalNodeDefinitionV2(StrictBaseModel):
     """Narrative node in the proposal structure."""
 
     id: str = Field(min_length=1)
+    parent_logical_id: str | None = None
     label: str = Field(min_length=1)
     node_type: str = Field(min_length=1)
     source_section: str | None = None
@@ -155,6 +158,18 @@ class CallDefinitionV2(StrictBaseModel):
     @model_validator(mode="after")
     def check_references(self) -> CallDefinitionV2:
         """Ensure every node expectation points to a defined evaluation element."""
+        seen_node_ids: set[str] = set()
+        duplicate_node_ids: list[str] = []
+        for node in self.proposal_nodes:
+            if node.id in seen_node_ids:
+                duplicate_node_ids.append(node.id)
+                continue
+            seen_node_ids.add(node.id)
+
+        if duplicate_node_ids:
+            duplicate_label = ", ".join(sorted(set(duplicate_node_ids)))
+            raise ValueError(f"Duplicate proposal node id: {duplicate_label}")
+
         valid_element_ids = {
             element.id
             for criterion in self.evaluation_criteria
