@@ -23,6 +23,9 @@ Runner shortcuts:
 Phase 0 input confirmation convention:
 - Before running Phase 0.0, confirm `Title` / `Type` / `Slug` via 2–3 structured options each, with one recommended option.
 
+Deferred work convention:
+- If a discussion produces a deferred/follow-up item, park it in `docs/parking_lot.md` with enough context to pick later, and reference the originating WF/chat (at minimum: `WF-XXXX`, date, and commit ID if available).
+
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).
 

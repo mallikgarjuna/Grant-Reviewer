@@ -112,6 +112,7 @@ Promotion dependency note:
 | 20 | Structured review: per-node grouped detail endpoint | product | New `/reviews/{id}/structured` endpoint returning `nodes[].cards[]` grouped response. Current MVP uses flat `cards[]` from existing detail endpoint. (Ref: WF-0029 PRD v0.3 deferral) | 2026-02-22 |
 | 21 | Assisted extraction via document upload (.docx / .pdf) | product | Use a service like MarkItDown or an MCP tool to parse uploaded documents and auto-populate the structured UI inputs (reducing copy-paste friction with tables/images). (Ref: WF-0030 S1 Q2) | 2026-02-22 |
 | 22 | Machine validation of page-based constraints (`max_pages`) | product | `max_pages` is currently authored merely as a UI signaling field. Since the MVP uses plain text strings rather than PDF uploads, we cannot physically count pages. Add a rough heuristic (e.g., 1 page = 4000 chars) or PDF parsing to strictly enforce this in the backend. (Ref: WF-0032 Brainstorm Section 6) | 2026-02-25 |
+| 23 | Deprecate `POST /reviews` (migrate to structured-only create flow) | tech-debt | Follow-on WF: make `POST /api/structured-review` support single-node UX cleanly (idempotency + persistence + errors), migrate frontend/BFF, then deprecate `POST /reviews` with a compatibility window. (Ref: WF-0034 Phase 0.1 chat 2026-02-26, commit `a53843a`.) | 2026-02-26 |
 
 ---
 
@@ -156,3 +157,4 @@ Promotion dependency note:
 - **v1.4** (2026-02-26): Reordered P2 priorities to map exactly to the Architect's 7-step Execution Pipeline (Contracts -> Runtime -> App Alignment -> E2E). Added 2 new explicit ops items for E2E validation scenarios.
 - **v1.5** (2026-02-26): Promoted P2 #1 (Tree API) and P2 #2 (Metadata DTO) to WF-0033. Renumbered P2.
 - **v1.6** (2026-02-26): Promoted P2 #1 (Unify review service execution core) to WF-0034. Renumbered P2.
+- **v1.7** (2026-02-26): Parked follow-on item to eventually deprecate `POST /reviews` after migrating to structured-only create flow. (Ref: WF-0034.)
