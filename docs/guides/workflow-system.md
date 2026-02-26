@@ -18,7 +18,7 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 
 ### Workflow Execution Rules
 
-- **Runners are Routers:** When executing a workflow runner (e.g., `run-lifecycle-auto.md`), you **MUST** read and follow the specific steps in the referenced phase file (e.g., `phase-0-0-start-workflow.md`).
+- **Runners are Routers:** When executing a workflow runner (e.g., `lifecycle-run-auto.md`), you **MUST** read and follow the specific steps in the referenced phase file (e.g., `phase-0-0-start-workflow.md`).
 - Before starting a new WF phase (or phase runner), ensure the previous phase’s primary artifact(s) are saved and committed (use `git status --short` to confirm a clean boundary).
 - After completing a WF phase, ensure any artifacts edited/created in that phase are saved and committed before starting the next phase.
 - During phase runners, commit at each part boundary: after Part A outputs, after Part C revisions, and after any Part B edits when applicable.

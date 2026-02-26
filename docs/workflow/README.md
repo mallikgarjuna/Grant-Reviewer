@@ -16,9 +16,32 @@ Every meaningful initiative is tracked using a Workflow ID (WF-XXXX).
 - Done
 
 Runner shortcuts:
-- Phase 0: `docs/workflow/phase-0-run-start-and-brainstorm-ideation.md`
-- Phase 1/2: `docs/workflow/phase-12-run-planning.md` (one unified runner; Phase ID = 1 or 2)
-- Phase 3: `docs/workflow/phase-3-run-implement-execution.md`
+- Phase 0: `docs/workflow/phase-0-run-ideation.md` (includes brainstorm review gate + revise)
+- Phase 1/2: `docs/workflow/phase-1-2-run-planning.md` (one unified runner; Phase ID = 1 or 2)
+- Phase 3: `docs/workflow/phase-3-run-execution.md`
+- Lifecycle (auto): `docs/workflow/lifecycle-run-auto.md`
+- Lifecycle (interactive): `docs/workflow/lifecycle-run-interactive.md`
+
+## Runner Index (Canonical)
+
+| Runner | Scope | Part Structure | Delegates To | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| `phase-0-run-ideation.md` | Phase 0 end-to-end | `A1/A2/B/C` | `phase-0-0-start-workflow.md`, `phase-0-1-brainstorm.md`, `phase-0-2-brainstorm-risk-audit.md`, `phase-0-3-brainstorm-revise.md` | Includes interactive brainstorm + review gate |
+| `phase-1-2-run-planning.md` | Phase 1 or 2 end-to-end | `A/B/C` | `phase-1-1/2/3` or `phase-2-1/2/3` (selected by Phase ID) | Strict A/B/C router, no logic duplication |
+| `phase-3-run-execution.md` | Phase 3 end-to-end | `A/B/C` (where `C -> C1/C2/C3`) | `phase-3-1-implement-tasks.md`, `phase-3-2-technical-audit-review.md`, `phase-3-3-revise-verify-and-ship.md` | Part B is technical audit only |
+| `phase-3-2-technical-audit-review.md` | Phase 3 review gate only | `B` | N/A | No edits allowed |
+| `phase-3-3-revise-verify-and-ship.md` | Phase 3 post-review execution | `C1/C2/C3` | N/A | Revise, verify, then walkthrough + ship gate |
+| `lifecycle-run-auto.md` | Phases 0→3 | Phase routers chained (`0 -> 1/2 -> 3`) | Phase runners above | Autonomous orchestration; still obeys downstream gates |
+| `lifecycle-run-interactive.md` | Phases 0→3 with user checkpoints | Phase routers chained (`0 -> 1/2 -> 3`) | Phase runners above | Waits for user signal between phases |
+
+Phase 0 input confirmation convention:
+- Before running Phase 0.0, confirm `Title` / `Type` / `Slug` via 2–3 structured options each, with one recommended option.
+
+Deferred work convention:
+- If a discussion produces a deferred/follow-up item, park it in `docs/parking_lot.md` with enough context to pick later, and reference the originating WF/chat (at minimum: `WF-XXXX`, date, and commit ID if available).
+
+End-of-phase convention:
+- At the end of each phase run, provide next steps/options with explicit copy-pasteable prompt blocks, and recommend starting a new chat/session if context is getting long or the next phase is a separate workflow run.
 
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).

@@ -6,24 +6,22 @@ Rule: Services call Repositories. Controllers call Services.
 
 import logging
 import os
-from concurrent.futures import TimeoutError
 from datetime import datetime
 from uuid import UUID
 
 from app.models.domain import (
-    NodeExpectation,
     Review,
     ReviewCard,
     ReviewRating,
     ReviewStatus,
 )
 from app.repositories.review_repository import ReviewRepository
-from app.schemas.llm_response import LLMReviewResponse
-from app.services.llm_client import LLMClientError, LLMClientProtocol, OpenAIClient
-from app.services.llm_helpers import generate_with_timeout, parse_llm_response
-from app.services.prompt_builder import build_review_prompt
+from app.services.llm_client import LLMClientProtocol, OpenAIClient
+from app.services.review_execution_core import (
+    ReviewExecutionCore,
+    format_execution_failure_summary,
+)
 from app.services.reviewer_policy import (
-    find_policy_violations,
     get_applicable_reviewer_policy_rules,
     ReviewStage,
 )
@@ -38,10 +36,12 @@ class ReviewerService:
         self,
         repository: ReviewRepository,
         llm_client: LLMClientProtocol | None = None,
+        execution_core: ReviewExecutionCore | None = None,
     ) -> None:
         self.repository = repository
         self._llm_client = llm_client
         self._timeout_seconds = float(os.getenv("REVIEW_TIMEOUT_SECONDS", "30"))
+        self._execution_core = execution_core
         logger.debug("ReviewerService initialized")
 
     @property
@@ -51,6 +51,15 @@ class ReviewerService:
             logger.debug("Lazy-loading OpenAI client...")
             self._llm_client = OpenAIClient()
         return self._llm_client
+
+    @property
+    def execution_core(self) -> ReviewExecutionCore:
+        if self._execution_core is None:
+            self._execution_core = ReviewExecutionCore(
+                llm_client=self.llm_client,
+                timeout_seconds=self._timeout_seconds,
+            )
+        return self._execution_core
 
     def generate_review(
         self,
@@ -132,16 +141,6 @@ class ReviewerService:
             f"[Review] Created snippet {snippet.id} ({len(snippet_text)} chars)"
         )
 
-        # 6. Build prompt
-        logger.debug("[Review] Building prompt...")
-        prompt = build_review_prompt(
-            node,
-            snippet_text,
-            expectations,
-            reviewer_policy_rules=reviewer_policy_rules,
-        )
-        logger.debug(f"[Review] Prompt built ({len(prompt)} chars)")
-
         # 7. Create review record (status=PENDING initially)
         review = self.repository.create_review(
             snippet_id=snippet.id,
@@ -153,75 +152,31 @@ class ReviewerService:
         )
         logger.info(f"[Review] Created review {review.id} (status=PENDING)")
 
-        # Store prompt and model info
-        review.prompt_sent = prompt
+        # Store model info
         review.llm_model = self.llm_client.get_model_name()
-
-        # 8. Call LLM
-        try:
-            logger.info("[Review] Calling LLM...")
-            raw_response = generate_with_timeout(
-                llm_client=self.llm_client,
-                prompt=prompt,
+        node_result = self.execution_core.execute_assessable_node(
+            node=node,
+            snippet_text=snippet_text,
+            expectations=expectations,
+            reviewer_policy_rules=reviewer_policy_rules,
+        )
+        review.prompt_sent = node_result.prompt
+        review.raw_llm_response = node_result.raw_response
+        if node_result.failure is not None:
+            review.status = ReviewStatus.FAILED
+            review.overall_summary = format_execution_failure_summary(
+                flow="single",
+                category=node_result.failure.category,
+                message=node_result.failure.message,
                 timeout_seconds=self._timeout_seconds,
             )
-            review.raw_llm_response = raw_response
-            logger.info("[Review] LLM call successful")
-        except TimeoutError:
-            logger.error(
-                "[Review] LLM call timed out after %.2fs", self._timeout_seconds
-            )
-            review.status = ReviewStatus.FAILED
-            review.overall_summary = (
-                f"LLM call timed out after {self._timeout_seconds:.2f}s."
-            )
-            self.repository.update_review(review)
-            return review, []
-        except LLMClientError as e:
-            logger.error(f"[Review] LLM call failed: {e}")
-            review.status = ReviewStatus.FAILED
-            review.overall_summary = f"LLM call failed: {e}"
             self.repository.update_review(review)
             return review, []
 
-        # 9. Parse and validate response
-        try:
-            logger.debug("[Review] Parsing LLM response...")
-            llm_response = parse_llm_response(raw_response)
-            logger.debug(
-                f"[Review] Parsed {len(llm_response.feedbacks)} feedback items"
-            )
-
-            logger.debug("[Review] Validating response...")
-            self._validate_response(llm_response, expectations)
-            logger.info("[Review] Response validation passed")
-        except ValueError as e:
-            logger.error(f"[Review] Response validation failed: {e}")
-            review.status = ReviewStatus.FAILED
-            review.overall_summary = f"Response validation failed: {e}"
-            self.repository.update_review(review)
-            return review, []
-
-        blocking_violations, warning_violations = find_policy_violations(
-            feedback_texts=[item.feedback for item in llm_response.feedbacks],
-            policy_rules=reviewer_policy_rules,
-        )
-        if blocking_violations:
-            logger.error(
-                "[Review] Blocking reviewer-policy violations: %s",
-                blocking_violations,
-            )
-            review.status = ReviewStatus.FAILED
-            review.overall_summary = (
-                "Reviewer-policy blocking violations detected: "
-                + "; ".join(blocking_violations)
-            )
-            self.repository.update_review(review)
-            return review, []
-        if warning_violations:
+        if node_result.warning_violations:
             logger.warning(
                 "[Review] Reviewer-policy warning violations: %s",
-                warning_violations,
+                node_result.warning_violations,
             )
 
         # 10. Create ReviewCards
@@ -229,7 +184,7 @@ class ReviewerService:
         cards = []
         expectation_map = {str(exp.id): exp for exp in expectations}
 
-        for feedback_item in llm_response.feedbacks:
+        for feedback_item in node_result.feedbacks:
             expectation = expectation_map[feedback_item.node_expectation_id]
             card = self.repository.create_review_card(
                 review_id=review.id,
@@ -244,38 +199,12 @@ class ReviewerService:
         review.status = ReviewStatus.COMPLETED
         review.overall_rating = ReviewRating.NOTE  # Defer rating logic
         review.overall_summary = f"Review completed with {len(cards)} findings."
-        if warning_violations:
+        if node_result.warning_violations:
             review.overall_summary += (
-                " Reviewer-policy warnings: " + "; ".join(warning_violations)
+                " Reviewer-policy warnings: "
+                + "; ".join(node_result.warning_violations)
             )
         self.repository.update_review(review)
 
         logger.info(f"[Review] ✓ Review {review.id} COMPLETED with {len(cards)} cards")
         return review, cards
-
-    def _validate_response(
-        self,
-        response: LLMReviewResponse,
-        expectations: list[NodeExpectation],
-    ) -> None:
-        """Validate LLM response matches expectations."""
-        # Check cardinality
-        expected_count = len(expectations)
-        actual_count = len(response.feedbacks)
-        if actual_count != expected_count:
-            raise ValueError(
-                f"Cardinality mismatch: expected {expected_count} feedbacks, "
-                f"got {actual_count}"
-            )
-
-        # Check all expectation IDs exist and belong to this node
-        valid_ids = {str(exp.id) for exp in expectations}
-        received_ids = {fb.node_expectation_id for fb in response.feedbacks}
-
-        missing = valid_ids - received_ids
-        if missing:
-            raise ValueError(f"Missing feedback for expectations: {missing}")
-
-        extra = received_ids - valid_ids
-        if extra:
-            raise ValueError(f"Unknown expectation IDs in response: {extra}")

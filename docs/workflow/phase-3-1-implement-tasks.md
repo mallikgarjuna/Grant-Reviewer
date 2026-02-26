@@ -53,7 +53,7 @@ If the baseline test run fails for reasons unrelated to this WF, **STOP** and as
 ## Phase Return — Stop Processing Here
 When all tasks are implemented, STOP execution.
 Do NOT create the walkthrough here.
-Return control to the `phase-3-run-implement-execution.md` Part B Verification gate.
+Return control to the `phase-3-run-execution.md` Part B Verification gate.
 
 ---
 
@@ -112,7 +112,7 @@ For each task:
 
    WF-XXXX: <slug> — Task <N> — <short title>
 
-9. Optionally mark task complete inside tasks file (checkbox).
+9. Mark task complete inside tasks file (`[x]`) before moving to the next task.
    Do NOT bump version unless the task plan itself changed.
 
 Then continue automatically to the next task.
@@ -121,10 +121,10 @@ Then continue automatically to the next task.
 
 When all tasks are complete, **STOP**.
 
-Do not update `docs/index.md` or create a walkthrough here. Your job is done. The primary `phase-3-run-implement-execution.md` orchestrator will now take over to enforce Part B (Verify) and Part C (Walkthrough + Ship).
+Do not update `docs/index.md` or create a walkthrough here. Your job is done. The primary `phase-3-run-execution.md` orchestrator will now take over to enforce Phase 3.2 (technical audit review gate) and Phase 3.3 (revise + verify + walkthrough/ship).
 
 ---
 
 ## How to Invoke implicitly
 
-This instructions file is implicitly invoked by `phase-3-run-implement-execution.md` Part A. You do not need a direct prompt cheat-sheet for this file, as it should no longer be run locally or standalone.
+This instructions file is implicitly invoked by `phase-3-run-execution.md` Part A. You do not need a direct prompt cheat-sheet for this file, as it should no longer be run locally or standalone.

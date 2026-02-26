@@ -128,7 +128,7 @@
 **Prevention**: After any merge to `main`, always run `git push origin main` and verify with `git log --oneline --decorate -1` that `origin/main` matches `HEAD`.
 
 ### L27: Workflow Runners contain References, not Rules
-**Issue**: Agent skipped branch creation because `run-lifecycle-auto.md` listed "Phase 0.0" as a single bullet without explicit sub-steps.
+**Issue**: Agent skipped branch creation because `lifecycle-run-auto.md` listed "Phase 0.0" as a single bullet without explicit sub-steps.
 **Fix**: Updated runners to explicitly reference `phase-0-0-start-workflow.md`.
 **Prevention**: Always read the detailed phase file referenced in the runner before executing the phase. The runner is a router, not the full protocol.
 
@@ -140,7 +140,7 @@
 ### L29: Phase 3 Must Include Breakage Risk Review + Bugfix Test-First Flow
 **Issue**: Implementation runs can ship code changes without explicitly identifying regression risks, and bug fixes can be applied without first proving the failure with a reproducible test.
 **Fix**: Encode two mandatory rules in workflow instructions: (1) after coding, explicitly list what could break and propose targeted tests; (2) for bug fixes, first add/update a failing test reproducer, then fix until it passes.
-**Prevention**: Enforce these rules in `AGENTS.md` and Phase 3 runner files (`docs/workflow/phase-3-run-implement-execution.md`, `docs/workflow/phase-3-1-implement-tasks.md`) so every execution run applies them by default.
+**Prevention**: Enforce these rules in `AGENTS.md` and Phase 3 runner files (`docs/workflow/phase-3-run-execution.md`, `docs/workflow/phase-3-1-implement-tasks.md`) so every execution run applies them by default.
 
 ### L30: Append Q&A to Brainstorm Artifacts
 **Issue**: Brainstorming artifacts contained only summaries of decisions, making it harder to understand the reasoning.

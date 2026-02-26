@@ -776,6 +776,69 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
     assert detail_payload["cards"][0]["not_assessable_reason"] is None
 
 
+def test_create_review_shared_core_happy_path_parity(monkeypatch) -> None:
+    from app.services.review_execution_core import ReviewExecutionCore
+
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    calls = {"count": 0}
+    original_execute = ReviewExecutionCore.execute_assessable_node
+
+    def traced_execute(self, **kwargs):
+        calls["count"] += 1
+        return original_execute(self, **kwargs)
+
+    monkeypatch.setattr(ReviewExecutionCore, "execute_assessable_node", traced_execute)
+
+    response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Shared core parity happy path.",
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "COMPLETED"
+    assert calls["count"] == 1
+
+    detail_response = get_review_detail(client=client, review_id=payload["review_id"])
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert detail_payload["review"]["status"] == "COMPLETED"
+    assert len(detail_payload["cards"]) == 1
+
+
+def test_create_review_contract_parity(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    success = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Contract parity single node.",
+        },
+        idempotency_key="idem-single-contract-1",
+    )
+    assert success.status_code == 200
+    success_payload = success.json()
+    assert set(success_payload.keys()) == {"review_id", "status"}
+    assert success_payload["status"] == "COMPLETED"
+
+    mismatch = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Contract parity single node changed payload",
+        },
+        idempotency_key="idem-single-contract-1",
+    )
+    assert mismatch.status_code == 409
+    mismatch_payload = mismatch.json()
+    assert mismatch_payload["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+
+
 def test_review_repository_supports_structured_write_path(monkeypatch) -> None:
     _, seeded_ids = create_client_with_seed(monkeypatch)
     session = get_session()
@@ -1119,6 +1182,34 @@ def test_structured_review_single_node_submission_research_idea(monkeypatch) -> 
     )
 
 
+def test_structured_review_contract_parity(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    success = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+        idempotency_key="idem-structured-contract-1",
+    )
+    assert success.status_code == 200
+    success_payload = success.json()
+    assert set(success_payload.keys()) == {"review_id", "status"}
+    assert success_payload["status"] == "COMPLETED"
+
+    mismatch = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "updated text"}],
+        },
+        idempotency_key="idem-structured-contract-1",
+    )
+    assert mismatch.status_code == 409
+    mismatch_payload = mismatch.json()
+    assert mismatch_payload["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+
+
 def test_review_detail_retains_cards_when_evaluation_element_is_archived(
     monkeypatch,
 ) -> None:
@@ -1357,6 +1448,34 @@ def test_timeout_creates_failed_review(monkeypatch) -> None:
     assert response.json()["status"] == "FAILED"
 
 
+def test_create_review_timeout_parity(monkeypatch) -> None:
+    monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.001")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    def slow_generate(_: StubLLMClient, __: str) -> str:
+        time.sleep(0.05)
+        return '{"feedbacks":[]}'
+
+    monkeypatch.setattr(StubLLMClient, "generate", slow_generate)
+    response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Trigger timeout parity path",
+        },
+        idempotency_key="idem-timeout-parity-1",
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "FAILED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    review_payload = detail.json()["review"]
+    assert review_payload["status"] == "FAILED"
+    assert review_payload["overall_summary"] == "LLM call timed out after 0.00s."
+
+
 def test_missing_signature_headers_returns_unauthorized(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = client.post(
@@ -1450,6 +1569,36 @@ def test_idempotency_payload_mismatch_returns_conflict(monkeypatch) -> None:
     assert response_one.status_code == 200
     assert response_two.status_code == 409
     assert response_two.json()["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+
+
+def test_create_review_idempotency_mismatch_parity(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    first = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Original payload",
+        },
+        idempotency_key="idem-parity-mismatch-1",
+    )
+    second = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Modified payload",
+        },
+        idempotency_key="idem-parity-mismatch-1",
+    )
+    assert first.status_code == 200
+    assert second.status_code == 409
+    payload = second.json()
+    assert payload["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+    assert (
+        payload["error"]["message"]
+        == "Idempotency key was already used with a different payload."
+    )
 
 
 def test_quota_exceeded_returns_429_with_details(monkeypatch) -> None:
