@@ -118,7 +118,7 @@ Verification Steps:
 Risks (if any):
 - Route/service validation ordering can regress and change returned error priority.
 
-### [ ] Task 6 — Shared-core service tests with deterministic stubs
+### [x] Task 6 — Shared-core service tests with deterministic stubs
 
 Goal: Add focused shared-core seam tests for policy injection, parse/validation, and post-check outcomes.
 Slice: core-seam-tests
