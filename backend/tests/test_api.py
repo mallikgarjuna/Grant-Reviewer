@@ -1390,6 +1390,34 @@ def test_timeout_creates_failed_review(monkeypatch) -> None:
     assert response.json()["status"] == "FAILED"
 
 
+def test_create_review_timeout_parity(monkeypatch) -> None:
+    monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.001")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    def slow_generate(_: StubLLMClient, __: str) -> str:
+        time.sleep(0.05)
+        return '{"feedbacks":[]}'
+
+    monkeypatch.setattr(StubLLMClient, "generate", slow_generate)
+    response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Trigger timeout parity path",
+        },
+        idempotency_key="idem-timeout-parity-1",
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "FAILED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    review_payload = detail.json()["review"]
+    assert review_payload["status"] == "FAILED"
+    assert review_payload["overall_summary"] == "LLM call timed out after 0.00s."
+
+
 def test_missing_signature_headers_returns_unauthorized(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = client.post(
@@ -1483,6 +1511,36 @@ def test_idempotency_payload_mismatch_returns_conflict(monkeypatch) -> None:
     assert response_one.status_code == 200
     assert response_two.status_code == 409
     assert response_two.json()["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+
+
+def test_create_review_idempotency_mismatch_parity(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    first = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Original payload",
+        },
+        idempotency_key="idem-parity-mismatch-1",
+    )
+    second = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Modified payload",
+        },
+        idempotency_key="idem-parity-mismatch-1",
+    )
+    assert first.status_code == 200
+    assert second.status_code == 409
+    payload = second.json()
+    assert payload["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+    assert (
+        payload["error"]["message"]
+        == "Idempotency key was already used with a different payload."
+    )
 
 
 def test_quota_exceeded_returns_429_with_details(monkeypatch) -> None:

@@ -79,3 +79,20 @@ def test_find_policy_violations_separates_blocking_and_warning() -> None:
 
     assert len(blocking) == 1
     assert warning == []
+
+
+def test_policy_blocking_violation_classification() -> None:
+    call_definition = _build_call_definition()
+    rules = get_applicable_reviewer_policy_rules(
+        call_definition=call_definition,
+        node_logical_id="b1_part1_scientific_proposal",
+        review_stage="STEP_1",
+    )
+    blocking, warning = find_policy_violations(
+        feedback_texts=["The proposal has insufficient budget for objectives."],
+        policy_rules=rules,
+    )
+    assert blocking == [
+        "pol_step1_budget: forbidden term 'insufficient budget' detected in feedback #1"
+    ]
+    assert warning == []

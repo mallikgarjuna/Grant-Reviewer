@@ -95,7 +95,7 @@ Verification Steps:
 Risks (if any):
 - Adapter migration may inadvertently change check ordering before execution.
 
-### [ ] Task 5 — Single-node failure and idempotency parity lock
+### [x] Task 5 — Single-node failure and idempotency parity lock
 
 Goal: Maintain `/reviews` timeout/error/idempotency semantics after shared-core migration.
 Slice: single-node-parity-guards
