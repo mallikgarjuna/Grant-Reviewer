@@ -86,14 +86,14 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 ### P1 Rationale Snapshot (2026-02-26)
 
 - Current launch blocker is the mismatch between promised multi-program coverage and call-specific frontend behavior.
-- Frontend call-agnostic foundations (P1 #1-#3) are prioritized before broad data ingestion so added call YAMLs become immediately usable in UX.
-- ERC CoG re-authoring from official sources (P1 #4) is kept ahead of broad ingestion because it is the immediate quality/completeness follow-up from WF-0032.
-- Broad content expansion (P1 #5) should be promoted only after prerequisites are done (or explicitly bundled into one WF).
+- Frontend call-agnostic foundations (WF-0035 + P1 #1-#2) are prioritized before broad data ingestion so added call YAMLs become immediately usable in UX.
+- ERC CoG re-authoring from official sources (P1 #3) is kept ahead of broad ingestion because it is the immediate quality/completeness follow-up from WF-0032.
+- Broad content expansion (P1 #4) should be promoted only after prerequisites are done (or explicitly bundled into one WF).
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 
 Promotion dependency note:
-- If promoting P1 #5, first verify P1 #1-#4 are done, or bundle them in the same WF with explicit dependency sequencing.
-- If promoting P1 #8, first verify P1 #1-#3 are done (or included in that same WF).
+- If promoting P1 #4, first verify WF-0035 and P1 #1-#3 are done, or bundle them in the same WF with explicit dependency sequencing.
+- If promoting P1 #7, first verify WF-0035 and P1 #1-#2 are done (or included in that same WF).
 
 ---
 
