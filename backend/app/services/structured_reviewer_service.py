@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-from concurrent.futures import TimeoutError
 from datetime import datetime
 from uuid import UUID
 
@@ -18,12 +17,13 @@ from app.models.domain import (
     ReviewStatus,
 )
 from app.repositories.review_repository import ReviewRepository
-from app.services.llm_client import LLMClientError, LLMClientProtocol, OpenAIClient
-from app.services.llm_helpers import generate_with_timeout, parse_llm_response
-from app.services.prompt_builder import build_review_prompt
+from app.services.llm_client import LLMClientProtocol, OpenAIClient
+from app.services.review_execution_core import (
+    ExecutionFailureCategory,
+    ReviewExecutionCore,
+)
 from app.services.reviewer_policy import (
     ReviewStage,
-    find_policy_violations,
     get_applicable_reviewer_policy_rules,
 )
 
@@ -43,10 +43,12 @@ class StructuredReviewerService:
         self,
         repository: ReviewRepository,
         llm_client: LLMClientProtocol | None = None,
+        execution_core: ReviewExecutionCore | None = None,
     ) -> None:
         self.repository = repository
         self._llm_client = llm_client
         self._timeout_seconds = float(os.getenv("REVIEW_TIMEOUT_SECONDS", "30"))
+        self._execution_core = execution_core
 
     @property
     def llm_client(self) -> LLMClientProtocol:
@@ -54,6 +56,15 @@ class StructuredReviewerService:
         if self._llm_client is None:
             self._llm_client = OpenAIClient()
         return self._llm_client
+
+    @property
+    def execution_core(self) -> ReviewExecutionCore:
+        if self._execution_core is None:
+            self._execution_core = ReviewExecutionCore(
+                llm_client=self.llm_client,
+                timeout_seconds=self._timeout_seconds,
+            )
+        return self._execution_core
 
     def generate_structured_review(
         self,
@@ -155,74 +166,42 @@ class StructuredReviewerService:
                 node_logical_id=node.logical_id,
                 review_stage=review_stage,
             )
-            prompt = build_review_prompt(
+            node_result = self.execution_core.execute_assessable_node(
                 node=node,
                 snippet_text=node_text,
                 expectations=assessable,
                 reviewer_policy_rules=reviewer_policy_rules,
                 cross_node_context=cross_context,
             )
-            prompt_logs.append({"node_logical_id": node_logical_id, "prompt": prompt})
+            prompt_logs.append(
+                {"node_logical_id": node_logical_id, "prompt": node_result.prompt}
+            )
+            if node_result.raw_response is not None:
+                raw_logs.append(
+                    {"node_logical_id": node_logical_id, "raw": node_result.raw_response}
+                )
 
-            try:
-                raw_response = generate_with_timeout(
-                    llm_client=self.llm_client,
-                    prompt=prompt,
-                    timeout_seconds=self._timeout_seconds,
-                )
-            except TimeoutError:
+            if node_result.failure is not None:
                 review.status = ReviewStatus.FAILED
-                review.overall_summary = (
-                    f"Structured review failed: timeout while reviewing "
-                    f"'{node_logical_id}' after {self._timeout_seconds:.2f}s."
-                )
-                review.prompt_sent = json.dumps(prompt_logs)
-                self.repository.update_review(review)
-                return review, all_cards
-            except LLMClientError as err:
-                review.status = ReviewStatus.FAILED
-                review.overall_summary = (
-                    f"Structured review failed for '{node_logical_id}': {err}"
-                )
-                review.prompt_sent = json.dumps(prompt_logs)
-                self.repository.update_review(review)
-                return review, all_cards
-
-            raw_logs.append({"node_logical_id": node_logical_id, "raw": raw_response})
-
-            try:
-                parsed_response = parse_llm_response(raw_response)
-                self._validate_response(parsed_response.feedbacks, assessable)
-                blocking_violations, warning_violations = find_policy_violations(
-                    feedback_texts=[
-                        feedback_item.feedback
-                        for feedback_item in parsed_response.feedbacks
-                    ],
-                    policy_rules=reviewer_policy_rules,
-                )
-                if blocking_violations:
-                    raise ValueError(
-                        "Reviewer-policy blocking violations: "
-                        + "; ".join(blocking_violations)
-                    )
-                if warning_violations:
-                    logger.warning(
-                        "[StructuredReview] Reviewer-policy warnings for %s: %s",
-                        node_logical_id,
-                        warning_violations,
-                    )
-            except ValueError as err:
-                review.status = ReviewStatus.FAILED
-                review.overall_summary = (
-                    f"Structured review validation failed for '{node_logical_id}': {err}"
+                review.overall_summary = self._failure_summary_for_node(
+                    node_logical_id=node_logical_id,
+                    category=node_result.failure.category,
+                    message=node_result.failure.message,
                 )
                 review.prompt_sent = json.dumps(prompt_logs)
                 review.raw_llm_response = json.dumps(raw_logs)
                 self.repository.update_review(review)
                 return review, all_cards
 
+            if node_result.warning_violations:
+                logger.warning(
+                    "[StructuredReview] Reviewer-policy warnings for %s: %s",
+                    node_logical_id,
+                    node_result.warning_violations,
+                )
+
             expectation_map = {str(expectation.id): expectation for expectation in assessable}
-            for feedback_item in parsed_response.feedbacks:
+            for feedback_item in node_result.feedbacks:
                 expectation = expectation_map[feedback_item.node_expectation_id]
                 card = self.repository.create_review_card(
                     review_id=review.id,
@@ -243,6 +222,22 @@ class StructuredReviewerService:
         review.raw_llm_response = json.dumps(raw_logs)
         self.repository.update_review(review)
         return review, all_cards
+
+    def _failure_summary_for_node(
+        self,
+        *,
+        node_logical_id: str,
+        category: ExecutionFailureCategory,
+        message: str,
+    ) -> str:
+        if category == ExecutionFailureCategory.TIMEOUT:
+            return (
+                f"Structured review failed: timeout while reviewing "
+                f"'{node_logical_id}' after {self._timeout_seconds:.2f}s."
+            )
+        if category == ExecutionFailureCategory.LLM_FAILURE:
+            return f"Structured review failed for '{node_logical_id}': {message}"
+        return f"Structured review validation failed for '{node_logical_id}': {message}"
 
     def _partition_expectations(
         self,
@@ -306,25 +301,3 @@ class StructuredReviewerService:
             return False
         element_logical_id = expectation.element.logical_id if expectation.element else None
         return element_logical_id in ALIGNMENT_ELEMENT_IDS
-
-    def _validate_response(
-        self,
-        feedbacks: list,
-        expectations: list[NodeExpectation],
-    ) -> None:
-        expected_ids = {str(expectation.id) for expectation in expectations}
-        received_ids = {feedback.node_expectation_id for feedback in feedbacks}
-
-        if len(feedbacks) != len(expectations):
-            raise ValueError(
-                f"Cardinality mismatch: expected {len(expectations)} feedbacks, "
-                f"got {len(feedbacks)}"
-            )
-
-        missing = expected_ids - received_ids
-        if missing:
-            raise ValueError(f"Missing feedback for expectations: {missing}")
-
-        extra = received_ids - expected_ids
-        if extra:
-            raise ValueError(f"Unknown expectation IDs in response: {extra}")

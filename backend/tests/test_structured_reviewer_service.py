@@ -24,6 +24,8 @@ from app.models.domain import (
     ReviewStatus,
 )
 from app.repositories.review_repository import ReviewRepository
+from app.services.review_execution_core import NodeExecutionResult
+from app.schemas.llm_response import ExpectationFeedback
 from app.services.structured_reviewer_service import StructuredReviewerService
 
 
@@ -205,14 +207,47 @@ class TimeoutOnSecondCallLLMClient(EchoExpectationLLMClient):
         return super().generate(prompt)
 
 
-def _build_service(monkeypatch, llm_client):
+def _build_service(monkeypatch, llm_client, execution_core=None):
     monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
     _reset_database()
     call_id = _seed_structured_service_graph()
     session = get_session()
     repository = ReviewRepository(session)
-    service = StructuredReviewerService(repository=repository, llm_client=llm_client)
+    service = StructuredReviewerService(
+        repository=repository,
+        llm_client=llm_client,
+        execution_core=execution_core,
+    )
     return service, call_id
+
+
+class SpyExecutionCore:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def execute_assessable_node(
+        self,
+        *,
+        node,
+        snippet_text: str,
+        expectations,
+        reviewer_policy_rules,
+        cross_node_context=None,
+    ) -> NodeExecutionResult:
+        del node, reviewer_policy_rules, cross_node_context
+        self.calls += 1
+        return NodeExecutionResult(
+            prompt=f"spy prompt: {snippet_text}",
+            raw_response='{"feedbacks": []}',
+            feedbacks=[
+                ExpectationFeedback(
+                    node_expectation_id=str(expectation.id),
+                    feedback=f"Spy feedback for {expectation.id}",
+                )
+                for expectation in expectations
+            ],
+            warning_violations=[],
+        )
 
 
 def test_structured_reviewer_service_happy_path(monkeypatch) -> None:
@@ -234,6 +269,33 @@ def test_structured_reviewer_service_happy_path(monkeypatch) -> None:
         assert review.proposal_snippet_id is None
         assert len(cards) == 5
         assert all(card.assessment_status == AssessmentStatus.ASSESSED for card in cards)
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_shared_core_tracer_happy_path(monkeypatch) -> None:
+    spy_core = SpyExecutionCore()
+    service, call_id = _build_service(
+        monkeypatch,
+        EchoExpectationLLMClient(),
+        execution_core=spy_core,
+    )
+    try:
+        review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                ("academic_profile", "Academic profile text"),
+                ("key_outputs", "Key outputs text"),
+                ("research_idea", "Research idea text"),
+            ],
+            external_user_id="user-shared-core-tracer",
+            idempotency_key="structured-shared-core-tracer",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 5
+        assert all(card.assessment_status == AssessmentStatus.ASSESSED for card in cards)
+        assert spy_core.calls == 3
     finally:
         service.repository.session.close()
 

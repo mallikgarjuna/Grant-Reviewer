@@ -7,7 +7,7 @@ Last Updated: 2026-02-26
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: structured path executes through shared core
+### [x] Task 1 — Tracer bullet: structured path executes through shared core
 
 Goal: Prove one end-to-end structured happy path can run via a new shared execution seam without changing endpoint contracts.
 Slice: tracer-bullet
