@@ -863,11 +863,21 @@ def _upsert_projection_v2(
     seen_nodes: set[str] = set()
     node_by_logical_id: dict[str, ProposalNode] = {}
     for order_idx, node_def in enumerate(ordered_nodes, start=1):
+        parent_node_id: UUID | None = None
+        if node_def.parent_logical_id is not None:
+            parent_node = node_by_logical_id.get(node_def.parent_logical_id)
+            if parent_node is None:
+                raise ValueError(
+                    "Missing parent during V2 node projection: "
+                    f"{node_def.parent_logical_id}"
+                )
+            parent_node_id = parent_node.id
+
         node = existing_nodes.get(node_def.id)
         if node is None:
             node = ProposalNode(
                 funding_call_id=call_id,
-                parent_node_id=None,
+                parent_node_id=parent_node_id,
                 logical_id=node_def.id,
                 node_type=_map_v2_node_type(node_def.node_type),
                 title=node_def.label,
@@ -877,7 +887,7 @@ def _upsert_projection_v2(
             )
             session.add(node)
         else:
-            node.parent_node_id = None
+            node.parent_node_id = parent_node_id
             node.logical_id = node_def.id
             node.node_type = _map_v2_node_type(node_def.node_type)
             node.title = node_def.label

@@ -43,7 +43,7 @@ TDD Plan: RED (supply cyclic graph, missing parent graph, self-parent graph from
 Verification Steps: `cd backend && uv run pytest -m no_db backend/tests/test_ingest_call_graph_pure.py`
 Risks: Preorder determination requires careful tracking of original YAML list order vs parent relationships.
 
-### [ ] Task 3 — Ingestion DB Commit & Parent ID Resolution
+### [x] Task 3 — Ingestion DB Commit & Parent ID Resolution
 Goal: Create the `ProposalNode` rows in the preorder sequence so that `parent_node_id` (UUID) can be resolved from `parent_logical_id`. Ensure `session.flush()` is called within the sequence. Store `order_index` mapped to the preorder traversal.
 Slice: DB Ingestion
 User Stories: US2, US4
