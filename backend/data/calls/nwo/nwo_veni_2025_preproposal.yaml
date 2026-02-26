@@ -208,6 +208,14 @@ reviewer_policy:
       - leading publisher
     source_hint: "Pre-proposal form notes (2a/2b)"
 
+  - id: pol_dora_merits_over_surrogates
+    applies_to_stage: BOTH
+    rule_type: assessment_principle
+    instruction: "Assess research and researchers on their own merits; do not use surrogate measures (venue prestige, rankings, bibliometrics). Use an evidence-based narrative and a broad definition of scientific output."
+    severity: WARNING
+    enforcement_mode: PROMPT_ONLY
+    source_hint: "Call for Proposals (Veni 2025) §4.1 (DORA)"
+
   - id: pol_research_idea_not_independent_criterion
     applies_to_stage: BOTH
     applies_to_node_ids: ["research_idea"]
