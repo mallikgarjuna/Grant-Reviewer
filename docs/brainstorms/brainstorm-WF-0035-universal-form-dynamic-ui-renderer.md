@@ -1,8 +1,8 @@
 # WF-0035 — Universal Form: Dynamic UI renderer
 
 Artifact: brainstorm
-Version: v0.2
-Status: Draft Complete
+Version: v0.3
+Status: Draft
 Last Updated: 2026-02-26
 
 ---
@@ -363,6 +363,21 @@ MVP is a universal, schema-driven submit form that supports any structured call 
 - C) Nothing excluded.
 > Recommendation: A — These exclusions protect the 2–3 day MVP timebox and preserve the pre-parked follow-on items.
 > **Selected: A**
+
+---
+
+## Part B Risk Audit Resolutions (Applied)
+
+- Kept WF-0035 scope flat-only and fail-fast for nested calls; ERC-StG-2026 remains explicitly blocked until recursive rendering work ships.
+- Clarified call selection behavior: structured-node calls only; exclude calls that fail config/metadata fetch and show a non-blocking warning banner.
+- Clarified nested detection: if any node has a non-null `parent_node_id`, hard-block as unsupported for WF-0035.
+- Clarified rendering order: use `/calls/{call_id}/nodes?view=flat` ordering as source-of-truth; metadata only enriches.
+
+### Remaining Blocker
+
+- Identify and ingest at least one additional *flat structured call* (non-Veni) using the updated authoring conventions (no legacy YAML structure). Candidates:
+  - Re-author ERC CoG from official sources (tracked as P1 item).
+  - Author a new flat call YAML from official sources (NWO/ZonMw/MSCA).
 
 ## 8. Explicit Non-Goals
 

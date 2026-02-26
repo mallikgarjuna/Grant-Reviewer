@@ -75,7 +75,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Universal Form: Recursive UI components for nested schemas | product | Required for hierarchical calls (ERC-like structures) so frontend can render real call structures without manual per-call coding. | 2026-02-22 |
+| 1 | Universal Form: Recursive UI components for nested schemas | product | Required for hierarchical calls (ERC-like structures) so frontend can render real call structures without manual per-call coding. (Ref: WF-0035 Phase 0.2 risk audit Q1.) | 2026-02-22 |
 | 2 | Review detail page: remove hardcoded Veni node mapping | tech-debt | `/app/reviews/[reviewId]` must become call-aware so reviewed sections/cards remain correct once multiple real calls are live. | 2026-02-23 |
 | 3 | Re-author ERC CoG YAML from official sources | product | Rebuild `erc_cog_2026` with source-grounded evaluable structure + criteria/elements + reviewer-policy and source manifest traceability (follow-up from WF-0032). | 2026-02-26 |
 | 4 | Ingest real call data | product | After P1 #1-#4 are done (or bundled), deliver at least 1 complete call per promised program (NWO, ZonMw, ERC, MSCA) so landing claims match product reality. | 2026-02-16 |
@@ -83,6 +83,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 | 6 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 | 7 | Add node hierarchy selector | product | Implement only after P1 #1-#3 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
 | 8 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 9 | Re-author NWO Veni 2025 preproposal YAML from official sources | product | Update to the expanded WF-0032 call YAML authoring conventions with source manifest traceability so it can serve as a flat structured proving call for universal form work. (Ref: WF-0035 Phase 0.2 risk audit Q2.) | 2026-02-26 |
 
 ### P1 Rationale Snapshot (2026-02-26)
 
