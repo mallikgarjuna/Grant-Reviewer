@@ -83,7 +83,6 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 | 6 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 | 7 | Add node hierarchy selector | product | Implement only after P1 #1-#3 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
 | 8 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 9 | Re-author NWO Veni 2025 preproposal YAML from official sources | product | Update to the expanded WF-0032 call YAML authoring conventions with source manifest traceability so it can serve as a flat structured proving call for universal form work. (Ref: WF-0035 Phase 0.2 risk audit Q2.) | 2026-02-26 |
 
 ### P1 Rationale Snapshot (2026-02-26)
 
@@ -157,6 +156,7 @@ Promotion dependency note:
 | 24 | WF-0033 | data-contract-foundation | promoted | P2 #15 (historical) | 2026-02-26 |
 | 25 | WF-0034 | unify-review-execution-core | promoted | P2 #16 (historical) | 2026-02-26 |
 | 26 | WF-0035 | universal-form-dynamic-ui-renderer | promoted | P1 #1 | 2026-02-26 |
+| 27 | WF-0036 | nwo-veni-2025-preproposal-yaml-reauthor | promoted | P1 #9 | 2026-02-26 |
 
 ---
 
