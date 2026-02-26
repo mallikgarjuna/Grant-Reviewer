@@ -1,9 +1,17 @@
 # WF-0034 — Unify review service execution core
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-02-26
+
+---
+
+## Changelog
+
+- v0.3 (2026-02-26): Tightened parity definition (per-endpoint baseline), and made “shared vs endpoint-specific” boundaries explicit.
+- v0.2 (2026-02-26): Completed Sections 1–8; marked Draft Complete.
+- v0.1 (2026-02-26): Initialized brainstorm + repo snapshot scaffold.
 
 ---
 
@@ -82,8 +90,25 @@ They share many concerns (policy injection, LLM call, response validation, post-
 - Create a shared internal execution pipeline that returns a normalized “execution result”; endpoints adapt to their own DTOs/persistence semantics.
 - Share policy injection + policy post-checks + response validation first (highest ROI, lowest behavior risk).
 - Migrate incrementally, flipping one endpoint at a time with parity checks.
-- Define success as golden parity across API semantics, idempotency, and persistence side effects.
+- Define success as strict parity vs each endpoint’s existing baseline (API semantics, idempotency, persistence side effects), not “making the endpoints identical”.
 - Use both endpoint-level API tests and service-level shared-core tests with deterministic LLM stubs/fixtures.
+
+**Shared vs endpoint-specific boundaries (explicit):**
+
+Shared (becomes common internal pipeline/seams):
+- Policy injection (select applicable reviewer-policy rules) + policy post-checks (blocking/warning handling).
+- LLM call seam (timeouts; retry seam preserved but behavior unchanged initially).
+- Response parsing + response validation (match expectations; stable error mapping).
+- Telemetry seam (standardized structured events/hooks; no-op/non-invasive initially).
+
+Endpoint-specific (must remain separate):
+- Request/response DTOs:
+  - `POST /reviews`: single-node (`node_id`, `snippet_text`).
+  - `POST /api/structured-review`: multi-node (`node_logical_id[]`, per-node text).
+- Idempotency semantics: preserve current semantics per endpoint (Idempotency-Key enforcement + payload-hash mismatch behavior); do not change error codes/ordering.
+- Persistence differences:
+  - Single-node creates `ProposalSnippet` and associates `Review` to `snippet_id`.
+  - Structured persists `structured_payload`, may create deterministic `NOT_ASSESSABLE` cards, and uses `review_type="structured"`.
 
 **Brainstorming Q&A:**
 
@@ -109,10 +134,10 @@ They share many concerns (policy injection, LLM call, response validation, post-
 > **Selected: A**
 
 **Q4: What is the success definition for “no behavior change first”?**
-- A) Golden-contract parity tests: same API status codes/errors, same idempotency semantics, same persistence side effects, same card counts/fields for both endpoints.
+- A) Golden-contract parity tests per endpoint: preserve that endpoint’s API status codes/errors, idempotency semantics, persistence side effects, and card persistence rules (do not force the two endpoints to match each other).
 - B) Only API shape parity; persistence/logging may change.
 - C) Only “end user experience” parity; backend internals can change.
-> Recommendation: A — This is the tightest safety rail: it explicitly constrains the refactor to internal structure while guarding against subtle regressions.
+> Recommendation: A — This is the tightest safety rail: it constrains the refactor to internal structure while guarding against subtle regressions, without accidentally redefining endpoint behavior.
 > **Selected: A**
 
 **Q5: What testing seam do we rely on to prevent regressions across both endpoints?**
