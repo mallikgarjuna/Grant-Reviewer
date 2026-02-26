@@ -2,7 +2,7 @@
 
 Artifact: task
 Version: v0.9
-Status: Part A Implemented (Pending Part B/C)
+Status: Complete
 Last Updated: 2026-02-26
 
 ## Changelog
