@@ -137,7 +137,7 @@ proposal_nodes:
       - evaluation_element_id: elem_peer_exceeding_quality
         expectation_strength: MANDATORY
         evaluation_intent: QUALITY
-        guidance_note: "Use key outputs as concrete evidence supporting excellence beyond peers."
+        guidance_note: "Use key outputs as concrete evidence supporting excellence beyond peers (quality/impact), without bibliometric shortcuts or venue-prestige language."
       - evaluation_element_id: elem_network_collaboration_visibility
         expectation_strength: IMPORTANT
         evaluation_intent: QUALITY
