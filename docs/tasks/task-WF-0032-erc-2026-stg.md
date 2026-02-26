@@ -26,7 +26,7 @@ Files to modify:
 - `backend/tests/test_call_definitions_v2_schema.py`
 Acceptance Criteria: Pydantic models successfully parse new fields and reject duplicate node IDs in the list.
 TDD Plan: RED (write failing validation tests for duplicate IDs and missing fields in `test_call_definitions_v2_schema.py`) -> GREEN (add fields and validators to schema) -> REFACTOR (skip)
-Verification Steps: `cd backend && uv run pytest backend/tests/test_call_definitions_v2_schema.py`
+Verification Steps: `cd backend && uv run pytest tests/test_call_definitions_v2_schema.py`
 Risks: Minimal.
 
 ### [x] Task 2 — Ingestion Parser & Topological Sort Validations
@@ -40,7 +40,7 @@ Files to modify:
 - `backend/tests/fixtures/hierarchy_v2.yaml`
 Acceptance Criteria: Pure graph parser accepts valid flat lists (no parents), accepts correctly ordered lists with parents, errors on missing parents, self-parents, duplicate IDs, and cycles. Exposes clear pure helper functions. Use `graphlib.TopologicalSorter` from the standard library for cycle detection ONLY. Ensure deterministic "preorder traversal" (using list order + parent links) is resolved correctly rather than relying on unstable topo sort ties.
 TDD Plan: RED (supply cyclic graph, missing parent graph, self-parent graph from fixture to pure unit test marked with `@pytest.mark.no_db`) -> GREEN (build acyclic check with `graphlib` and parsing logic into reusable pure functions) -> REFACTOR (extract graph functions safely)
-Verification Steps: `cd backend && uv run pytest -m no_db backend/tests/test_ingest_call_graph_pure.py`
+Verification Steps: `cd backend && uv run pytest -m no_db tests/test_ingest_call_graph_pure.py`
 Risks: Preorder determination requires careful tracking of original YAML list order vs parent relationships.
 
 ### [x] Task 3 — Ingestion DB Commit & Parent ID Resolution
@@ -55,7 +55,7 @@ Acceptance Criteria: DB reflects nodes with correct `parent_node_id` foreign key
 TDD Plan: RED (write DB-backed test using hierarchy fixture: expect `parent_node_id` populated, `order_index` matching preorder, explicit test for transactional rollback on failure leaving DB empty, and evaluation element `stage` present in stored `canonical_json`) -> GREEN (in 2nd pass of ingestion, look up the newly created UUID of the parent, assign it, and set `order_index`. Ensure `session.flush()` is used between interdependent insert operations) -> REFACTOR (none)
 Verification Steps:
 1. `cd backend && docker compose -f docker-compose.test.yml up -d`
-2. `cd backend && export DATABASE_URL="postgresql+psycopg://grant:grant@localhost:5433/grant_reviewer_test" && uv run pytest backend/tests/test_ingest_call_v2_db.py`
+2. `cd backend && export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable" && uv run pytest tests/test_ingest_call_v2_db.py`
 Risks: Transaction boundaries might be tricky if saving and searching sequentially. Ensure session is flushed to generate UUIDs before referencing them, and proper rollback handling exists. Test DB is required.
 
 ### [x] Task 4 — Flat API Verification (Tracer Bullet E2E)
@@ -69,10 +69,10 @@ Acceptance Criteria: True E2E test: Ingests the V2 hierarchy fixture YAML into t
 TDD Plan: RED (update api test to ingest the new hierarchy fixture and assert `parent_node_id` is present and correct) -> GREEN (None required if Tasks 1-3 are correct) -> REFACTOR (None)
 Verification Steps:
 1. `cd backend && docker compose -f docker-compose.test.yml up -d`
-2. `cd backend && export DATABASE_URL="postgresql+psycopg://grant:grant@localhost:5433/grant_reviewer_test" && uv run pytest backend/tests/test_api.py`
+2. `cd backend && export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable" && uv run pytest tests/test_api.py -k hierarchy_ingest`
 Risks: Real E2E requires clean DB teardown between ingestion steps.
 
-### [ ] Task 5 — Author ERC 2026 StG YAML
+### [x] Task 5 — Author ERC 2026 StG YAML
 Goal: Write the final declarative canonical artifact for the ERC 2026 Starting Grant (Step 1).
 Slice: Canonical Data
 User Stories: US1
@@ -84,5 +84,5 @@ TDD Plan: N/A
 Verification Steps:
 1. `cd backend && uv run python scripts/ingest_call.py data/calls/erc_stg_2026_step1.yaml --dry-run`
 2. `cd backend && docker compose -f docker-compose.test.yml up -d`
-3. `cd backend && export DATABASE_URL="postgresql+psycopg://grant:grant@localhost:5433/grant_reviewer_test" && uv run python scripts/ingest_call.py data/calls/erc_stg_2026_step1.yaml`
+3. `cd backend && export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable" && uv run python scripts/ingest_call.py data/calls/erc_stg_2026_step1.yaml`
 Risks: None.
