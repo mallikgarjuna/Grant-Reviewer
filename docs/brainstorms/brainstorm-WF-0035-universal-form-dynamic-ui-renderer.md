@@ -79,11 +79,85 @@ Open questions suggested by the snapshot:
 
 ## 1. Problem Statement
 
-(Interactive; fill via Q&A below.)
+Researchers cannot submit non-Veni structured calls because the submit UI is hardcoded to Veni's 3 fields. WF-0035 targets the smallest universal renderer that supports any *structured* call with a flat (non-nested) node list: render N textareas, allow partial submission (at least one filled node), and fail-fast with a clear blocking message for nested calls (recursive rendering deferred to P1 #1).
+
+**Brainstorming Q&A:**
+
+**Q1: What is the concrete user-visible failure today?**
+- A) Non-Veni calls cannot be submitted because the form only renders Veni’s 3 fields.
+- B) Non-Veni calls appear, but submitting fails (API mismatch/errors).
+- C) Calls load inconsistently; user can’t reliably select a call.
+> Recommendation: A — This is the top-level product failure described in P1 #1 and is directly falsifiable in the UI.
+> **Selected: A**
+
+**Q2: What is the “minimal universality” we’re targeting in WF-0035?**
+- A) Any structured call with a flat node list (no nesting) renders N textareas.
+- B) Only 2–3 known calls (Veni + 1–2 more) render dynamically.
+- C) Any call at all (including legacy single-snippet) renders via one universal component.
+> Recommendation: A — Keeps scope tightly aligned to the launch blocker while avoiding legacy-mode entanglement; recursion is explicitly deferred.
+> **Selected: A**
+
+**Q3: What should the form do with nodes that are “expected” but the user leaves empty?**
+- A) Allow partial submission (at least one node), and only evaluate submitted nodes.
+- B) Hard-require all expected nodes before submit.
+- C) Make it configurable per call (more complex).
+> Recommendation: A — Matches current UX behavior and reduces the risk of blocking users when some sections are legitimately not applicable.
+> **Selected: A**
+
+**Q4: What’s the MVP behavior for nested nodes (since recursion is deferred)?**
+- A) Fail-fast with a clear blocking message: “This call isn’t supported yet (nested sections)”.
+- B) Flatten nested nodes into a single list anyway.
+- C) Hide nested nodes and allow partial rendering.
+> Recommendation: A — Prevents silent data loss or misleading UI; recursive rendering is already tracked as a separate backlog item (P1 #1).
+> **Selected: A**
+
+**Q5: What is the success metric for Phase 0 clarity (not implementation)?**
+- A) We can write an unambiguous MVP statement + explicit non-goals that prevent scope creep.
+- B) We can list every component we’ll build.
+- C) We have UI mockups.
+> Recommendation: A — Phase 0 should be decision-tight, not architecture-heavy.
+> **Selected: A**
 
 ## 2. Desired Outcome
 
-(Interactive; fill via Q&A below.)
+WF-0035 ships a single universal submit experience: user selects any structured call (flat nodes only), the UI dynamically renders N textareas, performs minimal client-side validation (at least one section + word counters), relies on backend compliance checks for enforceable rules, and hard-blocks unsupported nested calls with a clear message. Recursive rendering is explicitly deferred to the parked backlog item: `P1 #1 Universal Form: Recursive UI components for nested schemas`.
+
+**Brainstorming Q&A:**
+
+**Q1: What’s the primary “ship outcome” for WF-0035?**
+- A) A single submit route renders dynamic N-node textareas for any flat structured call and can submit successfully.
+- B) Backend adds a new UI-schema endpoint; frontend stays mostly the same.
+- C) Only refactor Veni form internals; no multi-call support yet.
+> Recommendation: A — This closes the user loop and removes call-specific UI, which is the core P1 #1 (promoted) launch blocker.
+> **Selected: A**
+
+**Q2: What is the minimal call selection behavior?**
+- A) Dropdown lists all calls with `ui_mode="structured_nodes"` (from `GET /api/public/calls/{code}/config`), not just Veni.
+- B) Dropdown lists all calls (including legacy), but legacy routes elsewhere.
+- C) Keep Veni-only dropdown; add a hidden query-param for other calls.
+> Recommendation: A — Keeps selection aligned to structured-mode calls and avoids legacy-path complexity in this WF.
+> **Selected: A**
+
+**Q3: What is the minimal “schema/DTO” the frontend uses to render the form?**
+- A) `GET /calls/{call_id}/nodes?view=flat` for node list + `GET /api/public/calls/{code}/nodes/metadata` for labels/constraints.
+- B) A new single “form schema” endpoint purpose-built for UI.
+- C) Only `nodes/metadata` (ignore DB nodes list).
+> Recommendation: A — Uses existing endpoints and keeps contract changes out of this WF’s MVP ideation.
+> **Selected: A**
+
+**Q4: What is the MVP validation UX (client-side) before submit?**
+- A) Only “at least one section required” + basic per-field word counters; rely on `/api/bff/check-compliance` for real enforcement.
+- B) Enforce “expected nodes must be filled” client-side.
+- C) No validation at all; submit and show backend errors.
+> Recommendation: A — Avoids duplicating enforceable rules on the client; keeps client UX helpful but not authoritative.
+> **Selected: A**
+
+**Q5: What is “good enough” error handling for unsupported calls?**
+- A) Clear blocking banner: “This call has nested sections and is not supported yet” + link to tracked deferred work.
+- B) Try to flatten and warn.
+- C) Hide the call from selection entirely.
+> Recommendation: A — Transparent and safe; avoids silent corruption and preserves user trust.
+> **Selected: A**
 
 ## 3. Target User / Actor
 
