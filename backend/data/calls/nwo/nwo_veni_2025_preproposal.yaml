@@ -216,6 +216,14 @@ reviewer_policy:
     enforcement_mode: PROMPT_ONLY
     source_hint: "Call for Proposals (Veni 2025) §4.1 (DORA)"
 
+  - id: pol_avoid_personal_attribute_commentary
+    applies_to_stage: BOTH
+    rule_type: bias_and_fairness
+    instruction: "Avoid commentary on personal attributes or protected characteristics; focus feedback strictly on the submitted content and evidence-based assessment aligned to the evaluation criteria/elements."
+    severity: WARNING
+    enforcement_mode: PROMPT_ONLY
+    source_hint: "Call for Proposals (Veni 2025) Chapter 4 (assessment procedure; implicit bias and inclusive culture guidance)"
+
   - id: pol_research_idea_not_independent_criterion
     applies_to_stage: BOTH
     applies_to_node_ids: ["research_idea"]
