@@ -86,7 +86,7 @@ Verification Steps:
 Risks (if any):
 - Need a safe place to add minimal cycle/mismatch fixtures without touching many unrelated files.
 
-### [ ] Task 4 — Tracer bullet: metadata DTO endpoint (bulk)
+### [x] Task 4 — Tracer bullet: metadata DTO endpoint (bulk)
 
 Goal:
 Add `GET /api/public/calls/{call_logical_id}/nodes/metadata` returning per-node metadata DTOs from `CallDefinition.canonical_json` joined to active DB nodes by `logical_id`.

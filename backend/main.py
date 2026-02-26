@@ -31,6 +31,8 @@ from app.schemas.api import (
     CreateReviewRequest,
     CreateReviewResponse,
     DeleteReviewResponse,
+    NodeMetadataDTO,
+    NodeMetadataResponse,
     NodeTreeNode,
     NodesResponse,
     NodesTreeResponse,
@@ -90,6 +92,7 @@ ERROR_STATUS_BY_CODE = {
     "STRUCTURED_PAYLOAD_TOO_LARGE": 422,
     "CALL_DEFINITION_NODE_MISMATCH": 409,
     "CALL_DEFINITION_CYCLE": 409,
+    "CALL_DEFINITION_MISSING": 409,
     "VALIDATION_ERROR": 400,
     "INTERNAL_ERROR": 500,
 }
@@ -494,6 +497,92 @@ def list_call_nodes(
         ]
 
     return NodesTreeResponse(nodes=build_tree(parent_id=None))
+
+
+@app.get(
+    "/api/public/calls/{call_logical_id}/nodes/metadata",
+    response_model=NodeMetadataResponse,
+    responses=API_ERROR_RESPONSES,
+)
+def get_call_nodes_metadata(
+    call_logical_id: str,
+    repository: RepositoryDep,
+) -> NodeMetadataResponse:
+    """Return node metadata DTOs for universal-form rendering."""
+    call = repository.get_active_call_by_code(call_logical_id)
+    if call is None:
+        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+
+    definition = repository.get_call_definition_by_call_id(call.id)
+    if definition is None:
+        raise APIException(
+            code="CALL_DEFINITION_MISSING",
+            message="Call definition is required for metadata endpoint.",
+        )
+
+    proposal_nodes = definition.canonical_json.get("proposal_nodes")
+    if not isinstance(proposal_nodes, list):
+        proposal_nodes = []
+
+    active_nodes = repository.get_nodes_for_call(call.id)
+    node_id_by_logical_id = {
+        node.logical_id: node.id
+        for node, _ in active_nodes
+        if isinstance(node.logical_id, str) and node.logical_id
+    }
+
+    metadata_nodes: list[NodeMetadataDTO] = []
+    for item in proposal_nodes:
+        if not isinstance(item, dict):
+            continue
+        logical_id = item.get("id")
+        if not isinstance(logical_id, str) or not logical_id.strip():
+            continue
+        compliance_rules = item.get("compliance_rules")
+        if not isinstance(compliance_rules, list):
+            compliance_rules = []
+
+        metadata_nodes.append(
+            NodeMetadataDTO(
+                logical_id=logical_id,
+                node_id=node_id_by_logical_id.get(logical_id),
+                label=item.get("label") if isinstance(item.get("label"), str) else None,
+                node_type=(
+                    item.get("node_type")
+                    if isinstance(item.get("node_type"), str)
+                    else None
+                ),
+                parent_logical_id=(
+                    item.get("parent_logical_id")
+                    if isinstance(item.get("parent_logical_id"), str)
+                    else None
+                ),
+                guidance_text=(
+                    item.get("guidance_text")
+                    if isinstance(item.get("guidance_text"), str)
+                    else None
+                ),
+                content_constraints=(
+                    item.get("content_constraints")
+                    if isinstance(item.get("content_constraints"), dict)
+                    else {}
+                ),
+                compliance_rules=[
+                    rule for rule in compliance_rules if isinstance(rule, dict)
+                ],
+                source_section=(
+                    item.get("source_section")
+                    if isinstance(item.get("source_section"), str)
+                    else None
+                ),
+            )
+        )
+
+    return NodeMetadataResponse(
+        call_logical_id=call_logical_id,
+        config_version=definition.schema_version,
+        nodes=metadata_nodes,
+    )
 
 
 @app.post(
