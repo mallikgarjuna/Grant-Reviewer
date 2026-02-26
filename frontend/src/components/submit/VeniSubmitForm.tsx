@@ -211,6 +211,7 @@ export function VeniSubmitForm() {
           "Idempotency-Key": crypto.randomUUID(),
         },
         body: JSON.stringify({
+          review_stage: "STEP_1",
           call_id: selectedCallId,
           nodes: buildNonEmptyDraftNodes(draft),
         }),

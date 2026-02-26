@@ -28,6 +28,7 @@ export async function GET() {
 
 
 type CreateReviewBody = {
+  review_stage?: unknown;
   call_id?: unknown;
   node_id?: unknown;
   snippet_text?: unknown;
@@ -45,6 +46,10 @@ function validationError(message: string) {
   });
 }
 
+function isValidReviewStage(value: unknown): value is "STEP_1" | "STEP_2" {
+  return value === "STEP_1" || value === "STEP_2";
+}
+
 export async function POST(request: Request) {
   const { userId } = await auth();
   const contextResult = requireBffContext(userId);
@@ -54,6 +59,7 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as CreateReviewBody;
   if (
+    !isValidReviewStage(body.review_stage) ||
     typeof body.call_id !== "string" ||
     typeof body.node_id !== "string" ||
     typeof body.snippet_text !== "string" ||
@@ -65,6 +71,7 @@ export async function POST(request: Request) {
   }
 
   const payload = normalizeCreateReviewDraft({
+    review_stage: body.review_stage,
     call_id: body.call_id,
     node_id: body.node_id,
     snippet_text: body.snippet_text,

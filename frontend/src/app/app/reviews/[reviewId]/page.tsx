@@ -290,6 +290,7 @@ export default function ReviewDetailPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          review_stage: stored.draft.review_stage,
           call_id: stored.draft.call_id,
           node_id: stored.draft.node_id,
           snippet_text: stored.draft.snippet_text,

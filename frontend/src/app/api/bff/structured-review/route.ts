@@ -46,8 +46,15 @@ export async function POST(request: Request) {
 
   let bodyText = "{}";
   try {
-    const parsed = (await request.json()) as unknown;
-    bodyText = JSON.stringify(parsed);
+    const parsed = (await request.json()) as Record<string, unknown>;
+    const reviewStage =
+      parsed.review_stage === "STEP_1" || parsed.review_stage === "STEP_2"
+        ? parsed.review_stage
+        : "STEP_1";
+    bodyText = JSON.stringify({
+      ...parsed,
+      review_stage: reviewStage,
+    });
   } catch {
     return apiErrorResponse({
       code: "VALIDATION_ERROR",

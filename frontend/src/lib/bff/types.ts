@@ -1,5 +1,6 @@
 export type ReviewStatus = "PENDING" | "COMPLETED" | "FAILED";
 export type ReviewRating = "CRITICAL" | "WARNING" | "SUCCESS" | "NOTE";
+export type ReviewStage = "STEP_1" | "STEP_2";
 
 export type ApiError = {
   code: string;
@@ -55,6 +56,7 @@ export type CallConfigResponse = {
 };
 
 export type CreateReviewRequest = {
+  review_stage: ReviewStage;
   call_id: string;
   node_id: string;
   snippet_text: string;
@@ -71,6 +73,7 @@ export type StructuredReviewNodeInput = {
 };
 
 export type StructuredReviewRequest = {
+  review_stage: ReviewStage;
   call_id: string;
   nodes: StructuredReviewNodeInput[];
 };
