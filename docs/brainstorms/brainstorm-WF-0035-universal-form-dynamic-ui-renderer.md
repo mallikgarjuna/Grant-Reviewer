@@ -1,8 +1,8 @@
 # WF-0035 — Universal Form: Dynamic UI renderer
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-02-26
 
 ---
@@ -366,4 +366,41 @@ MVP is a universal, schema-driven submit form that supports any structured call 
 
 ## 8. Explicit Non-Goals
 
-(Interactive; fill via Q&A below.)
+Non-goals are explicit to prevent scope creep: no recursive rendering (nested calls hard-block), no Markdown/rich text (plain text only), no legacy single-snippet unification, no server-side drafts, and no major UX redesign beyond minimal tweaks needed for call selection and unsupported-call messaging.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the clearest non-goal about nested structures for WF-0035?**
+- A) No recursive rendering; any nested call hard-blocks with an explicit unsupported message.
+- B) Flatten nested nodes silently.
+- C) Partially render only top-level nodes.
+> Recommendation: A — Prevents silent corruption and preserves the explicit deferral boundary to recursive rendering work.
+> **Selected: A**
+
+**Q2: What is the non-goal about content types?**
+- A) No Markdown/rich text; plain text only.
+- B) Markdown allowed but no rich text.
+- C) Full rich text editor.
+> Recommendation: A — Keeps compliance counting and backend normalization deterministic; Markdown/rich text is already tracked as a follow-on.
+> **Selected: A**
+
+**Q3: What is the non-goal about call modes?**
+- A) Do not unify legacy single-snippet calls into this universal form in WF-0035.
+- B) Unify legacy + structured now.
+- C) Remove legacy mode entirely.
+> Recommendation: A — Keeps this WF tightly scoped; legacy unification is parked as a separate follow-on.
+> **Selected: A**
+
+**Q4: What is the non-goal about drafts/persistence?**
+- A) No server-side drafts; localStorage only.
+- B) Add server drafts now.
+- C) Remove drafts entirely.
+> Recommendation: A — Sufficient for MVP and consistent with current behavior.
+> **Selected: A**
+
+**Q5: What is the non-goal about UX scope?**
+- A) No major redesign; only minimal UI tweaks needed for call selection and unsupported-call messaging.
+- B) Full redesign is in scope.
+- C) No UI tweaks allowed at all.
+> Recommendation: A — Minimizes regression risk while allowing the small changes required by universalization.
+> **Selected: A**
