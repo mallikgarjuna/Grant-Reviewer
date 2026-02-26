@@ -16,9 +16,21 @@ Every meaningful initiative is tracked using a Workflow ID (WF-XXXX).
 - Done
 
 Runner shortcuts:
-- Phase 0: `docs/workflow/phase-0-run-start-and-brainstorm-ideation.md` (includes brainstorm review gate + revise)
-- Phase 1/2: `docs/workflow/phase-12-run-planning.md` (one unified runner; Phase ID = 1 or 2)
-- Phase 3: `docs/workflow/phase-3-run-implement-execution.md`
+- Phase 0: `docs/workflow/phase-0-run-ideation.md` (includes brainstorm review gate + revise)
+- Phase 1/2: `docs/workflow/phase-1-2-run-planning.md` (one unified runner; Phase ID = 1 or 2)
+- Phase 3: `docs/workflow/phase-3-run-execution.md`
+- Lifecycle (auto): `docs/workflow/lifecycle-run-auto.md`
+- Lifecycle (interactive): `docs/workflow/lifecycle-run-interactive.md`
+
+## Runner Index (Canonical)
+
+| Runner | Scope | Delegates To | Notes |
+| :--- | :--- | :--- | :--- |
+| `phase-0-run-ideation.md` | Phase 0 end-to-end | `phase-0-0-start-workflow.md`, `phase-0-1-brainstorm.md`, `phase-0-2-brainstorm-risk-audit.md`, `phase-0-3-brainstorm-revise.md` | Includes interactive brainstorm + review gate |
+| `phase-1-2-run-planning.md` | Phase 1 or 2 end-to-end | `phase-1-1/2/3` or `phase-2-1/2/3` (selected by Phase ID) | Strict A/B/C router, no logic duplication |
+| `phase-3-run-execution.md` | Phase 3 end-to-end | `phase-3-1-implement-tasks.md`, `phase-3-2-technical-audit-review.md`, `phase-3-3-revise-verify-and-ship.md` | Part B is technical audit only |
+| `lifecycle-run-auto.md` | Phases 0→3 | Phase runners above | Autonomous orchestration; still obeys downstream gates |
+| `lifecycle-run-interactive.md` | Phases 0→3 with user checkpoints | Phase runners above | Waits for user signal between phases |
 
 Phase 0 input confirmation convention:
 - Before running Phase 0.0, confirm `Title` / `Type` / `Slug` via 2–3 structured options each, with one recommended option.

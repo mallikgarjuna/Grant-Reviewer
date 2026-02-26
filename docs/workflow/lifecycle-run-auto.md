@@ -1,6 +1,6 @@
-# Full Lifecycle Runner (Autonomous)
+# Workflow Runner — Lifecycle (Autonomous)
 
-Reference in chat: `@docs/workflow/run-lifecycle-auto.md`
+Reference in chat: `@docs/workflow/lifecycle-run-auto.md`
 Do NOT modify this file during execution.
 
 ## When to Use
@@ -20,10 +20,10 @@ Do NOT modify this file during execution.
 >
 > **Router Rule**: This file orchestrates only. Use phase runners as the source of truth; do not restate or override sub-phase instructions.
 
-1. **Phase 0 (Ideation)**: Execute end-to-end via `@docs/workflow/phase-0-run-start-and-brainstorm-ideation.md`.
-2. **Phase 1 (Definition)**: Execute via `@docs/workflow/phase-12-run-planning.md` with Phase ID `1`.
-3. **Phase 2 (Planning)**: Execute via `@docs/workflow/phase-12-run-planning.md` with Phase ID `2`.
-4. **Phase 3 (Execution)**: Execute via `@docs/workflow/phase-3-run-implement-execution.md` (which routes Part B to 3.2 and Part C to 3.3).
+1. **Phase 0 (Ideation)**: Execute end-to-end via `@docs/workflow/phase-0-run-ideation.md`.
+2. **Phase 1 (Definition)**: Execute via `@docs/workflow/phase-1-2-run-planning.md` with Phase ID `1`.
+3. **Phase 2 (Planning)**: Execute via `@docs/workflow/phase-1-2-run-planning.md` with Phase ID `2`.
+4. **Phase 3 (Execution)**: Execute via `@docs/workflow/phase-3-run-execution.md` (which routes Part B to 3.2 and Part C to 3.3).
    - *Stop*
 
 ## Safety Guardrails
@@ -33,7 +33,7 @@ Do NOT modify this file during execution.
 
 ## How to Invoke
 ```text
-Use @docs/workflow/run-lifecycle-auto.md
+Use @docs/workflow/lifecycle-run-auto.md
 Title: <Title>
 Type: <feature>
 Slug: <slug>

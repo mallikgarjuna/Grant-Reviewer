@@ -1,7 +1,7 @@
-# Phase 1/2 Unified Runner — Planning
+# Workflow Runner — Phase 1/2 (Planning)
 
 This file is a workflow instruction orchestrator.
-Reference it in chat (any coding agent) using `@docs/workflow/phase-12-run-planning.md`.
+Reference it in chat (any coding agent) using `@docs/workflow/phase-1-2-run-planning.md`.
 Do NOT modify this file during execution.
 
 ---
@@ -115,7 +115,7 @@ After completing Part C, output:
 Use:
 
 ```text
-Use @docs/workflow/phase-12-run-planning.md
+Use @docs/workflow/phase-1-2-run-planning.md
 @docs/index.md
 @docs/INPUT/artifact-WF-XXXX-<slug>.md
 

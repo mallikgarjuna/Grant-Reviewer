@@ -1,7 +1,7 @@
-# Phase 3 — Implement Tasks
+# Workflow Runner — Phase 3 (Execution)
 
 This file is a workflow instruction.
-Reference it in chat (any coding agent) using @docs/workflow/phase-3-run-implement-execution.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-3-run-execution.md.
 Do NOT modify this file during execution.
 
 ---
@@ -59,7 +59,7 @@ After completing Phase 3 (including Part C revisions and commits), suggest the f
 Use:
 
 ```text
-Use @docs/workflow/phase-3-run-implement-execution.md
+Use @docs/workflow/phase-3-run-execution.md
 @docs/index.md
 @docs/tasks/task-<WF-ID>-<slug>.md
 

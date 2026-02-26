@@ -4,16 +4,16 @@ Replace placeholders like `<WF-ID>` and `<slug>` with your current workflow valu
 
 This is a minimal "cheat sheet" of verbatim chat prompt templates for each workflow action.
 
-Note: phases are 0/1/2/3; Phase 1 + Phase 2 share one unified runner (`phase-12-run-planning.md`, Phase ID selects 1 vs 2).
+Note: phases are 0/1/2/3; Phase 1 + Phase 2 share one unified runner (`phase-1-2-run-planning.md`, Phase ID selects 1 vs 2).
 
 ---
 
 ## Lifecycle: Auto (End-to-End)
 
-Warning: use only if `run-lifecycle-*.md` is kept in sync with `docs/workflow/README.md` invariants (US#/FR#/Slice, mandatory TDD). If unsure, use the phase runners below.
+Warning: use only if `lifecycle-run-*.md` is kept in sync with `docs/workflow/README.md` invariants (US#/FR#/Slice, mandatory TDD). If unsure, use the phase runners below.
 
 ```text
-Use @docs/workflow/run-lifecycle-auto.md
+Use @docs/workflow/lifecycle-run-auto.md
 @docs/index.md
 
 Title: <Title>
@@ -27,10 +27,10 @@ Run the end-to-end auto lifecycle for this initiative.
 
 ## Lifecycle: Interactive (End-to-End)
 
-Warning: use only if `run-lifecycle-*.md` is kept in sync with `docs/workflow/README.md` invariants (US#/FR#/Slice, mandatory TDD). If unsure, use the phase runners below.
+Warning: use only if `lifecycle-run-*.md` is kept in sync with `docs/workflow/README.md` invariants (US#/FR#/Slice, mandatory TDD). If unsure, use the phase runners below.
 
 ```text
-Use @docs/workflow/run-lifecycle-interactive.md
+Use @docs/workflow/lifecycle-run-interactive.md
 @docs/index.md
 
 Title: <Title>
@@ -47,7 +47,7 @@ Run the end-to-end interactive lifecycle for this initiative.
 This runs Phase 0.0 (mint WF ID + branch + register) + Phase 0.1 (brainstorm) in sequence.
 
 ```text
-Use @docs/workflow/phase-0-run-start-and-brainstorm-ideation.md
+Use @docs/workflow/phase-0-run-ideation.md
 @docs/index.md
 @docs/templates/brainstorm-template.md
 
@@ -83,7 +83,7 @@ Phase 1 output requirements (enforced by runner):
 - PRD includes `User Stories (MVP)` + `Deferred Stories`, `FR#` requirement IDs linked to `US#`, `Testing Decisions (TDD)`, and US# traceability in flows/contracts.
 
 ```text
-Use @docs/workflow/phase-12-run-planning.md
+Use @docs/workflow/phase-1-2-run-planning.md
 @docs/index.md
 @docs/brainstorms/brainstorm-<WF-ID>-<slug>.md
 
@@ -101,7 +101,7 @@ Phase 2 output requirements (enforced by runner):
 - Each task includes `Slice`, `User Stories (US#)`, `PRD Requirements (FR#)`, and an early tracer-bullet task; TDD is mandatory for behavior changes/bug fixes.
 
 ```text
-Use @docs/workflow/phase-12-run-planning.md
+Use @docs/workflow/phase-1-2-run-planning.md
 @docs/index.md
 @docs/prds/prd-<WF-ID>-<slug>.md
 
@@ -116,7 +116,7 @@ End with two suggested next actions.
 ## Phase 3 — Execution: Implement + Verify + Ship
 
 ```text
-Use @docs/workflow/phase-3-run-implement-execution.md
+Use @docs/workflow/phase-3-run-execution.md
 @docs/index.md
 @docs/tasks/task-<WF-ID>-<slug>.md
 

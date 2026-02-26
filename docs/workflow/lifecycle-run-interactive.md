@@ -1,6 +1,6 @@
-# Full Lifecycle Runner (Interactive)
+# Workflow Runner — Lifecycle (Interactive)
 
-Reference in chat: `@docs/workflow/run-lifecycle-interactive.md`
+Reference in chat: `@docs/workflow/lifecycle-run-interactive.md`
 Do NOT modify this file during execution.
 
 ## When to Use
@@ -16,13 +16,13 @@ Do NOT modify this file during execution.
 > **Context Limit Warning**: If context feels heavy after Phase 2, pause and advise the user to start a new chat for Phase 3.
 >
 > **Router Rule**: This file orchestrates only. Use phase runners as the source of truth; do not restate or override sub-phase instructions.
-1. **Phase 0 (Ideation)**: Execute end-to-end via `@docs/workflow/phase-0-run-start-and-brainstorm-ideation.md`.
+1. **Phase 0 (Ideation)**: Execute end-to-end via `@docs/workflow/phase-0-run-ideation.md`.
    - *Wait for User Signal*
-2. **Phase 1 (Definition)**: Execute via `@docs/workflow/phase-12-run-planning.md` with Phase ID `1`.
+2. **Phase 1 (Definition)**: Execute via `@docs/workflow/phase-1-2-run-planning.md` with Phase ID `1`.
    - *Wait for User Signal*
-3. **Phase 2 (Planning)**: Execute via `@docs/workflow/phase-12-run-planning.md` with Phase ID `2`.
+3. **Phase 2 (Planning)**: Execute via `@docs/workflow/phase-1-2-run-planning.md` with Phase ID `2`.
    - *Wait for User Signal*
-4. **Phase 3 (Execution)**: Execute via `@docs/workflow/phase-3-run-implement-execution.md` (which routes Part B to 3.2 and Part C to 3.3).
+4. **Phase 3 (Execution)**: Execute via `@docs/workflow/phase-3-run-execution.md` (which routes Part B to 3.2 and Part C to 3.3).
    - *Stop*
 
 ## Safety Guardrails
@@ -32,7 +32,7 @@ Do NOT modify this file during execution.
 
 ## How to Invoke
 ```text
-Use @docs/workflow/run-lifecycle-interactive.md
+Use @docs/workflow/lifecycle-run-interactive.md
 Title: <Title>
 Type: <feature>
 Slug: <slug>
