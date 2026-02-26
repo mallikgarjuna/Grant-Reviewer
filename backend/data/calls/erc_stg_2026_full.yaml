@@ -186,7 +186,3 @@ proposal_nodes:
 runtime_notes:
   - id: note_step_scope
     description: "Step 1 evaluates Part I plus CV and Track Record from Part B1; Step 2 evaluates the complete research proposal including Part B2 and Resources."
-  - id: note_resource_assessment
-    description: "Peer reviewers should avoid recommendations on resources at Step 1; resource assessment is done at Step 2."
-  - id: note_criterion_guardrails
-    description: "Excellence is the sole criterion; societal impact and host institution standing are not evaluation criteria."

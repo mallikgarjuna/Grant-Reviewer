@@ -20,6 +20,7 @@ It ensures:
 - Separation of compliance and scoring
 - Year-specific versioning
 - Safe runtime behavior
+- Scope focus on evaluable proposal structure, evaluation criteria/elements, and enforceable content constraints only
 
 This spec must be followed for all new call onboardings.
 
