@@ -14,7 +14,7 @@ Do NOT modify this file during execution.
 - Title, Type, Slug
 
 ## Execution Flow
-**(No stops until implementation is done)**
+**(No discretionary stops between phases; mandatory downstream gates still apply)**
 
 > **Context Limit Warning**: If context feels heavy after Phase 2, pause and advise the user to start a new chat for Phase 3.
 >

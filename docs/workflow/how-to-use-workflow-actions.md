@@ -56,7 +56,7 @@ Type: <page|feature>
 Slug: <slug>
 
 Run Phase 0 end-to-end for this initiative.
-Execute Part A (0.0) then Part B (0.1) exactly as routed.
+Execute Part A1 (0.0), then Part A2 (0.1), then Part B (risk audit), then Part C (revise) exactly as routed.
 Ask interactive brainstorm questions with options + recommendation.
 End with two suggested next actions.
 ```

@@ -21,7 +21,7 @@ To execute Phase 3 end-to-end: implement tasks, run the technical audit gate, ap
 1. **Runners are Routers**: You **MUST** read the detailed instruction file referenced in each "PART" section below. Do not guess.
 2. Execute Part A, then Part B, then Part C in strict order.
 3. Print a short "PART A/B/C" header and a bullet summary of actions taken at the end of each part.
-4. If Part B identifies regressions or test failures, you must fix them before proceeding to Part C.
+4. If Part B identifies blocking technical findings, you must address them in Part C (Phase 3.3) before ship.
 4.1. Before Task 1 in Part A, run a baseline test command to confirm a green starting state (see `docs/workflow/phase-3-1-implement-tasks.md` “Preflight — First Run the Tests”).
 5. For any behavior change or bug fix implemented during Part A, ensure the chat log contains explicit TDD loop labels (`RED`, `GREEN`, `REFACTOR`) as required by `phase-3-1-implement-tasks.md`.
 6. TDD is mandatory for behavior changes/bug fixes. Enforce red/green/refactor and boundary-only mocking via `docs/guides/tdd/README.md`.

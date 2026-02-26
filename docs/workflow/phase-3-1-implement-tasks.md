@@ -112,7 +112,7 @@ For each task:
 
    WF-XXXX: <slug> — Task <N> — <short title>
 
-9. Optionally mark task complete inside tasks file (checkbox).
+9. Mark task complete inside tasks file (`[x]`) before moving to the next task.
    Do NOT bump version unless the task plan itself changed.
 
 Then continue automatically to the next task.
