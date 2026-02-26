@@ -91,9 +91,9 @@ Highlights include:
 ### Call ingestion
 
 - Dry-run validate a call YAML:
-  - `cd backend && uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml --dry-run`
+  - `cd backend && uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run`
 - Ingest (writes to DB):
-  - `cd backend && uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml`
+  - `cd backend && uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml`
 
 ## Ops & Safety Notes (important)
 

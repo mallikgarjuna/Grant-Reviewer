@@ -132,7 +132,7 @@ Implementation options (pick the simplest that works on Render):
 - **Decision (MVP)**: avoid `scripts/seed.py` in production (it creates sample calls); use explicit bootstrap commands instead.
 - Option A (preferred): Render shell / one-off exec runs:
   - `uv run python scripts/ensure_prompt_template.py`
-  - `uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml`
+  - `uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml`
 - Option B: extend `scripts/ingest_call.py` to ensure an active prompt template exists (acceptable, but mixes concerns).
 - Option C: temporary admin-only route (defer unless absolutely necessary; increases attack surface).
 
@@ -192,7 +192,7 @@ Goal: prove end-to-end deployed wiring with minimal cost/latency noise.
 - [x] Provision Neon Postgres + set backend `DATABASE_URL`.
 - [x] Run production bootstrap commands against the deployed DB:
   - [x] `uv run python scripts/ensure_prompt_template.py` (ran locally with `DATABASE_URL` targeting Neon; Render free has no shell)
-  - [x] `uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml` (ran locally with `DATABASE_URL` targeting Neon)
+  - [x] `uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml` (ran locally with `DATABASE_URL` targeting Neon)
 - [x] Verify deployed backend:
   - [x] `GET /health` returns `{ok:true}`
   - [x] DB readiness endpoint returns healthy signal

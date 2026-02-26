@@ -63,7 +63,7 @@ Coverage of key invariants:
 ### Manual (Stub Mode, No OpenAI Cost)
 Commands:
 ```bash
-cd backend && uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml --dry-run
+cd backend && uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run
 cd backend && LLM_MODE=stub uv run python -c "from fastapi.testclient import TestClient; from main import app; c=TestClient(app); calls=c.get('/calls'); print('calls_status', calls.status_code); call_id=calls.json()['calls'][0]['id']; nodes=c.get(f'/calls/{call_id}/nodes'); print('nodes_status', nodes.status_code); node_id=next(n['id'] for n in nodes.json()['nodes'] if n['has_expectations']); review=c.post('/reviews', json={'call_id':call_id,'node_id':node_id,'snippet_text':'manual stub verification text'}); print('create_status', review.status_code, review.json().get('status')); review_id=review.json()['review_id']; detail=c.get(f'/reviews/{review_id}'); print('detail_status', detail.status_code, 'cards', len(detail.json().get('cards', [])))"
 ```
 Observed:

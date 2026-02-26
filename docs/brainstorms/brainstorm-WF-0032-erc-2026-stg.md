@@ -7,7 +7,7 @@ Last Updated: 2026-02-25
 
 ## Repo Reality Snapshot (Read-Only)
 *Date: 2026-02-25*
-- **Current Data State**: We have `erc_cog_2026_full_official.yaml` but no `ERC-2026-STG` formal V2 YAML yet.
+- **Current Data State**: We have `erc/erc_cog_2026_full_official.yaml` but no `ERC-2026-STG` formal V2 YAML yet.
 - **Architectural Motivation**: The ingestion and `/app/reviews/[id]` UX currently assumes flat proposal structures (fitted to the existing Veni preproposal). We need an ERC STG (with deep `Part B1` / `Part B2` nesting) to force generalizations.
 - **Authoring Process**: Must explicitly adhere to `docs/workflow/call-yaml-authoring-workflow.md` (separation of compliance vs. evaluation, conservative Node↔Element mapping).
 - **Frontend Impact**: This workflow (WF-0032) focuses on authoring and ingesting the call definition to stress-test the backend, setting the stage for the universal Dynamic UI renderer in the next workflow.
@@ -260,7 +260,7 @@ User provided the following pain points & constraints:
 **Brainstorming Q&A:**
 
 **Q1: What assumption is most fragile about ingesting the ERC 2026 StG call?**
-- A) That an `erc_cog_2026_full_official.yaml` demo file already loosely exists, meaning the official ERC rubric is straightforward to extract.
+- A) That an `erc/erc_cog_2026_full_official.yaml` demo file already loosely exists, meaning the official ERC rubric is straightforward to extract.
 - B) That the funder's PDF structure perfectly aligns with non-overlapping `evaluation_elements`.
 - C) That the ingestion script's YAML parser can handle deep nesting without Pydantic throwing massive, unreadable validation errors.
 > Recommendation: C — Pydantic errors on deeply nested structures can be famously opaque. If we get the schema slightly wrong in `call_definitions_v2.py`, debugging the ingestion failure will be painful.
@@ -304,7 +304,7 @@ User provided the following pain points & constraints:
 **Brainstorming Q&A:**
 
 **Q1: If we had to finish this workflow today, what absolute minimum must exist?**
-- A) The `CallDefinitionV2` Pydantic models must have `parent_logical_id` and `max_pages`, the mapping logic updated, and `erc_cog_2026_full_official.yaml` must ingest without crashing.
+- A) The `CallDefinitionV2` Pydantic models must have `parent_logical_id` and `max_pages`, the mapping logic updated, and `erc/erc_cog_2026_full_official.yaml` must ingest without crashing.
 - B) A newly authored `erc_stg_2026_step1.yaml` with the exact ERC B1/B2/Resources structure and its criteria mapped, successfully ingested, with automated tests proving it can be queried via API.
 - C) Both the ERC and NWO YAMLs ingested successfully via the CLI tool.
 > Recommendation: B (with C implied) — Authoring the *real* ERC StG 2026 structure (not the old demo COG one) and proving it ingested correctly via tests is the exact MVP definition. Since backward compatibility is a constraint, C happens naturally.

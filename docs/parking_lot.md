@@ -112,6 +112,7 @@ Promotion dependency note:
 | 20 | Multi-step Evaluation Gating (ERC Step 1 vs Step 2) | product | The ERC StG evaluates B1 in Step 1, and both B1+B2+Resources in Step 2. We authored the full schema combined. We must build a UX/Execution routing rule engine to conditionally trigger subsets of node evaluations based on the chosen Step. (Ref: WF-0032 Brainstorm Section 3) | 2026-02-25 |
 | 21 | Tree-shaped API response for node hierarchies | tech-debt | Update `GET /calls/{id}/nodes` to return a natively nested tree (e.g., NodeResponse with `children[]`) instead of a flat list where the frontend has to rebuild the hierarchy. (Ref: WF-0032 PRD v0.3 post-audit) | 2026-02-25 |
 | 22 | Unify review service execution core | tech-debt | Keep separate endpoints (`/reviews` single-node and `/api/structured-review` multi-node), but extract shared execution pipeline (policy injection, LLM call, response validation, policy post-checks) into a common internal component to reduce drift and duplicate fixes. | 2026-02-26 |
+| 23 | Re-author ERC CoG YAML from official sources | product | Rebuild `erc_cog_2026` call YAML with the same source-grounded standard used for ERC StG (evaluable proposal structure + evaluation criteria/elements + enforceable reviewer-policy), plus source manifest traceability. Start immediately after WF-0032 closure. | 2026-02-26 |
 
 ---
 
@@ -150,3 +151,4 @@ Promotion dependency note:
 - **v1.0** (2026-02-24): Reordered P1 for launch-readiness sequencing, added mandatory promotion gate, and recorded dependency-aware rationale snapshot.
 - **v1.1** (2026-02-25): Promoted P1 #2 (Accessibility pass) to WF-0031 and renumbered remaining P1 items.
 - **v1.2** (2026-02-26): Added P2 #22 to track shared-core refactor for single-node and structured review services while preserving separate API contracts.
+- **v1.3** (2026-02-26): Added P2 #23 to track source-grounded re-authoring of ERC CoG YAML after ERC StG workflow completion.

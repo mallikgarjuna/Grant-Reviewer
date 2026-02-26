@@ -124,7 +124,7 @@ Troubleshooting:
 ```bash
 cd backend
 uv run python scripts/ensure_prompt_template.py
-uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full_official.yaml
+uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml
 ```
 
 ### 4) Verify readiness thresholds
@@ -255,10 +255,10 @@ detailed manner..."
 
 ```bash
 # Validate a call definition (dry run)
-uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full_official.yaml --dry-run
+uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run
 
 # Ingest to database
-uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full_official.yaml
+uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml
 ```
 
 ### Ensure PromptTemplate (Bootstrap Precondition)
@@ -277,7 +277,7 @@ Use this when provisioning a fresh production database (Task 8.0C).
 uv run python scripts/ensure_prompt_template.py
 
 # 2) Ingest at least one real call definition
-uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full_official.yaml
+uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml
 ```
 
 Verification checklist:
@@ -348,7 +348,7 @@ YAML files in `data/calls/` follow this naming convention:
 ```
 
 Examples:
-- `erc_cog_2026_full_official.yaml` - ERC Consolidator Grant 2026, full proposal
+- `erc/erc_cog_2026_full_official.yaml` - ERC Consolidator Grant 2026, full proposal
 - `nwo_veni_2025_preproposal.yaml` - NWO Veni 2025, pre-proposal
 
 See `data/calls/README.md` for details.
