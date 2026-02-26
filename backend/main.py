@@ -507,6 +507,7 @@ def list_call_nodes(
 def get_call_nodes_metadata(
     call_logical_id: str,
     repository: RepositoryDep,
+    node_logical_ids: list[str] | None = Query(default=None),
 ) -> NodeMetadataResponse:
     """Return node metadata DTOs for universal-form rendering."""
     call = repository.get_active_call_by_code(call_logical_id)
@@ -578,10 +579,37 @@ def get_call_nodes_metadata(
             )
         )
 
+    unknown_node_logical_ids: list[str] | None = None
+    if node_logical_ids:
+        requested_ids: list[str] = []
+        for node_logical_id in node_logical_ids:
+            normalized = node_logical_id.strip()
+            if not normalized:
+                continue
+            if normalized not in requested_ids:
+                requested_ids.append(normalized)
+
+        metadata_by_logical_id = {node.logical_id: node for node in metadata_nodes}
+        metadata_nodes = [
+            metadata_by_logical_id[node_logical_id]
+            for node_logical_id in requested_ids
+            if node_logical_id in metadata_by_logical_id
+        ]
+        unknown_node_logical_ids = sorted(
+            [
+                node_logical_id
+                for node_logical_id in requested_ids
+                if node_logical_id not in metadata_by_logical_id
+            ]
+        )
+        if not unknown_node_logical_ids:
+            unknown_node_logical_ids = None
+
     return NodeMetadataResponse(
         call_logical_id=call_logical_id,
         config_version=definition.schema_version,
         nodes=metadata_nodes,
+        unknown_node_logical_ids=unknown_node_logical_ids,
     )
 
 

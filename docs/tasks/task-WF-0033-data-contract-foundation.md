@@ -109,7 +109,7 @@ Verification Steps:
 Risks (if any):
 - Some fixtures may not include `guidance_text` / `content_constraints`; tests should allow `null` values.
 
-### [ ] Task 5 — Metadata filtering + unknown IDs partial success
+### [x] Task 5 — Metadata filtering + unknown IDs partial success
 
 Goal:
 Support `node_logical_ids` filtering and return `unknown_node_logical_ids` while still returning known nodes (200).

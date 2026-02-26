@@ -36,3 +36,21 @@ def test_call_nodes_metadata_bulk_success(monkeypatch) -> None:
     assert "content_constraints" in first
     assert "compliance_rules" in first
     assert "source_section" in first
+
+
+def test_call_nodes_metadata_filter_returns_unknowns(monkeypatch) -> None:
+    """Filter should return known subset and explicit unknown logical IDs."""
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    response = client.get(
+        f"/api/public/calls/{seeded_ids.structured_call_code}/nodes/metadata",
+        params=[
+            ("node_logical_ids", "academic_profile"),
+            ("node_logical_ids", "unknown_node"),
+        ],
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert [node["logical_id"] for node in payload["nodes"]] == ["academic_profile"]
+    assert payload["unknown_node_logical_ids"] == ["unknown_node"]
