@@ -26,6 +26,9 @@ Phase 0 input confirmation convention:
 Deferred work convention:
 - If a discussion produces a deferred/follow-up item, park it in `docs/parking_lot.md` with enough context to pick later, and reference the originating WF/chat (at minimum: `WF-XXXX`, date, and commit ID if available).
 
+End-of-phase convention:
+- At the end of each phase run, provide next steps/options with explicit copy-pasteable prompt blocks, and recommend starting a new chat/session if context is getting long or the next phase is a separate workflow run.
+
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).
 
