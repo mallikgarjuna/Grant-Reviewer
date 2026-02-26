@@ -325,7 +325,44 @@ Primary risks are contract ambiguity (which DTOs/fields are truly required for r
 
 ## 7. MVP Definition
 
-(Interactive; fill via Q&A below.)
+MVP is a universal, schema-driven submit form that supports any structured call with a flat node list (no nesting): dynamically render N plain-text inputs, run the existing compliance-check flow, and submit successfully end-to-end. Minimum supported node types are simple text inputs grouped by section/subsection semantics; unknown/unsupported types must fail visibly. “MVP complete” requires demonstrating Veni plus at least one additional flat structured call.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the smallest functional slice (frontend) we must ship?**
+- A) Universal dynamic renderer for flat structured calls + submit works end-to-end.
+- B) Universal renderer only (no submit).
+- C) Only multi-call dropdown (still Veni-only form).
+> Recommendation: A — Rendering without submit does not remove the launch blocker; end-to-end payload correctness is the point of the universal form.
+> **Selected: A**
+
+**Q2: What is the minimum backend dependency for the universal renderer?**
+- A) Use existing endpoints only; accept any small UX gaps (fallback labels).
+- B) Add one small backend endpoint to return a single “form schema” payload.
+- C) Freeze universal work until backend exposes perfect UI schema.
+> Recommendation: A — Matches the explicit constraint: no new backend endpoints in this WF.
+> **Selected: A**
+
+**Q3: What is the minimum supported node types in the renderer?**
+- A) `section/subsection/textarea` as plain text inputs only; anything else is “unsupported”.
+- B) Support file upload nodes too.
+- C) Support rich widgets (tables, list builders).
+> Recommendation: A — Minimizes scope and avoids content-type drift that would break compliance counting and backend normalization.
+> **Selected: A**
+
+**Q4: What calls must be demonstrated for “MVP complete”?**
+- A) Veni + 1 additional flat structured call.
+- B) Veni only.
+- C) Veni + ERC (nested).
+> Recommendation: A — Demonstrating at least one additional call proves universality and prevents overfitting to Veni.
+> **Selected: A**
+
+**Q5: What is explicitly excluded from this MVP?**
+- A) Recursive/nested rendering, Markdown/rich text, legacy single-snippet unification, server-side drafts.
+- B) Only recursive/nested rendering excluded.
+- C) Nothing excluded.
+> Recommendation: A — These exclusions protect the 2–3 day MVP timebox and preserve the pre-parked follow-on items.
+> **Selected: A**
 
 ## 8. Explicit Non-Goals
 
