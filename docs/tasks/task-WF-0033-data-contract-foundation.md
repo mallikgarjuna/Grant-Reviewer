@@ -1,11 +1,16 @@
 # WF-0033 — Data Contract Foundation Tasks
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-02-26
 
 ---
+
+## Preflight (One-Time)
+
+- Start the isolated test DB: `cd backend && docker compose -f docker-compose.test.yml up -d`
+- Set `DATABASE_URL` to the test DB (never dev/prod), then run tests with `PYTHONPATH=.`.
 
 ## Task Breakdown (Sequential Order)
 
@@ -22,6 +27,7 @@ Files to modify:
 - `backend/tests/test_call_nodes_tree_api.py` (new)
 Acceptance Criteria:
 - `GET /calls/{call_id}/nodes` returns the current flat shape unchanged.
+- Flat nodes include `logical_id: str | None` (additive field; existing clients continue to work).
 - `GET /calls/{call_id}/nodes?view=tree` returns `nodes` as root nodes only, each with recursive `children` arrays (empty list for leaves).
 - Tree nodes include `logical_id` (may be null if not present in DB fixtures yet).
 TDD Plan:
@@ -29,7 +35,6 @@ TDD Plan:
 - GREEN: Implement `view` parsing + tree DTOs + DB-adjacency builder.
 - REFACTOR: Keep tree builder code small/contained (no new services yet).
 Verification Steps:
-- `cd backend && docker compose -f docker-compose.test.yml up -d`
 - `cd backend && export DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/grant_reviewer_test && PYTHONPATH=. uv run pytest -q tests/test_call_nodes_tree_api.py`
 Risks (if any):
 - FastAPI `response_model` union shape needs careful typing to avoid breaking OpenAPI.
@@ -44,16 +49,16 @@ PRD Requirements: FR4, FR8
 Files to modify:
 - `backend/app/services/node_tree_service.py` (new)
 - `backend/main.py`
-- `backend/tests/test_call_nodes_tree_api.py`
+- `backend/tests/test_node_tree_service.py` (new)
 Acceptance Criteria:
 - For V2 calls with a valid `proposal_nodes` list, `view=tree` uses canonical JSON ordering/parentage (not DB adjacency).
 - For legacy/no-definition calls, behavior falls back to DB adjacency as in Task 1.
 TDD Plan:
-- RED: Add `backend/tests/test_call_nodes_tree_api.py::test_call_nodes_view_tree_uses_canonical_parent_logical_id` that seeds a minimal V2 `proposal_nodes` list and asserts ordering/parentage.
+- RED: Add `backend/tests/test_node_tree_service.py::test_build_tree_from_parent_logical_id_orders_siblings_by_definition_order`.
 - GREEN: Implement `NodeTreeService` and wire it into the route.
 - REFACTOR: Keep service API narrow (inputs: canonical JSON + active nodes mapping).
 Verification Steps:
-- `cd backend && export DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/grant_reviewer_test && PYTHONPATH=. uv run pytest -q tests/test_call_nodes_tree_api.py`
+- `cd backend && export DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/grant_reviewer_test && PYTHONPATH=. uv run pytest -q tests/test_node_tree_service.py`
 Risks (if any):
 - Fixtures may not yet include a deeply nested call; unit tests must cover ordering deterministically.
 
@@ -155,3 +160,4 @@ Risks (if any):
 
 - v0.1 (2026-02-26): Initial task breakdown from PRD.
 - v0.2 (2026-02-26): Tightened atomic file targets, removed ambiguity, and made TDD plan/verification steps implementation-ready.
+- v0.3 (2026-02-26): Added one-time preflight, made `logical_id` additive on flat nodes, and moved canonical-tree testing to a unit seam to keep tasks atomic.
