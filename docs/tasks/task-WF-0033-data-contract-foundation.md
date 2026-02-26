@@ -133,7 +133,7 @@ Verification Steps:
 Risks (if any):
 - Query param parsing differences (repeated vs CSV); stick to repeated params per PRD.
 
-### [ ] Task 6 — Refactor: extract metadata builder service
+### [x] Task 6 — Refactor: extract metadata builder service
 
 Goal:
 Move metadata DTO construction out of route handler into a dedicated service for reuse/testing.

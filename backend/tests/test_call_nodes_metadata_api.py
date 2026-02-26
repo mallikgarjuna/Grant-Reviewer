@@ -1,5 +1,7 @@
 """API tests for public node metadata contract."""
 
+import main as main_module
+
 from tests.test_api import create_client_with_seed
 
 
@@ -54,3 +56,40 @@ def test_call_nodes_metadata_filter_returns_unknowns(monkeypatch) -> None:
     payload = response.json()
     assert [node["logical_id"] for node in payload["nodes"]] == ["academic_profile"]
     assert payload["unknown_node_logical_ids"] == ["unknown_node"]
+
+
+def test_call_nodes_metadata_route_delegates_to_service(monkeypatch) -> None:
+    """Route should delegate projection logic to NodeMetadataService."""
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    class FakeNodeMetadataService:
+        def build_metadata_response(self, *, call, definition, node_logical_ids, repository):
+            assert call.code == seeded_ids.structured_call_code
+            assert definition is not None
+            return {
+                "call_logical_id": call.code,
+                "config_version": "v2",
+                "nodes": [
+                    {
+                        "logical_id": "sentinel_node",
+                        "node_id": None,
+                        "label": None,
+                        "node_type": None,
+                        "parent_logical_id": None,
+                        "guidance_text": None,
+                        "content_constraints": {},
+                        "compliance_rules": [],
+                        "source_section": None,
+                    }
+                ],
+                "unknown_node_logical_ids": None,
+            }
+
+    monkeypatch.setattr(main_module, "NodeMetadataService", FakeNodeMetadataService)
+
+    response = client.get(
+        f"/api/public/calls/{seeded_ids.structured_call_code}/nodes/metadata"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["nodes"][0]["logical_id"] == "sentinel_node"
