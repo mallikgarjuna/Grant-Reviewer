@@ -251,3 +251,25 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 - **Tool Preference**: Prioritize filesystem tools (`write_to_file`) over terminal hacks (`heredoc`).
 - **Communication**: If the assistant detects a persistent error or a "rejection" message, it should stop and notify the user instead of looping.
 - **Minimal Edits**: Strictly adhere to changing only what is requested; avoid unnecessary overwrites or refactors during fixes.
+
+## Date: 2026-02-26 (WF-0032: Reviewer-policy runtime hardening)
+
+### Q: Should reviewer-policy details live in YAML, and what were we missing?
+**A**: Yes. Reviewer-policy should be first-class call data in YAML, not only runtime notes. We added structured `reviewer_policy` rules (stage scope, node scope, enforcement mode, forbidden terms, source hint) and wired them into prompt construction + post-generation policy checks.
+
+### Q: What does “flip to BLOCKING + explicit `review_stage`” mean?
+**A**:
+- `POST_CHECK`: detect violations after LLM output and keep review with warnings.
+- `BLOCKING`: detect violations and fail review (no violating cards persisted).
+- Explicit `review_stage`: client sends `STEP_1` or `STEP_2`; backend rejects node/stage mismatches instead of silently inferring stage.
+
+### Q: What is the difference between `/reviews` and `/api/structured-review`?
+**A**:
+- `/reviews`: single-node review (`node_id` + `snippet_text`) for one section/snippet.
+- `/api/structured-review`: multi-node review (multiple `node_logical_id` + text pairs) with cross-node orchestration in one review job.
+
+### Q: Why do we keep `reviewer_service.py` and `structured_reviewer_service.py` separate?
+**A**: They represent different execution contracts (single-snippet vs multi-node orchestration). Keeping separate entry services reduces branching complexity and test ambiguity. Shared behavior (policy parsing/enforcement, prompt assembly) is already extracted into shared helpers.
+
+### Q: Should we park the service consolidation suggestion and record this Q&A?
+**A**: Yes. Parked as `P2 #22` in `docs/parking_lot.md` (shared internal execution core while preserving two API contracts). Q&A is captured here; architectural rationale is in `docs/logs/decisions.md` (AD 32.1–32.3).
