@@ -25,7 +25,11 @@ from app.models.domain import (
 )
 from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import LLMClientError
-from app.services.review_execution_core import NodeExecutionResult
+from app.services.review_execution_core import (
+    ExecutionTelemetryPayload,
+    NodeExecutionResult,
+    ReviewExecutionCore,
+)
 from app.schemas.llm_response import ExpectationFeedback
 from app.services.structured_reviewer_service import StructuredReviewerService
 
@@ -263,6 +267,22 @@ class SpyExecutionCore:
             ],
             warning_violations=[],
         )
+
+
+class RecordingTelemetryHooks:
+    def __init__(self) -> None:
+        self.starts: list[ExecutionTelemetryPayload] = []
+        self.completes: list[ExecutionTelemetryPayload] = []
+        self.failures: list[ExecutionTelemetryPayload] = []
+
+    def on_execution_start(self, payload: ExecutionTelemetryPayload) -> None:
+        self.starts.append(payload)
+
+    def on_execution_complete(self, payload: ExecutionTelemetryPayload) -> None:
+        self.completes.append(payload)
+
+    def on_execution_failure(self, payload: ExecutionTelemetryPayload) -> None:
+        self.failures.append(payload)
 
 
 def test_structured_reviewer_service_happy_path(monkeypatch) -> None:
@@ -514,5 +534,39 @@ def test_structured_not_assessable_cards_remain_deterministic(monkeypatch) -> No
         assert spy_core.calls == 1
         assert len(spy_core.expectation_batches) == 1
         assert len(spy_core.expectation_batches[0]) == 1
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_path_telemetry_is_non_invasive(monkeypatch) -> None:
+    hooks = RecordingTelemetryHooks()
+    core = ReviewExecutionCore(
+        llm_client=EchoExpectationLLMClient(),
+        timeout_seconds=0.02,
+        telemetry_hooks=hooks,
+    )
+    service, call_id = _build_service(
+        monkeypatch,
+        EchoExpectationLLMClient(),
+        execution_core=core,
+    )
+    try:
+        review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                ("academic_profile", "Academic profile text"),
+                ("key_outputs", "Key outputs text"),
+                ("research_idea", "Research idea text"),
+            ],
+            external_user_id="user-core-telemetry",
+            idempotency_key="core-telemetry-case",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 5
+        assert all(card.assessment_status == AssessmentStatus.ASSESSED for card in cards)
+        assert len(hooks.starts) == 3
+        assert len(hooks.completes) == 3
+        assert hooks.failures == []
     finally:
         service.repository.session.close()

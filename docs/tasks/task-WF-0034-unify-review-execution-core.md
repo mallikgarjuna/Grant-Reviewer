@@ -139,7 +139,7 @@ Verification Steps:
 Risks (if any):
 - Over-mocking could hide regressions that adapters depend on.
 
-### [ ] Task 7 — Introduce no-op telemetry seam at execution boundaries
+### [x] Task 7 — Introduce no-op telemetry seam at execution boundaries
 
 Goal: Add standardized, non-invasive telemetry hooks around shared-core execution.
 Slice: telemetry-seam

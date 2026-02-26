@@ -12,6 +12,7 @@ import pytest
 from app.models.domain import EvaluationIntent, ExpectationStrength, NodeExpectation, NodeType, ProposalNode
 from app.services.review_execution_core import (
     ExecutionFailureCategory,
+    ExecutionTelemetryPayload,
     ReviewExecutionCore,
 )
 from app.services.reviewer_policy import ReviewerPolicyRule
@@ -64,6 +65,22 @@ class PolicyTermLLMClient:
 
     def get_model_name(self) -> str:
         return "policy-term-model"
+
+
+class RecordingTelemetryHooks:
+    def __init__(self) -> None:
+        self.starts: list[ExecutionTelemetryPayload] = []
+        self.completes: list[ExecutionTelemetryPayload] = []
+        self.failures: list[ExecutionTelemetryPayload] = []
+
+    def on_execution_start(self, payload: ExecutionTelemetryPayload) -> None:
+        self.starts.append(payload)
+
+    def on_execution_complete(self, payload: ExecutionTelemetryPayload) -> None:
+        self.completes.append(payload)
+
+    def on_execution_failure(self, payload: ExecutionTelemetryPayload) -> None:
+        self.failures.append(payload)
 
 
 def _build_node() -> ProposalNode:
@@ -183,3 +200,52 @@ def test_core_policy_postcheck_classification() -> None:
     assert blocking_result.failure is not None
     assert blocking_result.failure.category == ExecutionFailureCategory.POLICY_BLOCKING
     assert "pol_block" in blocking_result.failure.message
+
+
+def test_core_emits_telemetry_start_complete() -> None:
+    hooks = RecordingTelemetryHooks()
+    core = ReviewExecutionCore(
+        llm_client=EchoExpectationLLMClient(),
+        timeout_seconds=0.5,
+        telemetry_hooks=hooks,
+    )
+    node = _build_node()
+    expectations = _build_expectations(count=1)
+
+    result = core.execute_assessable_node(
+        node=node,
+        snippet_text="Some snippet text",
+        expectations=expectations,
+        reviewer_policy_rules=[],
+    )
+
+    assert result.failure is None
+    assert len(hooks.starts) == 1
+    assert len(hooks.completes) == 1
+    assert hooks.failures == []
+    assert hooks.starts[0].node_logical_id == "research_idea"
+    assert hooks.starts[0].expectation_count == 1
+
+
+def test_core_emits_telemetry_failure_category() -> None:
+    hooks = RecordingTelemetryHooks()
+    core = ReviewExecutionCore(
+        llm_client=TimeoutLLMClient(),
+        timeout_seconds=0.01,
+        telemetry_hooks=hooks,
+    )
+    node = _build_node()
+    expectations = _build_expectations(count=1)
+
+    result = core.execute_assessable_node(
+        node=node,
+        snippet_text="Some snippet text",
+        expectations=expectations,
+        reviewer_policy_rules=[],
+    )
+
+    assert result.failure is not None
+    assert len(hooks.starts) == 1
+    assert hooks.completes == []
+    assert len(hooks.failures) == 1
+    assert hooks.failures[0].failure_category == ExecutionFailureCategory.TIMEOUT.value
