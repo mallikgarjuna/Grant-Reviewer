@@ -202,7 +202,44 @@ Primary user is a researcher actively preparing a submission and iterating over 
 
 ## 4. Rough Idea (Unstructured Thinking)
 
-(Interactive; fill via Q&A below.)
+Replace the hardcoded Veni form with a universal submit form used by the existing submit route. The universal form builds a list of eligible calls by gating on `ui_mode="structured_nodes"`, then builds a flat render model from existing backend endpoints (`nodes?view=flat` + public `nodes/metadata`). Draft persistence is isolated per selected call. Compliance UX remains unchanged (local counters + backend check-compliance + warning bypass modal).
+
+**Brainstorming Q&A:**
+
+**Q1: What is the simplest frontend shape for the universal form?**
+- A) Replace `VeniSubmitForm` with a `UniversalSubmitForm` used by `/app/app/page.tsx`.
+- B) Keep `VeniSubmitForm` and add a separate `/app/universal` route.
+- C) Keep Veni as default, add universal form only when non-Veni selected.
+> Recommendation: A — Eliminates call-specific UI at the root and prevents a long-lived parallel “universal” route that will drift.
+> **Selected: A**
+
+**Q2: How should the form build the list of eligible calls?**
+- A) Fetch all calls (`/api/bff/calls`), then for each call code check `/api/public/calls/{code}/config` and include only `ui_mode="structured_nodes"`.
+- B) Backend adds a “structured_only” filter to `/calls` to avoid N+1 calls.
+- C) Hardcode a list of supported call codes in frontend.
+> Recommendation: A — Correctness first for MVP ideation; contract optimization (B) can be tackled later if N+1 becomes problematic.
+> **Selected: A**
+
+**Q3: How should the form build the render model for flat nodes?**
+- A) `GET /calls/{call_id}/nodes?view=flat` for node IDs + `GET /api/public/calls/{code}/nodes/metadata` for labels/constraints; render in the returned ordering.
+- B) Only call `nodes?view=tree` and flatten client-side.
+- C) Only call metadata and ignore DB nodes list.
+> Recommendation: A — Uses existing contracts and keeps the UI aligned with DB node identity while pulling UI text/constraints from metadata DTOs.
+> **Selected: A**
+
+**Q4: What should draft persistence key off of?**
+- A) Key drafts by `call_id` (UUID) so switching calls never overwrites drafts.
+- B) Key drafts by `call code` (logical id) for portability across environments.
+- C) One shared draft across all calls.
+> Recommendation: A — Safest for in-app UX; prevents accidental cross-call draft collisions.
+> **Selected: A**
+
+**Q5: What should happen to compliance checking UX in the universal form?**
+- A) Keep the existing flow: local word counters + `/api/bff/check-compliance` before submit + bypass modal for warnings.
+- B) Remove client-side counters; backend-only.
+- C) Skip compliance check for MVP; submit directly.
+> Recommendation: A — Preserves current UX and the backend enforcement model; avoids surprising regressions during universalization.
+> **Selected: A**
 
 ## 5. Constraints
 
