@@ -52,7 +52,7 @@ Verification Steps:
 Risks (if any):
 - Failure classification drift could change externally observable summaries.
 
-### [ ] Task 3 — Preserve deterministic structured NOT_ASSESSABLE semantics
+### [x] Task 3 — Preserve deterministic structured NOT_ASSESSABLE semantics
 
 Goal: Keep deterministic `NOT_ASSESSABLE` card generation endpoint-owned while shared core handles only assessable execution.
 Slice: structured-not-assessable

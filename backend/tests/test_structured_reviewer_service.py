@@ -237,6 +237,7 @@ def _build_service(monkeypatch, llm_client, execution_core=None):
 class SpyExecutionCore:
     def __init__(self) -> None:
         self.calls = 0
+        self.expectation_batches: list[list[str]] = []
 
     def execute_assessable_node(
         self,
@@ -249,6 +250,7 @@ class SpyExecutionCore:
     ) -> NodeExecutionResult:
         del node, reviewer_policy_rules, cross_node_context
         self.calls += 1
+        self.expectation_batches.append([str(expectation.id) for expectation in expectations])
         return NodeExecutionResult(
             prompt=f"spy prompt: {snippet_text}",
             raw_response='{"feedbacks": []}',
@@ -475,5 +477,42 @@ def test_structured_reviewer_validates_cardinality_only_for_assessable_expectati
         ]
         assert len(assessed) == 1
         assert len(not_assessed) == 2
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_not_assessable_cards_remain_deterministic(monkeypatch) -> None:
+    spy_core = SpyExecutionCore()
+    service, call_id = _build_service(
+        monkeypatch,
+        EchoExpectationLLMClient(),
+        execution_core=spy_core,
+    )
+    try:
+        review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("research_idea", "Research idea text only")],
+            external_user_id="user-core-not-assessable",
+            idempotency_key="core-not-assessable-case",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+
+        not_assessable_cards = [
+            card for card in cards if card.assessment_status == AssessmentStatus.NOT_ASSESSABLE
+        ]
+        assert len(not_assessable_cards) == 2
+        assert all(
+            card.feedback_text == "Not assessable due to missing cross-node context."
+            for card in not_assessable_cards
+        )
+        assert all(
+            card.not_assessable_reason and "Missing required context from:" in card.not_assessable_reason
+            for card in not_assessable_cards
+        )
+
+        assert spy_core.calls == 1
+        assert len(spy_core.expectation_batches) == 1
+        assert len(spy_core.expectation_batches[0]) == 1
     finally:
         service.repository.session.close()
