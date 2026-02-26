@@ -23,11 +23,8 @@ To execute the granular development tasks defined in Phase 3, run a strict revie
 3. Print a short "PART A/B/C" header and a bullet summary of actions taken at the end of each part.
 4. If Part B identifies regressions or test failures, you must fix them before proceeding to Part C.
 4.1. Before Task 1 in Part A, run a baseline test command to confirm a green starting state (see `docs/workflow/phase-3-1-implement-tasks.md` “Preflight — First Run the Tests”).
-5. After any code-writing step in Part A or Part B, explicitly report:
-   - what could break because of the change
-   - which tests were run and which additional tests are recommended to cover those breakage risks
-6. For any behavior change or bug fix implemented during Part A, ensure the chat log contains explicit TDD loop labels (`RED`, `GREEN`, `REFACTOR`) as required by `phase-3-1-implement-tasks.md`.
-7. TDD is mandatory for behavior changes/bug fixes. Enforce red/green/refactor and boundary-only mocking via `docs/guides/tdd/README.md`.
+5. For any behavior change or bug fix implemented during Part A, ensure the chat log contains explicit TDD loop labels (`RED`, `GREEN`, `REFACTOR`) as required by `phase-3-1-implement-tasks.md`.
+6. TDD is mandatory for behavior changes/bug fixes. Enforce red/green/refactor and boundary-only mocking via `docs/guides/tdd/README.md`.
 
 ---
 
@@ -40,25 +37,12 @@ To execute the granular development tasks defined in Phase 3, run a strict revie
 
 ### PART B: Review + Verify [GATE]
 1. Stop implementing features.
-2. Run a focused review pass (code review mindset): identify regressions, behavioral drift from PRD/tasks, missing tests, and scope creep.
-3. If review finds issues, drop back to Part A to implement fixes, then restart Part B.
-4. Run `pre-commit run --all-files` (or the equivalent linter/formatter).
-5. Run the project's test suite (if applicable) and explicitly print the results.
-6. If the work touched UI/Frontend, ask the user if they wish to perform a manual visual validation or if you should use an Agentic Browser to verify the UI.
-7. For any bug discovered during verification, write/update a failing test that reproduces it before fixing code; only proceed once the reproducer passes.
-8. If any verification fails, drop back to Part A to implement the fix, then return to Part B.
-9. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C.
+2. Execute **only** the Part B gate defined in `docs/workflow/phase-3-2-verify-and-ship.md` (Technical Audit + Verification).
+3. If the Part B gate requires fixes, drop back to Part A, implement them, then re-run Part B.
+4. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C.
 
 ### PART C: Walkthrough + Ship [GATE]
-1. Read the artifact file: `docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md`.
-2. Follow the template and instructions inside that file (or create it using a standard format if it's empty).
-3. Draft the walkthrough summarizing what was changed, what was verified, and the next steps.
-4. Execute `git mv` via terminal to move the active artifacts (Brainstorm, PRD, Tasks, Walkthrough) for this `<WF-ID>` into their respective `completed/` subdirectories.
-5. Update `docs/index.md`:
-   - Change the `Status` column for this WF to `Done`.
-   - Update the markdown links in this WF's row to point to the new `completed/` paths.
-6. Run a final `git add` and `git commit` for the walkthrough, the file moves, and the index update.
-7. **STOP**: You must strictly await explicit user approval ("Ship it") before autonomously executing `git push`, opening a PR, or merging. Do not push to remote without a direct command.
+1. Execute Part C exactly as defined in `docs/workflow/phase-3-2-verify-and-ship.md`.
 
 ---
 

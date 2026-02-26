@@ -23,17 +23,26 @@ To cleanly resume a workflow that has already completed Part A (Implementation) 
 3. Print a short "PART B/C" header and a bullet summary of actions taken at the end of each part.
 4. If Part B identifies regressions or test failures, you must fix them before proceeding to Part C.
 5. If fixes require behavior changes, TDD is mandatory (red/green/refactor; mock boundaries only): `docs/guides/tdd/README.md`.
+6. This file is the canonical source for Phase 3 Part B and Part C gate behavior. The end-to-end runner (`phase-3-run-implement-execution.md`) must reference this file for those gates.
 
 ---
 
-### PART B: Review + Verify [GATE]
-1. Run a focused review pass (code review mindset): identify regressions, behavioral drift from PRD/tasks, missing tests, and scope creep.
-2. If review finds issues, implement fixes, then restart Part B.
-3. Run `pre-commit run --all-files` (or the equivalent linter/formatter).
-4. Run the project's test suite (if applicable) and explicitly print the results.
-5. If the work touched UI/Frontend, ask the user if they wish to perform a manual visual validation or if you should use an Agentic Browser to verify the UI.
-6. If any verification fails, implement the fix, then return to the start of Part B.
-7. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C.
+### PART B: Technical Audit + Verify [GATE]
+1. Stop feature work and perform a detailed **technical audit (code review) of Part A only**.
+2. Output the audit in this exact structure:
+   1. potential bugs
+   2. missing tests
+   3. design issues
+   4. suggested fixes
+   5. refactored version with comments (only for high-impact snippets; keep minimal and actionable)
+3. Keep Part B review scope exclusive to technical audit concerns; do not add product-scope brainstorming or non-technical critique.
+4. If audit finds issues, implement fixes, then restart Part B from step 1.
+5. Run `pre-commit run --all-files` (or equivalent lint/format checks).
+6. Run the project's relevant automated test suite and explicitly print pass/fail evidence.
+7. If work touched UI/Frontend, ask the user whether to do manual visual validation or agentic browser validation.
+8. For each bug found during Part B, add/update a failing reproducer test before fixing; re-run verification.
+9. If any verification fails, implement fixes and return to Part B step 1.
+10. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C.
 
 ### PART C: Walkthrough + Ship [GATE]
 1. Read the artifact file: `docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md`.
