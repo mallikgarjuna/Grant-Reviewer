@@ -161,7 +161,44 @@ WF-0035 ships a single universal submit experience: user selects any structured 
 
 ## 3. Target User / Actor
 
-(Interactive; fill via Q&A below.)
+Primary user is a researcher actively preparing a submission and iterating over multiple sessions. The dominant behavior is copy-pasting text blocks from an existing document into multiple node fields. MVP supports plain text only (no tables/images), optimized for speed of pasting and minimal friction. Expected flat-structured calls are roughly 3–10 nodes; larger call navigation is out of scope for this WF.
+
+**Brainstorming Q&A:**
+
+**Q1: What stage is the primary user in when they hit this form?**
+- A) Actively preparing a submission, iterating multiple times.
+- B) One-shot “paste and run” to sanity-check quickly.
+- C) Admin/ops verifying ingestion correctness.
+> Recommendation: A — This aligns with the need for draft persistence and repeated edits; it also matches the current localStorage draft pattern in the repo.
+> **Selected: A**
+
+**Q2: What is the dominant user behavior for filling nodes?**
+- A) Copy-paste text blocks from an existing document into multiple fields.
+- B) Type directly into the UI as their primary editor.
+- C) A mix, but mostly typing.
+> Recommendation: A — Optimizing for paste-first reduces friction and maps to the current “plain text paste” disclaimer UX.
+> **Selected: A**
+
+**Q3: What is the minimum supported content type per node for MVP?**
+- A) Plain text only (no tables/images), with explicit upfront disclaimer.
+- B) Markdown allowed (basic formatting).
+- C) Rich text editor (WYSIWYG).
+> Recommendation: A — Keeps compliance counting and backend normalization deterministic. Defer Markdown/rich text to a parked follow-on item to avoid silent mismatches.
+> **Selected: A**
+
+**Q4: What should the UI optimize for: speed vs guidance?**
+- A) Speed: fast paste, clear labels, minimal friction.
+- B) Guidance: lots of inline instructions, constraints, and helper text.
+- C) Balanced.
+> Recommendation: A — This is the lowest-risk MVP for launch-readiness; deeper guidance can be layered in later via metadata DTOs.
+> **Selected: A**
+
+**Q5: What is the expected number of nodes for “flat structured calls” we must handle in MVP?**
+- A) 3–10 nodes (typical).
+- B) 10–30 nodes (needs heavier navigation).
+- C) 30+ nodes (needs wizard/steps).
+> Recommendation: A — Fits a single-page form without introducing navigational architecture; larger calls will be blocked until recursion/navigation work exists.
+> **Selected: A**
 
 ## 4. Rough Idea (Unstructured Thinking)
 
