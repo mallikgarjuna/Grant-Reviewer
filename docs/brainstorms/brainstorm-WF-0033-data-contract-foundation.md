@@ -1,7 +1,7 @@
 # WF-0033 — Data Contract Foundation Brainstorm
 
 Artifact: brainstorm
-Version: v0.3
+Version: v0.4
 Status: Draft Complete (Transitioning to PRD)
 Last Updated: 2026-02-26
 
@@ -150,3 +150,70 @@ A backend that can serve a nested tree of nodes for any call and provide a rich 
 3.  **Hydration Ready**: `CallDefinitionService.get_hydrated_nodes` already exists to merge YAML config with DB nodes.
 4.  **V2 Alignment**: The project has migrated to `CallDefinitionV2` schemas for ingestion.
 5.  **Hardcoded Form Logic**: The frontend is currently program-aware rather than metadata-aware.
+
+---
+
+## 9. Phase 0.1 Rerun (Fresh) — API Contract Decisions (Tree + Metadata DTO)
+
+This section supersedes earlier brainstorm choices where they conflict (notably, the nested toggle vs multi-view API contract).
+
+### Decisions (Carry into PRD)
+
+- **Canonical node identity**: Expose both DB UUID and `logical_id` in API DTOs.
+- **Tree source of truth**: Use canonical JSON for structure + ordering; use DB for UUIDs, `archived_at` filtering, and persistence alignment.
+- **Nodes endpoint**: Keep `GET /calls/{call_id}/nodes` as the primary entrypoint; add `view=flat|tree` query param (default: `flat`).
+- **Tree node DTO**: Keep the tree payload UI-ready but not "heavy"; include `has_expectations` but keep detailed constraints out.
+- **Metadata DTO route**: Provide a bulk-per-call route with optional filtering for lazy hydration.
+
+### Specific API Changes Needed (Concrete Targets)
+
+1. **Tree response shape**
+   - Add a tree DTO (e.g., `NodeTreeNode`) that includes `children: list[NodeTreeNode]`.
+   - Implement a `NodesTreeResponse` variant that returns only root nodes under `nodes`.
+2. **Identifier + UI binding**
+   - Add `logical_id: str | None` to the node DTOs used by the universal renderer.
+3. **Endpoint contract**
+   - Update `GET /calls/{call_id}/nodes` to accept `view=flat|tree`.
+   - Return current `NodesResponse` for `view=flat` (backward compatible).
+   - Return `NodesTreeResponse` for `view=tree` (tree roots, nested children).
+4. **Metadata DTO endpoint**
+   - Add `GET /api/public/calls/{call_logical_id}/nodes/metadata` returning a UI-oriented per-node metadata DTO.
+   - Support `node_logical_ids` query param to fetch a subset (optional).
+   - Source: `CallDefinition.canonical_json` (validated V2); join against DB nodes by `logical_id` for UUID mapping.
+
+### Brainstorming Q&A (Rerun)
+
+**Q1: What is the canonical node identifier in the API contract for the frontend?**
+- A) DB UUID only (`node.id`)
+- B) `logical_id` string only (from `CallDefinitionV2`)
+- C) Both UUID + `logical_id` (UUID for persistence; `logical_id` for UI binding/stability)
+> Recommendation: C — UUID is strong for DB joins and existing persistence, while `logical_id` is the stable, environment-agnostic key the universal renderer should bind to.
+> **Selected: C**
+
+**Q2: What is the source of truth for building the node tree?**
+- A) DB adjacency (`parent_node_id`) from `ProposalNode`
+- B) Canonical JSON (`CallDefinition.canonical_json.proposal_nodes[].children`) order/structure
+- C) Hybrid: structure/order from canonical JSON; UUID mapping from DB
+> Recommendation: C — Canonical JSON defines the designed hierarchy and ordering; the DB supplies IDs and the active/archived projection.
+> **Selected: C**
+
+**Q3: How should we expose “flat vs tree” from `GET /calls/{call_id}/nodes`?**
+- A) Add `view=flat|tree` query param (default `flat`)
+- B) Add `nested=true|false` query param (default `false`)
+- C) New endpoint `GET /calls/{call_id}/tree`
+> Recommendation: A — A `view` enum keeps the migration incremental while leaving room for future variants without proliferating endpoints.
+> **Selected: A**
+
+**Q4: What should the tree node DTO include (per node)?**
+- A) Minimal: `id,parent_node_id,title,node_type,order_index,children[]`
+- B) UI-ready: A + `logical_id` + `has_expectations`
+- C) Everything: B + full metadata (constraints/compliance rules) inline
+> Recommendation: B — The tree should be directly renderable (and bindable via `logical_id`) without pulling the entire metadata payload on first paint.
+> **Selected: B**
+
+**Q5: What’s the Metadata DTO route strategy?**
+- A) Single bulk route per call: returns metadata for all nodes
+- B) Per-node route: fetch metadata for one node at a time
+- C) Bulk route + optional filtering (e.g., `node_logical_ids=...`) to support lazy loading
+> Recommendation: C — Enables both initial full hydration and progressive loading while keeping API surface area minimal.
+> **Selected: C**
