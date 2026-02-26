@@ -68,11 +68,11 @@ When you pick an item to start work:
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
- | 1 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |  |
- | 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |  |
- | 3 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |  |
- | 4 | Add node hierarchy selector | product | Defer until universal form architecture is active; implement as part of dynamic renderer UX (depends on P2 #15/#16/#18) to avoid one-off UI debt. | 2026-02-16 |  |
- | 5 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |  |
+| 1 | Ingest real call data | product | Only 2 YAMLs exist (ERC + partial NWO); landing promises NWO, ZonMw, ERC, MSCA — deliver at least 1 complete call per program. | 2026-02-16 |
+| 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 3 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 4 | Add node hierarchy selector | product | Defer until universal form architecture is active; implement as part of dynamic renderer UX (depends on P2 #15/#16/#18) to avoid one-off UI debt. | 2026-02-16 |
+| 5 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 
 ### P1 Rationale Snapshot (2026-02-24)
 
