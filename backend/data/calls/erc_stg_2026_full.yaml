@@ -241,6 +241,59 @@ reviewer_policy:
     forbidden_terms: []
     source_hint: "Guide for Peer Reviewers - reviewer guidelines"
 
+  - id: pol_no_cross_proposal_comparison
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: reviewer_conduct
+    instruction: "Do not compare this submission with other proposals or prior evaluation rounds; assess only this proposal against ERC evaluation elements."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - compared to other proposals
+      - relative to other applicants
+      - in the previous submission
+    source_hint: "Guide for Peer Reviewers - reviewer guidelines"
+
+  - id: pol_no_personal_attribute_comments
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: bias_guardrail
+    instruction: "Avoid comments about age, nationality, gender, or personal matters of the applicant; focus on proposal content and track record evidence."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - because of age
+      - due to nationality
+      - due to gender
+    source_hint: "Guide for Peer Reviewers - reviewer guidelines"
+
+  - id: pol_no_ethics_security_comments
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: scope_guardrail
+    instruction: "Avoid reviewing ethical or security clearance aspects in this scientific evaluation flow."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - ethical clearance is insufficient
+      - security clearance is insufficient
+      - ethics approval is missing
+    source_hint: "Guide for Peer Reviewers - reviewer guidelines"
+
+  - id: pol_step2_no_salary_cut_recommendation
+    applies_to_stage: STEP_2
+    applies_to_node_ids:
+      - resources_time_commitment
+    rule_type: resource_guideline
+    instruction: "At Step 2, do not recommend salary cuts; if budget adjustments are suggested, justify them based on non-salary resource needs."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - reduce salary
+      - salary should be cut
+      - salaries are too high
+    source_hint: "Guide for Peer Reviewers - resources assessment guidelines"
+
 runtime_notes:
   - id: note_step_scope
     description: "Step 1 evaluates Part I plus CV and Track Record from Part B1; Step 2 evaluates the complete research proposal including Part B2 and Resources."
