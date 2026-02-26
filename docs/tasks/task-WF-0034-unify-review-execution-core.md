@@ -30,7 +30,7 @@ Verification Steps:
 Risks (if any):
 - Initial seam may accidentally absorb structured-only persistence responsibilities.
 
-### [ ] Task 2 — Structured failure-path parity via shared core
+### [x] Task 2 — Structured failure-path parity via shared core
 
 Goal: Preserve structured timeout/LLM/validation failure semantics while using shared-core execution.
 Slice: structured-failure-parity

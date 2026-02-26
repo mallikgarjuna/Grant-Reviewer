@@ -24,6 +24,7 @@ from app.models.domain import (
     ReviewStatus,
 )
 from app.repositories.review_repository import ReviewRepository
+from app.services.llm_client import LLMClientError
 from app.services.review_execution_core import NodeExecutionResult
 from app.schemas.llm_response import ExpectationFeedback
 from app.services.structured_reviewer_service import StructuredReviewerService
@@ -207,6 +208,18 @@ class TimeoutOnSecondCallLLMClient(EchoExpectationLLMClient):
         return super().generate(prompt)
 
 
+class InvalidJsonLLMClient(EchoExpectationLLMClient):
+    def generate(self, prompt: str) -> str:
+        del prompt
+        return "not-json"
+
+
+class FailingLLMClient(EchoExpectationLLMClient):
+    def generate(self, prompt: str) -> str:
+        del prompt
+        raise LLMClientError("synthetic llm failure")
+
+
 def _build_service(monkeypatch, llm_client, execution_core=None):
     monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
     _reset_database()
@@ -374,6 +387,71 @@ def test_structured_reviewer_service_sets_failed_on_llm_timeout_with_partial_car
         assert review.status == ReviewStatus.FAILED
         assert len(cards) >= 1
         assert "key_outputs" in (review.overall_summary or "")
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_shared_core_timeout_parity(monkeypatch) -> None:
+    service, call_id = _build_service(monkeypatch, TimeoutOnSecondCallLLMClient())
+    try:
+        review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                ("academic_profile", "Academic profile text"),
+                ("key_outputs", "Key outputs text"),
+            ],
+            external_user_id="user-core-timeout",
+            idempotency_key="core-timeout-case",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert len(cards) >= 1
+        assert (
+            review.overall_summary
+            == "Structured review failed: timeout while reviewing "
+            "'key_outputs' after 0.02s."
+        )
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_shared_core_validation_failure_parity(monkeypatch) -> None:
+    service, call_id = _build_service(monkeypatch, InvalidJsonLLMClient())
+    try:
+        review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Academic profile text")],
+            external_user_id="user-core-validation",
+            idempotency_key="core-validation-case",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert review.overall_summary is not None
+        assert "Structured review validation failed for 'academic_profile'" in (
+            review.overall_summary
+        )
+        assert "Invalid JSON from LLM:" in review.overall_summary
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_shared_core_llm_failure_parity(monkeypatch) -> None:
+    service, call_id = _build_service(monkeypatch, FailingLLMClient())
+    try:
+        review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Academic profile text")],
+            external_user_id="user-core-llm",
+            idempotency_key="core-llm-case",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert (
+            review.overall_summary
+            == "Structured review failed for 'academic_profile': synthetic llm failure"
+        )
     finally:
         service.repository.session.close()
 
