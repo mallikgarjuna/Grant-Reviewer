@@ -7,6 +7,7 @@
 **Keep this file tiny; link SSOT.** Add rules only after an AI failure (1-3 lines).
 **Surprises:** unexpected behavior or new rule idea -> alert developer first.
 **Style (this file):** extreme concision; sacrifice grammar.
+**Minimal Edits:** never replace content unnecessarily; only change what is requested.
 
 ## Quick Reference & Links
 
