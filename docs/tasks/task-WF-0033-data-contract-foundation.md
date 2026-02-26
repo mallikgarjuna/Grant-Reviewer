@@ -39,7 +39,7 @@ Verification Steps:
 Risks (if any):
 - FastAPI `response_model` union shape needs careful typing to avoid breaking OpenAPI.
 
-### [ ] Task 2 — Canonical JSON tree: V2 `parent_logical_id` as source-of-truth
+### [x] Task 2 — Canonical JSON tree: V2 `parent_logical_id` as source-of-truth
 
 Goal:
 Implement tree construction from V2 canonical JSON `proposal_nodes[]` using `id` + `parent_logical_id` and canonical list order for sibling ordering.

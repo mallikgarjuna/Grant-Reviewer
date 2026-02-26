@@ -50,6 +50,7 @@ from app.schemas.structured_review import (
 from app.services.call_definition_service import CallDefinitionService
 from app.services.compliance_engine import evaluate_compliance
 from app.services.llm_client import build_llm_client
+from app.services.node_tree_service import NodeTreeService
 from app.services.reviewer_policy import matches_review_stage
 from app.services.reviewer_service import ReviewerService
 from app.services.structured_reviewer_service import StructuredReviewerService
@@ -446,6 +447,15 @@ def list_call_nodes(
 
     if view == "flat":
         return NodesResponse(nodes=flat_nodes)
+
+    definition = repository.get_call_definition_by_call_id(call_id)
+    if definition is not None:
+        canonical_tree = NodeTreeService().build_tree_from_canonical(
+            definition.canonical_json,
+            flat_nodes,
+        )
+        if canonical_tree is not None:
+            return NodesTreeResponse(nodes=canonical_tree)
 
     nodes_by_parent: dict[UUID | None, list[NodeSummary]] = {}
     for node in flat_nodes:
