@@ -32,6 +32,13 @@ We currently maintain two synchronous “create review” execution paths:
 
 They share many concerns (policy injection, LLM call, response validation, post-checks) but are implemented separately, increasing drift risk and duplicating fixes.
 
+**Section 1 summary (decisions):**
+- Scope the problem as drift/duplication between the two create endpoints (not new features).
+- Primary pain: engineering maintenance + duplicated bugfixes.
+- Key failure mode: behavior drift (one endpoint gets fixes, the other lags).
+- Timing: do it now to prevent future divergence.
+- Strict “no behavior change first” for safety and reviewability.
+
 **Brainstorming Q&A:**
 
 **Q1: What’s the primary problem we’re solving with this WF?**
@@ -71,7 +78,49 @@ They share many concerns (policy injection, LLM call, response validation, post-
 
 ## 2. Desired Outcome
 
-(Pending — to be filled via interactive Q&A.)
+**Section 2 summary (decisions):**
+- Create a shared internal execution pipeline that returns a normalized “execution result”; endpoints adapt to their own DTOs/persistence semantics.
+- Share policy injection + policy post-checks + response validation first (highest ROI, lowest behavior risk).
+- Migrate incrementally, flipping one endpoint at a time with parity checks.
+- Define success as golden parity across API semantics, idempotency, and persistence side effects.
+- Use both endpoint-level API tests and service-level shared-core tests with deterministic LLM stubs/fixtures.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the shared “execution core” output we want to converge on (internally), while keeping external contracts separate?**
+- A) A shared internal pipeline function that returns a normalized “review execution result” (status, cards, summary, logs/telemetry hooks), and each endpoint adapts it to its DTO/persistence needs.
+- B) A shared service class that both endpoints call directly, with branching inside for single vs multi.
+- C) Share only helpers (prompt/policy/validation) and keep orchestration separate.
+> Recommendation: A — It maximizes shared behavior while preserving endpoint-specific contracts and persistence semantics. B risks a “god service” with branching and ambiguous ownership. C is too shallow and doesn’t prevent orchestration drift.
+> **Selected: A**
+
+**Q2: Which concerns must be shared first (highest ROI, lowest behavior risk)?**
+- A) Policy injection + post-checks + response validation (schema/expectations).
+- B) LLM call wrapper (timeouts/retries) + parsing + error mapping.
+- C) Telemetry + tracing + structured logs.
+> Recommendation: A — These are the most likely to drift and the easiest to make deterministic/parity-safe. B/C are valuable but can change behavior/observability expectations if introduced prematurely.
+> **Selected: A**
+
+**Q3: What is the migration strategy for WF-0034?**
+- A) Incremental refactor: introduce shared pipeline behind an internal switch; keep behavior identical; flip one endpoint at a time; compare outputs in tests.
+- B) Big-bang: refactor both endpoints to the new core in one PR.
+- C) Only refactor structured endpoint first; leave `/reviews` untouched.
+> Recommendation: A — Incremental flips reduce blast radius and make regressions attributable. Big-bang increases review and rollback risk. C leaves half the drift risk in place.
+> **Selected: A**
+
+**Q4: What is the success definition for “no behavior change first”?**
+- A) Golden-contract parity tests: same API status codes/errors, same idempotency semantics, same persistence side effects, same card counts/fields for both endpoints.
+- B) Only API shape parity; persistence/logging may change.
+- C) Only “end user experience” parity; backend internals can change.
+> Recommendation: A — This is the tightest safety rail: it explicitly constrains the refactor to internal structure while guarding against subtle regressions.
+> **Selected: A**
+
+**Q5: What testing seam do we rely on to prevent regressions across both endpoints?**
+- A) Keep endpoint-level API tests + add service-level tests around the shared core using a stub LLM client and deterministic fixtures.
+- B) Only API tests (end-to-end) are enough.
+- C) Only service-level tests; reduce API test coverage.
+> Recommendation: A — API tests protect external contracts; shared-core tests protect internal equivalence and allow faster iteration without full-stack setup.
+> **Selected: A**
 
 ## 3. Target User / Actor
 
