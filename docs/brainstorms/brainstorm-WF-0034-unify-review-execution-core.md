@@ -262,7 +262,51 @@ They share many concerns (policy injection, LLM call, response validation, post-
 
 ## 6. Risks / Unknowns
 
-(Pending — to be filled via interactive Q&A.)
+User instruction for remaining sections (2026-02-26): default to the recommended option unless overridden.
+
+**Section 6 summary (decisions):**
+- Biggest risk is accidental behavior change (error mapping, persistence ordering, idempotency edge cases).
+- Second risk is creating a shared-core abstraction that’s either too shallow (doesn’t prevent drift) or too deep (couples endpoint-specific semantics).
+- Validation/policy seams must be deterministic and testable; avoid “hidden” exceptions that differ by endpoint.
+- Telemetry and retry seams should not change execution timing or failure modes in the initial refactor.
+- Regression prevention depends on strong parity tests and controlled rollout (one endpoint at a time).
+
+**Brainstorming Q&A:**
+
+**Q1: What is the most fragile assumption in this refactor?**
+- A) We can extract shared execution without changing any externally observable behavior (including persistence side effects). (Recommended)
+- B) The main risk is only code organization; behavior won’t change if tests pass.
+- C) Small behavior changes are acceptable as long as response models don’t change.
+> Recommendation: A — The refactor crosses execution, validation, and persistence boundaries; subtle changes are easy to introduce without strict parity framing.
+> **Selected: A**
+
+**Q2: Where are we most likely to introduce accidental divergence?**
+- A) Error mapping + exception handling + edge-case validation ordering. (Recommended)
+- B) Prompt text formatting changes.
+- C) Logging/telemetry fields.
+> Recommendation: A — Error semantics are highly sensitive; reordering checks or changing exception types can change API behavior.
+> **Selected: A**
+
+**Q3: What is the biggest abstraction risk for the shared core?**
+- A) Core becomes too coupled to endpoint-specific persistence/DTOs, making future changes harder. (Recommended)
+- B) Core is too generic and requires lots of boilerplate adapters.
+- C) Core doesn’t share enough, so drift continues.
+> Recommendation: A — Coupling is the hardest to unwind; we can mitigate B/C with careful boundaries, but coupling can silently creep in.
+> **Selected: A**
+
+**Q4: What is the highest-risk integration seam?**
+- A) The boundary between “execution result” (parsed/validated findings) and endpoint-specific persistence (review/cards/snippet/structured payload). (Recommended)
+- B) The LLM client wrapper.
+- C) The prompt builder.
+> Recommendation: A — This is where side effects happen; mistakes here are hardest to detect without parity tests.
+> **Selected: A**
+
+**Q5: What is the primary mitigation strategy for these risks?**
+- A) Add/strengthen parity tests first, then extract core incrementally and flip endpoints one at a time. (Recommended)
+- B) Rely on manual testing in the UI.
+- C) Refactor quickly, then fix bugs as they appear.
+> Recommendation: A — It’s the only approach aligned with “no behavior change first” and reduces blast radius.
+> **Selected: A**
 
 ## 7. MVP Definition
 
