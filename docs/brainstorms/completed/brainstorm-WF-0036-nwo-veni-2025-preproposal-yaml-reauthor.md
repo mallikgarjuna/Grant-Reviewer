@@ -1,8 +1,8 @@
 # WF-0036 — Re-author NWO Veni 2025 preproposal YAML (official sources)
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v1.0
+Status: Done
 Last Updated: 2026-02-26
 
 ---
@@ -54,6 +54,22 @@ Decisions:
 > **Selected: A**
 
 ---
+
+## Part B: Risk Audit (2026-02-26)
+
+- Scope creep risk: treating “call YAML re-authoring” like a product feature. Mitigation: keep WF-0036 as “call-definition maintenance”; no API/UI work.
+- Source integrity risk: authoring without official docs or unclear mapping. Mitigation: add a source manifest (SHA256 + mapping) and keep legacy YAML archived for diffing.
+- Enforcement mismatch risk: encoding constraints the runtime cannot deterministically enforce. Mitigation: keep `max_items` guidance-only; enforce prohibited metrics via `reviewer_policy` where deterministic post-check exists.
+- Review quality risk: reviewers accidentally use bibliometrics / venue prestige language. Mitigation: add `reviewer_policy` BLOCKING/POST_CHECK rules for forbidden terms and PROMPT_ONLY guidance for DORA/merits/bias avoidance.
+
+## Part C: Revise (What Changed) (2026-02-26)
+
+- Re-authored YAML from official sources and kept runtime path stable:
+  - Canonical: `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
+  - Archived legacy: `backend/data/calls/nwo/nwo_veni_2025_preproposal_legacy.yaml`
+- Added traceability manifest: `backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md`
+- Added/standardized `reviewer_policy` to align with call guidance (bibliometrics ban, venue-prestige language, DORA/merits principle, bias avoidance).
+- Verified via dry-run ingest (no DB required): `cd backend && PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
 
 ## Repo Reality Snapshot (Read-Only) (2026-02-26)
 
