@@ -14,6 +14,8 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 ExpectationStrength = Literal["MANDATORY", "IMPORTANT", "OPTIONAL"]
 EvaluationIntent = Literal["COMPLIANCE", "QUALITY", "RISK", "STRATEGIC_FIT"]
 RuleSeverity = Literal["ERROR", "WARNING"]
+EvaluationStage = Literal["STEP_1", "STEP_2", "BOTH"]
+ReviewerPolicyEnforcementMode = Literal["PROMPT_ONLY", "POST_CHECK", "BLOCKING"]
 
 
 class StrictBaseModel(BaseModel):
@@ -64,7 +66,7 @@ class EvaluationElementDefinitionV2(StrictBaseModel):
     name: str = Field(min_length=1)
     description: str = Field(min_length=1)
     source_hint: str | None = None
-    stage: Literal["STEP_1", "STEP_2", "BOTH"] | None = "BOTH"
+    stage: EvaluationStage | None = "BOTH"
 
 
 class EvaluationCriterionDefinitionV2(StrictBaseModel):
@@ -144,6 +146,20 @@ class RuntimeNoteDefinitionV2(StrictBaseModel):
     description: str = Field(min_length=1)
 
 
+class ReviewerPolicyRuleDefinitionV2(StrictBaseModel):
+    """Call-scoped reviewer policy rule for prompt and runtime enforcement."""
+
+    id: str = Field(min_length=1)
+    applies_to_stage: EvaluationStage = "BOTH"
+    applies_to_node_ids: list[str] = Field(default_factory=list)
+    rule_type: str = Field(min_length=1)
+    instruction: str = Field(min_length=1)
+    severity: RuleSeverity = "WARNING"
+    enforcement_mode: ReviewerPolicyEnforcementMode = "PROMPT_ONLY"
+    forbidden_terms: list[str] = Field(default_factory=list)
+    source_hint: str | None = None
+
+
 class CallDefinitionV2(StrictBaseModel):
     """Root model for V2 call definition YAML."""
 
@@ -153,6 +169,7 @@ class CallDefinitionV2(StrictBaseModel):
         default_factory=list
     )
     proposal_nodes: list[ProposalNodeDefinitionV2] = Field(default_factory=list)
+    reviewer_policy: list[ReviewerPolicyRuleDefinitionV2] = Field(default_factory=list)
     runtime_notes: list[RuntimeNoteDefinitionV2] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -188,6 +205,45 @@ class CallDefinitionV2(StrictBaseModel):
         if errors:
             raise ValueError(
                 "Reference validation failed:\n  - " + "\n  - ".join(errors)
+            )
+
+        valid_node_ids = {node.id for node in self.proposal_nodes}
+        seen_policy_rule_ids: set[str] = set()
+        duplicate_policy_rule_ids: list[str] = []
+        policy_errors: list[str] = []
+        for rule in self.reviewer_policy:
+            if rule.id in seen_policy_rule_ids:
+                duplicate_policy_rule_ids.append(rule.id)
+            seen_policy_rule_ids.add(rule.id)
+
+            unknown_node_ids = sorted(
+                node_id
+                for node_id in rule.applies_to_node_ids
+                if node_id not in valid_node_ids
+            )
+            if unknown_node_ids:
+                policy_errors.append(
+                    f"Reviewer policy '{rule.id}': Unknown applies_to_node_ids "
+                    f"{unknown_node_ids}"
+                )
+
+            if (
+                rule.enforcement_mode in {"POST_CHECK", "BLOCKING"}
+                and not rule.forbidden_terms
+            ):
+                policy_errors.append(
+                    f"Reviewer policy '{rule.id}': forbidden_terms required for "
+                    f"enforcement_mode={rule.enforcement_mode}"
+                )
+
+        if duplicate_policy_rule_ids:
+            duplicate_label = ", ".join(sorted(set(duplicate_policy_rule_ids)))
+            policy_errors.append(f"Duplicate reviewer policy id: {duplicate_label}")
+
+        if policy_errors:
+            raise ValueError(
+                "Reviewer policy validation failed:\n  - "
+                + "\n  - ".join(policy_errors)
             )
 
         return self

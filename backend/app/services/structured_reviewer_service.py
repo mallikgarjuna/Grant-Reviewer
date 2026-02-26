@@ -21,6 +21,11 @@ from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import LLMClientError, LLMClientProtocol, OpenAIClient
 from app.services.llm_helpers import generate_with_timeout, parse_llm_response
 from app.services.prompt_builder import build_review_prompt
+from app.services.reviewer_policy import (
+    find_policy_violations,
+    get_applicable_reviewer_policy_rules,
+    infer_review_stage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +83,7 @@ class StructuredReviewerService:
         call = self.repository.get_call_by_id(call_id)
         if call is None:
             raise ValueError("Funding call not found.")
+        call_definition = self.repository.get_call_definition_by_call_id(call_id)
         structured_payload = {
             "call_id": str(call_id),
             "call_name": call.name,
@@ -142,10 +148,16 @@ class StructuredReviewerService:
                 expectations=assessable,
                 submitted_text_by_node=submitted_text_by_node,
             )
+            reviewer_policy_rules = get_applicable_reviewer_policy_rules(
+                call_definition=call_definition,
+                node_logical_id=node.logical_id,
+                review_stage=infer_review_stage(node.logical_id),
+            )
             prompt = build_review_prompt(
                 node=node,
                 snippet_text=node_text,
                 expectations=assessable,
+                reviewer_policy_rules=reviewer_policy_rules,
                 cross_node_context=cross_context,
             )
             prompt_logs.append({"node_logical_id": node_logical_id, "prompt": prompt})
@@ -179,6 +191,24 @@ class StructuredReviewerService:
             try:
                 parsed_response = parse_llm_response(raw_response)
                 self._validate_response(parsed_response.feedbacks, assessable)
+                blocking_violations, warning_violations = find_policy_violations(
+                    feedback_texts=[
+                        feedback_item.feedback
+                        for feedback_item in parsed_response.feedbacks
+                    ],
+                    policy_rules=reviewer_policy_rules,
+                )
+                if blocking_violations:
+                    raise ValueError(
+                        "Reviewer-policy blocking violations: "
+                        + "; ".join(blocking_violations)
+                    )
+                if warning_violations:
+                    logger.warning(
+                        "[StructuredReview] Reviewer-policy warnings for %s: %s",
+                        node_logical_id,
+                        warning_violations,
+                    )
             except ValueError as err:
                 review.status = ReviewStatus.FAILED
                 review.overall_summary = (

@@ -6,6 +6,7 @@ Includes expectation_strength and evaluation_intent per PRD requirements.
 """
 
 from app.models.domain import NodeExpectation, ProposalNode
+from app.services.reviewer_policy import ReviewerPolicyRule
 
 REVIEW_PROMPT_TEMPLATE = """You are a grant proposal reviewer evaluating text against specific criteria.
 
@@ -18,6 +19,7 @@ Guidance: {guidance_text}
 
 ## Evaluation Criteria
 {expectations_block}
+{reviewer_policy_block}
 {cross_node_context_block}
 
 ## Instructions
@@ -53,6 +55,7 @@ def build_review_prompt(
     node: ProposalNode,
     snippet_text: str,
     expectations: list[NodeExpectation],
+    reviewer_policy_rules: list[ReviewerPolicyRule] | None = None,
     cross_node_context: dict[str, str] | None = None,
 ) -> str:
     """
@@ -73,6 +76,7 @@ def build_review_prompt(
         expectations_lines.append(_format_expectation(exp, i))
 
     expectations_block = "\n".join(expectations_lines)
+    reviewer_policy_block = _format_reviewer_policy_block(reviewer_policy_rules)
     cross_node_context_block = ""
     if cross_node_context:
         context_lines = ["## Cross-Node Context"]
@@ -86,5 +90,27 @@ def build_review_prompt(
         guidance_text=node.guidance_text or "No guidance provided",
         snippet_text=snippet_text,
         expectations_block=expectations_block,
+        reviewer_policy_block=reviewer_policy_block,
         cross_node_context_block=cross_node_context_block,
     )
+
+
+def _format_reviewer_policy_block(
+    rules: list[ReviewerPolicyRule] | None,
+) -> str:
+    if not rules:
+        return ""
+
+    lines = ["## Reviewer Policy"]
+    for index, rule in enumerate(rules, start=1):
+        lines.append(
+            f"{index}. Policy ID: {rule.id}"
+            f" | Type: {rule.rule_type}"
+            f" | Stage: {rule.applies_to_stage}"
+            f" | Enforcement: {rule.enforcement_mode}"
+        )
+        lines.append(f"   Instruction: {rule.instruction}")
+        if rule.source_hint:
+            lines.append(f"   Source: {rule.source_hint}")
+
+    return "\n" + "\n".join(lines)

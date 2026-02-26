@@ -2,6 +2,8 @@
 
 from uuid import uuid4
 
+import pytest
+
 from app.models.domain import (
     EvaluationIntent,
     ExpectationStrength,
@@ -9,6 +11,9 @@ from app.models.domain import (
     ProposalNode,
 )
 from app.services.prompt_builder import build_review_prompt
+from app.services.reviewer_policy import ReviewerPolicyRule
+
+pytestmark = pytest.mark.no_db
 
 
 def _build_node() -> ProposalNode:
@@ -64,3 +69,28 @@ def test_build_review_prompt_includes_cross_node_context_when_provided() -> None
     assert "Profile summary" in prompt
     assert "- key_outputs:" in prompt
     assert "Output evidence" in prompt
+
+
+def test_build_review_prompt_includes_reviewer_policy_when_provided() -> None:
+    prompt = build_review_prompt(
+        node=_build_node(),
+        snippet_text="Idea text",
+        expectations=[_build_expectation()],
+        reviewer_policy_rules=[
+            ReviewerPolicyRule(
+                id="pol_excellence_only",
+                applies_to_stage="BOTH",
+                applies_to_node_ids=(),
+                rule_type="criterion_scope",
+                instruction="Assess only Excellence criterion.",
+                severity="WARNING",
+                enforcement_mode="PROMPT_ONLY",
+                forbidden_terms=(),
+                source_hint="Guide 2.1",
+            )
+        ],
+    )
+
+    assert "## Reviewer Policy" in prompt
+    assert "Policy ID: pol_excellence_only" in prompt
+    assert "Assess only Excellence criterion." in prompt

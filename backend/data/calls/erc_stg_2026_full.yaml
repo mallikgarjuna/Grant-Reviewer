@@ -201,6 +201,46 @@ proposal_nodes:
         expectation_strength: MANDATORY
         evaluation_intent: QUALITY
 
+reviewer_policy:
+  - id: pol_excellence_only
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: criterion_scope
+    instruction: "Assess only against the Excellence criterion and evaluation elements; do not score societal impact, host institution prestige, or other non-criterion factors."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - societal impact score
+      - host institution prestige
+      - host institution ranking
+    source_hint: "Guide for Peer Reviewers - 2.1 Evaluation Criterion"
+
+  - id: pol_step1_no_resource_judgement
+    applies_to_stage: STEP_1
+    applies_to_node_ids:
+      - b1
+      - b1_part1_scientific_proposal
+      - b1_cv_track_record
+    rule_type: stage_scope
+    instruction: "At Step 1, do not assess budget/resource sufficiency; evaluate only Part I plus CV and Track Record."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - insufficient budget
+      - resource allocation is inadequate
+      - funding request is too high
+    source_hint: "Guide for Peer Reviewers + AF 2026 Step process"
+
+  - id: pol_evidence_based_feedback
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: feedback_quality
+    instruction: "Feedback must remain evidence-based, section-scoped, and actionable; avoid generic judgments not grounded in submitted text."
+    severity: WARNING
+    enforcement_mode: PROMPT_ONLY
+    forbidden_terms: []
+    source_hint: "Guide for Peer Reviewers - reviewer guidelines"
+
 runtime_notes:
   - id: note_step_scope
     description: "Step 1 evaluates Part I plus CV and Track Record from Part B1; Step 2 evaluates the complete research proposal including Part B2 and Resources."
