@@ -10,11 +10,11 @@ from collections.abc import Generator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
@@ -31,7 +31,9 @@ from app.schemas.api import (
     CreateReviewRequest,
     CreateReviewResponse,
     DeleteReviewResponse,
+    NodeTreeNode,
     NodesResponse,
+    NodesTreeResponse,
     NodeSummary,
     ReviewCardSummary,
     ReviewDetailResponse,
@@ -415,29 +417,57 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
 
 @app.get(
     "/calls/{call_id}/nodes",
-    response_model=NodesResponse,
+    response_model=NodesResponse | NodesTreeResponse,
     responses=API_ERROR_RESPONSES,
 )
-def list_call_nodes(call_id: UUID, repository: RepositoryDep) -> NodesResponse:
-    """List proposal nodes for a call (flat list)."""
+def list_call_nodes(
+    call_id: UUID,
+    repository: RepositoryDep,
+    view: Literal["flat", "tree"] = Query(default="flat"),
+) -> NodesResponse | NodesTreeResponse:
+    """List proposal nodes for a call in flat or tree view."""
     call = repository.get_call_by_id(call_id)
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
 
     nodes = repository.get_nodes_for_call(call_id)
-    return NodesResponse(
-        nodes=[
-            NodeSummary(
-                id=node.id,
-                parent_node_id=node.parent_node_id,
-                title=node.title,
-                node_type=node.node_type,
-                order_index=node.order_index,
-                has_expectations=has_expectations,
+    flat_nodes = [
+        NodeSummary(
+            id=node.id,
+            logical_id=node.logical_id,
+            parent_node_id=node.parent_node_id,
+            title=node.title,
+            node_type=node.node_type,
+            order_index=node.order_index,
+            has_expectations=has_expectations,
+        )
+        for node, has_expectations in nodes
+    ]
+
+    if view == "flat":
+        return NodesResponse(nodes=flat_nodes)
+
+    nodes_by_parent: dict[UUID | None, list[NodeSummary]] = {}
+    for node in flat_nodes:
+        nodes_by_parent.setdefault(node.parent_node_id, []).append(node)
+
+    def build_tree(parent_id: UUID | None) -> list[NodeTreeNode]:
+        ordered_children = nodes_by_parent.get(parent_id, [])
+        return [
+            NodeTreeNode(
+                id=child.id,
+                logical_id=child.logical_id,
+                parent_node_id=child.parent_node_id,
+                title=child.title,
+                node_type=child.node_type,
+                order_index=child.order_index,
+                has_expectations=child.has_expectations,
+                children=build_tree(child.id),
             )
-            for node, has_expectations in nodes
-        ],
-    )
+            for child in ordered_children
+        ]
+
+    return NodesTreeResponse(nodes=build_tree(parent_id=None))
 
 
 @app.post(

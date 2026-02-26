@@ -42,6 +42,7 @@ class NodeSummary(BaseModel):
     """Proposal node summary for section picker UIs."""
 
     id: UUID
+    logical_id: str | None = None
     parent_node_id: UUID | None
     title: str
     node_type: NodeType
@@ -53,6 +54,28 @@ class NodesResponse(BaseModel):
     """Response for GET /calls/{call_id}/nodes."""
 
     nodes: list[NodeSummary]
+
+
+class NodeTreeNode(BaseModel):
+    """Tree node shape for nested proposal-node responses."""
+
+    id: UUID
+    logical_id: str | None = None
+    parent_node_id: UUID | None
+    title: str
+    node_type: NodeType
+    order_index: int
+    has_expectations: bool
+    children: list["NodeTreeNode"] = Field(default_factory=list)
+
+
+NodeTreeNode.model_rebuild()
+
+
+class NodesTreeResponse(BaseModel):
+    """Response for GET /calls/{call_id}/nodes?view=tree."""
+
+    nodes: list[NodeTreeNode]
 
 
 class CallConfigResponse(BaseModel):

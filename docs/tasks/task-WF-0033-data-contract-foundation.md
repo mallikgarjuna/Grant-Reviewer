@@ -14,7 +14,7 @@ Last Updated: 2026-02-26
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: add `view=tree` (DB-adjacency fallback)
+### [x] Task 1 — Tracer bullet: add `view=tree` (DB-adjacency fallback)
 
 Goal:
 Add `view=flat|tree` to `GET /calls/{call_id}/nodes` with `flat` default and a minimal tree view built from DB `parent_node_id` + `order_index` (no canonical JSON yet).
