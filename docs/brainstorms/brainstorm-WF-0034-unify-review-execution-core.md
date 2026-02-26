@@ -170,7 +170,49 @@ They share many concerns (policy injection, LLM call, response validation, post-
 
 ## 4. Rough Idea (Unstructured Thinking)
 
-(Pending — to be filled via interactive Q&A.)
+**Section 4 summary (decisions):**
+- Extract a new shared internal module (e.g., `backend/app/services/review_execution_core.py`) used by both services.
+- Define a shared-core internal input contract at the “node execution” level (call/stage/node_logical_id/text + lookup context), not endpoint DTOs.
+- Shared-core responsibility (first cut): prechecks + policy selection/injection + prompt build + LLM call + parse + validation + policy post-checks; return normalized result; avoid direct DB writes.
+- Keep endpoint/service-specific persistence separate (snippet vs structured payload, NOT_ASSESSABLE cards, review_type differences).
+- Refactor sequence: helper extraction + parity tests first, then consolidate orchestration into shared-core; flip one endpoint at a time.
+
+**Brainstorming Q&A:**
+
+**Q1: Where should the shared internal execution pipeline live?**
+- A) New internal module, e.g. `backend/app/services/review_execution_core.py`, imported by both `reviewer_service.py` and `structured_reviewer_service.py`.
+- B) Keep it inside `reviewer_service.py` and import from structured.
+- C) Put it in `backend/main.py` next to the routes.
+> Recommendation: A — A dedicated module creates a clean “shared core” seam without making either service the de facto owner, and keeps route handlers thin.
+> **Selected: A**
+
+**Q2: What is the shared-core input contract (internal), at the right abstraction level?**
+- A) `call_id`, `review_stage`, `node_logical_id`, `node_text`, plus context needed for policy + expectations lookup.
+- B) Pass full endpoint DTOs into the core and branch.
+- C) Pass raw DB models only (node/expectations already fetched).
+> Recommendation: A — It’s stable across endpoints and avoids coupling core logic to external DTOs, while still being concrete enough to be testable and deterministic.
+> **Selected: A**
+
+**Q3: What should the shared-core be responsible for (first cut)?**
+- A) Deterministic prechecks + policy rule selection + prompt build + LLM call + parse + validation + policy post-checks; return normalized result (no direct DB writes).
+- B) Everything including DB writes (create review, cards, snippets).
+- C) Only LLM call + parsing; leave validation/policy to callers.
+> Recommendation: A — This captures the drift-prone “execution pipeline” while keeping DB side effects endpoint-owned, preserving no-behavior-change constraints.
+> **Selected: A**
+
+**Q4: How should endpoint-specific persistence stay separate?**
+- A) Each endpoint/service remains responsible for DB writes (snippet vs structured payload, NOT_ASSESSABLE cards, review_type, etc.), using the shared-core result.
+- B) Core writes everything; endpoints just adapt DTOs.
+- C) Create a third “persistence service” that both call.
+> Recommendation: A — It keeps the shared-core purely “execution” and avoids entangling storage semantics that differ across endpoints.
+> **Selected: A**
+
+**Q5: What is the “no behavior change” refactor sequence (high level)?**
+- A) First extract helpers behind the same public service methods (no signature changes), add parity tests, then consolidate orchestration into shared-core, then flip structured, then flip single.
+- B) Immediately rewrite both services around the new core.
+- C) Only refactor one endpoint; leave the other duplicated.
+> Recommendation: A — It’s the safest incremental route: you establish tests, then move logic behind a seam, then flip one endpoint at a time.
+> **Selected: A**
 
 ## 5. Constraints
 
