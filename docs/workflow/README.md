@@ -16,7 +16,7 @@ Every meaningful initiative is tracked using a Workflow ID (WF-XXXX).
 - Done
 
 Runner shortcuts:
-- Phase 0: `docs/workflow/phase-0-run-start-and-brainstorm-ideation.md`
+- Phase 0: `docs/workflow/phase-0-run-start-and-brainstorm-ideation.md` (includes brainstorm review gate + revise)
 - Phase 1/2: `docs/workflow/phase-12-run-planning.md` (one unified runner; Phase ID = 1 or 2)
 - Phase 3: `docs/workflow/phase-3-run-implement-execution.md`
 
