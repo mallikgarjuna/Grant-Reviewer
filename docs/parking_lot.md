@@ -26,6 +26,7 @@ You can also add items manually. Each row should have:
 - **Task**: short, verb-first title.
 - **Type**: `product` / `tech-debt` / `ops` / `legal` / `idea`.
 - **Recommendation**: one-line why and what.
+- **Traceability**: include a `Ref:` to the origin artifact/chat/commit (e.g., `Ref: WF-0035 brainstorm`, `Ref: docs/...`, `Ref: branch ...; commit ...`) when applicable.
 - **Date**: when parked (YYYY-MM-DD).
 
 ### Picking Items (Code Phrase: `pick P[x] #[n]`)
