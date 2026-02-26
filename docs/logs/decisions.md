@@ -18,6 +18,14 @@
 - **Tradeoff**: Endpoint has two response shapes; API typing/docs must be explicit.
 - **Status**: Approved.
 
+### AD 33.5: Tree source-of-truth uses V2 `parent_logical_id` (canonical JSON) when available
+- **WF ID**: WF-0033
+- **Context**: The V2 call-definition schema expresses hierarchy via `proposal_nodes[].parent_logical_id` (not nested `children` lists).
+- **Decision**: Build tree structure/order from V2 canonical JSON `proposal_nodes` using `id` + `parent_logical_id` and the list order for sibling ordering; use DB adjacency (`parent_node_id`) only as a fallback when no V2 definition is present/valid.
+- **Why**: Keeps the hierarchy consistent with the authored call definition while allowing deterministic fallback for legacy calls.
+- **Tradeoff**: Requires careful mismatch handling between canonical JSON logical IDs and active DB nodes.
+- **Status**: Approved.
+
 ### AD 33.3: Metadata DTO is a bulk public route with optional filtering and partial-success semantics
 - **WF ID**: WF-0033
 - **Context**: UI needs node-specific constraints/rules without fetching heavy metadata up front, and must support lazy hydration.

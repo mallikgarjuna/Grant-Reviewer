@@ -1,7 +1,7 @@
 # WF-0033 — Data Contract Foundation PRD
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-02-26
 
@@ -99,13 +99,13 @@ Validation / invariants:
 - `logical_id` may be null for legacy calls, but for V2 calls it should be populated. (FR3)
 
 Deterministic tree construction rules (FR4, FR8):
-- If canonical JSON contains a valid `proposal_nodes` list and includes nested `children` structure, use it as the primary source of structure + ordering.
-- If canonical JSON is missing/invalid or lacks `children`, fall back to DB adjacency (`parent_node_id`) and order siblings by `order_index`.
+- If canonical JSON contains a valid V2 `proposal_nodes` list, use it as the primary source of structure + ordering by interpreting each entry's `id` and `parent_logical_id`.
+- If canonical JSON is missing/invalid, fall back to DB adjacency (`parent_node_id`) and order siblings by `order_index`.
 - If canonical JSON references `logical_id` values that do not map to an active DB node:
-  - Omit those nodes from the returned tree (cannot render without persisted node record), and log a warning with counts.
+  - Hard fail with 409 `CALL_DEFINITION_NODE_MISMATCH` including the missing logical IDs (do not silently omit required nodes).
 - Hard failures (return 4xx + canonical error payload):
   - Duplicate `logical_id` detected in active DB nodes for the call.
-  - Cycle detected in canonical `children` graph.
+  - Cycle detected in the canonical `parent_logical_id` graph.
 
 ### 5.2 Metadata DTO Endpoint (`/api/public/calls/{call_logical_id}/nodes/metadata`) (US2)
 
@@ -123,6 +123,10 @@ NodeMetadataDTO (UI-oriented, derived from canonical JSON + DB join): (FR5, FR7)
 
 - `logical_id: str`
 - `node_id: UUID | None` (null if not mapped to an active DB node)
+- `label: str | None`
+- `node_type: str | None`
+- `parent_logical_id: str | None`
+- `guidance_text: str | None`
 - `content_constraints: dict` (shape mirrors V2 canonical JSON)
 - `compliance_rules: list` (shape mirrors V2 canonical JSON)
 - `source_section: str | None`
@@ -207,3 +211,4 @@ Design tree (dependency order):
 
 - v0.1 (2026-02-26): Initial PRD from brainstorm.
 - v0.2 (2026-02-26): Applied risk audit edits (deterministic mismatch behavior, metadata filtering semantics, and contract clarification).
+- v0.3 (2026-02-26): Corrected V2 schema alignment (tree derived from `parent_logical_id`, not canonical `children`) and expanded metadata DTO to include UI-critical fields.
