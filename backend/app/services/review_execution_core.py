@@ -23,6 +23,38 @@ class ExecutionFailureCategory(StrEnum):
     POLICY_BLOCKING = "policy_blocking"
 
 
+def format_execution_failure_summary(
+    *,
+    flow: str,
+    category: ExecutionFailureCategory,
+    message: str,
+    timeout_seconds: float,
+    node_logical_id: str | None = None,
+) -> str:
+    if flow == "single":
+        if category == ExecutionFailureCategory.TIMEOUT:
+            return message
+        if category == ExecutionFailureCategory.LLM_FAILURE:
+            return f"LLM call failed: {message}"
+        if category == ExecutionFailureCategory.POLICY_BLOCKING:
+            return "Reviewer-policy blocking violations detected: " + message
+        return f"Response validation failed: {message}"
+
+    if flow == "structured":
+        if node_logical_id is None:
+            raise ValueError("node_logical_id is required for structured flow")
+        if category == ExecutionFailureCategory.TIMEOUT:
+            return (
+                f"Structured review failed: timeout while reviewing "
+                f"'{node_logical_id}' after {timeout_seconds:.2f}s."
+            )
+        if category == ExecutionFailureCategory.LLM_FAILURE:
+            return f"Structured review failed for '{node_logical_id}': {message}"
+        return f"Structured review validation failed for '{node_logical_id}': {message}"
+
+    raise ValueError(f"Unsupported execution failure summary flow: {flow}")
+
+
 @dataclass(frozen=True)
 class ExecutionFailure:
     category: ExecutionFailureCategory

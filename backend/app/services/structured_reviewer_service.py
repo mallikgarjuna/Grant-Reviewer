@@ -19,8 +19,8 @@ from app.models.domain import (
 from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import LLMClientProtocol, OpenAIClient
 from app.services.review_execution_core import (
-    ExecutionFailureCategory,
     ReviewExecutionCore,
+    format_execution_failure_summary,
 )
 from app.services.reviewer_policy import (
     ReviewStage,
@@ -183,10 +183,12 @@ class StructuredReviewerService:
 
             if node_result.failure is not None:
                 review.status = ReviewStatus.FAILED
-                review.overall_summary = self._failure_summary_for_node(
-                    node_logical_id=node_logical_id,
+                review.overall_summary = format_execution_failure_summary(
+                    flow="structured",
                     category=node_result.failure.category,
                     message=node_result.failure.message,
+                    timeout_seconds=self._timeout_seconds,
+                    node_logical_id=node_logical_id,
                 )
                 review.prompt_sent = json.dumps(prompt_logs)
                 review.raw_llm_response = json.dumps(raw_logs)
@@ -222,22 +224,6 @@ class StructuredReviewerService:
         review.raw_llm_response = json.dumps(raw_logs)
         self.repository.update_review(review)
         return review, all_cards
-
-    def _failure_summary_for_node(
-        self,
-        *,
-        node_logical_id: str,
-        category: ExecutionFailureCategory,
-        message: str,
-    ) -> str:
-        if category == ExecutionFailureCategory.TIMEOUT:
-            return (
-                f"Structured review failed: timeout while reviewing "
-                f"'{node_logical_id}' after {self._timeout_seconds:.2f}s."
-            )
-        if category == ExecutionFailureCategory.LLM_FAILURE:
-            return f"Structured review failed for '{node_logical_id}': {message}"
-        return f"Structured review validation failed for '{node_logical_id}': {message}"
 
     def _partition_expectations(
         self,

@@ -18,8 +18,8 @@ from app.models.domain import (
 from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import LLMClientProtocol, OpenAIClient
 from app.services.review_execution_core import (
-    ExecutionFailureCategory,
     ReviewExecutionCore,
+    format_execution_failure_summary,
 )
 from app.services.reviewer_policy import (
     get_applicable_reviewer_policy_rules,
@@ -164,9 +164,11 @@ class ReviewerService:
         review.raw_llm_response = node_result.raw_response
         if node_result.failure is not None:
             review.status = ReviewStatus.FAILED
-            review.overall_summary = self._failure_summary(
+            review.overall_summary = format_execution_failure_summary(
+                flow="single",
                 category=node_result.failure.category,
                 message=node_result.failure.message,
+                timeout_seconds=self._timeout_seconds,
             )
             self.repository.update_review(review)
             return review, []
@@ -206,17 +208,3 @@ class ReviewerService:
 
         logger.info(f"[Review] ✓ Review {review.id} COMPLETED with {len(cards)} cards")
         return review, cards
-
-    def _failure_summary(
-        self,
-        *,
-        category: ExecutionFailureCategory,
-        message: str,
-    ) -> str:
-        if category == ExecutionFailureCategory.TIMEOUT:
-            return message
-        if category == ExecutionFailureCategory.LLM_FAILURE:
-            return f"LLM call failed: {message}"
-        if category == ExecutionFailureCategory.POLICY_BLOCKING:
-            return "Reviewer-policy blocking violations detected: " + message
-        return f"Response validation failed: {message}"

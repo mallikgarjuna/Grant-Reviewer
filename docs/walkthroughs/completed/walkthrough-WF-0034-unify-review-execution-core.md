@@ -1,7 +1,7 @@
 # WF-0034 — Unify review service execution core Walkthrough
 
 Artifact: walkthrough
-Version: v1.0
+Version: v1.1
 Status: Complete
 Last Updated: 2026-02-26
 
@@ -23,10 +23,10 @@ Unify single-node and structured review execution behind a shared core seam whil
 
 ## 4. Part B Technical Audit Summary
 - No blocking findings.
-- Non-blocking findings:
-  - Structured failure path now always serializes `raw_llm_response` as JSON logs on failures (`[]` possible) instead of leaving it unset in some early-failure cases.
-  - Structured policy-blocking summary wording now routes through generic validation-failure text path and could drift from historical phrasing if contracts tighten on exact message text.
-  - Structured contract parity test currently allows both `COMPLETED` and `FAILED` for success-path status; this weakens regression sensitivity.
+- Non-blocking findings were incorporated in follow-up C1:
+  - Added explicit structured policy-blocking summary parity coverage.
+  - Tightened structured contract parity success status assertion to `COMPLETED`.
+  - Deduplicated adapter failure summary formatting through shared core formatter.
 
 ## 5. Commit Trail (Phase 3)
 - `69b4724` Task 1: tracer shared-core seam for structured path.
@@ -37,6 +37,7 @@ Unify single-node and structured review execution behind a shared core seam whil
 - `0c7d1f0` Task 6: shared-core seam test suite.
 - `de6042e` Task 7: telemetry seam + non-invasive coverage.
 - `b784a05` Task 8: endpoint contract parity guards.
+- Follow-up C1/C2 patch: incorporated Part B non-blocking audit findings.
 
 ## 6. Remaining Risks
 - Future wording-level API assertions could expose summary-text drift across adapters.

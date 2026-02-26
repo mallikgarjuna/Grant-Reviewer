@@ -1195,7 +1195,7 @@ def test_structured_review_contract_parity(monkeypatch) -> None:
     assert success.status_code == 200
     success_payload = success.json()
     assert set(success_payload.keys()) == {"review_id", "status"}
-    assert success_payload["status"] in {"COMPLETED", "FAILED"}
+    assert success_payload["status"] == "COMPLETED"
 
     mismatch = post_structured_review(
         client=client,

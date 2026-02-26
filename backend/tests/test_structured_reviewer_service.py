@@ -26,6 +26,8 @@ from app.models.domain import (
 from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import LLMClientError
 from app.services.review_execution_core import (
+    ExecutionFailure,
+    ExecutionFailureCategory,
     ExecutionTelemetryPayload,
     NodeExecutionResult,
     ReviewExecutionCore,
@@ -285,6 +287,29 @@ class RecordingTelemetryHooks:
         self.failures.append(payload)
 
 
+class PolicyBlockingExecutionCore:
+    def execute_assessable_node(
+        self,
+        *,
+        node,
+        snippet_text: str,
+        expectations,
+        reviewer_policy_rules,
+        cross_node_context=None,
+    ) -> NodeExecutionResult:
+        del node, snippet_text, expectations, reviewer_policy_rules, cross_node_context
+        return NodeExecutionResult(
+            prompt="policy-blocking-prompt",
+            raw_response='{"feedbacks":[{"node_expectation_id":"x","feedback":"y"}]}',
+            feedbacks=[],
+            warning_violations=[],
+            failure=ExecutionFailure(
+                category=ExecutionFailureCategory.POLICY_BLOCKING,
+                message="pol_step1_budget: forbidden term 'insufficient budget' detected in feedback #1",
+            ),
+        )
+
+
 def test_structured_reviewer_service_happy_path(monkeypatch) -> None:
     service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
     try:
@@ -473,6 +498,31 @@ def test_structured_shared_core_llm_failure_parity(monkeypatch) -> None:
         assert (
             review.overall_summary
             == "Structured review failed for 'academic_profile': synthetic llm failure"
+        )
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_shared_core_policy_blocking_summary_parity(monkeypatch) -> None:
+    service, call_id = _build_service(
+        monkeypatch,
+        EchoExpectationLLMClient(),
+        execution_core=PolicyBlockingExecutionCore(),
+    )
+    try:
+        review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Academic profile text")],
+            external_user_id="user-core-policy-blocking",
+            idempotency_key="core-policy-blocking-case",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert (
+            review.overall_summary
+            == "Structured review validation failed for 'academic_profile': "
+            "pol_step1_budget: forbidden term 'insufficient budget' detected in feedback #1"
         )
     finally:
         service.repository.session.close()
