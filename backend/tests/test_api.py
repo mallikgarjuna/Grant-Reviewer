@@ -7,6 +7,7 @@ import re
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from uuid import UUID
 
 from fastapi.testclient import TestClient
@@ -35,6 +36,7 @@ from app.models.domain import (
 from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import StubLLMClient
 from main import ERROR_STATUS_BY_CODE, app
+from scripts.ingest_call import ingest_call
 
 TEST_BFF_SHARED_SECRET = "test-bff-secret"
 TEST_USER_ID = "user_test_1"
@@ -494,6 +496,8 @@ def post_review(
     shared_secret: str = TEST_BFF_SHARED_SECRET,
 ) -> object:
     """Call POST /reviews with signed headers and explicit JSON bytes."""
+    if "review_stage" not in payload:
+        payload["review_stage"] = "STEP_1"
     body = json.dumps(payload).encode("utf-8")
     headers = build_signature_headers(
         body=body,
@@ -519,6 +523,8 @@ def post_structured_review(
     shared_secret: str = TEST_BFF_SHARED_SECRET,
 ) -> object:
     """Call POST /api/structured-review with signed headers."""
+    if "review_stage" not in payload:
+        payload["review_stage"] = "STEP_1"
     body = json.dumps(payload).encode("utf-8")
     headers = build_signature_headers(
         body=body,
@@ -652,6 +658,34 @@ def test_list_nodes_includes_has_expectations(monkeypatch) -> None:
     assert (
         by_id[seeded_ids.section_without_expectations_id]["has_expectations"] is False
     )
+
+
+def test_list_nodes_returns_parent_links_after_v2_hierarchy_ingest() -> None:
+    """Nodes endpoint should expose parent ids for ingested hierarchy calls."""
+    reset_database()
+    ingest_call(Path("tests/fixtures/hierarchy_v2.yaml"), dry_run=False)
+
+    session = get_session()
+    try:
+        call = session.exec(
+            select(FundingCall).where(FundingCall.code == "erc_stg_2026_step1")
+        ).first()
+        assert call is not None
+        call_id = call.id
+    finally:
+        session.close()
+
+    client = TestClient(app)
+    response = client.get(f"/calls/{call_id}/nodes")
+    assert response.status_code == 200
+
+    payload = response.json()
+    nodes = payload["nodes"]
+    by_id = {node["id"]: node for node in nodes}
+    parent_linked = [node for node in nodes if node["parent_node_id"] is not None]
+    assert parent_linked
+    for node in parent_linked:
+        assert node["parent_node_id"] in by_id
 
 
 def test_get_call_config_returns_structured_mode(monkeypatch) -> None:
@@ -868,6 +902,20 @@ def test_create_structured_review_unknown_node_returns_422(monkeypatch) -> None:
     assert response.json()["error"]["code"] == "UNKNOWN_NODE_ID"
 
 
+def test_create_structured_review_stage_mismatch_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "review_stage": "STEP_2",
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "abc"}],
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "REVIEW_STAGE_NODE_MISMATCH"
+
+
 def test_create_structured_review_duplicate_node_returns_422(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = post_structured_review(
@@ -920,6 +968,7 @@ def test_create_structured_review_success_persists_structured_fields(monkeypatch
         assert review.structured_payload == {
             "call_id": str(seeded_ids.structured_call_id),
             "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+            "review_stage": "STEP_1",
             "nodes": {"academic_profile": "profile text"},
         }
 
@@ -1210,6 +1259,21 @@ def test_node_not_in_call_returns_domain_error(monkeypatch) -> None:
     assert response.json()["error"]["code"] == "NODE_NOT_IN_CALL"
 
 
+def test_review_stage_node_mismatch_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_review(
+        client=client,
+        payload={
+            "review_stage": "STEP_2",
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Mismatch test",
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "REVIEW_STAGE_NODE_MISMATCH"
+
+
 def test_no_expectations_returns_domain_error(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = post_review(
@@ -1298,6 +1362,7 @@ def test_missing_signature_headers_returns_unauthorized(monkeypatch) -> None:
     response = client.post(
         "/reviews",
         json={
+            "review_stage": "STEP_1",
             "call_id": str(seeded_ids.call_id),
             "node_id": str(seeded_ids.section_with_expectations_id),
             "snippet_text": "No signature",
@@ -1310,6 +1375,7 @@ def test_missing_signature_headers_returns_unauthorized(monkeypatch) -> None:
 def test_missing_idempotency_key_returns_validation_error(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     payload = {
+        "review_stage": "STEP_1",
         "call_id": str(seeded_ids.call_id),
         "node_id": str(seeded_ids.section_with_expectations_id),
         "snippet_text": "No idempotency key",
@@ -1560,6 +1626,7 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "REVIEW_NOT_FOUND": 404,
         "NO_EXPECTATIONS": 400,
         "NODE_NOT_IN_CALL": 400,
+        "REVIEW_STAGE_NODE_MISMATCH": 422,
         "REVIEWS_DISABLED": 503,
         "DB_UNAVAILABLE": 503,
         "SNIPPET_TOO_LONG": 400,

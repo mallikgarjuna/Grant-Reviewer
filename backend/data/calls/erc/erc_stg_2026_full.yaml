@@ -1,0 +1,315 @@
+# ERC Starting Grant 2026 (full combined) — source-grounded call definition
+#
+# Structure and policy were authored from official source PDFs provided by user.
+# Traceability manifest: backend/data/calls/sources/erc_stg_2026_full.sources.md
+#
+# Primary sources:
+# - af_he-erc-stg_en.pdf (Part B1/B2 structure, page/character constraints, Step visibility)
+# - wp_horizon-erc-2026_en.pdf (1.6.1, 1.6.3, 1.6.5 + Research Proposal definition)
+# - guide-for-peer-reviewers_he-erc-stg-cog_en.pdf (2.1 + reviewer guidelines)
+#
+funding_agency:
+  id: erc
+  name: European Research Council
+  country: EU
+
+funding_call:
+  id: erc_stg_2026_full
+  code: erc_stg_2026_full
+  title: ERC Starting Grant 2026
+  year: 2026
+  stage: full
+  language: en
+
+evaluation_criteria:
+  - id: crit_excellence
+    name: Excellence
+    stage: step1_step2
+    weight_percent: 100
+    evaluation_elements:
+      - id: elem_project_importance_questions
+        name: Research addresses important scientific questions
+        description: To what extent does the research address important scientific questions?
+        source_hint: "Work Programme 2026 - section 1.6.5, Research Project, Step 1 and Step 2"
+        stage: BOTH
+      - id: elem_project_ambition_frontier
+        name: Objectives are ambitious and advance frontier of knowledge
+        description: To what extent are the project objectives ambitious and will they advance the frontier of knowledge?
+        source_hint: "Work Programme 2026 - section 1.6.5, Research Project, Step 1 and Step 2"
+        stage: BOTH
+      - id: elem_project_methodology_arrangements
+        name: Methodology and working arrangements are appropriate
+        description: To what extent are the research methodology and working arrangements appropriate to achieve project goals?
+        source_hint: "Work Programme 2026 - section 1.6.5, Research Project, Step 2"
+        stage: STEP_2
+      - id: elem_project_timescale_resources
+        name: Timescales and resources are adequate and justified
+        description: To what extent are the timescales and resources adequate and properly justified?
+        source_hint: "Work Programme 2026 - section 1.6.5, Research Project, Step 2"
+        stage: STEP_2
+      - id: elem_pi_groundbreaking_ability
+        name: PI ability to conduct ground-breaking research
+        description: To what extent has the Principal Investigator demonstrated the ability to conduct ground-breaking research?
+        source_hint: "Work Programme 2026 - section 1.6.5, Principal Investigator(s), Step 1 and Step 2"
+        stage: BOTH
+      - id: elem_pi_creative_original_thinking
+        name: PI evidence of creative and original thinking
+        description: To what extent does the Principal Investigator provide evidence of creative and original thinking?
+        source_hint: "Work Programme 2026 - section 1.6.5, Principal Investigator(s), Step 1 and Step 2"
+        stage: BOTH
+      - id: elem_pi_expertise_capacity
+        name: PI scientific expertise and execution capacity
+        description: To what extent does the Principal Investigator have required scientific expertise and capacity to execute the project?
+        source_hint: "Work Programme 2026 - section 1.6.5, Principal Investigator(s), Step 1 and Step 2"
+        stage: BOTH
+
+proposal_nodes:
+  - id: b1
+    label: Part B1
+    node_type: section
+    source_section: "AF 2026 - Part B1"
+    guidance_text: "Part B1 is evaluated in Step 1 and Step 2; it must contain Part I and Curriculum Vitae plus Track Record in one document."
+    compliance_rules:
+      - id: comp_excellence_only_criterion_step1_step2
+        severity: WARNING
+        rule_type: criterion_scope
+        description: "Reviews should be grounded only in the Excellence criterion and its evaluation elements."
+    node_expectations:
+      - evaluation_element_id: elem_project_importance_questions
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_project_ambition_frontier
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_pi_groundbreaking_ability
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_pi_creative_original_thinking
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_pi_expertise_capacity
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+
+  - id: b1_part1_scientific_proposal
+    parent_logical_id: b1
+    label: Part I of the Scientific Proposal
+    node_type: subsection
+    source_section: "AF 2026 - Part B1, Part I"
+    content_constraints:
+      max_pages: 5
+      note: "References do not count towards the page limit."
+    guidance_text: "Present state of knowledge, scientific question and objectives, and overall approach or strategy; include all essential information for Step 1."
+    compliance_rules:
+      - id: comp_b1_part1_page_limit
+        severity: WARNING
+        rule_type: formatting
+        description: "Part I should not exceed 5 pages (references excluded)."
+    node_expectations:
+      - evaluation_element_id: elem_project_importance_questions
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_project_ambition_frontier
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: b1_cv_track_record
+    parent_logical_id: b1
+    label: Curriculum Vitae and Track Record
+    node_type: subsection
+    source_section: "AF 2026 - Part B1, CV and Track Record"
+    content_constraints:
+      max_pages: 4
+      note: "Combined CV and Track Record page limit."
+    guidance_text: "Provide personal details, education, positions, up to ten outputs with significance and role, and selected peer recognition."
+    compliance_rules:
+      - id: comp_b1_cv_track_record_page_limit
+        severity: WARNING
+        rule_type: formatting
+        description: "Curriculum Vitae and Track Record should not exceed 4 pages."
+    node_expectations:
+      - evaluation_element_id: elem_pi_groundbreaking_ability
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_pi_creative_original_thinking
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_pi_expertise_capacity
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: b2
+    label: Part B2
+    node_type: section
+    source_section: "AF 2026 - Part B2"
+    guidance_text: "Part B2 is not evaluated in Step 1 and is evaluated in Step 2 only."
+    compliance_rules:
+      - id: comp_b2_step2_only
+        severity: WARNING
+        rule_type: stage_scope
+        description: "Part B2 content should be excluded from Step 1 evaluations and assessed only at Step 2."
+    node_expectations:
+      - evaluation_element_id: elem_project_methodology_arrangements
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_project_timescale_resources
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+
+  - id: b2_part2_scientific_proposal
+    parent_logical_id: b2
+    label: Part II of the Scientific Proposal
+    node_type: subsection
+    source_section: "AF 2026 - Part B2, Part II"
+    content_constraints:
+      max_pages: 7
+      note: "References do not count towards the page limit."
+    guidance_text: "Provide detailed implementation, methodology, work plan, risk assessment and mitigation; do not include resource description or budget table in Part B2."
+    compliance_rules:
+      - id: comp_b2_part2_page_limit
+        severity: WARNING
+        rule_type: formatting
+        description: "Part II should not exceed 7 pages (references excluded)."
+      - id: comp_b2_no_resources_or_budget
+        severity: WARNING
+        rule_type: scope
+        description: "Part B2 should not include resources description or budget table; those belong to Part A Section C and budget form."
+    node_expectations:
+      - evaluation_element_id: elem_project_importance_questions
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_project_ambition_frontier
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_project_methodology_arrangements
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: resources_time_commitment
+    label: Resources and Time Commitment
+    node_type: section
+    source_section: "Part A Section C + Work Programme 2026"
+    content_constraints:
+      max_pages: 2
+      note: "Work Programme: up to 2 pages. Application Form Section C text field: maximum 8000 characters."
+    guidance_text: "Describe and justify requested resources and time commitment; this information is provided to experts at Step 2."
+    compliance_rules:
+      - id: comp_resources_pages
+        severity: WARNING
+        rule_type: formatting
+        description: "Resources and Time Commitment should not exceed 2 pages in the research proposal context."
+      - id: comp_resources_section_c_chars
+        severity: WARNING
+        rule_type: formatting
+        description: "Part A Section C Resources field is limited to 8000 characters."
+      - id: comp_resources_step2_only_assessment
+        severity: WARNING
+        rule_type: stage_scope
+        description: "Resources should be assessed only at Step 2; Step 1 feedback should not score or prioritize resource sufficiency."
+    node_expectations:
+      - evaluation_element_id: elem_project_timescale_resources
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+# Reviewer-policy rules are call-scoped and applied at runtime to prompt + post-check enforcement.
+# Rule instructions and source hints trace back to the source manifest above.
+reviewer_policy:
+  - id: pol_excellence_only
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: criterion_scope
+    instruction: "Assess only against the Excellence criterion and evaluation elements; do not score societal impact, host institution prestige, or other non-criterion factors."
+    severity: WARNING
+    enforcement_mode: BLOCKING
+    forbidden_terms:
+      - societal impact score
+      - host institution prestige
+      - host institution ranking
+    source_hint: "Guide for Peer Reviewers - 2.1 Evaluation Criterion"
+
+  - id: pol_step1_no_resource_judgement
+    applies_to_stage: STEP_1
+    applies_to_node_ids:
+      - b1
+      - b1_part1_scientific_proposal
+      - b1_cv_track_record
+    rule_type: stage_scope
+    instruction: "At Step 1, do not assess budget/resource sufficiency; evaluate only Part I plus CV and Track Record."
+    severity: WARNING
+    enforcement_mode: BLOCKING
+    forbidden_terms:
+      - insufficient budget
+      - resource allocation is inadequate
+      - funding request is too high
+    source_hint: "Guide for Peer Reviewers + AF 2026 Step process"
+
+  - id: pol_evidence_based_feedback
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: feedback_quality
+    instruction: "Feedback must remain evidence-based, section-scoped, and actionable; avoid generic judgments not grounded in submitted text."
+    severity: WARNING
+    enforcement_mode: PROMPT_ONLY
+    forbidden_terms: []
+    source_hint: "Guide for Peer Reviewers - reviewer guidelines"
+
+  - id: pol_no_cross_proposal_comparison
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: reviewer_conduct
+    instruction: "Do not compare this submission with other proposals or prior evaluation rounds; assess only this proposal against ERC evaluation elements."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - compared to other proposals
+      - relative to other applicants
+      - in the previous submission
+    source_hint: "Guide for Peer Reviewers - reviewer guidelines"
+
+  - id: pol_no_personal_attribute_comments
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: bias_guardrail
+    instruction: "Avoid comments about age, nationality, gender, or personal matters of the applicant; focus on proposal content and track record evidence."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - because of age
+      - due to nationality
+      - due to gender
+    source_hint: "Guide for Peer Reviewers - reviewer guidelines"
+
+  - id: pol_no_ethics_security_comments
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: scope_guardrail
+    instruction: "Avoid reviewing ethical or security clearance aspects in this scientific evaluation flow."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - ethical clearance is insufficient
+      - security clearance is insufficient
+      - ethics approval is missing
+    source_hint: "Guide for Peer Reviewers - reviewer guidelines"
+
+  - id: pol_step2_no_salary_cut_recommendation
+    applies_to_stage: STEP_2
+    applies_to_node_ids:
+      - resources_time_commitment
+    rule_type: resource_guideline
+    instruction: "At Step 2, do not recommend salary cuts; if budget adjustments are suggested, justify them based on non-salary resource needs."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - reduce salary
+      - salary should be cut
+      - salaries are too high
+    source_hint: "Guide for Peer Reviewers - resources assessment guidelines"
+
+runtime_notes:
+  - id: note_step_scope
+    description: "Step 1 evaluates Part I plus CV and Track Record from Part B1; Step 2 evaluates the complete research proposal including Part B2 and Resources."
+  - id: note_resource_assessment
+    description: "Peer reviewers should avoid recommendations on resources at Step 1; resource assessment is done at Step 2."
+  - id: note_criterion_guardrails
+    description: "Excellence is the sole criterion; societal impact and host institution standing are not evaluation criteria."

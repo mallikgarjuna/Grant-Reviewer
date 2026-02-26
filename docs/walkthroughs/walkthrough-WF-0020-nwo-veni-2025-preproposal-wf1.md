@@ -36,7 +36,7 @@ V1 dry-run compatibility check:
 
 ```bash
 cd backend
-env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml --dry-run
+env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run
 ```
 
 Targeted regression test:
@@ -55,7 +55,7 @@ Task 1:
 Task 2:
 - `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
 - Result: pass (schema_version=v2, summary returned)
-- `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml --dry-run`
+- `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run`
 - Result: pass (schema_version=v1, summary returned)
 
 Task 3:

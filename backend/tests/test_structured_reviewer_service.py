@@ -219,6 +219,7 @@ def test_structured_reviewer_service_happy_path(monkeypatch) -> None:
     service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
     try:
         review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
             call_id=call_id,
             nodes=[
                 ("academic_profile", "Academic profile text"),
@@ -243,6 +244,7 @@ def test_structured_reviewer_marks_alignment_not_assessable_when_missing_academi
     service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
     try:
         review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
             call_id=call_id,
             nodes=[
                 ("key_outputs", "Key outputs text"),
@@ -270,6 +272,7 @@ def test_structured_reviewer_marks_alignment_not_assessable_when_missing_key_out
     service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
     try:
         review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
             call_id=call_id,
             nodes=[
                 ("academic_profile", "Academic profile text"),
@@ -297,6 +300,7 @@ def test_structured_reviewer_service_sets_failed_on_llm_timeout_with_partial_car
     service, call_id = _build_service(monkeypatch, TimeoutOnSecondCallLLMClient())
     try:
         review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
             call_id=call_id,
             nodes=[
                 ("academic_profile", "Academic profile text"),
@@ -318,6 +322,7 @@ def test_structured_reviewer_validates_cardinality_only_for_assessable_expectati
     service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
     try:
         review, cards = service.generate_structured_review(
+            review_stage="STEP_1",
             call_id=call_id,
             nodes=[("research_idea", "Research idea text only")],
             external_user_id="user-5",

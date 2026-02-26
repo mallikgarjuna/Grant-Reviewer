@@ -22,6 +22,7 @@ To execute the granular development tasks defined in Phase 3, rigorously verify 
 2. Execute Part A, then Part B, then Part C in strict order.
 3. Print a short "PART A/B/C" header and a bullet summary of actions taken at the end of each part.
 4. If Part B identifies regressions or test failures, you must fix them before proceeding to Part C.
+4.1. Before Task 1 in Part A, run a baseline test command to confirm a green starting state (see `docs/workflow/phase-3-1-implement-tasks.md` “Preflight — First Run the Tests”).
 5. After any code-writing step in Part A or Part B, explicitly report:
    - what could break because of the change
    - which tests were run and which additional tests are recommended to cover those breakage risks

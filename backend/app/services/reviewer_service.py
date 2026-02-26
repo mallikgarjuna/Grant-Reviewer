@@ -22,6 +22,11 @@ from app.schemas.llm_response import LLMReviewResponse
 from app.services.llm_client import LLMClientError, LLMClientProtocol, OpenAIClient
 from app.services.llm_helpers import generate_with_timeout, parse_llm_response
 from app.services.prompt_builder import build_review_prompt
+from app.services.reviewer_policy import (
+    find_policy_violations,
+    get_applicable_reviewer_policy_rules,
+    ReviewStage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +57,7 @@ class ReviewerService:
         node_id: UUID,
         snippet_text: str,
         call_id: UUID,
+        review_stage: ReviewStage,
         external_user_id: str,
         *,
         idempotency_key: str | None = None,
@@ -102,6 +108,16 @@ class ReviewerService:
             msg = f"Node {node_id} not found."
             raise ValueError(msg)
         logger.debug(f"[Review] Node title: {node.title}")
+        call_definition = self.repository.get_call_definition_by_call_id(call_id)
+        reviewer_policy_rules = get_applicable_reviewer_policy_rules(
+            call_definition=call_definition,
+            node_logical_id=node.logical_id,
+            review_stage=review_stage,
+        )
+        logger.debug(
+            "[Review] Reviewer policy rules applied: %s",
+            len(reviewer_policy_rules),
+        )
 
         # 5. Create/fetch user and create snippet
         logger.debug("[Review] Creating user and snippet...")
@@ -118,7 +134,12 @@ class ReviewerService:
 
         # 6. Build prompt
         logger.debug("[Review] Building prompt...")
-        prompt = build_review_prompt(node, snippet_text, expectations)
+        prompt = build_review_prompt(
+            node,
+            snippet_text,
+            expectations,
+            reviewer_policy_rules=reviewer_policy_rules,
+        )
         logger.debug(f"[Review] Prompt built ({len(prompt)} chars)")
 
         # 7. Create review record (status=PENDING initially)
@@ -181,6 +202,28 @@ class ReviewerService:
             self.repository.update_review(review)
             return review, []
 
+        blocking_violations, warning_violations = find_policy_violations(
+            feedback_texts=[item.feedback for item in llm_response.feedbacks],
+            policy_rules=reviewer_policy_rules,
+        )
+        if blocking_violations:
+            logger.error(
+                "[Review] Blocking reviewer-policy violations: %s",
+                blocking_violations,
+            )
+            review.status = ReviewStatus.FAILED
+            review.overall_summary = (
+                "Reviewer-policy blocking violations detected: "
+                + "; ".join(blocking_violations)
+            )
+            self.repository.update_review(review)
+            return review, []
+        if warning_violations:
+            logger.warning(
+                "[Review] Reviewer-policy warning violations: %s",
+                warning_violations,
+            )
+
         # 10. Create ReviewCards
         logger.debug("[Review] Creating ReviewCards...")
         cards = []
@@ -201,6 +244,10 @@ class ReviewerService:
         review.status = ReviewStatus.COMPLETED
         review.overall_rating = ReviewRating.NOTE  # Defer rating logic
         review.overall_summary = f"Review completed with {len(cards)} findings."
+        if warning_violations:
+            review.overall_summary += (
+                " Reviewer-policy warnings: " + "; ".join(warning_violations)
+            )
         self.repository.update_review(review)
 
         logger.info(f"[Review] ✓ Review {review.id} COMPLETED with {len(cards)} cards")

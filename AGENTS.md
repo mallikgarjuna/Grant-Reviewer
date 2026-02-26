@@ -7,6 +7,7 @@
 **Keep this file tiny; link SSOT.** Add rules only after an AI failure (1-3 lines).
 **Surprises:** unexpected behavior or new rule idea -> alert developer first.
 **Style (this file):** extreme concision; sacrifice grammar.
+**Minimal Edits:** never replace content unnecessarily; only change what is requested.
 
 ## Quick Reference & Links
 
@@ -29,4 +30,6 @@
 - **Database variables:** `DATABASE_URL` is required; backend no longer falls back to SQLite when unset.
 - **DB Isolation (Tests):** never run tests against dev DB. Example: `cd backend && docker compose -f docker-compose.test.yml up -d && export DATABASE_URL=...  # match backend/docker-compose.test.yml && uv run pytest`
 - **Call YAML naming:** `{agency}_{program}_{year}_{stage}.yaml`.
+- **Call YAML source gate:** Author call YAML only from official funder documents provided in-workflow; if missing, stop and request them.
+- **Call YAML scope:** Encode only evaluable proposal structure, evaluation criteria/elements, and enforceable content constraints.
 - **Frontend Tools:** `nvm use` (uses `.nvmrc`) before `npm/npx`. No `nvm` -> scaffold/build locally; commit generated `frontend/`.

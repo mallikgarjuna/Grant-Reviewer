@@ -108,6 +108,11 @@ Promotion dependency note:
 | 16 | Universal Form: Node Metadata DTO Route (`/calls/{id}/form-schema`) | tech-debt | To support the Dynamic UI Renderer (P2 #15), the backend must supply `node_logical_id`, UI labels, and constraints (not just the raw `nodes` JSON). (Ref: WF-0030 PRD v0.4 deferral) | 2026-02-22 |
 | 17 | Universal Form: Recursive UI components for nested schemas | product | Some funding calls (e.g., ERC) contain nested `ProposalNode` structures. To support complex calls, the dynamic frontend requires recursive component rendering and the backend must serve deep structures. (Ref: WF-0030 S13 Q7 / Codex Audit) | 2026-02-22 |
 | 18 | Review detail page: remove hardcoded Veni node mapping | tech-debt | `/app/reviews/[reviewId]` currently uses hardcoded Veni labels/order. Refactor to call-aware node metadata so section headings/grouping remain correct for future funding calls. | 2026-02-23 |
+| 19 | Machine validation of page-based constraints (`max_pages`) | product | `max_pages` is currently authored merely as a UI signaling field. Since the MVP uses plain text strings rather than PDF uploads, we cannot physically count pages. Add a rough heuristic (e.g., 1 page = 4000 chars) or PDF parsing to strictly enforce this in the backend. (Ref: WF-0032 Brainstorm Section 6) | 2026-02-25 |
+| 20 | Multi-step Evaluation Gating (ERC Step 1 vs Step 2) | product | The ERC StG evaluates B1 in Step 1, and both B1+B2+Resources in Step 2. We authored the full schema combined. We must build a UX/Execution routing rule engine to conditionally trigger subsets of node evaluations based on the chosen Step. (Ref: WF-0032 Brainstorm Section 3) | 2026-02-25 |
+| 21 | Tree-shaped API response for node hierarchies | tech-debt | Update `GET /calls/{id}/nodes` to return a natively nested tree (e.g., NodeResponse with `children[]`) instead of a flat list where the frontend has to rebuild the hierarchy. (Ref: WF-0032 PRD v0.3 post-audit) | 2026-02-25 |
+| 22 | Unify review service execution core | tech-debt | Keep separate endpoints (`/reviews` single-node and `/api/structured-review` multi-node), but extract shared execution pipeline (policy injection, LLM call, response validation, policy post-checks) into a common internal component to reduce drift and duplicate fixes. | 2026-02-26 |
+| 23 | Re-author ERC CoG YAML from official sources | product | Rebuild `erc_cog_2026` call YAML with the same source-grounded standard used for ERC StG (evaluable proposal structure + evaluation criteria/elements + enforceable reviewer-policy), plus source manifest traceability. Start immediately after WF-0032 closure. | 2026-02-26 |
 
 ---
 
@@ -145,3 +150,5 @@ Promotion dependency note:
 - **v0.9** (2026-02-23): Added P2 #18 to track review-detail node label/order refactor beyond hardcoded Veni mappings.
 - **v1.0** (2026-02-24): Reordered P1 for launch-readiness sequencing, added mandatory promotion gate, and recorded dependency-aware rationale snapshot.
 - **v1.1** (2026-02-25): Promoted P1 #2 (Accessibility pass) to WF-0031 and renumbered remaining P1 items.
+- **v1.2** (2026-02-26): Added P2 #22 to track shared-core refactor for single-node and structured review services while preserving separate API contracts.
+- **v1.3** (2026-02-26): Added P2 #23 to track source-grounded re-authoring of ERC CoG YAML after ERC StG workflow completion.

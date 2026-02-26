@@ -37,6 +37,19 @@ Before starting Phase 3 implementation, ensure Phase 2 outputs are **saved and c
 
 ---
 
+## Preflight — First Run the Tests [Required]
+
+Before implementing **Task 1**, run the smallest relevant automated test command to confirm the starting state is green.
+
+- If you have a safe test DB configured (`DATABASE_URL` points to a DB name containing `test`), run:
+  - `cd backend && uv run pytest`
+- If you do **not** have DB configured, run the no-DB subset:
+  - `cd backend && uv run pytest -m no_db`
+
+If the baseline test run fails for reasons unrelated to this WF, **STOP** and ask the user how to proceed (don’t build on a red baseline).
+
+---
+
 ## Phase Return — Stop Processing Here
 When all tasks are implemented, STOP execution.
 Do NOT create the walkthrough here.

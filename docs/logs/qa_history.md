@@ -119,6 +119,17 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 ### Q: How should the landing demo express “both” (fix + rewrite), and what’s the locked copy?
 **A:** Use micro-rewrite examples *inside* the suggested fix on some cards (not a separate before/after block). Keep the landing promise “Export your review”, and label the ERC tab “ERC Starting”.
 
+## 2026-02-26 (WF-0032 context)
+
+### Q: When/how are we going to get/request “ERC StG 2026 funder PDFs (Application Forms + Guide for Peer Reviewers)”?
+**A:** Treat this as Gate 1 “Source Confirmation” per `docs/workflow/call-yaml-authoring-workflow.md`. We need either (a) the PDFs provided directly, or (b) stable links + exact doc titles/versions/dates. Don’t commit PDFs to the repo unless licensing allows; instead record a sources manifest (doc name/version/date/location/checksum) and cite section/page references in YAML `source_hint`/comments.
+
+### Q: What are the consequences of keeping `GET /calls/{call_id}/nodes` flat vs returning a tree response?
+**A:** Flat + correct `parent_node_id` is the minimal, lowest-risk change: it matches current `NodesResponse` shape and current endpoint behavior in `backend/main.py` + `backend/app/schemas/api.py`, and consumers can build the tree client-side. A tree response is either a breaking change (if we change the existing endpoint shape) or a new endpoint (recommended); it requires a tree DTO, canonical ordering/traversal rules, cycle safety, and added tests. (Decision was not made in chat; treat as pending for WF-0032 task generation.)
+
+### Q: Should my non-brainstorm clarifying questions + your answers be saved somewhere?
+**A:** Yes—use `docs/logs/qa_history.md` for “why are we doing X / tradeoffs / clarifications” outside brainstorm artifacts, and use `docs/logs/decisions.md` when a clarification becomes a binding decision.
+
 ### Q: Do Phase 0.1 decisions get written into `docs/workflow/phase-0-1-brainstorm.md`?
 **A:** No. `docs/workflow/*` files are workflow instructions and should not be edited during execution; decisions belong in the WF artifacts (e.g., `docs/brainstorms/brainstorm-WF-0009-peerlens-landing-page.md`) and the registry in `docs/index.md`.
 
@@ -197,3 +208,68 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Given the recent changes (WF-0028/WF-0029/WF-0031), should the next workflow author another funding call (ERC/MSCA) before building more universal form features?
 **A:** Yes. The next mandatory phase (P2 #15: Universal Form Dynamic UI) cannot be built effectively until the system has ingested a second, structurally complex funding call (like ERC with nested nodes). Authoring and ingesting a new V2 YAML will flush out hardcoded assumptions in the backend ingestion and frontend `/app/reviews/[id]` logic, acting as the forcing function for the true dynamic form requirements.
+
+### Q: When using the "remember this" phrase, does the agent actually save the rule somewhere?
+**A:** Yes. When explicitly asked to "remember this", the agent permanently codifies it. Workflow/agent rules are logged in `AGENTS.md` (or specific `docs/workflow/` runner files). Project/codebase gotchas are logged in `docs/lessons.md`.
+
+### Q: Will the call YAML guidelines and ingestion scripts be expanded to handle any funding call (NWO, ERC, MSCA)?
+**A:** Yes. The current schemas and scripts are biased toward flat structures (like NWO Veni). When ingesting deep/complex calls (like ERC), the `CallDefinitionV2` python models, `ingest_call.py` script, and authoring guidelines will be expanded to support recursive/nested properties natively, making the V2 infrastructure truly universal.
+
+### Q: Are we aiming for a single YAML structure for all types of funding calls (NWO, ERC, MSCA), or separate YAML structures for different types of funding calls?
+**A:** We are explicitly aiming for a single, universal YAML structure for all calls. Building separate YAML shapes or bespoke frontend logic per funding agency is an anti-pattern we are strictly avoiding. The system must adapt dynamically based on the universal data payload.
+
+### Q: Are we expanding the V2 YAML structure to accommodate the ERC call, or creating a new version (V3)?
+**A:** We are expanding the existing `CallDefinitionV2` structure. The goal of this workflow is to stress-test the V2 schema with deep nesting (ERC) in order to flush out and safely implement the necessary recursive properties (like `parent_id` and `max_pages`) into the V2 baseline, maintaining backward compatibility with flat calls (NWO).
+
+### Q: If a workflow is scoped to backend-only work, what does "thin vertical slices" (Phase 2.1) mean? Does it still include the frontend?
+**A:** Normally, a pure feature vertical slice is "backend + frontend together." However, if a workflow's explicit strict scope is backend-only (e.g., stress-testing data structures before UI work starts), a "vertical slice" means building the *backend stack iteratively* rather than bulk-authoring everything at once. For example: Task 1: Author Section A -> ingest to DB -> expose in API. Task 2: Author Section B with new `max_pages` constraint -> ingest to DB -> expose in API. This proves the data pipeline works piecemeal without horizontal batching.
+
+### Q: Do we need to start a new chat for the next phase (e.g. moving from Phase 0 to Phase 1)?
+**A:** You are not strictly required by the workflow rules to start a new chat, but it is highly recommended as a best practice to manage AI context length window limits. Phase 0 brainstorms (with all the options, Q&As, and critical reviews) generate a lot of text. Starting a fresh chat specifically for Phase 1 (PRD Generation) keeps the context clean and focused purely on the final approved brainstorm artifact.
+
+## Date: 2026-02-26 (WF-0032: ERC 2026 STG YAML & Hierarchical Ingestion)
+
+**Q:** When/how are YOU going to get/request for "ERC StG 2026 funder PDFs (Application Forms + Guide for Peer Reviewers)"?
+**A:** Since I do not have web access to natively search and download the official PDFs, I will either rely on the user to provide the raw text/documents (e.g., via copy-paste into a prompt or placing them in a `docs/reference/` folder) OR I will use my `search_web` and `read_url_content` tools to pull the public ERC Work Programme 2026 and Information for Applicants documents directly from the European Commission's funding portal when we reach the task execution phase where the YAML is actually authored.
+
+**Q:** What are consequences for both options in "If you want a crisp decision to unblock task-gen: should /calls/{call_id}/nodes remain a flat list with correct parent_node_id (minimal) or should WF-0032 add a new tree-shaped response?"?
+**A:**
+- **Option A (Flat List with `parent_node_id` - Current PRD v0.3):**
+  - **Pros:** Zero API breakage. Existing frontend code (e.g. Veni) still works perfectly. Fastest backend implementation (no nested Pydantic models needed). Minimal scope creep.
+  - **Cons:** The frontend team absorbs the complexity of taking a flat array and writing a recursive reducer to build the tree UI in a future workflow.
+- **Option B (New Tree-shaped Response):**
+  - **Pros:** Backend does the heavy lifting once, making the frontend Dynamic UI renderer much simpler to write later. "Cleanest" API design for a hierarchical domain.
+  - **Cons:** Expands WF-0032 scope. We either have to break the existing `GET /calls/{id}/nodes` contract (breaking the current Veni frontend) OR build a brand new endpoint (e.g., `GET /calls/{id}/nodes/tree`), which means writing recursive Pydantic response models and tree-building logic in the backend right now.
+### Q: Why do I see "heredoc>" loops and "system override" messages in the logs?
+**A**:
+1. **Heredoc Loops**: These occur when the assistant uses `run_command` with `cat <<EOF` to write large blocks of text. If something fails or the terminal context is interrupted, the model often tries to re-run the entire large command, burning tokens. **Fix**: Use `write_to_file` or `replace_file_content` instead of shell-based writing.
+2. **System Override Messages**: "The system keeps overriding my response. I have to break out." is an internal model signal triggered when a system-level constraint (safety or hard prompt rule) blocks an intended action. The model repeats its attempt to "break through," leading to a loop. **Fix**: Detect the blocked action, stop the loop, and ask the user for clarification.
+
+### Q: How can we solve these looping problems?
+**A**:
+- **Chunking**: Break large file writes or code changes into smaller, verifiable chunks.
+- **Tool Preference**: Prioritize filesystem tools (`write_to_file`) over terminal hacks (`heredoc`).
+- **Communication**: If the assistant detects a persistent error or a "rejection" message, it should stop and notify the user instead of looping.
+- **Minimal Edits**: Strictly adhere to changing only what is requested; avoid unnecessary overwrites or refactors during fixes.
+
+## Date: 2026-02-26 (WF-0032: Reviewer-policy runtime hardening)
+
+### Q: Should reviewer-policy details live in YAML, and what were we missing?
+**A**: Yes. Reviewer-policy should be first-class call data in YAML, not only runtime notes. We added structured `reviewer_policy` rules (stage scope, node scope, enforcement mode, forbidden terms, source hint) and wired them into prompt construction + post-generation policy checks.
+
+### Q: What does “flip to BLOCKING + explicit `review_stage`” mean?
+**A**:
+- `POST_CHECK`: detect violations after LLM output and keep review with warnings.
+- `BLOCKING`: detect violations and fail review (no violating cards persisted).
+- Explicit `review_stage`: client sends `STEP_1` or `STEP_2`; backend rejects node/stage mismatches instead of silently inferring stage.
+
+### Q: What is the difference between `/reviews` and `/api/structured-review`?
+**A**:
+- `/reviews`: single-node review (`node_id` + `snippet_text`) for one section/snippet.
+- `/api/structured-review`: multi-node review (multiple `node_logical_id` + text pairs) with cross-node orchestration in one review job.
+
+### Q: Why do we keep `reviewer_service.py` and `structured_reviewer_service.py` separate?
+**A**: They represent different execution contracts (single-snippet vs multi-node orchestration). Keeping separate entry services reduces branching complexity and test ambiguity. Shared behavior (policy parsing/enforcement, prompt assembly) is already extracted into shared helpers.
+
+### Q: Should we park the service consolidation suggestion and record this Q&A?
+**A**: Yes. Parked as `P2 #22` in `docs/parking_lot.md` (shared internal execution core while preserving two API contracts). Q&A is captured here; architectural rationale is in `docs/logs/decisions.md` (AD 32.1–32.3).

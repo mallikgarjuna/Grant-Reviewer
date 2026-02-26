@@ -157,3 +157,13 @@
 **Issue**: Running backend API tests against the same Postgres DB used for local app QA replaced call expectations with seeded test fixtures, which made UI behavior look inconsistent (for example, `academic_profile` unexpectedly showing one finding instead of five).
 **Fix**: Enforce test DB isolation with a pytest safety guard (`backend/tests/conftest.py`) that fails if `DATABASE_URL` does not include `test`, and run test DB on a dedicated compose stack (`backend/docker-compose.test.yml`).
 **Prevention**: Use `backend/scripts/reset_test_db.sh` before backend tests and `backend/scripts/reset_dev_db.sh` before manual local app QA. Treat this as mandatory for all future funding-call workflows.
+
+### L32: Explicitly Park Out-of-Scope Brainstorm Ideas
+**Issue**: Out-of-scope ideas generated during Phase 0 brainstorms were sometimes lost or only implicitly skipped.
+**Fix**: Put all out-of-scope or deferred ideas from a brainstorm chat into a separate "Out-of-Scope / Deferred" section at the end of the brainstorm artifact `docs/brainstorms/...`, AND explicitly add them as tracked items in `docs/parking_lot.md`.
+**Prevention**: Treat "deferring an idea" as a two-step action: document it in the current artifact, and promote it to the backlog.
+
+### L33: Always Persist Ad-Hoc User Questions
+**Issue**: The user asked architectural and project-specific questions during a workflow phase, but the agent failed to capture those questions and answers in `docs/logs/qa_history.md` without being explicitly reminded.
+**Fix**: Always explicitly save *all* ad-hoc user questions and the provided answers in `docs/logs/qa_history.md` during the conversation or immediately at the end of the phase.
+**Prevention**: Treat user questions asked during any session as mandatory inputs for the knowledge base. Do not just answer them in chat; persist them.

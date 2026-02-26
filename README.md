@@ -89,7 +89,7 @@ MVP API note:
 - Avoid `source backend/.env` if your `DATABASE_URL` contains `&` (bash/zsh will parse it); set env vars via your shell (`export DATABASE_URL='...'`) or rely on `python-dotenv` in `backend/main.py`.
 - Bootstrap in production by running scripts locally against the same Neon DB used by Render:
   - `cd backend && DATABASE_URL='...' uv run python scripts/ensure_prompt_template.py`
-  - `cd backend && DATABASE_URL='...' uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml`
+  - `cd backend && DATABASE_URL='...' uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml`
 
 ### Running The Frontend (Local)
 
@@ -172,10 +172,10 @@ detailed manner. It is essential to expand on the specific goals..."
 
 ```bash
 # Validate first (dry run)
-uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml --dry-run
+uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run
 
 # Ingest to database
-uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml
+uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml
 ```
 
 ## Architecture

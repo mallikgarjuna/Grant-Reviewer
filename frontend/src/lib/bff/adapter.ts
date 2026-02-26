@@ -45,6 +45,7 @@ function buildCanonicalCreateReviewPayload(
   payload: CreateReviewRequest,
 ): CreateReviewRequest {
   return {
+    review_stage: payload.review_stage,
     call_id: payload.call_id,
     node_id: payload.node_id,
     snippet_text: normalizeSnippetText(payload.snippet_text),

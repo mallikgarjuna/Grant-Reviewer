@@ -48,7 +48,7 @@ Verification Steps:
 - V2 dry-run with no DB env:
   - `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
 - V1 dry-run still works:
-  - `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml --dry-run`
+  - `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run`
 
 Risks (if any):
 - Current script imports DB modules at import time; restructuring must be minimal but sufficient to defer DB imports until needed.

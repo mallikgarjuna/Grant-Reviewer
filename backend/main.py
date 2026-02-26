@@ -48,6 +48,7 @@ from app.schemas.structured_review import (
 from app.services.call_definition_service import CallDefinitionService
 from app.services.compliance_engine import evaluate_compliance
 from app.services.llm_client import build_llm_client
+from app.services.reviewer_policy import matches_review_stage
 from app.services.reviewer_service import ReviewerService
 from app.services.structured_reviewer_service import StructuredReviewerService
 
@@ -73,6 +74,7 @@ ERROR_STATUS_BY_CODE = {
     "REVIEW_NOT_FOUND": 404,
     "NO_EXPECTATIONS": 400,
     "NODE_NOT_IN_CALL": 400,
+    "REVIEW_STAGE_NODE_MISMATCH": 422,
     "REVIEWS_DISABLED": 503,
     "DB_UNAVAILABLE": 503,
     "SNIPPET_TOO_LONG": 400,
@@ -646,12 +648,31 @@ def create_structured_review(
             details={"node_logical_ids": unknown_ids},
         )
 
+    stage_mismatch_ids = sorted(
+        node.node_logical_id
+        for node in payload.nodes
+        if not matches_review_stage(
+            node_logical_id=node.node_logical_id,
+            review_stage=payload.review_stage,
+        )
+    )
+    if stage_mismatch_ids:
+        raise APIException(
+            code="REVIEW_STAGE_NODE_MISMATCH",
+            message="One or more nodes do not belong to selected review_stage.",
+            details={
+                "review_stage": payload.review_stage,
+                "node_logical_ids": stage_mismatch_ids,
+            },
+        )
+
     reviewer_service = StructuredReviewerService(
         repository=repository,
         llm_client=build_llm_client(),
     )
     try:
         review, _ = reviewer_service.generate_structured_review(
+            review_stage=payload.review_stage,
             call_id=payload.call_id,
             nodes=[(node.node_logical_id, node.text) for node in payload.nodes],
             external_user_id=external_user_id,
@@ -774,6 +795,19 @@ def create_review(
             code="NODE_NOT_IN_CALL",
             message="Selected node does not belong to selected call.",
         )
+    if not matches_review_stage(
+        node_logical_id=node.logical_id,
+        review_stage=payload.review_stage,
+    ):
+        raise APIException(
+            code="REVIEW_STAGE_NODE_MISMATCH",
+            message="Selected node does not belong to selected review_stage.",
+            details={
+                "review_stage": payload.review_stage,
+                "node_id": str(payload.node_id),
+                "node_logical_id": node.logical_id,
+            },
+        )
 
     reviewer_service = ReviewerService(
         repository=repository,
@@ -784,6 +818,7 @@ def create_review(
             node_id=payload.node_id,
             snippet_text=payload.snippet_text,
             call_id=payload.call_id,
+            review_stage=payload.review_stage,
             external_user_id=external_user_id,
             idempotency_key=idempotency_key,
             request_payload_sha256=request_payload_sha256,

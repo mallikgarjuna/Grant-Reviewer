@@ -52,7 +52,7 @@ cd backend
 export DATABASE_URL='postgresql://...'
 
 uv run python scripts/ensure_prompt_template.py
-uv run python scripts/ingest_call.py data/calls/erc_cog_2026_full.yaml
+uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml
 ```
 
 Verify bootstrap via deployed API:

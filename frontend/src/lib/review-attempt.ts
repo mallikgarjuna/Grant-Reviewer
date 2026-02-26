@@ -1,6 +1,7 @@
 export const MAX_SNIPPET_CHARS = 10_000;
 
 type CreateReviewDraft = {
+  review_stage: "STEP_1" | "STEP_2";
   call_id: string;
   node_id: string;
   snippet_text: string;
@@ -19,6 +20,7 @@ function normalizeSnippetText(value: string): string {
 
 function normalizeDraft(draft: CreateReviewDraft): CreateReviewDraft {
   return {
+    review_stage: draft.review_stage,
     call_id: draft.call_id,
     node_id: draft.node_id,
     snippet_text: normalizeSnippetText(draft.snippet_text),
@@ -64,6 +66,7 @@ async function sha256Hex(text: string): Promise<string> {
 
 function draftsEqual(left: CreateReviewDraft, right: CreateReviewDraft): boolean {
   return (
+    left.review_stage === right.review_stage &&
     left.call_id === right.call_id &&
     left.node_id === right.node_id &&
     left.snippet_text === right.snippet_text
@@ -75,20 +78,37 @@ function parseStoredAttempt(value: string | null): ReviewAttempt | null {
     return null;
   }
   try {
-    const parsed = JSON.parse(value) as ReviewAttempt;
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    const parsedDraft =
+      parsed && typeof parsed === "object" && parsed.draft && typeof parsed.draft === "object"
+        ? (parsed.draft as Record<string, unknown>)
+        : null;
+    const normalizedStage =
+      parsedDraft?.review_stage === "STEP_2" ? "STEP_2" : "STEP_1";
     if (
       !parsed ||
       typeof parsed !== "object" ||
       typeof parsed.idempotencyKey !== "string" ||
       typeof parsed.payloadSha256 !== "string" ||
       typeof parsed.createdAtMs !== "number" ||
-      typeof parsed.draft?.call_id !== "string" ||
-      typeof parsed.draft?.node_id !== "string" ||
-      typeof parsed.draft?.snippet_text !== "string"
+      !parsedDraft ||
+      typeof parsedDraft.call_id !== "string" ||
+      typeof parsedDraft.node_id !== "string" ||
+      typeof parsedDraft.snippet_text !== "string"
     ) {
       return null;
     }
-    return parsed;
+    return {
+      draft: {
+        review_stage: normalizedStage,
+        call_id: parsedDraft.call_id,
+        node_id: parsedDraft.node_id,
+        snippet_text: parsedDraft.snippet_text,
+      },
+      idempotencyKey: parsed.idempotencyKey,
+      payloadSha256: parsed.payloadSha256,
+      createdAtMs: parsed.createdAtMs,
+    };
   } catch {
     return null;
   }
