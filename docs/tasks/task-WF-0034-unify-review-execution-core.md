@@ -162,7 +162,7 @@ Verification Steps:
 Risks (if any):
 - Hook placement could accidentally mutate control flow if not strictly side-effect free.
 
-### [ ] Task 8 — Endpoint contract parity guard for both create endpoints
+### [x] Task 8 — Endpoint contract parity guard for both create endpoints
 
 Goal: Add explicit parity regression checks proving external contracts remain stable after both migrations.
 Slice: endpoint-parity

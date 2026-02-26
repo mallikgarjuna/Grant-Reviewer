@@ -809,6 +809,36 @@ def test_create_review_shared_core_happy_path_parity(monkeypatch) -> None:
     assert len(detail_payload["cards"]) == 1
 
 
+def test_create_review_contract_parity(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    success = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Contract parity single node.",
+        },
+        idempotency_key="idem-single-contract-1",
+    )
+    assert success.status_code == 200
+    success_payload = success.json()
+    assert set(success_payload.keys()) == {"review_id", "status"}
+    assert success_payload["status"] == "COMPLETED"
+
+    mismatch = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Contract parity single node changed payload",
+        },
+        idempotency_key="idem-single-contract-1",
+    )
+    assert mismatch.status_code == 409
+    mismatch_payload = mismatch.json()
+    assert mismatch_payload["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+
+
 def test_review_repository_supports_structured_write_path(monkeypatch) -> None:
     _, seeded_ids = create_client_with_seed(monkeypatch)
     session = get_session()
@@ -1150,6 +1180,34 @@ def test_structured_review_single_node_submission_research_idea(monkeypatch) -> 
         or "key_outputs" in (card["not_assessable_reason"] or "")
         for card in not_assessable_cards
     )
+
+
+def test_structured_review_contract_parity(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    success = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+        idempotency_key="idem-structured-contract-1",
+    )
+    assert success.status_code == 200
+    success_payload = success.json()
+    assert set(success_payload.keys()) == {"review_id", "status"}
+    assert success_payload["status"] in {"COMPLETED", "FAILED"}
+
+    mismatch = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "updated text"}],
+        },
+        idempotency_key="idem-structured-contract-1",
+    )
+    assert mismatch.status_code == 409
+    mismatch_payload = mismatch.json()
+    assert mismatch_payload["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
 
 
 def test_review_detail_retains_cards_when_evaluation_element_is_archived(

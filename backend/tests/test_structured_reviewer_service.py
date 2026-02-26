@@ -570,3 +570,39 @@ def test_structured_path_telemetry_is_non_invasive(monkeypatch) -> None:
         assert hooks.failures == []
     finally:
         service.repository.session.close()
+
+
+def test_incremental_migration_does_not_cross_regress(monkeypatch) -> None:
+    service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
+    try:
+        first_review, first_cards = service.generate_structured_review(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Academic profile text")],
+            external_user_id="user-cross-regress-1",
+            idempotency_key="cross-regress-structured-1",
+        )
+        assert first_review.status == ReviewStatus.COMPLETED
+        assert len(first_cards) == 1
+        assert first_cards[0].assessment_status == AssessmentStatus.ASSESSED
+
+        second_review, second_cards = service.generate_structured_review(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("research_idea", "Research idea text only")],
+            external_user_id="user-cross-regress-2",
+            idempotency_key="cross-regress-structured-2",
+        )
+        assert second_review.status == ReviewStatus.COMPLETED
+        assessed_cards = [
+            card for card in second_cards if card.assessment_status == AssessmentStatus.ASSESSED
+        ]
+        not_assessable_cards = [
+            card
+            for card in second_cards
+            if card.assessment_status == AssessmentStatus.NOT_ASSESSABLE
+        ]
+        assert len(assessed_cards) == 1
+        assert len(not_assessable_cards) == 2
+    finally:
+        service.repository.session.close()
