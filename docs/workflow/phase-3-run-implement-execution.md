@@ -37,7 +37,7 @@ To execute Phase 3 end-to-end: implement tasks, run the technical audit gate, ap
 
 ### PART B: Review [GATE]
 1. Stop implementing features.
-2. Execute Phase 3.2 from `docs/workflow/phase-3-2-verify-and-ship.md` (technical audit review gate, no edits).
+2. Execute Phase 3.2 from `docs/workflow/phase-3-2-technical-audit-review.md` (technical audit review gate, no edits).
 3. If the Part B gate requires fixes, drop back to Part A, implement them, then re-run Part B.
 4. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C.
 

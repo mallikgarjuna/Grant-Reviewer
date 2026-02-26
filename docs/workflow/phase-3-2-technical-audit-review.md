@@ -1,7 +1,7 @@
 # Phase 3.2 — Technical Audit Review Gate (No Edits)
 
 This file is a workflow instruction.
-Reference it in chat (any coding agent) using @docs/workflow/phase-3-2-verify-and-ship.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-3-2-technical-audit-review.md.
 Do NOT modify this file during execution.
 
 ---
@@ -55,7 +55,7 @@ After completing Phase 3.2, suggest the following next actions to the user:
 Use:
 
 ```text
-Use @docs/workflow/phase-3-2-verify-and-ship.md
+Use @docs/workflow/phase-3-2-technical-audit-review.md
 @docs/index.md
 @docs/tasks/task-<WF-ID>-<slug>.md
 

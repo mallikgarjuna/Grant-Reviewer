@@ -46,7 +46,7 @@ To maximize velocity without sacrificing architectural integrity, isolate the "T
 **Role**: Staff Architect / Reviewer
 
 - When the IDE agent finishes the task checklist, return control to Antigravity.
-- Invoke `docs/workflow/phase-3-2-verify-and-ship.md`.
+- Invoke `docs/workflow/phase-3-2-technical-audit-review.md`.
 - Antigravity will review the Git diffs, ensure the IDE agent didn't break global architecture or introduce lint debt, run the test suites, draft the final Walkthrough, and prepare the `Ship it` gate.
 - **Output**: A thoroughly verified PR, aligned with the original Phase 1 PRD.
 - **Cheat Sheet**: See `docs/workflow/how-to-use-workflow-actions.md` — Phase 3.2 (Verify & Ship) template.

@@ -146,7 +146,7 @@ When ALL tasks are done, STOP. Do NOT write the walkthrough or update docs/index
 ## Phase 3.2 — Technical Audit Review Gate
 
 ```text
-Use @docs/workflow/phase-3-2-verify-and-ship.md
+Use @docs/workflow/phase-3-2-technical-audit-review.md
 @docs/index.md
 @docs/tasks/task-<WF-ID>-<slug>.md
 
