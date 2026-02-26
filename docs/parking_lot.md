@@ -49,6 +49,12 @@ When you pick an item to start work:
 5. **Add the WF row** to `docs/index.md` WF Registry.
 6. Follow the standard WF phase workflow from there.
 
+### WF Log Rule (Mandatory)
+
+Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known to the project), and mark origin for each row as:
+- `promoted` (from P0/P1/P2 with reference), or
+- `started-directly` (not promoted from parking lot).
+
 ### Maintenance
 
 - Prefer fewer, higher-signal items; merge duplicates.
@@ -118,26 +124,35 @@ Promotion dependency note:
 
 ---
 
-## Promoted Items
+## WF Initiative Log (All WF IDs)
 
-| # | Original P-tier | Task | WF ID | Date Promoted |
-|---|---|---|---|---|
-| 1 | P0 | Add app shell + sign-out | [WF-0013](tasks/task-WF-0013-app-shell-signout.md) | 2026-02-16 |
-| 2 | P0 | Add review history ("My Reviews") | [WF-0014](tasks/task-WF-0014-review-history.md) | 2026-02-16 |
-| 3 | P1 | Practices Upgrade (CI/CD) | [WF-0015](tasks/task-WF-0015-practices-upgrade.md) | 2026-02-17 |
-| 4 | P0 | Upgrade review results UX | [WF-0016](tasks/task-WF-0016-review-results-ux.md) | 2026-02-17 |
-| 5 | P0 | Add auto-polling for processing reviews | [WF-0017](tasks/task-WF-0017-auto-polling-processing-reviews.md) | 2026-02-18 |
-| 6 | P0 | Harden submit flow UX | [WF-0018](tasks/task-WF-0018-harden-submit-flow-ux.md) | 2026-02-18 |
-| 7 | P1 | Add loading & empty states | [WF-0019](tasks/task-WF-0019-add-loading-empty-states.md) | 2026-02-18 |
-| 8 | P1 | NWO Veni 2025 preproposal — WF-1: Fix YAML parse + add CallDefinition V2 loader (dry-run only) | WF-0020 | 2026-02-21 |
-| 9 | P1 | NWO Veni 2025 preproposal — WF-2: Add `logical_id` columns + ingest V2 YAML into DB | [WF-0021](tasks/task-WF-0021-nwo-veni-2025-preproposal-wf2.md) | 2026-02-21 |
-| 10 | P1 | NWO Veni 2025 preproposal — WF-3: Add `structured-config` endpoint + frontend mode gating | [WF-0027](tasks/task-WF-0027-nwo-veni-2025-preproposal-wf3.md) | 2026-02-21 |
-| 11 | P1 | NWO Veni 2025 preproposal — WF-4: Implement compliance engine + persist findings | [WF-0028](tasks/task-WF-0028-compliance-engine.md) | 2026-02-22 |
-| 12 | P1 | NWO Veni 2025 preproposal — WF-5: Add structured reviews API + NOT_ASSESSABLE alignment | [WF-0029](tasks/task-WF-0029-nwo-veni-2025-preproposal-wf5-structured-review.md) | 2026-02-22 |
-| 13 | P1 | NWO Veni 2025 preproposal — WF-6: Build frontend structured form + compliance UI + idempotent drafts | [WF-0030](tasks/task-WF-0030-nwo-veni-2025-preproposal-wf6-frontend-structured-form.md) | 2026-02-22 |
-| 14 | P1 | Accessibility pass (forms + results) | [WF-0031](tasks/task-WF-0031-accessibility-pass.md) | 2026-02-25 |
-| 15 | P2 | Data Contract Foundation (Tree Nodes + Metadata DTO) | [WF-0033](tasks/task-WF-0033-data-contract-foundation.md) | 2026-02-26 |
-| 16 | P2 | Unify review service execution core | [WF-0034](tasks/task-WF-0034-unify-review-execution-core.md) | 2026-02-26 |
+| Seq | WF ID | Slug / Initiative | Origin | Backlog Ref | Date |
+|---|---|---|---|---|---|
+| 1 | WF-0009 | peerlens-landing-page | started-directly | - | unknown |
+| 2 | WF-0010 | peerlens-landing-design-refresh | started-directly | - | unknown |
+| 3 | WF-0011 | local-postgres-dev-db | started-directly | - | unknown |
+| 4 | WF-0012 | alembic-migration-baseline | started-directly | - | unknown |
+| 5 | WF-0013 | app-shell-signout | promoted | P0 #1 | 2026-02-16 |
+| 6 | WF-0014 | review-history | promoted | P0 #2 | 2026-02-16 |
+| 7 | WF-0015 | practices-upgrade | promoted | P1 #3 (historical) | 2026-02-17 |
+| 8 | WF-0016 | review-results-ux | promoted | P0 #4 | 2026-02-17 |
+| 9 | WF-0017 | auto-polling-processing-reviews | promoted | P0 #5 | 2026-02-18 |
+| 10 | WF-0018 | harden-submit-flow-ux | promoted | P0 #6 | 2026-02-18 |
+| 11 | WF-0019 | add-loading-empty-states | promoted | P1 #7 (historical) | 2026-02-18 |
+| 12 | WF-0020 | nwo-veni-2025-preproposal-wf1 | promoted | P1 #8 (historical) | 2026-02-21 |
+| 13 | WF-0021 | nwo-veni-2025-preproposal-wf2 | promoted | P1 #9 (historical) | 2026-02-21 |
+| 14 | WF-0023 | tier2-phase4 | started-directly | - | unknown |
+| 15 | WF-0024 | tier3-refactor | started-directly | - | unknown |
+| 16 | WF-0025 | archiving-convention | started-directly | - | unknown |
+| 17 | WF-0026 | sdlc-4-phase-refactor | started-directly | - | unknown |
+| 18 | WF-0027 | nwo-veni-2025-preproposal-wf3 | promoted | P1 #10 (historical) | 2026-02-21 |
+| 19 | WF-0028 | compliance-engine | promoted | P1 #11 (historical) | 2026-02-22 |
+| 20 | WF-0029 | nwo-veni-2025-preproposal-wf5-structured-review | promoted | P1 #12 (historical) | 2026-02-22 |
+| 21 | WF-0030 | nwo-veni-2025-preproposal-wf6-frontend-structured-form | promoted | P1 #13 (historical) | 2026-02-22 |
+| 22 | WF-0031 | accessibility-pass | promoted | P1 #14 (historical) | 2026-02-25 |
+| 23 | WF-0032 | erc-2026-stg | started-directly | - | 2026-02-26 |
+| 24 | WF-0033 | data-contract-foundation | promoted | P2 #15 (historical) | 2026-02-26 |
+| 25 | WF-0034 | unify-review-execution-core | promoted | P2 #16 (historical) | 2026-02-26 |
 
 ---
 
@@ -161,3 +176,4 @@ Promotion dependency note:
 - **v1.6** (2026-02-26): Promoted P2 #1 (Unify review service execution core) to WF-0034. Renumbered P2.
 - **v1.7** (2026-02-26): Parked follow-on item to eventually deprecate `POST /reviews` after migrating to structured-only create flow. (Ref: WF-0034.)
 - **v1.8** (2026-02-26): Reordered priorities for safer launch sequencing after WF-0032/0033/0034: pulled frontend call-agnostic prerequisites + ERC CoG source re-authoring into P1 ahead of broad data ingestion; renumbered P2 accordingly.
+- **v1.9** (2026-02-26): Replaced `Promoted Items` with a unified WF initiative log table (all known WF IDs), explicitly marking each as `promoted` or `started-directly`; added missing WF-0032 as started-directly.
