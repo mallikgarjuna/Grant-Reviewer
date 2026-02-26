@@ -124,7 +124,49 @@ They share many concerns (policy injection, LLM call, response validation, post-
 
 ## 3. Target User / Actor
 
-(Pending — to be filled via interactive Q&A.)
+**Section 3 summary (decisions):**
+- Primary actor: backend engineers maintaining review execution.
+- Secondary actor: frontend engineers relying on stable contracts/error semantics.
+- Frontend constraint: no contract changes (including error-code semantics).
+- Backend constraint: a single shared place for policy/validation/timeouts to avoid drift.
+- Ops constraint: standardize telemetry hooks in a no-behavior-change way (can start as no-op).
+
+**Brainstorming Q&A:**
+
+**Q1: Who is the primary “user” of this workflow output (the refactor) day-to-day?**
+- A) Backend engineers working on review execution/features/bugfixes.
+- B) Frontend engineers integrating submission flows.
+- C) SRE/ops monitoring reliability.
+> Recommendation: A — This WF is primarily about reducing backend maintenance cost and drift risk; frontend/ops benefits are downstream.
+> **Selected: A**
+
+**Q2: Who is the secondary actor we should optimize for (explicitly, but not primary)?**
+- A) Frontend engineers (predictable errors/contracts).
+- B) SRE/ops (telemetry + incident response).
+- C) End users (perceived latency and clarity).
+> Recommendation: A — The main risk of a refactor is contract drift; making frontend expectations explicit helps prevent accidental behavior changes.
+> **Selected: A**
+
+**Q3: What is the strongest constraint from the frontend actor perspective?**
+- A) No contract changes (same endpoints, same error codes/semantics).
+- B) Faster responses / fewer timeouts.
+- C) More detailed structured response shapes.
+> Recommendation: A — Contract stability is a hard gate for safe incremental refactors. B/C are valuable but belong in later behavior-changing WFs.
+> **Selected: A**
+
+**Q4: What is the strongest constraint from the backend actor perspective?**
+- A) One place to implement/verify policy + validation + retries/timeouts to avoid drift.
+- B) Maximum flexibility to experiment with new LLM prompting strategies.
+- C) Simplify DB writes even if behavior changes slightly.
+> Recommendation: A — This directly targets the drift problem and produces the most leverage for future work.
+> **Selected: A**
+
+**Q5: What is the strongest constraint from the ops actor perspective (if any)?**
+- A) Add/standardize telemetry hooks without changing behavior (can be no-op initially).
+- B) Introduce retries/backoff globally even if it changes latency.
+- C) Defer ops concerns entirely to a future WF.
+> Recommendation: A — Establishing standardized hooks now creates a seam for later improvements without forcing behavior changes.
+> **Selected: A**
 
 ## 4. Rough Idea (Unstructured Thinking)
 
