@@ -215,3 +215,17 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 
 ### Q: Do we need to start a new chat for the next phase (e.g. moving from Phase 0 to Phase 1)?
 **A:** You are not strictly required by the workflow rules to start a new chat, but it is highly recommended as a best practice to manage AI context length window limits. Phase 0 brainstorms (with all the options, Q&As, and critical reviews) generate a lot of text. Starting a fresh chat specifically for Phase 1 (PRD Generation) keeps the context clean and focused purely on the final approved brainstorm artifact.
+
+## Date: 2026-02-26 (WF-0032: ERC 2026 STG YAML & Hierarchical Ingestion)
+
+**Q:** When/how are YOU going to get/request for "ERC StG 2026 funder PDFs (Application Forms + Guide for Peer Reviewers)"?
+**A:** Since I do not have web access to natively search and download the official PDFs, I will either rely on the user to provide the raw text/documents (e.g., via copy-paste into a prompt or placing them in a `docs/reference/` folder) OR I will use my `search_web` and `read_url_content` tools to pull the public ERC Work Programme 2026 and Information for Applicants documents directly from the European Commission's funding portal when we reach the task execution phase where the YAML is actually authored.
+
+**Q:** What are consequences for both options in "If you want a crisp decision to unblock task-gen: should /calls/{call_id}/nodes remain a flat list with correct parent_node_id (minimal) or should WF-0032 add a new tree-shaped response?"?
+**A:**
+- **Option A (Flat List with `parent_node_id` - Current PRD v0.3):**
+  - **Pros:** Zero API breakage. Existing frontend code (e.g. Veni) still works perfectly. Fastest backend implementation (no nested Pydantic models needed). Minimal scope creep.
+  - **Cons:** The frontend team absorbs the complexity of taking a flat array and writing a recursive reducer to build the tree UI in a future workflow.
+- **Option B (New Tree-shaped Response):**
+  - **Pros:** Backend does the heavy lifting once, making the frontend Dynamic UI renderer much simpler to write later. "Cleanest" API design for a hierarchical domain.
+  - **Cons:** Expands WF-0032 scope. We either have to break the existing `GET /calls/{id}/nodes` contract (breaking the current Veni frontend) OR build a brand new endpoint (e.g., `GET /calls/{id}/nodes/tree`), which means writing recursive Pydantic response models and tree-building logic in the backend right now.
