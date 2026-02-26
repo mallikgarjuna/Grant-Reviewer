@@ -74,15 +74,14 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Universal Form: Dynamic UI renderer | product | The frontend submission form is still effectively call-specific; implement dynamic rendering so newly ingested calls are actually usable in launch UX. | 2026-02-22 |
-| 2 | Universal Form: Recursive UI components for nested schemas | product | Required for hierarchical calls (ERC-like structures) so frontend can render real call structures without manual per-call coding. | 2026-02-22 |
-| 3 | Review detail page: remove hardcoded Veni node mapping | tech-debt | `/app/reviews/[reviewId]` must become call-aware so reviewed sections/cards remain correct once multiple real calls are live. | 2026-02-23 |
-| 4 | Re-author ERC CoG YAML from official sources | product | Rebuild `erc_cog_2026` with source-grounded evaluable structure + criteria/elements + reviewer-policy and source manifest traceability (follow-up from WF-0032). | 2026-02-26 |
-| 5 | Ingest real call data | product | After P1 #1-#4 are done (or bundled), deliver at least 1 complete call per promised program (NWO, ZonMw, ERC, MSCA) so landing claims match product reality. | 2026-02-16 |
-| 6 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
-| 7 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 8 | Add node hierarchy selector | product | Implement only after P1 #1-#3 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
-| 9 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 1 | Universal Form: Recursive UI components for nested schemas | product | Required for hierarchical calls (ERC-like structures) so frontend can render real call structures without manual per-call coding. | 2026-02-22 |
+| 2 | Review detail page: remove hardcoded Veni node mapping | tech-debt | `/app/reviews/[reviewId]` must become call-aware so reviewed sections/cards remain correct once multiple real calls are live. | 2026-02-23 |
+| 3 | Re-author ERC CoG YAML from official sources | product | Rebuild `erc_cog_2026` with source-grounded evaluable structure + criteria/elements + reviewer-policy and source manifest traceability (follow-up from WF-0032). | 2026-02-26 |
+| 4 | Ingest real call data | product | After P1 #1-#4 are done (or bundled), deliver at least 1 complete call per promised program (NWO, ZonMw, ERC, MSCA) so landing claims match product reality. | 2026-02-16 |
+| 5 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 6 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 7 | Add node hierarchy selector | product | Implement only after P1 #1-#3 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
+| 8 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 
 ### P1 Rationale Snapshot (2026-02-26)
 
@@ -153,6 +152,7 @@ Promotion dependency note:
 | 23 | WF-0032 | erc-2026-stg | started-directly | - | 2026-02-26 |
 | 24 | WF-0033 | data-contract-foundation | promoted | P2 #15 (historical) | 2026-02-26 |
 | 25 | WF-0034 | unify-review-execution-core | promoted | P2 #16 (historical) | 2026-02-26 |
+| 26 | WF-0035 | universal-form-dynamic-ui-renderer | promoted | P1 #1 | 2026-02-26 |
 
 ---
 
