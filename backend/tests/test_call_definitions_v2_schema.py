@@ -62,3 +62,41 @@ def test_v2_schema_rejects_duplicate_node_ids() -> None:
 
     with pytest.raises(ValueError, match="Duplicate proposal node id"):
         CallDefinitionV2.model_validate(payload)
+
+
+def test_v2_schema_rejects_policy_with_unknown_node_scope() -> None:
+    payload = _load_nwo_v2_yaml()
+    payload["reviewer_policy"] = [
+        {
+            "id": "pol_bad_scope",
+            "applies_to_stage": "STEP_1",
+            "applies_to_node_ids": ["unknown_node"],
+            "rule_type": "stage_scope",
+            "instruction": "Invalid node scope",
+            "severity": "WARNING",
+            "enforcement_mode": "PROMPT_ONLY",
+            "forbidden_terms": [],
+        }
+    ]
+
+    with pytest.raises(ValueError, match="Unknown applies_to_node_ids"):
+        CallDefinitionV2.model_validate(payload)
+
+
+def test_v2_schema_requires_forbidden_terms_for_blocking_policy() -> None:
+    payload = _load_nwo_v2_yaml()
+    payload["reviewer_policy"] = [
+        {
+            "id": "pol_missing_terms",
+            "applies_to_stage": "BOTH",
+            "applies_to_node_ids": [],
+            "rule_type": "criterion_scope",
+            "instruction": "Blocking rule without terms",
+            "severity": "WARNING",
+            "enforcement_mode": "BLOCKING",
+            "forbidden_terms": [],
+        }
+    ]
+
+    with pytest.raises(ValueError, match="forbidden_terms required"):
+        CallDefinitionV2.model_validate(payload)

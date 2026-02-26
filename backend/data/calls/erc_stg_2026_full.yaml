@@ -208,7 +208,7 @@ reviewer_policy:
     rule_type: criterion_scope
     instruction: "Assess only against the Excellence criterion and evaluation elements; do not score societal impact, host institution prestige, or other non-criterion factors."
     severity: WARNING
-    enforcement_mode: POST_CHECK
+    enforcement_mode: BLOCKING
     forbidden_terms:
       - societal impact score
       - host institution prestige
@@ -224,7 +224,7 @@ reviewer_policy:
     rule_type: stage_scope
     instruction: "At Step 1, do not assess budget/resource sufficiency; evaluate only Part I plus CV and Track Record."
     severity: WARNING
-    enforcement_mode: POST_CHECK
+    enforcement_mode: BLOCKING
     forbidden_terms:
       - insufficient budget
       - resource allocation is inadequate

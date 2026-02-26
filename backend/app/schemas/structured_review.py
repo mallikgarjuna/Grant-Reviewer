@@ -5,6 +5,7 @@ from __future__ import annotations
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+from typing import Literal
 
 MAX_NODE_TEXT_CHARS = 10_000
 MAX_STRUCTURED_PAYLOAD_CHARS = 30_000
@@ -20,5 +21,6 @@ class StructuredReviewNodeInput(BaseModel):
 class StructuredReviewRequest(BaseModel):
     """Input contract for POST /api/structured-review."""
 
+    review_stage: Literal["STEP_1", "STEP_2"]
     call_id: UUID
     nodes: list[StructuredReviewNodeInput] = Field(default_factory=list)

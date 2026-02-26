@@ -1,5 +1,31 @@
 # Architectural Decisions
 
+## Date: 2026-02-26 (WF-0032: ERC StG 2026 reviewer-policy hardening)
+
+### AD 32.1: Reviewer policy is first-class call-definition data (`reviewer_policy`)
+- **WF ID**: WF-0032
+- **Context**: Reviewer guidance was captured as notes/compliance hints, but not modeled as enforceable runtime policy.
+- **Decision**: Extend V2 call YAML/schema with `reviewer_policy` rules containing stage scope, node scope, enforcement mode, and source hints.
+- **Why**: Each funding call has distinct reviewer-policy constraints that must be versioned with evaluation criteria/elements and consumed by runtime.
+- **Tradeoff**: Slight schema complexity increase; authoring now requires structured policy fields.
+- **Status**: Implemented.
+
+### AD 32.2: Review stage must be explicit API input
+- **WF ID**: WF-0032
+- **Context**: Inferring Step 1 vs Step 2 from node ID can drift in mixed or future workflows.
+- **Decision**: Require `review_stage` (`STEP_1`/`STEP_2`) in `/reviews` and `/api/structured-review`, and reject node/stage mismatches.
+- **Why**: Prevents silent scope errors and makes policy enforcement deterministic at request time.
+- **Tradeoff**: API clients must send one additional required field.
+- **Status**: Implemented.
+
+### AD 32.3: Critical ERC reviewer-policy rules are blocking
+- **WF ID**: WF-0032
+- **Context**: Warning-only checks allow policy-violating reviewer output to be persisted.
+- **Decision**: Promote critical ERC rules (Excellence-only criterion scope, no Step-1 resource judgments) to `BLOCKING`.
+- **Why**: These are hard guardrails from official reviewer guidance and should fail-fast instead of degrade silently.
+- **Tradeoff**: Some reviews will fail and need regeneration/retry when outputs violate policy.
+- **Status**: Implemented.
+
 ## Date: 2026-02-23 (WF-0030: Local QA/Test DB Isolation Hardening)
 
 ### AD 30.1: Dedicated test database is required for DB-backed backend tests

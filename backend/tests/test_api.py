@@ -496,6 +496,8 @@ def post_review(
     shared_secret: str = TEST_BFF_SHARED_SECRET,
 ) -> object:
     """Call POST /reviews with signed headers and explicit JSON bytes."""
+    if "review_stage" not in payload:
+        payload["review_stage"] = "STEP_1"
     body = json.dumps(payload).encode("utf-8")
     headers = build_signature_headers(
         body=body,
@@ -521,6 +523,8 @@ def post_structured_review(
     shared_secret: str = TEST_BFF_SHARED_SECRET,
 ) -> object:
     """Call POST /api/structured-review with signed headers."""
+    if "review_stage" not in payload:
+        payload["review_stage"] = "STEP_1"
     body = json.dumps(payload).encode("utf-8")
     headers = build_signature_headers(
         body=body,
@@ -898,6 +902,20 @@ def test_create_structured_review_unknown_node_returns_422(monkeypatch) -> None:
     assert response.json()["error"]["code"] == "UNKNOWN_NODE_ID"
 
 
+def test_create_structured_review_stage_mismatch_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "review_stage": "STEP_2",
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "abc"}],
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "REVIEW_STAGE_NODE_MISMATCH"
+
+
 def test_create_structured_review_duplicate_node_returns_422(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = post_structured_review(
@@ -950,6 +968,7 @@ def test_create_structured_review_success_persists_structured_fields(monkeypatch
         assert review.structured_payload == {
             "call_id": str(seeded_ids.structured_call_id),
             "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+            "review_stage": "STEP_1",
             "nodes": {"academic_profile": "profile text"},
         }
 
@@ -1240,6 +1259,21 @@ def test_node_not_in_call_returns_domain_error(monkeypatch) -> None:
     assert response.json()["error"]["code"] == "NODE_NOT_IN_CALL"
 
 
+def test_review_stage_node_mismatch_returns_422(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_review(
+        client=client,
+        payload={
+            "review_stage": "STEP_2",
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Mismatch test",
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "REVIEW_STAGE_NODE_MISMATCH"
+
+
 def test_no_expectations_returns_domain_error(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = post_review(
@@ -1328,6 +1362,7 @@ def test_missing_signature_headers_returns_unauthorized(monkeypatch) -> None:
     response = client.post(
         "/reviews",
         json={
+            "review_stage": "STEP_1",
             "call_id": str(seeded_ids.call_id),
             "node_id": str(seeded_ids.section_with_expectations_id),
             "snippet_text": "No signature",
@@ -1340,6 +1375,7 @@ def test_missing_signature_headers_returns_unauthorized(monkeypatch) -> None:
 def test_missing_idempotency_key_returns_validation_error(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     payload = {
+        "review_stage": "STEP_1",
         "call_id": str(seeded_ids.call_id),
         "node_id": str(seeded_ids.section_with_expectations_id),
         "snippet_text": "No idempotency key",
@@ -1590,6 +1626,7 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "REVIEW_NOT_FOUND": 404,
         "NO_EXPECTATIONS": 400,
         "NODE_NOT_IN_CALL": 400,
+        "REVIEW_STAGE_NODE_MISMATCH": 422,
         "REVIEWS_DISABLED": 503,
         "DB_UNAVAILABLE": 503,
         "SNIPPET_TOO_LONG": 400,

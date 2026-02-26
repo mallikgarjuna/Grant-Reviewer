@@ -35,6 +35,15 @@ def infer_review_stage(node_logical_id: str | None) -> ReviewStage:
     return "STEP_1"
 
 
+def matches_review_stage(
+    *,
+    node_logical_id: str | None,
+    review_stage: ReviewStage,
+) -> bool:
+    """Return True when a node belongs to the requested review stage."""
+    return infer_review_stage(node_logical_id) == review_stage
+
+
 def get_applicable_reviewer_policy_rules(
     *,
     call_definition: CallDefinition | None,

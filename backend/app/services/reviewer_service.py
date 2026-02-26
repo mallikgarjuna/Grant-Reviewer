@@ -25,7 +25,7 @@ from app.services.prompt_builder import build_review_prompt
 from app.services.reviewer_policy import (
     find_policy_violations,
     get_applicable_reviewer_policy_rules,
-    infer_review_stage,
+    ReviewStage,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,6 +57,7 @@ class ReviewerService:
         node_id: UUID,
         snippet_text: str,
         call_id: UUID,
+        review_stage: ReviewStage,
         external_user_id: str,
         *,
         idempotency_key: str | None = None,
@@ -107,7 +108,6 @@ class ReviewerService:
             msg = f"Node {node_id} not found."
             raise ValueError(msg)
         logger.debug(f"[Review] Node title: {node.title}")
-        review_stage = infer_review_stage(node.logical_id)
         call_definition = self.repository.get_call_definition_by_call_id(call_id)
         reviewer_policy_rules = get_applicable_reviewer_policy_rules(
             call_definition=call_definition,

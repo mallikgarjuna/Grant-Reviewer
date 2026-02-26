@@ -67,6 +67,7 @@ class CallConfigResponse(BaseModel):
 class CreateReviewRequest(BaseModel):
     """Request payload for POST /reviews."""
 
+    review_stage: Literal["STEP_1", "STEP_2"]
     call_id: UUID
     node_id: UUID
     snippet_text: str = Field(min_length=1)

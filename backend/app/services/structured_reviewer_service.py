@@ -22,9 +22,9 @@ from app.services.llm_client import LLMClientError, LLMClientProtocol, OpenAICli
 from app.services.llm_helpers import generate_with_timeout, parse_llm_response
 from app.services.prompt_builder import build_review_prompt
 from app.services.reviewer_policy import (
+    ReviewStage,
     find_policy_violations,
     get_applicable_reviewer_policy_rules,
-    infer_review_stage,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,6 +58,7 @@ class StructuredReviewerService:
     def generate_structured_review(
         self,
         *,
+        review_stage: ReviewStage,
         call_id: UUID,
         nodes: list[tuple[str, str]],
         external_user_id: str,
@@ -87,6 +88,7 @@ class StructuredReviewerService:
         structured_payload = {
             "call_id": str(call_id),
             "call_name": call.name,
+            "review_stage": review_stage,
             "nodes": submitted_text_by_node,
         }
 
@@ -151,7 +153,7 @@ class StructuredReviewerService:
             reviewer_policy_rules = get_applicable_reviewer_policy_rules(
                 call_definition=call_definition,
                 node_logical_id=node.logical_id,
-                review_stage=infer_review_stage(node.logical_id),
+                review_stage=review_stage,
             )
             prompt = build_review_prompt(
                 node=node,
