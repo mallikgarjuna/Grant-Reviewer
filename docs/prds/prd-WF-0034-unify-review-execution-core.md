@@ -1,8 +1,8 @@
 # WF-0034 — Unify review service execution core PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-26
 
 ## 0. User Stories (MVP)
@@ -44,6 +44,7 @@ Last Updated: 2026-02-26
 - Full telemetry stack rollout or alerting program.
 - Performance behavior changes (new retry policies, parallelization, prompt strategy changes).
 - Database schema migrations not required for parity-preserving refactor.
+- Temporary "shadow mode" dual-write/dual-execution rollout in this WF.
 
 ## 3. User / System Flow
 
@@ -111,6 +112,7 @@ Last Updated: 2026-02-26
     - execution status/outcome
     - parsed validated findings
     - policy post-check outcomes (blocking/warning metadata)
+    - failure classification suitable for endpoint-stable error mapping
     - non-invasive telemetry payload/hooks
   - Does NOT own endpoint-specific DB write semantics.
 
@@ -220,9 +222,12 @@ TDD scope applies to behavior-preserving refactor boundaries and regression prev
 
 ## 11. Open Questions (if any)
 
-- OQ1: Should shared-core contract be formalized as explicit typed dataclasses/protocols in this WF, or introduced minimally and typed in Phase 2 tasks?
-- OQ2: Do we need a temporary dual-path “shadow mode” execution for observability during migration, or are parity tests sufficient for MVP safety?
+- None for Phase 2 entry.
+- Defaults applied:
+  - Shared-core contract should be introduced with explicit typed interfaces in this WF to reduce drift in Task planning.
+  - Migration should rely on parity tests and incremental endpoint flips; no shadow mode in MVP.
 
 ## 12. Changelog
 
 - v0.1 (2026-02-26): Initial PRD from brainstorm.
+- v0.2 (2026-02-26): Applied risk-audit tightenings (parity clarity, out-of-scope guardrails, explicit defaults) and marked Ready for Tasks.

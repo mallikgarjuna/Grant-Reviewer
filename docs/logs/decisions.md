@@ -1,5 +1,31 @@
 # Architectural Decisions
 
+## Date: 2026-02-26 (WF-0034: Unify review execution core)
+
+### AD 34.1: Preserve separate external create contracts; share internal execution core
+- **WF ID**: WF-0034
+- **Context**: `POST /reviews` and `POST /api/structured-review` have different request shapes and persistence semantics but duplicate core execution concerns.
+- **Decision**: Keep both external create endpoints stable and extract shared internal execution pipeline seams (policy injection/post-checks, LLM call seam, parse/validate, telemetry seam).
+- **Why**: Reduces drift and duplicate fixes without forcing risky contract changes.
+- **Tradeoff**: Two adapter/orchestration surfaces remain and require explicit parity tests.
+- **Status**: Approved.
+
+### AD 34.2: No-behavior-change parity is per-endpoint baseline, not cross-endpoint equivalence
+- **WF ID**: WF-0034
+- **Context**: “Shared core” can be misread as making both endpoints behave identically, which would break endpoint-specific semantics.
+- **Decision**: Define parity against each endpoint’s existing baseline (error semantics, idempotency behavior, persistence side effects, card rules), not against each other.
+- **Why**: Preserves existing client/API expectations while enabling safe internal refactor.
+- **Tradeoff**: Shared core design must remain persistence-agnostic and avoid over-normalizing behavior.
+- **Status**: Approved.
+
+### AD 34.3: Incremental migration with structured-first adapter flip
+- **WF ID**: WF-0034
+- **Context**: Big-bang migration across both endpoints increases blast radius and rollback difficulty.
+- **Decision**: Migrate incrementally: establish parity tests, introduce shared core seam, flip structured endpoint first, then single-node endpoint.
+- **Why**: Structured path has higher complexity and better stress-tests shared-core boundaries first.
+- **Tradeoff**: Temporary mixed architecture during migration window.
+- **Status**: Approved.
+
 ## Date: 2026-02-26 (WF-0033: Data Contract foundation for hierarchical grants)
 
 ### AD 33.1: Universal node identity is `logical_id` + DB UUID
