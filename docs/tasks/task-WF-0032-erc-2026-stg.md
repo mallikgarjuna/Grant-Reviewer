@@ -58,7 +58,7 @@ Verification Steps:
 2. `cd backend && export DATABASE_URL="postgresql+psycopg://grant:grant@localhost:5433/grant_reviewer_test" && uv run pytest backend/tests/test_ingest_call_v2_db.py`
 Risks: Transaction boundaries might be tricky if saving and searching sequentially. Ensure session is flushed to generate UUIDs before referencing them, and proper rollback handling exists. Test DB is required.
 
-### [ ] Task 4 — Flat API Verification (Tracer Bullet E2E)
+### [x] Task 4 — Flat API Verification (Tracer Bullet E2E)
 Goal: Ensure the overarching API yields the properly linked flat list of nodes, validating the E2E contract.
 Slice: API E2E
 User Stories: US3

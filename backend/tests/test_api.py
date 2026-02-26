@@ -7,6 +7,7 @@ import re
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from uuid import UUID
 
 from fastapi.testclient import TestClient
@@ -35,6 +36,7 @@ from app.models.domain import (
 from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import StubLLMClient
 from main import ERROR_STATUS_BY_CODE, app
+from scripts.ingest_call import ingest_call
 
 TEST_BFF_SHARED_SECRET = "test-bff-secret"
 TEST_USER_ID = "user_test_1"
@@ -652,6 +654,34 @@ def test_list_nodes_includes_has_expectations(monkeypatch) -> None:
     assert (
         by_id[seeded_ids.section_without_expectations_id]["has_expectations"] is False
     )
+
+
+def test_list_nodes_returns_parent_links_after_v2_hierarchy_ingest() -> None:
+    """Nodes endpoint should expose parent ids for ingested hierarchy calls."""
+    reset_database()
+    ingest_call(Path("tests/fixtures/hierarchy_v2.yaml"), dry_run=False)
+
+    session = get_session()
+    try:
+        call = session.exec(
+            select(FundingCall).where(FundingCall.code == "erc_stg_2026_step1")
+        ).first()
+        assert call is not None
+        call_id = call.id
+    finally:
+        session.close()
+
+    client = TestClient(app)
+    response = client.get(f"/calls/{call_id}/nodes")
+    assert response.status_code == 200
+
+    payload = response.json()
+    nodes = payload["nodes"]
+    by_id = {node["id"]: node for node in nodes}
+    parent_linked = [node for node in nodes if node["parent_node_id"] is not None]
+    assert parent_linked
+    for node in parent_linked:
+        assert node["parent_node_id"] in by_id
 
 
 def test_get_call_config_returns_structured_mode(monkeypatch) -> None:
