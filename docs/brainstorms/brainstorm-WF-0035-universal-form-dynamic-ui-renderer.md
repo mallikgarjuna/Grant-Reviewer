@@ -284,7 +284,44 @@ Implementation timebox is 2–3 days for a tight MVP. Prefer no new backend endp
 
 ## 6. Risks / Unknowns
 
-(Interactive; fill via Q&A below.)
+Primary risks are contract ambiguity (which DTOs/fields are truly required for reliable labels/constraints), and silent corruption (a form that renders but submits structurally wrong payloads). Mitigation is to render with safe fallbacks when metadata is missing (label defaults to `logical_id`, hide constraints, show warning banner) and to validate a non-Veni structured call round-trip early before frontend work expands.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the riskiest unknown for WF-0035?**
+- A) Frontend contract ambiguity: what exact DTOs/fields are required to render labels/constraints reliably.
+- B) Performance: N+1 call gating (`config` per call) becomes slow.
+- C) Compliance UX drift: counters/checks differ between client and server.
+> Recommendation: A — If the UI can’t trust labels/constraints, we’ll either hardcode (defeating universality) or ship confusing UX.
+> **Selected: A**
+
+**Q2: What is the biggest failure mode we must prevent?**
+- A) Rendering a form that looks valid but submits a structurally wrong payload (silent corruption).
+- B) The form fails to load sometimes.
+- C) The form is ugly.
+> Recommendation: A — Silent wrong submissions waste LLM tokens and erode trust; load/visual issues are visible and easier to catch.
+> **Selected: A**
+
+**Q3: What should we do if metadata is missing/incomplete for a node?**
+- A) Render with safe fallbacks (label = logical_id, constraints hidden) and show a warning banner.
+- B) Hard-block the call as unsupported.
+- C) Hide the node.
+> Recommendation: A — Keeps the app usable while making the missing-data issue explicit; avoids data loss (C) and over-blocking (B).
+> **Selected: A**
+
+**Q4: What’s the biggest scope-creep temptation to explicitly guard against?**
+- A) “Just add recursion/navigation” for ERC-like calls inside WF-0035.
+- B) “Just support Markdown/rich text now.”
+- C) “Just redesign the whole submit UX.”
+> Recommendation: A — Recursion is the highest-risk expansion and is already tracked as a separate launch prerequisite item (P1 #1).
+> **Selected: A**
+
+**Q5: What must we validate early to avoid rework?**
+- A) One non-Veni flat structured call exists in DB and can round-trip submit with expected node IDs.
+- B) UI polish.
+- C) Performance tuning.
+> Recommendation: A — Validates the true end-to-end premise (schema-driven rendering + submission) before investing in UI layering.
+> **Selected: A**
 
 ## 7. MVP Definition
 
