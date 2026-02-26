@@ -20,6 +20,9 @@ Runner shortcuts:
 - Phase 1/2: `docs/workflow/phase-12-run-planning.md` (one unified runner; Phase ID = 1 or 2)
 - Phase 3: `docs/workflow/phase-3-run-implement-execution.md`
 
+Phase 0 input confirmation convention:
+- Before running Phase 0.0, confirm `Title` / `Type` / `Slug` via 2–3 structured options each, with one recommended option.
+
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).
 

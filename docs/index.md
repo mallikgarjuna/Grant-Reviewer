@@ -57,6 +57,7 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF-0031 | accessibility-pass | [Brainstorm](brainstorms/completed/brainstorm-WF-0031-accessibility-pass.md) | [PRD](prds/completed/prd-WF-0031-accessibility-pass.md) | [Tasks](tasks/completed/task-WF-0031-accessibility-pass.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0031-accessibility-pass.md) | Done |
 | WF-0032 | erc-2026-stg | [Brainstorm](brainstorms/completed/brainstorm-WF-0032-erc-2026-stg.md) | [PRD](prds/completed/prd-WF-0032-erc-2026-stg.md) | [Tasks](tasks/completed/task-WF-0032-erc-2026-stg.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0032-erc-2026-stg.md) | Done |
 | WF-0033 | data-contract-foundation | [Brainstorm](brainstorms/completed/brainstorm-WF-0033-data-contract-foundation.md) | [PRD](prds/completed/prd-WF-0033-data-contract-foundation.md) | [Tasks](tasks/completed/task-WF-0033-data-contract-foundation.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0033-data-contract-foundation.md) | Done |
+| WF-0034 | unify-review-execution-core | [Brainstorm](brainstorms/brainstorm-WF-0034-unify-review-execution-core.md) | [PRD](prds/prd-WF-0034-unify-review-execution-core.md) | [Tasks](tasks/task-WF-0034-unify-review-execution-core.md) | [Walkthrough](walkthroughs/walkthrough-WF-0034-unify-review-execution-core.md) | Phase 0 |
 
 ---
 
