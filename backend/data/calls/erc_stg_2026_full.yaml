@@ -1,0 +1,192 @@
+funding_agency:
+  id: erc
+  name: European Research Council
+  country: EU
+
+funding_call:
+  id: erc_stg_2026_full
+  code: erc_stg_2026_full
+  title: ERC Starting Grant 2026
+  year: 2026
+  stage: full
+  language: en
+
+evaluation_criteria:
+  - id: crit_excellence
+    name: Excellence
+    stage: step1_step2
+    weight_percent: 100
+    evaluation_elements:
+      - id: elem_project_importance_questions
+        name: Research addresses important scientific questions
+        description: To what extent does the research address important scientific questions?
+        source_hint: "Work Programme 2026 - section 1.6.5, Research Project, Step 1 and Step 2"
+        stage: BOTH
+      - id: elem_project_ambition_frontier
+        name: Objectives are ambitious and advance frontier of knowledge
+        description: To what extent are the project objectives ambitious and will they advance the frontier of knowledge?
+        source_hint: "Work Programme 2026 - section 1.6.5, Research Project, Step 1 and Step 2"
+        stage: BOTH
+      - id: elem_project_methodology_arrangements
+        name: Methodology and working arrangements are appropriate
+        description: To what extent are the research methodology and working arrangements appropriate to achieve project goals?
+        source_hint: "Work Programme 2026 - section 1.6.5, Research Project, Step 2"
+        stage: STEP_2
+      - id: elem_project_timescale_resources
+        name: Timescales and resources are adequate and justified
+        description: To what extent are the timescales and resources adequate and properly justified?
+        source_hint: "Work Programme 2026 - section 1.6.5, Research Project, Step 2"
+        stage: STEP_2
+      - id: elem_pi_groundbreaking_ability
+        name: PI ability to conduct ground-breaking research
+        description: To what extent has the Principal Investigator demonstrated the ability to conduct ground-breaking research?
+        source_hint: "Work Programme 2026 - section 1.6.5, Principal Investigator(s), Step 1 and Step 2"
+        stage: BOTH
+      - id: elem_pi_creative_original_thinking
+        name: PI evidence of creative and original thinking
+        description: To what extent does the Principal Investigator provide evidence of creative and original thinking?
+        source_hint: "Work Programme 2026 - section 1.6.5, Principal Investigator(s), Step 1 and Step 2"
+        stage: BOTH
+      - id: elem_pi_expertise_capacity
+        name: PI scientific expertise and execution capacity
+        description: To what extent does the Principal Investigator have required scientific expertise and capacity to execute the project?
+        source_hint: "Work Programme 2026 - section 1.6.5, Principal Investigator(s), Step 1 and Step 2"
+        stage: BOTH
+
+proposal_nodes:
+  - id: b1
+    label: Part B1
+    node_type: section
+    source_section: "AF 2026 - Part B1"
+    guidance_text: "Part B1 is evaluated in Step 1 and Step 2; it must contain Part I and Curriculum Vitae plus Track Record in one document."
+    node_expectations:
+      - evaluation_element_id: elem_project_importance_questions
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_project_ambition_frontier
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_pi_groundbreaking_ability
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_pi_creative_original_thinking
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_pi_expertise_capacity
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+
+  - id: b1_part1_scientific_proposal
+    parent_logical_id: b1
+    label: Part I of the Scientific Proposal
+    node_type: subsection
+    source_section: "AF 2026 - Part B1, Part I"
+    content_constraints:
+      max_pages: 5
+      note: "References do not count towards the page limit."
+    guidance_text: "Present state of knowledge, scientific question and objectives, and overall approach or strategy; include all essential information for Step 1."
+    compliance_rules:
+      - id: comp_b1_part1_page_limit
+        severity: WARNING
+        rule_type: formatting
+        description: "Part I should not exceed 5 pages (references excluded)."
+    node_expectations:
+      - evaluation_element_id: elem_project_importance_questions
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_project_ambition_frontier
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: b1_cv_track_record
+    parent_logical_id: b1
+    label: Curriculum Vitae and Track Record
+    node_type: subsection
+    source_section: "AF 2026 - Part B1, CV and Track Record"
+    content_constraints:
+      max_pages: 4
+      note: "Combined CV and Track Record page limit."
+    guidance_text: "Provide personal details, education, positions, up to ten outputs with significance and role, and selected peer recognition."
+    compliance_rules:
+      - id: comp_b1_cv_track_record_page_limit
+        severity: WARNING
+        rule_type: formatting
+        description: "Curriculum Vitae and Track Record should not exceed 4 pages."
+    node_expectations:
+      - evaluation_element_id: elem_pi_groundbreaking_ability
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_pi_creative_original_thinking
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_pi_expertise_capacity
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: b2
+    label: Part B2
+    node_type: section
+    source_section: "AF 2026 - Part B2"
+    guidance_text: "Part B2 is not evaluated in Step 1 and is evaluated in Step 2 only."
+    node_expectations:
+      - evaluation_element_id: elem_project_methodology_arrangements
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_project_timescale_resources
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+
+  - id: b2_part2_scientific_proposal
+    parent_logical_id: b2
+    label: Part II of the Scientific Proposal
+    node_type: subsection
+    source_section: "AF 2026 - Part B2, Part II"
+    content_constraints:
+      max_pages: 7
+      note: "References do not count towards the page limit."
+    guidance_text: "Provide detailed implementation, methodology, work plan, risk assessment and mitigation; do not include resource description or budget table in Part B2."
+    compliance_rules:
+      - id: comp_b2_part2_page_limit
+        severity: WARNING
+        rule_type: formatting
+        description: "Part II should not exceed 7 pages (references excluded)."
+    node_expectations:
+      - evaluation_element_id: elem_project_importance_questions
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_project_ambition_frontier
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_project_methodology_arrangements
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: resources_time_commitment
+    label: Resources and Time Commitment
+    node_type: section
+    source_section: "Part A Section C + Work Programme 2026"
+    content_constraints:
+      max_pages: 2
+      note: "Work Programme: up to 2 pages. Application Form Section C text field: maximum 8000 characters."
+    guidance_text: "Describe and justify requested resources and time commitment; this information is provided to experts at Step 2."
+    compliance_rules:
+      - id: comp_resources_pages
+        severity: WARNING
+        rule_type: formatting
+        description: "Resources and Time Commitment should not exceed 2 pages in the research proposal context."
+      - id: comp_resources_section_c_chars
+        severity: WARNING
+        rule_type: formatting
+        description: "Part A Section C Resources field is limited to 8000 characters."
+    node_expectations:
+      - evaluation_element_id: elem_project_timescale_resources
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+runtime_notes:
+  - id: note_step_scope
+    description: "Step 1 evaluates Part I plus CV and Track Record from Part B1; Step 2 evaluates the complete research proposal including Part B2 and Resources."
+  - id: note_resource_assessment
+    description: "Peer reviewers should avoid recommendations on resources at Step 1; resource assessment is done at Step 2."
+  - id: note_criterion_guardrails
+    description: "Excellence is the sole criterion; societal impact and host institution standing are not evaluation criteria."

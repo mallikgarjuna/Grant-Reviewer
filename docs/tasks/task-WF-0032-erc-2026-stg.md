@@ -1,7 +1,7 @@
 # WF-0032 — ERC Starting Grant 2026 Tasks
 
 Artifact: task
-Version: v0.7
+Version: v0.8
 Status: Ready for Implementation
 Last Updated: 2026-02-26
 
@@ -14,6 +14,7 @@ Last Updated: 2026-02-26
 - v0.5 (2026-02-26): Fix test file paths/commands; align stage assertions to canonical_json evaluation elements; use repo test DB compose URL.
 - v0.6 (2026-02-26): Align Task 5 DB verification with test DB safety rules and docker-compose.test.yml.
 - v0.7 (2026-02-26): Re-open Task 5; block YAML authoring until official ERC 2026 StG source documents are provided.
+- v0.8 (2026-02-26): Complete Task 5 using provided official ERC documents; produce full combined YAML.
 
 ## Task Breakdown (Sequential Order)
 
@@ -73,13 +74,13 @@ Verification Steps:
 2. `cd backend && export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable" && uv run pytest tests/test_api.py -k hierarchy_ingest`
 Risks: Real E2E requires clean DB teardown between ingestion steps.
 
-### [ ] Task 5 — Author ERC 2026 StG YAML (Blocked: Source Intake Required)
+### [x] Task 5 — Author ERC 2026 StG YAML
 Goal: Write the final declarative canonical artifact for the ERC 2026 Starting Grant based only on official source documents provided in this workflow.
 Slice: Canonical Data
 User Stories: US1
 PRD Requirements: FR1, FR3, FR4
 Files to modify:
-- `backend/data/calls/erc_stg_2026_step1.yaml`
+- `backend/data/calls/erc_stg_2026_full.yaml`
 Acceptance Criteria:
 - Official ERC StG 2026 source documents (application form + assessment criteria/reviewer guidance) are provided and referenced.
 - YAML structure, constraints, and evaluation criteria/elements are traceable to those sources.
@@ -87,7 +88,7 @@ Acceptance Criteria:
 TDD Plan: N/A
 Verification Steps:
 1. Source intake completed and documented (titles/version/date + supplied location).
-2. `cd backend && uv run python scripts/ingest_call.py data/calls/erc_stg_2026_step1.yaml --dry-run`
+2. `cd backend && uv run python scripts/ingest_call.py data/calls/erc_stg_2026_full.yaml --dry-run`
 3. `cd backend && docker compose -f docker-compose.test.yml up -d`
-4. `cd backend && export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable" && uv run python scripts/ingest_call.py data/calls/erc_stg_2026_step1.yaml`
+4. `cd backend && export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable" && uv run python scripts/ingest_call.py data/calls/erc_stg_2026_full.yaml`
 Risks: Authoring without official sources creates non-defensible YAML and must be avoided.
