@@ -143,7 +143,7 @@ When ALL tasks are done, STOP. Do NOT write the walkthrough or update docs/index
 
 ---
 
-## Phase 3.2 — Verify & Ship
+## Phase 3.2 — Technical Audit Review Gate
 
 ```text
 Use @docs/workflow/phase-3-2-verify-and-ship.md
@@ -151,9 +151,29 @@ Use @docs/workflow/phase-3-2-verify-and-ship.md
 @docs/tasks/task-<WF-ID>-<slug>.md
 
 Assume implementation tasks are DONE.
-Run Phase 3.2 (Verify & Ship) for <WF-ID>/<slug> using this runner.
-Print what you did in Part B/C.
-Confirm verification evidence before writing the walkthrough.
+Run Phase 3.2 (Technical Audit Review Gate) for <WF-ID>/<slug>.
+Do NOT edit files.
+Print findings in:
+1) potential bugs
+2) missing tests
+3) design issues
+4) suggested fixes
+5) refactored version with comments
+End with two suggested next actions.
+```
+
+---
+
+## Phase 3.3 — Revise, Verify, Walkthrough & Ship
+
+```text
+Use @docs/workflow/phase-3-3-revise-verify-and-ship.md
+@docs/index.md
+@docs/tasks/task-<WF-ID>-<slug>.md
+
+Use the Phase 3.2 review output from this session.
+Run Phase 3.3 for <WF-ID>/<slug>: apply review fixes, verify, then walkthrough + ship gate.
+Print what you did in Part C1/C2/C3.
 End with two suggested next actions.
 ```
 

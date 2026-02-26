@@ -7,7 +7,7 @@ Do NOT modify this file during execution.
 ---
 
 ## Purpose
-To execute the granular development tasks defined in Phase 3, run a strict review + verification gate, and synthesize the results into a walkthrough document.
+To execute Phase 3 end-to-end: implement tasks, run the technical audit gate, apply review-driven revisions with verification, then finalize walkthrough + ship gate artifacts.
 
 ## Inputs Required
 1. A completed and approved Tasks artifact representing the current WF scope (e.g., `docs/tasks/task-<WF-ID>-<slug>.md`).
@@ -35,14 +35,14 @@ To execute the granular development tasks defined in Phase 3, run a strict revie
 4. Check off (`[x]`) tasks in the task artifact as you go.
 5. Do not proceed to Part B until all tasks are implemented.
 
-### PART B: Review + Verify [GATE]
+### PART B: Review [GATE]
 1. Stop implementing features.
-2. Execute **only** the Part B gate defined in `docs/workflow/phase-3-2-verify-and-ship.md` (Technical Audit + Verification).
+2. Execute Phase 3.2 from `docs/workflow/phase-3-2-verify-and-ship.md` (technical audit review gate, no edits).
 3. If the Part B gate requires fixes, drop back to Part A, implement them, then re-run Part B.
 4. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C.
 
-### PART C: Walkthrough + Ship [GATE]
-1. Execute Part C exactly as defined in `docs/workflow/phase-3-2-verify-and-ship.md`.
+### PART C: Revise + Verify + Walkthrough/Ship [GATE]
+1. Execute Phase 3.3 from `docs/workflow/phase-3-3-revise-verify-and-ship.md` exactly (Part C1 revise, Part C2 verify, Part C3 walkthrough + ship gate).
 
 ---
 

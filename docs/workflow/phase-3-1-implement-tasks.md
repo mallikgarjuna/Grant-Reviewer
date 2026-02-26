@@ -121,7 +121,7 @@ Then continue automatically to the next task.
 
 When all tasks are complete, **STOP**.
 
-Do not update `docs/index.md` or create a walkthrough here. Your job is done. The primary `phase-3-run-implement-execution.md` orchestrator will now take over to enforce Part B (Verify) and Part C (Walkthrough + Ship).
+Do not update `docs/index.md` or create a walkthrough here. Your job is done. The primary `phase-3-run-implement-execution.md` orchestrator will now take over to enforce Phase 3.2 (technical audit review gate) and Phase 3.3 (revise + verify + walkthrough/ship).
 
 ---
 
