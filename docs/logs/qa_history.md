@@ -240,3 +240,14 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 - **Option B (New Tree-shaped Response):**
   - **Pros:** Backend does the heavy lifting once, making the frontend Dynamic UI renderer much simpler to write later. "Cleanest" API design for a hierarchical domain.
   - **Cons:** Expands WF-0032 scope. We either have to break the existing `GET /calls/{id}/nodes` contract (breaking the current Veni frontend) OR build a brand new endpoint (e.g., `GET /calls/{id}/nodes/tree`), which means writing recursive Pydantic response models and tree-building logic in the backend right now.
+### Q: Why do I see "heredoc>" loops and "system override" messages in the logs?
+**A**:
+1. **Heredoc Loops**: These occur when the assistant uses `run_command` with `cat <<EOF` to write large blocks of text. If something fails or the terminal context is interrupted, the model often tries to re-run the entire large command, burning tokens. **Fix**: Use `write_to_file` or `replace_file_content` instead of shell-based writing.
+2. **System Override Messages**: "The system keeps overriding my response. I have to break out." is an internal model signal triggered when a system-level constraint (safety or hard prompt rule) blocks an intended action. The model repeats its attempt to "break through," leading to a loop. **Fix**: Detect the blocked action, stop the loop, and ask the user for clarification.
+
+### Q: How can we solve these looping problems?
+**A**:
+- **Chunking**: Break large file writes or code changes into smaller, verifiable chunks.
+- **Tool Preference**: Prioritize filesystem tools (`write_to_file`) over terminal hacks (`heredoc`).
+- **Communication**: If the assistant detects a persistent error or a "rejection" message, it should stop and notify the user instead of looping.
+- **Minimal Edits**: Strictly adhere to changing only what is requested; avoid unnecessary overwrites or refactors during fixes.
