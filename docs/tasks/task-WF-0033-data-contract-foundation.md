@@ -62,7 +62,7 @@ Verification Steps:
 Risks (if any):
 - Fixtures may not yet include a deeply nested call; unit tests must cover ordering deterministically.
 
-### [ ] Task 3 — Deterministic mismatch + cycle failure behavior (409)
+### [x] Task 3 — Deterministic mismatch + cycle failure behavior (409)
 
 Goal:
 Enforce fail-fast behavior for canonical-JSON/DB mismatch and for canonical cycles when serving `view=tree`.

@@ -1,7 +1,9 @@
 """API tests for call nodes flat/tree response contracts."""
 
 from fastapi.testclient import TestClient
+from sqlmodel import select
 
+from app.models.domain import CallDefinition
 from app.db import get_session
 from app.models.domain import NodeType, ProposalNode
 from tests.test_api import SeededIDs, create_client_with_seed
@@ -29,6 +31,29 @@ def _get_call_nodes_tree(client: TestClient, call_id: str) -> dict:
     response = client.get(f"/calls/{call_id}/nodes?view=tree")
     assert response.status_code == 200
     return response.json()
+
+
+def _set_structured_call_definition(
+    seeded_ids: SeededIDs,
+    *,
+    proposal_nodes: list[dict],
+) -> None:
+    """Overwrite structured call proposal_nodes for edge-case testing."""
+    session = get_session()
+    try:
+        definition = session.exec(
+            select(CallDefinition).where(
+                CallDefinition.funding_call_id == seeded_ids.structured_call_id
+            )
+        ).first()
+        assert definition is not None
+        canonical_json = dict(definition.canonical_json)
+        canonical_json["proposal_nodes"] = proposal_nodes
+        definition.canonical_json = canonical_json
+        session.add(definition)
+        session.commit()
+    finally:
+        session.close()
 
 
 def test_call_nodes_view_tree_returns_nested_children(monkeypatch) -> None:
@@ -60,3 +85,40 @@ def test_call_nodes_flat_includes_logical_id_field(monkeypatch) -> None:
     nodes = response.json()["nodes"]
     assert nodes
     assert "logical_id" in nodes[0]
+
+
+def test_call_nodes_view_tree_mismatch_returns_409(monkeypatch) -> None:
+    """Canonical nodes missing from DB should return deterministic mismatch."""
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    _set_structured_call_definition(
+        seeded_ids,
+        proposal_nodes=[
+            {"id": "academic_profile"},
+            {"id": "missing_node", "parent_logical_id": "academic_profile"},
+        ],
+    )
+
+    response = client.get(f"/calls/{seeded_ids.structured_call_id}/nodes?view=tree")
+
+    assert response.status_code == 409
+    body = response.json()
+    assert body["error"]["code"] == "CALL_DEFINITION_NODE_MISMATCH"
+    assert "missing_node" in body["error"]["details"]["node_logical_ids"]
+
+
+def test_call_nodes_view_tree_cycle_returns_409(monkeypatch) -> None:
+    """Canonical parent graph cycles should return deterministic 409."""
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    _set_structured_call_definition(
+        seeded_ids,
+        proposal_nodes=[
+            {"id": "academic_profile", "parent_logical_id": "knowledge_utilisation"},
+            {"id": "knowledge_utilisation", "parent_logical_id": "academic_profile"},
+        ],
+    )
+
+    response = client.get(f"/calls/{seeded_ids.structured_call_id}/nodes?view=tree")
+
+    assert response.status_code == 409
+    body = response.json()
+    assert body["error"]["code"] == "CALL_DEFINITION_CYCLE"

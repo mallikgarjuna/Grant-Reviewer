@@ -51,6 +51,7 @@ from app.services.call_definition_service import CallDefinitionService
 from app.services.compliance_engine import evaluate_compliance
 from app.services.llm_client import build_llm_client
 from app.services.node_tree_service import NodeTreeService
+from app.services.node_tree_service import NodeTreeCycleError, NodeTreeMismatchError
 from app.services.reviewer_policy import matches_review_stage
 from app.services.reviewer_service import ReviewerService
 from app.services.structured_reviewer_service import StructuredReviewerService
@@ -87,6 +88,8 @@ ERROR_STATUS_BY_CODE = {
     "DOMAIN_INVALID": 422,
     "STRUCTURED_NODES_REQUIRED": 422,
     "STRUCTURED_PAYLOAD_TOO_LARGE": 422,
+    "CALL_DEFINITION_NODE_MISMATCH": 409,
+    "CALL_DEFINITION_CYCLE": 409,
     "VALIDATION_ERROR": 400,
     "INTERNAL_ERROR": 500,
 }
@@ -450,10 +453,23 @@ def list_call_nodes(
 
     definition = repository.get_call_definition_by_call_id(call_id)
     if definition is not None:
-        canonical_tree = NodeTreeService().build_tree_from_canonical(
-            definition.canonical_json,
-            flat_nodes,
-        )
+        try:
+            canonical_tree = NodeTreeService().build_tree_from_canonical(
+                definition.canonical_json,
+                flat_nodes,
+            )
+        except NodeTreeMismatchError as err:
+            raise APIException(
+                code="CALL_DEFINITION_NODE_MISMATCH",
+                message="Call definition references nodes that do not map to active call nodes.",
+                details={"node_logical_ids": err.node_logical_ids},
+            ) from err
+        except NodeTreeCycleError as err:
+            raise APIException(
+                code="CALL_DEFINITION_CYCLE",
+                message="Call definition contains a cycle in parent_logical_id links.",
+            ) from err
+
         if canonical_tree is not None:
             return NodesTreeResponse(nodes=canonical_tree)
 
