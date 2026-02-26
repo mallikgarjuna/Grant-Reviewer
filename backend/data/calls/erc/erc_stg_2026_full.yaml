@@ -1,7 +1,7 @@
 # ERC Starting Grant 2026 (full combined) — source-grounded call definition
 #
 # Structure and policy were authored from official source PDFs provided by user.
-# Traceability manifest: docs/reference/erc_stg_2026_source_manifest.md
+# Traceability manifest: backend/data/calls/sources/erc_stg_2026_full.sources.md
 #
 # Primary sources:
 # - af_he-erc-stg_en.pdf (Part B1/B2 structure, page/character constraints, Step visibility)
