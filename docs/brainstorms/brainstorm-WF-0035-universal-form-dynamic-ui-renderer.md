@@ -243,7 +243,44 @@ Replace the hardcoded Veni form with a universal submit form used by the existin
 
 ## 5. Constraints
 
-(Interactive; fill via Q&A below.)
+Implementation timebox is 2–3 days for a tight MVP. Prefer no new backend endpoints (use existing contracts); frontend should keep UX close to the current submit page, but minor improvements are acceptable if they reduce confusion or support call selection. Call coverage is explicitly limited to structured calls with flat nodes; nested calls must hard-block. Draft persistence remains localStorage per call; no server-side drafts.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the time constraint for WF-0035 implementation (once we leave ideation)?**
+- A) 2–3 days (tight MVP).
+- B) 1 week.
+- C) Open-ended.
+> Recommendation: A — Matches the urgency of the P1 launch blocker and forces aggressive scope discipline.
+> **Selected: A**
+
+**Q2: What is the hard backend constraint for this WF?**
+- A) No new backend endpoints; use existing contracts only.
+- B) Small backend tweaks allowed if they reduce frontend complexity.
+- C) Backend refactor is allowed.
+> Recommendation: A — Keeps this WF focused on frontend universalization; the repo already has usable endpoints for nodes/config/metadata.
+> **Selected: A**
+
+**Q3: What is the hard frontend constraint?**
+- A) Keep UX similar to current submit page; avoid redesign.
+- B) Redesign is acceptable if it speeds universalization.
+- C) Any UI is fine; correctness only.
+> Recommendation: A — Minimizes regression risk. Allow small, targeted UX tweaks (e.g., call selection and clearer unsupported-call messaging) without a full redesign.
+> **Selected: A (with small, targeted UX tweaks allowed)**
+
+**Q4: What is the constraint on call coverage for MVP?**
+- A) Only structured calls with flat nodes; nested calls must hard-block.
+- B) Must include at least one nested call (partial support).
+- C) Must include legacy single-snippet calls too.
+> Recommendation: A — Preserves the explicit deferral boundary; nested support is a separate parked initiative.
+> **Selected: A**
+
+**Q5: What is the constraint on persistence/drafts?**
+- A) localStorage draft per call is sufficient; no server drafts.
+- B) Must persist drafts server-side.
+- C) No drafts needed.
+> Recommendation: A — Matches current behavior and is sufficient for MVP paste/iterate workflows.
+> **Selected: A**
 
 ## 6. Risks / Unknowns
 
