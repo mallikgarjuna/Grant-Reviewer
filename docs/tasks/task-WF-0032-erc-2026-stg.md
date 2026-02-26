@@ -29,7 +29,7 @@ TDD Plan: RED (write failing validation tests for duplicate IDs and missing fiel
 Verification Steps: `cd backend && uv run pytest backend/tests/test_call_definitions_v2_schema.py`
 Risks: Minimal.
 
-### [ ] Task 2 — Ingestion Parser & Topological Sort Validations
+### [x] Task 2 — Ingestion Parser & Topological Sort Validations
 Goal: Implement the logic to build the dependency tree from the flat YAML nodes, checking for cycles, self-parents, and missing parent IDs. Create a pure-function API for the tree/graph checks.
 Slice: Ingestion Graph Logic
 User Stories: US2, US5

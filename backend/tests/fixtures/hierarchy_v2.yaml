@@ -1,0 +1,59 @@
+funding_agency:
+  id: erc
+  name: European Research Council
+  country: EU
+
+funding_call:
+  id: erc_stg_2026_step1
+  code: erc_stg_2026_step1
+  title: ERC Starting Grant 2026 Step 1
+  year: 2026
+  stage: step1
+  language: en
+
+evaluation_criteria:
+  - id: crit_excellence
+    name: Excellence
+    stage: step1
+    weight_percent: 100
+    evaluation_elements:
+      - id: elem_quality
+        name: Quality
+        description: Assess quality.
+        stage: STEP_1
+
+proposal_nodes:
+  - id: grandchild
+    parent_logical_id: child_1
+    label: Grandchild
+    node_type: subsection
+    node_expectations:
+      - evaluation_element_id: elem_quality
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+
+  - id: root
+    label: Root
+    node_type: section
+    node_expectations:
+      - evaluation_element_id: elem_quality
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: child_2
+    parent_logical_id: root
+    label: Child 2
+    node_type: subsection
+    node_expectations:
+      - evaluation_element_id: elem_quality
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+
+  - id: child_1
+    parent_logical_id: root
+    label: Child 1
+    node_type: subsection
+    node_expectations:
+      - evaluation_element_id: elem_quality
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY

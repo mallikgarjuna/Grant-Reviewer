@@ -15,6 +15,7 @@ import logging
 import sys
 from collections.abc import Sequence
 from datetime import UTC, datetime
+from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
@@ -593,6 +594,65 @@ def _map_v2_node_type(node_type: str) -> NodeType:
     return NodeType.SECTION
 
 
+def _resolve_v2_node_preorder(
+    nodes: Sequence[ProposalNodeDefinitionV2],
+) -> list[ProposalNodeDefinitionV2]:
+    """Validate V2 node graph and return deterministic preorder traversal."""
+    node_by_id: dict[str, ProposalNodeDefinitionV2] = {}
+    duplicate_ids: list[str] = []
+    for node in nodes:
+        if node.id in node_by_id:
+            duplicate_ids.append(node.id)
+            continue
+        node_by_id[node.id] = node
+
+    if duplicate_ids:
+        duplicate_label = ", ".join(sorted(set(duplicate_ids)))
+        raise ValueError(f"Duplicate proposal node id: {duplicate_label}")
+
+    dependency_graph: dict[str, set[str]] = {}
+    children_by_parent: dict[str, list[str]] = {}
+    root_ids: list[str] = []
+    for node in nodes:
+        parent_id = node.parent_logical_id
+        if parent_id is None:
+            dependency_graph[node.id] = set()
+            root_ids.append(node.id)
+            continue
+
+        if parent_id == node.id:
+            raise ValueError(
+                f"Node '{node.id}' cannot reference itself as parent_logical_id"
+            )
+        if parent_id not in node_by_id:
+            raise ValueError(
+                f"Node '{node.id}': Unknown parent_logical_id '{parent_id}'"
+            )
+
+        dependency_graph[node.id] = {parent_id}
+        children_by_parent.setdefault(parent_id, []).append(node.id)
+
+    try:
+        tuple(TopologicalSorter(dependency_graph).static_order())
+    except CycleError as err:
+        raise ValueError("Cycle detected in proposal node hierarchy") from err
+
+    ordered_ids: list[str] = []
+    stack: list[str] = list(reversed(root_ids))
+    while stack:
+        current_id = stack.pop()
+        ordered_ids.append(current_id)
+        children = children_by_parent.get(current_id, [])
+        stack.extend(reversed(children))
+
+    if len(ordered_ids) != len(nodes):
+        raise ValueError(
+            "Unable to resolve preorder traversal for proposal node hierarchy"
+        )
+
+    return [node_by_id[node_id] for node_id in ordered_ids]
+
+
 def _upsert_agency_and_call_v2(
     session: Session,
     call_def: CallDefinitionV2,
@@ -799,9 +859,10 @@ def _upsert_projection_v2(
         ).all()
         if node.logical_id is not None
     }
+    ordered_nodes = _resolve_v2_node_preorder(call_def.proposal_nodes)
     seen_nodes: set[str] = set()
     node_by_logical_id: dict[str, ProposalNode] = {}
-    for order_idx, node_def in enumerate(call_def.proposal_nodes, start=1):
+    for order_idx, node_def in enumerate(ordered_nodes, start=1):
         node = existing_nodes.get(node_def.id)
         if node is None:
             node = ProposalNode(
@@ -843,7 +904,7 @@ def _upsert_projection_v2(
         for expectation in existing_expectations:
             session.delete(expectation)
 
-    for node_def in call_def.proposal_nodes:
+    for node_def in ordered_nodes:
         node = node_by_logical_id[node_def.id]
         for order_idx, expectation_def in enumerate(
             node_def.node_expectations, start=1
