@@ -60,6 +60,8 @@ After completing Part C revisions, ensure the **Target Output Artifact** (and an
    - Prefer each task to touch <=3 files.
    - Split larger tasks into additional dependent tasks instead of broad tasks.
    - Use as many tasks as needed to keep tasks independently testable/verifiable.
+   - Require per-task dependency metadata (`Depends on`, `Enables`, `Parallelizable`) and topologically valid ordering.
+   - Treat `Parallelizable` as planning metadata only; it does not authorize parallel implementation in Phase 3.
 4. Output the v0.1 draft of the Target Output Artifact.
 5. Print the artifact path, version, and a 5-bullet summary of what it contains.
 
@@ -82,6 +84,8 @@ After completing Part C revisions, ensure the **Target Output Artifact** (and an
 3. Apply edits from Part B, bump the version (v0.1 -> v0.2), update the changelog, and update the status marker (Ready for PRD/Tasks/Implementation).
 4. If the user answered blocking questions, incorporate their decisions.
 5. If Phase ID = 2, ensure final tasks remain atomic (<=3 files preferred per task) and independently testable before marking Ready for Implementation.
+   - Ensure dependency metadata remains valid after revisions (no cycles, no forward references in `Depends on`, coherent topological order).
+   - Preserve execution safety: Phase 3 task implementation remains sequential unless future execution rules explicitly change.
 6. Before ending Part C, print:
    - `Applied feedback from Part B: yes/no`
    - If yes, list 3–5 exact edits mapped to Part B findings.

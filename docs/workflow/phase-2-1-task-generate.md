@@ -81,6 +81,8 @@ Task planning rules:
 - Every behavior change/bug fix MUST be implemented with TDD (red/green/refactor).
 - Avoid horizontal slicing (do not plan "all tests first, all code later"). Prefer `RED->GREEN` per slice increment.
 - Tasks MUST be written so Phase 3 can execute and *log* a recognizable TDD loop per task (labels: `RED`, `GREEN`, `REFACTOR`).
+- Add explicit dependency metadata per task (`Depends on`, `Enables`, `Parallelizable`) to make ordering assumptions reviewable.
+- Dependency metadata is planning-only and MUST NOT be interpreted as permission to parallelize Phase 3 execution.
 
 For each task include:
 
@@ -90,6 +92,9 @@ Goal:
 Slice: <tracer-bullet|slice-name>
 User Stories: <US1, US2> (from PRD) or `N/A`
 PRD Requirements: <FR1, FR2> (from PRD) or `N/A`
+Depends on: <Task #s or `none`>
+Enables: <Task #s or `none`>
+Parallelizable: <yes|no> (planning-only signal)
 Files to modify:
 Acceptance Criteria:
 TDD Plan: <required: `N/A` or explicit `RED/GREEN/REFACTOR` plan>
@@ -102,6 +107,10 @@ Tasks must:
 - Respect dependencies
 - Avoid scope expansion
 - Be minimal for MVP
+- Form a DAG-valid dependency structure:
+  - No cycles.
+  - `Depends on` references must point to earlier tasks only.
+  - Prefer topological ordering in the listed sequence.
 - Be atomic and implementation-ready:
   - Prefer each task to touch no more than 3 files.
   - If a task would exceed ~3 files, split it into smaller dependent tasks.

@@ -108,6 +108,7 @@ Use @docs/workflow/phase-1-2-run-planning.md
 Run Phase 2 end-to-end for <WF-ID>/<slug> using this unified runner.
 Print what you did in Part A/B/C.
 Ask me questions if needed (options + recommendation).
+Ensure tasks include dependency metadata (`Depends on`, `Enables`, `Parallelizable`) for planning clarity only.
 End with two suggested next actions.
 ```
 
