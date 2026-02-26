@@ -1,9 +1,9 @@
 # WF-0032 — ERC Starting Grant 2026 PRD
 
 Artifact: prd
-Version: v0.3
-Status: Ready for Tasks
-Last Updated: 2026-02-25
+Version: v0.4
+Status: Part A Implemented (Pending Phase 3 Part B/C)
+Last Updated: 2026-02-26
 
 ## 0. User Stories (MVP)
 - US1: As a developer, I want to define hierarchical proposal node structures in the Call Definition V2 YAML so that complex multi-part forms (like ERC 2026 StG) can be modeled accurately.
@@ -23,7 +23,7 @@ Last Updated: 2026-02-25
 - Updating schema to include `stage` metadata on evaluation elements (canonical_json only).
 - Refactoring `scripts/ingest_call.py` to resolve string-based `parent_logical_id` to database `parent_node_id` UUIDs securely.
 - Enforcing acyclic dependency (loop prevention) during ingestion.
-- Authoring the ERC 2026 StG call structure in a new V2 YAML (`backend/data/calls/erc_stg_2026_step1.yaml`).
+- Authoring the ERC 2026 StG full-call structure in V2 YAML (`backend/data/calls/erc_stg_2026_full.yaml`), with reviewer-policy metadata grounded in official ERC sources.
 - Automated integration test for `GET /calls/{id}/nodes` verifying parent ids are correct in the flat list.
 - Verifying the flat `nwo_veni` YAML still ingests seamlessly.
 
@@ -36,7 +36,7 @@ Last Updated: 2026-02-25
 - PDF upload parsing.
 
 ## 3. User / System Flow
-- **Happy Path:** (US1, US2, US3) Developer runs `cd backend && uv run python scripts/ingest_call.py data/calls/erc_stg_2026_step1.yaml`. The script parses the YAML, validates schemas, validates acyclic graphs/order, creates nodes hierarchically, and assigns `parent_node_id`. (FR1, FR2, FR5)
+- **Happy Path:** (US1, US2, US3) Developer runs `cd backend && uv run python scripts/ingest_call.py data/calls/erc_stg_2026_full.yaml`. The script parses the YAML, validates schemas, validates acyclic graphs/order, creates nodes hierarchically, and assigns `parent_node_id`. (FR1, FR2, FR5)
 - **Failure Path 1: Missing Parent** (US2, US5) Developer references a `parent_logical_id` that does not exist in the YAML. Ingestion script throws a strict validation error and halts before DB commit. (FR7)
 - **Failure Path 2: Circular Dependency** (US2) Developer authors nodes that reference each other in a loop. Ingestion validation catches cyclic reference error and halts. (FR2)
 - **Failure Path 3: Duplicate ID** (US5) Developer authors multiple nodes with same ID. Ingestion fails fast before DB commit. (FR8)
@@ -62,7 +62,7 @@ Last Updated: 2026-02-25
 - **`backend/app/schemas/call_definitions_v2.py`**: Add new fields. Add explicit validation for duplicate node IDs.
 - **`backend/scripts/ingest_call.py`**: Significant refactor to do topological sorting / two-pass ingestion of nodes so parents exist before children are linked. Handle `order_index` calculation deterministically.
 - **`backend/tests/integration/test_api.py`**: New automated tests validating parent ID retrieval.
-- **`backend/data/calls/erc_stg_2026_step1.yaml`**: The new canonical call logic artifact.
+- **`backend/data/calls/erc_stg_2026_full.yaml`**: Canonical call logic artifact, including evaluable structure + criteria/elements + enforceable reviewer-policy rules.
 
 ## 7. Edge Cases
 - YAML defines nodes out of topological order. (US2) -> Ingestion must resolve parent/child dependencies safely (e.g. topological sort).
@@ -90,3 +90,4 @@ Last Updated: 2026-02-25
 - v0.1 (2026-02-25): Initial PRD from brainstorm
 - v0.2 (2026-02-25): Applied risk audit self-edits.
 - v0.3 (2026-02-25): Applied adversarial audit findings (flat API clarification, test gaps, duplicate ID FRs, canonical JSON constraints).
+- v0.4 (2026-02-26): Reconciled implementation scope to full ERC YAML + reviewer-policy runtime hardening and added Part-A-complete status.

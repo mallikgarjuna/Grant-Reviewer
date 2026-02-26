@@ -1,8 +1,8 @@
 # WF-0032 — ERC Starting Grant 2026 Tasks
 
 Artifact: task
-Version: v0.8
-Status: Ready for Implementation
+Version: v0.9
+Status: Part A Implemented (Pending Part B/C)
 Last Updated: 2026-02-26
 
 ## Changelog
@@ -15,6 +15,7 @@ Last Updated: 2026-02-26
 - v0.6 (2026-02-26): Align Task 5 DB verification with test DB safety rules and docker-compose.test.yml.
 - v0.7 (2026-02-26): Re-open Task 5; block YAML authoring until official ERC 2026 StG source documents are provided.
 - v0.8 (2026-02-26): Complete Task 5 using provided official ERC documents; produce full combined YAML.
+- v0.9 (2026-02-26): Mark Part A complete; add explicit source-manifest reference for Task 5 traceability.
 
 ## Task Breakdown (Sequential Order)
 
@@ -85,6 +86,7 @@ Acceptance Criteria:
 - Official ERC StG 2026 source documents (application form + assessment criteria/reviewer guidance) are provided and referenced.
 - YAML structure, constraints, and evaluation criteria/elements are traceable to those sources.
 - A valid YAML struct details nodes and constraints using `parent_logical_id`.
+- Source manifest exists and records file names, paths, checksums, and relevant sections used for YAML authoring (`docs/reference/erc_stg_2026_source_manifest.md`).
 TDD Plan: N/A
 Verification Steps:
 1. Source intake completed and documented (titles/version/date + supplied location).

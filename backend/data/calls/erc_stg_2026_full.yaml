@@ -1,3 +1,13 @@
+# ERC Starting Grant 2026 (full combined) — source-grounded call definition
+#
+# Structure and policy were authored from official source PDFs provided by user.
+# Traceability manifest: docs/reference/erc_stg_2026_source_manifest.md
+#
+# Primary sources:
+# - af_he-erc-stg_en.pdf (Part B1/B2 structure, page/character constraints, Step visibility)
+# - wp_horizon-erc-2026_en.pdf (1.6.1, 1.6.3, 1.6.5 + Research Proposal definition)
+# - guide-for-peer-reviewers_he-erc-stg-cog_en.pdf (2.1 + reviewer guidelines)
+#
 funding_agency:
   id: erc
   name: European Research Council
@@ -201,6 +211,8 @@ proposal_nodes:
         expectation_strength: MANDATORY
         evaluation_intent: QUALITY
 
+# Reviewer-policy rules are call-scoped and applied at runtime to prompt + post-check enforcement.
+# Rule instructions and source hints trace back to the source manifest above.
 reviewer_policy:
   - id: pol_excellence_only
     applies_to_stage: BOTH
