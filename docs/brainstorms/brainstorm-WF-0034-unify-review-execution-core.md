@@ -1,8 +1,8 @@
 # WF-0034 — Unify review service execution core
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-02-26
 
 ---
@@ -356,4 +356,46 @@ User instruction for remaining sections (2026-02-26): default to the recommended
 
 ## 8. Explicit Non-Goals
 
-(Pending — to be filled via interactive Q&A.)
+**Section 8 summary (decisions):**
+- Non-goal: remove or deprecate endpoints in WF-0034 (keep both stable).
+- Non-goal: change request/response DTOs, error codes, or idempotency semantics.
+- Non-goal: introduce new retry policies, async processing, or major telemetry stack changes.
+- Non-goal: prompt re-writes or model changes; no “quality tuning” bundled into this refactor.
+- Non-goal: database schema changes unrelated to preserving current persistence behavior.
+
+**Brainstorming Q&A:**
+
+**Q1: What tempting scope should we explicitly defer?**
+- A) Deprecating `POST /reviews` and migrating all create flows to structured-only. (Recommended)
+- B) Introducing async processing/polling for structured reviews.
+- C) Redesigning API response shapes (grouped nodes, richer payloads).
+> Recommendation: A — Endpoint deprecation is a separate migration effort (frontend/BFF + compatibility window). Park it as follow-on to keep WF-0034 safe.
+> **Selected: A**
+
+**Q2: What behavior changes are explicitly out-of-scope?**
+- A) Any changes to error mapping, idempotency semantics, or persistence side effects. (Recommended)
+- B) Minor timeout changes.
+- C) Minor card text changes.
+> Recommendation: A — This WF is a refactor; behavior changes must be isolated.
+> **Selected: A**
+
+**Q3: What performance optimizations are explicitly out-of-scope?**
+- A) Parallel per-node LLM calls, mega-prompts, or retry/backoff changes. (Recommended)
+- B) Any prompt builder changes.
+- C) Any DB query optimizations.
+> Recommendation: A — These optimizations can materially change latency/cost and should be pursued only after the shared core is stable.
+> **Selected: A**
+
+**Q4: What observability changes are explicitly out-of-scope?**
+- A) Full production monitoring platform rollout (Sentry, dashboards) beyond adding internal hooks/seams. (Recommended)
+- B) Any logging changes at all.
+- C) Any metrics.
+> Recommendation: A — Hooks are fine; platform adoption and alerting can be separate.
+> **Selected: A**
+
+**Q5: What data-model changes are explicitly out-of-scope?**
+- A) Any schema migrations that aren’t required to preserve current behavior (e.g., new aggregates/normalization). (Recommended)
+- B) All DB changes, including harmless indexes.
+- C) Move everything to JSONB.
+> Recommendation: A — Keep this WF focused on execution/pipeline refactor; schema work is higher-risk and belongs in dedicated WFs.
+> **Selected: A**
