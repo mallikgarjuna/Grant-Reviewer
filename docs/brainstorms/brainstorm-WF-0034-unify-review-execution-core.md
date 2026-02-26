@@ -310,7 +310,49 @@ User instruction for remaining sections (2026-02-26): default to the recommended
 
 ## 7. MVP Definition
 
-(Pending — to be filled via interactive Q&A.)
+**Section 7 summary (decisions):**
+- MVP is a refactor slice: establish parity tests + introduce shared-core module + migrate orchestration incrementally.
+- Shared-core MVP includes: policy injection, LLM call wrapper seam, response parsing/validation, policy post-checks, normalized result object.
+- Endpoint-specific MVP includes: preserve DTOs, idempotency semantics, and persistence differences; no endpoint removal.
+- Rollout MVP: flip one endpoint at a time with test coverage and clear rollback (revert switch).
+- “Good enough” for Phase 0: a concrete, testable boundary and a stepwise migration plan with explicit non-goals.
+
+**Brainstorming Q&A:**
+
+**Q1: If we had to ship in 2–3 days, what must exist?**
+- A) Shared-core module + parity tests + one endpoint migrated with no behavior change. (Recommended)
+- B) Both endpoints fully migrated + new telemetry and retries.
+- C) Just code movement; tests later.
+> Recommendation: A — It’s the smallest functional slice that proves the approach while minimizing regression risk.
+> **Selected: A**
+
+**Q2: What is the smallest “shared core” slice that delivers value?**
+- A) Policy selection/injection + parsing/validation + policy post-checks unified behind a single internal pipeline. (Recommended)
+- B) Only unify the LLM client wrapper.
+- C) Only unify prompt construction.
+> Recommendation: A — This is where drift is most harmful and frequent; unifying only LLM/prompt is less protective.
+> **Selected: A**
+
+**Q3: What is explicitly excluded from MVP even if tempting?**
+- A) Changing contracts/DTOs, altering retries/timeouts behavior, or changing LLM prompting strategies. (Recommended)
+- B) Keeping the legacy endpoint around.
+- C) Writing new features on top of the refactor.
+> Recommendation: A — These are behavior changes that should be isolated into follow-on WFs.
+> **Selected: A**
+
+**Q4: What is the MVP testing bar?**
+- A) Keep existing endpoint API tests + add shared-core unit/service tests with stub LLM; add at least one parity-focused test per endpoint. (Recommended)
+- B) Manual testing only.
+- C) Only shared-core unit tests.
+> Recommendation: A — Covers both contract-level and internal-level regression surfaces.
+> **Selected: A**
+
+**Q5: What is the MVP migration sequencing?**
+- A) Add parity tests → introduce shared-core behind existing service APIs → migrate structured first → migrate single-node next. (Recommended)
+- B) Migrate single-node first.
+- C) Migrate both simultaneously.
+> Recommendation: A — Structured has more complexity and drift risk; migrating it first forces the shared core to handle the harder path.
+> **Selected: A**
 
 ## 8. Explicit Non-Goals
 
