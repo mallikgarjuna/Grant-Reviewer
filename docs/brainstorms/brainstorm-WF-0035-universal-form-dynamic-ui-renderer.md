@@ -1,7 +1,7 @@
 # WF-0035 — Universal Form: Dynamic UI renderer
 
 Artifact: brainstorm
-Version: v0.3
+Version: v0.4
 Status: Draft
 Last Updated: 2026-02-26
 
@@ -74,6 +74,15 @@ Open questions suggested by the snapshot:
 - Which backend DTO is the renderer’s primary contract: `nodes?view=tree` vs `public nodes/metadata`, and what minimum UI schema must be assembled client-side?
 - What should be the failure UX when a selected call is structured but has nested nodes (explicit unsupported blocking state vs silent flattening)?
 - How should call selection work for non-Veni calls (dropdown of all calls vs only “structured_nodes” calls)?
+
+## Contract Notes (Implementation Guardrails)
+
+- `GET /api/bff/calls` returns `{ id, code, name, ... }` where:
+  - `id` is the UUID used for `GET /calls/{call_id}/nodes` and for submitting reviews.
+  - `code` is the `call_logical_id` used for `GET /api/public/calls/{call_logical_id}/config` and `GET /api/public/calls/{call_logical_id}/nodes/metadata`.
+- **Ordering SSOT**: `GET /calls/{call_id}/nodes?view=flat` (DB `order_index`).
+- **Label/constraints SSOT**: `GET /api/public/calls/{call_logical_id}/nodes/metadata`.
+- **Submission SSOT**: use `node_logical_id` from metadata (do not infer from titles).
 
 ---
 
@@ -282,6 +291,16 @@ Implementation timebox is 2–3 days for a tight MVP. Prefer no new backend endp
 > Recommendation: A — Matches current behavior and is sufficient for MVP paste/iterate workflows.
 > **Selected: A**
 
+## Flat-Only Definition (MVP Guardrail)
+
+For WF-0035, a call is **flat-supported** iff **every** node returned by `GET /calls/{call_id}/nodes` has `parent_node_id == null`.
+
+If any node has `parent_node_id != null`, the UI must hard-block the call with an explicit message:
+
+> Nested calls are not supported yet (recursive rendering deferred).
+
+Rationale: prevents shipping partial/incorrect nested rendering and keeps recursion work isolated.
+
 ## 6. Risks / Unknowns
 
 Primary risks are contract ambiguity (which DTOs/fields are truly required for reliable labels/constraints), and silent corruption (a form that renders but submits structurally wrong payloads). Mitigation is to render with safe fallbacks when metadata is missing (label defaults to `logical_id`, hide constraints, show warning banner) and to validate a non-Veni structured call round-trip early before frontend work expands.
@@ -366,18 +385,24 @@ MVP is a universal, schema-driven submit form that supports any structured call 
 
 ---
 
-## Part B Risk Audit Resolutions (Applied)
+## Phase 0 Risk Audit Notes (Summary)
 
 - Kept WF-0035 scope flat-only and fail-fast for nested calls; ERC-StG-2026 remains explicitly blocked until recursive rendering work ships.
 - Clarified call selection behavior: structured-node calls only; exclude calls that fail config/metadata fetch and show a non-blocking warning banner.
 - Clarified nested detection: if any node has a non-null `parent_node_id`, hard-block as unsupported for WF-0035.
 - Clarified rendering order: use `/calls/{call_id}/nodes?view=flat` ordering as source-of-truth; metadata only enriches.
+- Frontend typing should tolerate future `NodeSummary` expansion (e.g., `logical_id` presence/nullable; `node_type` may expand beyond `SECTION|SUBSECTION`).
+- Preflight before frontend implementation: ingest the 2nd call into DB and smoke-test:
+  - `GET /calls`
+  - `GET /calls/{call_id}/nodes` (ensure flat-only guardrail: `parent_node_id` all null)
+  - `GET /api/public/calls/{code}/config` (`ui_mode="structured_nodes"`)
+  - `GET /api/public/calls/{code}/nodes/metadata` (ensure expected logical IDs exist)
 
 ### Remaining Blocker
 
-- Identify and ingest at least one additional *flat structured call* (non-Veni) using the updated authoring conventions (no legacy YAML structure). Candidates:
-  - Re-author ERC CoG from official sources (tracked as P1 item).
-  - Author a new flat call YAML from official sources (NWO/ZonMw/MSCA).
+- Identify and ingest at least one additional *official, flat-supported structured call* (non-Veni) using the updated authoring conventions (no legacy YAML structure).
+- Selected target for the 2nd call proof: **NWO Vidi 2025 full proposal** (deadline: **2026-04-09 14:00 CEST**).
+- Source gate: official funder docs must be provided in-workflow before authoring the YAML; once provided, ingest into DB and validate flat-only guardrail (`parent_node_id` all null).
 
 ## 8. Explicit Non-Goals
 
