@@ -1,8 +1,8 @@
 # WF-0033 — Data Contract Foundation PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-26
 
 ---
@@ -64,6 +64,7 @@ Last Updated: 2026-02-26
 - FR6 (US2): Metadata route supports optional filtering via `node_logical_ids` to return only requested nodes.
 - FR7 (US1, US2): Metadata is sourced from `CallDefinition.canonical_json` (validated V2) and joined to DB nodes by `logical_id` when mapping to UUIDs.
 - FR8 (US1, US3): On structural mismatch, API behavior is deterministic (documented error codes + best-effort rules).
+- FR9 (US2): Metadata endpoint returns partial success for unknown requested logical IDs and reports unknowns explicitly.
 
 ## 5. Data & API Contracts
 
@@ -77,6 +78,9 @@ Last Updated: 2026-02-26
   - `nodes: list[NodeSummary]`
 - Response (view=tree): `NodesTreeResponse` (FR2).
   - `nodes: list[NodeTreeNode]` (root nodes only)
+
+Implementation note (FastAPI typing):
+- This endpoint has two response shapes. Prefer `response_model=NodesResponse | NodesTreeResponse` and keep the runtime shape keyed by `view`.
 
 Node DTO fields (tree view): (FR2, FR3)
 
@@ -94,16 +98,26 @@ Validation / invariants:
 - Roots have `parent_node_id = null`. (FR2)
 - `logical_id` may be null for legacy calls, but for V2 calls it should be populated. (FR3)
 
+Deterministic tree construction rules (FR4, FR8):
+- If canonical JSON contains a valid `proposal_nodes` list and includes nested `children` structure, use it as the primary source of structure + ordering.
+- If canonical JSON is missing/invalid or lacks `children`, fall back to DB adjacency (`parent_node_id`) and order siblings by `order_index`.
+- If canonical JSON references `logical_id` values that do not map to an active DB node:
+  - Omit those nodes from the returned tree (cannot render without persisted node record), and log a warning with counts.
+- Hard failures (return 4xx + canonical error payload):
+  - Duplicate `logical_id` detected in active DB nodes for the call.
+  - Cycle detected in canonical `children` graph.
+
 ### 5.2 Metadata DTO Endpoint (`/api/public/calls/{call_logical_id}/nodes/metadata`) (US2)
 
 `GET /api/public/calls/{call_logical_id}/nodes/metadata?node_logical_ids=...`
 
 - Query params:
-  - `node_logical_ids`: optional repeated or comma-separated list (exact encoding to decide in implementation). (FR6)
+  - `node_logical_ids`: optional repeated query param (e.g., `...?node_logical_ids=a&node_logical_ids=b`). (FR6)
 - Response: `NodeMetadataResponse`
   - `call_logical_id: str`
   - `config_version: str`
   - `nodes: list[NodeMetadataDTO]`
+  - `unknown_node_logical_ids: list[str]` (optional; present only when a filter is provided and contains unknown IDs) (FR9)
 
 NodeMetadataDTO (UI-oriented, derived from canonical JSON + DB join): (FR5, FR7)
 
@@ -115,8 +129,8 @@ NodeMetadataDTO (UI-oriented, derived from canonical JSON + DB join): (FR5, FR7)
 
 Validation / error behavior (FR8):
 - If call is not found: `CALL_NOT_FOUND`
-- If definition/canonical JSON missing: return a clear error code OR a "legacy" empty response (decision in Phase 1.3).
-- If requested `node_logical_ids` includes unknown values: either return partial success + list unknowns, or 4xx with details (decision in Phase 1.3).
+- If definition/canonical JSON missing: return `CALL_DEFINITION_MISSING` (409) to make misuse explicit; clients should gate via `/api/public/calls/{call_logical_id}/config`. (FR8)
+- If requested `node_logical_ids` includes unknown values: return partial success (200) + `unknown_node_logical_ids` while still returning metadata for known nodes. (FR9)
 
 ### 5.3 Compatibility Notes
 
@@ -187,10 +201,9 @@ Design tree (dependency order):
 
 ## 11. Open Questions
 
-1. For metadata filtering, should `node_logical_ids` be repeated params (`...?node_logical_ids=a&node_logical_ids=b`) or a comma-separated string? (US2)
-2. For unknown `node_logical_ids`, should the endpoint be partial-success (200 + list unknowns) or strict (4xx)? (US2)
-3. For calls lacking a V2 definition, should metadata endpoint return an empty payload (legacy-friendly) or a clear error? (US3)
+- None (decisions logged in `docs/logs/decisions.md`).
 
 ## 12. Changelog
 
 - v0.1 (2026-02-26): Initial PRD from brainstorm.
+- v0.2 (2026-02-26): Applied risk audit edits (deterministic mismatch behavior, metadata filtering semantics, and contract clarification).
