@@ -119,6 +119,17 @@ Using plural for classes (`FundingAgencies`) would be confusing as the object in
 ### Q: How should the landing demo express “both” (fix + rewrite), and what’s the locked copy?
 **A:** Use micro-rewrite examples *inside* the suggested fix on some cards (not a separate before/after block). Keep the landing promise “Export your review”, and label the ERC tab “ERC Starting”.
 
+## 2026-02-26 (WF-0032 context)
+
+### Q: When/how are we going to get/request “ERC StG 2026 funder PDFs (Application Forms + Guide for Peer Reviewers)”?
+**A:** Treat this as Gate 1 “Source Confirmation” per `docs/workflow/call-yaml-authoring-workflow.md`. We need either (a) the PDFs provided directly, or (b) stable links + exact doc titles/versions/dates. Don’t commit PDFs to the repo unless licensing allows; instead record a sources manifest (doc name/version/date/location/checksum) and cite section/page references in YAML `source_hint`/comments.
+
+### Q: What are the consequences of keeping `GET /calls/{call_id}/nodes` flat vs returning a tree response?
+**A:** Flat + correct `parent_node_id` is the minimal, lowest-risk change: it matches current `NodesResponse` shape and current endpoint behavior in `backend/main.py` + `backend/app/schemas/api.py`, and consumers can build the tree client-side. A tree response is either a breaking change (if we change the existing endpoint shape) or a new endpoint (recommended); it requires a tree DTO, canonical ordering/traversal rules, cycle safety, and added tests. (Decision was not made in chat; treat as pending for WF-0032 task generation.)
+
+### Q: Should my non-brainstorm clarifying questions + your answers be saved somewhere?
+**A:** Yes—use `docs/logs/qa_history.md` for “why are we doing X / tradeoffs / clarifications” outside brainstorm artifacts, and use `docs/logs/decisions.md` when a clarification becomes a binding decision.
+
 ### Q: Do Phase 0.1 decisions get written into `docs/workflow/phase-0-1-brainstorm.md`?
 **A:** No. `docs/workflow/*` files are workflow instructions and should not be edited during execution; decisions belong in the WF artifacts (e.g., `docs/brainstorms/brainstorm-WF-0009-peerlens-landing-page.md`) and the registry in `docs/index.md`.
 
