@@ -7,7 +7,7 @@ Do NOT modify this file during execution.
 ---
 
 ## Purpose
-To cleanly resume a workflow that has already completed Part A (Implementation) in a prior session. This runner explicitly skips task implementation and jumps straight into Verification and Walkthrough generation.
+To cleanly resume a workflow that has already completed Part A (Implementation) in a prior session. This runner explicitly skips task implementation and jumps straight into Review + Verification and Walkthrough generation.
 
 ## Inputs Required
 1. A completed Tasks artifact representing the current WF scope (e.g., `docs/tasks/task-<WF-ID>-<slug>.md`) where ALL tasks are marked as `[x]`.
@@ -26,12 +26,14 @@ To cleanly resume a workflow that has already completed Part A (Implementation) 
 
 ---
 
-### PART B: Verify [GATE]
-1. Run `pre-commit run --all-files` (or the equivalent linter/formatter).
-2. Run the project's test suite (if applicable) and explicitly print the results.
-3. If the work touched UI/Frontend, ask the user if they wish to perform a manual visual validation or if you should use an Agentic Browser to verify the UI.
-4. If any verification fails, implement the fix, then return to the start of Part B.
-5. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C.
+### PART B: Review + Verify [GATE]
+1. Run a focused review pass (code review mindset): identify regressions, behavioral drift from PRD/tasks, missing tests, and scope creep.
+2. If review finds issues, implement fixes, then restart Part B.
+3. Run `pre-commit run --all-files` (or the equivalent linter/formatter).
+4. Run the project's test suite (if applicable) and explicitly print the results.
+5. If the work touched UI/Frontend, ask the user if they wish to perform a manual visual validation or if you should use an Agentic Browser to verify the UI.
+6. If any verification fails, implement the fix, then return to the start of Part B.
+7. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C.
 
 ### PART C: Walkthrough + Ship [GATE]
 1. Read the artifact file: `docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md`.

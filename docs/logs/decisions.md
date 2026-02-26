@@ -1,5 +1,47 @@
 # Architectural Decisions
 
+## Date: 2026-02-26 (WF-0033: Data Contract foundation for hierarchical grants)
+
+### AD 33.1: Universal node identity is `logical_id` + DB UUID
+- **WF ID**: WF-0033
+- **Context**: A universal renderer needs stable, environment-agnostic identifiers, while the backend persists nodes by UUID.
+- **Decision**: Expose both `logical_id` (V2) and `id` (UUID) in UI-facing node DTOs. Frontend binds drafts/state by `logical_id`; backend uses UUID for persistence and joins.
+- **Why**: Avoids program-specific code and prevents environment drift (UUIDs differ across DBs; `logical_id` is stable across ingest runs).
+- **Tradeoff**: Slightly larger payloads and dual-identifier handling for clients.
+- **Status**: Approved.
+
+### AD 33.2: Nodes endpoint uses `view=flat|tree` with flat as default
+- **WF ID**: WF-0033
+- **Context**: Existing clients depend on a flat nodes list; the new universal renderer needs a tree.
+- **Decision**: Keep `GET /calls/{call_id}/nodes` as the canonical endpoint and add `view=flat|tree` (default `flat`). Tree view returns roots with nested `children`.
+- **Why**: Enables incremental migration while preserving backward compatibility.
+- **Tradeoff**: Endpoint has two response shapes; API typing/docs must be explicit.
+- **Status**: Approved.
+
+### AD 33.5: Tree source-of-truth uses V2 `parent_logical_id` (canonical JSON) when available
+- **WF ID**: WF-0033
+- **Context**: The V2 call-definition schema expresses hierarchy via `proposal_nodes[].parent_logical_id` (not nested `children` lists).
+- **Decision**: Build tree structure/order from V2 canonical JSON `proposal_nodes` using `id` + `parent_logical_id` and the list order for sibling ordering; use DB adjacency (`parent_node_id`) only as a fallback when no V2 definition is present/valid.
+- **Why**: Keeps the hierarchy consistent with the authored call definition while allowing deterministic fallback for legacy calls.
+- **Tradeoff**: Requires careful mismatch handling between canonical JSON logical IDs and active DB nodes.
+- **Status**: Approved.
+
+### AD 33.3: Metadata DTO is a bulk public route with optional filtering and partial-success semantics
+- **WF ID**: WF-0033
+- **Context**: UI needs node-specific constraints/rules without fetching heavy metadata up front, and must support lazy hydration.
+- **Decision**: Add `GET /api/public/calls/{call_logical_id}/nodes/metadata` sourced from `CallDefinition.canonical_json`, support repeated `node_logical_ids` filters, and return partial success with `unknown_node_logical_ids` when filters include unknown IDs.
+- **Why**: Minimizes API surface area while supporting both bulk and progressive loading patterns.
+- **Tradeoff**: Consumers must handle a mixed "known + unknown" result set.
+- **Status**: Approved.
+
+### AD 33.4: Missing call definition is an explicit error for metadata requests
+- **WF ID**: WF-0033
+- **Context**: Legacy calls may not have V2 canonical JSON; metadata DTO depends on it.
+- **Decision**: If a call lacks a V2 definition, metadata endpoint returns `CALL_DEFINITION_MISSING` (409). Clients should gate behavior via `/api/public/calls/{call_logical_id}/config`.
+- **Why**: Prevents silent empty responses that mask configuration problems and simplifies debugging.
+- **Tradeoff**: Client must respect the gating endpoint to avoid 409s.
+- **Status**: Approved.
+
 ## Date: 2026-02-26 (WF-0032: ERC StG 2026 reviewer-policy hardening)
 
 ### AD 32.1: Reviewer policy is first-class call-definition data (`reviewer_policy`)

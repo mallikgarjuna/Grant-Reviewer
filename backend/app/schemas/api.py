@@ -42,6 +42,7 @@ class NodeSummary(BaseModel):
     """Proposal node summary for section picker UIs."""
 
     id: UUID
+    logical_id: str | None = None
     parent_node_id: UUID | None
     title: str
     node_type: NodeType
@@ -53,6 +54,51 @@ class NodesResponse(BaseModel):
     """Response for GET /calls/{call_id}/nodes."""
 
     nodes: list[NodeSummary]
+
+
+class NodeTreeNode(BaseModel):
+    """Tree node shape for nested proposal-node responses."""
+
+    id: UUID
+    logical_id: str | None = None
+    parent_node_id: UUID | None
+    title: str
+    node_type: NodeType
+    order_index: int
+    has_expectations: bool
+    children: list["NodeTreeNode"] = Field(default_factory=list)
+
+
+NodeTreeNode.model_rebuild()
+
+
+class NodesTreeResponse(BaseModel):
+    """Response for GET /calls/{call_id}/nodes?view=tree."""
+
+    nodes: list[NodeTreeNode]
+
+
+class NodeMetadataDTO(BaseModel):
+    """UI-oriented metadata for one proposal node."""
+
+    logical_id: str
+    node_id: UUID | None = None
+    label: str | None = None
+    node_type: str | None = None
+    parent_logical_id: str | None = None
+    guidance_text: str | None = None
+    content_constraints: dict[str, Any] = Field(default_factory=dict)
+    compliance_rules: list[dict[str, Any]] = Field(default_factory=list)
+    source_section: str | None = None
+
+
+class NodeMetadataResponse(BaseModel):
+    """Response for GET /api/public/calls/{call_logical_id}/nodes/metadata."""
+
+    call_logical_id: str
+    config_version: str
+    nodes: list[NodeMetadataDTO]
+    unknown_node_logical_ids: list[str] | None = None
 
 
 class CallConfigResponse(BaseModel):

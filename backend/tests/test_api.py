@@ -1634,11 +1634,14 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "DUPLICATE_NODE_ID": 422,
         "DOMAIN_REQUIRED": 422,
         "DOMAIN_INVALID": 422,
-        "STRUCTURED_NODES_REQUIRED": 422,
-        "STRUCTURED_PAYLOAD_TOO_LARGE": 422,
-        "VALIDATION_ERROR": 400,
-        "INTERNAL_ERROR": 500,
-    }
+            "STRUCTURED_NODES_REQUIRED": 422,
+            "STRUCTURED_PAYLOAD_TOO_LARGE": 422,
+            "CALL_DEFINITION_NODE_MISMATCH": 409,
+            "CALL_DEFINITION_CYCLE": 409,
+            "CALL_DEFINITION_MISSING": 409,
+            "VALIDATION_ERROR": 400,
+            "INTERNAL_ERROR": 500,
+        }
     assert expected == ERROR_STATUS_BY_CODE
 
 

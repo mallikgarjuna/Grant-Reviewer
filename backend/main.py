@@ -10,11 +10,11 @@ from collections.abc import Generator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
@@ -31,7 +31,10 @@ from app.schemas.api import (
     CreateReviewRequest,
     CreateReviewResponse,
     DeleteReviewResponse,
+    NodeMetadataResponse,
+    NodeTreeNode,
     NodesResponse,
+    NodesTreeResponse,
     NodeSummary,
     ReviewCardSummary,
     ReviewDetailResponse,
@@ -48,6 +51,9 @@ from app.schemas.structured_review import (
 from app.services.call_definition_service import CallDefinitionService
 from app.services.compliance_engine import evaluate_compliance
 from app.services.llm_client import build_llm_client
+from app.services.node_metadata_service import NodeMetadataService
+from app.services.node_tree_service import NodeTreeService
+from app.services.node_tree_service import NodeTreeCycleError, NodeTreeMismatchError
 from app.services.reviewer_policy import matches_review_stage
 from app.services.reviewer_service import ReviewerService
 from app.services.structured_reviewer_service import StructuredReviewerService
@@ -84,6 +90,9 @@ ERROR_STATUS_BY_CODE = {
     "DOMAIN_INVALID": 422,
     "STRUCTURED_NODES_REQUIRED": 422,
     "STRUCTURED_PAYLOAD_TOO_LARGE": 422,
+    "CALL_DEFINITION_NODE_MISMATCH": 409,
+    "CALL_DEFINITION_CYCLE": 409,
+    "CALL_DEFINITION_MISSING": 409,
     "VALIDATION_ERROR": 400,
     "INTERNAL_ERROR": 500,
 }
@@ -415,28 +424,108 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
 
 @app.get(
     "/calls/{call_id}/nodes",
-    response_model=NodesResponse,
+    response_model=NodesResponse | NodesTreeResponse,
     responses=API_ERROR_RESPONSES,
 )
-def list_call_nodes(call_id: UUID, repository: RepositoryDep) -> NodesResponse:
-    """List proposal nodes for a call (flat list)."""
+def list_call_nodes(
+    call_id: UUID,
+    repository: RepositoryDep,
+    view: Literal["flat", "tree"] = Query(default="flat"),
+) -> NodesResponse | NodesTreeResponse:
+    """List proposal nodes for a call in flat or tree view."""
     call = repository.get_call_by_id(call_id)
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
 
     nodes = repository.get_nodes_for_call(call_id)
-    return NodesResponse(
-        nodes=[
-            NodeSummary(
-                id=node.id,
-                parent_node_id=node.parent_node_id,
-                title=node.title,
-                node_type=node.node_type,
-                order_index=node.order_index,
-                has_expectations=has_expectations,
+    flat_nodes = [
+        NodeSummary(
+            id=node.id,
+            logical_id=node.logical_id,
+            parent_node_id=node.parent_node_id,
+            title=node.title,
+            node_type=node.node_type,
+            order_index=node.order_index,
+            has_expectations=has_expectations,
+        )
+        for node, has_expectations in nodes
+    ]
+
+    if view == "flat":
+        return NodesResponse(nodes=flat_nodes)
+
+    definition = repository.get_call_definition_by_call_id(call_id)
+    if definition is not None:
+        try:
+            canonical_tree = NodeTreeService().build_tree_from_canonical(
+                definition.canonical_json,
+                flat_nodes,
             )
-            for node, has_expectations in nodes
-        ],
+        except NodeTreeMismatchError as err:
+            raise APIException(
+                code="CALL_DEFINITION_NODE_MISMATCH",
+                message="Call definition references nodes that do not map to active call nodes.",
+                details={"node_logical_ids": err.node_logical_ids},
+            ) from err
+        except NodeTreeCycleError as err:
+            raise APIException(
+                code="CALL_DEFINITION_CYCLE",
+                message="Call definition contains a cycle in parent_logical_id links.",
+            ) from err
+
+        if canonical_tree is not None:
+            return NodesTreeResponse(nodes=canonical_tree)
+
+    nodes_by_parent: dict[UUID | None, list[NodeSummary]] = {}
+    for node in flat_nodes:
+        nodes_by_parent.setdefault(node.parent_node_id, []).append(node)
+
+    def build_tree(parent_id: UUID | None) -> list[NodeTreeNode]:
+        ordered_children = nodes_by_parent.get(parent_id, [])
+        return [
+            NodeTreeNode(
+                id=child.id,
+                logical_id=child.logical_id,
+                parent_node_id=child.parent_node_id,
+                title=child.title,
+                node_type=child.node_type,
+                order_index=child.order_index,
+                has_expectations=child.has_expectations,
+                children=build_tree(child.id),
+            )
+            for child in ordered_children
+        ]
+
+    return NodesTreeResponse(nodes=build_tree(parent_id=None))
+
+
+@app.get(
+    "/api/public/calls/{call_logical_id}/nodes/metadata",
+    response_model=NodeMetadataResponse,
+    responses=API_ERROR_RESPONSES,
+)
+def get_call_nodes_metadata(
+    call_logical_id: str,
+    repository: RepositoryDep,
+    node_logical_ids: list[str] | None = Query(default=None),
+) -> NodeMetadataResponse:
+    """Return node metadata DTOs for universal-form rendering."""
+    call = repository.get_active_call_by_code(call_logical_id)
+    if call is None:
+        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+
+    definition = repository.get_call_definition_by_call_id(call.id)
+    if definition is None:
+        raise APIException(
+            code="CALL_DEFINITION_MISSING",
+            message="Call definition is required for metadata endpoint.",
+        )
+
+    return NodeMetadataService().build_metadata_response(
+        call=call,
+        definition=definition,
+        node_logical_ids=node_logical_ids,
+        repository=repository,
     )
 
 
