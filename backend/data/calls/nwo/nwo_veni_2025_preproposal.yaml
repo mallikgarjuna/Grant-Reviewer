@@ -1,14 +1,12 @@
-# =============================================================================
-# PeerLens Call Definition (YAML)
-# Funding call: NWO Talent Programme - Veni 2025
-# Stage: Pre-proposal
-# Versioning: one YAML per year per stage
+# NWO Veni 2025 (pre-proposal) — source-grounded call definition
 #
-# Sources:
-# - Pre-proposal form (Word): veni_pre-proposal_form_2025.docx
-# - Call for Proposals (PDF): Call for Proposals Veni 2025_EN_0.pdf
-# =============================================================================
-
+# Authored from official sources provided in-workflow.
+# Traceability manifest: backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md
+#
+# Primary sources:
+# - veni_pre-proposal_form_2025.docx (proposal-node structure + constraints)
+# - Call for Proposals Veni 2025_EN_0.pdf (DORA + assessment criterion)
+#
 funding_agency:
   id: nwo
   name: Dutch Research Council (NWO)
@@ -22,264 +20,203 @@ funding_call:
   stage: preproposal
   language: en
 
-  # Deadlines: Call for Proposals §1.3 :contentReference[oaicite:2]{index=2}
   deadlines:
     preproposal_submission:
       datetime_local: "2025-09-02T14:00:00"
-      timezone: "Europe/Amsterdam" # CET/CEST
+      timezone: "Europe/Amsterdam"
     fullproposal_submission:
       datetime_local: "2026-01-27T14:00:00"
       timezone: "Europe/Amsterdam"
 
-  # Domain notes: ENW (Science) pilot expands research idea in pre-proposal from 100 to 500 words :contentReference[oaicite:3]{index=3}
   domain_notes:
     - domain_id: science_enw
-      note: "ENW/Science pilot: research idea in pre-proposal expanded from 100 to 500 words (pilot does not affect assessment criteria)."
+      note: "ENW/Science pilot: pre-proposal research idea word limit expanded to 500 words (pilot does not affect assessment criteria)."
 
 evaluation_criteria:
-  # Pre-proposal has a single substantive criterion: "Quality of the researcher (100%)" :contentReference[oaicite:4]{index=4}
   - id: crit_quality_of_researcher
-    name: "Quality of the researcher"
+    name: Quality of the researcher
     stage: preproposal
     weight_percent: 100
-
-    # IMPORTANT: All evaluation_element IDs must be globally unique within the YAML.
     evaluation_elements:
       - id: elem_target_group_fit_and_growth
-        name: "Target-group fit & development leverage"
-        description: >
-          Assess whether the researcher fits the Veni target group (transitioning toward independence)
-          and to what extent the Veni would contribute to their development.
-        source_hint: "Call §4.3.1 (pre-proposal criterion bullets)"
+        name: Target-group fit and development leverage
+        description: "Fit to the Veni target group (transition toward independence) and how Veni supports development."
+        source_hint: "Call for Proposals (Veni 2025) §4.3.1"
 
       - id: elem_peer_exceeding_quality
-        name: "Peer-exceeding researcher quality"
-        description: >
-          Assess whether the researcher's qualities clearly exceed what is customary within the international peer group,
-          as evidenced in the CV by achievements and output quality.
-        source_hint: "Call §4.3.1"
-
-      - id: elem_key_output_quality_impact_evidence
-        name: "Key-output quality & impact evidence"
-        description: >
-          Assess the quality/impact of the selected key outputs as evidence supporting the applicant's standing and claims.
-          Focus on evidence-based narrative rather than bibliometric shortcuts.
-        source_hint: "Call §4.3.1 + form instructions on evidence-based CV"
+        name: Researcher qualities exceed international peer norms
+        description: "Qualities exceed customary international peer group norms, evidenced by CV, key output quality/impact, and academic achievements."
+        source_hint: "Call for Proposals (Veni 2025) §4.3.1"
 
       - id: elem_positioning_in_themes
-        name: "Positioning in scientific/societal themes"
-        description: >
-          Assess how clearly the researcher's work is positioned with respect to scientific and (where possible) societal themes or questions.
-        source_hint: "Call §4.3.1"
+        name: Positioning in scientific and societal themes
+        description: "Work is clearly positioned with respect to scientific and (where possible) societal themes or questions."
+        source_hint: "Call for Proposals (Veni 2025) §4.3.1"
 
       - id: elem_network_collaboration_visibility
-        name: "Network, collaboration & visibility"
-        description: >
-          Assess the quality of the (inter)national network, collaborative abilities, and visibility of the researcher.
-        source_hint: "Call §4.3.1"
+        name: Network, collaboration, and visibility
+        description: "Quality of (inter)national network, collaborative abilities, and visibility."
+        source_hint: "Call for Proposals (Veni 2025) §4.3.1"
 
       - id: elem_innovative_ideas_capability
-        name: "Innovative-ideas capability"
-        description: >
-          Assess the extent to which the CV demonstrates capability to generate innovative ideas (based on concrete evidence).
-        source_hint: "Call §4.3.1"
+        name: Capability to generate innovative ideas
+        description: "CV demonstrates capability of generating innovative ideas."
+        source_hint: "Call for Proposals (Veni 2025) §4.3.1"
 
       - id: elem_cv_idea_alignment
-        name: "CV ↔ research idea alignment"
-        description: >
-          Assess whether the key output and academic profile clearly align with the research idea.
-          Note: the research idea is not independently evaluated; it is used to assess alignment.
-        source_hint: "Call §4.3.1 + form notes"
-
-      - id: elem_alignment_plan_credibility
-        name: "Credible path to alignment (if not yet aligned)"
-        description: >
-          If alignment is not yet clear, assess whether the applicant presents a convincing vision of how alignment will be achieved.
-        source_hint: "Call §4.3.1"
+        name: CV and key output align with research idea
+        description: "Key output and academic profile align with research idea, or applicant presents a convincing vision for achieving alignment."
+        source_hint: "Call for Proposals (Veni 2025) §4.3.1 + pre-proposal form notes (section 3)"
 
 proposal_nodes:
-  # NOTE: We intentionally exclude administrative sections (form sections 1 & 4) from proposal_nodes.
-  # We model only narrative, evaluable content.
   - id: academic_profile
-    label: "Academic profile"
+    label: Academic profile
     node_type: narrative
-    source_section: "2a" # form numbering :contentReference[oaicite:5]{index=5}
-
+    source_section: "2a"
     content_constraints:
       total_word_limit:
         min_words: 400
         max_words: 700
-        includes: ["all text"]   # matches form instruction that word counts include all text unless noted :contentReference[oaicite:1]{index=1}
-
-    # Condensed guidance derived from form explanatory notes :contentReference[oaicite:6]{index=6}
+        includes: ["all text"]
     guidance_text: >
-      Describe your academic trajectory and current position, and clarify your transition toward independence.
-      Provide evidence-based claims about your contribution and standing. Show positioning relative to scientific and
-      (where relevant) societal themes/questions. Avoid prohibited bibliometric indicators (e.g., h-index, JIF).
-      Respect any stated word limit in the form template.
-
+      Evidence-based narrative of your unique academic profile (research line/agenda/vision, relevant qualities, skills, and activities).
+      Substantiate quality claims; avoid output indicators and focus on achievements most relevant to your field and the research idea.
+      Describe how the grant contributes to your academic development.
     compliance_rules:
       - id: comp_academic_profile_word_limit
         severity: ERROR
         rule_type: formatting
         description: "Academic profile must be between 400 and 700 words."
-
-      - id: comp_no_prohibited_bibliometrics_profile
-        severity: ERROR
-        rule_type: prohibited_metric
-        description: "Prohibited metrics (e.g., h-index, Journal Impact Factor) must not be used in the academic profile."
-
-      - id: comp_must_address_independence_stage
-        severity: WARNING
-        rule_type: completeness
-        description: "Should explicitly address transition-to-independence stage and how Veni supports development."
-
     node_expectations:
       - evaluation_element_id: elem_target_group_fit_and_growth
         expectation_strength: MANDATORY
         evaluation_intent: QUALITY
-        guidance_note: "Make independence trajectory explicit and link Veni to development needs."
-
+        guidance_note: "Make transition-to-independence stage explicit and explain how Veni supports development."
       - evaluation_element_id: elem_peer_exceeding_quality
         expectation_strength: MANDATORY
         evaluation_intent: QUALITY
-        guidance_note: "Provide concrete evidence of excellence beyond peers; avoid metric shorthand."
-
+        guidance_note: "Provide concrete evidence for exceeding peer norms; avoid bibliometric shortcuts."
       - evaluation_element_id: elem_positioning_in_themes
         expectation_strength: IMPORTANT
         evaluation_intent: STRATEGIC_FIT
-        guidance_note: "State the scientific (and where possible societal) themes/questions you are clearly positioned in."
-
+        guidance_note: "State positioning relative to scientific (and where possible societal) themes/questions."
       - evaluation_element_id: elem_network_collaboration_visibility
         expectation_strength: IMPORTANT
         evaluation_intent: QUALITY
-        guidance_note: "Show credible network/collaboration/visibility evidence (roles, collaborations, invitations, etc.)."
-
+        guidance_note: "Evidence for network, collaboration, and visibility."
       - evaluation_element_id: elem_innovative_ideas_capability
         expectation_strength: IMPORTANT
         evaluation_intent: QUALITY
-        guidance_note: "Demonstrate innovative thinking via concrete examples, not slogans."
+        guidance_note: "Evidence of innovative-ideas capability."
 
   - id: key_outputs
-    label: "Key outputs"
+    label: Key outputs
     node_type: narrative
-    source_section: "2b" # :contentReference[oaicite:7]{index=7}
-
-    # Explicit constraint visible in document text :contentReference[oaicite:8]{index=8}
+    source_section: "2b"
     content_constraints:
       max_items: 10
       total_word_limit:
         min_words: 400
         max_words: 700
-        excludes: ["references", "URLs", "output types", "indicators"]
-
+        includes: ["all text"]
+      note: "Official form notes mention exclusions (references/URLs/types/indicators), but runtime counting is deterministic whitespace tokenization over submitted text."
     guidance_text: >
-      List up to 10 key outputs. For each output, provide a brief explanation of relevance and impact as evidence of your quality.
-      Focus on quality over quantity. Do not use prohibited bibliometric indicators such as Journal Impact Factor or h-index.
-
+      Provide up to 10 key output items that best demonstrate your qualities and are relevant to the application and research idea.
+      Provide reference information and (at most) one direct hyperlink per output item (preferably a persistent identifier such as a DOI) when applicable.
+      Avoid prohibited quality indicators and bibliometric shortcuts.
     compliance_rules:
-      - id: comp_max_10_outputs
-        severity: ERROR
+      - id: comp_key_outputs_max_items
+        severity: WARNING
         rule_type: hard_limit
-        description: "No more than 10 key outputs allowed."
-
-      - id: comp_each_output_explained
-        severity: ERROR
-        rule_type: completeness
-        description: "Each key output must include a brief explanation of relevance/impact."
-
+        description: "List no more than 10 key output items (runtime does not deterministically parse items in plain text)."
       - id: comp_key_outputs_total_word_limit
         severity: ERROR
         rule_type: formatting
-        description: "Total key outputs text must be between 400 and 700 words (excluding references/URLs/output types/indicators)."
-
-      - id: comp_no_jif
-        severity: ERROR
-        rule_type: prohibited_metric
-        description: "Journal Impact Factor must not be used."
-
-      - id: comp_no_h_index
-        severity: ERROR
-        rule_type: prohibited_metric
-        description: "h-index must not be used."
-
-      - id: comp_no_bibliometric_shortcuts
-        severity: ERROR
-        rule_type: prohibited_metric
-        description: "Do not rely on citation metrics/shortcuts; use evidence-based narrative."
-
+        description: "Key outputs narrative should be between 400 and 700 words."
     node_expectations:
-      - evaluation_element_id: elem_key_output_quality_impact_evidence
+      - evaluation_element_id: elem_peer_exceeding_quality
         expectation_strength: MANDATORY
         evaluation_intent: QUALITY
-        guidance_note: "Use outputs as direct evidence of quality/impact; explain significance plainly."
-
-      - evaluation_element_id: elem_peer_exceeding_quality
+        guidance_note: "Use key outputs as concrete evidence supporting excellence beyond peers."
+      - evaluation_element_id: elem_network_collaboration_visibility
         expectation_strength: IMPORTANT
         evaluation_intent: QUALITY
-        guidance_note: "Connect outputs to claims of exceeding international peer norms without metrics."
+        guidance_note: "Include credible signals of collaboration/visibility where relevant."
+      - evaluation_element_id: elem_innovative_ideas_capability
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+        guidance_note: "Use outputs/achievements to support innovative-ideas capability."
 
   - id: research_idea
-    label: "Research idea"
+    label: Research idea
     node_type: narrative
-    source_section: "3" # :contentReference[oaicite:9]{index=9}
-
-    # Word limit varies by domain due to ENW pilot :contentReference[oaicite:10]{index=10}
+    source_section: "3"
     content_constraints:
       word_limit_by_domain:
         default_max_words: 100
         science_enw_max_words: 500
-      note: "Pilot applies to ENW/Science; otherwise default is 100 words."
-
+      note: "Research idea is not assessed as an independent criterion in pre-proposal; used to assess alignment with CV/key outputs."
     guidance_text: >
-      Provide a concise research idea. Avoid full proposal-level detail; keep it at idea level.
-      Ensure the idea aligns with your academic profile and key outputs (or explain a credible path to alignment).
-      For ENW/Science in 2025, the research idea may be expanded (pilot).
-
+      Concise description of the envisioned research topic and importance (not a full plan).
+      Plain text only; do not include figures/tables/references/footnotes. Hyperlinks are not allowed in this section.
+      Make alignment with academic profile and key outputs explicit (or explain how alignment will be achieved).
     compliance_rules:
       - id: comp_research_idea_word_limit
         severity: ERROR
         rule_type: formatting
-        description: "Must respect domain-specific word limit (default 100; ENW/Science 500 in 2025 pilot)."
-
-      - id: comp_no_methodological_overload
-        severity: WARNING
-        rule_type: scope
-        description: "Should not contain full proposal-level methodology or extended workplan detail."
-
-      - id: comp_alignment_reference_present
-        severity: WARNING
-        rule_type: completeness
-        description: "Should indicate connection to CV trajectory/outputs or explicitly motivate the connection."
-
+        description: "Must respect domain-specific word limit (default 100; ENW/Science pilot 500)."
     node_expectations:
       - evaluation_element_id: elem_cv_idea_alignment
         expectation_strength: MANDATORY
         evaluation_intent: STRATEGIC_FIT
-        guidance_note: "Make alignment to profile/outputs explicit; if misaligned, state why and how you bridge it."
+        guidance_note: "Use the research idea to evaluate CV/key-output alignment or a credible path to alignment."
 
-      - evaluation_element_id: elem_alignment_plan_credibility
-        expectation_strength: IMPORTANT
-        evaluation_intent: RISK
-        guidance_note: "If alignment is not obvious, provide a credible plan/vision to achieve it."
+reviewer_policy:
+  - id: pol_no_bibliometrics_blocking
+    applies_to_stage: BOTH
+    rule_type: prohibited_metric
+    instruction: "Do not use bibliometric indicators (e.g., h-index, Journal Impact Factor) as a basis for assessment; evaluate on merits per DORA."
+    severity: ERROR
+    enforcement_mode: BLOCKING
+    forbidden_terms:
+      - h-index
+      - h index
+      - journal impact factor
+      - impact factor
+      - JIF
+      - SNIP
+      - SJR
+      - SCImago
+      - Q1
+      - university rankings
+    source_hint: "Call for Proposals (Veni 2025) §4.1 + pre-proposal form notes (2a/2b)"
 
-      - evaluation_element_id: elem_innovative_ideas_capability
-        expectation_strength: OPTIONAL
-        evaluation_intent: QUALITY
-        guidance_note: "Originality signals can strengthen perceived innovative capability (without overclaiming)."
+  - id: pol_no_ranked_journal_language
+    applies_to_stage: BOTH
+    rule_type: prohibited_metric
+    instruction: "Avoid prestige/ranking language for venues (e.g., 'top-tier journal'); focus on evidence-based narrative."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - top-tier
+      - top tier
+      - top journal
+      - prestigious journal
+      - leading journal
+      - top publisher
+      - prestigious publisher
+      - leading publisher
+    source_hint: "Pre-proposal form notes (2a/2b)"
 
-# -----------------------------------------------------------------------------
-# Runtime behavior notes (implementation guidance; not for scoring)
-# Add: not_assessable_due_to_missing_context: If a mapped element depends on another node and that node is missing, mark element status as: not_assessable_due_to_missing_context.
-# -----------------------------------------------------------------------------
+  - id: pol_research_idea_not_independent_criterion
+    applies_to_stage: BOTH
+    applies_to_node_ids: ["research_idea"]
+    rule_type: evaluation_scope
+    instruction: "Research idea is not assessed as an independent criterion at pre-proposal stage; use it only to assess alignment with academic profile and key outputs."
+    severity: WARNING
+    enforcement_mode: PROMPT_ONLY
+    source_hint: "Pre-proposal form notes (section 3) + Call for Proposals (Veni 2025) §4.3.1"
+
 runtime_notes:
-  - id: note_alignment_requires_context
-    description: >
-      Alignment elements require both academic_profile and research_idea context.
-      If academic_profile is missing, mark alignment-related evaluation elements as NOT_ASSESSABLE,
-      and optionally ask user for a short academic profile summary (5–10 bullets) to enable alignment checks.
-
-  - id: note_assisted_extraction_mode
-    description: >
-      Assisted extraction from pasted text/.docx/.pdf must show extracted snippet preview + confidence.
-      Only run compliance/evaluation on user-confirmed extracted snippet to avoid silent misrouting.
+  - id: runtime_word_count_tokenization
+    description: "Runtime word counting uses deterministic whitespace tokenization and does not implement exclusions (e.g., excluding references/URLs)."
