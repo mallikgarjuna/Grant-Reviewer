@@ -776,6 +776,39 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
     assert detail_payload["cards"][0]["not_assessable_reason"] is None
 
 
+def test_create_review_shared_core_happy_path_parity(monkeypatch) -> None:
+    from app.services.review_execution_core import ReviewExecutionCore
+
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    calls = {"count": 0}
+    original_execute = ReviewExecutionCore.execute_assessable_node
+
+    def traced_execute(self, **kwargs):
+        calls["count"] += 1
+        return original_execute(self, **kwargs)
+
+    monkeypatch.setattr(ReviewExecutionCore, "execute_assessable_node", traced_execute)
+
+    response = post_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.call_id),
+            "node_id": str(seeded_ids.section_with_expectations_id),
+            "snippet_text": "Shared core parity happy path.",
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "COMPLETED"
+    assert calls["count"] == 1
+
+    detail_response = get_review_detail(client=client, review_id=payload["review_id"])
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert detail_payload["review"]["status"] == "COMPLETED"
+    assert len(detail_payload["cards"]) == 1
+
+
 def test_review_repository_supports_structured_write_path(monkeypatch) -> None:
     _, seeded_ids = create_client_with_seed(monkeypatch)
     session = get_session()

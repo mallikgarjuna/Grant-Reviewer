@@ -73,7 +73,7 @@ Verification Steps:
 Risks (if any):
 - Boundary confusion may leak not-assessable logic into shared core.
 
-### [ ] Task 4 — Single-node happy-path migration to shared core
+### [x] Task 4 — Single-node happy-path migration to shared core
 
 Goal: Route single-node review execution through shared core while preserving existing single-node persistence behavior.
 Slice: single-node-happy-path
