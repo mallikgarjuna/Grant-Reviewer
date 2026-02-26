@@ -216,7 +216,49 @@ They share many concerns (policy injection, LLM call, response validation, post-
 
 ## 5. Constraints
 
-(Pending — to be filled via interactive Q&A.)
+**Section 5 summary (decisions):**
+- Hard boundary: strict “no behavior change” across HTTP semantics, idempotency, and persistence.
+- Endpoint-specific must remain: DTOs + idempotency semantics + persistence differences.
+- Retries/timeouts: preserve current behavior first; introduce a seam for later standardization.
+- Telemetry: add standardized hooks in a non-invasive way (can be no-op initially).
+- Test mode constraint: keep `LLM_MODE=stub` behavior identical; ensure coverage for both endpoints in stub.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the hard “no behavior change” boundary for WF-0034?**
+- A) Strict: identical status codes + error codes/messages, idempotency behavior, DB side effects, and card persistence rules.
+- B) Contracts identical, but internal retry/timeout behavior may change.
+- C) User-visible behavior only; backend internals can change.
+> Recommendation: A — This is a refactor WF; strict parity is the safest guardrail and keeps review scope narrow.
+> **Selected: A**
+
+**Q2: What must remain endpoint-specific (explicitly) even after shared-core extraction?**
+- A) Request/response DTOs + idempotency semantics + persistence differences (snippet vs structured payload, NOT_ASSESSABLE handling).
+- B) Only DTOs; everything else can be shared.
+- C) Keep persistence shared; DTOs + validation stay endpoint-specific.
+> Recommendation: A — DTOs and persistence semantics differ materially today; forcing them into shared code early increases regression risk.
+> **Selected: A**
+
+**Q3: How should retries/timeouts be handled in the shared-core (initially)?**
+- A) Preserve existing timeout behavior; add a shared wrapper seam but default to current values/behavior.
+- B) Introduce a standardized retry policy now.
+- C) Remove timeouts from services and let infra handle it.
+> Recommendation: A — Changing retries/timeouts changes behavior (latency/error patterns). Create a seam first; standardize later.
+> **Selected: A**
+
+**Q4: Telemetry constraint (initially)?**
+- A) Add standardized hooks (structured logs/metrics/tracing) but keep them no-op or non-invasive to avoid behavior change.
+- B) Implement full telemetry stack changes in this WF.
+- C) Defer telemetry entirely.
+> Recommendation: A — Add the seam now with low risk; full telemetry adoption can be a separate WF if needed.
+> **Selected: A**
+
+**Q5: Any constraints around LLM-mode and test mode?**
+- A) Must keep `LLM_MODE=stub` behavior identical and ensure tests cover both endpoints under stub.
+- B) It’s okay if stub behavior changes as long as prod works.
+- C) Remove stub mode and rely on recorded cassettes.
+> Recommendation: A — Stub mode is a core regression safety net; refactors should not break deterministic test execution.
+> **Selected: A**
 
 ## 6. Risks / Unknowns
 
