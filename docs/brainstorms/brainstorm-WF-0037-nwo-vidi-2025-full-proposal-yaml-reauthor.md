@@ -1,7 +1,7 @@
 # WF-0037 — Re-author NWO Vidi 2025 full proposal YAML (official sources)
 
 Artifact: brainstorm
-Version: v0.5
+Version: v0.6
 Status: Draft
 Last Updated: 2026-02-27
 
@@ -377,4 +377,53 @@ Decisions:
 - B) Make a best guess to keep moving.
 - C) Force-flatten/simplify automatically.
 > Recommendation: A — Guessing here creates irreversible drift; explicit decisions keep the workflow safe.
+> **Selected: A**
+
+---
+
+## Section 7: MVP Definition (Interactive)
+
+Decisions:
+
+- MVP completion means: canonical Vidi full-proposal YAML + source manifest exist, and dry-run ingest passes.
+- MVP nodes include only evaluable narrative content (plus minimal metadata like deadlines); budget justification stays conditional on being explicitly evaluated.
+- One YAML across domains; use `domain_notes` unless sources mandate enforceable per-domain constraints.
+- Include `reviewer_policy` when grounded in the official PDF; enforcement strength matches source clarity.
+- Walkthrough records dry-run verification; DB/API preflight is planned (and expected) once YAML exists, but not required to claim MVP completion at the Phase 0 definition level.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the MVP output of WF-0037 (the smallest “real” completion)?**
+- A) Author `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml` + `backend/data/calls/sources/nwo_vidi_2025_full_proposal.sources.md`, and `ingest_call.py --dry-run` passes.
+- B) Same as A, plus DB ingest + API preflight is executed and recorded in walkthrough.
+- C) Only the brainstorm is completed; YAML happens later.
+> Recommendation: A — Establishes a source-grounded call definition artifact and a deterministic validation signal without turning Phase 0 into a runtime integration sprint.
+> **Selected: A**
+
+**Q2: What is the MVP scope for proposal nodes?**
+- A) Only evaluable narrative nodes required for assessment (summary, research narrative, impact), plus minimal required metadata like deadlines.
+- B) Include narrative + budget justification always.
+- C) Include everything in the form.
+> Recommendation: A — Keeps YAML aligned to evaluable narrative content; avoids encoding mechanics as if they were reviewed narrative.
+> **Selected: A**
+
+**Q3: What is the MVP treatment of multi-domain differences?**
+- A) One YAML; use `domain_notes` only unless the sources mandate different constraints.
+- B) Split into one YAML per domain.
+- C) Add domain branching everywhere.
+> Recommendation: A — Preserves a universal flow and avoids inventing branching logic; escalate only when the sources demand it.
+> **Selected: A**
+
+**Q4: What is the MVP stance on `reviewer_policy`?**
+- A) Include `reviewer_policy` rules grounded in the PDF (DORA/merits, bibliometrics ban, prestige language, bias/personal-attributes avoidance), with enforcement strength matching source clarity.
+- B) PROMPT_ONLY only; no POST_CHECK/BLOCKING.
+- C) Skip reviewer_policy.
+> Recommendation: A — It’s cheap insurance against known failure modes, but must be grounded in official wording to remain defensible.
+> **Selected: A**
+
+**Q5: What is the MVP verification record?**
+- A) Walkthrough includes dry-run ingest commands and expected output; DB/API preflight is planned but not executed until YAML exists.
+- B) Walkthrough must include DB/API preflight execution now.
+- C) No walkthrough needed for MVP.
+> Recommendation: A — Walkthrough is required for reproducibility; preflight execution belongs after YAML exists and is still required before frontend reliance.
 > **Selected: A**
