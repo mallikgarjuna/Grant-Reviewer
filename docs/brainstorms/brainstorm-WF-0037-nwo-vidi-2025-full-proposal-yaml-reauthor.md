@@ -1,7 +1,7 @@
 # WF-0037 — Re-author NWO Vidi 2025 full proposal YAML (official sources)
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft
 Last Updated: 2026-02-27
 
@@ -164,4 +164,70 @@ Decisions:
 - B) Yes, include it automatically as a source.
 - C) Use it only for guidance_text, never for constraints/evaluation mapping.
 > Recommendation: A — Keeps the source gate legally defensible and avoids “helpful but unofficial” content bleeding into evaluable structure.
+> **Selected: A**
+
+---
+
+## Sources (Confirmed, Local) (2026-02-27)
+
+SSOT inputs (provided in-workflow):
+
+- Structure (DOCX): `Vidi-2025-Full-proposal-form.docx`
+  - Local path: `/home/mgurram/Projects/Non-Github/PeerLens_proj/NWO-Vidi-2025/Full-proposal/Vidi-2025-Full-proposal-form.docx`
+  - SHA256: `2c0fae7da27eec6001c85ebbd23b338e4a659b7c5d4d4c23eec414ff5e2e7919`
+- Evaluation criteria/procedure (PDF): `Call-for-Proposals-Vidi-2025_Eng.pdf`
+  - Local path: `/home/mgurram/Projects/Non-Github/PeerLens_proj/NWO-Vidi-2025/Full-proposal/Call-for-Proposals-Vidi-2025_Eng.pdf`
+  - SHA256: `0ca64071d011268eea1c9a3a6aa3de52f0a8f16b2ed480ca8e24fe1e5de5c026`
+
+Non-SSOT candidate file in the same folder:
+
+- `Vidi 2025_literature_list.docx` (ignore unless the call PDF explicitly references it as an official annex that affects evaluable structure/limits/evaluation).
+
+---
+
+## Section 3: Target User / Actor (Interactive)
+
+Decisions:
+
+- Primary UI reader for guidance is the researcher/applicant; keep guidance text researcher-facing and submission-practical.
+- English-only for YAML labels and guidance (sources are English).
+- Do not add domain/pilot scaffolding unless the official Vidi sources explicitly define variants.
+- Author nodes at section-level granularity aligned to evaluable chunks (few nodes), optimized for paste-first behavior.
+- Source gate approved: we may now open/extract from the official Vidi DOCX+PDF to draft nodes/criteria.
+
+**Brainstorming Q&A:**
+
+**Q1: Who is the primary “reader” of the YAML-authored guidance (guidance_text, constraint notes, reviewer_policy instruction)?**
+- A) Researchers/applicants (write in second-person “you”, practical, submission-focused).
+- B) Reviewers (write like panel guidance; more formal evaluation framing).
+- C) Both (dual-voice; risk: bloated/unclear).
+> Recommendation: A — The product UI is researcher-facing; reviewer behavior is mediated by the model. Keep guidance usable for the submitter.
+> **Selected: A**
+
+**Q2: What language should we target for node labels/guidance in YAML?**
+- A) English only (since sources are English; keep consistent).
+- B) Bilingual (English + Dutch).
+- C) English now, add localization later (store only English in YAML for now anyway).
+> Recommendation: A — Keeps authoring grounded in the provided sources and avoids premature localization complexity.
+> **Selected: A**
+
+**Q3: Do we assume domain/pilot variants exist for Vidi (affecting constraints/word limits or nodes)?**
+- A) Assume single default (no domain branching) unless the official docs explicitly define variants.
+- B) Proactively add `domain_id` scaffolding even if unclear.
+- C) Force the user to select a domain in UI always.
+> Recommendation: A — Avoid inventing branching logic. If variants exist, encode them explicitly from source text.
+> **Selected: A**
+
+**Q4: How should we size proposal nodes for the expected user behavior in the app?**
+- A) Section-level nodes aligned to evaluable chunks (few nodes; user pastes per major section).
+- B) Very granular subsection nodes (many nodes; heavier UX).
+- C) One giant full-proposal node (legacy-style).
+> Recommendation: A — Balances structure with usability and keeps the “universal call flow” feasible without making the UI a wizard.
+> **Selected: A**
+
+**Q5: Source-gate execution: may I now open and extract from the two official files you listed (DOCX+PDF) to draft nodes/criteria?**
+- A) Yes, you can open and extract from both now.
+- B) Yes, but only extract structure from DOCX; wait before using the PDF.
+- C) Not yet; list exactly which pages/sections first.
+> Recommendation: A — We need both structure and evaluation criteria grounded in the official sources to proceed.
 > **Selected: A**

@@ -124,6 +124,7 @@ Promotion dependency note:
 | 20 | Universal Form: Markdown / rich-text inputs per node | idea | MVP is plain text only. Follow-on: support Markdown or rich text per node (copy-paste with basic formatting) without breaking compliance counting and backend normalization. (Ref: WF-0035 brainstorm Q3 in Target User / Actor.) | 2026-02-26 |
 | 21 | Universal Form: Unify legacy single-snippet mode | idea | Follow-on: fold `legacy_single_snippet` calls into the same universal submit experience (selection + UX) without breaking current behavior; keep structured-node and legacy semantics explicit. (Ref: WF-0035 brainstorm MVP Definition Q5.) | 2026-02-26 |
 | 22 | Call onboarding: DB/API preflight for new call YAMLs | ops | Standardize a smoke-test checklist after ingesting a new call into DB (`/calls`, `/calls/{id}/nodes`, `/public config`, `/nodes/metadata`) to catch mapping/shape issues before frontend work. (Ref: WF-0037 brainstorm v0.1, Q1.) | 2026-02-27 |
+| 23 | Call YAML: domain/pilot variants scaffolding | idea | Don’t invent `domain_id` branching unless the official call defines it; follow-on: define a universal pattern for when/how to introduce domain selection and per-domain constraints. (Ref: WF-0037 brainstorm v0.2 Section 3 Q3.) | 2026-02-27 |
 
 ---
 
