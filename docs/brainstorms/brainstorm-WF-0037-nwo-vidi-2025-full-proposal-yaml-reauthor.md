@@ -67,3 +67,52 @@ Key open questions this snapshot suggests:
 - Are there domain/pilot variants that introduce per-domain word limits or node differences (like Veni `science_enw`)?
 - Does Vidi explicitly prohibit bibliometrics/venue-prestige language (needs `reviewer_policy` parity), and where is it stated?
 - Are there hard word limits / item limits per section that are actually enforceable with current compliance engine capabilities?
+
+---
+
+## Section 1: Problem Statement (Interactive)
+
+Decisions:
+
+- Use the provided Vidi DOCX (structure + enforceable limits) and PDF (evaluation criteria/procedure) as SSOT sources for authoring.
+- Canonical code and filename: `nwo_vidi_2025_full_proposal` → `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`.
+- Include deadlines inside YAML (schema-supported; must be copied from official sources only).
+- Encode true structure even if nested (`children`), even though WF-0035 flat-only universal form will hard-block nested calls for now.
+- Do not update `docs/workflow/call-yaml-authoring-workflow.md` with call-specific content during WF-0037; only add generalizable workflow rules when warranted.
+
+**Brainstorming Q&A:**
+
+**Q1: Source Gate Confirmation (SSOT)**
+- A) Yes: treat the provided DOCX (structure) + PDF (evaluation criteria/procedure) as SSOT; provide any missing annexes if we discover a gap.
+- B) Yes, but only the PDF is SSOT; the DOCX is “help text”.
+- C) Not yet; wait for a page/section list first.
+> Recommendation: A — Minimizes ambiguity: structure comes from the form; evaluation logic comes from the call PDF; this matches the authoring SSOT workflow.
+> **Selected: A**
+
+**Q2: Canonical Call Code + Filename**
+- A) `nwo_vidi_2025_full_proposal` and filename `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`.
+- B) `nwo_vidi_2025_fullproposal` (avoid underscores in stage).
+- C) Custom code (specify).
+> Recommendation: A — Matches repo naming convention `{agency}_{program}_{year}_{stage}.yaml` and keeps the stage explicit.
+> **Selected: A**
+
+**Q3: Deadlines In YAML**
+- A) Yes: include the key submission deadline(s) in `funding_call.deadlines`, clearly labeled, strictly copied from official sources.
+- B) No: keep deadlines out of YAML entirely.
+- C) Yes, but only a single `submission_deadline` key.
+> Recommendation: A — Schema supports deadlines and we already use it (e.g., NWO Veni); it’s useful metadata and low risk if source-grounded.
+> **Selected: A**
+
+**Q4: Proposal Node Shape If The Real Call Is Nested**
+- A) Encode the true structure (including nesting via `children`), even if WF-0035 universal form will hard-block it for now.
+- B) Force-flatten to keep it “flat-supported” for WF-0035.
+- C) Dual-author: “true nested” + “flat shim” YAML.
+> Recommendation: A — Don’t falsify the call structure to satisfy a temporary frontend limitation; keep the universal flow honest and handle recursion separately.
+> **Selected: A**
+
+**Q5: Update The Living Authoring Spec (`docs/workflow/call-yaml-authoring-workflow.md`)**
+- A) Update only with generalizable workflow rules we learn here (no call-specific facts), and link to example YAML/manifests.
+- B) Also add a short “NWO patterns” note (still generic).
+- C) Do not update it during WF-0037; defer spec updates to a dedicated WF.
+> Recommendation: A — Keeps SSOT lean while still letting us improve the workflow when we learn something reusable.
+> **Selected: A**
