@@ -126,6 +126,7 @@ Promotion dependency note:
 | 22 | Call onboarding: DB/API preflight for new call YAMLs | ops | Standardize a smoke-test checklist after ingesting a new call into DB (`/calls`, `/calls/{id}/nodes`, `/public config`, `/nodes/metadata`) to catch mapping/shape issues before frontend work. (Ref: WF-0037 brainstorm v0.1, Q1.) | 2026-02-27 |
 | 23 | Call YAML: domain/pilot variants scaffolding | idea | Don’t invent `domain_id` branching unless the official call defines it; follow-on: define a universal pattern for when/how to introduce domain selection and per-domain constraints. (Ref: WF-0037 brainstorm v0.2 Section 3 Q3.) | 2026-02-27 |
 | 24 | Compliance UX: “informational-only constraints” mode | idea | Add a way to surface constraints (fonts/margins/page layout etc.) in compliance check output as informational guidance without pretending they’re enforceable/deterministic. (Ref: WF-0037 brainstorm v0.3 Section 4 Q5; user request in chat.) | 2026-02-27 |
+| 25 | Call YAML schema: separate evaluable vs non-evaluable guidance fields | idea | Add explicit fields to keep “evaluation-tied guidance” separate from “helpful but non-evaluable explanatory notes”, so prompts can stay honest while still helping applicants. (Ref: WF-0037 brainstorm v0.4 Section 5 Q2; user request in chat.) | 2026-02-27 |
 
 ---
 

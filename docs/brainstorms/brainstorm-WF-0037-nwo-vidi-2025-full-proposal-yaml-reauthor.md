@@ -1,7 +1,7 @@
 # WF-0037 — Re-author NWO Vidi 2025 full proposal YAML (official sources)
 
 Artifact: brainstorm
-Version: v0.3
+Version: v0.4
 Status: Draft
 Last Updated: 2026-02-27
 
@@ -279,4 +279,53 @@ Decisions:
 - B) Encode all formatting requirements as compliance_rules WARNING/ERROR anyway.
 - C) Don’t encode constraints; guidance_text only.
 > Recommendation: A — Honest enforcement prevents false confidence while still providing useful guardrails to applicants.
+> **Selected: A**
+
+---
+
+## Section 5: Constraints (Interactive)
+
+Decisions:
+
+- Timebox: 1–2 days once we move from ideation into authoring/verification.
+- Guidance strictness: default strict (only evaluation-tied or enforceable-constraint-tied guidance, source-grounded). If we want broader “explanatory notes” guidance, we should only add it if it can live in a clearly separated field (not mixed into evaluable guidance); schema support for that separation is currently unclear and may require a follow-on.
+- Deadline handling: store `datetime_local` + `timezone` exactly as in the official sources (no conversion).
+- Nested structure: encode true nesting, but keep depth conservative (<=4–5). If depth reaches >=5, stop and ask for explicit user guidance before proceeding.
+- Budget justification node: exclude by default; include only if official criteria explicitly assess feasibility/resources/budget, and keep it narrow.
+
+**Brainstorming Q&A:**
+
+**Q1: Timebox for WF-0037 execution (once we leave ideation)?**
+- A) 1–2 days (tight YAML-only maintenance).
+- B) 1 week.
+- C) No timebox.
+> Recommendation: A — Keeps this WF from turning into a product initiative; it should be a fast, source-grounded definition + verification pass.
+> **Selected: A**
+
+**Q2: YAML scope strictness for “helpful for LLM to review” guidance**
+- A) Strict: only include guidance that is directly tied to an evaluation element or an enforceable constraint, and is grounded in sources.
+- B) Medium: include broader “Explanatory Notes” guidance if it helps applicants write better, even if not evaluable.
+- C) Loose: include most embedded guidance.
+> Recommendation: A — Mixing non-evaluable tips into evaluable guidance blurs what the model should assess. If we want (B), we should do it via a clearly separated field to keep the execution contract honest.
+> **Selected: A (+ B only if represented in separate YAML fields, not mixed into evaluable guidance)**
+
+**Q3: Deadline timezone consistency**
+- A) Store deadlines exactly as in source (CET/CEST) with `datetime_local` + `timezone` and no conversion.
+- B) Convert everything to UTC.
+- C) Store as free text only.
+> Recommendation: A — Lowest ambiguity and matches the schema intent; avoids implicit conversions that can shift deadlines.
+> **Selected: A**
+
+**Q4: Nested structure depth limit**
+- A) Allow nesting as needed but keep depth <= 4–5; if deeper (>=5), stop and ask for user input.
+- B) Allow arbitrary depth.
+- C) Force flat only.
+> Recommendation: A — Protects downstream UX/execution complexity while keeping the call definition faithful.
+> **Selected: A (ask user if depth >=5)**
+
+**Q5: Budget justification conditional (based on evaluation criteria)**
+- A) Default exclude; include only if the official criteria explicitly assess resources/feasibility/budget, and then keep it narrow.
+- B) Always include budget justification as a node.
+- C) Never include budget justification as a node.
+> Recommendation: A — Keeps nodes aligned to what is actually assessed; avoids adding non-evaluable mechanics as narrative nodes.
 > **Selected: A**
