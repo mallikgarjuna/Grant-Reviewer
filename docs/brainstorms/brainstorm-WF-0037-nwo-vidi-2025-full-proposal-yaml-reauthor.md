@@ -1,7 +1,7 @@
 # WF-0037 — Re-author NWO Vidi 2025 full proposal YAML (official sources)
 
 Artifact: brainstorm
-Version: v0.4
+Version: v0.5
 Status: Draft
 Last Updated: 2026-02-27
 
@@ -328,4 +328,53 @@ Decisions:
 - B) Always include budget justification as a node.
 - C) Never include budget justification as a node.
 > Recommendation: A — Keeps nodes aligned to what is actually assessed; avoids adding non-evaluable mechanics as narrative nodes.
+> **Selected: A**
+
+---
+
+## Section 6: Risks / Unknowns (Interactive)
+
+Decisions:
+
+- Primary authoring risk is mis-identifying what is actually evaluated vs “instructions only”.
+- Primary runtime/product risk is that Vidi’s true structure may be nested, so WF-0035 flat-only universal form will hard-block it until recursion ships.
+- Despite the PDF describing a pre-proposal + proposal procedure, this WF will model full proposal only (structure from the full-proposal form) and extract only full-proposal-relevant evaluation criteria.
+- Traceability must be strict: each evaluation element and any strong guidance/constraint must carry a `source_hint` and be enumerated in `sources.md`.
+- If we discover depth >=5 or strong domain-specific differences, we stop and ask explicitly (no guessing).
+
+**Brainstorming Q&A:**
+
+**Q1: Biggest risk to authoring the YAML correctly**
+- A) Mis-identifying what is actually evaluated vs “instructions only”, leading to wrong nodes/elements.
+- B) Missing/incorrect word/page limits per section.
+- C) Incorrectly encoding nested structure depth/order.
+> Recommendation: A — If we get “what is assessed” wrong, everything downstream (nodes, mapping, prompts) becomes misleading.
+> **Selected: A**
+
+**Q2: Biggest runtime/product risk**
+- A) The authored node tree is nested, so WF-0035 universal form won’t accept it yet (hard-block), delaying the “2nd call proof” unless recursion ships.
+- B) Review quality drift (model uses bibliometrics/prestige language).
+- C) Compliance mismatch (we claim enforceability we don’t have).
+> Recommendation: A — This is the most concrete integration risk against current launch sequencing; it can block universal-form validation even if the YAML is correct.
+> **Selected: A**
+
+**Q3: How should we handle “single-stage” vs the PDF describing a pre-proposal + proposal procedure?**
+- A) Treat this YAML as full proposal only; ignore pre-proposal steps, but use the PDF’s full-proposal evaluation criteria sections.
+- B) Reinterpret “single-stage” and encode STEP_1/STEP_2 anyway.
+- C) Stop and create separate WFs for pre-proposal vs full proposal.
+> Recommendation: A — Keeps scope aligned to the full-proposal form while remaining source-grounded about how full proposals are assessed.
+> **Selected: A**
+
+**Q4: Source traceability strictness**
+- A) Every evaluation element and any strong guidance/constraint must have a `source_hint` and be listed in `sources.md`.
+- B) Only top-level criteria need source hints.
+- C) No per-item source hints; just a general manifest.
+> Recommendation: A — Prevents “made up” criteria and keeps the universal authoring workflow defensible and maintainable.
+> **Selected: A**
+
+**Q5: If we discover depth >=5 or strong domain-specific differences, what is the escalation path?**
+- A) Stop and ask you immediately (no guessing), then proceed with your decision.
+- B) Make a best guess to keep moving.
+- C) Force-flatten/simplify automatically.
+> Recommendation: A — Guessing here creates irreversible drift; explicit decisions keep the workflow safe.
 > **Selected: A**
