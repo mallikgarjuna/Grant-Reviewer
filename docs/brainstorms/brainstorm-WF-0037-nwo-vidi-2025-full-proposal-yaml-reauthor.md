@@ -1,7 +1,7 @@
 # WF-0037 — Re-author NWO Vidi 2025 full proposal YAML (official sources)
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft
 Last Updated: 2026-02-27
 
@@ -230,4 +230,53 @@ Decisions:
 - B) Yes, but only extract structure from DOCX; wait before using the PDF.
 - C) Not yet; list exactly which pages/sections first.
 > Recommendation: A — We need both structure and evaluation criteria grounded in the official sources to proceed.
+> **Selected: A**
+
+---
+
+## Section 4: Rough Idea Exploration (Interactive)
+
+Decisions:
+
+- Model **full proposal only** in this WF (do not encode the entire pre-proposal + full-proposal pipeline here).
+- Proposal nodes: include evaluable **narrative** sections only (summary, research narrative, impact). Exclude administrative and mechanics by default.
+- Budget justification: include **only if** the official evaluation criteria explicitly assess feasibility/resources/budget as a reviewable concern; otherwise exclude from proposal nodes.
+- Multi-domain scheme: keep one YAML; add domain notes only; add per-domain constraints only if the schema can represent them honestly from sources.
+- Enforceable constraints posture: encode deterministic constraints only (word limits / explicit max items). Do not pretend we can enforce fonts/margins/layout.
+
+**Brainstorming Q&A:**
+
+**Q1: Single “full proposal call” vs encoding the whole Vidi pipeline (pre-proposal + full proposal)**
+- A) Model full proposal only.
+- B) Model both pre-proposal + full proposal as STEP_1/STEP_2 stages in one YAML.
+- C) Create two separate call YAMLs: pre-proposal + full proposal.
+> Recommendation: A — Matches the initiative (“Vidi 2025 full proposal”) and avoids turning this WF into a multi-stage workflow rebuild.
+> **Selected: A**
+
+**Q2: Which DOCX sections become `proposal_nodes` (narrative content only)**
+- A) Include narrative sections only: scientific summary, public summary (EN), research description, impact; exclude administrative/budget/literature list as nodes.
+- B) Also include “Budget justification” as a node (if evaluated).
+- C) Include everything in the form as nodes.
+> Recommendation: A — Preserves YAML scope; budget may be added only if explicitly evaluated in the call’s criteria.
+> **Selected: A (and B only if budget justification is evaluated)**
+
+**Q3: How to handle the multi-domain nature (AES/TTW, SSH/SGW, ENW)**
+- A) Keep one call YAML; encode domain differences as `funding_call.domain_notes` only, and only add per-domain constraints if the schema can represent them honestly.
+- B) Split into 3 call YAMLs (one per domain).
+- C) Add domain branching everywhere even if it requires schema work.
+> Recommendation: A — Keeps the universal call flow consistent; only encode branching when the source requires it.
+> **Selected: A**
+
+**Q4: Literature list: do we treat `Vidi 2025_literature_list.docx` as a source?**
+- A) No, unless the PDF explicitly says it is an official annex that affects evaluable structure/limits/evaluation; otherwise ignore it for YAML authoring.
+- B) Yes, include it in the manifest and use it for guidance_text only.
+- C) Yes, include it and make it a proposal node.
+> Recommendation: A — Keeps the source gate defensible; do not import “extra” docs unless officially referenced.
+> **Selected: A**
+
+**Q5: “Enforceable constraints” posture (given our compliance engine limits)**
+- A) Encode deterministic constraints only (word limits, explicit max items) and keep the rest as guidance_text; do not pretend we can enforce fonts/margins/page layout.
+- B) Encode all formatting requirements as compliance_rules WARNING/ERROR anyway.
+- C) Don’t encode constraints; guidance_text only.
+> Recommendation: A — Honest enforcement prevents false confidence while still providing useful guardrails to applicants.
 > **Selected: A**
