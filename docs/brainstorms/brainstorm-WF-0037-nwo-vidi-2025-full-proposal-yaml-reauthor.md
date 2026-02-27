@@ -116,3 +116,52 @@ Decisions:
 - C) Do not update it during WF-0037; defer spec updates to a dedicated WF.
 > Recommendation: A — Keeps SSOT lean while still letting us improve the workflow when we learn something reusable.
 > **Selected: A**
+
+---
+
+## Section 2: Desired Outcome (Interactive)
+
+Decisions:
+
+- “Shipped output” for this WF includes the authored YAML + traceability manifest + passing validations (not brainstorm-only).
+- Assume no legacy Vidi YAML exists; create a new canonical file (if we discover a legacy later, we will archive it as `*_legacy.yaml`).
+- Verification required before “ready”: both `--dry-run` ingest and DB/API preflight smoke-test.
+- Include `reviewer_policy` where Vidi official sources justify it, following the same enforcement posture as Veni (PROMPT_ONLY vs POST_CHECK vs BLOCKING based on clarity).
+- Treat `Vidi 2025_literature_list.docx` as out-of-scope unless the official call PDF explicitly references it as an official annex that affects structure/limits/evaluation.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the minimum “shipped output” for WF-0037 (beyond brainstorm clarity)?**
+- A) A fully authored V2 call YAML + `sources.md` manifest + `--dry-run` ingest passes.
+- B) Same as A, plus DB ingest and API smoke-test is executed now.
+- C) Brainstorm-only; YAML authoring happens in Phase 1+.
+> Recommendation: A — Phase 0 should converge on a falsifiable deliverable and verification plan; DB/API smoke-test is still required, but it can be executed once the YAML exists.
+> **Selected: A**
+
+**Q2: Do we archive any “legacy Vidi YAML” if it exists?**
+- A) No legacy exists; this is a new file.
+- B) If legacy exists, archive to `*_legacy.yaml` and keep canonical stable.
+- C) Overwrite any existing file in-place without archive.
+> Recommendation: A — No evidence of an existing Vidi YAML in-repo; if one is found later, we should switch to (B) rather than overwrite.
+> **Selected: A**
+
+**Q3: What verification is required before we consider YAML “ready to be used by the app”?**
+- A) Both: dry-run ingest + DB/API smoke-test (`/calls`, `/calls/{id}/nodes`, `/api/public/calls/{code}/config`, `/api/public/calls/{code}/nodes/metadata`).
+- B) Dry-run ingest only.
+- C) DB/API smoke-test only.
+> Recommendation: A — Dry-run validates schema and references; DB/API preflight validates runtime shape and prevents frontend rework.
+> **Selected: A**
+
+**Q4: Should we include `reviewer_policy` for Vidi in this WF?**
+- A) Yes: mirror the pattern from Veni where Vidi sources justify it (bibliometrics ban, prestige language, DORA/merits, bias avoidance).
+- B) Only include PROMPT_ONLY guidance; skip POST_CHECK/BLOCKING enforcement.
+- C) Skip reviewer_policy entirely for Vidi.
+> Recommendation: A — This is low-effort, high-impact quality control when (and only when) grounded in official wording; enforcement level should match clarity of the source.
+> **Selected: A**
+
+**Q5: Should we incorporate the extra file present in the folder (`Vidi 2025_literature_list.docx`) as an official source?**
+- A) Not unless the Call PDF explicitly references it as a required/official annex affecting structure/limits/evaluation.
+- B) Yes, include it automatically as a source.
+- C) Use it only for guidance_text, never for constraints/evaluation mapping.
+> Recommendation: A — Keeps the source gate legally defensible and avoids “helpful but unofficial” content bleeding into evaluable structure.
+> **Selected: A**
