@@ -65,7 +65,7 @@ Verification Steps:
 Risks (if any):
 - Promise throttling bugs can accidentally hide eligible calls.
 
-### [ ] Task 3 — Render-model deep module with identity precedence and hard-block guards
+### [x] Task 3 — Render-model deep module with identity precedence and hard-block guards
 
 Goal:
 - Centralize render-model assembly and unsupported-state classification (nested nodes, missing logical IDs, metadata fallback).

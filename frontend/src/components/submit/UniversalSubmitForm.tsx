@@ -12,6 +12,7 @@ import type {
 } from "@/lib/bff/types";
 import { buildReviewDetailRoute, SIGN_IN_ROUTE } from "@/lib/routes";
 import { loadStructuredCalls } from "@/lib/submit/loadStructuredCalls";
+import { buildRenderModel, type RenderModelResult } from "@/lib/submit/renderModel";
 
 type ApiErrorEnvelope = {
   error?: {
@@ -53,13 +54,6 @@ async function parseApiError(response: Response): Promise<ApiError> {
   return fallback;
 }
 
-function toNodeLogicalId(node: NodeSummary): string {
-  if (typeof node.logical_id === "string" && node.logical_id.trim()) {
-    return node.logical_id;
-  }
-  return node.id;
-}
-
 export function UniversalSubmitForm() {
   const router = useRouter();
   const [calls, setCalls] = useState<CallSummary[]>([]);
@@ -68,6 +62,10 @@ export function UniversalSubmitForm() {
   const [gatingWarning, setGatingWarning] = useState<string | null>(null);
   const [selectedCallId, setSelectedCallId] = useState("");
   const [nodes, setNodes] = useState<NodeSummary[]>([]);
+  const [renderModel, setRenderModel] = useState<RenderModelResult>({
+    state: "ready",
+    nodes: [],
+  });
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -133,12 +131,18 @@ export function UniversalSubmitForm() {
         const payload = (await response.json()) as { nodes?: NodeSummary[] };
         if (!cancelled) {
           const nextNodes = Array.isArray(payload.nodes) ? payload.nodes : [];
+          const nextRenderModel = buildRenderModel({
+            nodes: nextNodes,
+            metadataByLogicalId: {},
+          });
           setNodes(nextNodes);
+          setRenderModel(nextRenderModel);
           setDraft((current) => {
             const next: Record<string, string> = {};
-            for (const node of nextNodes) {
-              const logicalId = toNodeLogicalId(node);
-              next[logicalId] = current[logicalId] ?? "";
+            if (nextRenderModel.state === "ready") {
+              for (const node of nextRenderModel.nodes) {
+                next[node.nodeLogicalId] = current[node.nodeLogicalId] ?? "";
+              }
             }
             return next;
           });
@@ -157,12 +161,14 @@ export function UniversalSubmitForm() {
   }, [selectedCallId]);
 
   function buildNodesPayload(): StructuredReviewNodeInput[] {
-    return nodes
+    if (renderModel.state !== "ready") {
+      return [];
+    }
+    return renderModel.nodes
       .map((node) => {
-        const nodeLogicalId = toNodeLogicalId(node);
         return {
-          node_logical_id: nodeLogicalId,
-          text: draft[nodeLogicalId] ?? "",
+          node_logical_id: node.nodeLogicalId,
+          text: draft[node.nodeLogicalId] ?? "",
         };
       })
       .filter((node) => node.text.trim().length > 0);
@@ -177,6 +183,10 @@ export function UniversalSubmitForm() {
     }
 
     const nonEmptyNodes = buildNodesPayload();
+    if (renderModel.state !== "ready") {
+      setFormError("This call is currently unsupported for universal structured submit.");
+      return;
+    }
     if (nonEmptyNodes.length === 0) {
       setFormError("You must fill out at least one section before submitting.");
       return;
@@ -190,9 +200,9 @@ export function UniversalSubmitForm() {
         body: JSON.stringify({
           call_id: selectedCallId,
           domain: null,
-          draft_nodes: nodes.map((node) => ({
-            node_logical_id: toNodeLogicalId(node),
-            text: draft[toNodeLogicalId(node)] ?? "",
+          draft_nodes: renderModel.nodes.map((node) => ({
+            node_logical_id: node.nodeLogicalId,
+            text: draft[node.nodeLogicalId] ?? "",
           })),
         }),
       });
@@ -282,31 +292,44 @@ export function UniversalSubmitForm() {
             {callError ? <p className="text-sm text-red-600">{callError}</p> : null}
           </div>
 
-          {nodes.map((node) => {
-            const logicalId = toNodeLogicalId(node);
-            const inputId = `node-${logicalId.replace(/_/g, "-")}`;
-            return (
-              <div className="space-y-2" key={logicalId}>
-                <label
-                  className="text-sm font-medium text-[var(--color-foreground)]"
-                  htmlFor={inputId}
-                >
-                  {node.title}
-                </label>
-                <textarea
-                  id={inputId}
-                  className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      [logicalId]: event.target.value,
-                    }))
-                  }
-                  value={draft[logicalId] ?? ""}
-                />
-              </div>
-            );
-          })}
+          {renderModel.state === "ready"
+            ? renderModel.nodes.map((node) => {
+                const logicalId = node.nodeLogicalId;
+                const inputId = `node-${logicalId.replace(/_/g, "-")}`;
+                return (
+                  <div className="space-y-2" key={logicalId}>
+                    <label
+                      className="text-sm font-medium text-[var(--color-foreground)]"
+                      htmlFor={inputId}
+                    >
+                      {node.label}
+                    </label>
+                    <textarea
+                      id={inputId}
+                      className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          [logicalId]: event.target.value,
+                        }))
+                      }
+                      value={draft[logicalId] ?? ""}
+                    />
+                  </div>
+                );
+              })
+            : null}
+
+          {renderModel.state === "unsupported" ? (
+            <div className="rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              {renderModel.message}
+            </div>
+          ) : null}
+          {renderModel.state === "contract_error" ? (
+            <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {renderModel.message}
+            </div>
+          ) : null}
 
           {formError ? (
             <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -316,7 +339,12 @@ export function UniversalSubmitForm() {
 
           <button
             className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={Boolean(callError) || isLoadingCalls || isSubmitting}
+            disabled={
+              Boolean(callError) ||
+              isLoadingCalls ||
+              isSubmitting ||
+              renderModel.state !== "ready"
+            }
             type="submit"
           >
             {isSubmitting ? "Submitting..." : "Submit"}

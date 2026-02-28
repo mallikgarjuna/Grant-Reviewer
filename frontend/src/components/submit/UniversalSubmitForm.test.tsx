@@ -279,4 +279,133 @@ describe("UniversalSubmitForm", () => {
     expect(screen.getByRole("combobox")).toHaveTextContent("call_1 - Call 1");
     expect(screen.getByRole("combobox")).not.toHaveTextContent("call_2 - Call 2");
   });
+
+  it("shows unsupported state for nested node calls", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "call_1",
+                name: "Call 1",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call_1/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call_1",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "root",
+                title: "Root",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+              {
+                id: "node-2",
+                logical_id: "child",
+                title: "Child",
+                parent_node_id: "node-1",
+                node_type: "SUBSECTION",
+                order_index: 2,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    expect(
+      await screen.findByText("This call uses nested sections and is not yet supported in this form."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
+  });
+
+  it("shows contract error for missing logical_id", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "call_1",
+                name: "Call 1",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call_1/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call_1",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: null,
+                title: "Broken node",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    expect(
+      await screen.findByText(
+        "This call cannot be rendered because one or more sections are missing logical ids.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
+  });
 });
