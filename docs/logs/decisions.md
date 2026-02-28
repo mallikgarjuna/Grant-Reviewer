@@ -132,6 +132,14 @@
 - **Tradeoff**: Requires canonicalization discipline in tooling; payloads include snapshot to avoid storage coupling.
 - **Status**: Approved.
 
+### AD 38.18: Evidence-gap classification is encoded via engine-defined `check_id` taxonomy (not new finding fields)
+- **WF ID**: WF-0038
+- **Context**: We need consistent, deterministic classification of common issue types (evidence gaps, misalignment, overclaims, etc.) for downstream consumption and future scoring projection, without expanding the top-level `DiagnosticFinding v1` schema.
+- **Decision**: Encode issue classification as an engine-defined, stable `check_id` taxonomy (`{DOMAIN}.{CODE}`), with a bounded starter set. `NOT_ASSESSABLE` remains represented only via `assessment_status` (must not be duplicated as a `check_id` gap code).
+- **Why**: Preserves schema growth discipline, keeps semantics call-agnostic, and still provides stable tags for analytics/scoring projection.
+- **Tradeoff**: Requires governance over the `check_id` catalog and tests to prevent free-form drift.
+- **Status**: Approved.
+
 ## Date: 2026-02-28 (WF-0035: Universal form dynamic UI renderer)
 
 ### AD 35.1: Frontend render model composes flat nodes ordering + metadata enrichment

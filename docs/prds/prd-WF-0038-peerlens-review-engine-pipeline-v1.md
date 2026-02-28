@@ -1,7 +1,7 @@
 # WF-0038 — PeerLens Review Engine Pipeline v1 PRD
 
 Artifact: prd
-Version: v0.3
+Version: v0.4
 Status: Ready for Tasks
 Last Updated: 2026-02-28
 
@@ -124,18 +124,6 @@ Hard boundary:
 
 - Findings reference expectations via call-config `expectation_id` (string) scoped by `call_config_ref`, not runtime DB ids.
 
-### 5.4 Error contracts (FR1, FR6)
-
-The engine must distinguish deterministic contract failures from execution failures.
-
-- Contract errors (reject request; no partial findings/cards):
-  - `CALL_CONFIG_DIGEST_MISMATCH`
-  - `MALFORMED_REVIEW_REQUEST`
-  - `EXPECTATION_REF_UNRESOLVABLE` (mapping integrity failure in adapter)
-- Execution failures (engine failed to evaluate despite valid contract):
-  - `ENGINE_EXECUTION_FAILED`
-  - `TIMEOUT`
-
 ### 5.2 Engine atomic output — `DiagnosticFinding v1` (FR4, FR5)
 
 Each finding is single-primary, trace-first, and anchored.
@@ -161,6 +149,27 @@ Deterministic ordering:
 
 - Sort by `severity` desc (`ERROR > WARNING > NOTE`), then call-defined expectation order, then `check_id`.
 
+#### 5.2.1 Evidence-gap / issue classification via `check_id` (engine-defined)
+
+To support consistent downstream interpretation (and future scoring projection) without expanding the top-level finding schema, v1 encodes issue classification as an engine-defined `check_id` taxonomy.
+
+Rules:
+
+- `check_id` is engine-defined, call-agnostic, and stable (no call-config-defined check ids).
+- `NOT_ASSESSABLE` is represented only in `assessment_status`; it must not appear as a `check_id` “gap code”.
+- `check_id` namespace is meaningful and bounded: `{DOMAIN}.{CODE}`.
+- New `check_id` codes may be added only if call-invariant and required for deterministic downstream behavior (same discipline as the schema growth gate).
+
+Starter taxonomy (v1, non-exhaustive):
+
+- `EVIDENCE.MISSING_ELEMENT`
+- `EVIDENCE.UNDERDEVELOPED`
+- `CLARITY.IMPLICIT_NOT_EXPLICIT`
+- `ALIGNMENT.MISALIGNED`
+- `ARGUMENT.OVERCLAIMED`
+- `CONSISTENCY.INTERNAL_INCONSISTENCY`
+- `RISK.RISK_UNADDRESSED`
+
 ### 5.3 Compatibility mapping — `DiagnosticFinding v1[] → ReviewCard[]` (FR6)
 
 Mapping is a pure compatibility adapter; engine SSOT remains `DiagnosticFinding v1`.
@@ -183,6 +192,18 @@ Field mapping rules (v1):
   - Else null.
 - `ReviewCard.feedback_text`:
   - Deterministic Markdown rendering from grouped findings using a fixed template; analytical-only (problem + why + fix direction), expectation/anchor grounded.
+
+### 5.4 Error contracts (FR1, FR6)
+
+The engine must distinguish deterministic contract failures from execution failures.
+
+- Contract errors (reject request; no partial findings/cards):
+  - `CALL_CONFIG_DIGEST_MISMATCH`
+  - `MALFORMED_REVIEW_REQUEST`
+  - `EXPECTATION_REF_UNRESOLVABLE` (mapping integrity failure in adapter)
+- Execution failures (engine failed to evaluate despite valid contract):
+  - `ENGINE_EXECUTION_FAILED`
+  - `TIMEOUT`
 
 ## 6. Components / Modules
 
@@ -229,6 +250,7 @@ Test seams (public interfaces):
 - Finding determinism:
   - stable ordering under identical inputs,
   - stable aggregation identity (`primary_expectation_ref`, `subject_ref`, `check_id`). (FR4, FR5)
+  - `check_id` taxonomy is drawn from the engine-defined catalog (no free-form codes). (FR4)
 - Mode projection:
   - `STRICT` is a pure filter of `DIAGNOSTIC` output (subset invariant). (FR2)
 - Mapping determinism:
@@ -296,3 +318,4 @@ Downstream consumption / governance risk:
 - v0.1 (2026-02-28): Initial PRD from brainstorm (contracts for modes, `ReviewRequest v1`, `DiagnosticFinding v1`, mapping, stress tests).
 - v0.2 (2026-02-28): Applied Phase 1 runner risk-audit edits: added US/FR traceability, flows, data/contracts sectioning, module boundaries, and testing/telemetry decisions; marked Ready for Tasks.
 - v0.3 (2026-02-28): Incorporated adversarial audit follow-ups: removed duplicated legacy PRD block, clarified digest canonicalization and expectation ordering source, clarified mapping failure abort semantics, expanded stress-test matrix and determinism tests, and added anchor redaction rules for telemetry.
+- v0.4 (2026-02-28): Added engine-defined `check_id` evidence-gap taxonomy (starter set) and clarified that `NOT_ASSESSABLE` is represented only via `assessment_status`.
