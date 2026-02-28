@@ -16,6 +16,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 |--------|--------|
 | **`context refresh`** | Re-ground agent context from current project state before deciding the next action. |
 | **`new chat kickoff`** | Generate a reusable 3-line starter for opening a new chat with clear scope/constraints. |
+| **`interactive Q&A`** | Run an iterative clarification loop: ask 1–5 questions at a time, each with 2–3 options + one recommended option with rationale; continue until decisions are made or the user says stop. |
 | **`run phase [N]`** | Execute WF phase runner (`0` runs `0.0 + 0.1` end-to-end, `1` PRD, `2` tasks, `3` implement). |
 | **`go ahead`** | Explicit approval to proceed to the next phase/step. |
 | **`critical review`** | Senior-level review of current work with actionable findings. |
