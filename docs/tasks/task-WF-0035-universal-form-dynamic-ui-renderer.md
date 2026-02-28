@@ -259,7 +259,7 @@ Verification Steps:
 Risks (if any):
 - Deleting legacy files too early can break in-progress references if prior tasks are incomplete.
 
-### [ ] Task 10 — Capture MVP acceptance matrix evidence for two flat calls
+### [x] Task 10 — Capture MVP acceptance matrix evidence for two flat calls
 
 Goal:
 - Produce explicit implementation evidence matrix for Veni + one additional flat structured call across render/compliance/submit.
