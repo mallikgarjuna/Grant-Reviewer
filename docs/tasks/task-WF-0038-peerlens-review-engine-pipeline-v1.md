@@ -391,7 +391,7 @@ Verification Steps:
 Risks (if any):
 - Hidden nondeterminism from unordered maps/sets can cause flaky CI.
 
-### [ ] Task 15 — Capture implementation evidence and handoff walkthrough
+### [x] Task 15 — Capture implementation evidence and handoff walkthrough
 
 Goal:
 - Record Phase 3-ready implementation and verification evidence for the pipeline v1 contract boundaries.
