@@ -1,8 +1,8 @@
 # WF-0038 — PeerLens Review Engine Pipeline v1
 
 Artifact: brainstorm
-Version: v0.2
-Status: Draft Complete
+Version: v0.3
+Status: Draft
 Last Updated: 2026-02-28
 
 ## Objective
@@ -489,3 +489,139 @@ Missing / not yet frozen:
 - C) Both A and B.
 > Recommendation: C — prevents silent drift across calls and preserves long-term traceability.
 > **Selected: C**
+
+---
+
+## Refinement Pass (Exit Criteria Closure) (2026-02-28)
+
+This pass tightens remaining ambiguity to move closer to the architecture exit criteria in `docs/reference/architecture_chat.md`:
+- “DiagnosticFinding v1 schema is frozen”
+- “Call-agnostic pipeline v1 is defined”
+- “Adversarial stress test finds no structural contradictions”
+
+### Decisions (selected)
+
+- “Schema frozen” bar: enumerate field-level contract + invariants (not code/types).
+- “Observation v1” bar: small fixed `observation_kind` catalog + required fields per kind (anchored + subject-scoped) to keep Pass 2 deterministic.
+- “Pipeline defined” bar: define stage contracts (inputs/outputs), determinism/ordering rules, failure handling, and NOT_ASSESSABLE policy (no implementation internals).
+- Compatibility: `DiagnosticFinding v1 → ReviewCard` mapping is 1:1 and deterministic.
+- Stress test: add a 3-archetype (NWO/ERC/MSCA) matrix against invariants + “no engine branching” checks.
+
+**Brainstorming Q&A:**
+
+**Q1: What does “DiagnosticFinding v1 schema is frozen” mean operationally in this brainstorm?**
+- A) Freeze only constraints/principles (fields implied, not enumerated).
+- B) Enumerate exact required/optional fields (names + meanings), but not invariants.
+- C) Enumerate fields + field-level invariants (cardinality, allowed enums, required refs), still no implementation.
+> Recommendation: C — exit criteria requires “implement without new architecture decisions”.
+> **Selected: C**
+
+**Q2: What is the minimum `Observation v1` output contract we must freeze now to keep Pass 2 deterministic?**
+- A) Only `observation_kind` + anchors; everything else ad hoc.
+- B) Small fixed catalog of observation kinds + required fields per kind (including `subject_ref` + anchors).
+- C) Full observation catalog for all invariant checks.
+> Recommendation: B — enough for deterministic mapping without pretending we know every future observation.
+> **Selected: B**
+
+**Q3: What is the “Call-agnostic pipeline v1 is defined” bar for this brainstorm?**
+- A) Name the stages only (Pass 1, Pass 2).
+- B) Define stage contracts: inputs/outputs + determinism/ordering rules + failure handling + NOT_ASSESSABLE policy.
+- C) Define full stage internals (algorithms, prompts).
+> Recommendation: B — contracts are required; internals drift into implementation.
+> **Selected: B**
+
+**Q4: What does “mapping DiagnosticFinding v1 → ReviewCard” mean as a compatibility contract?**
+- A) 1:1 mapping: each finding corresponds to one ReviewCard.
+- B) N:1 mapping: multiple findings may roll up to one ReviewCard.
+- C) 1:N mapping: one finding may fan out to multiple ReviewCards.
+> Recommendation: A — simplest, most deterministic, least room for downstream ambiguity.
+> **Selected: A**
+
+**Q5: What is the minimum adversarial stress test artifact we must add to satisfy exit criteria?**
+- A) Matrix of 3 call-config archetypes (NWO/ERC/MSCA) × invariants × expected finding kinds, plus “no engine branching” checks.
+- B) Single narrative test plan paragraph.
+- C) Full test suite design (cases, inputs, expected outputs per case).
+> Recommendation: A — concrete enough to expose contradictions without drifting into implementation.
+> **Selected: A**
+
+---
+
+## Frozen Contracts (Architecture-Level; v1)
+
+### `DiagnosticFinding v1` (atomic output) — frozen contract (field-level)
+
+Required (every finding):
+- `finding_kind`: one of `STRUCTURE|COMPLIANCE|EXPECTATION_SATISFACTION|EVIDENCE_SUFFICIENCY|ALIGNMENT|FEASIBILITY`
+- `severity`: one of `ERROR|WARNING|NOTE` (non-numeric)
+- `assessment_status`: one of `ASSESSED|NOT_ASSESSABLE` (when `NOT_ASSESSABLE`, a human-readable reason is required)
+- `primary_expectation_ref`: call-defined `expectation_id` (string)
+- `criterion_ref` and `element_ref`: the evaluation criterion/element references the expectation is grounded in
+- `check_id`: stable engine check identifier (HOW)
+- `subject_ref`: the evaluated unit (at minimum: target section/node; may include sub-field identifier)
+- `anchors[]`: ≥1 typed anchor (`TEXT_SPAN|STRUCTURAL_LOCATOR|DERIVED`)
+- `call_config_ref`: includes `{call_code}@{semver}` and `{digest}`
+- `engine_ref`: engine version/build identifier
+
+Optional:
+- `related_expectation_refs[]`: trace-only cross-links (same-kind only)
+- Explanatory text fields (short): problem + why + fix direction (must not contain rewriting)
+
+Invariants:
+- Single-primary trace: exactly 1 `primary_expectation_ref` per finding.
+- Related refs must not cross `finding_kind` boundaries.
+- Determinism: structured fields (ids/kind/severity/anchors/order) must be stable for identical inputs + call_config_ref + engine_ref.
+- Aggregation determinism: at most one finding per (`primary_expectation_ref`, `subject_ref`, `check_id`).
+- Ordering determinism: sort by `severity` desc, then call-defined expectation order, then `check_id`.
+
+### `Observation v1` (Pass 1 output) — minimal frozen contract
+
+All observations (required):
+- `observation_kind` (strict catalog; engine-defined)
+- `subject_ref`
+- `anchors[]` (≥1; same typed anchor union as findings)
+- `call_config_ref` + `engine_ref`
+
+Minimal `observation_kind` catalog (v1; extend only by engine versioned change):
+- `STRUCTURE_SIGNAL`
+- `COMPLIANCE_SIGNAL`
+- `EXPECTATION_SIGNAL`
+- `EVIDENCE_SIGNAL`
+- `ALIGNMENT_SIGNAL`
+- `FEASIBILITY_SIGNAL`
+- `DEPENDENCY_CONTEXT_MISSING` (must include `missing_subject_ref` and the dependency edge identifier)
+
+### Call-agnostic Pipeline v1 — stage contracts (no internals)
+
+Inputs (minimum):
+- Call-config (WHAT) + `call_config_ref`
+- Engine mode (`strict` or `diagnostic`)
+- Stage/step selector (e.g., `STEP_1|STEP_2|...`) that activates WHAT via call-config
+- Target `subject_ref` content (single section)
+- Dependency context inputs only when explicitly declared by dependency edges in call-config
+
+Pass 1 (Observations):
+- Produces `Observation v1[]` (anchored facts about the submission), no severity, no expectation failure labels.
+
+Pass 2 (Findings):
+- Consumes observations + call-config expectations/constraints/dependencies and emits `DiagnosticFinding v1[]`.
+- Missing dependency context: emits explicit NOT_ASSESSABLE findings (only when dependency edge is declared).
+
+Failure handling (architecture-level):
+- Invalid/missing call-config: fail-fast (no partial findings).
+- Missing dependency context when required: not a pipeline failure; results in NOT_ASSESSABLE findings.
+
+---
+
+## Adversarial Stress Test Matrix (v1; written artifact)
+
+Archetypes (config-only; no engine branching):
+- **NWO-like**: strong compliance/structural constraints + section expectations; limited cross-section dependencies.
+- **ERC-like**: stage/step-specific activation of expectations (e.g., Step 1 vs Step 2), strict policy constraints, and emphasis on criterion scoping.
+- **MSCA-like**: multi-criterion expectations with explicit dependencies (alignment + feasibility concerns), still section-first.
+
+Matrix expectations (must hold for all three):
+- Same engine pipeline stages execute (two-pass), no funder branching/adapters.
+- Findings remain trace-first and deterministic (structured fields stable).
+- `finding_kind` remains within frozen enum; no call-defined kinds/check semantics.
+- Missing declared dependency context produces NOT_ASSESSABLE findings with anchors and trace (not silence).
+- Severity remains non-numeric and policy-driven via call-config metadata, not funder code.
