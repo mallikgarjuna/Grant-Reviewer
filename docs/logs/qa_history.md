@@ -50,6 +50,9 @@
 ### Q: What counts as an anchor (required for all findings)?
 **A**: Typed anchor union: `TEXT_SPAN` OR `STRUCTURAL_LOCATOR` OR `DERIVED` (Option A approved).
 
+### Q: Is WF-0038 fixated on the existing `ReviewCard` backend contract, or is it producing a new universal output?
+**A**: WF-0038’s engine SSOT output is `DiagnosticFinding v1`. The `DiagnosticFinding v1 → ReviewCard` mapping is a compatibility adapter for existing downstream/UI/persistence and may be deprecated in a follow-on workflow once UI/API can consume `DiagnosticFinding v1` directly.
+
 ## 2026-02-06
 
 ### Q: Hierarchy structure for proposal nodes?

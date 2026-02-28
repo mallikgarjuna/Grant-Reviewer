@@ -106,6 +106,14 @@
 - **Tradeoff**: Some per-check granularity becomes internal to `feedback_text` rather than separate cards.
 - **Status**: Approved.
 
+### AD 38.15: `DiagnosticFinding v1` is the engine SSOT; `ReviewCard` is a compatibility surface (deprecable)
+- **WF ID**: WF-0038
+- **Context**: The repo currently persists and serves `ReviewCard`, but WF-0038’s universal pipeline is defined to produce `DiagnosticFinding v1` as the atomic output.
+- **Decision**: Treat `DiagnosticFinding v1` as the canonical engine output and source of truth for evaluation semantics. Keep `DiagnosticFinding v1 → ReviewCard` mapping as an explicit compatibility adapter only, which may be deprecated in a follow-on workflow once UI/API can consume `DiagnosticFinding v1` directly.
+- **Why**: Avoids letting legacy persistence/UI constraints shape the universal engine contracts while still enabling incremental adoption without a big-bang rewrite.
+- **Tradeoff**: Temporarily maintains two representations (findings vs cards) and requires governance to prevent “card semantics” from leaking back into engine semantics.
+- **Status**: Approved.
+
 ## Date: 2026-02-28 (WF-0035: Universal form dynamic UI renderer)
 
 ### AD 35.1: Frontend render model composes flat nodes ordering + metadata enrichment
