@@ -12,6 +12,7 @@ import type {
   StructuredReviewNodeInput,
 } from "@/lib/bff/types";
 import { buildReviewDetailRoute, SIGN_IN_ROUTE } from "@/lib/routes";
+import { getDomainOptionsForCall } from "@/lib/submit/domainOptions";
 import { loadStructuredCalls } from "@/lib/submit/loadStructuredCalls";
 import { buildRenderModel, type RenderModelResult } from "@/lib/submit/renderModel";
 
@@ -68,6 +69,8 @@ export function UniversalSubmitForm() {
     nodes: [],
   });
   const [draft, setDraft] = useState<Record<string, string>>({});
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [hardBlockErrors, setHardBlockErrors] = useState<string[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -185,6 +188,9 @@ export function UniversalSubmitForm() {
     };
   }, [calls, selectedCallId]);
 
+  const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
+  const domainOptions = selectedCall ? getDomainOptionsForCall(selectedCall.code) : [];
+
   function buildNodesPayload(): StructuredReviewNodeInput[] {
     if (renderModel.state !== "ready") {
       return [];
@@ -202,6 +208,7 @@ export function UniversalSubmitForm() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
+    setHardBlockErrors([]);
     if (!selectedCallId) {
       setFormError("Funding call is required before submission.");
       return;
@@ -224,7 +231,7 @@ export function UniversalSubmitForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           call_id: selectedCallId,
-          domain: null,
+          domain: selectedDomain,
           draft_nodes: renderModel.nodes.map((node) => ({
             node_logical_id: node.nodeLogicalId,
             text: draft[node.nodeLogicalId] ?? "",
@@ -233,6 +240,13 @@ export function UniversalSubmitForm() {
       });
       if (!complianceResponse.ok) {
         const apiError = await parseApiError(complianceResponse);
+        if (apiError.status === 422) {
+          const detailNodeIds = Array.isArray(apiError.details.node_logical_ids)
+            ? apiError.details.node_logical_ids.filter((item) => typeof item === "string")
+            : [];
+          setHardBlockErrors([apiError.message, ...detailNodeIds]);
+          return;
+        }
         setFormError(apiError.message);
         return;
       }
@@ -345,6 +359,32 @@ export function UniversalSubmitForm() {
               })
             : null}
 
+          {domainOptions.length > 0 ? (
+            <div className="space-y-2">
+              <label
+                className="text-sm font-medium text-[var(--color-foreground)]"
+                htmlFor="domain"
+              >
+                Domain
+              </label>
+              <select
+                id="domain"
+                className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm"
+                onChange={(event) =>
+                  setSelectedDomain(event.target.value ? event.target.value : null)
+                }
+                value={selectedDomain ?? ""}
+              >
+                <option value="">No domain override</option>
+                {domainOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+
           {renderModel.state === "unsupported" ? (
             <div className="rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               {renderModel.message}
@@ -353,6 +393,16 @@ export function UniversalSubmitForm() {
           {renderModel.state === "contract_error" ? (
             <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               {renderModel.message}
+            </div>
+          ) : null}
+          {hardBlockErrors.length > 0 ? (
+            <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p className="font-medium">Submission blocked</p>
+              <ul className="mt-1 list-disc pl-5">
+                {hardBlockErrors.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
             </div>
           ) : null}
 

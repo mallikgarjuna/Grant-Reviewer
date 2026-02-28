@@ -149,7 +149,7 @@ Verification Steps:
 Risks (if any):
 - Route path mismatch (`code` vs `id`) can break metadata loading.
 
-### [ ] Task 6 — Domain options bridge + compliance hard-block UX
+### [x] Task 6 — Domain options bridge + compliance hard-block UX
 
 Goal:
 - Add interim per-call domain options mapping and ensure domain-related compliance blocking prevents submit.
