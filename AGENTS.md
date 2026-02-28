@@ -25,6 +25,7 @@
 
 *(Added here because previous agents failed on them)*
 
+- **Chat hygiene:** If a new chat is warranted (context bloat, WF/branch switch, runner needs clean session), explicitly say so and provide a copy-paste prompt.
 - **Backend script paths:** `cd backend && PYTHONPATH=. uv run python scripts/my_script.py`
 - **SQLModel sessions:** Don't access ORM objects after session close; capture IDs/primitives first.
 - **Database variables:** `DATABASE_URL` is required; backend no longer falls back to SQLite when unset.
