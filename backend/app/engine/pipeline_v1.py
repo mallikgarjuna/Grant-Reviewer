@@ -1,21 +1,8 @@
 from __future__ import annotations
 
-from app.engine.contracts import (
-    DiagnosticFindingV1,
-    PipelineResult,
-    ReviewCard,
-    ReviewRequestV1,
-    SubjectRef,
-)
+from app.engine.compat.review_card_mapper import map_findings_to_review_cards
+from app.engine.contracts import DiagnosticFindingV1, PipelineResult, ReviewRequestV1, SubjectRef
 from app.engine.modes import project_findings_for_mode
-
-
-def _severity_to_rating(severity: str) -> str:
-    if severity == "ERROR":
-        return "CRITICAL"
-    if severity == "WARNING":
-        return "WARNING"
-    return "NOTE"
 
 
 def _compute_diagnostic_findings(request: ReviewRequestV1) -> list[DiagnosticFindingV1]:
@@ -53,20 +40,20 @@ def _compute_diagnostic_findings(request: ReviewRequestV1) -> list[DiagnosticFin
 
 
 def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
+    expectations = list(request.call_config_snapshot.get("expectations", []))
+    resolvable_expectation_refs = {
+        str(expectation["expectation_id"])
+        for expectation in expectations
+    }
+
     diagnostic_findings = _compute_diagnostic_findings(request)
     projected_findings = project_findings_for_mode(
         findings=diagnostic_findings,
         mode=request.mode,
     )
-
-    cards = [
-        ReviewCard(
-            node_logical_id=finding.subject_ref.node_logical_id,
-            expectation_id=finding.primary_expectation_ref,
-            rating=_severity_to_rating(finding.severity),
-            feedback=finding.reason,
-        )
-        for finding in projected_findings
-    ]
+    cards = map_findings_to_review_cards(
+        findings=projected_findings,
+        resolvable_expectation_refs=resolvable_expectation_refs,
+    )
 
     return PipelineResult(findings=projected_findings, review_cards=cards)

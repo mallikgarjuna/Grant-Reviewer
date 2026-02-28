@@ -225,7 +225,7 @@ Verification Steps:
 Risks (if any):
 - Re-computation per mode could violate projection-only semantics.
 
-### [ ] Task 9 — Build compatibility adapter `DiagnosticFinding v1[] -> ReviewCard[]`
+### [x] Task 9 — Build compatibility adapter `DiagnosticFinding v1[] -> ReviewCard[]`
 
 Goal:
 - Map findings deterministically to existing `ReviewCard` shape, including severity/rating roll-up and expectation-resolution integrity checks.
