@@ -12,6 +12,7 @@ export type RenderNode = {
 export type RenderModelReady = {
   state: "ready";
   nodes: RenderNode[];
+  metadataFallbackCount: number;
 };
 
 export type RenderModelUnsupported = {
@@ -70,14 +71,21 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
     nodes: input.nodes.map((node) => {
       const nodeLogicalId = node.logical_id as string;
       const metadata = input.metadataByLogicalId[nodeLogicalId];
-      const label =
-        (typeof metadata?.title === "string" && metadata.title.trim()) ||
-        (typeof node.title === "string" && node.title.trim()) ||
-        toFallbackLabel(nodeLogicalId);
+      const metadataTitle =
+        typeof metadata?.title === "string" && metadata.title.trim()
+          ? metadata.title
+          : null;
+      const nodeTitle =
+        typeof node.title === "string" && node.title.trim() ? node.title : null;
       return {
         nodeLogicalId,
-        label,
+        label: metadataTitle ?? nodeTitle ?? toFallbackLabel(nodeLogicalId),
       };
     }),
+    metadataFallbackCount: input.nodes.filter((node) => {
+      const nodeLogicalId = node.logical_id as string;
+      const metadata = input.metadataByLogicalId[nodeLogicalId];
+      return !(typeof metadata?.title === "string" && metadata.title.trim());
+    }).length,
   };
 }

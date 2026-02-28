@@ -50,6 +50,27 @@ describe("AppSubmitPage", () => {
             { status: 200 },
           );
         }
+        if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+          return new Response(
+            JSON.stringify({
+              call_logical_id: "nwo_veni_2025_preproposal",
+              config_version: "1",
+              ui_mode: "structured_nodes",
+              expected_nodes: [],
+            }),
+            { status: 200 },
+          );
+        }
+        if (url === "/api/bff/calls/nwo_veni_2025_preproposal/metadata") {
+          return new Response(
+            JSON.stringify({
+              call_logical_id: "nwo_veni_2025_preproposal",
+              nodes: [],
+              unknown_node_logical_ids: null,
+            }),
+            { status: 200 },
+          );
+        }
         return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
           status: 200,
         });

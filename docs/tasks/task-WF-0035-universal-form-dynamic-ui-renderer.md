@@ -203,7 +203,7 @@ Verification Steps:
 Risks (if any):
 - Existing users may carry legacy draft keys from Veni-only implementation.
 
-### [ ] Task 8 — End-to-end submit orchestration parity and telemetry events
+### [x] Task 8 — End-to-end submit orchestration parity and telemetry events
 
 Goal:
 - Finalize universal submit orchestration parity (warnings bypass, blocking paths, telemetry counters) with comprehensive component coverage.

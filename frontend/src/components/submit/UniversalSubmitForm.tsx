@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { ComplianceBypassModal } from "@/components/submit/ComplianceBypassModal";
 import type {
   ApiError,
   CallNodesMetadataResponse,
@@ -72,6 +73,10 @@ export function UniversalSubmitForm() {
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const [hardBlockErrors, setHardBlockErrors] = useState<string[]>([]);
+  const [complianceWarnings, setComplianceWarnings] = useState<
+    ComplianceCheckResponse["errors"]
+  >([]);
+  const [isBypassModalOpen, setIsBypassModalOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -94,6 +99,11 @@ export function UniversalSubmitForm() {
         if (!cancelled) {
           setCalls(structuredResult.calls);
           setSelectedCallId(structuredResult.calls[0]?.id ?? "");
+          console.info("universal_submit.gating_summary", {
+            total_calls: allCalls.length,
+            structured_calls: structuredResult.calls.length,
+            warnings: structuredResult.warnings.length,
+          });
           setGatingWarning(
             structuredResult.warnings.length > 0
               ? "Some calls were hidden due to config loading issues."
@@ -164,6 +174,15 @@ export function UniversalSubmitForm() {
             nodes: nextNodes,
             metadataByLogicalId,
           });
+          if (nextRenderModel.state !== "ready") {
+            console.info("universal_submit.unsupported_call_selection", {
+              reason: nextRenderModel.reason,
+            });
+          } else if (nextRenderModel.metadataFallbackCount > 0) {
+            console.info("universal_submit.metadata_fallback_usage", {
+              fallback_count: nextRenderModel.metadataFallbackCount,
+            });
+          }
           setNodes(nextNodes);
           setRenderModel(nextRenderModel);
           setDraft((current) => {
@@ -226,11 +245,56 @@ export function UniversalSubmitForm() {
     event.preventDefault();
     setFormError(null);
     setHardBlockErrors([]);
+    setComplianceWarnings([]);
+    setIsBypassModalOpen(false);
     if (!selectedCallId) {
       setFormError("Funding call is required before submission.");
       return;
     }
 
+    await runComplianceThenMaybeSubmit();
+  }
+
+  async function submitStructuredReview(nonEmptyNodes: StructuredReviewNodeInput[]) {
+    const response = await fetch("/api/bff/structured-review", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": crypto.randomUUID(),
+      },
+      body: JSON.stringify({
+        review_stage: "STEP_1",
+        call_id: selectedCallId,
+        nodes: nonEmptyNodes,
+      }),
+    });
+    if (!response.ok) {
+      const apiError = await parseApiError(response);
+      if (apiError.status === 401) {
+        console.info("universal_submit.submit_outcome", { outcome: "auth_redirect" });
+        router.push(SIGN_IN_ROUTE);
+        return;
+      }
+      console.info("universal_submit.submit_outcome", { outcome: "api_error" });
+      setFormError(apiError.message);
+      return;
+    }
+
+    const payload = (await response.json()) as { review_id?: string };
+    if (!payload.review_id) {
+      console.info("universal_submit.submit_outcome", { outcome: "missing_review_id" });
+      setFormError("Review submitted but no review id was returned.");
+      return;
+    }
+    clearDraft(selectedCallId);
+    const query = new URLSearchParams({
+      submitted_nodes: nonEmptyNodes.map((node) => node.node_logical_id).join(","),
+    });
+    console.info("universal_submit.submit_outcome", { outcome: "success" });
+    router.push(`${buildReviewDetailRoute(payload.review_id)}?${query.toString()}`);
+  }
+
+  async function runComplianceThenMaybeSubmit() {
     const nonEmptyNodes = buildNodesPayload();
     if (renderModel.state !== "ready") {
       setFormError("This call is currently unsupported for universal structured submit.");
@@ -262,50 +326,36 @@ export function UniversalSubmitForm() {
             ? apiError.details.node_logical_ids.filter((item) => typeof item === "string")
             : [];
           setHardBlockErrors([apiError.message, ...detailNodeIds]);
+          console.info("universal_submit.submit_outcome", { outcome: "compliance_hard_block" });
           return;
         }
         setFormError(apiError.message);
+        console.info("universal_submit.submit_outcome", { outcome: "compliance_api_error" });
         return;
       }
 
       const compliance = (await complianceResponse.json()) as ComplianceCheckResponse;
       if (compliance.errors.length > 0) {
-        setFormError("Compliance warnings must be acknowledged before submitting.");
+        setComplianceWarnings(compliance.errors);
+        setIsBypassModalOpen(true);
         return;
       }
+      await submitStructuredReview(nonEmptyNodes);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
-      const response = await fetch("/api/bff/structured-review", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Idempotency-Key": crypto.randomUUID(),
-        },
-        body: JSON.stringify({
-          review_stage: "STEP_1",
-          call_id: selectedCallId,
-          nodes: nonEmptyNodes,
-        }),
-      });
-      if (!response.ok) {
-        const apiError = await parseApiError(response);
-        if (apiError.status === 401) {
-          router.push(SIGN_IN_ROUTE);
-          return;
-        }
-        setFormError(apiError.message);
-        return;
-      }
-
-      const payload = (await response.json()) as { review_id?: string };
-      if (!payload.review_id) {
-        setFormError("Review submitted but no review id was returned.");
-        return;
-      }
-      clearDraft(selectedCallId);
-      const query = new URLSearchParams({
-        submitted_nodes: nonEmptyNodes.map((node) => node.node_logical_id).join(","),
-      });
-      router.push(`${buildReviewDetailRoute(payload.review_id)}?${query.toString()}`);
+  async function handleBypassConfirm() {
+    setIsBypassModalOpen(false);
+    const nonEmptyNodes = buildNodesPayload();
+    if (nonEmptyNodes.length === 0) {
+      setFormError("You must fill out at least one section before submitting.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await submitStructuredReview(nonEmptyNodes);
     } finally {
       setIsSubmitting(false);
     }
@@ -439,6 +489,15 @@ export function UniversalSubmitForm() {
           </button>
         </form>
       </div>
+      <ComplianceBypassModal
+        isOpen={isBypassModalOpen}
+        isSubmitting={isSubmitting}
+        onCancel={() => setIsBypassModalOpen(false)}
+        onConfirm={() => {
+          void handleBypassConfirm();
+        }}
+        warnings={complianceWarnings}
+      />
     </main>
   );
 }
