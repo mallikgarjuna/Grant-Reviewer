@@ -80,6 +80,32 @@
 - **Why**: Ensures auditability and traceability even when failures are structural/non-textual.
 - **Status**: Approved.
 
+### AD 38.12: Modes are projection-only (filter-only) over a single canonical findings set
+- **WF ID**: WF-0038
+- **Context**: Modes risk semantic drift (“strict runs fewer checks”) which breaks call-agnostic determinism and auditability.
+- **Decision**: Define modes as projection-only over the same computed `DiagnosticFinding v1[]` list:
+  - `DIAGNOSTIC` returns the full ordered findings set.
+  - `STRICT` returns a deterministic subset by fixed predicate (`severity == ERROR`).
+- **Why**: Preserves a single canonical “truth set” per input and makes strict/diagnostic a deterministic view choice, not a different evaluation.
+- **Tradeoff**: Strict cannot reduce runtime cost by skipping checks; it only changes what is surfaced downstream.
+- **Status**: Approved.
+
+### AD 38.13: `ReviewRequest v1` requires embedding `call_config_snapshot` for replayability
+- **WF ID**: WF-0038
+- **Context**: Pointer-only call-config references couple replayability to external storage availability and version drift.
+- **Decision**: Require `call_config_snapshot` in every `ReviewRequest v1`, with `call_config_ref.digest` matching the snapshot.
+- **Why**: Ensures deterministic replay/audit of findings across time with no hidden dependency on config storage state.
+- **Tradeoff**: Request payloads are larger; config duplication is accepted for audit safety.
+- **Status**: Approved.
+
+### AD 38.14: Deterministic compatibility mapping groups findings into one `ReviewCard` per expectation per subject
+- **WF ID**: WF-0038
+- **Context**: Current product surface persists `ReviewCard` linked to an expectation; the new engine SSOT output is `DiagnosticFinding v1`.
+- **Decision**: Freeze mapping cardinality to exactly one `ReviewCard` per (`subject_ref`, `primary_expectation_ref`), aggregating grouped findings deterministically.
+- **Why**: Preserves stable UX and persistence semantics while keeping the engine atomic output trace-first and single-primary.
+- **Tradeoff**: Some per-check granularity becomes internal to `feedback_text` rather than separate cards.
+- **Status**: Approved.
+
 ## Date: 2026-02-28 (WF-0035: Universal form dynamic UI renderer)
 
 ### AD 35.1: Frontend render model composes flat nodes ordering + metadata enrichment
