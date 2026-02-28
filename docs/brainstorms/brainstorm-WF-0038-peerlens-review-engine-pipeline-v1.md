@@ -35,6 +35,27 @@ Open questions this snapshot raises:
 - Qualitative evaluation is primary; numerical scoring is optional/secondary and isolated (must not contaminate core logic).
 - One canonical, call-agnostic engine: calls define WHAT; engine defines HOW; modes define WHICH components are activated; extend via configuration, not mutation; atomic output is `DiagnosticFinding v1`.
 
+## Glossary (v1 architecture terms)
+
+- **Call-config (call configuration)**: the declarative, funder/program-specific *data* that defines WHAT to evaluate for a specific call (evaluation criteria/elements, expectations, constraints, dependencies, and activation by stage/step). The engine must not contain funder branching; call variability lives here.
+- **Engine adapters**: funder/program-specific code paths (e.g., “if ERC then…”), shims, or plug-ins inside the engine that alter evaluation behavior. These are explicitly forbidden for WF-0038 (coupling risk); any variability must be expressed via call-config.
+- **Modes**: engine-defined execution profiles (not call-defined semantics) that toggle which invariant components run and how results are surfaced (e.g., stricter vs more exploratory output) without changing the underlying call-config semantics.
+- **Pass 1 / Pass 2 (two-pass pipeline)**:
+  - **Pass 1 (Observations)**: produce anchored, normalized “facts about the submission” (no expectation scoring/labeling); output is `Observation v1`.
+  - **Pass 2 (Findings)**: evaluate observations against call-config expectations/constraints and emit `DiagnosticFinding v1` (with kind, severity, assessment status, and trace).
+- **Stage vs Step (“review stage”)**: a call-config notion for which requirements/expectations are active at a given point (e.g., `STEP_1` vs `STEP_2`). The engine does not branch by funder; it uses stage/step only as an input that selects WHAT is active in the call-config.
+- **WHAT unit vs HOW unit**:
+  - **WHAT unit**: the call-defined thing being evaluated (v1: an `expectation_id`, mapped to evaluation criteria/elements and constraints).
+  - **HOW unit**: the engine mechanism used to evaluate (e.g., `observation_kind`, `check_id`, pipeline components). HOW must remain call-agnostic and stable.
+- **Dependency**: an explicit call-config edge that states an expectation requires context from another section/node (for cross-section alignment). Missing required dependency context yields explicit `NOT_ASSESSABLE` findings rather than silent skipping.
+- **Anchors**: required, typed references that justify a claim. Every finding must have ≥1 anchor:
+  - `TEXT_SPAN` (quote/offsets), or
+  - `STRUCTURAL_LOCATOR` (node/logical location + field), or
+  - `DERIVED` (computed, still pointing to a structural locator).
+- **Two modes (“strict” vs “diagnostic”)**: intended engine-defined profiles:
+  - **Strict (blocking-focused)**: emphasize high-precision `ERROR`/blocking findings; minimize lower-severity exploratory notes.
+  - **Diagnostic (full coverage)**: emit the complete set of expectation-grounded findings (including lower-severity notes) consistent with the call-config and invariant kinds.
+
 ## Decisions Approved (This Chat, 2026-02-28)
 
 1. `DiagnosticFinding v1` is trace-first (required traceability/determinism fields).
