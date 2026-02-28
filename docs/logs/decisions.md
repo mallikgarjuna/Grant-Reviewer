@@ -94,6 +94,32 @@
 - **Tradeoff**: Some reviews will fail and need regeneration/retry when outputs violate policy.
 - **Status**: Implemented.
 
+## Date: 2026-02-28 (WF-0037: NWO Vidi 2025 full proposal call definition)
+
+### AD 37.1: Defer AES-only impact clause until domain gating exists
+- **WF ID**: WF-0037
+- **Context**: The Call PDF contains an AES-specific impact clause, but the app does not currently select a Vidi domain, so any AES-only element would be evaluated for all submissions.
+- **Decision**: Exclude AES-only clause from canonical evaluation criteria/elements until domain selection/branching is introduced.
+- **Why**: Prevents incorrect universal evaluation semantics and preserves source-grounded correctness.
+- **Tradeoff**: AES-specific nuance is not evaluated until domain gating ships.
+- **Status**: Approved.
+
+### AD 37.2: Keep WF-0037 YAML-only; schema gaps require a follow-on WF
+- **WF ID**: WF-0037
+- **Context**: During planning we may discover schema needs (domain gating, separate non-evaluable guidance fields).
+- **Decision**: No schema/contract changes in WF-0037; if a gap is discovered, stop and promote a dedicated follow-on WF.
+- **Why**: Schema changes have high blast radius across ingestion/runtime/tests and must remain explicitly scoped and gated.
+- **Tradeoff**: Some desired modeling fidelity is deferred.
+- **Status**: Approved.
+
+### AD 37.3: Deadlines store timezone verbatim from sources
+- **WF ID**: WF-0037
+- **Context**: Deadlines in the call sources use human labels like CET/CEST; conversion/normalization can introduce ambiguity.
+- **Decision**: Store `funding_call.deadlines.*.timezone` verbatim as written in the authoritative source document; treat IANA normalization as a follow-on.
+- **Why**: Avoids silent conversion errors and preserves legal defensibility.
+- **Tradeoff**: Consumers may later need normalization logic.
+- **Status**: Approved.
+
 ## Date: 2026-02-23 (WF-0030: Local QA/Test DB Isolation Hardening)
 
 ### AD 30.1: Dedicated test database is required for DB-backed backend tests

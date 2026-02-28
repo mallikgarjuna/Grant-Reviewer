@@ -1,0 +1,318 @@
+# NWO Vidi 2025 (full proposal) — source-grounded call definition
+#
+# Authored from official sources provided in-workflow.
+# Traceability manifest: backend/data/calls/sources/nwo_vidi_2025_full_proposal.sources.md
+#
+# Primary sources:
+# - Vidi-2025-Full-proposal-form.docx (proposal-node structure + constraints)
+# - Call-for-Proposals-Vidi-2025_Eng.pdf (DORA + assessment criteria + deadlines)
+#
+funding_agency:
+  id: nwo
+  name: Dutch Research Council (NWO)
+  country: NL
+
+funding_call:
+  id: nwo_talent_vidi_2025_full_proposal
+  code: nwo_vidi_2025_full_proposal
+  title: NWO Talent Programme — Vidi 2025 — Full proposal
+  year: 2025
+  stage: full_proposal
+  language: en
+
+  deadlines:
+    full_proposal_submission:
+      datetime_local: "2026-04-09T14:00:00"
+      timezone: "CEST"
+
+evaluation_criteria:
+  - id: crit_quality_and_innovation
+    name: Quality and innovative character of the research proposal
+    stage: full_proposal
+    weight_percent: 75
+    evaluation_elements:
+      - id: elem_scientific_contribution
+        name: Important contribution to advancement of science
+        description: "The proposed research has potential to make an important contribution to the advancement of science (broad definition of science)."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_scientific_innovation
+        name: Scientific innovation
+        description: "The proposed research contains (elements of) scientific innovation in terms of theory, methods and/or topic."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_beyond_incremental
+        name: Beyond gradual evolution of current research
+        description: "The proposed research goes beyond a gradual evolution of the applicant's current research."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_challenge_and_feasibility
+        name: Equitable balance of challenge and feasibility
+        description: "The proposal strikes an equitable balance between being challenging and feasible (including planning/timeframe/resources and a high risk-high gain stance where applicable)."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2 + footnote 7"
+
+      - id: elem_alignment_with_expertise
+        name: Alignment with researcher expertise
+        description: "The proposal aligns with the researcher's expertise, or presents a convincing vision of how alignment will be achieved."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_approach_appropriateness
+        name: Appropriate approach
+        description: "The proposed approach is appropriate."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_clarity_questions_objectives
+        name: Clarity of proposal (questions and objectives)
+        description: "The proposal is clear, including the question(s) posed and the objectives."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+  - id: crit_impact
+    name: Scientific and/or societal impact
+    stage: full_proposal
+    weight_percent: 25
+    evaluation_elements:
+      - id: elem_scientific_impact_strategy
+        name: Scientific impact dissemination/implementation strategy
+        description: "Ambitious vision and appropriate strategy for dissemination/implementation of results in one's discipline, related disciplines, and the broader scientific field."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_societal_impact_added_value
+        name: Societal impact added value
+        description: "Added value for societal impact (per the call's definition)."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_societal_impact_potential
+        name: Societal impact potential (short and long term)
+        description: "Potential for societal impact in the short and long term."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_societal_impact_strategy
+        name: Societal impact strategy
+        description: "Ambitious vision and appropriate strategy regarding how the proposed research may lead to societal impact."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_impact_focus_motivation
+        name: Convincing motivation for chosen impact focus
+        description: "Motivation for the focus on scientific impact and/or societal impact is convincing."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_cross_impact_opportunities
+        name: Proportional attention to cross-impact opportunities
+        description: "Proportional attention during the project to increasing (unforeseen) opportunities for the non-primary impact type (scientific vs societal), depending on chosen focus."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+      - id: elem_undesirable_societal_impact_risks
+        name: Risks of undesirable societal impact and mitigation
+        description: "Sufficient attention to key risks of undesirable societal impact and measures to prevent/mitigate them and increase chances of desired impact."
+        source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
+
+
+proposal_nodes:
+  - id: scientific_summary
+    label: Scientific summary
+    node_type: narrative
+    source_section: "1b"
+    content_constraints:
+      total_word_limit:
+        max_words: 300
+        includes: ["all text"]
+    guidance_text: >
+      Summarize the proposed research (topic, approach, and potential importance of results) for a multidisciplinary assessment committee.
+      Plain text only; keep it consistent with the online submission system if it duplicates fields there.
+    compliance_rules:
+      - id: comp_scientific_summary_word_limit
+        severity: ERROR
+        rule_type: formatting
+        description: "Scientific summary must be no more than 300 words."
+    node_expectations:
+      - evaluation_element_id: elem_clarity_questions_objectives
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+        guidance_note: "Use the summary to make the core question(s) and objectives immediately clear."
+      - evaluation_element_id: elem_scientific_contribution
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+        guidance_note: "State the scientific contribution succinctly without overclaiming."
+
+  - id: public_summary_en
+    label: Public summary (English)
+    node_type: narrative
+    source_section: "1c"
+    content_constraints:
+      total_word_limit:
+        min_words: 50
+        max_words: 100
+        includes: ["all text"]
+    guidance_text: >
+      Write a short public-facing summary in English (avoid 'we/us'; use discipline-appropriate roles and plain language).
+      This is not an independent assessment criterion; use it to communicate the essence of the project clearly.
+    compliance_rules:
+      - id: comp_public_summary_en_word_limit
+        severity: ERROR
+        rule_type: formatting
+        description: "Public summary (English) must be between 50 and 100 words."
+    node_expectations:
+      - evaluation_element_id: elem_clarity_questions_objectives
+        expectation_strength: OPTIONAL
+        evaluation_intent: QUALITY
+        guidance_note: "Clarity and accessibility help a multidisciplinary committee; keep it concrete."
+
+  - id: research_proposal
+    label: Description of proposed research
+    node_type: narrative
+    source_section: "2a"
+    content_constraints:
+      max_pages: 8
+      total_word_limit:
+        max_words: 4000
+        includes: ["all text"]
+      note: "Official form notes specify that word count includes in-text references, footnotes, figure/table text and captions; runtime word counting is deterministic whitespace tokenization over submitted text."
+    guidance_text: >
+      Describe the proposed research clearly and concretely (question(s), objectives, state of the art, approach/methods, and why the work is novel).
+      Ensure the proposal is understandable to a multidisciplinary committee.
+    compliance_rules:
+      - id: comp_research_proposal_word_limit
+        severity: ERROR
+        rule_type: formatting
+        description: "Research proposal description must be no more than 4000 words."
+      - id: comp_research_proposal_page_limit
+        severity: WARNING
+        rule_type: formatting
+        description: "Form indicates a maximum of 8 pages (not deterministically enforceable on plain text)."
+    node_expectations:
+      - evaluation_element_id: elem_scientific_contribution
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+        guidance_note: "Make the scientific contribution explicit and credible."
+      - evaluation_element_id: elem_scientific_innovation
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+        guidance_note: "Specify what is innovative (theory/method/topic) and why it matters."
+      - evaluation_element_id: elem_beyond_incremental
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+        guidance_note: "Clarify how this goes beyond incremental continuation of current work."
+      - evaluation_element_id: elem_challenge_and_feasibility
+        expectation_strength: MANDATORY
+        evaluation_intent: RISK
+        guidance_note: "Explain why it is challenging yet feasible (planning, resources, risks, contingencies)."
+      - evaluation_element_id: elem_alignment_with_expertise
+        expectation_strength: IMPORTANT
+        evaluation_intent: STRATEGIC_FIT
+        guidance_note: "Show alignment with your expertise, or a concrete path to achieve alignment."
+      - evaluation_element_id: elem_approach_appropriateness
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+        guidance_note: "Describe an appropriate approach and justify key choices."
+      - evaluation_element_id: elem_clarity_questions_objectives
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+        guidance_note: "Keep questions/objectives and logic of the approach easy to follow."
+
+  - id: impact
+    label: Scientific and/or societal impact
+    node_type: narrative
+    source_section: "2b"
+    content_constraints:
+      max_pages: 2
+      total_word_limit:
+        max_words: 1000
+        includes: ["all text"]
+      note: "Form notes specify word count includes references/footnotes/figures/tables; runtime word counting is deterministic whitespace tokenization over submitted text."
+    guidance_text: >
+      Describe the expected scientific and/or societal impact, your strategy for dissemination/implementation, and how you will pursue impact during the project.
+      If relevant, identify risks of undesirable societal impact and how you will mitigate them.
+    compliance_rules:
+      - id: comp_impact_word_limit
+        severity: ERROR
+        rule_type: formatting
+        description: "Impact section must be no more than 1000 words."
+      - id: comp_impact_page_limit
+        severity: WARNING
+        rule_type: formatting
+        description: "Form indicates a maximum of 2 pages (not deterministically enforceable on plain text)."
+    node_expectations:
+      - evaluation_element_id: elem_scientific_impact_strategy
+        expectation_strength: IMPORTANT
+        evaluation_intent: STRATEGIC_FIT
+        guidance_note: "If focusing on scientific impact, provide an ambitious dissemination/implementation strategy."
+      - evaluation_element_id: elem_societal_impact_added_value
+        expectation_strength: IMPORTANT
+        evaluation_intent: STRATEGIC_FIT
+        guidance_note: "If claiming societal impact, explain the added value clearly."
+      - evaluation_element_id: elem_societal_impact_potential
+        expectation_strength: IMPORTANT
+        evaluation_intent: STRATEGIC_FIT
+        guidance_note: "Describe short- and long-term societal impact potential where applicable."
+      - evaluation_element_id: elem_societal_impact_strategy
+        expectation_strength: IMPORTANT
+        evaluation_intent: STRATEGIC_FIT
+        guidance_note: "Provide a credible strategy for achieving societal impact if chosen."
+      - evaluation_element_id: elem_impact_focus_motivation
+        expectation_strength: IMPORTANT
+        evaluation_intent: QUALITY
+        guidance_note: "Make the motivation for your chosen impact focus convincing."
+      - evaluation_element_id: elem_cross_impact_opportunities
+        expectation_strength: OPTIONAL
+        evaluation_intent: RISK
+        guidance_note: "Address how you will capture opportunities for the non-primary impact type, depending on focus."
+      - evaluation_element_id: elem_undesirable_societal_impact_risks
+        expectation_strength: OPTIONAL
+        evaluation_intent: RISK
+        guidance_note: "Identify and mitigate risks of undesirable societal impact where relevant."
+
+reviewer_policy:
+  - id: pol_no_bibliometrics_blocking
+    applies_to_stage: BOTH
+    rule_type: prohibited_metric
+    instruction: "Do not use bibliometric indicators (e.g., h-index, Journal Impact Factor) as a basis for assessment; evaluate on merits per DORA. Applicants are not allowed to mention these in their applications."
+    severity: ERROR
+    enforcement_mode: BLOCKING
+    forbidden_terms:
+      - h-index
+      - h index
+      - journal impact factor
+      - impact factor
+      - JIF
+      - SNIP
+      - SJR
+      - SCImago
+      - Q1
+    source_hint: "Call for Proposals (Vidi 2025) §4.1 (DORA)"
+
+  - id: pol_dora_merits_over_surrogates
+    applies_to_stage: BOTH
+    rule_type: assessment_principle
+    instruction: "Assess research and researchers on their own merits; do not use surrogate measures (venue prestige, rankings, bibliometrics). Use evidence-based narrative and a broad definition of scientific output."
+    severity: WARNING
+    enforcement_mode: PROMPT_ONLY
+    source_hint: "Call for Proposals (Vidi 2025) §4.1 (DORA)"
+
+  - id: pol_no_prestige_language
+    applies_to_stage: BOTH
+    rule_type: assessment_principle
+    instruction: "Avoid prestige/ranking language for venues (e.g., 'top-tier journal'); focus on what the work contributed and the evidence provided."
+    severity: WARNING
+    enforcement_mode: POST_CHECK
+    forbidden_terms:
+      - top-tier
+      - top tier
+      - top journal
+      - prestigious journal
+      - leading journal
+      - top publisher
+      - prestigious publisher
+      - leading publisher
+    source_hint: "Call for Proposals (Vidi 2025) §4.1 (DORA surrogate measures)"
+
+  - id: pol_avoid_personal_attribute_commentary
+    applies_to_stage: BOTH
+    rule_type: bias_avoidance
+    instruction: "Avoid commentary on personal attributes or protected characteristics (e.g., cultural/ethnic background, gender, sexual orientation, health, age). Focus on the proposal and evidence."
+    severity: WARNING
+    enforcement_mode: PROMPT_ONLY
+    source_hint: "Call for Proposals (Vidi 2025) Chapter 4 (assessment procedure: inclusion/implicit bias note)"
+
+runtime_notes:
+  - id: note_scope_full_proposal_only
+    description: "This call definition models the full proposal narrative form only. The call procedure includes a pre-proposal phase, but pre-proposal criteria are not encoded here."
