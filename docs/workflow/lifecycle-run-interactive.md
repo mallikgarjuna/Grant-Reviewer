@@ -18,9 +18,9 @@ Do NOT modify this file during execution.
 > **Router Rule**: This file orchestrates only. Use phase runners as the source of truth; do not restate or override sub-phase instructions.
 1. **Phase 0 (Ideation)**: Execute end-to-end via `@docs/workflow/phase-0-run-ideation.md`.
    - *Wait for User Signal*
-2. **Phase 1 (Definition)**: Execute via `@docs/workflow/phase-1-2-run-planning.md` with Phase ID `1`.
+2. **Phase 1 (Definition)**: Execute via `@docs/workflow/phase-1-or-2-run-planning.md` with Phase ID `1`.
    - *Wait for User Signal*
-3. **Phase 2 (Planning)**: Execute via `@docs/workflow/phase-1-2-run-planning.md` with Phase ID `2`.
+3. **Phase 2 (Planning)**: Execute via `@docs/workflow/phase-1-or-2-run-planning.md` with Phase ID `2`.
    - *Wait for User Signal*
 4. **Phase 3 (Execution)**: Execute via `@docs/workflow/phase-3-run-execution.md` (which routes Part B to 3.2 and Part C to 3.3).
    - *Stop*
