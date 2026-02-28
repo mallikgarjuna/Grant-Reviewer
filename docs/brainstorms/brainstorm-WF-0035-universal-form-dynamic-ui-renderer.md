@@ -1,9 +1,9 @@
 # WF-0035 — Universal Form: Dynamic UI renderer
 
 Artifact: brainstorm
-Version: v0.4
-Status: Draft
-Last Updated: 2026-02-26
+Version: v0.5
+Status: Draft Complete
+Last Updated: 2026-02-28
 
 ---
 
@@ -40,7 +40,7 @@ Initial decisions to anchor the brainstorm:
 > Recommendation: A — Keeps frontend simpler and avoids parsing raw canonical JSON; aligns with existing backend DTO direction (e.g., metadata endpoints).
 > **Selected: A**
 
-**Q4: What is the MVP rendering scope for WF-0035 (leave recursion for P1 #2 unless overridden)?**
+**Q4: What is the MVP rendering scope for WF-0035 (leave recursion for P1 #1 unless overridden)?**
 - A) Flat fields + simple sections only (no nested/recursive structures).
 - B) Flat + one level of grouping (accordions/sections), but no arbitrary-depth recursion.
 - C) Full nested recursion (trees/arrays/objects) in this WF.
@@ -85,6 +85,45 @@ Open questions suggested by the snapshot:
 - **Submission SSOT**: use `node_logical_id` from metadata (do not infer from titles).
 
 ---
+
+## Post-WF-0032..WF-0037 Reality Check (Decisions Applied) (2026-02-28)
+
+These decisions are based on the repo state after WF-0032 through WF-0037 (Veni + Vidi canonical call definitions; `ui_mode` gating; public metadata/config endpoints; compliance + structured review contracts).
+
+**Q1: How does WF-0035 handle domain input (required for correct compliance in at least Veni today)?**
+- A) Add a generic domain picker surface in the universal form, and pass `domain` through compliance/review when applicable; use an interim per-call domain-options mapping only where the repo lacks a call-definition-driven domain options contract.
+- B) Keep a Veni-only domain UI exception inside WF-0035.
+- C) Defer domain entirely and accept incorrect/incomplete compliance for domain-gated calls.
+> Recommendation: A — Preserves correctness and the universal direction. However, because domain options are not yet modeled in the call definition schema/metadata contract, WF-0035 should treat per-call domain options as a temporary bridge and explicitly avoid coupling other logic to "Veni".
+> **Selected: A**
+
+**Q2: What is the primary rendering contract to avoid overfitting to Veni?**
+- A) Define an explicit frontend "render model" contract and deterministic fallback rules; treat endpoints as inputs to populate that model.
+- B) Treat existing endpoints as the contract directly (ad-hoc rendering based on whatever is returned).
+- C) Add a new backend "form schema" endpoint now.
+> Recommendation: A — The UI currently composes multiple endpoints with different semantics; the render model must be the stable SSOT for frontend behavior to avoid drift.
+> **Selected: A**
+
+**Q3: How should WF-0035 gate the call dropdown without adding backend endpoints (N+1 config fetch risk)?**
+- A) Keep N+1 config gating for MVP, but enforce guardrails: concurrency limit, timeout, and partial-results UX (do not block the entire form if some configs fail).
+- B) Add a backend endpoint to return only `ui_mode="structured_nodes"` calls.
+- C) Hardcode supported call codes.
+> Recommendation: A — Keeps scope consistent with the "no new backend endpoints" constraint while preventing the worst UX failure mode as call count grows.
+> **Selected: A**
+
+**Q4: How should we standardize the recursion deferral reference?**
+- A) Standardize recursion as one parked item: `P1 #1 Universal Form: Recursive UI components for nested schemas`.
+- B) Keep multiple labels (P1 #1 vs P1 #2).
+- C) Rename later.
+> Recommendation: A — Prevents future routing and traceability confusion.
+> **Selected: A**
+
+**Q5: What are the partial-submission semantics (compliance vs review)?**
+- A) Submit requires at least one non-empty node; compliance may evaluate the full draft payload; structured review submits only non-empty nodes.
+- B) Require all expected nodes filled before submit.
+- C) Both compliance and review operate only on non-empty nodes.
+> Recommendation: A — Matches current behavior and keeps submission unblocked while remaining explicit about what is evaluated vs what is checked.
+> **Selected: A**
 
 ## 1. Problem Statement
 
@@ -226,7 +265,7 @@ Replace the hardcoded Veni form with a universal submit form used by the existin
 - A) Fetch all calls (`/api/bff/calls`), then for each call code check `/api/public/calls/{code}/config` and include only `ui_mode="structured_nodes"`.
 - B) Backend adds a “structured_only” filter to `/calls` to avoid N+1 calls.
 - C) Hardcode a list of supported call codes in frontend.
-> Recommendation: A — Correctness first for MVP ideation; contract optimization (B) can be tackled later if N+1 becomes problematic.
+> Recommendation: A — Correctness first for MVP ideation. Add explicit guardrails (concurrency limit, timeout, partial-results UX) so N+1 does not degrade the entire form as calls increase.
 > **Selected: A**
 
 **Q3: How should the form build the render model for flat nodes?**
