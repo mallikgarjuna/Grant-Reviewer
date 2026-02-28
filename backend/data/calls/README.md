@@ -35,7 +35,9 @@ Guidelines for authoring call YAML that validates/ingests correctly:
 
 ## Suggested Layout
 
-- Agency-specific call YAMLs under subfolders (for example `erc/`, `nwo/`)
+- Agency-specific canonical call YAMLs under subfolders (for example `erc/`, `nwo/`)
+- Legacy/superseded YAMLs under `legacy/`
+- Design/authoring notes under `notes/`
 - Source traceability manifests under `sources/`
 - Reusable starter templates under `templates/`
 

@@ -66,7 +66,7 @@ Decisions:
 
 - Re-authored YAML from official sources and kept runtime path stable:
   - Canonical: `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
-  - Archived legacy: `backend/data/calls/nwo/nwo_veni_2025_preproposal_legacy.yaml`
+  - Archived legacy: `backend/data/calls/legacy/nwo/nwo_veni_2025_preproposal_legacy.yaml`
 - Added traceability manifest: `backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md`
 - Added/standardized `reviewer_policy` to align with call guidance (bibliometrics ban, venue-prestige language, DORA/merits principle, bias avoidance).
 - Verified via dry-run ingest (no DB required): `cd backend && PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`

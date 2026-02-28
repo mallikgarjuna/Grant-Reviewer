@@ -67,5 +67,5 @@ Observed: flat call (no `parent_node_id` links), and `/api/public/...` endpoints
 ## What Shipped
 
 - Canonical call YAML: `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
-- Archived legacy YAML: `backend/data/calls/nwo/nwo_veni_2025_preproposal_legacy.yaml`
+- Archived legacy YAML: `backend/data/calls/legacy/nwo/nwo_veni_2025_preproposal_legacy.yaml`
 - Source manifest: `backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md`

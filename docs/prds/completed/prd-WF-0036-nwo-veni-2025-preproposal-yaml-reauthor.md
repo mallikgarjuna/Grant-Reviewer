@@ -27,7 +27,7 @@ Re-author the NWO Veni 2025 pre-proposal call definition YAML from official sour
 ## Shipped Artifacts
 
 - Canonical: `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
-- Archived legacy: `backend/data/calls/nwo/nwo_veni_2025_preproposal_legacy.yaml`
+- Archived legacy: `backend/data/calls/legacy/nwo/nwo_veni_2025_preproposal_legacy.yaml`
 - Source manifest: `backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md`
 
 ## Acceptance / Verification
