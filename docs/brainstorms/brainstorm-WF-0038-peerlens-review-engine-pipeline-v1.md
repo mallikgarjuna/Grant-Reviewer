@@ -14,6 +14,19 @@ Design a universal, call-agnostic Grant Review Engine Pipeline that works across
 - Source of truth (architecture snapshot): `docs/reference/architecture_chat.md`
 - Evaluation terminology: use “evaluation criteria/elements” (not “rubric”)
 
+## Repo Reality Snapshot (Read-Only) (2026-02-28)
+
+- Current persisted/user-facing atomic output in the product is `ReviewCard` (linked to `NodeExpectation`), not `DiagnosticFinding`.
+- `DiagnosticFinding v1` currently exists only as an architecture concept/logged decisions (no code-level schema or type yet).
+- Call ingestion has an explicit V2 schema (`backend/app/schemas/call_definitions_v2.py`) that models evaluation criteria/elements and `NodeExpectation` links to elements.
+- Domain model docs assert “no scoring, no rewriting” and expectation-linked `ReviewCard` outputs as the MVP shape (`docs/reference/domain_model.md`).
+- Multiple prior WFs touched review execution and `ReviewCard` semantics, so mapping `DiagnosticFinding v1 → ReviewCard` must be treated as a compatibility contract.
+
+Open questions this snapshot raises:
+- Does `DiagnosticFinding v1` replace `ReviewCard` internally, or is it an intermediate artifact that maps 1:1 (or N:1) onto `ReviewCard`?
+- What is the authoritative identifier for “expectation” in v1 findings: `NodeExpectation` id, YAML expectation id, or a new stable expectation logical id?
+- How do we preserve “trace-first” determinism across call ingestion versions (V2 schema) without leaking funder concepts into the engine?
+
 ## Locked Decisions (Snapshot)
 
 - Product identity: surgical pre-submission diagnostic tool; optimized for researcher trust.
@@ -49,3 +62,262 @@ Missing / not yet frozen:
 - Specify how call configuration declares expectations, constraints, and evaluation criteria/elements (WHAT) without encoding funder-specific semantics.
 - Define execution profiles (modes) as activation sets over the two-pass pipeline.
 - Map `DiagnosticFinding v1` to the existing `ReviewCard` surface (downstream compatibility contract).
+
+---
+
+## 1. Problem Statement (Section 1)
+
+### Decisions (selected)
+
+- Primary user harm to eliminate: **untraceable diagnostics** (findings must be defensible and expectation/anchor-grounded).
+- MVP input boundary: **single section + explicitly declared dependency context** (only when call config declares dependencies).
+- v1 success state: **complete set of expectation-grounded findings across invariant kinds** (not “only blockers” or “only top few”).
+- Scoring promise: **optional and explicitly separate metadata only** (never driving evaluation logic).
+- Definition of call-agnostic (strict): **same engine; call config defines expectations/constraints; modes only toggle components** (no call-defined semantics or funder adapters).
+
+**Brainstorming Q&A:**
+
+**Q1: What is the primary user harm this WF must eliminate (most important failure to prevent)?**
+- A) Untraceable diagnostics (cannot justify a finding to a specific expectation/anchor).
+- B) Funder/program coupling (engine behavior changes by funder logic rather than config).
+- C) Non-determinism (same inputs yield materially different findings).
+> Recommendation: A — trust collapses first when findings aren’t defensible; B/C matter, but trace-first is the audit spine.
+> **Selected: A**
+
+---
+
+## 5. Constraints (Section 5)
+
+### Decisions (selected)
+
+- Call-config expressiveness constraint: call config may define expectations/constraints/dependencies only; it may not define new semantics (no custom kinds/checks).
+- Explainability constraint: every finding must include at least one anchor; anchors are always required.
+- Versioning constraint: `DiagnosticFinding v1` is frozen and backward-compatible until an intentional `v2`.
+- Stage constraint: stage influences WHAT via call config (which expectations are active), not engine branching.
+- Non-assessable constraint: must be explicit and trace-first per finding (status/reason + anchors), not silent omission or separate summary.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the hard constraint on call-config expressiveness (to prevent funder logic smuggling)?**
+- A) Call config may define expectations/constraints/dependencies only; it may not define new semantics (no custom kinds/checks).
+- B) Call config may define custom checks (still declarative) as long as engine interprets them.
+- C) Call config can include “scripted” logic in a restricted DSL.
+> Recommendation: A — B/C are funder-logic-in-disguise and erode call-agnostic purity.
+> **Selected: A**
+
+**Q2: What is the hard constraint on engine outputs for explainability?**
+- A) Every finding must include at least one anchor; anchors are always required.
+- B) Only content-related findings need anchors; structure/compliance can omit.
+- C) Anchors optional; rely on narrative.
+> Recommendation: A — prevents hand-wavy outputs and preserves trace-first defensibility.
+> **Selected: A**
+
+**Q3: What is the constraint on versioning/compatibility for `DiagnosticFinding v1`?**
+- A) Frozen schema + strict backward compatibility until a deliberate `v2`.
+- B) Additive evolution allowed freely in v1 (fields can be added/renamed as needed).
+- C) Per-call schema variants (v1 differs by call).
+> Recommendation: A — avoids downstream breakage and prevents coupling through per-call variants.
+> **Selected: A**
+
+**Q4: What is the constraint on how “review stage” (Step 1/Step 2/etc.) affects evaluation?**
+- A) Stage influences WHAT via call config (expectations/elements active per stage), not engine branching.
+- B) Stage is an engine mode that changes evaluation semantics.
+- C) Stage is inferred from the input section.
+> Recommendation: A — preserves call-agnostic behavior and keeps stage declarative.
+> **Selected: A**
+
+**Q5: What is the constraint on “non-assessable” handling?**
+- A) Non-assessable must be explicit and trace-first (still a finding with status/reason + anchors).
+- B) Non-assessable can be omitted if the user didn’t provide required context.
+- C) Non-assessable is returned as a separate summary object, not per expectation.
+> Recommendation: A — omission is silent failure; separate summaries violate the atomic-output contract.
+> **Selected: A**
+
+---
+
+## 6. Risks / Unknowns (Section 6)
+
+### Decisions (selected)
+
+- Riskiest unknown for re-architecture risk: expectation identity/versioning stability across call-config versions.
+- Biggest coupling pressure point: severity policy (where “policy” can leak into engine defaults).
+- Biggest determinism failure mode: non-deterministic anchor selection.
+- Most likely downstream misuse risk: leaking Observations as a user-facing/consumer-facing contract (bypassing findings).
+- First adversarial stress test target: demonstrate one NWO + one ERC + one MSCA call config can drive the same pipeline stages with no special-casing.
+
+**Brainstorming Q&A:**
+
+**Q1: What is the riskiest unknown that could force a re-architecture after we “freeze” v1 schemas?**
+- A) Anchor model isn’t sufficient/consistent across all finding kinds.
+- B) Expectation identity/versioning across call-config versions can’t stay stable.
+- C) Two-pass boundary leaks semantics (observations start behaving like findings).
+> Recommendation: B — if expectation identity/versioning is unstable, trace-first collapses across time and across calls.
+> **Selected: B**
+
+**Q2: What is the biggest coupling pressure point (where funder-specific logic tends to sneak back in)?**
+- A) Dependency modeling (cross-section alignment rules).
+- B) Severity policy (“what counts as ERROR vs WARNING vs NOTE”).
+- C) Not-assessable logic and missing-context handling.
+> Recommendation: B — severity is where policy hides; if it isn’t strictly call-config-driven, funder semantics will leak into engine defaults.
+> **Selected: B**
+
+**Q3: What is the biggest determinism failure mode in practice?**
+- A) Non-deterministic aggregation/splitting of findings across runs.
+- B) Non-deterministic anchor selection.
+- C) Non-deterministic ordering of checks/observations.
+> Recommendation: B — anchors are the backbone; if anchors vary, identical findings become non-auditable even if ids are stable.
+> **Selected: B**
+
+**Q4: What is the most likely downstream misuse risk (breaking the “atomic output” philosophy)?**
+- A) UI shows Observations directly (bypassing findings).
+- B) UI or analytics uses `related_expectation_refs[]` as equal weight (reintroduces multi-primary semantics).
+- C) Consumers invent scores from severity counts and treat them as ranking.
+> Recommendation: A — once observations leak, you’ve effectively created a second output contract that will drift and undermine trust.
+> **Selected: A**
+
+**Q5: What must be validated first with an adversarial stress test (to satisfy exit criteria)?**
+- A) One NWO + one ERC + one MSCA call config can drive the same pipeline stages without any special-casing.
+- B) “No dependency provided” produces explicit not-assessable findings with correct trace/anchors.
+- C) Findings remain stable in identity/kind/severity/anchors/order across repeated runs.
+> Recommendation: A — directly tests the call-agnostic universality objective.
+> **Selected: A**
+
+---
+
+## 2. Desired Outcome (Section 2)
+
+### Decisions (selected)
+
+- Determinism definition: deterministic **structured fields** (identity/kind/severity/anchors/order), while explanatory text may vary within bounded patterns.
+- Success metric tradeoff: two-tier—**high precision for blocking/ERROR** findings; allow more exploratory lower-severity notes with stricter framing.
+- When to emit “higher-order” kinds (evidence/alignment/feasibility): **only when call config declares relevant expectations/dependencies**.
+- Ordering contract: sort by **severity desc**, then **call-defined expectation order**, then **check_id** tie-break for stability.
+- Compatibility: engine SSOT output is `DiagnosticFinding v1`; mapping to `ReviewCard` is an explicit downstream adapter/compatibility contract.
+
+**Brainstorming Q&A:**
+
+**Q1: What does “deterministic” mean for v1 outputs?**
+- A) Fully deterministic including generated text (same inputs → identical text).
+- B) Deterministic structured fields (ids/kind/severity/anchors/order), while explanatory text may vary within bounded templates.
+- C) Only deterministic at the aggregate level (same “themes” but not stable per-finding identity).
+> Recommendation: B — preserves auditability without pretending LLM prose is byte-identical. A is brittle; C undermines traceability.
+> **Selected: B**
+
+**Q2: What is the primary success metric tradeoff for v1?**
+- A) Maximize precision (minimize false positives), even if it misses some issues.
+- B) Maximize recall (find as many issues as possible), tolerating some false positives.
+- C) Two-tier: high-precision for `ERROR`/blocking findings; allow more exploratory “notes” at lower severity.
+> Recommendation: C — preserves trust where it matters most while still being diagnostically useful. A risks under-helping; B risks trust collapse.
+> **Selected: C**
+
+**Q3: When should the engine emit findings for `EVIDENCE_SUFFICIENCY`, `ALIGNMENT`, `FEASIBILITY`?**
+- A) Always, for every call/section.
+- B) Never in v1; only structure/compliance/expectation satisfaction.
+- C) Only when the call config (WHAT) declares relevant expectations/dependencies for those invariants.
+> Recommendation: C — prevents generic advice from masquerading as expectation-grounded diagnostics.
+> **Selected: C**
+
+**Q4: What is the deterministic ordering contract for findings returned to downstream consumers?**
+- A) Sort by `severity` desc, then by call-defined expectation order, then by `check_id`.
+- B) Sort purely by call-defined expectation order.
+- C) Sort by pipeline stage/kind order.
+> Recommendation: A — severity-first is user-meaningful; expectation order preserves call intent; `check_id` tie-break ensures stability.
+> **Selected: A**
+
+---
+
+## 3. Target User / Actor (Section 3)
+
+### Decisions (selected)
+
+- Primary target user: **researchers** (self-diagnosis pre-submission); other consumers are secondary.
+- False positives tolerance: **moderate** with clear labeling (especially at lower severity).
+- Missing dependency context: acceptable only as explicit **NOT_ASSESSABLE-style** findings that state what’s missing and why it blocks assessment.
+- Primary enabled action: **rewrite/improve the section outside the engine** using fix direction (not go/no-go or competition).
+- Explainability per finding: include “because” rationale with explicit expectation + anchor references (auditable, not essay-length).
+
+**Brainstorming Q&A:**
+
+**Q1: Who is the primary target user for v1 engine outputs (not UI)?**
+- A) Researchers (self-diagnosis pre-submission).
+- B) Internal reviewers/consultants (expert service workflow).
+- C) Admin/operators (quality control).
+> Recommendation: A — aligns with researcher-trust positioning; B/C are secondary consumers.
+> **Selected: A**
+
+**Q2: What is the user’s tolerance for false positives in v1?**
+- A) Very low: anything questionable must be framed as “uncertain” or omitted.
+- B) Moderate: lower-severity findings can be suggestive but must be clearly labeled.
+- C) High: more is better; user will sift.
+> Recommendation: B — consistent with the two-tier precision policy; A risks under-helping; C erodes trust.
+> **Selected: B**
+
+**Q3: What is the user’s tolerance for “missing context” when dependencies exist?**
+- A) Never acceptable: engine must block if required dependency context is missing.
+- B) Acceptable with “NOT_ASSESSABLE” style findings that explain what’s missing.
+- C) Acceptable silently; engine proceeds anyway.
+> Recommendation: B — preserves section-first flow while staying honest and traceable; A is overly blocking; C violates trust.
+> **Selected: B**
+
+**Q4: What is the primary user action we want to enable after reading findings?**
+- A) Rewrite the section (outside engine) guided by fix direction.
+- B) Decide whether to submit at all (go/no-go).
+- C) Compare against peers/competition.
+> Recommendation: A — matches “no rewriting in engine” while still driving improvement; B/C are out-of-scope/secondary.
+> **Selected: A**
+
+**Q5: What is the required explainability level per finding?**
+- A) Short label only (fast scan).
+- B) “Because” rationale with explicit expectation + anchor references (auditable).
+- C) Full essay with extended justification.
+> Recommendation: B — satisfies trace-first without bloating; A fails defensibility; C hurts usability.
+> **Selected: B**
+
+---
+
+## 4. Rough Idea Exploration (Section 4)
+
+### Decisions (selected)
+
+- Mode location: **engine-defined execution profile** selecting invariant components (no semantic drift; call-agnostic).
+- Call-config WHAT unit: **Expectation** (stable call-defined expectation id) that maps to evaluation criteria/elements and constraints; findings trace to expectations.
+- Dependencies representation: **explicit dependency edges** declared by expectations, not global blobs or inference.
+- Pass boundary: Pass 1 Observations are anchored “facts”; Pass 2 performs expectation evaluation + severity and emits findings.
+- Missing dependency context: represent as a **finding** (trace-first) with an explicit not-assessable status/severity semantics (not silent skip; not separate artifact).
+
+**Brainstorming Q&A:**
+
+**Q1: Where should “mode” live in the system (definition-level)?**
+- A) Mode is an engine execution profile that selects which invariant components run (no semantics).
+- B) Mode is call-config-defined (per call can define its own modes).
+- C) Mode is user-defined at runtime (free-form toggles).
+> Recommendation: A — keeps semantics stable and call-agnostic; B/C invite drift and implicit funder logic.
+> **Selected: A**
+
+**Q2: What is the canonical “WHAT” unit that call config declares, which findings trace to?**
+- A) `Expectation` (a stable, call-defined expectation id) that maps to evaluation criteria/elements and constraints.
+- B) `EvaluationElement` only (expectations become narrative).
+- C) `Check` only (engine check ids become WHAT).
+> Recommendation: A — aligns with trace-first and single-primary; B weakens precision; C collapses WHAT into HOW.
+> **Selected: A**
+
+**Q3: How should dependencies be represented (call-agnostic) for cross-section alignment?**
+- A) Expectations can declare `requires_context_from` other sections (explicit dependency edges).
+- B) A generic “global context” blob is always provided.
+- C) Dependencies are inferred by the engine.
+> Recommendation: A — explicit, deterministic, and avoids hidden coupling/inference.
+> **Selected: A**
+
+**Q4: What is the strict boundary between Observation (Pass 1) and Finding (Pass 2)?**
+- A) Pass 1 only states “facts about the submission” (anchored); Pass 2 performs expectation evaluation + severity.
+- B) Pass 1 can already label failures/severity; Pass 2 just formats.
+- C) Pass 1 is unstructured notes; Pass 2 does everything.
+> Recommendation: A — preserves WHAT vs HOW separation and keeps severity policy centralized in Pass 2.
+> **Selected: A**
+
+**Q5: How do we handle “NOT_ASSESSABLE” outcomes in v1 (given dependency missing)?**
+- A) As a finding with a dedicated status/severity field (still trace-first).
+- B) As absence of findings (silent skip).
+- C) As a separate “assessment status” artifact outside findings.
+> Recommendation: A — silent skip violates trust; separate artifact undermines the atomic-output contract.
+> **Selected: A**
