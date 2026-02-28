@@ -13,6 +13,7 @@ import type {
 } from "@/lib/bff/types";
 import { buildReviewDetailRoute, SIGN_IN_ROUTE } from "@/lib/routes";
 import { getDomainOptionsForCall } from "@/lib/submit/domainOptions";
+import { clearDraft, loadDraft, saveDraft } from "@/lib/submit/draftStore";
 import { loadStructuredCalls } from "@/lib/submit/loadStructuredCalls";
 import { buildRenderModel, type RenderModelResult } from "@/lib/submit/renderModel";
 
@@ -166,10 +167,12 @@ export function UniversalSubmitForm() {
           setNodes(nextNodes);
           setRenderModel(nextRenderModel);
           setDraft((current) => {
+            const storedDraft = loadDraft(selectedCallId);
             const next: Record<string, string> = {};
             if (nextRenderModel.state === "ready") {
               for (const node of nextRenderModel.nodes) {
-                next[node.nodeLogicalId] = current[node.nodeLogicalId] ?? "";
+                next[node.nodeLogicalId] =
+                  storedDraft[node.nodeLogicalId] ?? current[node.nodeLogicalId] ?? "";
               }
             }
             return next;
@@ -190,6 +193,20 @@ export function UniversalSubmitForm() {
 
   const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
   const domainOptions = selectedCall ? getDomainOptionsForCall(selectedCall.code) : [];
+
+  function updateNodeDraft(nodeLogicalId: string, value: string) {
+    if (!selectedCallId) {
+      return;
+    }
+    setDraft((current) => {
+      const next = {
+        ...current,
+        [nodeLogicalId]: value,
+      };
+      saveDraft(selectedCallId, next);
+      return next;
+    });
+  }
 
   function buildNodesPayload(): StructuredReviewNodeInput[] {
     if (renderModel.state !== "ready") {
@@ -284,6 +301,7 @@ export function UniversalSubmitForm() {
         setFormError("Review submitted but no review id was returned.");
         return;
       }
+      clearDraft(selectedCallId);
       const query = new URLSearchParams({
         submitted_nodes: nonEmptyNodes.map((node) => node.node_logical_id).join(","),
       });
@@ -346,12 +364,7 @@ export function UniversalSubmitForm() {
                     <textarea
                       id={inputId}
                       className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
-                      onChange={(event) =>
-                        setDraft((current) => ({
-                          ...current,
-                          [logicalId]: event.target.value,
-                        }))
-                      }
+                      onChange={(event) => updateNodeDraft(logicalId, event.target.value)}
                       value={draft[logicalId] ?? ""}
                     />
                   </div>

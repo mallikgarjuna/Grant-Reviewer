@@ -667,4 +667,181 @@ describe("UniversalSubmitForm", () => {
       fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/structured-review")),
     ).toBe(false);
   });
+
+  it("keeps draft values isolated per selected call", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+              {
+                id: "call-2",
+                code: "other_call",
+                name: "Other",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.endsWith("/config")) {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes" || url === "/api/bff/calls/call-2/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.endsWith("/metadata")) {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "draft for call 1" },
+    });
+    fireEvent.change(screen.getByLabelText("Funding Call"), { target: { value: "call-2" } });
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "draft for call 2" },
+    });
+    fireEvent.change(screen.getByLabelText("Funding Call"), { target: { value: "call-1" } });
+
+    expect(await screen.findByDisplayValue("draft for call 1")).toBeInTheDocument();
+  });
+
+  it("clears only active call draft on submit success", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+              {
+                id: "call-2",
+                code: "other_call",
+                name: "Other",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.endsWith("/config")) {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes" || url === "/api/bff/calls/call-2/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.endsWith("/metadata")) {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+          status: 200,
+        });
+      }
+      if (url === "/api/bff/structured-review") {
+        return new Response(JSON.stringify({ review_id: "review-1" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "draft for call 1" },
+    });
+    fireEvent.change(screen.getByLabelText("Funding Call"), { target: { value: "call-2" } });
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "draft for call 2" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+    await waitFor(() => {
+      expect(push).toHaveBeenCalled();
+    });
+
+    expect(window.localStorage.getItem("draft_universal_submit_call-2_v1")).toBeNull();
+    expect(window.localStorage.getItem("draft_universal_submit_call-1_v1")).not.toBeNull();
+  });
 });

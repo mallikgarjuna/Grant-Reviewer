@@ -176,7 +176,7 @@ Verification Steps:
 Risks (if any):
 - Interim mapping may drift if call codes change.
 
-### [ ] Task 7 — Per-call draft isolation helper and call-switch safety
+### [x] Task 7 — Per-call draft isolation helper and call-switch safety
 
 Goal:
 - Ensure local drafts are isolated by selected `call_id` and preserved across call switches.
