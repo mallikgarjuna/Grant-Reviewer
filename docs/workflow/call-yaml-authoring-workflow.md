@@ -318,6 +318,37 @@ This document must be updated whenever:
 - Runtime behavior changes
 - A failure mode is discovered
 
+---
+
+# 11. WF-0038 Readiness Gate (Required Before Rollout)
+
+Before enabling a new call on pipeline v1, complete all checks below.
+
+## 11.1 Authoring Baseline
+
+- Start from `backend/data/calls/templates/call_definition_v2_template.yaml`
+- Keep structure aligned with `backend/app/schemas/call_definitions_v2.py`
+- Use official source documents only (structure + evaluation criteria/elements)
+
+## 11.2 Validation and Ingestion
+
+- Dry-run must pass:
+  - `cd backend && uv run python scripts/ingest_call.py data/calls/<agency>/<file>.yaml --dry-run`
+- Ingest must succeed into the target environment DB.
+- Dry-run summary must show expected node and evaluation-element counts.
+
+## 11.3 Runtime Smoke for Structured Review
+
+- Enable pipeline-v1 only for the target call code:
+  - `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=1`
+  - `STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES=<call_code>`
+- Submit at least one `POST /api/structured-review` request for that call.
+- Request must succeed without malformed-request errors caused by call config / expectation mapping.
+
+## 11.4 Ship Decision
+
+Mark the call as WF-0038-ready only when Sections 11.1, 11.2, and 11.3 all pass.
+
 PeerLens call definitions must always follow this workflow.
 
 END OF SPEC

@@ -4,6 +4,7 @@ This directory contains YAML call definitions for ingestion into the Grant Revie
 
 Guidelines for authoring call YAML that validates/ingests correctly:
 - `docs/reference/call_yaml_guidelines.md`
+- `backend/data/calls/templates/call_definition_v2_template.yaml` (starter template)
 
 ## Filename Convention
 
@@ -29,6 +30,7 @@ Guidelines for authoring call YAML that validates/ingests correctly:
 
 - Agency-specific call YAMLs under subfolders (for example `erc/`, `nwo/`)
 - Source traceability manifests under `sources/`
+- Reusable starter templates under `templates/`
 
 ## Test Files
 

@@ -1,126 +1,75 @@
 # Call YAML Guidelines (PeerLens / Grant Reviewer)
 
-This project’s call YAML format is defined by:
-- Validation schema: `backend/app/schemas/call_definitions.py`
-- Ingestion logic: `backend/scripts/ingest_call.py`
-- Target DB models: `backend/app/models/domain.py`
+This repository uses `v2` call YAML for active onboarding and WF-0038 pipeline usage.
 
-This document summarizes how to author YAML that validates, ingests cleanly, and links correctly to SQLModel rows.
+Primary references:
+- Schema SSOT: `backend/app/schemas/call_definitions_v2.py`
+- Ingestion runner: `backend/scripts/ingest_call.py`
+- Authoring workflow: `docs/workflow/call-yaml-authoring-workflow.md`
+- Starter template: `backend/data/calls/templates/call_definition_v2_template.yaml`
 
 ## File Naming
 
-Prefer the convention from `backend/data/calls/README.md`:
+Use:
+`{agency}_{program}_{year}_{stage}.yaml`
 
-`{agency}_{program}_{year}_{stage}.yaml` where `stage` is `pre` or `full`.
+Examples:
+- `erc_stg_2026_full.yaml`
+- `nwo_veni_2025_preproposal.yaml`
 
-## Top-Level Shape
+## Required Top-Level Keys (v2)
 
-Required keys:
 - `funding_agency`
 - `funding_call`
 - `evaluation_criteria`
 - `proposal_nodes`
+- `reviewer_policy` (optional but recommended)
+- `runtime_notes` (optional)
 
-Minimal skeleton:
+## Critical Data Rules
 
-```yaml
-funding_agency:
-  name: "Example Agency"
-  short_name: "EX"
-  description: "..."
+- `evaluation_criteria[*].id` must be unique.
+- `evaluation_criteria[*].evaluation_elements[*].id` must be unique globally.
+- Every `proposal_nodes[*].node_expectations[*].evaluation_element_id` must reference an existing evaluation element.
+- `proposal_nodes[*].id` must be unique and stable across revisions.
+- Use `parent_logical_id` to encode hierarchy; do not encode hierarchy in IDs.
 
-funding_call:
-  name: "Example Call 2026"
-  code: "EX-2026"
-  year: 2026
-  aim_objectives: "..."
-  scope: "..."
-  general_guidelines: "..."
+## V2 Enums You Must Respect
 
-evaluation_criteria:
-  - id: "crit_example"
-    name: "Criterion Name"
-    description: "..."
-    evaluation_elements:
-      - id: "elem_example"
-        name: "Element Name"
-        description: "..."
-
-proposal_nodes:
-  - title: "Top Level Section"
-    node_type: "SECTION"
-    children: []
-    node_expectations: []
-```
-
-## ID Rules (Critical)
-
-YAML uses *logical string IDs* for rubric items.
-
-- `evaluation_criteria[*].id` must be unique across criteria.
-- `evaluation_criteria[*].evaluation_elements[*].id` must be unique across *all* elements.
-- `proposal_nodes[*].node_expectations[*].evaluation_element_id` must reference an existing element `id`.
-
-Ingestion maps these logical IDs to UUIDs internally (see `resolve_logical_ids()` in `backend/scripts/ingest_call.py`).
-
-## Proposal Node Tree
-
-### Node fields
-
-Each node supports:
-- `title` (string)
-- `node_type`: `"SECTION"` or `"SUBSECTION"`
-- `guidance_text` (optional string)
-- `children` (list of nodes)
-- `node_expectations` (list of expectations)
-
-### Recursion / Depth / Cycles
-
-Validation enforces:
-- Max depth of 5 levels
-- Title-based cycle detection (heuristic): a repeated `title` along an ancestor path is treated as a potential cycle
-
-Practical guidance:
-- Keep `title` values unique *within an ancestor chain* (avoid reusing the same title under itself).
-- For UI compatibility, prefer `SECTION -> SUBSECTION` for the first two levels, but deeper nesting is supported by the schema.
-
-## Expectations (How Nodes Link to Rubric)
-
-Each `node_expectations` item links the node to a rubric element and includes strictness/intent metadata:
-
-```yaml
-node_expectations:
-  - evaluation_element_id: "elem_example"
-    expectation_strength: "MANDATORY"  # or IMPORTANT / OPTIONAL
-    evaluation_intent: "QUALITY"       # or COMPLIANCE / RISK / STRATEGIC_FIT
-    guidance_note: "What the reviewer should look for."
-```
-
-Enums are validated in `backend/app/schemas/call_definitions.py`:
-- `node_type`: `SECTION | SUBSECTION`
 - `expectation_strength`: `MANDATORY | IMPORTANT | OPTIONAL`
 - `evaluation_intent`: `COMPLIANCE | QUALITY | RISK | STRATEGIC_FIT`
+- `rule_severity`: `ERROR | WARNING`
+- `evaluation_stage`: `STEP_1 | STEP_2 | BOTH`
+- `reviewer_policy.enforcement_mode`: `PROMPT_ONLY | POST_CHECK | BLOCKING`
 
-## Mapping to SQLModel Tables (Conceptual)
+## Authoring Checklist (WF-0038 Compatible)
 
-During ingestion (`backend/scripts/ingest_call.py`):
-- `funding_agency` -> `FundingAgency` (business key: `short_name`)
-- `funding_call` -> `FundingCall` (business key: `code`; linked to agency)
-- `evaluation_criteria` -> `EvaluationCriterion` rows
-- `evaluation_elements` -> `EvaluationElement` rows (linked to criterion)
-- `proposal_nodes` tree -> `ProposalNode` rows (linked to call; parent/child via `parent_node_id`)
-- `node_expectations` -> `NodeExpectation` rows (linked to node + evaluation element; carries strength/intent/guidance_note)
+1. Start from the template:
+   - `backend/data/calls/templates/call_definition_v2_template.yaml`
+2. Author from official sources only:
+   - proposal structure source
+   - evaluation criteria/elements source
+3. Keep scope limited to:
+   - evaluable proposal structure
+   - evaluation criteria/elements
+   - enforceable content constraints
+4. Validate with dry-run:
+   - `cd backend && uv run python scripts/ingest_call.py data/calls/<agency>/<file>.yaml --dry-run`
+5. Ensure `dry-run` output has:
+   - expected proposal node count
+   - expected evaluation element count
+   - no reference/validation errors
 
-## Authoring Checklist
+## WF-0038 Readiness Gate
 
-1. Run dry-run validation:
-   - `cd backend && uv run python scripts/ingest_call.py data/calls/<file>.yaml --dry-run`
-2. Fix any `Unknown evaluation_element_id` errors by aligning IDs.
-3. Avoid deep trees (>5) and title cycles.
-4. Ensure nodes that should be reviewable have at least one `node_expectations` entry.
+A call YAML is "WF-0038 ready" only if:
+- it passes `--dry-run`,
+- it ingests cleanly into DB,
+- a structured review request for that call can run without `MALFORMED_REVIEW_REQUEST` from bad call config / expectation mapping.
 
-## Common Pitfalls
+## Common Mistakes
 
-- Defining an element but never referencing it: allowed, but ingestion logs a warning for unused elements.
-- Reusing the same `title` down a branch (cycle heuristic): validation can fail even if your intent is “same label in two places”.
-- Treating “admin form PDFs” as proposal narrative structure: those documents often describe submission forms, not the snippet-review node tree. Use the narrative template/structure you want the user to select from in-app.
+- Mixing old `v1` fields (`short_name`, recursive `children`) with `v2` shape.
+- Encoding non-evaluable administrative content as proposal nodes.
+- Over-mapping one evaluation element to too many unrelated nodes.
+- Writing cross-node alignment expectations without clear source grounding.
