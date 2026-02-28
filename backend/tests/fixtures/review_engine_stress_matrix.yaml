@@ -2,7 +2,7 @@ scenarios:
   - id: nwo_missing_required
     archetype: NWO
     source_call: nwo_veni_2025_preproposal
-    source_call_path: backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml
+    source_call_path: backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml
     request:
       request_id: stress-nwo-1
       mode: DIAGNOSTIC
@@ -22,7 +22,7 @@ scenarios:
   - id: erc_present_content
     archetype: ERC
     source_call: erc_stg_2026_full
-    source_call_path: backend/data/calls/erc/erc_stg_2026_full.yaml
+    source_call_path: backend/data/calls/canonical/erc/erc_stg_2026_full.yaml
     request:
       request_id: stress-erc-1
       mode: DIAGNOSTIC
@@ -42,7 +42,7 @@ scenarios:
   - id: msca_optional_like_behavior
     archetype: MSCA
     source_call: synthetic_msca_archetype
-    source_call_path: backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml
+    source_call_path: backend/data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml
     request:
       request_id: stress-msca-1
       mode: DIAGNOSTIC

@@ -19,7 +19,7 @@ Decisions:
 
 **Brainstorming Q&A:**
 
-**Q1: Should the re-authored YAML overwrite `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`, or be a new file?**
+**Q1: Should the re-authored YAML overwrite `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`, or be a new file?**
 - A) Overwrite in-place (keeps call code stable for runtime).
 - B) New file (keep old as-is; update ingestion/docs to point to new).
 - C) Keep both: move old to `*_legacy.yaml`, write new to canonical name.
@@ -65,14 +65,14 @@ Decisions:
 ## Part C: Revise (What Changed) (2026-02-26)
 
 - Re-authored YAML from official sources and kept runtime path stable:
-  - Canonical: `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
+  - Canonical: `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`
   - Archived legacy: `backend/data/calls/legacy/nwo/nwo_veni_2025_preproposal_legacy.yaml`
 - Added traceability manifest: `backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md`
 - Added/standardized `reviewer_policy` to align with call guidance (bibliometrics ban, venue-prestige language, DORA/merits principle, bias avoidance).
-- Verified via dry-run ingest (no DB required): `cd backend && PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
+- Verified via dry-run ingest (no DB required): `cd backend && PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
 
 ## Repo Reality Snapshot (Read-Only) (2026-02-26)
 
 - Current V2 schema supports `reviewer_policy` with deterministic forbidden-term enforcement; `BLOCKING` causes node execution to fail if any forbidden term appears in LLM feedback.
 - Compliance engine currently enforces word limits (including `word_limit_by_domain`) but does not deterministically enforce `max_items` (so `max_items=10` should be guidance-only for now).
-- Existing Veni YAML at `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml` already models the ENW/Science pilot as `domain_id: science_enw`.
+- Existing Veni YAML at `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml` already models the ENW/Science pilot as `domain_id: science_enw`.

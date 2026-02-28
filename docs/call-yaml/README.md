@@ -16,7 +16,9 @@ This directory is the single docs entrypoint for call-definition authoring.
 
 ## Runtime/data artifacts
 
-- Call YAML files: `backend/data/calls/`
+- Canonical call YAML files: `backend/data/calls/canonical/`
+- Legacy/superseded call YAML files: `backend/data/calls/legacy/`
+- Authoring/design notes: `backend/data/calls/notes/`
 - Starter templates: `backend/data/calls/templates/`
 - Source traceability manifests: `backend/data/calls/sources/`
 
@@ -24,5 +26,5 @@ This directory is the single docs entrypoint for call-definition authoring.
 
 Legacy doc paths remain as pointer files:
 
-- `docs/workflow/call-yaml-authoring-workflow.md`
-- `docs/reference/call_yaml_guidelines.md`
+- `docs/call-yaml/authoring-workflow.md`
+- `docs/call-yaml/guidelines.md`

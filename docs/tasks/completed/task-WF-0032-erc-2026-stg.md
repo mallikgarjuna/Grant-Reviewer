@@ -81,7 +81,7 @@ Slice: Canonical Data
 User Stories: US1
 PRD Requirements: FR1, FR3, FR4
 Files to modify:
-- `backend/data/calls/erc/erc_stg_2026_full.yaml`
+- `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`
 Acceptance Criteria:
 - Official ERC StG 2026 source documents (application form + assessment criteria/reviewer guidance) are provided and referenced.
 - YAML structure, constraints, and evaluation criteria/elements are traceable to those sources.
@@ -90,7 +90,7 @@ Acceptance Criteria:
 TDD Plan: N/A
 Verification Steps:
 1. Source intake completed and documented (titles/version/date + supplied location).
-2. `cd backend && uv run python scripts/ingest_call.py data/calls/erc/erc_stg_2026_full.yaml --dry-run`
+2. `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml --dry-run`
 3. `cd backend && docker compose -f docker-compose.test.yml up -d`
-4. `cd backend && export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable" && uv run python scripts/ingest_call.py data/calls/erc/erc_stg_2026_full.yaml`
+4. `cd backend && export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable" && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml`
 Risks: Authoring without official sources creates non-defensible YAML and must be avoided.

@@ -29,14 +29,14 @@ From repo root:
 
 ```bash
 cd backend
-env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run
+env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run
 ```
 
 V1 dry-run compatibility check:
 
 ```bash
 cd backend
-env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run
+env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml --dry-run
 ```
 
 Targeted regression test:
@@ -49,17 +49,17 @@ uv run pytest tests/test_ingest_call_dry_run.py
 ## Verification Log (Executed)
 
 Task 1:
-- `cd backend && uv run python -c "from app.schemas.call_definitions_v2 import CallDefinitionV2; import yaml, pathlib; p=pathlib.Path('data/calls/nwo/nwo_veni_2025_preproposal.yaml'); CallDefinitionV2.model_validate(yaml.safe_load(p.read_text())); print('ok')"`
+- `cd backend && uv run python -c "from app.schemas.call_definitions_v2 import CallDefinitionV2; import yaml, pathlib; p=pathlib.Path('data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml'); CallDefinitionV2.model_validate(yaml.safe_load(p.read_text())); print('ok')"`
 - Result: pass (`ok`)
 
 Task 2:
-- `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
+- `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
 - Result: pass (schema_version=v2, summary returned)
-- `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run`
+- `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml --dry-run`
 - Result: pass (schema_version=v1, summary returned)
 
 Task 3:
-- `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run 2>&1 | rg '"schema_version"'`
+- `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run 2>&1 | rg '"schema_version"'`
 - Result: pass (detected `"schema_version": "v2"`)
 
 Task 4:

@@ -79,7 +79,7 @@ Acceptance Criteria:
 - Activation logic is stage/step driven by call config only (no funder branching).
 - Output includes stable expectation order keyed by subject and expectation id.
 - Unknown/duplicate expectation ids in active scope fail deterministically.
-- Selector tests include conformance cases grounded in existing authored calls (`nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`) and align with `docs/workflow/call-yaml-authoring-workflow.md` constraints.
+- Selector tests include conformance cases grounded in existing authored calls (`nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`) and align with `docs/call-yaml/authoring-workflow.md` constraints.
 TDD Plan:
 - RED: add failing tests for stage activation, ordering, and duplicate expectation detection.
 - GREEN: implement activation selector with explicit ordering extraction.
@@ -352,7 +352,7 @@ Files to modify:
 - `backend/tests/test_review_engine_pipeline_v1.py`
 Acceptance Criteria:
 - Acceptance suite covers NWO/ERC/MSCA scenarios listed in PRD with explicit expected outcomes.
-- Stress fixtures are explicitly derived from current authored call YAML structures (`backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`, `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`, `backend/data/calls/erc/erc_stg_2026_full.yaml`) without copying funder-specific semantics into engine logic.
+- Stress fixtures are explicitly derived from current authored call YAML structures (`backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`, `backend/data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml`, `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`) without copying funder-specific semantics into engine logic.
 - Tests confirm no funder-specific branching in engine behavior.
 TDD Plan:
 - RED: add failing archetype fixture tests for declared dependency gaps and expectation-driven finding emission.

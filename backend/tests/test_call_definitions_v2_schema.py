@@ -13,7 +13,7 @@ pytestmark = pytest.mark.no_db
 
 
 def _load_nwo_v2_yaml() -> dict[str, object]:
-    raw = Path("data/calls/nwo/nwo_veni_2025_preproposal.yaml").read_text(
+    raw = Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml").read_text(
         encoding="utf-8"
     )
     loaded = yaml.safe_load(raw)

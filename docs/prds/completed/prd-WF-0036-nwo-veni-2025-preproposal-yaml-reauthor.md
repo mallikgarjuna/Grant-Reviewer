@@ -26,7 +26,7 @@ Re-author the NWO Veni 2025 pre-proposal call definition YAML from official sour
 
 ## Shipped Artifacts
 
-- Canonical: `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
+- Canonical: `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`
 - Archived legacy: `backend/data/calls/legacy/nwo/nwo_veni_2025_preproposal_legacy.yaml`
 - Source manifest: `backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md`
 
@@ -34,4 +34,4 @@ Re-author the NWO Veni 2025 pre-proposal call definition YAML from official sour
 
 - `CallDefinitionV2` schema validates for the canonical YAML.
 - Dry-run ingest passes:
-  - `cd backend && PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
+  - `cd backend && PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run`

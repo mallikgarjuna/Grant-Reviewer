@@ -19,7 +19,7 @@ def _load_call(path: str) -> dict:
 
 
 def test_stage_activation_and_ordering_from_authored_erc_call() -> None:
-    call_snapshot = _load_call("data/calls/erc/erc_stg_2026_full.yaml")
+    call_snapshot = _load_call("data/calls/canonical/erc/erc_stg_2026_full.yaml")
 
     result = activate_expectations_for_stage(call_snapshot, stage_ref="STEP_1")
 
@@ -32,7 +32,7 @@ def test_stage_activation_and_ordering_from_authored_erc_call() -> None:
 
 
 def test_unknown_expectation_ref_fails_deterministically() -> None:
-    call_snapshot = _load_call("data/calls/nwo/nwo_veni_2025_preproposal.yaml")
+    call_snapshot = _load_call("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml")
     broken = deepcopy(call_snapshot)
     broken["proposal_nodes"][0]["node_expectations"][0]["evaluation_element_id"] = "elem_unknown"
 
@@ -43,7 +43,7 @@ def test_unknown_expectation_ref_fails_deterministically() -> None:
 
 
 def test_duplicate_expectation_ref_fails_deterministically() -> None:
-    call_snapshot = _load_call("data/calls/nwo/nwo_vidi_2025_full_proposal.yaml")
+    call_snapshot = _load_call("data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml")
     broken = deepcopy(call_snapshot)
     node = broken["proposal_nodes"][0]
     node["node_expectations"].append(deepcopy(node["node_expectations"][0]))
@@ -55,9 +55,9 @@ def test_duplicate_expectation_ref_fails_deterministically() -> None:
 
 
 def test_conformance_uses_authored_call_structures() -> None:
-    veni = _load_call("data/calls/nwo/nwo_veni_2025_preproposal.yaml")
-    vidi = _load_call("data/calls/nwo/nwo_vidi_2025_full_proposal.yaml")
-    erc = _load_call("data/calls/erc/erc_stg_2026_full.yaml")
+    veni = _load_call("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml")
+    vidi = _load_call("data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml")
+    erc = _load_call("data/calls/canonical/erc/erc_stg_2026_full.yaml")
 
     assert veni["funding_call"]["code"] == "nwo_veni_2025_preproposal"
     assert vidi["funding_call"]["code"] == "nwo_vidi_2025_full_proposal"

@@ -80,7 +80,7 @@ Render free instances do not support shell access; bootstrap was run from a deve
 
 Commands (run locally with `DATABASE_URL` set to the Neon **direct** URL used by Render):
 - `cd backend && DATABASE_URL="..." uv run python scripts/ensure_prompt_template.py`
-- `cd backend && DATABASE_URL="..." uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml`
+- `cd backend && DATABASE_URL="..." uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml`
 
 Verification:
 - `curl -i https://grant-reviewer.onrender.com/calls`

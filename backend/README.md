@@ -124,7 +124,7 @@ Troubleshooting:
 ```bash
 cd backend
 uv run python scripts/ensure_prompt_template.py
-uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml
+uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml
 ```
 
 ### 4) Verify readiness thresholds
@@ -255,10 +255,10 @@ detailed manner..."
 
 ```bash
 # Validate a call definition (dry run)
-uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run
+uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml --dry-run
 
 # Ingest to database
-uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml
+uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml
 ```
 
 ### Ensure PromptTemplate (Bootstrap Precondition)
@@ -277,7 +277,7 @@ Use this when provisioning a fresh production database (Task 8.0C).
 uv run python scripts/ensure_prompt_template.py
 
 # 2) Ingest at least one real call definition
-uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml
+uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml
 ```
 
 Verification checklist:

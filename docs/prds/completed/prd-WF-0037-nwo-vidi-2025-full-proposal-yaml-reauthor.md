@@ -19,7 +19,7 @@ Last Updated: 2026-02-28
 ## 1. In Scope
 
 - Author canonical V2 YAML for Vidi full proposal:
-  - `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`
+  - `backend/data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml`
 - Author traceability manifest with file hashes + “used for” mapping:
   - `backend/data/calls/sources/nwo_vidi_2025_full_proposal.sources.md`
 - Encode:
@@ -64,7 +64,7 @@ Failure path B: Runtime mismatch after DB ingest (US1)
 
 ## 4. Functional Requirements
 
-- FR1 (US1): Provide a canonical V2 call YAML at `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`.
+- FR1 (US1): Provide a canonical V2 call YAML at `backend/data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml`.
 - FR2 (US1): Provide a source manifest at `backend/data/calls/sources/nwo_vidi_2025_full_proposal.sources.md` listing official inputs, paths, SHA256, and mapping to YAML sections.
 - FR3 (US1): Encode `funding_call.deadlines` with stable semantic keys and verbatim `datetime_local` + `timezone` from the official Call PDF.
 - FR4 (US1): Encode full proposal evaluation criteria/elements grounded in the Call PDF §4.3.2, with `source_hint` per evaluation element.

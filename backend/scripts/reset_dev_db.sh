@@ -9,6 +9,6 @@ echo "[reset_dev_db] Ensuring active prompt template..."
 uv run python scripts/ensure_prompt_template.py
 
 echo "[reset_dev_db] Ingesting canonical Veni call definition..."
-uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml
+uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml
 
 echo "[reset_dev_db] Done."

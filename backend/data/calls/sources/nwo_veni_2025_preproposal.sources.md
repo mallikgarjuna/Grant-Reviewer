@@ -5,7 +5,7 @@ WF: WF-0036
 Last Updated: 2026-02-26
 
 ## Purpose
-Traceability manifest for `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`.
+Traceability manifest for `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`.
 
 ## Source Files
 

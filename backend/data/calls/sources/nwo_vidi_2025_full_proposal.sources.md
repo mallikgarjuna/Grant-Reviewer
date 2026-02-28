@@ -1,6 +1,6 @@
 # Sources Manifest — NWO Vidi 2025 Full Proposal
 
-Traceability manifest for `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`.
+Traceability manifest for `backend/data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml`.
 
 ## Source Files (Official)
 

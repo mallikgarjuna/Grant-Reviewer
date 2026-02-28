@@ -27,15 +27,15 @@ Guidelines for authoring call YAML that validates/ingests correctly:
 | `stage` | lowercase slug | `preproposal`, `full_proposal` |
 
 **Examples:**
-- `erc/erc_stg_2026_full.yaml` - ERC Starting Grant 2026, full proposal
-- `nwo/nwo_veni_2025_preproposal.yaml` - NWO Veni 2025, pre-proposal
-- `nwo/nwo_vidi_2025_full_proposal.yaml` - NWO Vidi 2025, full proposal
-- `msca_pf_2026_full.yaml` - MSCA Postdoctoral Fellowship 2026, full
-- `nsf_career_2026_full.yaml` - NSF CAREER Award 2026, full
+- `canonical/erc/erc_stg_2026_full.yaml` - ERC Starting Grant 2026, full proposal
+- `canonical/nwo/nwo_veni_2025_preproposal.yaml` - NWO Veni 2025, pre-proposal
+- `canonical/nwo/nwo_vidi_2025_full_proposal.yaml` - NWO Vidi 2025, full proposal
+- `canonical/msca/msca_pf_2026_full.yaml` - MSCA Postdoctoral Fellowship 2026, full
+- `canonical/nsf/nsf_career_2026_full.yaml` - NSF CAREER Award 2026, full
 
 ## Suggested Layout
 
-- Agency-specific canonical call YAMLs under subfolders (for example `erc/`, `nwo/`)
+- Agency-specific canonical call YAMLs under `canonical/<agency>/`
 - Legacy/superseded YAMLs under `legacy/`
 - Design/authoring notes under `notes/`
 - Source traceability manifests under `sources/`
@@ -51,8 +51,8 @@ These files are for testing validation logic and are not real funding calls:
 
 ```bash
 # Validate a call definition (dry run)
-uv run python scripts/ingest_call.py data/calls/erc/erc_stg_2026_full.yaml --dry-run
+uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml --dry-run
 
 # Ingest to database
-uv run python scripts/ingest_call.py data/calls/erc/erc_stg_2026_full.yaml
+uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml
 ```

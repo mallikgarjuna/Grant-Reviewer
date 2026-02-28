@@ -134,7 +134,7 @@ def seed_api_data() -> SeededIDs:
                     },
                 ],
             },
-            source_path="data/calls/nwo/nwo_veni_2025_preproposal.yaml",
+            source_path="data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml",
         )
         session.add(call_definition)
         session.commit()

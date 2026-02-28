@@ -30,7 +30,7 @@ Last Updated: 2026-02-21
 ### Happy path (V2)
 
 1. Developer runs:
-   - `cd backend && uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
+   - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
 2. Script loads YAML, detects it is V2, validates against V2 schema.
 3. Script prints a deterministic summary including:
    - funding call metadata (title/stage/year; IDs/codes when present)
@@ -78,7 +78,7 @@ Last Updated: 2026-02-21
 ### FR2 — V2 schema coverage (minimum for the current NWO YAML)
 
 - V2 must accept the current NWO YAML fields used by:
-  - `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
+  - `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`
 - At minimum, model and validate:
   - `funding_agency` (including `id`, `name`, `country`)
   - `funding_call` (including `id`, `code`, `title`, `year`, `stage`, `language`, `deadlines`, `domain_notes`)
