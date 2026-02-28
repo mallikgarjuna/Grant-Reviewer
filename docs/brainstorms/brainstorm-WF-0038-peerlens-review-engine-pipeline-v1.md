@@ -566,7 +566,7 @@ Required (every finding):
 - `primary_expectation_ref`: call-defined `expectation_id` (string)
 - `criterion_ref` and `element_ref`: the evaluation criterion/element references the expectation is grounded in
 - `check_id`: stable engine check identifier (HOW)
-- `subject_ref`: the evaluated unit (at minimum: target section/node; may include sub-field identifier)
+- `subject_ref`: the evaluated unit (minimum: `{call_code, node_logical_id, field_id?}`; `field_id` is optional but required when an anchor uses a sub-field structural locator)
 - `anchors[]`: ≥1 typed anchor (`TEXT_SPAN|STRUCTURAL_LOCATOR|DERIVED`)
 - `call_config_ref`: includes `{call_code}@{semver}` and `{digest}`
 - `engine_ref`: includes `{engine_semver}` and `{build_id}` (immutable)
@@ -588,12 +588,13 @@ Invariants:
 All observations (required):
 - `observation_kind` (strict catalog; engine-defined)
 - `primary_expectation_ref`: call-defined `expectation_id` (string); observations are expectation-scoped but do not assign severity or satisfied/unsatisfied labels
-- `subject_ref`
+- `subject_ref` (minimum: `{call_code, node_logical_id, field_id?}`)
 - `anchors[]` (≥1; same typed anchor union as findings)
 - `call_config_ref` + `engine_ref`
 
 Naming constraint:
 - `observation_kind` values encode only the invariant dimension (STRUCTURE/COMPLIANCE/…); they must not encode pass/fail or severity semantics.
+- A `*_SIGNAL` does not imply pass/fail; it is only a typed container for anchored observations.
 
 Minimal `observation_kind` catalog (v1; extend only by engine versioned change):
 - `STRUCTURE_SIGNAL`
@@ -624,6 +625,10 @@ Failure handling (architecture-level):
 - Invalid/missing call-config: fail-fast (no partial findings).
 - Missing dependency context when required: not a pipeline failure; results in NOT_ASSESSABLE findings.
 
+Additional v1 determinism constraints:
+- Severity policy tie-break: if any policy input implies `ERROR`, severity is `ERROR`; else if any implies `WARNING`, severity is `WARNING`; else `NOTE`. Call-config may tune thresholds/inputs, but may not add new severity levels.
+- `check_id` stability: `check_id` is engine-defined and mode-invariant; call-config cannot introduce or rename checks.
+
 ---
 
 ## Adversarial Stress Test Matrix (v1; written artifact)
@@ -639,3 +644,4 @@ Matrix expectations (must hold for all three):
 - `finding_kind` remains within frozen enum; no call-defined kinds/check semantics.
 - Missing declared dependency context produces NOT_ASSESSABLE findings with anchors and trace (not silence).
 - Severity remains non-numeric and policy-driven via call-config metadata, not funder code.
+- Contradiction checks: (a) any requirement forces engine branching/adapters, (b) any requirement demands new `finding_kind`/custom check semantics, (c) any requirement cannot be expressed as expectation/constraint/dependency/stage activation in call-config.
