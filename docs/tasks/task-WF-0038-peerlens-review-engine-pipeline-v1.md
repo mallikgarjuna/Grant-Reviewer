@@ -364,7 +364,7 @@ Verification Steps:
 Risks (if any):
 - Fixture assumptions may drift from real call-config authoring patterns.
 
-### [ ] Task 14 — Add determinism and strict-subset invariants suite
+### [x] Task 14 — Add determinism and strict-subset invariants suite
 
 Goal:
 - Lock repeated-run determinism and strict/diagnostic subset invariants separately from archetype coverage.

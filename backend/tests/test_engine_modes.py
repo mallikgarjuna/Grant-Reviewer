@@ -45,3 +45,17 @@ def test_mode_projection_does_not_mutate_findings() -> None:
     _ = project_findings_for_mode(findings=diagnostic, mode="STRICT")
 
     assert diagnostic == before
+
+
+def test_strict_subset_invariant_against_diagnostic_set() -> None:
+    diagnostic = [
+        _finding("check.a", "ERROR"),
+        _finding("check.b", "WARNING"),
+        _finding("check.c", "NOTE"),
+    ]
+
+    strict = project_findings_for_mode(findings=diagnostic, mode="STRICT")
+
+    assert {item.check_id for item in strict}.issubset(
+        {item.check_id for item in diagnostic}
+    )
