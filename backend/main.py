@@ -32,10 +32,10 @@ from app.schemas.api import (
     CreateReviewResponse,
     DeleteReviewResponse,
     NodeMetadataResponse,
-    NodeTreeNode,
     NodesResponse,
     NodesTreeResponse,
     NodeSummary,
+    NodeTreeNode,
     ReviewCardSummary,
     ReviewDetailResponse,
     ReviewListItem,
@@ -52,8 +52,11 @@ from app.services.call_definition_service import CallDefinitionService
 from app.services.compliance_engine import evaluate_compliance
 from app.services.llm_client import build_llm_client
 from app.services.node_metadata_service import NodeMetadataService
-from app.services.node_tree_service import NodeTreeService
-from app.services.node_tree_service import NodeTreeCycleError, NodeTreeMismatchError
+from app.services.node_tree_service import (
+    NodeTreeCycleError,
+    NodeTreeMismatchError,
+    NodeTreeService,
+)
 from app.services.reviewer_policy import matches_review_stage
 from app.services.reviewer_service import ReviewerService
 from app.services.structured_reviewer_service import StructuredReviewerService
@@ -107,6 +110,8 @@ API_ERROR_RESPONSES = {
     500: {"model": APIErrorResponse},
     503: {"model": APIErrorResponse},
 }
+
+NODE_LOGICAL_IDS_QUERY = Query(default=None)
 
 
 class APIException(Exception):
@@ -507,7 +512,7 @@ def list_call_nodes(
 def get_call_nodes_metadata(
     call_logical_id: str,
     repository: RepositoryDep,
-    node_logical_ids: list[str] | None = Query(default=None),
+    node_logical_ids: list[str] | None = NODE_LOGICAL_IDS_QUERY,
 ) -> NodeMetadataResponse:
     """Return node metadata DTOs for universal-form rendering."""
     call = repository.get_active_call_by_code(call_logical_id)

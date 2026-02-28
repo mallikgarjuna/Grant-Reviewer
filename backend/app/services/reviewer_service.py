@@ -22,8 +22,8 @@ from app.services.review_execution_core import (
     format_execution_failure_summary,
 )
 from app.services.reviewer_policy import (
-    get_applicable_reviewer_policy_rules,
     ReviewStage,
+    get_applicable_reviewer_policy_rules,
 )
 
 logger = logging.getLogger(__name__)

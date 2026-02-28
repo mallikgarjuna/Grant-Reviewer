@@ -3,9 +3,8 @@
 from fastapi.testclient import TestClient
 from sqlmodel import select
 
-from app.models.domain import CallDefinition
 from app.db import get_session
-from app.models.domain import NodeType, ProposalNode
+from app.models.domain import CallDefinition, NodeType, ProposalNode
 from tests.test_api import SeededIDs, create_client_with_seed
 
 
