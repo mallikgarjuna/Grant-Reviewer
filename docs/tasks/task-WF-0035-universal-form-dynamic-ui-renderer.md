@@ -37,7 +37,7 @@ Verification Steps:
 Risks (if any):
 - Early component may duplicate logic currently in `VeniSubmitForm` and need cleanup in later tasks.
 
-### [ ] Task 2 — Structured-call gating with deterministic timeout/concurrency defaults
+### [x] Task 2 — Structured-call gating with deterministic timeout/concurrency defaults
 
 Goal:
 - Enforce structured-only call dropdown via config gating with fixed defaults and partial-results UX.

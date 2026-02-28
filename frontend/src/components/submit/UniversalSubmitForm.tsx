@@ -11,6 +11,7 @@ import type {
   StructuredReviewNodeInput,
 } from "@/lib/bff/types";
 import { buildReviewDetailRoute, SIGN_IN_ROUTE } from "@/lib/routes";
+import { loadStructuredCalls } from "@/lib/submit/loadStructuredCalls";
 
 type ApiErrorEnvelope = {
   error?: {
@@ -64,6 +65,7 @@ export function UniversalSubmitForm() {
   const [calls, setCalls] = useState<CallSummary[]>([]);
   const [isLoadingCalls, setIsLoadingCalls] = useState(true);
   const [callError, setCallError] = useState<string | null>(null);
+  const [gatingWarning, setGatingWarning] = useState<string | null>(null);
   const [selectedCallId, setSelectedCallId] = useState("");
   const [nodes, setNodes] = useState<NodeSummary[]>([]);
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -85,9 +87,15 @@ export function UniversalSubmitForm() {
         }
         const payload = (await response.json()) as { calls?: CallSummary[] };
         const allCalls = Array.isArray(payload.calls) ? payload.calls : [];
+        const structuredResult = await loadStructuredCalls({ calls: allCalls });
         if (!cancelled) {
-          setCalls(allCalls);
-          setSelectedCallId(allCalls[0]?.id ?? "");
+          setCalls(structuredResult.calls);
+          setSelectedCallId(structuredResult.calls[0]?.id ?? "");
+          setGatingWarning(
+            structuredResult.warnings.length > 0
+              ? "Some calls were hidden due to config loading issues."
+              : null,
+          );
         }
       } catch {
         if (!cancelled) {
@@ -246,6 +254,11 @@ export function UniversalSubmitForm() {
           Complete sections for evaluation criteria-grounded feedback.
         </p>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {gatingWarning ? (
+            <div className="rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              {gatingWarning}
+            </div>
+          ) : null}
           <div className="space-y-2">
             <label
               className="text-sm font-medium text-[var(--color-foreground)]"

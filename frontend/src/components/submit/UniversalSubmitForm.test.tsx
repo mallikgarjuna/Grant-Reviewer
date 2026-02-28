@@ -206,4 +206,77 @@ describe("UniversalSubmitForm", () => {
       ),
     );
   });
+
+  it("shows gating warning for partial config failures", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "call_1",
+                name: "Call 1",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+              {
+                id: "call-2",
+                code: "call_2",
+                name: "Call 2",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call_1/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call_1",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call_2/config") {
+        return new Response(
+          JSON.stringify({ error: { code: "INTERNAL_ERROR", message: "boom" } }),
+          { status: 500 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+        status: 200,
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    expect(await screen.findByText("Some calls were hidden due to config loading issues.")).toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toHaveTextContent("call_1 - Call 1");
+    expect(screen.getByRole("combobox")).not.toHaveTextContent("call_2 - Call 2");
+  });
 });
