@@ -1,8 +1,8 @@
 # WF-0037 — Re-author NWO Vidi 2025 full proposal YAML (official sources)
 
 Artifact: walkthrough
-Version: v0.1
-Status: Draft
+Version: v1.0
+Status: Done
 Last Updated: 2026-02-28
 
 ---
@@ -86,3 +86,4 @@ Execution evidence (2026-02-28):
 
 - Canonical YAML: `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`
 - Source manifest: `backend/data/calls/sources/nwo_vidi_2025_full_proposal.sources.md`
+- Task outcome: removed AES-only `elem_aes_user_committee` from evaluable criteria and node mappings; deferred to future domain-gated modeling per WF-0037 PRD.
