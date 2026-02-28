@@ -114,6 +114,24 @@
 - **Tradeoff**: Temporarily maintains two representations (findings vs cards) and requires governance to prevent “card semantics” from leaking back into engine semantics.
 - **Status**: Approved.
 
+### AD 38.16: Contract failures are distinguished from execution failures (no partial results on contract failure)
+- **WF ID**: WF-0038
+- **Context**: Determinism and auditability collapse if malformed inputs or config mismatches yield partial/ambiguous outputs.
+- **Decision**: Define explicit error categories:
+  - Contract errors reject the request deterministically with no partial findings/cards (`CALL_CONFIG_DIGEST_MISMATCH`, `MALFORMED_REVIEW_REQUEST`, `EXPECTATION_REF_UNRESOLVABLE`).
+  - Execution failures indicate the engine failed despite a valid contract (`ENGINE_EXECUTION_FAILED`, `TIMEOUT`).
+- **Why**: Preserves replayability guarantees and prevents downstream consumers from treating partial output as authoritative.
+- **Tradeoff**: Some failures become “hard stops” rather than degraded output; this is intentional for trust/audit safety.
+- **Status**: Approved.
+
+### AD 38.17: `call_config_ref.digest` canonicalization is `sha256` over canonical JSON of `call_config_snapshot`
+- **WF ID**: WF-0038
+- **Context**: Replayability depends on a stable, unambiguous digest algorithm.
+- **Decision**: Define `call_config_ref.digest` as `sha256` of a canonical JSON serialization of `call_config_snapshot` (UTF-8, stable key ordering, stable list ordering).
+- **Why**: Makes digest verification deterministic across environments and prevents “same config, different digest” drift.
+- **Tradeoff**: Requires canonicalization discipline in tooling; payloads include snapshot to avoid storage coupling.
+- **Status**: Approved.
+
 ## Date: 2026-02-28 (WF-0035: Universal form dynamic UI renderer)
 
 ### AD 35.1: Frontend render model composes flat nodes ordering + metadata enrichment
