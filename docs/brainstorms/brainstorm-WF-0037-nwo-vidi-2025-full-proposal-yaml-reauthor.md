@@ -1,9 +1,9 @@
 # WF-0037 — Re-author NWO Vidi 2025 full proposal YAML (official sources)
 
 Artifact: brainstorm
-Version: v0.6
+Version: v0.7
 Status: Draft
-Last Updated: 2026-02-27
+Last Updated: 2026-02-28
 
 ---
 
@@ -427,3 +427,47 @@ Decisions:
 - C) No walkthrough needed for MVP.
 > Recommendation: A — Walkthrough is required for reproducibility; preflight execution belongs after YAML exists and is still required before frontend reliance.
 > **Selected: A**
+
+---
+
+## Phase 0 Risk Audit Edits (Applied) (2026-02-28)
+
+This section incorporates Phase 0.2 (risk audit) findings into the brainstorm so Phase 1 planning does not inherit ambiguity.
+
+### Deadline Encoding Rules (Resolved)
+
+- Deadlines must be copied from the official sources verbatim, including timezone label.
+- If sources disagree (e.g., CET vs CEST for April), stop and resolve by citing the authoritative source section/page.
+- Policy decision for WF-0037: trust the **Call PDF** for the full proposal submission deadline + timezone if it conflicts with the form.
+- Deadline keys must be stable and descriptive (e.g., `full_proposal_submission`), and each entry must include:
+  - `datetime_local` (as written)
+  - `timezone` (as written)
+  - `source_hint` (section/page in the PDF)
+
+### Criteria Extraction Guardrail (Resolved)
+
+The Call PDF describes both pre-proposal and full proposal procedures. For this WF:
+
+- We model the full proposal form only.
+- We extract and encode only the evaluation criteria/elements that are applied to the **full proposal**.
+- Any pre-proposal-only criteria are explicitly excluded (and noted) to avoid contaminating the full proposal evaluation criteria/elements.
+- Criteria extraction source: Chapter 4 “Assessment procedure” and its criteria subsections, explicitly separating pre-proposal vs full proposal applicability.
+
+### Dutch Summary Handling (Resolved)
+
+Decision: exclude "Public summary in Dutch" from `proposal_nodes` (out of evaluable narrative scope). We may optionally surface it as a compliance INFO note to the researcher (submission requirement context), but we will not map evaluation elements to it unless the official criteria explicitly assess it.
+
+### Domain Note (Non-blocking, Explicit)
+
+The official form spans AES/TTW, SSH/SGW, and ENW. Default remains: one YAML with `funding_call.domain_notes`. If required sections or enforceable constraints differ by domain in the official sources, we stop and ask for an explicit decision (split vs explicit branching).
+
+### Cross-WF Sequencing Risk (Non-blocking, Explicit)
+
+WF-0035 currently hard-blocks nested calls. If Vidi YAML is nested, it cannot serve as WF-0035’s “flat 2nd call proof” until recursion ships or we choose a different flat call for that acceptance gate.
+
+### Budget/Feasibility Handling Rule (Resolved)
+
+If full proposal evaluation criteria include “feasibility/resources”:
+
+- Add a narrow narrative node (e.g., “Resources & feasibility”) only if the official form has a corresponding narrative section.
+- Otherwise, keep feasibility/resources as an evaluation element mapped to the closest relevant narrative node (do not invent a budget node).
