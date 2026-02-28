@@ -1,7 +1,7 @@
 # WF-0038 — PeerLens Review Engine Pipeline v1
 
 Artifact: task
-Version: v0.5
+Version: v0.6
 Status: Ready for Implementation
 Last Updated: 2026-02-28
 
@@ -271,12 +271,14 @@ Acceptance Criteria:
 - Contract errors are surfaced as deterministic, non-partial failures.
 - Execution failures remain classified separately (`ENGINE_EXECUTION_FAILED`, `TIMEOUT`) via a shared engine error model.
 - `backend/app/services/review_execution_core.py` is treated as a stable seam in this task and should only be modified if parity tests fail and prove it is required.
+- If `backend/app/services/review_execution_core.py` is modified, Task 10 notes must reference the specific failing parity test(s) that required the change.
 TDD Plan:
 - RED: add failing integration tests for digest mismatch and expectation-resolution failure abort behavior.
 - GREEN: implement service wiring and error mapping.
 - REFACTOR: remove duplicated error-shaping branches across structured and single flows.
 Verification Steps:
 - `cd backend && PYTHONPATH=. uv run pytest tests/test_structured_reviewer_service.py -k "pipeline_v1 or contract_error"`
+- `cd backend && PYTHONPATH=. uv run pytest tests/test_review_execution_core.py tests/test_structured_reviewer_service.py -k "parity or contract_error or timeout"`
 Risks (if any):
 - Service-level fallback behavior may accidentally emit partial cards.
 
@@ -420,3 +422,4 @@ Risks (if any):
 - v0.3 (2026-02-28): Added confidence gates tying activation/stress/walkthrough tasks to existing authored call YAML structures and call-authoring workflow guardrails.
 - v0.4 (2026-02-28): Clarified Task 9 seam policy: treat `review_execution_core.py` as stable unless parity tests prove a required change.
 - v0.5 (2026-02-28): Applied adversarial hardening: added FR9 schema-growth gate, added explicit error-contract matrix task, and split stress coverage from determinism invariants for better atomicity.
+- v0.6 (2026-02-28): Hardened residual seam-risk guardrail in Task 10 with explicit parity-test evidence requirement and verification step.
