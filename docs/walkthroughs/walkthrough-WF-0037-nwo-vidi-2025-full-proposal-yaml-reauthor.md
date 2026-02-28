@@ -74,6 +74,14 @@ PY
 
 Expected: prints `ok nwo_vidi_2025_full_proposal <call_id>`.
 
+Execution evidence (2026-02-28):
+- Ingest result: `criteria_upserted=2`, `elements_upserted=14`, `nodes_upserted=4`, `expectations_replaced=17`.
+- API preflight result:
+  - `ok nwo_vidi_2025_full_proposal e863fa73-4f93-45e1-90d7-37ac12c29dba flat 4 tree_roots 4 expected_nodes 4 unknown None parent_links 0`
+- Interpretation:
+  - Call is served correctly across `/calls`, `/calls/{id}/nodes` (flat/tree), `/api/public/.../config`, and `/api/public/.../nodes/metadata`.
+  - Vidi remains a flat-node call (`parent_links=0`), and metadata has no unknown logical IDs.
+
 ## Shipped Files (WF-0037)
 
 - Canonical YAML: `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`

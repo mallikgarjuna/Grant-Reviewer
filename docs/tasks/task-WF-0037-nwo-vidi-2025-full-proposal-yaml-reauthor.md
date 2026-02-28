@@ -34,7 +34,7 @@ Risks (if any):
 - Over-correcting and deleting generally applicable impact elements; ensure only AES-specific clause is removed/deferred.
 - If this reveals a schema gap (domain gating / non-evaluable guidance separation), stop and promote a follow-on WF (per PRD Out of Scope).
 
-### [ ] Task 2 — Re-run DB/API Preflight and Update Walkthrough Evidence
+### [x] Task 2 — Re-run DB/API Preflight and Update Walkthrough Evidence
 
 Goal:
 Prove the updated canonical YAML ingests into a test DB and serves consistent shapes via existing endpoints.
