@@ -1,7 +1,7 @@
 # WF-0038 — PeerLens Review Engine Pipeline v1 PRD
 
 Artifact: prd
-Version: v0.4
+Version: v0.5
 Status: Ready for Tasks
 Last Updated: 2026-02-28
 
@@ -95,6 +95,8 @@ Last Updated: 2026-02-28
 - FR9 (US4): Enforce schema growth discipline:
   - admit new top-level `DiagnosticFinding v1` fields only if call-invariant and not derivable.
 - FR10 (US1, US4): Stress-test acceptance must pass for NWO/ERC/MSCA archetypes without funder branching or call-defined semantics.
+- FR11 (US1, US4): Enforce `check_id` governance:
+  - `check_id` must be drawn from an engine-defined, versioned catalog (no free-form codes and no call-config-defined check ids).
 
 ## 5. Data & API Contracts
 
@@ -123,6 +125,9 @@ Replayability boundary is locked: every request embeds the call-config snapshot.
 Hard boundary:
 
 - Findings reference expectations via call-config `expectation_id` (string) scoped by `call_config_ref`, not runtime DB ids.
+- Call config must provide stable expectation ids:
+  - Within `call_config_snapshot`, each expectation that can be referenced as `primary_expectation_ref` must have a stable, unique `expectation_id` (string) within the call-config version.
+  - Expectation ordering for determinism is derived from the call-config ordering for the subject (list order is authoritative).
 
 ### 5.2 Engine atomic output — `DiagnosticFinding v1` (FR4, FR5)
 
@@ -159,6 +164,7 @@ Rules:
 - `NOT_ASSESSABLE` is represented only in `assessment_status`; it must not appear as a `check_id` “gap code”.
 - `check_id` namespace is meaningful and bounded: `{DOMAIN}.{CODE}`.
 - New `check_id` codes may be added only if call-invariant and required for deterministic downstream behavior (same discipline as the schema growth gate).
+  - For v1, Phase 2 must define an explicit engine catalog and treat unknown `check_id` values as a contract violation in tests.
 
 Starter taxonomy (v1, non-exhaustive):
 
@@ -319,3 +325,4 @@ Downstream consumption / governance risk:
 - v0.2 (2026-02-28): Applied Phase 1 runner risk-audit edits: added US/FR traceability, flows, data/contracts sectioning, module boundaries, and testing/telemetry decisions; marked Ready for Tasks.
 - v0.3 (2026-02-28): Incorporated adversarial audit follow-ups: removed duplicated legacy PRD block, clarified digest canonicalization and expectation ordering source, clarified mapping failure abort semantics, expanded stress-test matrix and determinism tests, and added anchor redaction rules for telemetry.
 - v0.4 (2026-02-28): Added engine-defined `check_id` evidence-gap taxonomy (starter set) and clarified that `NOT_ASSESSABLE` is represented only via `assessment_status`.
+- v0.5 (2026-02-28): Clarified expectation-id presence/order requirements in call config and added `check_id` catalog governance requirement (FR11).
