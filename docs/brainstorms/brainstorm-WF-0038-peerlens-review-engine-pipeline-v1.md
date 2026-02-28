@@ -184,6 +184,104 @@ Missing / not yet frozen:
 
 ---
 
+## 7. MVP Definition (Section 7)
+
+### Decisions (selected)
+
+- v1 “engine done” definition: end-to-end call config → two-pass pipeline → `DiagnosticFinding v1` list (trace-first) for one section.
+- Modes MVP: ship **two engine-defined modes** — “strict” (blocking-focused) and “diagnostic” (full coverage); calls may not define semantics.
+- NOT_ASSESSABLE policy: emit NOT_ASSESSABLE findings **only when** call config declares an explicit dependency edge.
+- Compatibility MVP: define and freeze a deterministic mapping spec from `DiagnosticFinding v1` → `ReviewCard` as a v1 contract.
+- Exit-criteria stress test MVP: a written stress-test matrix (NWO/ERC/MSCA call configs + expected invariants + contradiction checks).
+
+**Brainstorming Q&A:**
+
+**Q1: If we had to declare “v1 engine done” in one line, what must exist?**
+- A) End-to-end: call config → two-pass pipeline → `DiagnosticFinding v1` list (trace-first) for one section.
+- B) Only Pass 2 (findings) is defined; Pass 1 observations are deferred.
+- C) Only structure/compliance kinds ship; other kinds deferred.
+> Recommendation: A — matches atomic-output + two-pass decisions; B/C leave the pipeline definition incomplete (exit criteria miss).
+> **Selected: A**
+
+**Q2: What is the strict MVP surface area for modes (execution profiles)?**
+- A) Exactly 1 mode in v1 (“default”), others deferred.
+- B) 2 modes: “strict” (blocking-focused) and “diagnostic” (full coverage).
+- C) Modes are fully call-defined.
+> Recommendation: B — supports the two-tier precision policy without letting calls define semantics.
+> **Selected: B**
+
+**Q3: What is the MVP policy for dependency-driven NOT_ASSESSABLE findings?**
+- A) Emit NOT_ASSESSABLE findings only when the call config declares a dependency edge.
+- B) Emit NOT_ASSESSABLE whenever the engine “thinks” context might help.
+- C) Never emit NOT_ASSESSABLE in v1 (block the run instead).
+> Recommendation: A — keeps dependency handling explicit and call-agnostic; B invites inference/coupling; C is too blocking.
+> **Selected: A**
+
+**Q4: What is the MVP for `DiagnosticFinding v1 → ReviewCard` compatibility?**
+- A) A deterministic mapping spec (field-to-field contract) is defined and frozen in v1.
+- B) Mapping is “best effort” and left to downstream consumers.
+- C) No mapping; findings replace cards immediately.
+> Recommendation: A — compatibility is a top-risk seam; “best effort” will fail downstream.
+> **Selected: A**
+
+**Q5: What is the MVP boundary for “adversarial stress test” to satisfy exit criteria?**
+- A) A written stress-test matrix: NWO/ERC/MSCA call configs + expected pipeline behavior invariants + contradiction checks.
+- B) Only a narrative assurance (“it’s call-agnostic by design”).
+- C) Only a single call (NWO) is used for stress testing in v1.
+> Recommendation: A — exit criteria requires an adversarial stress test; B/C won’t satisfy it.
+> **Selected: A**
+
+---
+
+## 8. Explicit Non-Goals (Section 8)
+
+### Decisions (selected)
+
+- Explicitly out-of-scope for this WF: full-proposal coherence audit across all sections (scope-explosion vector).
+- Purity guardrails (explicit forbiddance): no funder-specific engine branching/adapters, and no call-config-defined custom semantics (custom kinds/checks).
+- Observation non-goal: Observations are never exposed outside the engine boundary (no UI/API/analytics contract).
+- Scoring non-goal: no default numeric scoring computation.
+- Evolution non-goal: no per-call schema/output variants and no backwards-incompatible `DiagnosticFinding v1` changes without an explicit version bump.
+
+**Brainstorming Q&A:**
+
+**Q1: Which tempting capability must be explicitly declared out-of-scope for WF-0038 (even if it’s “easy”)?**
+- A) Auto-rewriting / generating improved text.
+- B) Competitive ranking / simulation / “fundability score”.
+- C) Full-proposal coherence audit across all sections.
+> Recommendation: C — easiest path to scope explosion beyond “section-first”.
+> **Selected: C**
+
+**Q2: What must we explicitly forbid to protect call-agnostic purity?**
+- A) Any funder-specific branching/adapters inside the engine.
+- B) Call-config-defined custom semantics (custom finding kinds / custom observation kinds / custom checks).
+- C) Both A and B.
+> Recommendation: C — forbidding only one still allows semantic coupling via the other path.
+> **Selected: C**
+
+**Q3: What should be an explicit non-goal for v1 regarding Observations?**
+- A) Observations are never exposed outside the engine boundary (no UI/API/analytics contract).
+- B) Observations can be optionally exposed for debugging.
+- C) Observations are first-class and visible in the UI.
+> Recommendation: A — prevents a second drifting output contract that undermines “atomic output = findings”.
+> **Selected: A**
+
+**Q4: What should be an explicit non-goal for v1 regarding scoring?**
+- A) Any default numeric score computation.
+- B) Any score storage anywhere (even optional metadata).
+- C) Any severity levels at all (only narrative).
+> Recommendation: A — matches “scoring optional/secondary” while preserving severity-based findings.
+> **Selected: A**
+
+**Q5: What should be an explicit non-goal for v1 regarding call-config evolution?**
+- A) Per-call schema variants or per-call output variants.
+- B) Backwards-incompatible changes to `DiagnosticFinding v1` without a version bump.
+- C) Both A and B.
+> Recommendation: C — prevents silent drift across calls and preserves long-term traceability.
+> **Selected: C**
+
+---
+
 ## 2. Desired Outcome (Section 2)
 
 ### Decisions (selected)
