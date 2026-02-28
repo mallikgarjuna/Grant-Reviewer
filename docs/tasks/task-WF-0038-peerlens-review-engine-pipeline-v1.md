@@ -7,7 +7,7 @@ Last Updated: 2026-02-28
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: deterministic single-subject pipeline path
+### [x] Task 1 — Tracer bullet: deterministic single-subject pipeline path
 
 Goal:
 - Prove one end-to-end deterministic path from `ReviewRequest v1` to `DiagnosticFinding v1[]` to `ReviewCard[]` for a single expectation and subject.
