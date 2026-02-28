@@ -76,3 +76,25 @@ def test_mode_projection_in_pipeline_strict_filters_non_errors() -> None:
     result = run_review_pipeline(request)
 
     assert [item.check_id for item in result.findings] == ["check.missing"]
+
+
+def test_pipeline_stress_archetype_smoke() -> None:
+    request = ReviewRequestV1(
+        request_id="stress-smoke",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_1",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.required",
+                    "required": True,
+                }
+            ]
+        },
+        proposal_nodes={"research_idea": ""},
+    )
+    result = run_review_pipeline(request)
+    assert result.findings[0].severity == "ERROR"

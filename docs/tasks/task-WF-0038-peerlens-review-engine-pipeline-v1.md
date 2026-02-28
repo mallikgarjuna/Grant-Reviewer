@@ -336,7 +336,7 @@ Verification Steps:
 Risks (if any):
 - Logger-side string interpolation can leak raw text if guards are incomplete.
 
-### [ ] Task 13 — Encode archetype stress-test matrix (NWO/ERC/MSCA)
+### [x] Task 13 — Encode archetype stress-test matrix (NWO/ERC/MSCA)
 
 Goal:
 - Prove call-agnostic behavior across NWO/ERC/MSCA archetypes using current authored call YAML structures as fixture roots.
