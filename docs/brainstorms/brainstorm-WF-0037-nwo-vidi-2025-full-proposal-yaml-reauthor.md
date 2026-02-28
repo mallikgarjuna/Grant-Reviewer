@@ -1,8 +1,8 @@
 # WF-0037 — Re-author NWO Vidi 2025 full proposal YAML (official sources)
 
 Artifact: brainstorm
-Version: v0.7
-Status: Draft
+Version: v0.8
+Status: Draft Complete
 Last Updated: 2026-02-28
 
 ---
