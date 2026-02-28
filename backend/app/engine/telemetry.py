@@ -23,11 +23,12 @@ def build_pipeline_telemetry(
     findings: list[DiagnosticFindingV1],
     status: str,
 ) -> dict[str, object]:
+    request_scope_salt = f"{request.call_config_digest}:{request.request_id}"
     redacted_nodes = {
         node_logical_id: {
             "text_hash": _hash_text(
                 text.strip(),
-                salt=request.call_config_digest,
+                salt=request_scope_salt,
             ),
             "length": len(text.strip()),
         }
