@@ -1,0 +1,209 @@
+import "@testing-library/jest-dom/vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { UniversalSubmitForm } from "@/components/submit/UniversalSubmitForm";
+
+const push = vi.fn();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+}));
+
+describe("UniversalSubmitForm", () => {
+  const originalCrypto = globalThis.crypto;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    push.mockReset();
+    window.localStorage.clear();
+    Object.defineProperty(globalThis, "crypto", {
+      value: {
+        ...originalCrypto,
+        randomUUID: () => "fixed-idempotency-key",
+      },
+      configurable: true,
+    });
+  });
+
+  it("renders dynamic node fields from API order", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-2",
+                logical_id: "research_idea",
+                title: "Research Idea",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 2,
+                has_expectations: true,
+              },
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+        status: 200,
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<UniversalSubmitForm />);
+
+    const fields = await screen.findAllByRole("textbox");
+    expect(fields).toHaveLength(2);
+    expect(fields[0]).toHaveAccessibleName("Research Idea");
+    expect(fields[1]).toHaveAccessibleName("Academic Profile");
+  });
+
+  it("blocks submit when all dynamic nodes are empty", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Submit" }));
+    expect(
+      await screen.findByText("You must fill out at least one section before submitting."),
+    ).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      "/api/bff/structured-review",
+      expect.anything(),
+    );
+  });
+
+  it("sends Idempotency-Key header during submit", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+          status: 200,
+        });
+      }
+      if (url === "/api/bff/structured-review") {
+        expect(init?.headers).toMatchObject({
+          "Content-Type": "application/json",
+          "Idempotency-Key": "fixed-idempotency-key",
+        });
+        return new Response(JSON.stringify({ review_id: "review-1" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "not found" } }), {
+        status: 404,
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "filled" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/bff/structured-review",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+  });
+});

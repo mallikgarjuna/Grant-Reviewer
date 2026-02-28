@@ -37,6 +37,7 @@ export type CallsResponse = {
 
 export type NodeSummary = {
   id: string;
+  logical_id?: string | null;
   parent_node_id: string | null;
   title: string;
   node_type: "SECTION" | "SUBSECTION";

@@ -7,7 +7,7 @@ Last Updated: 2026-02-28
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: mount universal submit shell with dynamic nodes + submit
+### [x] Task 1 — Tracer bullet: mount universal submit shell with dynamic nodes + submit
 
 Goal:
 - Replace the hardcoded Veni submit shell with a universal component that renders node textareas from API data and submits with idempotency for one flat structured call.
