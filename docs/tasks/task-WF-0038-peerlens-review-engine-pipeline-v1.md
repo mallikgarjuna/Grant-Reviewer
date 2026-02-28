@@ -1,7 +1,7 @@
 # WF-0038 — PeerLens Review Engine Pipeline v1
 
 Artifact: task
-Version: v0.3
+Version: v0.4
 Status: Ready for Implementation
 Last Updated: 2026-02-28
 
@@ -243,6 +243,7 @@ Acceptance Criteria:
 - Structured review path can execute via pipeline v1 seams without breaking existing `ReviewCard` persistence/read APIs.
 - Contract errors are surfaced as deterministic, non-partial failures.
 - Execution failures remain classified separately (`ENGINE_EXECUTION_FAILED`, `TIMEOUT`) via a shared engine error model.
+- `backend/app/services/review_execution_core.py` is treated as a stable seam in this task and should only be modified if parity tests fail and prove it is required.
 TDD Plan:
 - RED: add failing integration tests for digest mismatch and expectation-resolution failure abort behavior.
 - GREEN: implement service wiring and error mapping.
@@ -337,3 +338,4 @@ Risks (if any):
 - v0.1 (2026-02-28): Initial task breakdown from PRD
 - v0.2 (2026-02-28): Applied Phase 2 review edits (tightened Task 9 service boundary and corrected ERC stress-matrix label); marked Ready for Implementation
 - v0.3 (2026-02-28): Added confidence gates tying activation/stress/walkthrough tasks to existing authored call YAML structures and call-authoring workflow guardrails.
+- v0.4 (2026-02-28): Clarified Task 9 seam policy: treat `review_execution_core.py` as stable unless parity tests prove a required change.
