@@ -29,6 +29,10 @@ You can also add items manually. Each row should have:
 - **Traceability**: include a `Ref:` to the origin artifact/chat/commit (e.g., `Ref: WF-0035 brainstorm`, `Ref: docs/...`, `Ref: branch ...; commit ...`) when applicable.
 - **Date**: when parked (YYYY-MM-DD).
 
+### Next Actions (Meta Rule)
+
+- When suggesting next actions in chat, include a recommendation and a brief rationale so the user can choose quickly.
+
 ### Picking Items (Code Phrase: `pick P[x] #[n]`)
 
 Say **`pick P0 #1`** (or any P[x] #[n] reference) and the agent will promote that item into a new WF.
