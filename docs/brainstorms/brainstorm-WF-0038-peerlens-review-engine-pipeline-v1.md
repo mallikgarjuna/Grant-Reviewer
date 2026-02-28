@@ -1,8 +1,8 @@
 # WF-0038 — PeerLens Review Engine Pipeline v1
 
 Artifact: brainstorm
-Version: v0.3
-Status: Draft
+Version: v0.4
+Status: Draft Complete
 Last Updated: 2026-02-28
 
 ## Objective
@@ -560,7 +560,7 @@ Required (every finding):
 - `subject_ref`: the evaluated unit (at minimum: target section/node; may include sub-field identifier)
 - `anchors[]`: ≥1 typed anchor (`TEXT_SPAN|STRUCTURAL_LOCATOR|DERIVED`)
 - `call_config_ref`: includes `{call_code}@{semver}` and `{digest}`
-- `engine_ref`: engine version/build identifier
+- `engine_ref`: includes `{engine_semver}` and `{build_id}` (immutable)
 
 Optional:
 - `related_expectation_refs[]`: trace-only cross-links (same-kind only)
@@ -570,16 +570,21 @@ Invariants:
 - Single-primary trace: exactly 1 `primary_expectation_ref` per finding.
 - Related refs must not cross `finding_kind` boundaries.
 - Determinism: structured fields (ids/kind/severity/anchors/order) must be stable for identical inputs + call_config_ref + engine_ref.
+- Self-describing trace: `criterion_ref` and `element_ref` are required and must match the declared mapping for `primary_expectation_ref` under `call_config_ref` (mismatch = invalid output).
 - Aggregation determinism: at most one finding per (`primary_expectation_ref`, `subject_ref`, `check_id`).
-- Ordering determinism: sort by `severity` desc, then call-defined expectation order, then `check_id`.
+- Ordering determinism: sort by severity (`ERROR > WARNING > NOTE`), then call-defined expectation order, then `check_id`.
 
 ### `Observation v1` (Pass 1 output) — minimal frozen contract
 
 All observations (required):
 - `observation_kind` (strict catalog; engine-defined)
+- `primary_expectation_ref`: call-defined `expectation_id` (string); observations are expectation-scoped but do not assign severity or satisfied/unsatisfied labels
 - `subject_ref`
 - `anchors[]` (≥1; same typed anchor union as findings)
 - `call_config_ref` + `engine_ref`
+
+Naming constraint:
+- `observation_kind` values encode only the invariant dimension (STRUCTURE/COMPLIANCE/…); they must not encode pass/fail or severity semantics.
 
 Minimal `observation_kind` catalog (v1; extend only by engine versioned change):
 - `STRUCTURE_SIGNAL`
@@ -600,7 +605,7 @@ Inputs (minimum):
 - Dependency context inputs only when explicitly declared by dependency edges in call-config
 
 Pass 1 (Observations):
-- Produces `Observation v1[]` (anchored facts about the submission), no severity, no expectation failure labels.
+- Produces `Observation v1[]` (anchored, expectation-scoped facts about the submission), no severity, and no satisfied/unsatisfied labels.
 
 Pass 2 (Findings):
 - Consumes observations + call-config expectations/constraints/dependencies and emits `DiagnosticFinding v1[]`.
