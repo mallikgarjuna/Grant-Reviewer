@@ -84,6 +84,15 @@ Missing / not yet frozen:
 - Define execution profiles (modes) as activation sets over the two-pass pipeline.
 - Map `DiagnosticFinding v1` to the existing `ReviewCard` surface (downstream compatibility contract).
 
+## Remaining Open Decisions (Phase 1)
+
+These are intentionally deferred to Phase 1 (PRD) so Phase 2 task planning can proceed without new architecture decisions:
+
+- Mode activation sets: exact component toggles + output filtering rules for `strict` vs `diagnostic`.
+- Canonical engine input envelope: a single serialized “review request” shape (fields + normalization) covering target subject + optional dependency context.
+- `DiagnosticFinding v1 → ReviewCard` mapping spec: deterministic 1:1 field mapping and any required adapter invariants.
+- Stress-test matrix concretization: select representative NWO/ERC/MSCA call-config archetypes and enumerate contradiction checks against frozen contracts.
+
 ---
 
 ## 1. Problem Statement (Section 1)
