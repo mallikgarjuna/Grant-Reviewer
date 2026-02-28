@@ -73,9 +73,10 @@ MAX_SNIPPET_CHARS = 10_000
 BFF_SIGNATURE_MAX_AGE_SECONDS = 300
 IDEMPOTENCY_TTL_HOURS = 24
 FREE_DAILY_REVIEW_LIMIT = 5
-STRUCTURED_REVIEW_PIPELINE_V1_ENABLED = (
-    os.getenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "0").strip() == "1"
-)
+
+
+def is_structured_review_pipeline_v1_enabled() -> bool:
+    return os.getenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "0").strip() == "1"
 
 ERROR_STATUS_BY_CODE = {
     "UNAUTHORIZED": 401,
@@ -768,7 +769,7 @@ def create_structured_review(
         llm_client=build_llm_client(),
     )
     try:
-        if STRUCTURED_REVIEW_PIPELINE_V1_ENABLED:
+        if is_structured_review_pipeline_v1_enabled():
             review, _ = reviewer_service.generate_structured_review_pipeline_v1(
                 review_stage=payload.review_stage,
                 call_id=payload.call_id,

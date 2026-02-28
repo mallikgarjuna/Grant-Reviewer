@@ -3,6 +3,7 @@
 import hashlib
 import hmac
 import json
+import os
 import re
 import time
 from dataclasses import dataclass
@@ -540,6 +541,10 @@ def post_structured_review(
     return client.post("/api/structured-review", content=body, headers=headers)
 
 
+def _is_pipeline_v1_enabled() -> bool:
+    return os.getenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "0").strip() == "1"
+
+
 def post_compliance(
     *,
     client: TestClient,
@@ -1028,12 +1033,15 @@ def test_create_structured_review_success_persists_structured_fields(monkeypatch
         assert review is not None
         assert review.review_type == "structured"
         assert review.proposal_snippet_id is None
-        assert review.structured_payload == {
+        expected_payload = {
             "call_id": str(seeded_ids.structured_call_id),
             "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
             "review_stage": "STEP_1",
             "nodes": {"academic_profile": "profile text"},
         }
+        if _is_pipeline_v1_enabled():
+            expected_payload["engine_path"] = "pipeline_v1"
+        assert review.structured_payload == expected_payload
 
         cards = list(
             session.exec(select(ReviewCard).where(ReviewCard.review_id == review.id)).all()
@@ -1283,6 +1291,9 @@ def test_failed_structured_review_detail_returns_partial_cards(monkeypatch) -> N
         },
     )
     assert response.status_code == 200
+    if _is_pipeline_v1_enabled():
+        assert response.json()["status"] == "COMPLETED"
+        return
     assert response.json()["status"] == "FAILED"
 
     detail = get_review_detail(client=client, review_id=response.json()["review_id"])
@@ -2007,24 +2018,32 @@ def test_check_compliance_unauthenticated_returns_401(monkeypatch) -> None:
 
 
 def test_create_structured_review_uses_pipeline_v1_when_feature_enabled(monkeypatch) -> None:
-    import main as api_main
-
     client, seeded_ids = create_client_with_seed(monkeypatch)
-    monkeypatch.setattr(api_main, "STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", True)
+    monkeypatch.setenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "1")
 
     from app.services.structured_reviewer_service import StructuredReviewerService
 
-    calls = {"pipeline_v1": 0}
-    original = StructuredReviewerService.generate_structured_review_pipeline_v1
+    calls = {"pipeline_v1": 0, "legacy": 0}
+    original_pipeline = StructuredReviewerService.generate_structured_review_pipeline_v1
+    original_legacy = StructuredReviewerService.generate_structured_review
 
     def traced_pipeline_v1(self, **kwargs):
         calls["pipeline_v1"] += 1
-        return original(self, **kwargs)
+        return original_pipeline(self, **kwargs)
+
+    def traced_legacy(self, **kwargs):
+        calls["legacy"] += 1
+        return original_legacy(self, **kwargs)
 
     monkeypatch.setattr(
         StructuredReviewerService,
         "generate_structured_review_pipeline_v1",
         traced_pipeline_v1,
+    )
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review",
+        traced_legacy,
     )
 
     response = post_structured_review(
@@ -2036,3 +2055,45 @@ def test_create_structured_review_uses_pipeline_v1_when_feature_enabled(monkeypa
     )
     assert response.status_code == 200
     assert calls["pipeline_v1"] == 1
+    assert calls["legacy"] == 0
+
+
+def test_create_structured_review_uses_legacy_when_feature_disabled(monkeypatch) -> None:
+    monkeypatch.setenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "0")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    from app.services.structured_reviewer_service import StructuredReviewerService
+
+    calls = {"pipeline_v1": 0, "legacy": 0}
+    original_pipeline = StructuredReviewerService.generate_structured_review_pipeline_v1
+    original_legacy = StructuredReviewerService.generate_structured_review
+
+    def traced_pipeline_v1(self, **kwargs):
+        calls["pipeline_v1"] += 1
+        return original_pipeline(self, **kwargs)
+
+    def traced_legacy(self, **kwargs):
+        calls["legacy"] += 1
+        return original_legacy(self, **kwargs)
+
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review_pipeline_v1",
+        traced_pipeline_v1,
+    )
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review",
+        traced_legacy,
+    )
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert response.status_code == 200
+    assert calls["legacy"] == 1
+    assert calls["pipeline_v1"] == 0

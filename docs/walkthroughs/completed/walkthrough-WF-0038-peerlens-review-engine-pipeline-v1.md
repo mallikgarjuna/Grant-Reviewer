@@ -61,6 +61,13 @@ Executed with test-safe DB URL in environment for DB-backed tests:
 DATABASE_URL=sqlite:////tmp/grant_reviewer_test.db
 ```
 
+Structured API parity verification was executed with both feature-flag states:
+
+```bash
+cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test.db STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=1 PYTHONPATH=. uv run pytest tests/test_api.py -k "structured_review"
+cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test.db STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=0 PYTHONPATH=. uv run pytest tests/test_api.py -k "structured_review"
+```
+
 Walkthrough keyword conformance check:
 
 ```bash
@@ -71,6 +78,18 @@ cd /home/mgurram/Projects/Github/AIEng_MG/Grant-Reviewer && rg -n "tracer bullet
 
 - Public API/UI first-class exposure of `DiagnosticFinding v1` remains deferred; compatibility mapping to `ReviewCard` remains active for v1.
 - Engine telemetry currently records deterministic redacted metadata and counters only (no richer distributed tracing fields yet).
+
+## Deployment Note
+
+- `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED` controls live routing:
+  - `0` (default): legacy structured review flow.
+  - `1`: pipeline-v1 structured review flow.
+- Pipeline-v1 path is now non-partial for contract failures: it validates expectation resolvability before persistence and writes cards atomically in a single batch commit.
+- Legacy timeout behavior (partial cards on failed multi-node runs) remains unchanged when the flag is `0`.
+
+## Privacy Hardening Note
+
+- Telemetry `text_hash` now uses request-scoped salting (`call_config_digest`) before hashing raw text. This preserves deterministic replay for identical requests while reducing unsalted dictionary-attack risk across unrelated requests.
 
 ## Conformance Note: Promoted vs Excluded
 

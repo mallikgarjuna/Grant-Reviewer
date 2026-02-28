@@ -5,8 +5,9 @@ import hashlib
 from app.engine.contracts import DiagnosticFindingV1, ReviewRequestV1
 
 
-def _hash_text(value: str) -> str:
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+def _hash_text(value: str, *, salt: str) -> str:
+    salted_value = f"{salt}|{value}"
+    return hashlib.sha256(salted_value.encode("utf-8")).hexdigest()
 
 
 def _count_by(values: list[str]) -> dict[str, int]:
@@ -24,7 +25,10 @@ def build_pipeline_telemetry(
 ) -> dict[str, object]:
     redacted_nodes = {
         node_logical_id: {
-            "text_hash": _hash_text(text.strip()),
+            "text_hash": _hash_text(
+                text.strip(),
+                salt=request.call_config_digest,
+            ),
             "length": len(text.strip()),
         }
         for node_logical_id, text in sorted(request.proposal_nodes.items())

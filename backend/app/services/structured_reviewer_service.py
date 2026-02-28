@@ -10,6 +10,7 @@ from datetime import datetime
 from uuid import UUID
 
 from app.engine.errors import EngineContractError, EngineErrorCode
+from app.engine.contracts import PipelineResult
 from app.engine.pipeline_v1 import run_review_pipeline
 from app.engine.review_request_validator import (
     ReviewRequestValidationError,
@@ -317,6 +318,9 @@ class StructuredReviewerService:
         self.repository.update_review(review)
 
         expectation_map: dict[str, NodeExpectation] = {}
+        not_assessable_payloads: list[
+            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
+        ] = []
         request_expectations: list[dict[str, object]] = []
         for node_logical_id, _ in nodes:
             node = node_by_logical_id.get(node_logical_id)
@@ -327,7 +331,24 @@ class StructuredReviewerService:
                     message=f"Unknown node_logical_id: '{node_logical_id}'",
                 )
             expectations = self.repository.get_expectations_for_node(node.id)
-            for expectation in expectations:
+            assessable, not_assessable = self._partition_expectations(
+                node_logical_id=node_logical_id,
+                expectations=expectations,
+                submitted_text_by_node=submitted_text_by_node,
+            )
+
+            for expectation, reason in not_assessable:
+                not_assessable_payloads.append(
+                    (
+                        expectation.id,
+                        ReviewRating.NOTE,
+                        "Not assessable due to missing cross-node context.",
+                        AssessmentStatus.NOT_ASSESSABLE,
+                        reason,
+                    )
+                )
+
+            for expectation in assessable:
                 expectation_id = str(expectation.id)
                 request_expectations.append(
                     {
@@ -355,7 +376,11 @@ class StructuredReviewerService:
 
         try:
             review_request = validate_review_request_payload(payload)
-            result = run_review_pipeline(review_request)
+            result = (
+                run_review_pipeline(review_request)
+                if request_expectations
+                else PipelineResult(findings=[], review_cards=[], telemetry={})
+            )
         except ReviewRequestValidationError as err:
             return self._fail_contract_error(review, code=err.code, message=err.message)
         except EngineContractError as err:
@@ -391,7 +416,7 @@ class StructuredReviewerService:
 
         card_payloads: list[
             tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
-        ] = []
+        ] = list(not_assessable_payloads)
         for card in result.review_cards:
             expectation = expectation_map[card.expectation_id]
             card_payloads.append(
