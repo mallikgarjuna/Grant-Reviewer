@@ -135,6 +135,7 @@ Promotion dependency note:
 | 26 | Universal Form: add backend structured-calls listing/filter endpoint | tech-debt | Replace frontend N+1 config gating with one backend-filtered list (e.g., `ui_mode=structured_nodes`) only after WF-0035 ships; keeps current WF scoped to existing APIs while reducing latency/failure fanout later. (Ref: WF-0035 brainstorm “Post-WF-0032..WF-0037 Reality Check” Q3 selected A; WF-0035 PRD v0.2 FR16/C1.) | 2026-02-28 |
 | 27 | Universal Form: canonical domain-options contract for UI | product | Remove interim per-call frontend domain-options mapping by adding source-grounded domain options to the canonical call-definition/public metadata/config contract. (Ref: WF-0035 brainstorm “Post-WF-0032..WF-0037 Reality Check” Q1 selected A; AD 35.4 in `docs/logs/decisions.md`.) | 2026-02-28 |
 | 28 | Universal Form: large-form navigation for >10 nodes | product | Add section navigation/stepper/TOC patterns for larger flat calls once MVP universality is stable; avoid bundling this UX expansion into WF-0035’s 3–10 node target. (Ref: WF-0035 brainstorm “Target User / Actor” Q5 selected A; PRD v0.2 Target scope.) | 2026-02-28 |
+| 29 | Universal Submit: split orchestration into dedicated hooks/modules | tech-debt | Defer large `UniversalSubmitForm` decomposition into focused hooks (`gating`, `render-model`, `submit orchestration`, `draft persistence`) to a new WF to reduce regression risk post-WF-0035 ship gate. (Ref: WF-0035 adversarial audit follow-up, branch `wf/WF-0035-universal-form-dynamic-ui-renderer`.) | 2026-02-28 |
 
 ---
 
@@ -194,3 +195,4 @@ Promotion dependency note:
 - **v1.8** (2026-02-26): Reordered priorities for safer launch sequencing after WF-0032/0033/0034: pulled frontend call-agnostic prerequisites + ERC CoG source re-authoring into P1 ahead of broad data ingestion; renumbered P2 accordingly.
 - **v1.9** (2026-02-26): Replaced `Promoted Items` with a unified WF initiative log table (all known WF IDs), explicitly marking each as `promoted` or `started-directly`; added missing WF-0032 as started-directly.
 - **v2.0** (2026-02-28): Parked WF-0035 scope-creep follow-ons: backend structured-call filter endpoint, canonical domain-options contract, and large-form navigation UX.
+- **v2.1** (2026-02-28): Parked deferred WF-0035 follow-up for `UniversalSubmitForm` structural decomposition into dedicated hooks/modules.

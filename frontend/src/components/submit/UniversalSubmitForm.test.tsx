@@ -1049,6 +1049,86 @@ describe("UniversalSubmitForm", () => {
     expect(await screen.findByDisplayValue("draft for call 1")).toBeInTheDocument();
   });
 
+  it("persists domain per call draft across call switches", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+              {
+                id: "call-2",
+                code: "other_call",
+                name: "Other",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.endsWith("/config")) {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes" || url === "/api/bff/calls/call-2/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.endsWith("/metadata")) {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Domain"), {
+      target: { value: "science_enw" },
+    });
+    fireEvent.change(screen.getByLabelText("Funding Call"), { target: { value: "call-2" } });
+    fireEvent.change(screen.getByLabelText("Funding Call"), { target: { value: "call-1" } });
+
+    const domainSelect = await screen.findByLabelText("Domain");
+    expect(domainSelect).toHaveValue("science_enw");
+  });
+
   it("clears only active call draft on submit success", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);

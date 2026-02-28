@@ -17,6 +17,7 @@ import { getDomainOptionsForCall } from "@/lib/submit/domainOptions";
 import { clearDraft, loadDraft, saveDraft } from "@/lib/submit/draftStore";
 import { loadStructuredCalls } from "@/lib/submit/loadStructuredCalls";
 import { buildRenderModel, type RenderModelResult } from "@/lib/submit/renderModel";
+import { trackClientEvent } from "@/lib/telemetry/clientTelemetry";
 
 type ApiErrorEnvelope = {
   error?: {
@@ -25,6 +26,8 @@ type ApiErrorEnvelope = {
     details?: unknown;
   };
 };
+
+const DOMAIN_DRAFT_KEY = "__selected_domain";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -99,7 +102,7 @@ export function UniversalSubmitForm() {
         if (!cancelled) {
           setCalls(structuredResult.calls);
           setSelectedCallId(structuredResult.calls[0]?.id ?? "");
-          console.info("universal_submit.gating_summary", {
+          trackClientEvent("universal_submit.gating_summary", {
             total_calls: allCalls.length,
             structured_calls: structuredResult.calls.length,
             warnings: structuredResult.warnings.length,
@@ -174,23 +177,25 @@ export function UniversalSubmitForm() {
           ) ?? {};
         if (!cancelled) {
           const nextNodes = Array.isArray(payload.nodes) ? payload.nodes : [];
+          const storedDraft = loadDraft(selectedCallId);
+          const storedDomain = storedDraft[DOMAIN_DRAFT_KEY] ?? null;
           const nextRenderModel = buildRenderModel({
             nodes: nextNodes,
             metadataByLogicalId,
           });
           if (nextRenderModel.state !== "ready") {
-            console.info("universal_submit.unsupported_call_selection", {
+            trackClientEvent("universal_submit.unsupported_call_selection", {
               reason: nextRenderModel.reason,
             });
           } else if (nextRenderModel.metadataFallbackCount > 0) {
-            console.info("universal_submit.metadata_fallback_usage", {
+            trackClientEvent("universal_submit.metadata_fallback_usage", {
               fallback_count: nextRenderModel.metadataFallbackCount,
             });
           }
           setNodes(nextNodes);
           setRenderModel(nextRenderModel);
+          setSelectedDomain(storedDomain);
           setDraft((current) => {
-            const storedDraft = loadDraft(selectedCallId);
             const next: Record<string, string> = {};
             if (nextRenderModel.state === "ready") {
               for (const node of nextRenderModel.nodes) {
@@ -221,6 +226,19 @@ export function UniversalSubmitForm() {
       ? selectedDomain
       : null;
 
+  function serializeDraftState(
+    nodeDraft: Record<string, string>,
+    domain: string | null,
+  ): Record<string, string> {
+    if (!domain) {
+      return { ...nodeDraft };
+    }
+    return {
+      ...nodeDraft,
+      [DOMAIN_DRAFT_KEY]: domain,
+    };
+  }
+
   useEffect(() => {
     setSelectedDomain((current) =>
       current && domainOptions.some((option) => option.value === current) ? current : null,
@@ -236,7 +254,7 @@ export function UniversalSubmitForm() {
         ...current,
         [nodeLogicalId]: value,
       };
-      saveDraft(selectedCallId, next);
+      saveDraft(selectedCallId, serializeDraftState(next, effectiveDomain));
       return next;
     });
   }
@@ -285,18 +303,18 @@ export function UniversalSubmitForm() {
     if (!response.ok) {
       const apiError = await parseApiError(response);
       if (apiError.status === 401) {
-        console.info("universal_submit.submit_outcome", { outcome: "auth_redirect" });
+        trackClientEvent("universal_submit.submit_outcome", { outcome: "auth_redirect" });
         router.push(SIGN_IN_ROUTE);
         return;
       }
-      console.info("universal_submit.submit_outcome", { outcome: "api_error" });
+      trackClientEvent("universal_submit.submit_outcome", { outcome: "api_error" });
       setFormError(apiError.message);
       return;
     }
 
     const payload = (await response.json()) as { review_id?: string };
     if (!payload.review_id) {
-      console.info("universal_submit.submit_outcome", { outcome: "missing_review_id" });
+      trackClientEvent("universal_submit.submit_outcome", { outcome: "missing_review_id" });
       setFormError("Review submitted but no review id was returned.");
       return;
     }
@@ -304,7 +322,7 @@ export function UniversalSubmitForm() {
     const query = new URLSearchParams({
       submitted_nodes: nonEmptyNodes.map((node) => node.node_logical_id).join(","),
     });
-    console.info("universal_submit.submit_outcome", { outcome: "success" });
+    trackClientEvent("universal_submit.submit_outcome", { outcome: "success" });
     router.push(`${buildReviewDetailRoute(payload.review_id)}?${query.toString()}`);
   }
 
@@ -340,11 +358,15 @@ export function UniversalSubmitForm() {
             ? apiError.details.node_logical_ids.filter((item) => typeof item === "string")
             : [];
           setHardBlockErrors([apiError.message, ...detailNodeIds]);
-          console.info("universal_submit.submit_outcome", { outcome: "compliance_hard_block" });
+          trackClientEvent("universal_submit.submit_outcome", {
+            outcome: "compliance_hard_block",
+          });
           return;
         }
         setFormError(apiError.message);
-        console.info("universal_submit.submit_outcome", { outcome: "compliance_api_error" });
+        trackClientEvent("universal_submit.submit_outcome", {
+          outcome: "compliance_api_error",
+        });
         return;
       }
 
@@ -447,9 +469,13 @@ export function UniversalSubmitForm() {
               <select
                 id="domain"
                 className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm"
-                onChange={(event) =>
-                  setSelectedDomain(event.target.value ? event.target.value : null)
-                }
+                onChange={(event) => {
+                  const nextDomain = event.target.value ? event.target.value : null;
+                  setSelectedDomain(nextDomain);
+                  if (selectedCallId) {
+                    saveDraft(selectedCallId, serializeDraftState(draft, nextDomain));
+                  }
+                }}
                 value={effectiveDomain ?? ""}
               >
                 <option value="">No domain override</option>
