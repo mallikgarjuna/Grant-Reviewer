@@ -3,6 +3,7 @@ from __future__ import annotations
 from app.engine.compat.review_card_mapper import map_findings_to_review_cards
 from app.engine.contracts import DiagnosticFindingV1, PipelineResult, ReviewRequestV1, SubjectRef
 from app.engine.modes import project_findings_for_mode
+from app.engine.telemetry import build_pipeline_telemetry
 
 
 def _compute_diagnostic_findings(request: ReviewRequestV1) -> list[DiagnosticFindingV1]:
@@ -56,4 +57,14 @@ def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
         resolvable_expectation_refs=resolvable_expectation_refs,
     )
 
-    return PipelineResult(findings=projected_findings, review_cards=cards)
+    telemetry = build_pipeline_telemetry(
+        request=request,
+        findings=projected_findings,
+        status="success",
+    )
+
+    return PipelineResult(
+        findings=projected_findings,
+        review_cards=cards,
+        telemetry=telemetry,
+    )

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from dataclasses import field
 from typing import Literal
 
 EngineMode = Literal["DIAGNOSTIC", "STRICT"]
@@ -66,6 +67,7 @@ class ReviewCard:
 class PipelineResult:
     findings: list[DiagnosticFindingV1]
     review_cards: list[ReviewCard]
+    telemetry: dict[str, object] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)

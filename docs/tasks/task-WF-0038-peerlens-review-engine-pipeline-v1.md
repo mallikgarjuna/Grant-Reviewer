@@ -309,7 +309,7 @@ Verification Steps:
 Risks (if any):
 - Error naming drift between internal and public layers can create brittle tests.
 
-### [ ] Task 12 — Add minimal telemetry and anchor redaction safeguards
+### [x] Task 12 — Add minimal telemetry and anchor redaction safeguards
 
 Goal:
 - Emit run-level pipeline telemetry while preventing raw text leakage from `TEXT_SPAN` anchors.
