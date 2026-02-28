@@ -57,3 +57,29 @@ def test_validator_rejects_malformed_payload_with_deterministic_code() -> None:
         err_info.value.to_dict(),
         sort_keys=True,
     )
+
+
+def test_validator_rejects_malformed_expectation_entry_shape() -> None:
+    payload = _payload()
+    payload["call_config_snapshot"] = {
+        "expectations": [{"node_logical_id": "research_idea"}]
+    }
+    digest = hashlib.sha256(
+        canonicalize_for_digest(payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    payload["call_config_digest"] = f"sha256:{digest}"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
+
+
+def test_validator_rejects_non_string_proposal_node_payload_values() -> None:
+    payload = _payload()
+    payload["proposal_nodes"] = {"research_idea": 123}
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"

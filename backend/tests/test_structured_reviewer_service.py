@@ -698,6 +698,15 @@ def test_structured_pipeline_v1_contract_error_expectation_unresolvable(
     monkeypatch,
 ) -> None:
     service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
+    call_nodes = service.repository.get_nodes_for_call(call_id)
+    academic_profile_node = next(
+        node
+        for node, _ in call_nodes
+        if node.logical_id == "academic_profile"
+    )
+    valid_expectation_id = str(
+        service.repository.get_expectations_for_node(academic_profile_node.id)[0].id
+    )
 
     class TamperedResult:
         def __init__(self) -> None:
@@ -707,22 +716,38 @@ def test_structured_pipeline_v1_contract_error_expectation_unresolvable(
                 findings=[
                     DiagnosticFindingV1(
                         finding_id="tampered",
-                        primary_expectation_ref="exp-missing",
+                        primary_expectation_ref=valid_expectation_id,
                         subject_ref=SubjectRef(node_logical_id="academic_profile"),
                         check_id="check.presence",
                         finding_kind="MISSING_CONTENT",
                         severity="ERROR",
                         assessment_status="ASSESSED",
                         reason="tampered",
+                    ),
+                    DiagnosticFindingV1(
+                        finding_id="tampered-2",
+                        primary_expectation_ref="exp-missing",
+                        subject_ref=SubjectRef(node_logical_id="academic_profile"),
+                        check_id="check.presence.2",
+                        finding_kind="MISSING_CONTENT",
+                        severity="WARNING",
+                        assessment_status="ASSESSED",
+                        reason="tampered-2",
                     )
                 ],
                 review_cards=[
                     ReviewCard(
                         node_logical_id="academic_profile",
-                        expectation_id="exp-missing",
+                        expectation_id=valid_expectation_id,
                         rating="CRITICAL",
                         feedback="tampered",
-                    )
+                    ),
+                    ReviewCard(
+                        node_logical_id="academic_profile",
+                        expectation_id="exp-missing",
+                        rating="WARNING",
+                        feedback="tampered-2",
+                    ),
                 ],
             )
 
@@ -744,6 +769,8 @@ def test_structured_pipeline_v1_contract_error_expectation_unresolvable(
         assert cards == []
         assert review.overall_summary is not None
         assert "EXPECTATION_REF_UNRESOLVABLE" in review.overall_summary
+        persisted_cards = service.repository.get_review_cards_ordered(review.id)
+        assert persisted_cards == []
     finally:
         service.repository.session.close()
 

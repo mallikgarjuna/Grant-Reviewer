@@ -98,3 +98,36 @@ def test_pipeline_stress_archetype_smoke() -> None:
     )
     result = run_review_pipeline(request)
     assert result.findings[0].severity == "ERROR"
+
+
+def test_pipeline_runtime_ordering_uses_severity_and_expectation_order() -> None:
+    request = ReviewRequestV1(
+        request_id="req-ordering-1",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_1",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "exp-note",
+                    "node_logical_id": "academic_profile",
+                    "check_id": "check.note",
+                    "required": True,
+                },
+                {
+                    "expectation_id": "exp-error",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.error",
+                    "required": True,
+                },
+            ]
+        },
+        proposal_nodes={
+            "academic_profile": "present text",
+            "research_idea": "",
+        },
+    )
+
+    result = run_review_pipeline(request)
+
+    assert [item.check_id for item in result.findings] == ["check.error", "check.note"]

@@ -347,6 +347,32 @@ class ReviewRepository:
         self.session.refresh(card)
         return card
 
+    def create_review_cards_batch(
+        self,
+        *,
+        review_id: UUID,
+        cards: list[tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]],
+    ) -> list[ReviewCard]:
+        """Create many review cards atomically with a single commit."""
+        created_cards: list[ReviewCard] = []
+        for expectation_id, rating, feedback, assessment_status, not_assessable_reason in cards:
+            created_cards.append(
+                ReviewCard(
+                    review_id=review_id,
+                    node_expectation_id=expectation_id,
+                    rating=rating,
+                    feedback_text=feedback,
+                    assessment_status=assessment_status,
+                    not_assessable_reason=not_assessable_reason,
+                )
+            )
+
+        self.session.add_all(created_cards)
+        self.session.commit()
+        for card in created_cards:
+            self.session.refresh(card)
+        return created_cards
+
     def update_review(
         self,
         review: Review,

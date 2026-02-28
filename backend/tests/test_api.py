@@ -2004,3 +2004,35 @@ def test_check_compliance_unauthenticated_returns_401(monkeypatch) -> None:
 
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "UNAUTHORIZED"
+
+
+def test_create_structured_review_uses_pipeline_v1_when_feature_enabled(monkeypatch) -> None:
+    import main as api_main
+
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    monkeypatch.setattr(api_main, "STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", True)
+
+    from app.services.structured_reviewer_service import StructuredReviewerService
+
+    calls = {"pipeline_v1": 0}
+    original = StructuredReviewerService.generate_structured_review_pipeline_v1
+
+    def traced_pipeline_v1(self, **kwargs):
+        calls["pipeline_v1"] += 1
+        return original(self, **kwargs)
+
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review_pipeline_v1",
+        traced_pipeline_v1,
+    )
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert response.status_code == 200
+    assert calls["pipeline_v1"] == 1

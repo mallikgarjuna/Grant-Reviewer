@@ -377,24 +377,37 @@ class StructuredReviewerService:
                 message=str(err),
             )
 
-        cards: list[ReviewCard] = []
+        unresolved = [
+            card.expectation_id
+            for card in result.review_cards
+            if card.expectation_id not in expectation_map
+        ]
+        if unresolved:
+            return self._fail_contract_error(
+                review,
+                code=EngineErrorCode.EXPECTATION_REF_UNRESOLVABLE.value,
+                message=f"Unresolvable expectation ref: {sorted(set(unresolved))[0]}",
+            )
+
+        card_payloads: list[
+            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
+        ] = []
         for card in result.review_cards:
-            expectation = expectation_map.get(card.expectation_id)
-            if expectation is None:
-                return self._fail_contract_error(
-                    review,
-                    code=EngineErrorCode.EXPECTATION_REF_UNRESOLVABLE.value,
-                    message=f"Unresolvable expectation ref: {card.expectation_id}",
-                )
-            cards.append(
-                self.repository.create_review_card(
-                    review_id=review.id,
-                    expectation_id=expectation.id,
-                    rating=ReviewRating[card.rating],
-                    feedback=card.feedback,
-                    assessment_status=AssessmentStatus.ASSESSED,
+            expectation = expectation_map[card.expectation_id]
+            card_payloads.append(
+                (
+                    expectation.id,
+                    ReviewRating[card.rating],
+                    card.feedback,
+                    AssessmentStatus.ASSESSED,
+                    None,
                 )
             )
+
+        cards = self.repository.create_review_cards_batch(
+            review_id=review.id,
+            cards=card_payloads,
+        )
 
         review.status = ReviewStatus.COMPLETED
         review.overall_summary = (
