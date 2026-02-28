@@ -56,7 +56,7 @@ async function loadOneCall(
 ): Promise<{ call: CallSummary | null; warning: StructuredCallsWarning | null }> {
   try {
     const response = await withTimeout(
-      fetchImpl(`/api/bff/calls/${call.code}/config`, {
+      fetchImpl(`/api/bff/calls/${encodeURIComponent(call.code)}/config`, {
         method: "GET",
         cache: "no-store",
       }),

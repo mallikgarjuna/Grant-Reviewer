@@ -135,29 +135,33 @@ export function UniversalSubmitForm() {
 
     let cancelled = false;
     async function loadNodes() {
+      if (!cancelled) {
+        setCallError(null);
+      }
       try {
         const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
         const metadataCallCode = selectedCall?.code ?? "";
 
-        const [nodesResponse, metadataResponse] = await Promise.all([
+        const [nodesResult, metadataResult] = await Promise.allSettled([
           fetch(`/api/bff/calls/${selectedCallId}/nodes`, {
             method: "GET",
             cache: "no-store",
           }),
           metadataCallCode
-            ? fetch(`/api/bff/calls/${metadataCallCode}/metadata`, {
+            ? fetch(`/api/bff/calls/${encodeURIComponent(metadataCallCode)}/metadata`, {
                 method: "GET",
                 cache: "no-store",
               })
             : Promise.resolve(new Response(JSON.stringify({ nodes: [] }), { status: 200 })),
         ]);
-        if (!nodesResponse.ok) {
+        if (nodesResult.status !== "fulfilled" || !nodesResult.value.ok) {
           throw new Error("nodes failed");
         }
-        const payload = (await nodesResponse.json()) as { nodes?: NodeSummary[] };
-        const metadataPayload = metadataResponse.ok
-          ? ((await metadataResponse.json()) as CallNodesMetadataResponse)
-          : null;
+        const payload = (await nodesResult.value.json()) as { nodes?: NodeSummary[] };
+        const metadataPayload =
+          metadataResult.status === "fulfilled" && metadataResult.value.ok
+            ? ((await metadataResult.value.json()) as CallNodesMetadataResponse)
+            : null;
         const metadataByLogicalId =
           metadataPayload?.nodes?.reduce<Record<string, { title?: string | null }>>(
             (acc, node) => {

@@ -132,4 +132,32 @@ describe("loadStructuredCalls", () => {
       }),
     );
   });
+
+  it("encodes call code when requesting config endpoint", async () => {
+    const calls: CallSummary[] = [
+      {
+        id: "call-encoded",
+        code: "call/with space",
+        name: "Encoded",
+        year: 2025,
+        agency_short_name: "NWO",
+      },
+    ];
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      expect(url).toBe("/api/bff/calls/call%2Fwith%20space/config");
+      return new Response(
+        JSON.stringify({
+          call_logical_id: "call/with space",
+          config_version: "1",
+          ui_mode: "structured_nodes",
+          expected_nodes: [],
+        }),
+        { status: 200 },
+      );
+    });
+
+    const result = await loadStructuredCalls({ calls, fetchImpl });
+    expect(result.calls.map((call) => call.id)).toEqual(["call-encoded"]);
+  });
 });

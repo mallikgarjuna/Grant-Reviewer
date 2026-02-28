@@ -547,6 +547,66 @@ describe("UniversalSubmitForm", () => {
     expect(await screen.findByLabelText("Academic Profile from Metadata")).toBeInTheDocument();
   });
 
+  it("keeps rendering from nodes when metadata fetch rejects", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "call_1",
+                name: "Call 1",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call_1/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call_1",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call_1/metadata") {
+        throw new Error("metadata unavailable");
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    expect(await screen.findByLabelText("Academic Profile")).toBeInTheDocument();
+    expect(screen.queryByText("Unable to load funding call sections.")).not.toBeInTheDocument();
+  });
+
   it("shows domain selector only for calls with configured domain options", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
@@ -636,6 +696,85 @@ describe("UniversalSubmitForm", () => {
     await waitFor(() => {
       expect(screen.queryByLabelText("Domain")).not.toBeInTheDocument();
     });
+  });
+
+  it("clears stale call error after successful call switch reload", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "call_1",
+                name: "Call 1",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+              {
+                id: "call-2",
+                code: "call_2",
+                name: "Call 2",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call_1/config" || url === "/api/bff/calls/call_2/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(JSON.stringify({ error: { code: "INTERNAL_ERROR" } }), { status: 500 });
+      }
+      if (url === "/api/bff/calls/call-2/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-2",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call_1/metadata" || url === "/api/bff/calls/call_2/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    expect(await screen.findByText("Unable to load funding call sections.")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Funding Call"), { target: { value: "call-2" } });
+    expect(await screen.findByLabelText("Academic Profile")).toBeInTheDocument();
+    expect(screen.queryByText("Unable to load funding call sections.")).not.toBeInTheDocument();
   });
 
   it("submits selected domain and blocks on compliance 422", async () => {
