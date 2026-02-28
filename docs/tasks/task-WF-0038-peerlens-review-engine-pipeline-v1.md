@@ -144,7 +144,7 @@ Verification Steps:
 Risks (if any):
 - Catalog drift can introduce unstable downstream interpretation.
 
-### [ ] Task 6 — Add schema growth discipline gate for `DiagnosticFinding v1`
+### [x] Task 6 — Add schema growth discipline gate for `DiagnosticFinding v1`
 
 Goal:
 - Enforce FR9 by locking top-level `DiagnosticFinding v1` shape growth to call-invariant, non-derivable fields only.
