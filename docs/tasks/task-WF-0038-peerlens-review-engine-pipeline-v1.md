@@ -61,7 +61,7 @@ Verification Steps:
 Risks (if any):
 - Inconsistent canonicalization rules across modules can cause false digest mismatches.
 
-### [ ] Task 3 — Add call-config activation and expectation ordering selector
+### [x] Task 3 — Add call-config activation and expectation ordering selector
 
 Goal:
 - Select active expectations/constraints for `stage_ref` and expose authoritative expectation ordering per subject from snapshot list order.
