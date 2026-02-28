@@ -82,6 +82,34 @@ def _validate_snapshot_shape(call_config_snapshot: dict) -> None:
                 details={"missing_fields": missing, "index": index},
             )
 
+    seen_expectation_ids: set[str] = set()
+    seen_finding_identities: set[tuple[str, str]] = set()
+    for index, expectation in enumerate(expectations):
+        expectation_id = str(expectation["expectation_id"])
+        node_logical_id = str(expectation["node_logical_id"])
+        check_id = str(expectation.get("check_id", "check.presence"))
+
+        if expectation_id in seen_expectation_ids:
+            raise ReviewRequestValidationError(
+                code="MALFORMED_REVIEW_REQUEST",
+                message=f"Duplicate expectation_id at expectations[{index}]",
+                details={"expectation_id": expectation_id, "index": index},
+            )
+        seen_expectation_ids.add(expectation_id)
+
+        identity = (node_logical_id, check_id)
+        if identity in seen_finding_identities:
+            raise ReviewRequestValidationError(
+                code="MALFORMED_REVIEW_REQUEST",
+                message=f"Duplicate finding identity at expectations[{index}]",
+                details={
+                    "node_logical_id": node_logical_id,
+                    "check_id": check_id,
+                    "index": index,
+                },
+            )
+        seen_finding_identities.add(identity)
+
 
 def _validate_proposal_nodes_shape(proposal_nodes: dict) -> None:
     for key, value in proposal_nodes.items():

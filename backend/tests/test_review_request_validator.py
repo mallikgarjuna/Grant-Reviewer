@@ -83,3 +83,57 @@ def test_validator_rejects_non_string_proposal_node_payload_values() -> None:
         validate_review_request_payload(payload)
 
     assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
+
+
+def test_validator_rejects_duplicate_expectation_ids() -> None:
+    payload = _payload()
+    payload["call_config_snapshot"] = {
+        "expectations": [
+            {
+                "expectation_id": "exp-dup",
+                "node_logical_id": "research_idea",
+                "check_id": "check.a",
+            },
+            {
+                "expectation_id": "exp-dup",
+                "node_logical_id": "academic_profile",
+                "check_id": "check.b",
+            },
+        ]
+    }
+    digest = hashlib.sha256(
+        canonicalize_for_digest(payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    payload["call_config_digest"] = f"sha256:{digest}"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
+
+
+def test_validator_rejects_duplicate_finding_identity() -> None:
+    payload = _payload()
+    payload["call_config_snapshot"] = {
+        "expectations": [
+            {
+                "expectation_id": "exp-1",
+                "node_logical_id": "research_idea",
+                "check_id": "check.a",
+            },
+            {
+                "expectation_id": "exp-2",
+                "node_logical_id": "research_idea",
+                "check_id": "check.a",
+            },
+        ]
+    }
+    digest = hashlib.sha256(
+        canonicalize_for_digest(payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    payload["call_config_digest"] = f"sha256:{digest}"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
