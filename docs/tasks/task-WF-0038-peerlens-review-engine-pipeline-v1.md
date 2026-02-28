@@ -34,7 +34,7 @@ Verification Steps:
 Risks (if any):
 - Tracer bullet may over-simplify mapping assumptions; later tasks must harden contract integrity failures.
 
-### [ ] Task 2 — Implement `ReviewRequest v1` validator + digest enforcement
+### [x] Task 2 — Implement `ReviewRequest v1` validator + digest enforcement
 
 Goal:
 - Enforce replayable input contract, including canonical digest verification and deterministic contract-error behavior.
