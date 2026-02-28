@@ -117,7 +117,7 @@ Verification Steps:
 Risks (if any):
 - Anchor locator instability can break deterministic replay.
 
-### [ ] Task 5 — Implement Pass 2 finding evaluator + `check_id` catalog governance
+### [x] Task 5 — Implement Pass 2 finding evaluator + `check_id` catalog governance
 
 Goal:
 - Evaluate observations against active expectations and emit single-primary `DiagnosticFinding v1` using an engine-owned `check_id` catalog.
