@@ -29,6 +29,7 @@ Do NOT modify this file during execution.
 - Respect all no-edit review gates defined by phase runners.
 - Do not skip required user-approval checkpoints in downstream runners.
 - If a phase runner reports blocking ambiguity, stop and ask the user before continuing.
+- Do not advance to the next phase unless the current phase's commit gate is satisfied (including per-part commit handoffs required by downstream runners).
 
 ## How to Invoke
 ```text

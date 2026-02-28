@@ -49,6 +49,10 @@ After completing Part C revisions, ensure the **Target Output Artifact** (and an
    - Proceed to Part C and fix them automatically.
 7. Do NOT expand scope beyond the Input Artifact.
 8. Only update `docs/index.md` Status if the output is marked as "Ready for [Next Phase]" in Part C.
+9. Commit handoff safety between parts:
+   - After Part A: ensure generated output artifact v0.1 (and any `docs/index.md` updates) are **saved and committed** before Part B audit.
+   - After Part B: review-only; no file edits and no commit expected unless the user explicitly made unrelated changes.
+   - After Part C: ensure revised output artifact/version/status updates (and any `docs/index.md` updates) are **saved and committed** before ending the runner.
 
 ---
 

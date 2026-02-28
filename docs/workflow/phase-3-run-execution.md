@@ -25,6 +25,10 @@ To execute Phase 3 end-to-end: implement tasks, run the technical audit gate, ap
 4.1. Before Task 1 in Part A, run a baseline test command to confirm a green starting state (see `docs/workflow/phase-3-1-implement-tasks.md` “Preflight — First Run the Tests”).
 5. For any behavior change or bug fix implemented during Part A, ensure the chat log contains explicit TDD loop labels (`RED`, `GREEN`, `REFACTOR`) as required by `phase-3-1-implement-tasks.md`.
 6. TDD is mandatory for behavior changes/bug fixes. Enforce red/green/refactor and boundary-only mocking via `docs/guides/tdd/README.md`.
+7. Commit handoff safety between parts:
+   - After Part A: ensure task checkboxes, implementation changes, and task-level commits are complete before entering Part B.
+   - After Part B: review-only; no file edits and no commit expected.
+   - After Part C: ensure revise/verify/walkthrough/index/archive updates are **saved and committed** before ending the runner.
 
 ---
 

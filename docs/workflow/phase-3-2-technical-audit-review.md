@@ -17,8 +17,8 @@ No file edits are allowed in this phase.
 2. Relevant implementation diff/commits from Phase 3.1 (or resumed Part A).
 
 ## Phase Gate & Completion
-- **START**: Implementation tasks are done.
-- **FINISH**: Technical audit findings are printed in chat with clear fix guidance for Phase 3.3.
+- **START**: Implementation tasks are done and implementation commits from Phase 3.1 are available for audit.
+- **FINISH**: Technical audit findings are printed in chat with clear fix guidance for Phase 3.3. This is a no-edit review phase; if no files changed, there is nothing to commit.
 
 ## Runner Rules
 

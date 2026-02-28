@@ -20,6 +20,11 @@ This part converts “audit feedback” into “tightened artifact”, while pre
 - Part B audit output (Blocking + Non-blocking findings)
 - User answers to any clarification questions (if Part B asked them)
 
+## Phase Gate & Completion
+
+- **START**: Ensure Phase 0.2 review output is captured in chat and the current brainstorm file is saved.
+- **FINISH**: Ensure the revised brainstorm artifact is **saved and committed** before moving to the next phase.
+
 ---
 
 ## Rules (Strict)

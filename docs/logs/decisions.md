@@ -1,5 +1,39 @@
 # Architectural Decisions
 
+## Date: 2026-02-28 (WF-0035: Universal form dynamic UI renderer)
+
+### AD 35.1: Frontend render model composes flat nodes ordering + metadata enrichment
+- **WF ID**: WF-0035
+- **Context**: Existing backend contracts split ordering/identity (`GET /calls/{call_id}/nodes?view=flat`) from UI labels/constraints (`GET /api/public/calls/{call_logical_id}/nodes/metadata`).
+- **Decision**: Define frontend render model as the composition of these two inputs; nodes ordering SSOT is flat nodes endpoint, while metadata enriches labels/constraints via `logical_id`.
+- **Why**: Avoids adding new backend endpoints while preventing Veni-specific hardcoding in the renderer.
+- **Tradeoff**: Frontend must own deterministic merge/fallback logic and handle partial metadata responses.
+- **Status**: Approved.
+
+### AD 35.2: Flat-only support hard-blocks nested and missing-logical-id calls in MVP
+- **WF ID**: WF-0035
+- **Context**: WF-0035 explicitly defers recursion; structured submit payloads require `node_logical_id`.
+- **Decision**: Universal form supports a call only when all nodes are flat (`parent_node_id == null`) and have non-empty `logical_id`; otherwise the call is blocked with explicit unsupported/contract-error messaging.
+- **Why**: Prevents silent partial rendering and malformed structured-review submissions.
+- **Tradeoff**: Some structured calls remain unusable until recursive rendering and/or data-contract fixes ship.
+- **Status**: Approved.
+
+### AD 35.3: Keep existing call-gating API pattern with deterministic client guardrails
+- **WF ID**: WF-0035
+- **Context**: No new backend endpoint is in scope for filtering structured calls at source.
+- **Decision**: Gate eligibility client-side using `GET /api/public/calls/{code}/config` per call, with fixed guardrails (max 4 concurrent requests, 4-second timeout, partial-results UX).
+- **Why**: Preserves MVP scope while avoiding all-or-nothing failure as call count grows.
+- **Tradeoff**: Introduces N+1 request cost and requires robust degraded-state UX.
+- **Status**: Approved.
+
+### AD 35.4: Domain handling remains compliance-scoped with interim per-call options mapping
+- **WF ID**: WF-0035
+- **Context**: Veni compliance depends on domain input, but domain options are not yet delivered via canonical call-definition UI contract.
+- **Decision**: Add generic domain picker surface only where configured via interim per-call mapping; pass selected domain to compliance precheck, while keeping structured-review contract unchanged.
+- **Why**: Preserves correctness for domain-gated compliance without expanding backend/API scope in WF-0035.
+- **Tradeoff**: Domain options are temporarily maintained outside canonical metadata until a follow-on contract WF.
+- **Status**: Approved.
+
 ## Date: 2026-02-26 (WF-0034: Unify review execution core)
 
 ### AD 34.1: Preserve separate external create contracts; share internal execution core
