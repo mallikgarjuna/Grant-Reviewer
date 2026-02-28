@@ -1,5 +1,5 @@
-import { VeniSubmitForm } from "@/components/submit/VeniSubmitForm";
+import { UniversalSubmitForm } from "@/components/submit/UniversalSubmitForm";
 
 export default function AppSubmitPage() {
-  return <VeniSubmitForm />;
+  return <UniversalSubmitForm />;
 }

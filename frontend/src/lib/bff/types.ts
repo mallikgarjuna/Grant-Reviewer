@@ -37,6 +37,7 @@ export type CallsResponse = {
 
 export type NodeSummary = {
   id: string;
+  logical_id?: string | null;
   parent_node_id: string | null;
   title: string;
   node_type: "SECTION" | "SUBSECTION";
@@ -53,6 +54,20 @@ export type CallConfigResponse = {
   config_version: string;
   ui_mode: "legacy_single_snippet" | "structured_nodes";
   expected_nodes?: string[];
+};
+
+export type CallNodeMetadataDto = {
+  logical_id: string;
+  title: string | null;
+  parent_logical_id: string | null;
+  word_limit_min: number | null;
+  word_limit_max: number | null;
+};
+
+export type CallNodesMetadataResponse = {
+  call_logical_id: string;
+  nodes: CallNodeMetadataDto[];
+  unknown_node_logical_ids: string[] | null;
 };
 
 export type CreateReviewRequest = {

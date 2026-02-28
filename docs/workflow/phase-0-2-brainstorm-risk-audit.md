@@ -22,6 +22,11 @@ Mindset shift:
 - The brainstorm artifact path (e.g., `docs/brainstorms/brainstorm-WF-XXXX-<slug>.md`)
 - `docs/index.md` (to confirm WF/slug/phase)
 
+## Phase Gate & Completion
+
+- **START**: Ensure the brainstorm being audited is **saved and committed** so findings map to a stable artifact version.
+- **FINISH**: This is a no-edit review phase; if no files changed, there is nothing to commit for this phase.
+
 ---
 
 ## Rules (Strict)

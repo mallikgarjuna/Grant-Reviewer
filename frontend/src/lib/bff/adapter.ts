@@ -12,6 +12,7 @@ import type {
     BffRequestContext,
     ComplianceCheckRequest,
     ComplianceCheckResponse,
+    CallNodesMetadataResponse,
     CallConfigResponse,
     CallsResponse,
   CreateReviewAttempt,
@@ -223,6 +224,17 @@ export async function getCallConfig(
 ): Promise<Result<CallConfigResponse>> {
   return requestFastApi<CallConfigResponse>({
     path: `/api/public/calls/${callLogicalId}/config`,
+    method: "GET",
+    context,
+  });
+}
+
+export async function getCallNodeMetadata(
+  context: BffRequestContext,
+  callLogicalId: string,
+): Promise<Result<CallNodesMetadataResponse>> {
+  return requestFastApi<CallNodesMetadataResponse>({
+    path: `/api/public/calls/${callLogicalId}/nodes/metadata`,
     method: "GET",
     context,
   });
