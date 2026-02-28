@@ -104,6 +104,15 @@
 - **Tradeoff**: AES-specific nuance is not evaluated until domain gating ships.
 - **Status**: Approved.
 
+## Date: 2026-02-28 (WF-0036 branch closure hygiene)
+
+### AD 36.4: WF-0036 merged via direct main merge (no PR), then stale branch deleted
+- **WF ID**: WF-0036
+- **Context**: WF-0036 artifacts were already marked Done and commits were contained in `main`, but the old WF branch pointer remained on origin, causing closure ambiguity.
+- **Decision**: Keep workflow state as Done (no content changes), record that merge path differed from current PR-first policy, and delete stale local/remote WF-0036 branch refs after ancestry verification.
+- **Why**: Preserves audit clarity without rewriting history and prevents repeated confusion about whether WF-0036 is still open.
+- **Status**: Approved.
+
 ### AD 37.2: Keep WF-0037 YAML-only; schema gaps require a follow-on WF
 - **WF ID**: WF-0037
 - **Context**: During planning we may discover schema needs (domain gating, separate non-evaluable guidance fields).
