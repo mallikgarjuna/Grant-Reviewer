@@ -72,6 +72,12 @@ Open questions this snapshot raises:
 4. Adversarial critique standard: 3 risks must cover (a) config authoring, (b) runtime execution, (c) downstream consumption/governance; each risk includes a recommended mitigation/guardrail.
 5. Call-agnostic pipeline v1: two-pass model (Pass 1 normalized observations; Pass 2 maps observations → `DiagnosticFinding v1`).
 
+## Contract Notes (Non-obvious)
+
+- SSOT rule: this brainstorm defines contracts; Q&A transcript is rationale only (promote any contract found only in Q&A into this doc + log it).
+- No adapter rule: engine contains no funder/program branching; all variability lives in declarative call-config.
+- Finding identity rule: at most one finding per (`primary_expectation_ref`, `subject_ref`, `check_id`) to prevent duplication/drift.
+
 ## Exit Criteria (Status)
 
 Already satisfied (principle-level):

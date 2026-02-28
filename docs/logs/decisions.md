@@ -6,7 +6,7 @@
 - **WF ID**: WF-0038
 - **Decision**: `DiagnosticFinding v1` must include required traceability/determinism fields (not optional metadata).
 - **Constraints**:
-  - Minimum required trace set: `criterion_ref`, `element_ref`, `expectation_id`, `check_id`, `subject_ref`, plus `call_config_ref` and `engine_ref`.
+  - Minimum required trace set: `criterion_ref`, `element_ref`, `primary_expectation_ref` (value is the call-defined `expectation_id`), `check_id`, `subject_ref`, plus `call_config_ref` and `engine_ref`.
   - Schema growth gate: add a new top-level field only if it is call-invariant AND cannot be derived from existing fields.
   - `finding_kind` is explicit and required (not inferred from `check_id`).
 - **Why**: Researcher trust requires that every finding is defensible, deterministic, and expectation-grounded by construction.
