@@ -656,3 +656,93 @@ def test_incremental_migration_does_not_cross_regress(monkeypatch) -> None:
         assert len(not_assessable_cards) == 2
     finally:
         service.repository.session.close()
+
+
+def test_structured_pipeline_v1_happy_path(monkeypatch) -> None:
+    service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Academic profile text")],
+            external_user_id="user-pipeline-v1",
+            idempotency_key="pipeline-v1-happy",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].assessment_status == AssessmentStatus.ASSESSED
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_pipeline_v1_contract_error_digest_mismatch(monkeypatch) -> None:
+    service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Academic profile text")],
+            external_user_id="user-contract-error",
+            idempotency_key="pipeline-v1-digest-mismatch",
+            call_config_digest_override="sha256:deadbeef",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert review.overall_summary is not None
+        assert "CALL_CONFIG_DIGEST_MISMATCH" in review.overall_summary
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_pipeline_v1_contract_error_expectation_unresolvable(
+    monkeypatch,
+) -> None:
+    service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
+
+    class TamperedResult:
+        def __init__(self) -> None:
+            from app.engine.contracts import DiagnosticFindingV1, PipelineResult, ReviewCard, SubjectRef
+
+            self.value = PipelineResult(
+                findings=[
+                    DiagnosticFindingV1(
+                        finding_id="tampered",
+                        primary_expectation_ref="exp-missing",
+                        subject_ref=SubjectRef(node_logical_id="academic_profile"),
+                        check_id="check.presence",
+                        finding_kind="MISSING_CONTENT",
+                        severity="ERROR",
+                        assessment_status="ASSESSED",
+                        reason="tampered",
+                    )
+                ],
+                review_cards=[
+                    ReviewCard(
+                        node_logical_id="academic_profile",
+                        expectation_id="exp-missing",
+                        rating="CRITICAL",
+                        feedback="tampered",
+                    )
+                ],
+            )
+
+    tampered = TamperedResult()
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        lambda request: tampered.value,
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Academic profile text")],
+            external_user_id="user-contract-error-unresolvable",
+            idempotency_key="pipeline-v1-unresolvable",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert review.overall_summary is not None
+        assert "EXPECTATION_REF_UNRESOLVABLE" in review.overall_summary
+    finally:
+        service.repository.session.close()

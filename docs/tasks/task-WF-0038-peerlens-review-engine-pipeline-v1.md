@@ -252,7 +252,7 @@ Verification Steps:
 Risks (if any):
 - Hidden coupling to persistence IDs can break call-config-scoped expectation identity.
 
-### [ ] Task 10 — Integrate pipeline in structured review service behind deterministic error contracts
+### [x] Task 10 — Integrate pipeline in structured review service behind deterministic error contracts
 
 Goal:
 - Wire pipeline v1 into structured review orchestration with explicit contract vs execution failure boundaries.
