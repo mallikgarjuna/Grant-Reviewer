@@ -1,17 +1,17 @@
 # WF-0037 — NWO Vidi 2025 Full Proposal Call Definition PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-02-28
 
 ## 0. User Stories (MVP)
 
 - US1: As a maintainer, I want a source-grounded V2 call definition for NWO Vidi 2025 (full proposal), so that it can be ingested and served consistently via existing call/config/metadata endpoints.
-- US2: As a researcher (later), I want the Vidi full proposal call to be selectable as a structured-nodes call, so that I can submit text per proposal section and receive evaluation-criteria-grounded feedback.
 
 ## Deferred Stories (Not in MVP)
 
+- DS0: As a researcher, I want the Vidi full proposal call to be selectable as a structured-nodes call, so that I can submit text per proposal section and receive evaluation-criteria-grounded feedback.
 - DS1: As a maintainer, I want explicit domain selection + domain-specific constraints/criteria branching (AES/TTW vs SSH/SGW vs ENW), so that domain-specific rules are enforced without ambiguity.
 - DS2: As a researcher, I want non-evaluable “explanatory notes” guidance surfaced separately from evaluable guidance, so the UI can help without confusing what is assessed.
 - DS3: As a researcher, I want nested proposal structures to render in a universal submit UI (recursive renderer), so nested calls like ERC are supported.
@@ -44,6 +44,7 @@ Last Updated: 2026-02-28
 - Pre-proposal definition (this WF models full proposal only).
 - Domain branching (unless explicitly promoted as a follow-on WF).
 - Deterministic enforcement of formatting/layout rules (fonts/margins/page layout) on plain text input.
+- Any schema changes (e.g., domain gating, separating non-evaluable guidance fields). If a schema gap is discovered, stop and promote a dedicated follow-on WF.
 
 ## 3. User / System Flow
 
@@ -101,7 +102,7 @@ No new runtime modules are required (US1). The work product is:
 
 ## 7. Edge Cases
 
-- AES-specific impact clause exists in the Call PDF: without domain branching, it may be encoded as an OPTIONAL evaluation element, but must not be treated as universally applicable. (US1)
+- AES-specific impact clause exists in the Call PDF: because the app has no domain selection for Vidi yet, we must not encode an AES-only evaluation element that would be evaluated for all submissions. Defer to domain-branching follow-on. (US1)
 - Deadline timezone string: store verbatim label from source; do not silently convert. (US1)
 - Pre-proposal vs full proposal criteria: must not leak pre-proposal-only evaluation elements into full proposal criteria. (US1)
 - “Public summary in Dutch” exists in the form: excluded from `proposal_nodes` unless later explicitly required in evaluable scope. (US1)
@@ -116,6 +117,7 @@ No new runtime modules are required (US1). The work product is:
 - If regressions are found later, add a small DB/API integration test that asserts:
   - the call exists by `code`
   - config/metadata `expected_nodes` match `proposal_nodes` IDs
+  - `unknown_node_logical_ids` is empty
   - nested vs flat expectations for parent links are correct
 
 ## 9. Telemetry (Minimal)
@@ -131,9 +133,10 @@ No new runtime modules are required (US1). The work product is:
 
 ## 11. Open Questions
 
-- Should we standardize timezones to IANA identifiers (e.g., `Europe/Amsterdam`) while preserving the verbatim label somewhere else, or keep verbatim only?
+- Should we standardize timezones to IANA identifiers (e.g., `Europe/Amsterdam`) while preserving the verbatim label somewhere else, or keep verbatim only? (Default for now: keep verbatim timezone label from source.)
 - If AES-only impact considerations must be enforced, do we need domain branching sooner than planned?
 
 ## 12. Changelog
 
 - v0.1 (2026-02-28): Initial PRD from brainstorm.
+- v0.2 (2026-02-28): Applied Phase 1.2 risk-audit edits (deferred researcher story; AES-only clause deferred; tightened verification assertions; clarified scope for schema gaps).
