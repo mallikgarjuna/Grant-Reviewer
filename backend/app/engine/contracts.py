@@ -26,6 +26,23 @@ class SubjectRef:
 
 
 @dataclass(frozen=True)
+class AnchorV1:
+    anchor_type: str
+    locator: str
+    text_hash: str
+
+
+@dataclass(frozen=True)
+class ObservationV1:
+    observation_id: str
+    subject_ref: SubjectRef
+    expectation_ref: str
+    observation_kind: str
+    anchor: AnchorV1
+    details: dict[str, object]
+
+
+@dataclass(frozen=True)
 class DiagnosticFindingV1:
     finding_id: str
     primary_expectation_ref: str

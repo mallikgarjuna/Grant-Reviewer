@@ -90,7 +90,7 @@ Verification Steps:
 Risks (if any):
 - Misinterpreting stage activation shape in snapshots could over/under-activate expectations.
 
-### [ ] Task 4 — Implement Pass 1 observation extraction boundary (internal-only)
+### [x] Task 4 — Implement Pass 1 observation extraction boundary (internal-only)
 
 Goal:
 - Normalize anchored `Observation v1` objects as internal pipeline artifacts without creating API/UI contract leakage.
