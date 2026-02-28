@@ -49,6 +49,7 @@ Traceability manifest for `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.ya
   - Call PDF Chapter 4.3.2 (Substantive assessment criteria for the full proposal):
     - Quality and innovative character of the research proposal (75%).
     - Scientific and/or societal impact (25%).
+  - AES-only note about user committee composition/involvement is intentionally deferred from evaluable elements in this YAML until domain gating exists (see WF-0037 PRD v0.2, Edge Cases/Deferred Stories).
 
 ### Reviewer policy
 

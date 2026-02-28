@@ -106,10 +106,6 @@ evaluation_criteria:
         description: "Sufficient attention to key risks of undesirable societal impact and measures to prevent/mitigate them and increase chances of desired impact."
         source_hint: "Call for Proposals (Vidi 2025) §4.3.2"
 
-      - id: elem_aes_user_committee
-        name: "AES domain: user committee involvement"
-        description: "For AES domain, impact assessment also considers user committee composition and user involvement to maximize impact opportunities."
-        source_hint: "Call for Proposals (Vidi 2025) §4.3.2 (AES-specific note)"
 
 proposal_nodes:
   - id: scientific_summary
@@ -264,10 +260,6 @@ proposal_nodes:
         expectation_strength: OPTIONAL
         evaluation_intent: RISK
         guidance_note: "Identify and mitigate risks of undesirable societal impact where relevant."
-      - evaluation_element_id: elem_aes_user_committee
-        expectation_strength: OPTIONAL
-        evaluation_intent: STRATEGIC_FIT
-        guidance_note: "If submitting in AES, address user committee composition/involvement where applicable."
 
 reviewer_policy:
   - id: pol_no_bibliometrics_blocking

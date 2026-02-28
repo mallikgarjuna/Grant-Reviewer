@@ -7,7 +7,7 @@ Last Updated: 2026-02-28
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Align Vidi YAML With PRD Decisions (Remove AES-only Evaluation)
+### [x] Task 1 — Align Vidi YAML With PRD Decisions (Remove AES-only Evaluation)
 
 Goal:
 Ensure the canonical Vidi YAML does not encode AES-only evaluation semantics that would be evaluated for all submissions (no domain gating yet).
