@@ -212,6 +212,16 @@ export function UniversalSubmitForm() {
 
   const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
   const domainOptions = selectedCall ? getDomainOptionsForCall(selectedCall.code) : [];
+  const effectiveDomain =
+    selectedDomain && domainOptions.some((option) => option.value === selectedDomain)
+      ? selectedDomain
+      : null;
+
+  useEffect(() => {
+    setSelectedDomain((current) =>
+      current && domainOptions.some((option) => option.value === current) ? current : null,
+    );
+  }, [domainOptions, selectedCallId]);
 
   function updateNodeDraft(nodeLogicalId: string, value: string) {
     if (!selectedCallId) {
@@ -312,7 +322,7 @@ export function UniversalSubmitForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           call_id: selectedCallId,
-          domain: selectedDomain,
+          domain: effectiveDomain,
           draft_nodes: renderModel.nodes.map((node) => ({
             node_logical_id: node.nodeLogicalId,
             text: draft[node.nodeLogicalId] ?? "",
@@ -436,7 +446,7 @@ export function UniversalSubmitForm() {
                 onChange={(event) =>
                   setSelectedDomain(event.target.value ? event.target.value : null)
                 }
-                value={selectedDomain ?? ""}
+                value={effectiveDomain ?? ""}
               >
                 <option value="">No domain override</option>
                 {domainOptions.map((option) => (

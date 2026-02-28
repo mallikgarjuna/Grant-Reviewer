@@ -732,6 +732,102 @@ describe("UniversalSubmitForm", () => {
     ).toBe(false);
   });
 
+  it("sends domain null after switching to call without domain options", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+              {
+                id: "call-2",
+                code: "other_call",
+                name: "Other",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.endsWith("/config")) {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes" || url === "/api/bff/calls/call-2/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.endsWith("/metadata")) {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        const body = JSON.parse(String(init?.body ?? "{}")) as { call_id: string; domain?: string | null };
+        if (body.call_id === "call-2") {
+          expect(body.domain).toBeNull();
+        }
+        return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+          status: 200,
+        });
+      }
+      if (url === "/api/bff/structured-review") {
+        return new Response(JSON.stringify({ review_id: "review-1" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Domain"), {
+      target: { value: "science_enw" },
+    });
+    fireEvent.change(screen.getByLabelText("Funding Call"), { target: { value: "call-2" } });
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "content" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    await waitFor(() => {
+      expect(push).toHaveBeenCalled();
+    });
+  });
+
   it("keeps draft values isolated per selected call", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
