@@ -147,6 +147,7 @@
 **Fix**: Store detailed Q&A transcripts in `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md` and link to it from the main brainstorm (`docs/brainstorms/brainstorm-WF-...`).
 **Prevention**:
 - Phase 0.0 must create both the brainstorm and the brainstorm-qna artifacts; Phase 0.1 writes the detailed Q&A blocks into the QnA file and keeps the brainstorm concise with links.
+- Brainstorm is **SSOT for contracts/decisions**; QnA is **rationale only**. If QnA reveals a new contract, promote it into the brainstorm + log it.
 - Record the full option set (A/B/C/…) and the recommended + selected rationale in the QnA artifact (not only summaries).
 - If the user selects a non-recommended option or adds custom constraints, capture that rationale explicitly in the QnA artifact. [2026-02-22]
 - **Target User Assumption Correction**: The application is strictly a review tool, not an AI co-writer. Avoid assumptions that the tool exists to rewrite or shrink proposals for the user; its sole purpose is to evaluate against funding criteria. [2026-02-22]

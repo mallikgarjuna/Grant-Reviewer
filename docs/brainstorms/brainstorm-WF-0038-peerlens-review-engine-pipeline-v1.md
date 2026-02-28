@@ -1,11 +1,17 @@
 # WF-0038 — PeerLens Review Engine Pipeline v1
 
 Artifact: brainstorm
-Version: v0.5
+Version: v0.6
 Status: Draft Complete
 Last Updated: 2026-02-28
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0038-peerlens-review-engine-pipeline-v1.md`
+
+## Contract Safety (SSOT)
+
+- This brainstorm is SSOT for the contracts/decisions that Phase 1+ will rely on.
+- The Q&A transcript is rationale only; if a contract appears only in Q&A, promote it into this brainstorm and log it.
+- Open questions must stay visible here (not buried in Q&A) to prevent false completeness.
 
 ## Objective
 

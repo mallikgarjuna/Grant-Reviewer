@@ -119,6 +119,10 @@ After completing a Phase 0.1 brainstorm session:
    - Summarize decisions clearly as a bulleted list (not a paragraph).
    - Record the explicit Q&A block in the Brainstorm Q&A artifact (`docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`).
    - In the main brainstorm, add a single link line: `Full Q&A transcript: <path> (Section N)`.
+   - Treat the **main brainstorm as SSOT for contracts/decisions**; the Q&A transcript is rationale only.
+     - If a Q&A block reveals a new contract or contradicts the brainstorm summary, promote the contract into the brainstorm and log it (do not let “truth” live only in Q&A).
+   - For each major decision summarized in the brainstorm, add 1–3 “Contract Notes / Non-obvious constraints” bullets (with a link to the relevant Q&A section header).
+   - Maintain an explicit “Open Questions / Deferred” list in the brainstorm so deferred items aren’t lost.
    - The Q&A block **must** include:
      - The **full question text** (not just a label).
      - **All options** (A, B, C, etc.) with their descriptions.

@@ -55,6 +55,9 @@ Mindset shift:
 - Are external API contracts explicitly preserved (DTOs, error codes/semantics)?
 - Are idempotency semantics called out per endpoint (including payload-hash mismatch behavior)?
 - Are persistence side effects explicitly constrained?
+- Is it unambiguous that the **brainstorm is SSOT for contracts**, and the Q&A transcript is **rationale only**?
+- Are any contracts/requirements present only in Q&A (split-brain risk)?
+- Is there an explicit “Open Questions / Deferred” list so the brainstorm doesn’t imply false completeness?
 
 ### 3) Shared-Core Boundary Quality
 - Is the proposed shared-core *deep enough* to prevent drift?
