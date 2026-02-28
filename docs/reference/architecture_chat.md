@@ -100,6 +100,9 @@ Modes are execution profiles.
 - Log discipline: decisions + Q&A are WF-tagged in `docs/logs/decisions.md` and `docs/logs/qa_history.md`.
 - Adversarial critique standard: 3 risks must cover (authoring, runtime, downstream) and include a recommended mitigation/guardrail.
 - Call-agnostic pipeline v1: **two-pass** model (Pass 1 normalized observations; Pass 2 maps observations → `DiagnosticFinding v1`).
+- Pass 1 output contract: `Observation v1` uses a strict `observation_kind` catalog, and anchors are mandatory for all observation kinds.
+- Finding trace cardinality: single-primary `primary_expectation_ref` per finding; optional same-kind `related_expectation_refs[]` are trace-only; deterministic aggregation is one finding per (`primary_expectation_ref`, `subject_ref`, `check_id`).
+- `finding_kind` is frozen (v1): `STRUCTURE`, `COMPLIANCE`, `EXPECTATION_SATISFACTION`, `EVIDENCE_SUFFICIENCY`, `ALIGNMENT`, `FEASIBILITY`.
 
 ---
 

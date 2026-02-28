@@ -36,6 +36,29 @@
 - **Why**: Preserves call-agnostic purity by separating extraction/normalization from expectation-grounded diagnosis.
 - **Status**: Approved.
 
+### AD 38.6: Observation v1 is a strict catalog and requires anchors
+- **WF ID**: WF-0038
+- **Decision**: Pass 1 output (`Observation v1`) uses an engine-defined strict `observation_kind` catalog (no free-form payload-only observations in v1).
+- **Constraint**: All observations require anchors (not only content-claim observations).
+- **Why**: Enforces determinism and preserves trace-first mapping from observations → findings without silent context loss.
+- **Status**: Approved.
+
+### AD 38.7: Findings are single-primary; related refs are trace-only and same-kind
+- **WF ID**: WF-0038
+- **Decision**: Each `DiagnosticFinding v1` references exactly one `primary_expectation_ref`, with optional `related_expectation_refs[]`.
+- **Constraints**:
+  - Deterministic aggregation rule: one finding per (`primary_expectation_ref`, `subject_ref`, `check_id`).
+  - Only `primary_expectation_ref` drives grouping/counting; related refs are trace-only.
+  - `related_expectation_refs[]` must not cross `finding_kind` boundaries in v1.
+- **Why**: Keeps findings atomic and defensible while still allowing bounded cross-links without semantic drift.
+- **Status**: Approved.
+
+### AD 38.8: `finding_kind` enum is frozen (v1) to call-invariant invariants
+- **WF ID**: WF-0038
+- **Decision**: Freeze `finding_kind` values (v1) to: `STRUCTURE`, `COMPLIANCE`, `EXPECTATION_SATISFACTION`, `EVIDENCE_SUFFICIENCY`, `ALIGNMENT`, `FEASIBILITY`.
+- **Why**: Stable call-agnostic semantics for UI/analytics; prevents call-defined kind drift and pseudo-funder coupling.
+- **Status**: Approved.
+
 ## Date: 2026-02-28 (WF-0035: Universal form dynamic UI renderer)
 
 ### AD 35.1: Frontend render model composes flat nodes ordering + metadata enrichment

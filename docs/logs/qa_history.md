@@ -23,6 +23,18 @@
 ### Q: What should “top 3 architectural risks/failure modes” mean in this architecture decision loop?
 **A**: Use lifecycle standard: (1) config authoring, (2) runtime execution, (3) downstream consumption/governance; include coupling + traceability/determinism checks, and provide a recommended mitigation/guardrail per risk.
 
+### Q: What is the Pass 1 output contract shape for the two-pass pipeline?
+**A**: `Observation v1` is a strict `observation_kind` catalog (Option 1 approved), and anchors are mandatory for all observation kinds.
+
+### Q: Should findings reference a single expectation or multiple?
+**A**: Single-primary (Option 1 approved): exactly one `primary_expectation_ref` per finding, optional `related_expectation_refs[]`; deterministic aggregation is one finding per (`primary_expectation_ref`, `subject_ref`, `check_id`). Related refs are trace-only.
+
+### Q: Can `related_expectation_refs[]` cross `finding_kind` boundaries?
+**A**: No (Option 1 approved). Cross-kind causality is deferred to a future explicit/typed relation mechanism if needed.
+
+### Q: What is the `finding_kind` enum for `DiagnosticFinding v1`?
+**A**: Option 1 approved — fixed invariant-aligned set: `STRUCTURE`, `COMPLIANCE`, `EXPECTATION_SATISFACTION`, `EVIDENCE_SUFFICIENCY`, `ALIGNMENT`, `FEASIBILITY`.
+
 ## 2026-02-06
 
 ### Q: Hierarchy structure for proposal nodes?
