@@ -1,3 +1,11 @@
+---
+title: "Call YAML Guidelines"
+version: "1.0"
+status: "Active"
+updated: "2026-02-28"
+scope: "PeerLens / Grant Reviewer call definition authoring (v2)"
+---
+
 # Call YAML Guidelines (PeerLens / Grant Reviewer)
 
 This repository uses `v2` call YAML for active onboarding and WF-0038 pipeline usage.

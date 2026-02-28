@@ -1,3 +1,10 @@
+---
+title: "Funding Call YAML Files"
+version: "1.1"
+status: "Active"
+updated: "2026-02-28"
+---
+
 # Funding Call YAML Files
 
 This directory contains YAML call definitions for ingestion into the Grant Reviewer database.

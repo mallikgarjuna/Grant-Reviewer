@@ -1,10 +1,14 @@
+---
+title: "Spec: Call Authoring Workflow"
+version: "1.1"
+status: "Living Specification"
+updated: "2026-02-28"
+applies_to: "All funding agencies (NWO, ERC, MSCA, Horizon Europe, etc.)"
+---
+
 # Spec: Call Authoring Workflow
 
-## PeerLens – Funding Call YAML Design Methodology
-
-Version: 1.0
-Status: Living Specification
-Applies to: All funding agencies (NWO, ERC, MSCA, Horizon Europe, etc.)
+## PeerLens - Funding Call YAML Design Methodology
 
 ---
 

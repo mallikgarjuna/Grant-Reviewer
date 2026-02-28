@@ -88,6 +88,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 | 6 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 | 7 | Add node hierarchy selector | product | Implement only after P1 #1-#3 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
 | 8 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 9 | Migrate `erc_cog_2026_full_official.yaml` to v2 (WF-0038-native) | tech-debt | Re-author/migrate ERC CoG YAML from legacy v1 shape (`short_name` + recursive `children`) to v2 call-definition shape (`funding_agency.id`, flat `proposal_nodes`, `parent_logical_id`) so it can be validated/ingested and safely routed through pipeline-v1. (Ref: user request 2026-02-28; file `backend/data/calls/erc/erc_cog_2026_full_official.yaml`.) | 2026-02-28 |
 
 ### P1 Rationale Snapshot (2026-02-26)
 
@@ -197,3 +198,4 @@ Promotion dependency note:
 - **v1.9** (2026-02-26): Replaced `Promoted Items` with a unified WF initiative log table (all known WF IDs), explicitly marking each as `promoted` or `started-directly`; added missing WF-0032 as started-directly.
 - **v2.0** (2026-02-28): Parked WF-0035 scope-creep follow-ons: backend structured-call filter endpoint, canonical domain-options contract, and large-form navigation UX.
 - **v2.1** (2026-02-28): Parked deferred WF-0035 follow-up for `UniversalSubmitForm` structural decomposition into dedicated hooks/modules.
+- **v2.2** (2026-02-28): Parked explicit follow-up to migrate `backend/data/calls/erc/erc_cog_2026_full_official.yaml` from legacy v1 shape to v2 WF-0038-native call-definition format.
