@@ -231,7 +231,7 @@ Verification Steps:
 Risks (if any):
 - Event logging placement may accidentally duplicate or miss key transitions.
 
-### [ ] Task 9 — Legacy cleanup: remove Veni-specific submit form/test surface
+### [x] Task 9 — Legacy cleanup: remove Veni-specific submit form/test surface
 
 Goal:
 - Remove legacy Veni-specific submit component/test artifacts so the codebase/testbase aligns with universal structured submit direction and avoids fallback drift to old assumptions.
