@@ -321,7 +321,11 @@ class StructuredReviewerService:
         for node_logical_id, _ in nodes:
             node = node_by_logical_id.get(node_logical_id)
             if node is None:
-                raise ValueError(f"Unknown node_logical_id: '{node_logical_id}'")
+                return self._fail_contract_error(
+                    review,
+                    code=EngineErrorCode.MALFORMED_REVIEW_REQUEST.value,
+                    message=f"Unknown node_logical_id: '{node_logical_id}'",
+                )
             expectations = self.repository.get_expectations_for_node(node.id)
             for expectation in expectations:
                 expectation_id = str(expectation.id)

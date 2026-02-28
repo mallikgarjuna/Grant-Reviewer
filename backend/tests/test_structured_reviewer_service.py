@@ -792,3 +792,23 @@ def test_structured_pipeline_v1_engine_execution_failed_error_contract(
         assert "ENGINE_EXECUTION_FAILED" in review.overall_summary
     finally:
         service.repository.session.close()
+
+
+def test_structured_pipeline_v1_contract_error_unknown_node_logical_id(
+    monkeypatch,
+) -> None:
+    service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("unknown_node", "text")],
+            external_user_id="user-contract-error-unknown-node",
+            idempotency_key="pipeline-v1-unknown-node",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert review.overall_summary is not None
+        assert "MALFORMED_REVIEW_REQUEST" in review.overall_summary
+    finally:
+        service.repository.session.close()
