@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from app.models.domain import CallDefinition, FundingCall
 from app.repositories.review_repository import ReviewRepository
 from app.schemas.api import NodeMetadataDTO, NodeMetadataResponse

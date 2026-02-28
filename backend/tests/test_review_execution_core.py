@@ -9,7 +9,13 @@ from uuid import uuid4
 
 import pytest
 
-from app.models.domain import EvaluationIntent, ExpectationStrength, NodeExpectation, NodeType, ProposalNode
+from app.models.domain import (
+    EvaluationIntent,
+    ExpectationStrength,
+    NodeExpectation,
+    NodeType,
+    ProposalNode,
+)
 from app.services.review_execution_core import (
     ExecutionFailureCategory,
     ExecutionTelemetryPayload,

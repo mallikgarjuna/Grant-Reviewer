@@ -24,6 +24,7 @@ from app.models.domain import (
     ReviewStatus,
 )
 from app.repositories.review_repository import ReviewRepository
+from app.schemas.llm_response import ExpectationFeedback
 from app.services.llm_client import LLMClientError
 from app.services.review_execution_core import (
     ExecutionFailure,
@@ -32,7 +33,6 @@ from app.services.review_execution_core import (
     NodeExecutionResult,
     ReviewExecutionCore,
 )
-from app.schemas.llm_response import ExpectationFeedback
 from app.services.structured_reviewer_service import StructuredReviewerService
 
 

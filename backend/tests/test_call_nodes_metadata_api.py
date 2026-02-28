@@ -1,7 +1,6 @@
 """API tests for public node metadata contract."""
 
 import main as main_module
-
 from tests.test_api import create_client_with_seed
 
 

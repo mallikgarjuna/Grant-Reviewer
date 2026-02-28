@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
-from typing import Literal
 
 MAX_NODE_TEXT_CHARS = 10_000
 MAX_STRUCTURED_PAYLOAD_CHARS = 30_000
