@@ -1,5 +1,28 @@
 # Q&A History
 
+## 2026-02-28 (WF-0038: peerlens-review-engine-pipeline-v1)
+
+### Q: Should `DiagnosticFinding v1` require explicit traceability/determinism fields?
+**A**: Yes — trace-first is mandatory (Option 2 approved).
+
+### Q: What is the minimum non-negotiable trace field set in `DiagnosticFinding v1`?
+**A**: Option B — require `criterion_ref`, `element_ref`, `expectation_id`, `check_id`, `subject_ref`, plus `call_config_ref` and `engine_ref`.
+
+### Q: What is the hard rule for admitting a new top-level field into `DiagnosticFinding v1`?
+**A**: Option A — add only if call-invariant AND cannot be derived from existing fields.
+
+### Q: How do we disambiguate hard constraints vs expectation satisfaction in findings?
+**A**: Require an explicit `finding_kind` enum on every finding (do not infer from `check_id`).
+
+### Q: Should interactive Q&A always provide options + a recommendation?
+**A**: Yes — every interactive question includes 2–4 options + recommended option with rationale (approved as a standing rule).
+
+### Q: Where do decisions/approvals live for this WF?
+**A**: `docs/logs/decisions.md` and `docs/logs/qa_history.md`, with WF-tagging discipline (Option 1 approved).
+
+### Q: What should “top 3 architectural risks/failure modes” mean in this architecture decision loop?
+**A**: Use lifecycle standard: (1) config authoring, (2) runtime execution, (3) downstream consumption/governance; include coupling + traceability/determinism checks, and provide a recommended mitigation/guardrail per risk.
+
 ## 2026-02-06
 
 ### Q: Hierarchy structure for proposal nodes?

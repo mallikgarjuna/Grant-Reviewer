@@ -1,5 +1,41 @@
 # Architectural Decisions
 
+## Date: 2026-02-28 (WF-0038: PeerLens review engine pipeline v1)
+
+### AD 38.1: `DiagnosticFinding v1` schema is trace-first (required traceability/determinism)
+- **WF ID**: WF-0038
+- **Decision**: `DiagnosticFinding v1` must include required traceability/determinism fields (not optional metadata).
+- **Constraints**:
+  - Minimum required trace set: `criterion_ref`, `element_ref`, `expectation_id`, `check_id`, `subject_ref`, plus `call_config_ref` and `engine_ref`.
+  - Schema growth gate: add a new top-level field only if it is call-invariant AND cannot be derived from existing fields.
+  - `finding_kind` is explicit and required (not inferred from `check_id`).
+- **Why**: Researcher trust requires that every finding is defensible, deterministic, and expectation-grounded by construction.
+- **Status**: Approved.
+
+### AD 38.2: Interactive Q&A must include options + recommendation
+- **WF ID**: WF-0038
+- **Decision**: Every interactive Q&A question must include 2–4 explicit options and the assistant’s recommended option (with rationale).
+- **Why**: Prevents hidden defaults and forces explicit tradeoffs before architectural commitments.
+- **Status**: Approved.
+
+### AD 38.3: WF-tagging discipline for architecture logs
+- **WF ID**: WF-0038
+- **Decision**: All entries added for this initiative in `docs/logs/decisions.md` and `docs/logs/qa_history.md` must include the WF id tag/header.
+- **Why**: Provides a single trace spine and prevents rationale loss across chats.
+- **Status**: Approved.
+
+### AD 38.4: Adversarial critique standard is lifecycle-based and includes mitigations
+- **WF ID**: WF-0038
+- **Decision**: For each decision, adversarial critique must cover 3 risks across: (1) config authoring, (2) runtime execution, (3) downstream consumption/governance, and include a recommended mitigation/guardrail for each risk.
+- **Why**: Ensures systematic stress-testing without missing failure modes or leaving risks unowned.
+- **Status**: Approved.
+
+### AD 38.5: Call-agnostic pipeline v1 uses a two-pass model
+- **WF ID**: WF-0038
+- **Decision**: Define pipeline v1 as two-pass: Pass 1 produces normalized observations; Pass 2 maps observations → `DiagnosticFinding v1` (trace-first).
+- **Why**: Preserves call-agnostic purity by separating extraction/normalization from expectation-grounded diagnosis.
+- **Status**: Approved.
+
 ## Date: 2026-02-28 (WF-0035: Universal form dynamic UI renderer)
 
 ### AD 35.1: Frontend render model composes flat nodes ordering + metadata enrichment
