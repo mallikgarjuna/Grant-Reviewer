@@ -12,6 +12,7 @@ from pathlib import Path
 from uuid import UUID
 
 from fastapi.testclient import TestClient
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, select
 
 from app.db import engine, get_session, normalize_database_url
@@ -2097,3 +2098,51 @@ def test_create_structured_review_uses_legacy_when_feature_disabled(monkeypatch)
     assert response.status_code == 200
     assert calls["legacy"] == 1
     assert calls["pipeline_v1"] == 0
+
+
+def test_create_structured_review_non_idempotency_integrity_error_returns_500(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    monkeypatch.setenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "1")
+    idempotency_key = "idem-unrelated-integrity-error"
+
+    response = post_structured_review(
+        client=client,
+        idempotency_key=idempotency_key,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "baseline text"}],
+        },
+    )
+    assert response.status_code == 200
+
+    def bypass_active_idempotency_lookup(self, *args, **kwargs):
+        return None
+
+    def traced_create_review(self, *args, **kwargs):
+        raise IntegrityError(
+            statement="insert into reviews ...",
+            params={},
+            orig=Exception("foreign key violation on unrelated table"),
+        )
+
+    monkeypatch.setattr(
+        ReviewRepository,
+        "get_active_review_by_idempotency",
+        bypass_active_idempotency_lookup,
+    )
+    monkeypatch.setattr(ReviewRepository, "create_review", traced_create_review)
+
+    second_response = post_structured_review(
+        client=client,
+        idempotency_key=idempotency_key,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "baseline text"}],
+        },
+    )
+
+    assert second_response.status_code == 500
+    payload = second_response.json()["error"]
+    assert payload["code"] == "INTERNAL_ERROR"

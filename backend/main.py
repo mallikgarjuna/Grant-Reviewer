@@ -78,6 +78,19 @@ FREE_DAILY_REVIEW_LIMIT = 5
 def is_structured_review_pipeline_v1_enabled() -> bool:
     return os.getenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "0").strip() == "1"
 
+
+def is_idempotency_conflict_error(err: IntegrityError) -> bool:
+    error_text = str(err.orig).lower() if err.orig is not None else str(err).lower()
+    return (
+        "uq_review_external_idempotency" in error_text
+        or "unique constraint failed: reviews.external_user_id, reviews.idempotency_key"
+        in error_text
+        or (
+            "duplicate key value violates unique constraint" in error_text
+            and "idempotency" in error_text
+        )
+    )
+
 ERROR_STATUS_BY_CODE = {
     "UNAUTHORIZED": 401,
     "IDEMPOTENCY_PAYLOAD_MISMATCH": 409,
@@ -790,6 +803,12 @@ def create_structured_review(
                 idempotency_expires_at=now + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
             )
     except IntegrityError as err:
+        if not is_idempotency_conflict_error(err):
+            raise APIException(
+                code="INTERNAL_ERROR",
+                message="Database integrity error during review creation.",
+            ) from err
+
         repository.rollback()
         existing_on_conflict = (
             repository.get_review_by_external_user_and_idempotency_key(
