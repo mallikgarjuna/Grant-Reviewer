@@ -1,8 +1,8 @@
 # WF-0037 — NWO Vidi 2025 full proposal call definition (official sources)
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-02-28
 
 ## Task Breakdown (Sequential Order)
@@ -21,7 +21,9 @@ Files to modify:
 - `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`
 - `backend/data/calls/sources/nwo_vidi_2025_full_proposal.sources.md`
 Acceptance Criteria:
-- `elem_aes_user_committee` is removed (or not mapped/evaluated) so no AES-only criterion is evaluated without a domain signal.
+- `elem_aes_user_committee` is removed from `evaluation_elements` and is not referenced anywhere (no AES-only criterion is evaluated without a domain signal).
+- `node_expectations` no longer reference `elem_aes_user_committee`.
+- `sources.md` records that the AES-only clause is deferred pending domain gating (with a pointer to WF-0037 PRD decision).
 - YAML validates via schema-only validation command.
 - `ingest_call.py ... --dry-run` succeeds.
 TDD Plan: N/A (data-only; verification via validation + ingest commands).
@@ -59,3 +61,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-02-28): Initial task breakdown from PRD.
+- v0.2 (2026-02-28): Applied Phase 2.2 review edits (tightened Task 1 acceptance criteria; marked ready for implementation).
