@@ -27,6 +27,53 @@ PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/nwo/nwo_vidi_2025_f
 
 Expected: exits 0; prints a dry-run summary and canonical JSON (no DB writes).
 
+## DB/API Preflight (Executed, Test DB Only)
+
+This is a smoke-test to catch runtime shape/mapping issues before any frontend work depends on the new call.
+
+1. Reset local test DB (destructive to test DB only):
+
+```bash
+cd backend
+export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable"
+./scripts/reset_test_db.sh
+```
+
+2. Ingest into the test DB:
+
+```bash
+cd backend
+export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable"
+PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/nwo/nwo_vidi_2025_full_proposal.yaml
+```
+
+3. API preflight via FastAPI `TestClient` (no server process):
+
+```bash
+cd backend
+export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable"
+export LLM_MODE=stub
+PYTHONPATH=. uv run python - <<'PY'
+from fastapi.testclient import TestClient
+from main import app
+
+c = TestClient(app)
+code = "nwo_vidi_2025_full_proposal"
+
+calls = c.get("/calls")
+assert calls.status_code == 200, calls.text
+call_id = next(x["id"] for x in calls.json()["calls"] if x["code"] == code)
+
+assert c.get(f"/calls/{call_id}/nodes").status_code == 200
+assert c.get(f"/calls/{call_id}/nodes?view=tree").status_code == 200
+assert c.get(f"/api/public/calls/{code}/config").status_code == 200
+assert c.get(f"/api/public/calls/{code}/nodes/metadata").status_code == 200
+print("ok", code, call_id)
+PY
+```
+
+Expected: prints `ok nwo_vidi_2025_full_proposal <call_id>`.
+
 ## Shipped Files (WF-0037)
 
 - Canonical YAML: `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`
