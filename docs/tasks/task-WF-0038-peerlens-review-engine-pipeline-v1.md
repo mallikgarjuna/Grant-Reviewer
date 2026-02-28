@@ -1,7 +1,7 @@
 # WF-0038 — PeerLens Review Engine Pipeline v1
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-02-28
 
@@ -79,12 +79,14 @@ Acceptance Criteria:
 - Activation logic is stage/step driven by call config only (no funder branching).
 - Output includes stable expectation order keyed by subject and expectation id.
 - Unknown/duplicate expectation ids in active scope fail deterministically.
+- Selector tests include conformance cases grounded in existing authored calls (`nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`) and align with `docs/workflow/call-yaml-authoring-workflow.md` constraints.
 TDD Plan:
 - RED: add failing tests for stage activation, ordering, and duplicate expectation detection.
 - GREEN: implement activation selector with explicit ordering extraction.
 - REFACTOR: reduce repeated traversal logic into a single selector helper.
 Verification Steps:
 - `cd backend && PYTHONPATH=. uv run pytest tests/test_call_config_activation.py`
+- `cd backend && rg -n "nwo_veni_2025_preproposal|nwo_vidi_2025_full_proposal|erc_stg_2026_full" tests/test_call_config_activation.py`
 Risks (if any):
 - Misinterpreting stage activation shape in snapshots could over/under-activate expectations.
 
@@ -295,12 +297,14 @@ Acceptance Criteria:
 - Acceptance suite covers NWO/ERC/MSCA scenarios listed in PRD with explicit expected outcomes.
 - Tests confirm no funder-specific branching and stable output ordering across repeated runs.
 - Strict-mode subset invariant is validated against stress fixtures.
+- Stress fixtures are explicitly derived from current authored call YAML structures (`backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`, `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`, `backend/data/calls/erc/erc_stg_2026_full.yaml`) without copying funder-specific semantics into engine logic.
 TDD Plan:
 - RED: add failing archetype fixture tests for declared dependency gaps and expectation-driven finding emission.
 - GREEN: implement fixture harness assertions using existing pipeline outputs.
 - REFACTOR: de-duplicate fixture loading/helpers across stress and tracer tests.
 Verification Steps:
 - `cd backend && PYTHONPATH=. uv run pytest tests/test_review_engine_stress_matrix.py tests/test_review_engine_pipeline_v1.py -k "stress or determinism"`
+- `cd backend && rg -n "nwo_veni_2025_preproposal|nwo_vidi_2025_full_proposal|erc_stg_2026_full" tests/fixtures/review_engine_stress_matrix.yaml tests/test_review_engine_stress_matrix.py`
 Risks (if any):
 - Fixture assumptions may drift from real call-config authoring patterns.
 
@@ -320,6 +324,7 @@ Acceptance Criteria:
 - Walkthrough includes evidence for tracer bullet, contract errors, strict/diagnostic projection, and stress-matrix outcomes.
 - Commands and test targets are reproducible and mapped to tasks.
 - Any deferred scope is explicitly listed.
+- Walkthrough includes a conformance note showing which authored-call patterns were promoted to universal primitives vs explicitly excluded to preserve call-agnostic behavior.
 TDD Plan: N/A (documentation evidence task)
 Verification Steps:
 - `cd backend && PYTHONPATH=. uv run pytest tests/test_review_engine_pipeline_v1.py tests/test_review_request_validator.py tests/test_call_config_activation.py tests/test_observation_extractor.py tests/test_finding_evaluator.py tests/test_finding_aggregation.py tests/test_engine_modes.py tests/test_review_card_mapper.py tests/test_structured_reviewer_service.py tests/test_engine_telemetry.py tests/test_review_engine_stress_matrix.py`
@@ -331,3 +336,4 @@ Risks (if any):
 
 - v0.1 (2026-02-28): Initial task breakdown from PRD
 - v0.2 (2026-02-28): Applied Phase 2 review edits (tightened Task 9 service boundary and corrected ERC stress-matrix label); marked Ready for Implementation
+- v0.3 (2026-02-28): Added confidence gates tying activation/stress/walkthrough tasks to existing authored call YAML structures and call-authoring workflow guardrails.
