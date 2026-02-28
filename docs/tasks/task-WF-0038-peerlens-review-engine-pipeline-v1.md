@@ -198,7 +198,7 @@ Verification Steps:
 Risks (if any):
 - Incorrect severity rank mapping can invert strict-mode semantics.
 
-### [ ] Task 8 — Implement deterministic mode projector (`DIAGNOSTIC` / `STRICT`)
+### [x] Task 8 — Implement deterministic mode projector (`DIAGNOSTIC` / `STRICT`)
 
 Goal:
 - Guarantee `STRICT` is a projection-only filter over the already computed `DIAGNOSTIC` findings.

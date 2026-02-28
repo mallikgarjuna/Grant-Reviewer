@@ -7,6 +7,7 @@ from app.engine.contracts import (
     ReviewRequestV1,
     SubjectRef,
 )
+from app.engine.modes import project_findings_for_mode
 
 
 def _severity_to_rating(severity: str) -> str:
@@ -17,7 +18,7 @@ def _severity_to_rating(severity: str) -> str:
     return "NOTE"
 
 
-def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
+def _compute_diagnostic_findings(request: ReviewRequestV1) -> list[DiagnosticFindingV1]:
     expectations = list(request.call_config_snapshot.get("expectations", []))
     findings: list[DiagnosticFindingV1] = []
 
@@ -28,17 +29,18 @@ def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
         node_text = request.proposal_nodes.get(node_logical_id, "")
         is_missing = not node_text.strip() and bool(expectation.get("required", False))
 
-        finding = DiagnosticFindingV1(
-            finding_id=f"{node_logical_id}:{expectation_id}:{check_id}",
-            primary_expectation_ref=expectation_id,
-            subject_ref=SubjectRef(node_logical_id=node_logical_id),
-            check_id=check_id,
-            finding_kind="MISSING_CONTENT" if is_missing else "PRESENT_CONTENT",
-            severity="ERROR" if is_missing else "NOTE",
-            assessment_status="ASSESSED",
-            reason="Missing required content" if is_missing else "Content present",
+        findings.append(
+            DiagnosticFindingV1(
+                finding_id=f"{node_logical_id}:{expectation_id}:{check_id}",
+                primary_expectation_ref=expectation_id,
+                subject_ref=SubjectRef(node_logical_id=node_logical_id),
+                check_id=check_id,
+                finding_kind="MISSING_CONTENT" if is_missing else "PRESENT_CONTENT",
+                severity="ERROR" if is_missing else "NOTE",
+                assessment_status="ASSESSED",
+                reason="Missing required content" if is_missing else "Content present",
+            )
         )
-        findings.append(finding)
 
     findings.sort(
         key=lambda item: (
@@ -46,6 +48,15 @@ def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
             item.primary_expectation_ref,
             item.check_id,
         )
+    )
+    return findings
+
+
+def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
+    diagnostic_findings = _compute_diagnostic_findings(request)
+    projected_findings = project_findings_for_mode(
+        findings=diagnostic_findings,
+        mode=request.mode,
     )
 
     cards = [
@@ -55,7 +66,7 @@ def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
             rating=_severity_to_rating(finding.severity),
             feedback=finding.reason,
         )
-        for finding in findings
+        for finding in projected_findings
     ]
 
-    return PipelineResult(findings=findings, review_cards=cards)
+    return PipelineResult(findings=projected_findings, review_cards=cards)

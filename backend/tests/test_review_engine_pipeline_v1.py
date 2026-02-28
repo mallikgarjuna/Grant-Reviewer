@@ -43,3 +43,36 @@ def test_tracer_bullet_deterministic_pipeline_path() -> None:
         result_b.to_dict(),
         sort_keys=True,
     )
+
+
+def test_mode_projection_in_pipeline_strict_filters_non_errors() -> None:
+    request = ReviewRequestV1(
+        request_id="req-002",
+        mode="STRICT",
+        stage_ref="STEP_1",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.missing",
+                    "required": True,
+                },
+                {
+                    "expectation_id": "exp-2",
+                    "node_logical_id": "academic_profile",
+                    "check_id": "check.present",
+                    "required": True,
+                },
+            ]
+        },
+        proposal_nodes={
+            "research_idea": "",
+            "academic_profile": "some text",
+        },
+    )
+
+    result = run_review_pipeline(request)
+
+    assert [item.check_id for item in result.findings] == ["check.missing"]
