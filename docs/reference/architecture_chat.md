@@ -103,6 +103,9 @@ Modes are execution profiles.
 - Pass 1 output contract: `Observation v1` uses a strict `observation_kind` catalog, and anchors are mandatory for all observation kinds.
 - Finding trace cardinality: single-primary `primary_expectation_ref` per finding; optional same-kind `related_expectation_refs[]` are trace-only; deterministic aggregation is one finding per (`primary_expectation_ref`, `subject_ref`, `check_id`).
 - `finding_kind` is frozen (v1): `STRUCTURE`, `COMPLIANCE`, `EXPECTATION_SATISFACTION`, `EVIDENCE_SUFFICIENCY`, `ALIGNMENT`, `FEASIBILITY`.
+- Expectation identity: findings reference call-defined `expectation_id` (string) and include `call_config_ref` (human version + digest) for stability-within-version across time.
+- Severity + assessment: `severity` is non-numeric (`ERROR`, `WARNING`, `NOTE`); `assessment_status` is required (`ASSESSED` | `NOT_ASSESSABLE`, with reason when not assessable).
+- Anchors are typed and mandatory for all findings (including STRUCTURE/COMPLIANCE): `TEXT_SPAN` | `STRUCTURAL_LOCATOR` | `DERIVED`.
 
 ---
 

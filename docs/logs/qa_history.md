@@ -35,6 +35,21 @@
 ### Q: What is the `finding_kind` enum for `DiagnosticFinding v1`?
 **A**: Option 1 approved — fixed invariant-aligned set: `STRUCTURE`, `COMPLIANCE`, `EXPECTATION_SATISFACTION`, `EVIDENCE_SUFFICIENCY`, `ALIGNMENT`, `FEASIBILITY`.
 
+### Q: What is the stable identifier for `primary_expectation_ref` in `DiagnosticFinding v1`?
+**A**: Use the call-defined `expectation_id` (string) scoped by the required `call_config_ref` (Option A approved).
+
+### Q: What is the required `call_config_ref` shape?
+**A**: Include both a human version and a digest (e.g., `{call_code}@{semver}` + `{digest}`) (Option C approved).
+
+### Q: What are the v1 severity levels?
+**A**: `ERROR`, `WARNING`, `NOTE` (Option A approved).
+
+### Q: How is NOT_ASSESSABLE represented per finding?
+**A**: Add required `assessment_status = ASSESSED|NOT_ASSESSABLE` plus required reason when `NOT_ASSESSABLE`; keep `severity` present (Option A approved).
+
+### Q: What counts as an anchor (required for all findings)?
+**A**: Typed anchor union: `TEXT_SPAN` OR `STRUCTURAL_LOCATOR` OR `DERIVED` (Option A approved).
+
 ## 2026-02-06
 
 ### Q: Hierarchy structure for proposal nodes?

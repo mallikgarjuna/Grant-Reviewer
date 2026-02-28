@@ -59,6 +59,27 @@
 - **Why**: Stable call-agnostic semantics for UI/analytics; prevents call-defined kind drift and pseudo-funder coupling.
 - **Status**: Approved.
 
+### AD 38.9: Expectation references are call-defined ids, scoped by `call_config_ref`
+- **WF ID**: WF-0038
+- **Decision**: Findings reference expectations via call-defined `expectation_id` (string) rather than runtime DB ids; each finding includes a required `call_config_ref`.
+- **Constraint**: `call_config_ref` includes both human and digest forms (e.g., `{call_code}@{semver}` + `{digest}`).
+- **Why**: Preserves WHAT vs HOW separation and keeps traceability stable-within-version across time.
+- **Status**: Approved.
+
+### AD 38.10: Severity + assessment status contract is explicit and non-numeric
+- **WF ID**: WF-0038
+- **Decision**: Freeze `severity` (v1) to `ERROR`, `WARNING`, `NOTE` (non-numeric); represent not-assessable outcomes per finding via `assessment_status`.
+- **Constraint**: `assessment_status` is required (`ASSESSED` | `NOT_ASSESSABLE`); when `NOT_ASSESSABLE`, a reason is required.
+- **Why**: Limits coupling/scoring pressure while preserving honest, expectation-grounded diagnostics under missing-context constraints.
+- **Status**: Approved.
+
+### AD 38.11: Anchors are typed and mandatory for all findings
+- **WF ID**: WF-0038
+- **Decision**: Require at least one anchor for every finding, including STRUCTURE/COMPLIANCE.
+- **Constraint**: Anchor types include `TEXT_SPAN`, `STRUCTURAL_LOCATOR`, and `DERIVED` (derived anchors still point to a structural locator).
+- **Why**: Ensures auditability and traceability even when failures are structural/non-textual.
+- **Status**: Approved.
+
 ## Date: 2026-02-28 (WF-0035: Universal form dynamic UI renderer)
 
 ### AD 35.1: Frontend render model composes flat nodes ordering + metadata enrichment
