@@ -403,6 +403,7 @@ MVP is a universal, schema-driven submit form that supports any structured call 
 - Identify and ingest at least one additional *official, flat-supported structured call* (non-Veni) using the updated authoring conventions (no legacy YAML structure).
 - Selected target for the 2nd call proof: **NWO Vidi 2025 full proposal** (deadline: **2026-04-09 14:00 CEST**).
 - Source gate: official funder docs must be provided in-workflow before authoring the YAML; once provided, ingest into DB and validate flat-only guardrail (`parent_node_id` all null).
+- Status update: WF-0037 authored and validated `nwo_vidi_2025_full_proposal` end-to-end (dry-run + DB/API preflight). This call is the named “2nd call proof” for WF-0035 acceptance.
 
 ## 8. Explicit Non-Goals
 

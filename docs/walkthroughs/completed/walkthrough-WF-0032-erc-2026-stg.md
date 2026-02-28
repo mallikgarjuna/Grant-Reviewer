@@ -23,6 +23,44 @@ Deliver hierarchical proposal-node ingestion for V2 call definitions and author 
 - `cd backend && uv run python scripts/ingest_call.py data/calls/erc/erc_stg_2026_full.yaml --dry-run` passed.
 - `cd backend && uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run` passed.
 
+## 3.1 DB/API Preflight Smoke-Test (Executed Later) (2026-02-28)
+
+This is a lightweight runtime smoke-test (in addition to automated tests) to confirm the public call-config and metadata endpoints are consistent after DB ingest.
+
+```bash
+cd backend
+export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable"
+./scripts/reset_test_db.sh
+PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/erc/erc_stg_2026_full.yaml
+
+export LLM_MODE=stub
+PYTHONPATH=. uv run python - <<'PY'
+from fastapi.testclient import TestClient
+from main import app
+
+c = TestClient(app)
+code = "erc_stg_2026_full"
+
+calls = c.get("/calls")
+assert calls.status_code == 200, calls.text
+call_id = next(x["id"] for x in calls.json()["calls"] if x["code"] == code)
+
+flat = c.get(f"/calls/{call_id}/nodes")
+assert flat.status_code == 200, flat.text
+assert any(n.get("parent_node_id") for n in flat.json().get("nodes", [])), "expected nested parent_node_id links"
+
+tree = c.get(f"/calls/{call_id}/nodes?view=tree")
+assert tree.status_code == 200, tree.text
+assert any(n.get("children") for n in tree.json().get("nodes", [])), "expected children in tree view"
+
+assert c.get(f"/api/public/calls/{code}/config").status_code == 200
+assert c.get(f"/api/public/calls/{code}/nodes/metadata").status_code == 200
+print("ok", code, call_id)
+PY
+```
+
+Observed: `/calls/{id}/nodes` contained non-null `parent_node_id` links and tree view returned `children[]` (nested call).
+
 ## 4. Notable Decisions
 - Kept `GET /calls/{id}/nodes` flat with correct `parent_node_id` for MVP stability.
 - Stored source traceability next to call artifacts (`backend/data/calls/sources/`) instead of `docs/reference/`.

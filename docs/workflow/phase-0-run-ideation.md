@@ -113,11 +113,11 @@ After completing Part C, output:
 
 2. Two recommended next actions:
 
-- **Run Phase 1 runner**: `@docs/workflow/phase-1-2-run-planning.md`
+- **Run Phase 1 runner**: `@docs/workflow/phase-1-or-2-run-planning.md`
    - **CRITICAL**: For the recommended next phase, you MUST provide an explicit, copy-pasteable prompt block that the user can run to start it.
    - Example format for the prompt block:
      ```text
-     Use @docs/workflow/phase-1-2-run-planning.md
+     Use @docs/workflow/phase-1-or-2-run-planning.md
      @docs/index.md
      @docs/INPUT/...
 
