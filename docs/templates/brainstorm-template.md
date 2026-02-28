@@ -5,6 +5,8 @@ Version: v0.1
 Status: Draft
 Last Updated: YYYY-MM-DD
 
+Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`
+
 ---
 
 ## 1. Problem Statement

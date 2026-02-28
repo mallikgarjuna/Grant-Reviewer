@@ -20,6 +20,7 @@ Mindset shift:
 ## Inputs Required
 
 - The brainstorm artifact path (e.g., `docs/brainstorms/brainstorm-WF-XXXX-<slug>.md`)
+- The brainstorm Q&A transcript path (e.g., `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`)
 - `docs/index.md` (to confirm WF/slug/phase)
 
 ## Phase Gate & Completion
@@ -77,10 +78,11 @@ Mindset shift:
 Print:
 
 1. `Reviewed artifact: <path> @ <version>`
-2. **Blocking findings** (if any): list with:
+2. `Reviewed Q&A: <path> @ <version>`
+3. **Blocking findings** (if any): list with:
    - Finding
    - Why it matters
    - Exact brainstorm edit to apply (copy-pasteable)
-3. **Non-blocking findings** (if any): same format
-4. **Clarification Questions** (only if blocking findings exist):
+4. **Non-blocking findings** (if any): same format
+5. **Clarification Questions** (only if blocking findings exist):
    - Up to 5, each with 2–3 options + recommended option

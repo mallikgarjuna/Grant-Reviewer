@@ -17,6 +17,8 @@ Run Phase 0 end-to-end in one chat run:
 
 This runner removes manual handoff errors between 0.0 and 0.1.
 
+Note: Phase 0.0 now creates a dedicated Brainstorm Q&A artifact alongside the main brainstorm.
+
 ---
 
 ## Required Inputs

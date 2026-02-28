@@ -71,12 +71,18 @@ All artifacts must follow:
 
 <brainstorm/prd/task/walkthrough>-WF-XXXX-<slug>.md
 
+Q&A (new):
+docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md
+
 ---
 
 ## Files To Create
 
 Brainstorm:
 docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
+
+Brainstorm Q&A:
+docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md
 
 
 
@@ -96,6 +102,13 @@ docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md
 # WF-XXXX — <Title>
 
 Artifact: brainstorm | prd | task | walkthrough
+Version: v0.0
+Status: Not started
+Last Updated: YYYY-MM-DD
+
+For the Brainstorm Q&A file, use:
+
+Artifact: brainstorm-qna
 Version: v0.0
 Status: Not started
 Last Updated: YYYY-MM-DD

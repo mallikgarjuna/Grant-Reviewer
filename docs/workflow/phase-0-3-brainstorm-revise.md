@@ -17,6 +17,7 @@ This part converts “audit feedback” into “tightened artifact”, while pre
 ## Inputs Required
 
 - Brainstorm artifact path (same one reviewed in Part B)
+- Brainstorm Q&A transcript path (same one reviewed in Part B)
 - Part B audit output (Blocking + Non-blocking findings)
 - User answers to any clarification questions (if Part B asked them)
 
@@ -38,6 +39,7 @@ This part converts “audit feedback” into “tightened artifact”, while pre
    - If blocking issues are resolved: `Draft Complete`
    - Otherwise: keep as `Draft` and explicitly call out remaining blockers.
 5. Commit the brainstorm updates before ending this part.
+6. If Part B findings referenced the Q&A transcript, apply corresponding edits there and commit them together.
 
 ---
 

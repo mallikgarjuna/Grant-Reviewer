@@ -77,6 +77,7 @@ Goal: walk down the decision tree one dependency at a time until you can state t
 ## Required Inputs
 
 - docs/brainstorms/brainstorm-WF-XXXX-<slug>.md
+- docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md
 - docs/templates/brainstorm-template.md
 - docs/index.md (to understand project phase)
 - Any relevant previous WF artifacts (if related)
@@ -116,7 +117,9 @@ After completing a Phase 0.1 brainstorm session:
 8. Avoid architecture design.
 9. After each section:
    - Summarize decisions clearly as a bulleted list (not a paragraph).
-   - Append the explicit Q&A block directly below the summary. The Q&A block **must** include:
+   - Record the explicit Q&A block in the Brainstorm Q&A artifact (`docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`).
+   - In the main brainstorm, add a single link line: `Full Q&A transcript: <path> (Section N)`.
+   - The Q&A block **must** include:
      - The **full question text** (not just a label).
      - **All options** (A, B, C, etc.) with their descriptions.
      - The **model's recommendation** with reasoning: why the recommended option is preferred **and** why the alternatives are dismissed.
@@ -130,10 +133,11 @@ After completing a Phase 0.1 brainstorm session:
      - A) Option A description.
      - B) Option B description.
      - C) Option C description.
-     > Recommendation: A — Rationale for why A is preferred. B is dismissed because… C is partially true but…
-     > **Selected: A**
+      > Recommendation: A — Rationale for why A is preferred. B is dismissed because… C is partially true but…
+      > **Selected: A**
      ```
    - Update brainstorm file.
+   - Update Brainstorm Q&A file.
 10. Do NOT overwrite previous brainstorm content.
    - Append refinements or clarifications.
 11. Keep all thinking aligned with MVP.
