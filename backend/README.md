@@ -124,7 +124,7 @@ Troubleshooting:
 ```bash
 cd backend
 uv run python scripts/ensure_prompt_template.py
-uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml
+uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml
 ```
 
 ### 4) Verify readiness thresholds
@@ -255,10 +255,10 @@ detailed manner..."
 
 ```bash
 # Validate a call definition (dry run)
-uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml --dry-run
+uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml --dry-run
 
 # Ingest to database
-uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml
+uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml
 ```
 
 ### Ensure PromptTemplate (Bootstrap Precondition)
@@ -277,7 +277,7 @@ Use this when provisioning a fresh production database (Task 8.0C).
 uv run python scripts/ensure_prompt_template.py
 
 # 2) Ingest at least one real call definition
-uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml
+uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml
 ```
 
 Verification checklist:
@@ -342,13 +342,18 @@ The review service:
 
 ## Call Definition Files
 
-YAML files in `data/calls/` follow this naming convention:
+YAML files in `data/calls/canonical/` follow this naming convention:
 ```
 {agency}_{program}_{year}_{stage}.yaml
 ```
 
 Examples:
-- `erc/erc_cog_2026_full_official.yaml` - ERC Consolidator Grant 2026, full proposal
-- `nwo_veni_2025_preproposal.yaml` - NWO Veni 2025, pre-proposal
+- `erc/erc_stg_2026_full.yaml` - ERC Starting Grant 2026, full proposal
+- `nwo/nwo_veni_2025_preproposal.yaml` - NWO Veni 2025, pre-proposal
 
-See `data/calls/README.md` for details.
+Legacy/superseded calls are kept under `data/calls/legacy/` (for example `legacy/erc/erc_cog_2026_full_official.yaml`).
+
+Authoring and onboarding docs live under `docs/call-yaml/`:
+- `docs/call-yaml/README.md`
+- `docs/call-yaml/authoring-workflow.md`
+- `docs/call-yaml/guidelines.md`

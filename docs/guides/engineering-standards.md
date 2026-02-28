@@ -9,8 +9,9 @@ All commands should run from the repo root unless `cd backend` is specified.
 - Backend setup: `cd backend && uv sync`
 - Configure env: `cd backend && cp .env.example .env` (set `OPENAI_API_KEY`)
 - Run review demo (calls OpenAI API): `cd backend && uv run python scripts/run_review.py`
-- Validate call YAML (dry run): `cd backend && uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml --dry-run`
-- Ingest call YAML: `cd backend && uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml`
+- Validate call YAML (dry run): `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml --dry-run`
+- Ingest call YAML: `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml`
+- Call authoring docs hub: `docs/call-yaml/README.md`
 - Reset local DB (Postgres): `cd backend && docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d`
 - Lint: `cd backend && uv run ruff check .`
 - Lint (autofix): `cd backend && uv run ruff check . --fix`

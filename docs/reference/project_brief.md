@@ -91,9 +91,9 @@ Highlights include:
 ### Call ingestion
 
 - Dry-run validate a call YAML:
-  - `cd backend && uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml --dry-run`
+  - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml --dry-run`
 - Ingest (writes to DB):
-  - `cd backend && uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml`
+  - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml`
 
 ## Ops & Safety Notes (important)
 
@@ -123,6 +123,7 @@ Key behaviors:
 - Prompt history: `docs/logs/prompt_history.md`
 - Domain model reference: `docs/reference/domain_model.md`
 - Workflow system: `docs/workflow/README.md`
+- Call YAML docs hub: `docs/call-yaml/README.md`
 
 ## How to Use This File in ChatGPT Projects
 
