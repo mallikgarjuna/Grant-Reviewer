@@ -746,3 +746,49 @@ def test_structured_pipeline_v1_contract_error_expectation_unresolvable(
         assert "EXPECTATION_REF_UNRESOLVABLE" in review.overall_summary
     finally:
         service.repository.session.close()
+
+
+def test_structured_pipeline_v1_timeout_error_contract(monkeypatch) -> None:
+    service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        lambda request: (_ for _ in ()).throw(TimeoutError("synthetic timeout")),
+    )
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Academic profile text")],
+            external_user_id="user-timeout-contract",
+            idempotency_key="pipeline-v1-timeout-contract",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert review.overall_summary is not None
+        assert "TIMEOUT" in review.overall_summary
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_pipeline_v1_engine_execution_failed_error_contract(
+    monkeypatch,
+) -> None:
+    service, call_id = _build_service(monkeypatch, EchoExpectationLLMClient())
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        lambda request: (_ for _ in ()).throw(RuntimeError("boom")),
+    )
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Academic profile text")],
+            external_user_id="user-execution-contract",
+            idempotency_key="pipeline-v1-engine-execution-contract",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert review.overall_summary is not None
+        assert "ENGINE_EXECUTION_FAILED" in review.overall_summary
+    finally:
+        service.repository.session.close()

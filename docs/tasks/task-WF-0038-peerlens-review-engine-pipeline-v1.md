@@ -282,7 +282,7 @@ Verification Steps:
 Risks (if any):
 - Service-level fallback behavior may accidentally emit partial cards.
 
-### [ ] Task 11 — Add explicit engine error-contract matrix tests
+### [x] Task 11 — Add explicit engine error-contract matrix tests
 
 Goal:
 - Lock the complete error taxonomy and ensure deterministic classification across validator, mapper, and structured-service integration seams.
