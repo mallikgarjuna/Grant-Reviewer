@@ -171,7 +171,7 @@ Verification Steps:
 Risks (if any):
 - Overly rigid test guards can block intentional, justified contract evolution if process is unclear.
 
-### [ ] Task 7 — Add finding aggregation identity + deterministic ordering
+### [x] Task 7 — Add finding aggregation identity + deterministic ordering
 
 Goal:
 - Enforce one finding per `(primary_expectation_ref, subject_ref, check_id)` and deterministic sort order.
