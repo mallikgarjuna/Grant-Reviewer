@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type {
   ApiError,
+  CallNodesMetadataResponse,
   CallSummary,
   ComplianceCheckResponse,
   NodeSummary,
@@ -121,19 +122,43 @@ export function UniversalSubmitForm() {
     let cancelled = false;
     async function loadNodes() {
       try {
-        const response = await fetch(`/api/bff/calls/${selectedCallId}/nodes`, {
-          method: "GET",
-          cache: "no-store",
-        });
-        if (!response.ok) {
+        const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
+        const metadataCallCode = selectedCall?.code ?? "";
+
+        const [nodesResponse, metadataResponse] = await Promise.all([
+          fetch(`/api/bff/calls/${selectedCallId}/nodes`, {
+            method: "GET",
+            cache: "no-store",
+          }),
+          metadataCallCode
+            ? fetch(`/api/bff/calls/${metadataCallCode}/metadata`, {
+                method: "GET",
+                cache: "no-store",
+              })
+            : Promise.resolve(new Response(JSON.stringify({ nodes: [] }), { status: 200 })),
+        ]);
+        if (!nodesResponse.ok) {
           throw new Error("nodes failed");
         }
-        const payload = (await response.json()) as { nodes?: NodeSummary[] };
+        const payload = (await nodesResponse.json()) as { nodes?: NodeSummary[] };
+        const metadataPayload = metadataResponse.ok
+          ? ((await metadataResponse.json()) as CallNodesMetadataResponse)
+          : null;
+        const metadataByLogicalId =
+          metadataPayload?.nodes?.reduce<Record<string, { title?: string | null }>>(
+            (acc, node) => {
+              acc[node.logical_id] = {
+                title: node.title,
+              };
+              return acc;
+            },
+            {},
+          ) ?? {};
         if (!cancelled) {
           const nextNodes = Array.isArray(payload.nodes) ? payload.nodes : [];
           const nextRenderModel = buildRenderModel({
             nodes: nextNodes,
-            metadataByLogicalId: {},
+            metadataByLogicalId,
           });
           setNodes(nextNodes);
           setRenderModel(nextRenderModel);
@@ -158,7 +183,7 @@ export function UniversalSubmitForm() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCallId]);
+  }, [calls, selectedCallId]);
 
   function buildNodesPayload(): StructuredReviewNodeInput[] {
     if (renderModel.state !== "ready") {

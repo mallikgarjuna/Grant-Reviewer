@@ -120,7 +120,7 @@ Verification Steps:
 Risks (if any):
 - Mis-typed metadata DTO can silently break render enrichment.
 
-### [ ] Task 5 — Add BFF metadata proxy route and integrate enrichment in universal form
+### [x] Task 5 — Add BFF metadata proxy route and integrate enrichment in universal form
 
 Goal:
 - Expose metadata through authenticated BFF route and use it to enrich universal form labels/constraints.
