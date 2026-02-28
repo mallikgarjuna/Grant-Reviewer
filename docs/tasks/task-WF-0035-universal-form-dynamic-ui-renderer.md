@@ -93,7 +93,7 @@ Verification Steps:
 Risks (if any):
 - Incorrect state classification can over-block otherwise valid calls.
 
-### [ ] Task 4 — BFF metadata contract support in adapter/types
+### [x] Task 4 — BFF metadata contract support in adapter/types
 
 Goal:
 - Add typed metadata contract and adapter call for call-node metadata retrieval.

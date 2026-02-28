@@ -56,6 +56,20 @@ export type CallConfigResponse = {
   expected_nodes?: string[];
 };
 
+export type CallNodeMetadataDto = {
+  logical_id: string;
+  title: string | null;
+  parent_logical_id: string | null;
+  word_limit_min: number | null;
+  word_limit_max: number | null;
+};
+
+export type CallNodesMetadataResponse = {
+  call_logical_id: string;
+  nodes: CallNodeMetadataDto[];
+  unknown_node_logical_ids: string[] | null;
+};
+
 export type CreateReviewRequest = {
   review_stage: ReviewStage;
   call_id: string;
