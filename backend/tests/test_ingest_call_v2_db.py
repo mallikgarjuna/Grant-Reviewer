@@ -75,6 +75,21 @@ def test_v2_ingest_is_idempotent_and_soft_deletes_removed_nodes(tmp_path: Path) 
 
     payload = yaml.safe_load(source.read_text(encoding="utf-8"))
     removed_node = payload["proposal_nodes"].pop()
+    # Keep the mutated YAML schema-valid by removing stale reviewer-policy refs.
+    reviewer_policy = payload.get("reviewer_policy", [])
+    if isinstance(reviewer_policy, list):
+        for rule in reviewer_policy:
+            if not isinstance(rule, dict):
+                continue
+            applies_to_node_ids = rule.get("applies_to_node_ids")
+            if not isinstance(applies_to_node_ids, list):
+                continue
+            rule["applies_to_node_ids"] = [
+                node_id
+                for node_id in applies_to_node_ids
+                if node_id != removed_node["id"]
+            ]
+
     modified_path = tmp_path / "nwo_modified.yaml"
     modified_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
