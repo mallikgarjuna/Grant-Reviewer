@@ -92,10 +92,10 @@ class NodeTreeService:
 
         children_by_parent: dict[str | None, list[NodeSummary]] = defaultdict(list)
         for logical_id, parent_logical_id in canonical_entries:
-            node = nodes_by_logical_id.get(logical_id)
-            if node is None:
+            resolved_node = nodes_by_logical_id.get(logical_id)
+            if resolved_node is None:
                 raise NodeTreeMismatchError(node_logical_ids=[logical_id])
-            children_by_parent[parent_logical_id].append(node)
+            children_by_parent[parent_logical_id].append(resolved_node)
 
         if not children_by_parent:
             return None
@@ -122,7 +122,7 @@ class NodeTreeService:
         """Raise when any canonical parent chain loops back to a seen logical ID."""
         for logical_id in parent_by_node:
             seen: set[str] = set()
-            current = logical_id
+            current: str | None = logical_id
             while current is not None:
                 if current in seen:
                     raise NodeTreeCycleError("Canonical parent_logical_id cycle detected.")
