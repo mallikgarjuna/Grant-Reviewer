@@ -29,6 +29,9 @@ Last Updated: 2026-03-01
 - `38b194a` Task 7 — call-driven review detail ordering/fallback
 - `b2ac6e6` Task 8 — guardrails + universality proof tests
 - `671eab0` Task 9 — persistence/history invariants
+- Post-validation fixes:
+- `ed13b8c` Universal submit — fix duplicate React list keys for repeated blocking messages
+- `8af5b67` Universal submit — prefix blocking compliance messages with section label/fallback logical id
 
 ## Verification Evidence
 
