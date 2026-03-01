@@ -58,7 +58,7 @@ Verification Steps:
 Risks (if any):
 - Overly strict assertions may accidentally lock non-contract internals.
 
-### [ ] Task 3 — Codify deletion-gate health thresholds in tooling
+### [x] Task 3 — Codify deletion-gate health thresholds in tooling
 
 Goal:
 - Encode PRD gate defaults (24h staging, 7d prod, min samples per call) in rollout-health evaluation output.

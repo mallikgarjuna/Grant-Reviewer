@@ -9,6 +9,9 @@ from typing import Any
 ERROR_RATE_MULTIPLIER_THRESHOLD = 1.5
 ERROR_RATE_ABSOLUTE_DELTA_THRESHOLD = 0.02
 LATENCY_MULTIPLIER_THRESHOLD = 1.2
+STAGING_MIN_GREEN_HOURS = 24
+PROD_MIN_GREEN_DAYS = 7
+PROD_MIN_COMPLETED_REQUESTS_PER_CALL = 50
 
 
 def _as_float(metrics: dict[str, Any], key: str) -> float | None:
@@ -91,6 +94,54 @@ def evaluate_rollout_health(artifact: dict[str, Any]) -> dict[str, Any]:
     if latency_regression:
         reasons.append("latency_regression")
 
+    retirement_gate = artifact.get("retirement_gate")
+    gate_checks = {
+        "staging_window_ok": True,
+        "prod_window_ok": True,
+        "prod_sample_size_ok": True,
+    }
+    if isinstance(retirement_gate, dict):
+        environment = str(retirement_gate.get("environment", "")).strip().lower()
+        if environment == "staging":
+            staging_green_hours = retirement_gate.get("staging_green_hours", 0)
+            staging_hours = (
+                int(staging_green_hours)
+                if isinstance(staging_green_hours, (int, float))
+                else 0
+            )
+            gate_checks["staging_window_ok"] = (
+                staging_hours >= STAGING_MIN_GREEN_HOURS
+            )
+            if not gate_checks["staging_window_ok"]:
+                reasons.append("staging_window_incomplete")
+        elif environment in {"prod", "production"}:
+            production_green_days = retirement_gate.get("production_green_days", 0)
+            production_days = (
+                int(production_green_days)
+                if isinstance(production_green_days, (int, float))
+                else 0
+            )
+            gate_checks["prod_window_ok"] = production_days >= PROD_MIN_GREEN_DAYS
+            if not gate_checks["prod_window_ok"]:
+                reasons.append("prod_window_incomplete")
+
+            completed_requests_by_call = retirement_gate.get("completed_requests_by_call")
+            if not isinstance(completed_requests_by_call, dict) or not completed_requests_by_call:
+                gate_checks["prod_sample_size_ok"] = False
+            else:
+                gate_checks["prod_sample_size_ok"] = all(
+                    isinstance(count, (int, float))
+                    and int(count) >= PROD_MIN_COMPLETED_REQUESTS_PER_CALL
+                    for count in completed_requests_by_call.values()
+                )
+            if not gate_checks["prod_sample_size_ok"]:
+                reasons.append("prod_sample_size_insufficient")
+        elif environment:
+            gate_checks["staging_window_ok"] = False
+            gate_checks["prod_window_ok"] = False
+            gate_checks["prod_sample_size_ok"] = False
+            reasons.append("invalid_retirement_gate_environment")
+
     overall_pass = len(reasons) == 0
 
     return {
@@ -99,6 +150,9 @@ def evaluate_rollout_health(artifact: dict[str, Any]) -> dict[str, Any]:
             "error_rate_regression": error_rate_regression,
             "contract_error_rate_regression": contract_error_rate_regression,
             "latency_regression": latency_regression,
+            "staging_window_ok": gate_checks["staging_window_ok"],
+            "prod_window_ok": gate_checks["prod_window_ok"],
+            "prod_sample_size_ok": gate_checks["prod_sample_size_ok"],
         },
         "overall": {
             "pass": overall_pass,

@@ -29,6 +29,6 @@ Use this checklist as the gate before deleting legacy execution-path code.
 ## Evidence Links
 
 - Replay/parity artifact: TODO
-- Rollout health output: TODO
+- Rollout health output: TODO (must include `checks.staging_window_ok`, `checks.prod_window_ok`, `checks.prod_sample_size_ok`, and `overall.recommended_action`)
 - API contract test run: TODO
 - Approval record: TODO
