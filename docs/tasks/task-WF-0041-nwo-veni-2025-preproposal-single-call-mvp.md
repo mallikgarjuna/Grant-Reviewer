@@ -1,8 +1,8 @@
 # WF-0041 — NWO Veni 2025 (Preproposal) Single-Call MVP
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-01
 
 ## Task Breakdown (Sequential Order)
@@ -98,15 +98,15 @@ Enables: Task 6, Task 8
 Parallelizable: no
 Files to modify:
 - `frontend/src/components/submit/UniversalSubmitForm.tsx`
-- `frontend/src/lib/submit/domainOptions.ts`
+- `frontend/src/lib/bff/types.ts`
 - `frontend/src/components/submit/UniversalSubmitForm.test.tsx`
 Acceptance Criteria:
-- `DOMAIN_OPTIONS_BY_CALL` hardcoding is removed from active runtime path.
+- Runtime domain selector behavior is driven by backend `domain_options[]` contract.
 - Domain selector appears only when backend config exposes options.
 - Existing submit behavior remains stable when options are absent.
 TDD Plan:
 - RED: add failing UI tests in `UniversalSubmitForm.test.tsx` for backend-driven domain selector visibility/options.
-- GREEN: wire form state to backend `domain_options` and remove hardcoded branch.
+- GREEN: wire form state to backend `domain_options` and update BFF type contracts used by the page.
 - REFACTOR: simplify domain-state reset logic on call changes.
 Verification Steps:
 - `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "domain"`
@@ -202,22 +202,24 @@ Depends on: Task 3, Task 4, Task 5, Task 6, Task 7
 Enables: none
 Parallelizable: no
 Files to modify:
-- `backend/tests/test_api.py`
+- `frontend/src/lib/submit/domainOptions.ts`
 - `frontend/src/components/submit/UniversalSubmitForm.test.tsx`
 - `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
 Acceptance Criteria:
 - Tests fail if per-call maps/branches/constants are reintroduced in protected submit/review-detail seams.
 - At least one non-Veni structured fixture proves arbitrary node-count handling and domain selector absence when `domain_options[]` is empty.
+- Legacy hardcoded domain-options helper path is removed (or reduced to inert compatibility shim with no per-call map constants).
 TDD Plan:
 - RED: add failing guardrail tests for hardcoded behavior and non-Veni fixture expectations.
 - GREEN: adjust implementation seams only as needed to satisfy guardrails.
 - REFACTOR: deduplicate fixture builders across UI tests.
 Verification Steps:
-- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0041_t8.db uv run pytest -q tests/test_api.py -k "domain_options or ordering_source or non_veni"`
 - `cd frontend && npm run test:ui`
+- `cd frontend && npm run check:bff`
 Risks (if any):
 - Guardrail tests can become brittle if assertions target implementation detail instead of behavior.
 
 ## Changelog
 
 - v0.1 (2026-03-01): Initial task breakdown from PRD v0.3 with atomic slices, dependency metadata, and explicit TDD plans.
+- v0.2 (2026-03-01): Applied task-review revisions (explicit frontend type-sync seam for `domain_options[]`, hardcoded-domain-helper retirement tasking, and readiness polish); marked Ready for Implementation.
