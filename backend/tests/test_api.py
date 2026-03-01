@@ -2549,9 +2549,9 @@ def test_structured_review_unresolvable_expectation_marks_failed_review(
 ) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
 
+    import app.services.structured_reviewer_service as structured_service_module
     from app.engine.contracts import PipelineResult
     from app.engine.contracts import ReviewCard as EngineReviewCard
-    import app.services.structured_reviewer_service as structured_service_module
 
     def run_pipeline_with_unknown_expectation(_request):
         return PipelineResult(

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from dataclasses import field
+from dataclasses import asdict, dataclass, field
 from typing import Literal
 
 EngineMode = Literal["DIAGNOSTIC", "STRICT"]
