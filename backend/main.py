@@ -804,28 +804,16 @@ def create_structured_review(
         llm_client=build_llm_client(),
     )
     try:
-        selected_engine_path = "legacy"
-        if is_structured_review_pipeline_v1_enabled_for_call(call.code):
-            selected_engine_path = "pipeline_v1"
-            review, _ = reviewer_service.generate_structured_review_pipeline_v1(
-                review_stage=payload.review_stage,
-                call_id=payload.call_id,
-                nodes=[(node.node_logical_id, node.text) for node in payload.nodes],
-                external_user_id=external_user_id,
-                idempotency_key=idempotency_key,
-                request_payload_sha256=request_payload_sha256,
-                idempotency_expires_at=now + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
-            )
-        else:
-            review, _ = reviewer_service.generate_structured_review(
-                review_stage=payload.review_stage,
-                call_id=payload.call_id,
-                nodes=[(node.node_logical_id, node.text) for node in payload.nodes],
-                external_user_id=external_user_id,
-                idempotency_key=idempotency_key,
-                request_payload_sha256=request_payload_sha256,
-                idempotency_expires_at=now + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
-            )
+        selected_engine_path = "pipeline_v1"
+        review, _ = reviewer_service.generate_structured_review_pipeline_v1(
+            review_stage=payload.review_stage,
+            call_id=payload.call_id,
+            nodes=[(node.node_logical_id, node.text) for node in payload.nodes],
+            external_user_id=external_user_id,
+            idempotency_key=idempotency_key,
+            request_payload_sha256=request_payload_sha256,
+            idempotency_expires_at=now + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
+        )
         logger.info(
             "structured_review.engine_path=%s call_code=%s review_id=%s",
             selected_engine_path,

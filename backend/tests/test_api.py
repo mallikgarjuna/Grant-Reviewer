@@ -2059,7 +2059,9 @@ def test_create_structured_review_uses_pipeline_v1_when_feature_enabled(monkeypa
     assert calls["legacy"] == 0
 
 
-def test_create_structured_review_uses_legacy_when_feature_disabled(monkeypatch) -> None:
+def test_create_structured_review_uses_pipeline_v1_when_feature_disabled_in_retirement_mode(
+    monkeypatch,
+) -> None:
     monkeypatch.setenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "0")
     client, seeded_ids = create_client_with_seed(monkeypatch)
 
@@ -2096,8 +2098,8 @@ def test_create_structured_review_uses_legacy_when_feature_disabled(monkeypatch)
         },
     )
     assert response.status_code == 200
-    assert calls["legacy"] == 1
-    assert calls["pipeline_v1"] == 0
+    assert calls["legacy"] == 0
+    assert calls["pipeline_v1"] == 1
 
 
 def test_create_structured_review_uses_pipeline_v1_for_allowlisted_call(
@@ -2147,7 +2149,7 @@ def test_create_structured_review_uses_pipeline_v1_for_allowlisted_call(
     assert calls["legacy"] == 0
 
 
-def test_create_structured_review_uses_legacy_for_non_allowlisted_call(
+def test_create_structured_review_uses_pipeline_v1_for_non_allowlisted_call_in_retirement_mode(
     monkeypatch,
 ) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
@@ -2190,11 +2192,11 @@ def test_create_structured_review_uses_legacy_for_non_allowlisted_call(
         },
     )
     assert response.status_code == 200
-    assert calls["legacy"] == 1
-    assert calls["pipeline_v1"] == 0
+    assert calls["legacy"] == 0
+    assert calls["pipeline_v1"] == 1
 
 
-def test_create_structured_review_prod_empty_allowlist_fail_closed(
+def test_create_structured_review_prod_empty_allowlist_uses_pipeline_v1_in_retirement_mode(
     monkeypatch, caplog
 ) -> None:
     monkeypatch.setenv("APP_ENV", "prod")
@@ -2237,12 +2239,14 @@ def test_create_structured_review_prod_empty_allowlist_fail_closed(
         )
 
     assert response.status_code == 200
-    assert calls["legacy"] == 1
-    assert calls["pipeline_v1"] == 0
-    assert "empty call allowlist in prod" in caplog.text.lower()
+    assert calls["legacy"] == 0
+    assert calls["pipeline_v1"] == 1
+    assert "empty call allowlist in prod" not in caplog.text.lower()
 
 
-def test_create_structured_review_logs_engine_path_legacy(monkeypatch, caplog) -> None:
+def test_create_structured_review_logs_engine_path_pipeline_v1_when_flag_disabled(
+    monkeypatch, caplog
+) -> None:
     monkeypatch.setenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "0")
     client, seeded_ids = create_client_with_seed(monkeypatch)
 
@@ -2256,7 +2260,7 @@ def test_create_structured_review_logs_engine_path_legacy(monkeypatch, caplog) -
         )
 
     assert response.status_code == 200
-    assert "structured_review.engine_path=legacy" in caplog.text
+    assert "structured_review.engine_path=pipeline_v1" in caplog.text
 
 
 def test_create_structured_review_logs_engine_path_pipeline_v1(
@@ -2334,10 +2338,10 @@ def test_canary_rollout_routing_matrix_allowlist_and_fail_closed(
             },
         )
     assert second.status_code == 200
-    assert "empty call allowlist in prod" in caplog.text.lower()
+    assert "empty call allowlist in prod" not in caplog.text.lower()
 
-    assert calls["pipeline_v1"] == 1
-    assert calls["legacy"] == 1
+    assert calls["pipeline_v1"] == 2
+    assert calls["legacy"] == 0
 
 
 def test_create_structured_review_non_idempotency_integrity_error_returns_500(

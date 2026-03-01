@@ -7,7 +7,7 @@ Last Updated: 2026-03-01
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: prove v1-only routing contract
+### [x] Task 1 — Tracer bullet: prove v1-only routing contract
 
 Goal:
 - Prove end-to-end that `POST /api/structured-review` can run in enforced v1-only mode without API contract drift.
