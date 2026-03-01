@@ -73,7 +73,6 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Harden single-call MVP for `nwo_veni_2025_preproposal` (trust + regression) | tech-debt | Add reviewer-policy enforcement coverage (blocking/post-check/prompt-only), clearer failure states, and a deterministic verification bundle so this call doesn’t regress. Ref: 2026-03-01 chat; `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`. | 2026-03-01 |
 
 ---
 
@@ -179,6 +178,8 @@ Promotion dependency note:
 | 30 | WF-0039 | structured-pipeline-v1-rollout | started-directly | - | 2026-03-01 |
 | 31 | WF-0040 | structured-pipeline-v1-legacy-retirement | promoted | P1 #10 | 2026-03-01 |
 | 32 | WF-0041 | nwo-veni-2025-preproposal-single-call-mvp | promoted | P0 #1 | 2026-03-01 |
+| 33 | WF-0042 | agent-memory-system | started-directly | - | 2026-03-01 |
+| 34 | WF-0043 | nwo-veni-2025-preproposal-single-call-mvp-harden | promoted | P0 #1 | 2026-03-01 |
 
 ---
 
@@ -209,3 +210,4 @@ Promotion dependency note:
 - **v2.3** (2026-03-01): Added P1 #10 for legacy structured-review engine retirement after pipeline-v1 rollout and backfilled WF initiative log with WF-0037/WF-0038 plus new WF-0039.
 - **v2.4** (2026-03-01): Promoted P1 #10 to WF-0040 (`structured-pipeline-v1-legacy-retirement`) and removed it from active P1 backlog.
 - **v2.5** (2026-03-01): Added P1 #10 follow-up to backfill WF-0040 runtime evidence after waiver-based closure.
+- **v2.6** (2026-03-01): Promoted P0 #1 to WF-0043 (`nwo-veni-2025-preproposal-single-call-mvp-harden`) and removed it from active P0 backlog.
