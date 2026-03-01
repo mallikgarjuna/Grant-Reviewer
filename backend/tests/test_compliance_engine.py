@@ -1,13 +1,11 @@
-"""Unit tests for deterministic compliance engine behavior."""
-
-from __future__ import annotations
-
+import pytest
 from uuid import uuid4
-
 from app.models.domain import NodeType, ProposalNode
 from app.schemas.compliance import ComplianceCheckRequest, DraftNode
 from app.services.call_definition_service import HydratedNode
 from app.services.compliance_engine import evaluate_compliance
+
+pytestmark = pytest.mark.no_db
 
 
 def _hydrated_node(logical_id: str, config: dict) -> HydratedNode:
@@ -56,8 +54,8 @@ def test_happy_path_returns_compliant() -> None:
     assert response.warnings == []
 
 
-def test_word_limit_exceeded_returns_blocking_error() -> None:
-    """Node above max limit should return word_limit_max error."""
+def test_word_limit_exceeded_returns_non_blocking_warning() -> None:
+    """Node above max limit should return word_limit_max warning."""
     nodes = [
         _hydrated_node(
             "research_idea",
@@ -74,17 +72,18 @@ def test_word_limit_exceeded_returns_blocking_error() -> None:
 
     response = evaluate_compliance(request, nodes)
 
-    assert response.is_compliant is False
-    assert len(response.errors) == 1
-    error = response.errors[0]
-    assert error.rule_id == "word_limit_max"
-    assert error.actual == "4"
-    assert error.expected == "3"
-    assert error.is_blocking is True
+    assert response.is_compliant is True
+    assert len(response.errors) == 0
+    assert len(response.warnings) == 1
+    warning = response.warnings[0]
+    assert warning.rule_id == "word_limit_max"
+    assert warning.actual == "4"
+    assert warning.expected == "3"
+    assert warning.is_blocking is False
 
 
-def test_word_limit_under_minimum_returns_blocking_error() -> None:
-    """Node below min limit should return word_limit_min error."""
+def test_word_limit_under_minimum_returns_non_blocking_warning() -> None:
+    """Node below min limit should return word_limit_min warning."""
     nodes = [
         _hydrated_node(
             "academic_profile",
@@ -99,12 +98,14 @@ def test_word_limit_under_minimum_returns_blocking_error() -> None:
 
     response = evaluate_compliance(request, nodes)
 
-    assert response.is_compliant is False
-    assert len(response.errors) == 1
-    error = response.errors[0]
-    assert error.rule_id == "word_limit_min"
-    assert error.actual == "2"
-    assert error.expected == "3"
+    assert response.is_compliant is True
+    assert len(response.errors) == 0
+    assert len(response.warnings) == 1
+    warning = response.warnings[0]
+    assert warning.rule_id == "word_limit_min"
+    assert warning.actual == "2"
+    assert warning.expected == "3"
+    assert warning.is_blocking is False
 
 
 def test_domain_specific_override_applies_when_domain_provided() -> None:
@@ -135,7 +136,7 @@ def test_domain_specific_override_applies_when_domain_provided() -> None:
 
 
 def test_word_limit_by_domain_uses_default_when_domain_missing() -> None:
-    """Default max words should be used if no domain is supplied."""
+    """Default max words should be used if no domain is supplied (warning if exceeded)."""
     nodes = [
         _hydrated_node(
             "research_idea",
@@ -152,10 +153,11 @@ def test_word_limit_by_domain_uses_default_when_domain_missing() -> None:
 
     response = evaluate_compliance(request, nodes)
 
-    assert response.is_compliant is False
-    assert len(response.errors) == 1
-    assert response.errors[0].rule_id == "word_limit_max"
-    assert response.errors[0].expected == "3"
+    assert response.is_compliant is True
+    assert len(response.errors) == 0
+    assert len(response.warnings) == 1
+    assert response.warnings[0].rule_id == "word_limit_max"
+    assert response.warnings[0].expected == "3"
 
 
 def test_falls_back_to_total_word_limit_when_no_domain_limits_exist() -> None:
@@ -177,9 +179,9 @@ def test_falls_back_to_total_word_limit_when_no_domain_limits_exist() -> None:
 
     response = evaluate_compliance(request, nodes)
 
-    assert response.is_compliant is False
-    assert response.errors[0].rule_id == "word_limit_max"
-    assert response.errors[0].expected == "2"
+    assert response.is_compliant is True
+    assert response.warnings[0].rule_id == "word_limit_max"
+    assert response.warnings[0].expected == "2"
 
 
 def test_missing_mandatory_node_returns_blocking_error() -> None:
