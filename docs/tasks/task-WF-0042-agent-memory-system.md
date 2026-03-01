@@ -13,3 +13,5 @@ Implement a persistent agent memory system natively in `docs/memory/` based on C
 - [x] Extract existing Project Gotchas from `AGENTS.md` and place them into new memory files
 - [x] Add explicit "Memory Management" instruction to `AGENTS.md` making it proactive ("Don't wait to be asked. Don't wait for session end.")
 - [x] Verify everything looks good and commit
+- [x] Scan `docs/logs/` and `docs/lessons.md` for historical rules
+- [x] Port valid rules to `docs/memory/` and deduplicate

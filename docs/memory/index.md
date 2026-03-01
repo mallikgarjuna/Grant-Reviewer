@@ -6,6 +6,7 @@ Maintain a structured memory system rooted at `docs/memory/`.
 
 ## Index
 
+- [domain/architecture.md](domain/architecture.md) — Core architectural decisions and conventions
 - [domain/project_docs.md](domain/project_docs.md) — Documentation rules and code phrase SSOT
 - [domain/yaml_definitions.md](domain/yaml_definitions.md) — Call YAML naming, source gating, and scoping rules
 - [tools/backend.md](tools/backend.md) — Backend script paths and environment requirements
