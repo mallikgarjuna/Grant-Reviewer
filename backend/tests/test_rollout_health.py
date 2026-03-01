@@ -148,3 +148,27 @@ def test_evaluate_rollout_health_proceeds_when_prod_gate_defaults_met() -> None:
 
     assert result["overall"]["pass"] is True
     assert result["overall"]["recommended_action"] == "proceed"
+
+
+def test_evaluate_rollout_health_strict_mode_rolls_back_without_retirement_gate() -> None:
+    artifact = _artifact()
+
+    result = evaluate_rollout_health(artifact, require_retirement_gate=True)
+
+    assert result["overall"]["pass"] is False
+    assert result["overall"]["recommended_action"] == "rollback"
+    assert "retirement_gate_missing" in result["overall"]["reasons"]
+
+
+def test_evaluate_rollout_health_rolls_back_when_prod_samples_missing() -> None:
+    artifact = _artifact()
+    artifact["retirement_gate"] = _retirement_gate(
+        environment="prod",
+        production_green_days=7,
+    )
+
+    result = evaluate_rollout_health(artifact)
+
+    assert result["overall"]["pass"] is False
+    assert result["overall"]["recommended_action"] == "rollback"
+    assert "prod_sample_size_insufficient" in result["overall"]["reasons"]

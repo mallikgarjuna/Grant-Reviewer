@@ -21,7 +21,11 @@ def _as_float(metrics: dict[str, Any], key: str) -> float | None:
     return None
 
 
-def evaluate_rollout_health(artifact: dict[str, Any]) -> dict[str, Any]:
+def evaluate_rollout_health(
+    artifact: dict[str, Any],
+    *,
+    require_retirement_gate: bool = False,
+) -> dict[str, Any]:
     summary = artifact.get("summary")
     metrics = artifact.get("metrics")
     if not isinstance(summary, dict) or not isinstance(metrics, dict):
@@ -100,7 +104,12 @@ def evaluate_rollout_health(artifact: dict[str, Any]) -> dict[str, Any]:
         "prod_window_ok": True,
         "prod_sample_size_ok": True,
     }
-    if isinstance(retirement_gate, dict):
+    if require_retirement_gate and not isinstance(retirement_gate, dict):
+        gate_checks["staging_window_ok"] = False
+        gate_checks["prod_window_ok"] = False
+        gate_checks["prod_sample_size_ok"] = False
+        reasons.append("retirement_gate_missing")
+    elif isinstance(retirement_gate, dict):
         environment = str(retirement_gate.get("environment", "")).strip().lower()
         if environment == "staging":
             staging_green_hours = retirement_gate.get("staging_green_hours", 0)
@@ -167,6 +176,11 @@ def _build_parser() -> argparse.ArgumentParser:
         description="Evaluate rollout health thresholds from replay artifact JSON."
     )
     parser.add_argument("--input", type=Path, required=True, help="Replay artifact JSON path")
+    parser.add_argument(
+        "--require-retirement-gate",
+        action="store_true",
+        help="Require retirement_gate metadata (WF-0040 deletion gate strict mode).",
+    )
     return parser
 
 
@@ -175,7 +189,10 @@ def main() -> int:
     payload = json.loads(args.input.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("Input JSON must be an object")
-    result = evaluate_rollout_health(payload)
+    result = evaluate_rollout_health(
+        payload,
+        require_retirement_gate=args.require_retirement_gate,
+    )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 

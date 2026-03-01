@@ -29,7 +29,7 @@ Use this checklist as the gate before deleting legacy execution-path code.
 ## Evidence Links
 
 - Replay/parity artifact: `backend/artifacts/rollout/replay_canary.json` (existing rollout artifact; refresh before deletion decision).
-- Rollout health output: run `cd backend && uv run python scripts/evaluate_rollout_health.py --input artifacts/rollout/replay_canary.json` and archive JSON output with required checks (`staging_window_ok`, `prod_window_ok`, `prod_sample_size_ok`, `overall.recommended_action`).
+- Rollout health output: run `cd backend && uv run python scripts/evaluate_rollout_health.py --input artifacts/rollout/replay_canary.json --require-retirement-gate` and archive JSON output with required checks (`staging_window_ok`, `prod_window_ok`, `prod_sample_size_ok`, `overall.recommended_action`).
 - API contract test run:
   - `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t2.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py -k "idempotency or digest or expectation or timeout or validation"` (pass in this phase).
   - `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t6.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py tests/test_rollout_health.py` (pass in this phase).
