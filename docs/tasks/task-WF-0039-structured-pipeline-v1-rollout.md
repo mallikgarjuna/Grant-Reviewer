@@ -84,7 +84,7 @@ Verification Steps:
 Risks (if any):
 - Over-coupling tests to logging text; assert on structured fields, not strings.
 
-### [ ] Task 4 — Replay comparator contract: structural parity + status/error stability
+### [x] Task 4 — Replay comparator contract: structural parity + status/error stability
 
 Goal:
 - Implement deterministic replay comparator logic for rollout evidence gate.
