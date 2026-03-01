@@ -13,9 +13,11 @@ import type {
   StructuredReviewNodeInput,
 } from "@/lib/bff/types";
 import { buildReviewDetailRoute, SIGN_IN_ROUTE } from "@/lib/routes";
-import { getDomainOptionsForCall } from "@/lib/submit/domainOptions";
 import { clearDraft, loadDraft, saveDraft } from "@/lib/submit/draftStore";
-import { loadStructuredCalls } from "@/lib/submit/loadStructuredCalls";
+import {
+  loadStructuredCalls,
+  type StructuredCallSummary,
+} from "@/lib/submit/loadStructuredCalls";
 import { buildRenderModel, type RenderModelResult } from "@/lib/submit/renderModel";
 import { trackClientEvent } from "@/lib/telemetry/clientTelemetry";
 
@@ -63,7 +65,7 @@ async function parseApiError(response: Response): Promise<ApiError> {
 
 export function UniversalSubmitForm() {
   const router = useRouter();
-  const [calls, setCalls] = useState<CallSummary[]>([]);
+  const [calls, setCalls] = useState<StructuredCallSummary[]>([]);
   const [isLoadingCalls, setIsLoadingCalls] = useState(true);
   const [callError, setCallError] = useState<string | null>(null);
   const [gatingWarning, setGatingWarning] = useState<string | null>(null);
@@ -221,7 +223,7 @@ export function UniversalSubmitForm() {
   }, [calls, selectedCallId]);
 
   const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
-  const domainOptions = selectedCall ? getDomainOptionsForCall(selectedCall.code) : [];
+  const domainOptions = selectedCall?.domainOptions ?? [];
   const effectiveDomain =
     selectedDomain && domainOptions.some((option) => option.value === selectedDomain)
       ? selectedDomain

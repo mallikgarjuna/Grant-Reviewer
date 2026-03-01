@@ -80,6 +80,9 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
           }),
           { status: 200 },
         );
@@ -152,6 +155,9 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
           }),
           { status: 200 },
         );
@@ -225,6 +231,9 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
           }),
           { status: 200 },
         );
@@ -640,6 +649,9 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
           }),
           { status: 200 },
         );
@@ -651,6 +663,7 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [],
           }),
           { status: 200 },
         );
@@ -803,6 +816,9 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
           }),
           { status: 200 },
         );
@@ -871,6 +887,80 @@ describe("UniversalSubmitForm", () => {
     ).toBe(false);
   });
 
+  it("shows domain selector from backend domain_options for any call code", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "custom_call_code",
+                name: "Custom Call",
+                year: 2026,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/custom_call_code/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "custom_call_code",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [
+              { value: "beta", label: "Beta Domain", order_index: 2 },
+              { value: "alpha", label: "Alpha Domain", order_index: 1 },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/custom_call_code/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "custom_call_code",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    const domainSelect = await screen.findByLabelText("Domain");
+    const optionLabels = Array.from((domainSelect as HTMLSelectElement).options).map(
+      (option) => option.textContent,
+    );
+    expect(optionLabels).toEqual(["No domain override", "Alpha Domain", "Beta Domain"]);
+  });
+
   it("sends domain null after switching to call without domain options", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -897,13 +987,28 @@ describe("UniversalSubmitForm", () => {
           { status: 200 },
         );
       }
-      if (url.endsWith("/config")) {
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/other_call/config") {
         return new Response(
           JSON.stringify({
             call_logical_id: "call",
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [],
           }),
           { status: 200 },
         );
@@ -993,13 +1098,28 @@ describe("UniversalSubmitForm", () => {
           { status: 200 },
         );
       }
-      if (url.endsWith("/config")) {
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/other_call/config") {
         return new Response(
           JSON.stringify({
             call_logical_id: "call",
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [],
           }),
           { status: 200 },
         );
@@ -1075,13 +1195,28 @@ describe("UniversalSubmitForm", () => {
           { status: 200 },
         );
       }
-      if (url.endsWith("/config")) {
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/other_call/config") {
         return new Response(
           JSON.stringify({
             call_logical_id: "call",
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [],
           }),
           { status: 200 },
         );

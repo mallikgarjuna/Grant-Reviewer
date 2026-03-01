@@ -89,7 +89,7 @@ Verification Steps:
 Risks (if any):
 - Incorrect extraction from call definition could silently reintroduce frontend workarounds.
 
-### [ ] Task 4 — Submit UI consumes backend `domain_options[]` (remove hardcoding)
+### [x] Task 4 — Submit UI consumes backend `domain_options[]` (remove hardcoding)
 
 Goal:
 - Remove call-specific domain option hardcoding and drive selector visibility/options entirely from backend config.
