@@ -7,7 +7,7 @@ Last Updated: 2026-03-01
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: deterministic canary routing decision
+### [x] Task 1 — Tracer bullet: deterministic canary routing decision
 
 Goal:
 - Prove the backend structured-review route deterministically selects legacy vs `pipeline_v1` by env + call code allowlist.
