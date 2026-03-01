@@ -85,7 +85,7 @@ Verification Steps:
 Risks (if any):
 - Historical artifact formats may require compatibility handling.
 
-### [ ] Task 4 — Delete legacy execution entrypoints in service layer
+### [x] Task 4 — Delete legacy execution entrypoints in service layer
 
 Goal:
 - Remove legacy structured-review execution methods once v1-only behavior and invariants are protected.
