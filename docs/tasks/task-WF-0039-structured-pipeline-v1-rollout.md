@@ -166,7 +166,7 @@ Verification Steps:
 Risks (if any):
 - Threshold inputs may be sparse; fail-safe output should recommend rollback when data is insufficient.
 
-### [ ] Task 7 — End-to-end canary workflow verification (staging-simulated)
+### [x] Task 7 — End-to-end canary workflow verification (staging-simulated)
 
 Goal:
 - Validate full canary workflow from gating to replay evidence to rollback decision in one automated verification sequence.
