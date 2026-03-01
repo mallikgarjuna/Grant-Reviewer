@@ -1,8 +1,8 @@
 # WF-0041 — NWO Veni 2025 (Preproposal) Single-Call MVP
 
 Artifact: brainstorm-qna
-Version: v0.1
-Status: In progress
+Version: v0.2
+Status: Complete
 Last Updated: 2026-03-01
 
 ---
