@@ -1,7 +1,7 @@
 # WF-0039 — Structured Pipeline v1 Rollout
 
 Artifact: brainstorm-qna
-Version: v0.1
+Version: v0.2
 Status: Draft
 Last Updated: 2026-03-01
 
@@ -54,6 +54,47 @@ User instruction: "go with your recommendations" for Q1–Q5.
 - B) Prod for a single internal user only — faster signal, higher risk.
 - C) Prod for a single call allowlisted — real traffic, strict rollback required.
 > Recommendation: A — Lowest blast radius; establishes rollback muscle-memory and observability. B/C are acceptable only after staging proves out the operational mechanics.
+> Selected: A
+
+---
+
+## Section 1 — Problem Statement (5 Questions)
+
+User instruction: "go with your recommendations" for Q1–Q5.
+
+**Q1: Do we enforce “explicit allowlist required” as a hard guardrail in prod?**
+- A) Yes (Recommended): in `prod`, if `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=1` and `STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES` is empty, refuse to start or refuse to route to v1.
+- B) No: rely on ops discipline to always set allowlist.
+- C) Soft: allow it but emit loud warning logs/telemetry.
+> Recommendation: A — This eliminates the highest-risk misconfiguration class (accidentally enabling v1 for all calls). B is not defensible; C still allows silent production drift.
+> Selected: A
+
+**Q2: What is the canary call code for first rollout?**
+- A) `nwo_veni_2025_preproposal` (Recommended): most exercised structured call.
+- B) `erc_stg_2026_full`: bigger call, higher risk.
+- C) Custom: you name the call code.
+> Recommendation: A — Use the most exercised structured call as the canary; it maximizes signal and reduces the chance of “passing” due to low usage.
+> Selected: A
+
+**Q3: Do we require a “forced engine” test-only bypass to validate both paths in staging?**
+- A) Yes (Recommended): test-only header/env to force legacy vs v1 for verification (never enabled in prod).
+- B) No: only validate by changing env vars + redeploy.
+- C) Hybrid: force only in local/dev, not staging.
+> Recommendation: A — Enables deterministic A/B verification without redeploy churn; must be explicitly test-only and disabled in prod.
+> Selected: A
+
+**Q4: Parity definition for rollout gate (minimum acceptable)**
+- A) Structural parity (Recommended): same number of cards, same ordering, same rating per card; content text may differ.
+- B) Strict parity: structural + exact text match (likely unrealistic).
+- C) Contract-only parity: only status/error codes must match.
+> Recommendation: A — Text-level parity is unrealistic with LLM variability; contract-only is too weak. Structural parity is enforceable and user-impact-relevant.
+> Selected: A
+
+**Q5: Rollout evidence required before expanding allowlist**
+- A) Automated replay suite (Recommended): fixed payloads replayed N times, compare outputs + latency.
+- B) Manual smoke only: submit a few times, eyeball results.
+- C) Real-traffic only: monitor metrics, no replay harness.
+> Recommendation: A — Manual-only and traffic-only approaches let regressions slip; replay gives deterministic, repeatable evidence.
 > Selected: A
 
 **Q2: What’s the rollout unit?**

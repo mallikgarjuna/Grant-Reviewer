@@ -1,7 +1,7 @@
 # WF-0039 — Structured Pipeline v1 Rollout
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft
 Last Updated: 2026-03-01
 
@@ -37,11 +37,14 @@ Open questions suggested by snapshot:
 
 We need an operationally safe, incremental rollout of structured review `pipeline_v1` without breaking user-visible behavior or contracts, and with immediate rollback.
 
-Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0039-structured-pipeline-v1-rollout.md` (Preflight)
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0039-structured-pipeline-v1-rollout.md` (Preflight + Section 1)
 
 Contract notes / non-obvious constraints:
-- Production safety requires explicit allowlisting: do not rely on “empty allowlist means all calls” behavior in prod.
+- Production safety requires explicit allowlisting: in production, do not rely on “empty allowlist means all calls” behavior.
 - Rollout must preserve API contracts: status codes, error codes, idempotency semantics.
+- Parity gate for rollout is structural parity: same number of cards, same ordering, same rating per card (content text may differ).
+- Evidence gate for allowlist expansion requires an automated replay suite (not manual-only).
+- Any “force engine” control is test-only and must not be available in production.
 - Legacy path retirement is out of scope (parked separately).
 
 ## 2. Desired Outcome
