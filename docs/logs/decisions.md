@@ -26,6 +26,14 @@
 - **Tradeoff**: Low-traffic calls may take longer to satisfy deletion readiness criteria.
 - **Status**: Approved.
 
+### AD 40.4: Rollout-health evaluator is the deletion-gate computation surface
+- **WF ID**: WF-0040
+- **Context**: Gate defaults are only reliable if evaluated by one deterministic computation path.
+- **Decision**: Encode staging/prod observation-window and per-call sample-size checks in `backend/scripts/evaluate_rollout_health.py`; deletion readiness evidence must include evaluator output with explicit gate check booleans.
+- **Why**: Prevents spreadsheet/manual interpretation drift and keeps approval evidence reproducible.
+- **Tradeoff**: Artifact producers must include `retirement_gate` metadata for full gate evaluation.
+- **Status**: Approved.
+
 ## Date: 2026-03-01 (WF-0039: Structured pipeline v1 rollout)
 
 ### AD 39.1: Production empty-allowlist guardrail fails closed to legacy

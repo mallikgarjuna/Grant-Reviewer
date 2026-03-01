@@ -138,7 +138,7 @@ Verification Steps:
 Risks (if any):
 - Mis-scoped cleanup could remove still-needed non-retirement env behavior.
 
-### [ ] Task 6 — Finalize operational readiness and evidence handoff
+### [x] Task 6 — Finalize operational readiness and evidence handoff
 
 Goal:
 - Finalize retirement runbook/checklist with concrete evidence links and owner sign-off capture.
