@@ -1,11 +1,22 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: brainstorm
-Version: v0.5
+Version: v0.6
 Status: Draft Complete
 Last Updated: 2026-03-01
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0040-structured-pipeline-v1-legacy-retirement.md`
+
+## Contract Safety (SSOT)
+
+- This brainstorm is the SSOT for decisions/contracts (what we will implement).
+- The Q&A transcript is rationale only; it must not introduce new contracts.
+- Any contract discovered during implementation must be promoted into this brainstorm (do not let “truth” live only in code or in Q&A).
+
+## Definitions (Scope Guard)
+
+- "Legacy" in this WF means: the legacy structured-review engine execution path for `POST /api/structured-review`.
+- Out of scope unless explicitly needed: call-config/UI mode naming such as `ui_mode="legacy_single_snippet"`.
 
 ## Repo Reality Snapshot (Read-Only) (2026-03-01)
 
@@ -42,6 +53,19 @@ Success signals (selected):
 - Evidence bundle required before deletion: replay/parity artifact + rollout health evaluation output + API contract tests (all referenced from the readiness checklist).
 - Call coverage scope: validate currently-supported calls only (no expansion); ensure gating/allowlist behavior does not hide behavior changes.
 - Telemetry: keep `engine_path` but it should always be `pipeline_v1`; ops expectations updated to single-engine truth.
+
+## Evidence Gates (Deletion Preconditions)
+
+Before deleting legacy engine code or removing routing/flag branches:
+- Produce a replay/parity artifact and evaluate it using existing rollout scripts.
+- Produce a rollout health evaluation output (error/contract-error/latency thresholds) for the defined observation windows.
+- Ensure API contract tests are green, and add targeted tests for v1-only routing behavior.
+- Record evidence locations + decision in the WF-0040 walkthrough (readiness checklist SSOT).
+
+## Rollback Posture
+
+- Pre-deletion (legacy still exists): rollback is operational and explicit (runbook-driven); switching engines is not the long-term posture.
+- Post-deletion: rollback is revert-deploy; there is no runtime engine-choice switch.
 
 ## 3. Target User / Actor
 
