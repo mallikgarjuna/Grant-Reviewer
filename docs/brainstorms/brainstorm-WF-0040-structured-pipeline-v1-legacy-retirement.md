@@ -1,7 +1,7 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: brainstorm
-Version: v0.3
+Version: v0.4
 Status: Draft Complete
 Last Updated: 2026-03-01
 
@@ -47,6 +47,14 @@ Success signals (selected):
 
 - Primary: platform operator/engineer maintaining safe production behavior.
 - Secondary: end users submitting reviews who should see stable outcomes.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0040-structured-pipeline-v1-legacy-retirement.md` (Section 3)
+
+Actor decisions (selected):
+- Gate runner: backend/platform engineer on-call.
+- Pre-flip requirement: documented runbook + metrics/alerts that make regressions obvious/actionable.
+- Legacy deletion approval: explicit tech lead/repo owner sign-off checkpoint.
+- Call ownership: platform owns global behavior; consult call owners only on specific regressions.
 
 ## 4. Rough Idea (Unstructured Thinking)
 

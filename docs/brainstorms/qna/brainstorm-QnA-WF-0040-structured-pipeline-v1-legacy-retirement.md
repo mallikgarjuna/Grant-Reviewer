@@ -1,7 +1,7 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: brainstorm-qna
-Version: v0.1
+Version: v0.2
 Status: In progress
 Last Updated: 2026-03-01
 
@@ -64,6 +64,34 @@ The main brainstorm remains SSOT for decisions/contracts.
 > Recommendation: A — this is the root cause; operational risk and trust issues are downstream effects of drift and duplicated logic.
 > **Selected: A (by user instruction: “go with recommendations”)**
 
+**Q2: What exactly counts as “legacy structured-review execution path” for this WF?**
+- A) **Option A (Recommended):** Only the legacy engine execution path for `/api/structured-review` (the thing that actually generates reviews).
+- B) Option B: Both legacy engine execution and any “legacy_*” call-config/UI-mode fallbacks.
+- C) Option C: Anything not routed through `StructuredReviewerService.generate_structured_review_pipeline_v1`.
+> Recommendation: A — precise, falsifiable scope; avoids accidental broad refactors.
+> **Selected: A (by user instruction: “go with recommendations”)**
+
+**Q3: Where is the biggest risk of unintended behavior change during deprecation?**
+- A) **Option A (Recommended):** Edge cases and error contracts (timeouts, contract-error semantics, validation order).
+- B) Option B: Latency and performance under load.
+- C) Option C: Call-config parsing and proposal-node selection behavior.
+> Recommendation: A — contract and error semantics are easiest to regress while “routing changes” look small. Latency is important but tends to be observable; contract drift can silently break clients.
+> **Selected: A (by user instruction: “go with recommendations”)**
+
+**Q4: What is the “fail closed to legacy” stance supposed to be during Phase 0–1?**
+- A) **Option A (Recommended):** Keep fail-closed behavior until evidence gates; then remove it when legacy is removed.
+- B) Option B: Change it early to fail-closed to `pipeline_v1` (more aggressive).
+- C) Option C: Keep dual-mode indefinitely but make v1 the default (no deletion goal).
+> Recommendation: A — aligns with a gated program; B can turn config mistakes into production impact; C contradicts retirement.
+> **Selected: A (by user instruction: “go with recommendations”)**
+
+**Q5: What makes this problem falsifiable (so we know we solved it)?**
+- A) **Option A (Recommended):** No code path exists that can execute legacy engine; tests confirm single-engine routing; rollout evidence recorded.
+- B) Option B: Config flags removed and docs updated.
+- C) Option C: A production canary window completes without regressions.
+> Recommendation: A — combines code-level truth with evidence; B is insufficient; C is necessary but not sufficient without code deletion and test coverage.
+> **Selected: A (by user instruction: “go with recommendations”)**
+
 ---
 
 ## Section 2 — Desired Outcome (2026-03-01)
@@ -105,30 +133,43 @@ The main brainstorm remains SSOT for decisions/contracts.
 > Recommendation: A — preserves observability while removing ambiguity.
 > **Selected: A**
 
-**Q2: What exactly counts as “legacy structured-review execution path” for this WF?**
-- A) **Option A (Recommended):** Only the legacy engine execution path for `/api/structured-review` (the thing that actually generates reviews).
-- B) Option B: Both legacy engine execution and any “legacy_*” call-config/UI-mode fallbacks.
-- C) Option C: Anything not routed through `StructuredReviewerService.generate_structured_review_pipeline_v1`.
-> Recommendation: A — precise, falsifiable scope; avoids accidental broad refactors.
-> **Selected: A (by user instruction: “go with recommendations”)**
+---
 
-**Q3: Where is the biggest risk of unintended behavior change during deprecation?**
-- A) **Option A (Recommended):** Edge cases and error contracts (timeouts, contract-error semantics, validation order).
-- B) Option B: Latency and performance under load.
-- C) Option C: Call-config parsing and proposal-node selection behavior.
-> Recommendation: A — contract and error semantics are easiest to regress while “routing changes” look small. Latency is important but tends to be observable; contract drift can silently break clients.
-> **Selected: A (by user instruction: “go with recommendations”)**
+## Section 3 — Target User / Actor (2026-03-01)
 
-**Q4: What is the “fail closed to legacy” stance supposed to be during Phase 0–1?**
-- A) **Option A (Recommended):** Keep fail-closed behavior until evidence gates; then remove it when legacy is removed.
-- B) Option B: Change it early to fail-closed to `pipeline_v1` (more aggressive).
-- C) Option C: Keep dual-mode indefinitely but make v1 the default (no deletion goal).
-> Recommendation: A — aligns with a gated program; B can turn config mistakes into production impact; C contradicts retirement.
-> **Selected: A (by user instruction: “go with recommendations”)**
+**Brainstorming Q&A:**
 
-**Q5: What makes this problem falsifiable (so we know we solved it)?**
-- A) **Option A (Recommended):** No code path exists that can execute legacy engine; tests confirm single-engine routing; rollout evidence recorded.
-- B) Option B: Config flags removed and docs updated.
-- C) Option C: A production canary window completes without regressions.
-> Recommendation: A — combines code-level truth with evidence; B is insufficient; C is necessary but not sufficient without code deletion and test coverage.
-> **Selected: A (by user instruction: “go with recommendations”)**
+**Q1: Who is the primary “actor” responsible for running the retirement gates?**
+- A) **Option A (Recommended):** Backend/platform engineer on-call (owns ops + rollback).
+- B) Option B: Product engineer (feature owner, not on-call).
+- C) Option C: SRE/DevOps only.
+> Recommendation: A — authority and operational responsibility should match ownership of gates and rollback.
+> **Selected: A**
+
+**Q2: Who is the primary “customer” harmed if we get this wrong?**
+- A) **Option A (Recommended):** End users/researchers (behavior regressions undermine trust).
+- B) Option B: Internal engineers (time lost, incidents, maintenance overhead).
+- C) Option C: Both equally (treat as co-primary).
+> Recommendation: A — internal pain is real, but external regressions are the highest-cost failures.
+> **Selected: A**
+
+**Q3: What operational capability must exist before we flip to v1-only in prod?**
+- A) **Option A (Recommended):** A documented runbook + metrics/alerts that make regressions obvious and actionable.
+- B) Option B: Just a manual checklist in docs.
+- C) Option C: Only automated tests (no ops changes).
+> Recommendation: A — flipping runtime behavior without a runbook/alerts turns detection into guesswork.
+> **Selected: A**
+
+**Q4: Who has authority to approve “deletion of legacy code” after gates pass?**
+- A) **Option A (Recommended):** Tech lead / repo owner sign-off (explicit checkpoint).
+- B) Option B: Any engineer who sees green dashboards.
+- C) Option C: CI alone (merge if tests pass).
+> Recommendation: A — deletion is irreversible within the deprecation window; require explicit accountability.
+> **Selected: A**
+
+**Q5: How do we treat “tenants/calls” ownership during retirement?**
+- A) **Option A (Recommended):** Platform owns global behavior; call owners only consulted if a specific call regresses.
+- B) Option B: Each call owner must opt-in/out explicitly.
+- C) Option C: Ignore call differences entirely.
+> Recommendation: A — keeps the program operationally tractable while retaining an escalation path.
+> **Selected: A**
