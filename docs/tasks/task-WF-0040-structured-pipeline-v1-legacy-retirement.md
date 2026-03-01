@@ -111,7 +111,7 @@ Verification Steps:
 Risks (if any):
 - Residual imports/references to deleted helpers can break unrelated test modules.
 
-### [ ] Task 5 — Remove obsolete dual-routing env logic
+### [x] Task 5 — Remove obsolete dual-routing env logic
 
 Goal:
 - Eliminate runtime config branches that only existed to support legacy/v1 dual routing.

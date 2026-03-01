@@ -2274,6 +2274,14 @@ def test_structured_reviewer_service_legacy_entrypoint_removed(monkeypatch) -> N
     assert not hasattr(StructuredReviewerService, "generate_structured_review")
 
 
+def test_structured_review_dual_routing_helpers_removed(monkeypatch) -> None:
+    create_client_with_seed(monkeypatch)
+    import main as app_main
+
+    assert not hasattr(app_main, "is_structured_review_pipeline_v1_enabled")
+    assert not hasattr(app_main, "is_structured_review_pipeline_v1_enabled_for_call")
+
+
 def test_structured_review_call_config_digest_mismatch_marks_failed_review(
     monkeypatch,
 ) -> None:
