@@ -1,5 +1,47 @@
 # Architectural Decisions
 
+## Date: 2026-03-01 (WF-0040: Structured pipeline v1 legacy retirement)
+
+### AD 40.1: Legacy retirement scope is execution-path only
+- **WF ID**: WF-0040
+- **Context**: The codebase uses "legacy" terminology in both engine routing and call-config/UI naming, which risks scope creep.
+- **Decision**: Define WF-0040 scope as retiring only the legacy structured-review execution path for `POST /api/structured-review`; non-blocking `legacy_*` naming cleanup is deferred.
+- **Why**: Keeps the retirement program falsifiable and avoids accidental expansion into unrelated frontend/call-config refactors.
+- **Tradeoff**: Naming ambiguity remains in-place temporarily and must be documented in the runbook/checklist.
+- **Status**: Approved.
+
+### AD 40.2: Legacy deletion is checklist-gated with explicit approval checkpoint
+- **WF ID**: WF-0040
+- **Context**: Deleting legacy code prematurely would remove the pre-deletion rollback option and increase production risk.
+- **Decision**: Require a readiness checklist artifact in the WF walkthrough with replay/parity evidence, rollout-health outputs, API contract-test pass evidence, and explicit owner approval before deleting legacy path code.
+- **Why**: Preserves reversibility before deletion and forces evidence-based progression to single-engine runtime truth.
+- **Tradeoff**: Adds process overhead and can delay deletion if observability evidence is incomplete.
+- **Status**: Approved.
+
+### AD 40.3: Deletion gate defaults pin observation windows and production sample-size minimums
+- **WF ID**: WF-0040
+- **Context**: Open-ended gate durations and traffic-size expectations made readiness decisions ambiguous.
+- **Decision**: Freeze MVP gate defaults to 24 consecutive green hours in staging and 7 consecutive green days in production, with minimum 50 completed requests per currently-supported call code before deletion approval.
+- **Why**: Makes the retirement gate operationally unambiguous for Phase 2 task planning and execution.
+- **Tradeoff**: Low-traffic calls may take longer to satisfy deletion readiness criteria.
+- **Status**: Approved.
+
+### AD 40.4: Rollout-health evaluator is the deletion-gate computation surface
+- **WF ID**: WF-0040
+- **Context**: Gate defaults are only reliable if evaluated by one deterministic computation path.
+- **Decision**: Encode staging/prod observation-window and per-call sample-size checks in `backend/scripts/evaluate_rollout_health.py`; deletion readiness evidence must include evaluator output with explicit gate check booleans.
+- **Why**: Prevents spreadsheet/manual interpretation drift and keeps approval evidence reproducible.
+- **Tradeoff**: Artifact producers must include `retirement_gate` metadata for full gate evaluation.
+- **Status**: Approved.
+
+### AD 40.5: `check_id` remains stable taxonomy; validator uniqueness includes expectation identity
+- **WF ID**: WF-0040
+- **Context**: A temporary fix encoded `expectation_id` into `check_id`, which violated stable taxonomy expectations and downstream grouping assumptions.
+- **Decision**: Keep `check_id` taxonomy stable (`check.presence`) and enforce request-snapshot uniqueness on (`expectation_id`, `node_logical_id`, `check_id`) in validator logic.
+- **Why**: Preserves cross-call analytical stability while still preventing duplicate expectation identity rows in request snapshots.
+- **Tradeoff**: Validator relies on expectation identity for uniqueness rather than `check_id` alone.
+- **Status**: Approved.
+
 ## Date: 2026-03-01 (WF-0039: Structured pipeline v1 rollout)
 
 ### AD 39.1: Production empty-allowlist guardrail fails closed to legacy
@@ -1098,3 +1140,13 @@
 - **Why**: Keeps the ingestion payload simple and avoids Alembic migration thrash while correctly expanding the schema for hierarchical data.
 - **Tradeoff**: Ingestion script must perform topological sorting/two-pass insertion to construct the tree and defend against cycle loops.
 - **Status**: Approved in PRD v0.2.
+
+## Date: 2026-03-01 (WF-0040: Structured Pipeline v1 Legacy Retirement)
+
+### AD 40.6: Waiver-Based Workflow Closure for Missing Runtime Evidence
+- **WF ID**: WF-0040
+- **Context**: WF-0040 implementation and automated verification are complete, but required staging/production observation-window evidence, per-call production counts, and formal owner sign-off artifacts are unavailable in current environment/session.
+- **Decision**: Close WF-0040 as a documented waiver-based closure (`Done`) with explicit residual risks, record owner chat approval, and park a mandatory follow-up item to collect real runtime evidence before public-launch hardening/scale commitments.
+- **Why**: Preserves delivery momentum while keeping risk/accountability explicit instead of falsely marking unavailable evidence as complete.
+- **Tradeoff**: Runtime retirement safety is not fully evidenced yet; this risk remains open until follow-up evidence is captured and reviewed.
+- **Status**: Approved (waiver recorded in walkthrough + index closure + parking-lot follow-up).

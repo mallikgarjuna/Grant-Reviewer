@@ -1,0 +1,16 @@
+{
+  "checks": {
+    "contract_error_rate_regression": false,
+    "error_rate_regression": false,
+    "latency_regression": false,
+    "parity_ok": true,
+    "prod_sample_size_ok": true,
+    "prod_window_ok": true,
+    "staging_window_ok": true
+  },
+  "overall": {
+    "pass": true,
+    "reasons": [],
+    "recommended_action": "proceed"
+  }
+}

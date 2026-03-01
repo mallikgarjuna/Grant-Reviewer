@@ -89,7 +89,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 | 7 | Add node hierarchy selector | product | Implement only after P1 #1-#3 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
 | 8 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 | 9 | Migrate `erc_cog_2026_full_official.yaml` to v2 (WF-0038-native) | tech-debt | Re-author/migrate ERC CoG YAML from legacy v1 shape (`short_name` + recursive `children`) to v2 call-definition shape (`funding_agency.id`, flat `proposal_nodes`, `parent_logical_id`) so it can be validated/ingested and safely routed through pipeline-v1. (Ref: user request 2026-02-28; file `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml`.) | 2026-02-28 |
-| 10 | Retire legacy structured-review engine path after pipeline-v1 rollout | tech-debt | Execute a controlled cutover plan: call-by-call enablement in production, monitoring window, then remove fallback engine path and dead compatibility logic only after parity evidence. Keep this separate from YAML migration to reduce blast radius. (Ref: WF-0038 ship follow-up, 2026-03-01.) | 2026-03-01 |
+| 10 | WF-0040 gate evidence backfill (runtime observation + counts) | ops | Capture real staging/prod observation-window evidence and per-call production counts for legacy-retirement safety confirmation; close residual waiver risk from WF-0040. (Ref: WF-0040 walkthrough waiver closure, 2026-03-01.) | 2026-03-01 |
 
 ### P1 Rationale Snapshot (2026-02-26)
 
@@ -176,6 +176,7 @@ Promotion dependency note:
 | 28 | WF-0037 | nwo-vidi-2025-full-proposal-yaml-reauthor | started-directly | - | 2026-02-27 |
 | 29 | WF-0038 | peerlens-review-engine-pipeline-v1 | started-directly | - | 2026-02-28 |
 | 30 | WF-0039 | structured-pipeline-v1-rollout | started-directly | - | 2026-03-01 |
+| 31 | WF-0040 | structured-pipeline-v1-legacy-retirement | promoted | P1 #10 | 2026-03-01 |
 
 ---
 
@@ -204,3 +205,5 @@ Promotion dependency note:
 - **v2.1** (2026-02-28): Parked deferred WF-0035 follow-up for `UniversalSubmitForm` structural decomposition into dedicated hooks/modules.
 - **v2.2** (2026-02-28): Parked explicit follow-up to migrate `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml` from legacy v1 shape to v2 WF-0038-native call-definition format.
 - **v2.3** (2026-03-01): Added P1 #10 for legacy structured-review engine retirement after pipeline-v1 rollout and backfilled WF initiative log with WF-0037/WF-0038 plus new WF-0039.
+- **v2.4** (2026-03-01): Promoted P1 #10 to WF-0040 (`structured-pipeline-v1-legacy-retirement`) and removed it from active P1 backlog.
+- **v2.5** (2026-03-01): Added P1 #10 follow-up to backfill WF-0040 runtime evidence after waiver-based closure.

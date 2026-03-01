@@ -75,32 +75,6 @@ IDEMPOTENCY_TTL_HOURS = 24
 FREE_DAILY_REVIEW_LIMIT = 5
 
 
-def is_structured_review_pipeline_v1_enabled() -> bool:
-    return os.getenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "0").strip() == "1"
-
-
-def _is_production_env() -> bool:
-    app_env = os.getenv("APP_ENV", "").strip().lower()
-    return app_env in {"prod", "production"}
-
-
-def is_structured_review_pipeline_v1_enabled_for_call(call_code: str) -> bool:
-    if not is_structured_review_pipeline_v1_enabled():
-        return False
-
-    raw_allowlist = os.getenv("STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES", "").strip()
-    if not raw_allowlist:
-        if _is_production_env():
-            logger.warning(
-                "Structured review pipeline_v1 disabled: empty call allowlist in prod; fail-closed to legacy."
-            )
-            return False
-        return True
-
-    allowlist = {code.strip() for code in raw_allowlist.split(",") if code.strip()}
-    return call_code in allowlist
-
-
 def is_idempotency_conflict_error(err: IntegrityError) -> bool:
     error_text = str(err.orig).lower() if err.orig is not None else str(err).lower()
     return (
@@ -804,28 +778,16 @@ def create_structured_review(
         llm_client=build_llm_client(),
     )
     try:
-        selected_engine_path = "legacy"
-        if is_structured_review_pipeline_v1_enabled_for_call(call.code):
-            selected_engine_path = "pipeline_v1"
-            review, _ = reviewer_service.generate_structured_review_pipeline_v1(
-                review_stage=payload.review_stage,
-                call_id=payload.call_id,
-                nodes=[(node.node_logical_id, node.text) for node in payload.nodes],
-                external_user_id=external_user_id,
-                idempotency_key=idempotency_key,
-                request_payload_sha256=request_payload_sha256,
-                idempotency_expires_at=now + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
-            )
-        else:
-            review, _ = reviewer_service.generate_structured_review(
-                review_stage=payload.review_stage,
-                call_id=payload.call_id,
-                nodes=[(node.node_logical_id, node.text) for node in payload.nodes],
-                external_user_id=external_user_id,
-                idempotency_key=idempotency_key,
-                request_payload_sha256=request_payload_sha256,
-                idempotency_expires_at=now + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
-            )
+        selected_engine_path = "pipeline_v1"
+        review, _ = reviewer_service.generate_structured_review_pipeline_v1(
+            review_stage=payload.review_stage,
+            call_id=payload.call_id,
+            nodes=[(node.node_logical_id, node.text) for node in payload.nodes],
+            external_user_id=external_user_id,
+            idempotency_key=idempotency_key,
+            request_payload_sha256=request_payload_sha256,
+            idempotency_expires_at=now + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
+        )
         logger.info(
             "structured_review.engine_path=%s call_code=%s review_id=%s",
             selected_engine_path,

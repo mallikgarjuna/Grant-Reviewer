@@ -329,9 +329,9 @@ Rollout health check (from replay artifact):
 uv run python scripts/evaluate_rollout_health.py --input artifacts/rollout/replay_canary.json
 ```
 
-Rollback commands (configuration-only):
-- Global disable: set `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=0` and redeploy/restart.
-- Call-level removal: remove call code from `STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES` and redeploy/restart.
+Rollback commands (legacy-retirement posture):
+- Pre-delete posture (while legacy code exists): follow the WF-0040 runbook checklist and use the explicit config-first rollback procedure captured there.
+- Post-delete posture: rollback is revert-deploy of the prior backend release; there is no runtime engine-selection toggle.
 
 Recent API coverage includes:
 - signed auth and idempotency behavior

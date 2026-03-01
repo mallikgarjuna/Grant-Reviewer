@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import hashlib
 import json
 
 import pytest
 
 from app.engine.contracts import ReviewRequestV1
 from app.engine.pipeline_v1 import run_review_pipeline
+from app.engine.review_request_validator import (
+    ReviewRequestValidationError,
+    canonicalize_for_digest,
+    validate_review_request_payload,
+)
 from scripts.evaluate_rollout_health import evaluate_rollout_health
 from scripts.replay_structured_rollout import build_replay_artifact
 
@@ -184,3 +190,95 @@ def test_canary_rollout_replay_artifact_and_health_decision() -> None:
     assert rollback["overall"]["pass"] is False
     assert rollback["overall"]["recommended_action"] == "rollback"
     assert "structural_parity_failure" in rollback["overall"]["reasons"]
+
+
+def test_review_request_validator_rejects_digest_mismatch() -> None:
+    payload = {
+        "request_id": "req-digest-mismatch",
+        "mode": "DIAGNOSTIC",
+        "stage_ref": "STEP_1",
+        "call_config_digest": "sha256:not-the-real-digest",
+        "call_config_snapshot": {
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ]
+        },
+        "proposal_nodes": {"research_idea": "Clear proposal text."},
+    }
+
+    with pytest.raises(ReviewRequestValidationError) as err:
+        validate_review_request_payload(payload)
+
+    assert err.value.code == "CALL_CONFIG_DIGEST_MISMATCH"
+
+
+def test_review_request_validator_allows_same_check_id_for_different_expectations() -> None:
+    payload = {
+        "request_id": "req-shared-check-id",
+        "mode": "DIAGNOSTIC",
+        "stage_ref": "STEP_1",
+        "call_config_snapshot": {
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                },
+                {
+                    "expectation_id": "exp-2",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                },
+            ]
+        },
+        "proposal_nodes": {"research_idea": "text"},
+    }
+    canonical = canonicalize_for_digest(payload["call_config_snapshot"])
+    payload["call_config_digest"] = "sha256:" + hashlib.sha256(
+        canonical.encode("utf-8")
+    ).hexdigest()
+
+    validated = validate_review_request_payload(payload)
+    assert validated.request_id == "req-shared-check-id"
+
+
+def test_review_request_validator_rejects_duplicate_expectation_finding_identity() -> None:
+    payload = {
+        "request_id": "req-duplicate-identity",
+        "mode": "DIAGNOSTIC",
+        "stage_ref": "STEP_1",
+        "call_config_snapshot": {
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                },
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                },
+            ]
+        },
+        "proposal_nodes": {"research_idea": "text"},
+    }
+    canonical = canonicalize_for_digest(payload["call_config_snapshot"])
+    payload["call_config_digest"] = "sha256:" + hashlib.sha256(
+        canonical.encode("utf-8")
+    ).hexdigest()
+
+    with pytest.raises(ReviewRequestValidationError) as err:
+        validate_review_request_payload(payload)
+
+    assert err.value.code == "MALFORMED_REVIEW_REQUEST"
+    assert "Duplicate expectation finding identity" in err.value.message

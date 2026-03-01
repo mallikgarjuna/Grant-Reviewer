@@ -38,6 +38,23 @@ def _artifact(
     }
 
 
+def _retirement_gate(
+    *,
+    environment: str,
+    staging_green_hours: int = 24,
+    production_green_days: int = 7,
+    completed_requests_by_call: dict[str, int] | None = None,
+) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "environment": environment,
+        "staging_green_hours": staging_green_hours,
+        "production_green_days": production_green_days,
+    }
+    if completed_requests_by_call is not None:
+        payload["completed_requests_by_call"] = completed_requests_by_call
+    return payload
+
+
 def test_evaluate_rollout_health_returns_rollback_on_threshold_breach() -> None:
     result = evaluate_rollout_health(
         _artifact(
@@ -67,3 +84,91 @@ def test_evaluate_rollout_health_returns_proceed_when_within_thresholds() -> Non
 
     assert result["overall"]["pass"] is True
     assert result["overall"]["recommended_action"] == "proceed"
+
+
+def test_evaluate_rollout_health_rolls_back_when_staging_window_below_24h() -> None:
+    artifact = _artifact()
+    artifact["retirement_gate"] = _retirement_gate(
+        environment="staging",
+        staging_green_hours=12,
+    )
+
+    result = evaluate_rollout_health(artifact)
+
+    assert result["overall"]["pass"] is False
+    assert result["overall"]["recommended_action"] == "rollback"
+    assert "staging_window_incomplete" in result["overall"]["reasons"]
+
+
+def test_evaluate_rollout_health_rolls_back_when_prod_window_below_7d() -> None:
+    artifact = _artifact()
+    artifact["retirement_gate"] = _retirement_gate(
+        environment="prod",
+        production_green_days=5,
+        completed_requests_by_call={"nwo_veni_2025_preproposal": 55},
+    )
+
+    result = evaluate_rollout_health(artifact)
+
+    assert result["overall"]["pass"] is False
+    assert result["overall"]["recommended_action"] == "rollback"
+    assert "prod_window_incomplete" in result["overall"]["reasons"]
+
+
+def test_evaluate_rollout_health_rolls_back_when_prod_call_samples_below_50() -> None:
+    artifact = _artifact()
+    artifact["retirement_gate"] = _retirement_gate(
+        environment="prod",
+        production_green_days=7,
+        completed_requests_by_call={
+            "nwo_veni_2025_preproposal": 50,
+            "erc_stg_2026_full": 22,
+        },
+    )
+
+    result = evaluate_rollout_health(artifact)
+
+    assert result["overall"]["pass"] is False
+    assert result["overall"]["recommended_action"] == "rollback"
+    assert "prod_sample_size_insufficient" in result["overall"]["reasons"]
+
+
+def test_evaluate_rollout_health_proceeds_when_prod_gate_defaults_met() -> None:
+    artifact = _artifact()
+    artifact["retirement_gate"] = _retirement_gate(
+        environment="prod",
+        production_green_days=7,
+        completed_requests_by_call={
+            "nwo_veni_2025_preproposal": 64,
+            "erc_stg_2026_full": 50,
+        },
+    )
+
+    result = evaluate_rollout_health(artifact)
+
+    assert result["overall"]["pass"] is True
+    assert result["overall"]["recommended_action"] == "proceed"
+
+
+def test_evaluate_rollout_health_strict_mode_rolls_back_without_retirement_gate() -> None:
+    artifact = _artifact()
+
+    result = evaluate_rollout_health(artifact, require_retirement_gate=True)
+
+    assert result["overall"]["pass"] is False
+    assert result["overall"]["recommended_action"] == "rollback"
+    assert "retirement_gate_missing" in result["overall"]["reasons"]
+
+
+def test_evaluate_rollout_health_rolls_back_when_prod_samples_missing() -> None:
+    artifact = _artifact()
+    artifact["retirement_gate"] = _retirement_gate(
+        environment="prod",
+        production_green_days=7,
+    )
+
+    result = evaluate_rollout_health(artifact)
+
+    assert result["overall"]["pass"] is False
+    assert result["overall"]["recommended_action"] == "rollback"
+    assert "prod_sample_size_insufficient" in result["overall"]["reasons"]
