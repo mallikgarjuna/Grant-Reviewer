@@ -1,7 +1,7 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-01
 
@@ -33,6 +33,15 @@ Primary driver (selected): drift + maintenance overhead; secondary: operational 
 - Legacy routing flags and dead compatibility branches are removed from backend runtime code.
 - Operational docs and tests reflect single-engine truth.
 - If rollback is needed before final deletion, rollback path is explicit and rehearsed.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0040-structured-pipeline-v1-legacy-retirement.md` (Section 2)
+
+Success signals (selected):
+- Primary: 100% of `/api/structured-review` runtime executions use `pipeline_v1` for a full observation window in staging and production.
+- Observation windows are explicit, checklist-driven, and required to be green before deletion.
+- Evidence bundle required before deletion: replay/parity artifact + rollout health evaluation output + API contract tests (all referenced from the readiness checklist).
+- Call coverage scope: validate currently-supported calls only (no expansion); ensure gating/allowlist behavior does not hide behavior changes.
+- Telemetry: keep `engine_path` but it should always be `pipeline_v1`; ops expectations updated to single-engine truth.
 
 ## 3. Target User / Actor
 
@@ -81,3 +90,4 @@ A safe MVP deprecation is complete when:
 - Define parity acceptance: strict equality vs “no regressions” thresholds + spot checks (Phase 1).
 - Confirm rollback mechanism and which config/flags are the source of truth during observation windows (Phase 1).
 - Disambiguate scope: legacy engine execution retirement vs call-config/UI “legacy_*” fallbacks (Phase 1).
+- Define exact observation window durations and thresholds by environment (Phase 1; via readiness checklist).

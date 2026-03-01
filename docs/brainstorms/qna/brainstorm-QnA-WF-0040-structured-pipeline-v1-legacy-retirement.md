@@ -64,6 +64,47 @@ The main brainstorm remains SSOT for decisions/contracts.
 > Recommendation: A — this is the root cause; operational risk and trust issues are downstream effects of drift and duplicated logic.
 > **Selected: A (by user instruction: “go with recommendations”)**
 
+---
+
+## Section 2 — Desired Outcome (2026-03-01)
+
+**Brainstorming Q&A:**
+
+**Q1: What is the top-level success metric for the retirement program?**
+- A) **Option A (Recommended):** 100% of `/api/structured-review` runtime executions use `pipeline_v1` for a full observation window in staging and production.
+- B) Option B: Legacy code deleted + tests green (code-only).
+- C) Option C: Operational docs/runbooks updated (process-only).
+> Recommendation: A — ties success to runtime truth and safety gating; B/C are necessary but not sufficient.
+> **Selected: A**
+
+**Q2: What is the minimum acceptable “observation window” definition for MVP?**
+- A) **Option A (Recommended):** Explicitly define a window per env (staging + prod) in the readiness checklist; require a green window before deletion.
+- B) Option B: “A couple days” informal.
+- C) Option C: Only staging needs a window; prod is immediate after switch.
+> Recommendation: A — forces falsifiable gates and prevents premature deletion.
+> **Selected: A**
+
+**Q3: What’s the required evidence bundle before allowing code deletion?**
+- A) **Option A (Recommended):** Replay/parity artifact + rollout health evaluation output + API contract test pass, all referenced from a checklist.
+- B) Option B: Only rollout health eval output.
+- C) Option C: Only API tests.
+> Recommendation: A — balances safety (observational + replay) with contract protection.
+> **Selected: A**
+
+**Q4: What is “good enough” for call coverage during retirement?**
+- A) **Option A (Recommended):** Only currently-supported calls in prod (no expansion); ensure allowlist/call gating doesn’t hide unsupported-call behavior changes.
+- B) Option B: Expand to more calls to be safe.
+- C) Option C: Ignore call-level differences; routing is global.
+> Recommendation: A — avoids turning this WF into a call-coverage program while still preventing hidden regressions due to gating.
+> **Selected: A**
+
+**Q5: What outcome do we want for telemetry after retirement?**
+- A) **Option A (Recommended):** Keep `engine_path` telemetry but it should always be `pipeline_v1`; alerts/dashboards updated to assume single-engine.
+- B) Option B: Remove `engine_path` entirely.
+- C) Option C: Keep dual-engine metrics “just in case” even after deletion.
+> Recommendation: A — preserves observability while removing ambiguity.
+> **Selected: A**
+
 **Q2: What exactly counts as “legacy structured-review execution path” for this WF?**
 - A) **Option A (Recommended):** Only the legacy engine execution path for `/api/structured-review` (the thing that actually generates reviews).
 - B) Option B: Both legacy engine execution and any “legacy_*” call-config/UI-mode fallbacks.
