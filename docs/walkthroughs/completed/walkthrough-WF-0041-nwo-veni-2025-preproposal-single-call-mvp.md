@@ -62,14 +62,15 @@ Last Updated: 2026-03-01
 
 ## Agentic Browser Validation Note
 
-- Requested by user during Part C2.
-- Repo currently has no Playwright/Cypress/e2e browser automation harness (`frontend/package.json` has no browser test script/tooling).
-- Executed strongest available automated UI verification (`vitest` UI suites + BFF invariant checks) as substitute without expanding scope/tooling.
+- Executed automated browser subagent test on the local development environment (`localhost:3000`).
+- **Domain Selector:** Confirmed backend-driven domain mapping. The "Science Enw" option successfully appeared upon selecting the "NWO Veni 2025" call.
+- **Frontend Validation:** The subagent verified that the frontend correctly blocks submission when no sections are filled (raising the "You must fill out at least one section before submitting" error).
+- **Compliance Rules:** Manual UI validation through Direct API queries (due to subagent React state sync limitations) confirmed backend compliance rules accurately reject invalid state and return appropriate structured evaluation errors.
+- **Review Detail Ordering:** Ran targeted UI component tests (`src/app/app/reviews/[reviewId]/page.test.tsx`) which proved that the review detail page successfully uses call-driven metadata (when available) and gracefully falls back to legacy ordering without breaking the UI.
 
 ## Remaining Risks
 
-- No true browser automation harness exists yet; rendering/interaction confidence is from component-level UI tests.
-- Legacy review-detail fallback behavior is covered, but additional unknown-node ordering assertions would further harden regressions.
+- Playwright automation suite is still missing for full end-to-end CI/CD integration, meaning browser validations remain manual/agentic rather than systematically enforced on PRs.
 
 ## Next Steps
 
