@@ -21,16 +21,10 @@
 - tests/DB/migrations/setup/PR rules -> `docs/guides/engineering-standards.md`
 - repo map/KB/zero-latency logging -> `docs/guides/knowledge-base.md`
 
-## Project Gotchas
+## Memory Management
 
-*(Added here because previous agents failed on them)*
+When you discover something valuable for future sessions — architectural decisions, bug fixes, gotchas, environment quirks — immediately append it to `docs/memory/`.
 
-- **Chat hygiene:** If a new chat is warranted (context bloat, WF/branch switch, runner needs clean session), explicitly say so and provide a copy-paste prompt.
-- **Backend script paths:** `cd backend && PYTHONPATH=. uv run python scripts/my_script.py`
-- **SQLModel sessions:** Don't access ORM objects after session close; capture IDs/primitives first.
-- **Database variables:** `DATABASE_URL` is required; backend no longer falls back to SQLite when unset.
-- **DB Isolation (Tests):** never run tests against dev DB. Example: `cd backend && docker compose -f docker-compose.test.yml up -d && export DATABASE_URL=...  # match backend/docker-compose.test.yml && uv run pytest`
-- **Call YAML naming:** `{agency}_{program}_{year}_{stage}.yaml`.
-- **Call YAML source gate:** Author call YAML only from official funder documents provided in-workflow; if missing, stop and request them.
-- **Call YAML scope:** Encode only evaluable proposal structure, evaluation criteria/elements, and enforceable content constraints.
-- **Frontend Tools:** `nvm use` (uses `.nvmrc`) before `npm/npx`. No `nvm` -> scaffold/build locally; commit generated `frontend/`.
+Don't wait to be asked. Don't wait for session end.
+
+Keep entries short: date, what, why. Read `docs/memory/index.md` at the start of every session. Load other files only when relevant. If a file doesn't exist yet, create it and update `docs/memory/index.md`.
