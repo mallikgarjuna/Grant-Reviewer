@@ -1,143 +1,169 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: task
-Version: v0.1
+Version: v0.2
 Status: Ready for Implementation
 Last Updated: 2026-03-01
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Baseline retirement readiness audit
+### [ ] Task 1 — Tracer bullet: prove v1-only routing contract
 
 Goal:
-- Produce a concrete go/no-go checklist from current production/staging evidence.
-Slice: readiness-audit
-User Stories: US1, US2
-PRD Requirements: FR1, FR2
-Depends on: none
-Enables: Task 2
-Parallelizable: no
-Files to modify:
-- `backend/README.md`
-- `docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md` (new)
-Acceptance Criteria:
-- Checklist defines required replay/health evidence and observation windows.
-- Checklist has explicit go/no-go decision points.
-TDD Plan:
-- RED: add checklist assertions as failing test placeholders where automation exists.
-- GREEN: wire checklist references to existing scripts/artifacts.
-- REFACTOR: tighten wording and remove duplicate steps.
-Verification Steps:
-- `cd backend && uv run python scripts/replay_structured_rollout.py --help`
-- `cd backend && uv run python scripts/evaluate_rollout_health.py --help`
-Risks (if any):
-- Checklist can drift from real runtime behavior if not tied to scripts.
-
-### [ ] Task 2 — Enforce v1-only routing mode (pre-delete safe state)
-
-Goal:
-- Route all structured-review execution to `pipeline_v1` while legacy code remains temporarily for rollback.
-Slice: v1-only-runtime
+- Prove end-to-end that `POST /api/structured-review` can run in enforced v1-only mode without API contract drift.
+Slice: tracer-bullet-v1-only
 User Stories: US1, US3
 PRD Requirements: FR3, FR6
-Depends on: Task 1
-Enables: Task 3
+Depends on: none
+Enables: Task 2, Task 3
 Parallelizable: no
 Files to modify:
 - `backend/main.py`
 - `backend/tests/test_api.py`
 Acceptance Criteria:
-- Dual-path runtime routing is disabled; v1 path is always selected for structured review.
-- API behavior and idempotency semantics remain unchanged.
+- Route-level selection for structured review is v1-only in retirement mode.
+- Existing request/response contract behavior remains unchanged for covered test cases.
 TDD Plan:
-- RED: failing tests for forced v1-only routing and contract stability.
-- GREEN: minimal routing changes to satisfy tests.
-- REFACTOR: remove dead condition branches where safe.
+- RED: add/adjust failing API test in `backend/tests/test_api.py` asserting v1-only route selection and unchanged contract behavior.
+- GREEN: apply minimal routing change in `backend/main.py` to satisfy the test.
+- REFACTOR: remove duplicated route-selection condition branches.
 Verification Steps:
-- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t2.db uv run pytest -q tests/test_api.py -k "structured_review and pipeline_v1"`
+- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t1.db uv run pytest -q tests/test_api.py -k "structured_review and (pipeline_v1 or v1_only)"`
 Risks (if any):
-- Hidden reliance on legacy branch behavior for edge cases.
+- Hidden runtime assumptions may still rely on legacy path in uncovered payload shapes.
 
-### [ ] Task 3 — Harden v1-only regression safety net
+### [ ] Task 2 — Lock API invariant coverage for retirement
 
 Goal:
-- Add/adjust tests to cover v1-only edge cases formerly covered indirectly by legacy fallback.
-Slice: regression-hardening
+- Ensure retirement keeps idempotency, validation ordering, and error semantics stable.
+Slice: contract-invariants
 User Stories: US2, US3
-PRD Requirements: FR2, FR6
-Depends on: Task 2
+PRD Requirements: FR8
+Depends on: Task 1
 Enables: Task 4
 Parallelizable: no
 Files to modify:
-- `backend/tests/test_review_engine_pipeline_v1.py`
 - `backend/tests/test_api.py`
+- `backend/tests/test_review_engine_pipeline_v1.py`
+- `backend/app/services/structured_reviewer_service.py`
 Acceptance Criteria:
-- Explicit coverage exists for malformed payloads, missing config paths, and stable error codes in v1-only mode.
-- Replay and rollout-health scripts still pass on representative fixtures.
+- Automated tests explicitly cover invariant behaviors listed in PRD Section 5.
+- Any required code changes are minimal and preserve current API semantics.
 TDD Plan:
-- RED: add failing edge-case tests.
-- GREEN: implement smallest fixes needed in v1 path.
-- REFACTOR: consolidate test fixtures.
+- RED: add failing invariant tests for digest mismatch, expectation resolution errors, timeout classification, and validation ordering.
+- GREEN: patch service behavior only where tests expose drift.
+- REFACTOR: deduplicate invariant test fixtures and helper setup.
 Verification Steps:
-- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t3.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py`
-- `cd backend && uv run pytest -q tests/test_rollout_replay.py tests/test_rollout_health.py`
+- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t2.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py -k "idempotency or digest or expectation or timeout or validation"`
 Risks (if any):
-- Overly brittle tests if assertions are tied to non-contract text.
+- Overly strict assertions may accidentally lock non-contract internals.
 
-### [ ] Task 4 — Delete legacy execution path and obsolete env routing logic
+### [ ] Task 3 — Codify deletion-gate health thresholds in tooling
 
 Goal:
-- Remove legacy structured-review execution code and dead routing toggles.
-Slice: code-removal
+- Encode PRD gate defaults (24h staging, 7d prod, min samples per call) in rollout-health evaluation output.
+Slice: gate-tooling
 User Stories: US1, US2
-PRD Requirements: FR4, FR5
-Depends on: Task 3
+PRD Requirements: FR1, FR2, FR10
+Depends on: Task 1
 Enables: Task 5
 Parallelizable: no
 Files to modify:
-- `backend/main.py`
-- `backend/app/services/structured_reviewer_service.py`
-- `backend/tests/` (targeted files)
+- `backend/scripts/evaluate_rollout_health.py`
+- `backend/tests/test_rollout_health.py`
+- `docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
 Acceptance Criteria:
-- Legacy execution entrypoints are removed.
-- Obsolete dual-routing env logic is removed.
-- Test suite passes with v1-only assumptions.
+- Health evaluator reports explicit pass/fail against retirement gate defaults.
+- Walkthrough checklist references evaluator outputs as deletion precondition evidence.
 TDD Plan:
-- RED: tests fail when legacy references remain or contracts break.
-- GREEN: delete legacy code and update tests.
-- REFACTOR: simplify naming/comments to single-engine terminology.
+- RED: add failing tests in `backend/tests/test_rollout_health.py` for threshold/sample-size gate evaluation.
+- GREEN: implement minimal evaluator updates in `backend/scripts/evaluate_rollout_health.py`.
+- REFACTOR: clean threshold constants and output formatting for operator readability.
 Verification Steps:
-- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t4.db uv run pytest -q`
+- `cd backend && uv run pytest -q tests/test_rollout_health.py`
+- `cd backend && uv run python scripts/evaluate_rollout_health.py --help`
 Risks (if any):
-- Incomplete removal can leave dead code or broken imports.
+- Historical artifact formats may require compatibility handling.
 
-### [ ] Task 5 — Operational documentation and release cutover finalization
+### [ ] Task 4 — Delete legacy execution entrypoints in service layer
 
 Goal:
-- Finalize operator docs, rollout/runbook, and release notes for post-legacy world.
-Slice: ops-finalization
+- Remove legacy structured-review execution methods once v1-only behavior and invariants are protected.
+Slice: service-legacy-removal
 User Stories: US1, US2
-PRD Requirements: FR7
-Depends on: Task 4
+PRD Requirements: FR4
+Depends on: Task 2
+Enables: Task 5, Task 6
+Parallelizable: no
+Files to modify:
+- `backend/app/services/structured_reviewer_service.py`
+- `backend/tests/test_review_engine_pipeline_v1.py`
+- `backend/tests/test_api.py`
+Acceptance Criteria:
+- Legacy service entrypoints/helpers are deleted or made unreachable.
+- API and pipeline tests continue to pass with v1-only assumptions.
+TDD Plan:
+- RED: add/update failing tests that still reference or depend on legacy execution entrypoints.
+- GREEN: remove legacy entrypoints and align callers/tests to v1-only path.
+- REFACTOR: simplify service interfaces and remove dead helpers.
+Verification Steps:
+- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t4.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py`
+Risks (if any):
+- Residual imports/references to deleted helpers can break unrelated test modules.
+
+### [ ] Task 5 — Remove obsolete dual-routing env logic
+
+Goal:
+- Eliminate runtime config branches that only existed to support legacy/v1 dual routing.
+Slice: route-config-cleanup
+User Stories: US1, US2
+PRD Requirements: FR5, FR9
+Depends on: Task 3, Task 4
+Enables: Task 6
+Parallelizable: no
+Files to modify:
+- `backend/main.py`
+- `backend/tests/test_api.py`
+- `backend/README.md`
+Acceptance Criteria:
+- Runtime no longer exposes dual-engine routing toggles for structured review.
+- Tests and backend operator docs reflect single-engine truth.
+TDD Plan:
+- RED: add/update tests that fail if legacy routing env branches remain reachable.
+- GREEN: remove obsolete env-branch logic and update docs for supported runtime controls.
+- REFACTOR: simplify route/config naming to single-engine semantics.
+Verification Steps:
+- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t5.db uv run pytest -q tests/test_api.py -k "structured_review and routing"`
+- `cd backend && rg -n \"STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES|legacy route|dual-engine\" main.py README.md`
+Risks (if any):
+- Mis-scoped cleanup could remove still-needed non-retirement env behavior.
+
+### [ ] Task 6 — Finalize operational readiness and evidence handoff
+
+Goal:
+- Finalize retirement runbook/checklist with concrete evidence links and owner sign-off capture.
+Slice: ops-handoff
+User Stories: US1, US2
+PRD Requirements: FR1, FR7, FR9, FR10
+Depends on: Task 5
 Enables: none
 Parallelizable: no
 Files to modify:
-- `backend/README.md`
-- `docs/guides/engineering-standards.md`
 - `docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
+- `backend/README.md`
+- `docs/logs/decisions.md`
 Acceptance Criteria:
-- Docs no longer instruct dual-engine operations.
-- Rollback policy reflects post-delete code rollback model.
-- Release checklist includes post-ship monitoring tasks.
+- Walkthrough checklist includes completed evidence references and explicit approval record section.
+- Backend runbook states pre-delete rollback posture and post-delete revert-deploy posture.
+- Decision log references final gate default usage for deletion approval.
 TDD Plan:
-- RED: identify stale dual-engine doc references.
-- GREEN: update docs and commands.
-- REFACTOR: reduce duplicate operational guidance across docs.
+- N/A (documentation and operational artifact consolidation only).
 Verification Steps:
-- `rg -n "STRUCTURED_REVIEW_PIPELINE_V1_ENABLED|legacy structured|allowlist" backend/README.md docs/guides/engineering-standards.md docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
+- `rg -n \"Replay/parity artifact|Rollout health output|owner approval|revert-deploy|config-first rollback\" docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md backend/README.md docs/logs/decisions.md`
 Risks (if any):
-- Doc drift can cause incorrect operator actions during incidents.
+- Missing evidence links can delay approval even if code changes are complete.
 
 ## Changelog
 
 - v0.1 (2026-03-01): Initial sequential task plan for controlled deprecation and legacy path retirement.
+- v0.2 (2026-03-01): Applied Phase 2 review revisions for atomicity, strict FR/US traceability, dependency DAG validity, and explicit TDD/verification per task.
