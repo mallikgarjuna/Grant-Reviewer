@@ -40,6 +40,7 @@ def build_pipeline_telemetry(
             "request_id": request.request_id,
             "mode": request.mode,
             "stage_ref": request.stage_ref,
+            "engine_path": "pipeline_v1",
             "status": status,
         },
         "counters": {

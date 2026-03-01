@@ -6,6 +6,8 @@ import pytest
 
 from app.engine.contracts import ReviewRequestV1
 from app.engine.pipeline_v1 import run_review_pipeline
+from scripts.evaluate_rollout_health import evaluate_rollout_health
+from scripts.replay_structured_rollout import build_replay_artifact
 
 pytestmark = pytest.mark.no_db
 
@@ -131,3 +133,54 @@ def test_pipeline_runtime_ordering_uses_severity_and_expectation_order() -> None
     result = run_review_pipeline(request)
 
     assert [item.check_id for item in result.findings] == ["check.error", "check.note"]
+
+
+def test_canary_rollout_replay_artifact_and_health_decision() -> None:
+    legacy_payload = {
+        "status": "COMPLETED",
+        "cards": [
+            {
+                "node_logical_id": "academic_profile",
+                "node_expectation_id": "exp-1",
+                "rating": "NOTE",
+            }
+        ],
+    }
+    pipeline_payload = {
+        "status": "COMPLETED",
+        "cards": [
+            {
+                "node_logical_id": "academic_profile",
+                "node_expectation_id": "exp-1",
+                "rating": "NOTE",
+            }
+        ],
+    }
+
+    artifact = build_replay_artifact(
+        legacy_payload=legacy_payload,
+        pipeline_payload=pipeline_payload,
+        replays=2,
+    )
+    artifact["metrics"] = {
+        "legacy": {
+            "error_rate": 0.02,
+            "contract_error_rate": 0.01,
+            "p95_latency_ms": 1000.0,
+        },
+        "pipeline_v1": {
+            "error_rate": 0.025,
+            "contract_error_rate": 0.011,
+            "p95_latency_ms": 1100.0,
+        },
+    }
+
+    proceed = evaluate_rollout_health(artifact)
+    assert proceed["overall"]["pass"] is True
+    assert proceed["overall"]["recommended_action"] == "proceed"
+
+    artifact["summary"]["structural_parity_passes"] = 1
+    rollback = evaluate_rollout_health(artifact)
+    assert rollback["overall"]["pass"] is False
+    assert rollback["overall"]["recommended_action"] == "rollback"
+    assert "structural_parity_failure" in rollback["overall"]["reasons"]

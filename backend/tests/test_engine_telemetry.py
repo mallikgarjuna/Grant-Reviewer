@@ -33,6 +33,7 @@ def test_telemetry_includes_run_metadata_and_counters() -> None:
     result = run_review_pipeline(request)
 
     assert result.telemetry["run"]["request_id"] == "req-telemetry-1"
+    assert result.telemetry["run"]["engine_path"] == "pipeline_v1"
     assert result.telemetry["counters"]["severity"]["ERROR"] == 1
 
 

@@ -323,6 +323,16 @@ If you only need dry-run ingest tests (no DB), run:
 uv run pytest -q tests/test_ingest_call_dry_run.py
 ```
 
+Rollout health check (from replay artifact):
+
+```bash
+uv run python scripts/evaluate_rollout_health.py --input artifacts/rollout/replay_canary.json
+```
+
+Rollback commands (configuration-only):
+- Global disable: set `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=0` and redeploy/restart.
+- Call-level removal: remove call code from `STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES` and redeploy/restart.
+
 Recent API coverage includes:
 - signed auth and idempotency behavior
 - quota / kill switch handling
