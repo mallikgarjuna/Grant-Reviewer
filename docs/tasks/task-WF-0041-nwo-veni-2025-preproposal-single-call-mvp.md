@@ -224,7 +224,7 @@ Verification Steps:
 Risks (if any):
 - Guardrail tests can become brittle if assertions target implementation detail instead of behavior.
 
-### [ ] Task 9 — Persistence and `/app/reviews` history invariants
+### [x] Task 9 — Persistence and `/app/reviews` history invariants
 
 Goal:
 - Prove FR10 invariants end-to-end: successful structured review persists and remains visible/retrievable in review history surfaces.

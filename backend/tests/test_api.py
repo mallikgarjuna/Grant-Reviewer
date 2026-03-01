@@ -2060,6 +2060,50 @@ def test_list_reviews_excludes_other_users(monkeypatch) -> None:
     assert response.json()["reviews"] == []
 
 
+def test_structured_review_reviews_list_and_review_detail_and_idempotency_invariants(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    idempotency_key = "idem-structured-history-1"
+
+    create_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+        user_id="user_structured_history",
+        idempotency_key=idempotency_key,
+    )
+    assert create_response.status_code == 200
+    review_id = create_response.json()["review_id"]
+
+    list_response = list_reviews(client=client, user_id="user_structured_history")
+    assert list_response.status_code == 200
+    listed_ids = [item["id"] for item in list_response.json()["reviews"]]
+    assert review_id in listed_ids
+
+    detail_response = get_review_detail(
+        client=client,
+        review_id=review_id,
+        user_id="user_structured_history",
+    )
+    assert detail_response.status_code == 200
+    assert detail_response.json()["review"]["id"] == review_id
+
+    mismatch_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "changed text"}],
+        },
+        user_id="user_structured_history",
+        idempotency_key=idempotency_key,
+    )
+    assert mismatch_response.status_code == 409
+    assert mismatch_response.json()["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+
+
 def test_list_reviews_unauthenticated_returns_401(monkeypatch) -> None:
     client, _ = create_client_with_seed(monkeypatch)
     response = client.get("/reviews")
