@@ -138,7 +138,7 @@ Verification Steps:
 Risks (if any):
 - Runtime cost; keep defaults aligned to PRD while allowing CLI overrides for local dev.
 
-### [ ] Task 6 — Rollback trigger evaluator and operator runbook sync
+### [x] Task 6 — Rollback trigger evaluator and operator runbook sync
 
 Goal:
 - Encode rollback threshold checks and align operator runbook with executable commands.
