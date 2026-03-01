@@ -1570,6 +1570,111 @@ describe("UniversalSubmitForm", () => {
     ).toBe(false);
   });
 
+  it("does not emit duplicate-key warning when blocking messages repeat", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        return new Response(
+          JSON.stringify({
+            is_compliant: false,
+            errors: [
+              {
+                node_logical_id: "academic_profile",
+                rule_id: "word_limit_min",
+                severity: "ERROR",
+                actual: "1",
+                expected: "400",
+                message: "Minimum word limit is 400.",
+                is_blocking: true,
+              },
+              {
+                node_logical_id: "key_outputs",
+                rule_id: "word_limit_min",
+                severity: "ERROR",
+                actual: "1",
+                expected: "400",
+                message: "Minimum word limit is 400.",
+                is_blocking: true,
+              },
+            ],
+            warnings: [],
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "content" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    expect(await screen.findByText("Submission blocked")).toBeInTheDocument();
+    expect(screen.getAllByText("Minimum word limit is 400.")).toHaveLength(2);
+    expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining("Encountered two children with the same key"),
+    );
+  });
+
   it("does not create submit nodes from unmatched metadata", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
