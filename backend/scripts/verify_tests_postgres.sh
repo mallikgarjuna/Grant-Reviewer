@@ -35,15 +35,27 @@ if [[ -z "${cid}" ]]; then
 fi
 
 echo "[verify_tests_postgres] Waiting for Postgres readiness..."
-for _ in $(seq 1 30); do
+READY_TIMEOUT_SECONDS="${READY_TIMEOUT_SECONDS:-60}"
+for _ in $(seq 1 "${READY_TIMEOUT_SECONDS}"); do
+  # Prefer Docker health status when available (compose defines a healthcheck).
+  health_status="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{end}}' "${cid}" 2>/dev/null || true)"
+  if [[ "${health_status}" == "healthy" ]]; then
+    break
+  fi
+
   if docker exec "${cid}" pg_isready -U grant -d grant_reviewer_test >/dev/null 2>&1; then
     break
   fi
+
   sleep 1
 done
 
-if ! docker exec "${cid}" pg_isready -U grant -d grant_reviewer_test >/dev/null 2>&1; then
+health_status="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "${cid}" 2>/dev/null || true)"
+if [[ "${health_status}" != "healthy" ]] && ! docker exec "${cid}" pg_isready -U grant -d grant_reviewer_test >/dev/null 2>&1; then
   echo "[verify_tests_postgres] Postgres did not become ready in time."
+  echo "[verify_tests_postgres] Container health_status=${health_status}"
+  echo "[verify_tests_postgres] Recent container logs:"
+  docker logs --tail 200 "${cid}" || true
   exit 1
 fi
 
