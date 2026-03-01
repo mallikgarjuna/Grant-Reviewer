@@ -46,3 +46,21 @@ Hardening needed for the single-call MVP for `nwo_veni_2025_preproposal`:
 - Add confidence that reviewer-policy enforcement (blocking/post-check/prompt-only) cannot silently regress.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0043-nwo-veni-2025-preproposal-single-call-mvp-harden.md` (Section 1)
+
+### Decisions (Section 1)
+
+- Hardening target flow: `POST /api/structured-review` for `nwo_veni_2025_preproposal` only. (Q1)
+- Primary “trust” risk: **contract drift** (error semantics + idempotency + persistence). (Q2)
+- Execution-time failure contract: persist Review + return `200` `{review_id, status}` even on timeout/LLM/validation/policy-blocking failures, with stable failure summary in `overall_summary`. (Q3)
+- Regression hardening mechanism: deterministic `pytest` contract suite (API + service seams) using a stubbed LLM client. (Q4)
+- Deterministic verification bundle = docs checklist + explicit pytest subset + a versioned fixture matrix. (Q5)
+
+### Contract Notes / Non-obvious constraints (Section 1)
+
+- “Preserve API error semantics” explicitly includes:
+  - `Idempotency-Key` required behavior
+  - `IDEMPOTENCY_PAYLOAD_MISMATCH` semantics and status mapping
+  - existing validation ordering (avoid changing which error code wins for multi-error payloads)
+- “Preserve `/app/reviews` persistence” explicitly includes:
+  - review row creation and status transitions remain compatible with the UI’s “review exists even if execution fails” expectations
+  - avoid changing side effects (e.g., creating duplicate reviews) while tightening tests
