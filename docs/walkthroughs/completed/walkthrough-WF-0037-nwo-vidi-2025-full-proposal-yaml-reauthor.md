@@ -13,7 +13,7 @@ Last Updated: 2026-02-28
 
 ```bash
 cd backend
-PYTHONPATH=. uv run python -c "from app.schemas.call_definitions_v2 import CallDefinitionV2; import yaml, pathlib; p=pathlib.Path('data/calls/nwo/nwo_vidi_2025_full_proposal.yaml'); CallDefinitionV2.model_validate(yaml.safe_load(p.read_text())); print('ok')"
+PYTHONPATH=. uv run python -c "from app.schemas.call_definitions_v2 import CallDefinitionV2; import yaml, pathlib; p=pathlib.Path('data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml'); CallDefinitionV2.model_validate(yaml.safe_load(p.read_text())); print('ok')"
 ```
 
 Expected: prints `ok`.
@@ -22,7 +22,7 @@ Expected: prints `ok`.
 
 ```bash
 cd backend
-PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/nwo/nwo_vidi_2025_full_proposal.yaml --dry-run
+PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml --dry-run
 ```
 
 Expected: exits 0; prints a dry-run summary and canonical JSON (no DB writes).
@@ -44,7 +44,7 @@ export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test
 ```bash
 cd backend
 export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable"
-PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/nwo/nwo_vidi_2025_full_proposal.yaml
+PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml
 ```
 
 3. API preflight via FastAPI `TestClient` (no server process):
@@ -84,6 +84,6 @@ Execution evidence (2026-02-28):
 
 ## Shipped Files (WF-0037)
 
-- Canonical YAML: `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`
+- Canonical YAML: `backend/data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml`
 - Source manifest: `backend/data/calls/sources/nwo_vidi_2025_full_proposal.sources.md`
 - Task outcome: removed AES-only `elem_aes_user_committee` from evaluable criteria and node mappings; deferred to future domain-gated modeling per WF-0037 PRD.

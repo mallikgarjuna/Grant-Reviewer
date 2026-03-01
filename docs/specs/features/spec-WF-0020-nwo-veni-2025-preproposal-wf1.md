@@ -16,15 +16,15 @@ This unblocks authoring and iterating on “evaluation criteria” / “evaluati
 - Primary user: developer/admin maintaining call definition YAML files.
 - Context: running the ingestion CLI locally to validate call definition files during authoring.
 - Target input files:
-  - V2 (NWO): `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
-  - V1 (existing fixture): `backend/data/calls/erc/erc_cog_2026_full_official.yaml` (must remain supported)
+  - V2 (NWO): `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`
+  - V1 (existing fixture): `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml` (must remain supported)
 - Current limitation: existing schema/loader (`backend/app/schemas/call_definitions.py`) only supports the V1 shape and cannot validate the NWO V2 YAML structure.
 
 ## 3. Core Behavior
 
 When running:
 
-- `cd backend && uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
+- `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
 
 The system must:
 

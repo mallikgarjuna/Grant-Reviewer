@@ -14,7 +14,7 @@ Execution should be done via the parking-lot chunk items:
 
 ## Summary (what this delivers)
 
-Implement end-to-end PeerLens support for `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml` as a **structured-input** experience:
+Implement end-to-end PeerLens support for `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml` as a **structured-input** experience:
 
 - **3 nodes**: `academic_profile`, `key_outputs`, `research_idea` (with domain-specific word limit for ENW pilot).
 - **Evaluation**: single evaluation criterion with **8 evaluation elements**, producing ReviewCards.
@@ -50,7 +50,7 @@ Record these in `docs/logs/decisions.md` under the WF ID that actually implement
 
 ### A) Fix the NWO Veni YAML so it is parseable
 
-File: `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
+File: `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`
 
 - Convert the invalid inline `:contentReference[...]` fragments into comments (at least the two `source_section` lines for `key_outputs` and `research_idea`).
 - Do **not** change semantics/IDs/limits.

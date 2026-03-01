@@ -28,7 +28,7 @@ def reset_database() -> None:
 
 def test_v2_dry_run_reports_deterministic_checksum() -> None:
     """V2 dry-run should emit deterministic checksum and canonical JSON payload."""
-    yaml_path = Path("data/calls/nwo/nwo_veni_2025_preproposal.yaml")
+    yaml_path = Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml")
 
     first = ingest_call(yaml_path, dry_run=True)
     second = ingest_call(yaml_path, dry_run=True)
@@ -65,7 +65,7 @@ def test_v2_ingest_is_idempotent_and_soft_deletes_removed_nodes(tmp_path: Path) 
     """Second ingest should skip on checksum match and archive removed nodes."""
     reset_database()
 
-    source = Path("data/calls/nwo/nwo_veni_2025_preproposal.yaml")
+    source = Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml")
     first = ingest_call(source, dry_run=False)
     second = ingest_call(source, dry_run=False)
 
@@ -75,6 +75,21 @@ def test_v2_ingest_is_idempotent_and_soft_deletes_removed_nodes(tmp_path: Path) 
 
     payload = yaml.safe_load(source.read_text(encoding="utf-8"))
     removed_node = payload["proposal_nodes"].pop()
+    # Keep the mutated YAML schema-valid by removing stale reviewer-policy refs.
+    reviewer_policy = payload.get("reviewer_policy", [])
+    if isinstance(reviewer_policy, list):
+        for rule in reviewer_policy:
+            if not isinstance(rule, dict):
+                continue
+            applies_to_node_ids = rule.get("applies_to_node_ids")
+            if not isinstance(applies_to_node_ids, list):
+                continue
+            rule["applies_to_node_ids"] = [
+                node_id
+                for node_id in applies_to_node_ids
+                if node_id != removed_node["id"]
+            ]
+
     modified_path = tmp_path / "nwo_modified.yaml"
     modified_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
@@ -95,7 +110,7 @@ def test_v2_ingest_is_idempotent_and_soft_deletes_removed_nodes(tmp_path: Path) 
 def test_call_definition_service_hydrates_node_constraints() -> None:
     """Hydration service should merge canonical node config by logical_id."""
     reset_database()
-    ingest_call(Path("data/calls/nwo/nwo_veni_2025_preproposal.yaml"), dry_run=False)
+    ingest_call(Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml"), dry_run=False)
 
     session = get_session()
     try:

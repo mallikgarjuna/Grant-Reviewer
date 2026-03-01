@@ -55,7 +55,7 @@ Current intent:
 ## Preflight Step 2: Repo Reality Snapshot (Read-Only) (2026-02-27)
 
 - No existing NWO Vidi call YAML is present in `backend/data/calls/nwo/`; only Veni preproposal exists (canonical + legacy archive).
-- The repo has an explicit authoring SSOT: `docs/workflow/call-yaml-authoring-workflow.md` with gated steps (source confirmation, nodes, criteria/elements, mapping, guidance/compliance, then generation).
+- The repo has an explicit authoring SSOT: `docs/call-yaml/authoring-workflow.md` with gated steps (source confirmation, nodes, criteria/elements, mapping, guidance/compliance, then generation).
 - Source traceability manifests live in `backend/data/calls/sources/` and are already used for ERC StG 2026 and NWO Veni 2025 preproposal; we should follow the same pattern for Vidi.
 - V2 schema supports `reviewer_policy` with deterministic enforcement modes (`PROMPT_ONLY`, `POST_CHECK`, `BLOCKING`) and validates `forbidden_terms` when enforcement is post-check/blocking.
 - Universal form work (WF-0035) has an explicit acceptance gate: “Veni + 1 additional official flat-supported structured call” (Vidi selected as the candidate), so we should preserve flat-only feasibility when authoring Vidi nodes.
@@ -75,10 +75,10 @@ Key open questions this snapshot suggests:
 Decisions:
 
 - Use the provided Vidi DOCX (structure + enforceable limits) and PDF (evaluation criteria/procedure) as SSOT sources for authoring.
-- Canonical code and filename: `nwo_vidi_2025_full_proposal` → `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`.
+- Canonical code and filename: `nwo_vidi_2025_full_proposal` → `backend/data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml`.
 - Include deadlines inside YAML (schema-supported; must be copied from official sources only).
 - Encode true structure even if nested (`children`), even though WF-0035 flat-only universal form will hard-block nested calls for now.
-- Do not update `docs/workflow/call-yaml-authoring-workflow.md` with call-specific content during WF-0037; only add generalizable workflow rules when warranted.
+- Do not update `docs/call-yaml/authoring-workflow.md` with call-specific content during WF-0037; only add generalizable workflow rules when warranted.
 
 **Brainstorming Q&A:**
 
@@ -90,7 +90,7 @@ Decisions:
 > **Selected: A**
 
 **Q2: Canonical Call Code + Filename**
-- A) `nwo_vidi_2025_full_proposal` and filename `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml`.
+- A) `nwo_vidi_2025_full_proposal` and filename `backend/data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml`.
 - B) `nwo_vidi_2025_fullproposal` (avoid underscores in stage).
 - C) Custom code (specify).
 > Recommendation: A — Matches repo naming convention `{agency}_{program}_{year}_{stage}.yaml` and keeps the stage explicit.
@@ -110,7 +110,7 @@ Decisions:
 > Recommendation: A — Don’t falsify the call structure to satisfy a temporary frontend limitation; keep the universal flow honest and handle recursion separately.
 > **Selected: A**
 
-**Q5: Update The Living Authoring Spec (`docs/workflow/call-yaml-authoring-workflow.md`)**
+**Q5: Update The Living Authoring Spec (`docs/call-yaml/authoring-workflow.md`)**
 - A) Update only with generalizable workflow rules we learn here (no call-specific facts), and link to example YAML/manifests.
 - B) Also add a short “NWO patterns” note (still generic).
 - C) Do not update it during WF-0037; defer spec updates to a dedicated WF.
@@ -394,7 +394,7 @@ Decisions:
 **Brainstorming Q&A:**
 
 **Q1: What is the MVP output of WF-0037 (the smallest “real” completion)?**
-- A) Author `backend/data/calls/nwo/nwo_vidi_2025_full_proposal.yaml` + `backend/data/calls/sources/nwo_vidi_2025_full_proposal.sources.md`, and `ingest_call.py --dry-run` passes.
+- A) Author `backend/data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml` + `backend/data/calls/sources/nwo_vidi_2025_full_proposal.sources.md`, and `ingest_call.py --dry-run` passes.
 - B) Same as A, plus DB ingest + API preflight is executed and recorded in walkthrough.
 - C) Only the brainstorm is completed; YAML happens later.
 > Recommendation: A — Establishes a source-grounded call definition artifact and a deterministic validation signal without turning Phase 0 into a runtime integration sprint.

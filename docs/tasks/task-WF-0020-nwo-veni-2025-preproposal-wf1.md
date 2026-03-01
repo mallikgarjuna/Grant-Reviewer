@@ -17,12 +17,12 @@ Files to modify:
 - Potentially `backend/app/schemas/__init__.py` (only if needed for imports)
 
 Acceptance Criteria:
-- V2 schema validates `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml` with no code changes to the YAML.
+- V2 schema validates `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml` with no code changes to the YAML.
 - V2 schema rejects unknown keys by default (strict).
 - V2 schema fails if a `node_expectations[].evaluation_element_id` references a non-existent evaluation element ID.
 
 Verification Steps:
-- `cd backend && uv run python -c "from app.schemas.call_definitions_v2 import CallDefinitionV2; import yaml, pathlib; p=pathlib.Path('data/calls/nwo/nwo_veni_2025_preproposal.yaml'); CallDefinitionV2.model_validate(yaml.safe_load(p.read_text())); print('ok')"`
+- `cd backend && uv run python -c "from app.schemas.call_definitions_v2 import CallDefinitionV2; import yaml, pathlib; p=pathlib.Path('data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml'); CallDefinitionV2.model_validate(yaml.safe_load(p.read_text())); print('ok')"`
 
 Risks (if any):
 - Pydantic strictness may require explicitly modeling optional fields exactly as used in the YAML; keep scope to the current file’s fields only.
@@ -46,9 +46,9 @@ Acceptance Criteria:
 
 Verification Steps:
 - V2 dry-run with no DB env:
-  - `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
+  - `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
 - V1 dry-run still works:
-  - `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run`
+  - `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml --dry-run`
 
 Risks (if any):
 - Current script imports DB modules at import time; restructuring must be minimal but sufficient to defer DB imports until needed.
@@ -73,7 +73,7 @@ Acceptance Criteria:
   - runtime notes count (when present)
 
 Verification Steps:
-- `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run | rg '\"schema_version\"'`
+- `cd backend && env -u DATABASE_URL uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run | rg '\"schema_version\"'`
 
 Risks (if any):
 - Ensure output remains deterministic (avoid `set` in summary construction).

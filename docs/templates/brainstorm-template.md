@@ -5,6 +5,17 @@ Version: v0.1
 Status: Draft
 Last Updated: YYYY-MM-DD
 
+Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`
+
+---
+
+## Contract Safety (SSOT)
+
+- This brainstorm is the **SSOT for contracts/decisions** (what we will implement).
+- The Q&A transcript is **rationale only**; it must not introduce new contracts.
+- If a Q&A block reveals a new contract or contradicts the brainstorm, **promote** the contract into this brainstorm and log it in `docs/logs/decisions.md`.
+- For each major decision, add 1–3 “Contract Notes / Non-obvious constraints” bullets and link to the relevant Q&A section header.
+
 ---
 
 ## 1. Problem Statement
@@ -64,6 +75,12 @@ What assumptions are we making?
 What might fail?
 
 What needs validation?
+
+---
+
+## Open Questions / Deferred
+
+List items that are explicitly deferred (with the phase they’ll be decided in), so the brainstorm doesn’t imply false completeness.
 
 ---
 

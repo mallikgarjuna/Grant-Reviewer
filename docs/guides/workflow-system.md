@@ -10,6 +10,7 @@ Use the WF workflow system for non-trivial work:
 - **Chat prompt templates (cheat sheet):** `docs/workflow/how-to-use-workflow-actions.md`
 - **WF artifact filename convention** (note singular *task* prefix):
   - `docs/brainstorms/brainstorm-WF-XXXX-<slug>.md`
+  - `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md` (detailed brainstorm Q&A transcript)
   - `docs/prds/prd-WF-XXXX-<slug>.md`
   - `docs/tasks/task-WF-XXXX-<slug>.md`
   - `docs/walkthroughs/walkthrough-WF-XXXX-<slug>.md`

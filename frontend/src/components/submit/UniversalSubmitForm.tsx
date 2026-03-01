@@ -72,6 +72,7 @@ export function UniversalSubmitForm() {
   const [renderModel, setRenderModel] = useState<RenderModelResult>({
     state: "ready",
     nodes: [],
+    metadataFallbackCount: 0,
   });
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);

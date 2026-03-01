@@ -142,15 +142,17 @@
 **Fix**: Encode two mandatory rules in workflow instructions: (1) after coding, explicitly list what could break and propose targeted tests; (2) for bug fixes, first add/update a failing test reproducer, then fix until it passes.
 **Prevention**: Enforce these rules in `AGENTS.md` and Phase 3 runner files (`docs/workflow/phase-3-run-execution.md`, `docs/workflow/phase-3-1-implement-tasks.md`) so every execution run applies them by default.
 
-### L30: Append Q&A to Brainstorm Artifacts
-**Issue**: Brainstorming artifacts contained only summaries of decisions, making it harder to understand the reasoning.
-**Fix**: Append the explicit Q&A block for each section directly into the brainstorm artifact `docs/brainstorms/brainstorm-WF-...`.
-**Prevention**: Always include the Q&A text alongside the section summary when updating brainstorm artifacts during Phase 0.1.
-- Make sure to explicitly document user rationale and constraints within the brainstorm Q&A blocks when they select a non-recommended option or add custom context. [2026-02-22]
+### L30: Archive Detailed Brainstorm Q&A in a Dedicated Artifact (Link From Brainstorm)
+**Issue**: Keeping full “Brainstorming Q&A” blocks inside the main brainstorm artifact makes it noisy/hard to scan and increases accidental contradictions when the concise decision summary is updated but the embedded Q&A is not.
+**Fix**: Store detailed Q&A transcripts in `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md` and link to it from the main brainstorm (`docs/brainstorms/brainstorm-WF-...`).
+**Prevention**:
+- Phase 0.0 must create both the brainstorm and the brainstorm-qna artifacts; Phase 0.1 writes the detailed Q&A blocks into the QnA file and keeps the brainstorm concise with links.
+- Brainstorm is **SSOT for contracts/decisions**; QnA is **rationale only**. If QnA reveals a new contract, promote it into the brainstorm + log it.
+- Record the full option set (A/B/C/…) and the recommended + selected rationale in the QnA artifact (not only summaries).
+- If the user selects a non-recommended option or adds custom constraints, capture that rationale explicitly in the QnA artifact. [2026-02-22]
 - **Target User Assumption Correction**: The application is strictly a review tool, not an AI co-writer. Avoid assumptions that the tool exists to rewrite or shrink proposals for the user; its sole purpose is to evaluate against funding criteria. [2026-02-22]
 - **Tech Stack Assumption Correction**: The frontend is a Next.js SPA, not a Jinja2 template application. Always verify the `frontend` directory structure before assuming the rendering technology. [2026-02-22]
 - **Senior Engineering Stance on UX / Form Design**: Always challenge legacy UX constraints if they restrict the product vision. Replacing a generic single-textarea form with a dynamically constructed multi-node form based on the selected Funding Call is the correct, scalable architectural choice. Do not default to "easy" or "safe" routes if they create UX debt. [2026-02-22]
-- **Complete Artifact Brainstorming**: Always record the full list of options (A/B/C) alongside the recommended and selected rationales for every question in the brainstorm artifact. Summaries lose the context of the roads not taken. [2026-02-22]
 - **Next Actions at Phase Completion**: At the end of every workflow chunk execution (e.g., finishing Phase 0.1), always explicitly suggest the next 2 actions with copy-pasteable prompt blocks as defined in the phase runner documentation. [2026-02-22]
 
 ### L31: Never Run DB-backed Tests Against Dev DB

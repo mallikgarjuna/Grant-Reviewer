@@ -1,0 +1,76 @@
+# Call Definition V2 template (authoring starter)
+# Copy this file and replace all placeholder values.
+# Filename convention: {agency}_{program}_{year}_{stage}.yaml
+
+funding_agency:
+  id: example_agency
+  name: Example Agency
+  country: NL
+
+funding_call:
+  id: example_program_2026_full
+  code: example_program_2026_full
+  title: Example Program 2026 - Full Proposal
+  year: 2026
+  stage: full
+  language: en
+  deadlines:
+    submission:
+      datetime_local: "2026-09-01T17:00:00"
+      timezone: Europe/Amsterdam
+  domain_notes: []
+
+evaluation_criteria:
+  - id: crit_scientific_quality
+    name: Scientific quality
+    stage: full
+    weight_percent: 100
+    evaluation_elements:
+      - id: elem_objective_clarity
+        name: Objective clarity
+        description: Objectives are specific, coherent, and testable.
+        source_hint: "Official reviewer guide section X.Y"
+        stage: BOTH
+
+proposal_nodes:
+  - id: scientific_proposal
+    parent_logical_id: null
+    label: Scientific proposal
+    node_type: section
+    source_section: "Section 1"
+    content_constraints:
+      total_word_limit:
+        min_words: 300
+        max_words: 1500
+        includes: ["all text"]
+        excludes: []
+      max_items: null
+      max_pages: null
+      word_limit_by_domain: null
+      note: null
+    guidance_text: Describe aims, approach, and expected contribution.
+    compliance_rules:
+      - id: comp_scientific_proposal_word_limit
+        severity: ERROR
+        rule_type: formatting
+        description: Scientific proposal must be between 300 and 1500 words.
+    node_expectations:
+      - evaluation_element_id: elem_objective_clarity
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+        guidance_note: Make objectives explicit and measurable.
+
+reviewer_policy:
+  - id: pol_no_external_assumptions
+    applies_to_stage: BOTH
+    applies_to_node_ids: []
+    rule_type: evidence_scope
+    instruction: Evaluate only submitted text and source-grounded criteria.
+    severity: WARNING
+    enforcement_mode: PROMPT_ONLY
+    forbidden_terms: []
+    source_hint: "Official reviewer guide section X.Y"
+
+runtime_notes:
+  - id: runtime_counting_method
+    description: Runtime counting uses deterministic whitespace tokenization.

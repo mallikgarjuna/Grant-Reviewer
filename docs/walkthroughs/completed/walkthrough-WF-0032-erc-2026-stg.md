@@ -20,8 +20,8 @@ Deliver hierarchical proposal-node ingestion for V2 call definitions and author 
 - `pre-commit run --all-files` passed.
 - `cd backend && docker compose -f docker-compose.test.yml up -d`
 - `cd backend && export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable" && uv run pytest -q` → `92 passed`.
-- `cd backend && uv run python scripts/ingest_call.py data/calls/erc/erc_stg_2026_full.yaml --dry-run` passed.
-- `cd backend && uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml --dry-run` passed.
+- `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml --dry-run` passed.
+- `cd backend && uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml --dry-run` passed.
 
 ## 3.1 DB/API Preflight Smoke-Test (Executed Later) (2026-02-28)
 
@@ -31,7 +31,7 @@ This is a lightweight runtime smoke-test (in addition to automated tests) to con
 cd backend
 export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable"
 ./scripts/reset_test_db.sh
-PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/erc/erc_stg_2026_full.yaml
+PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml
 
 export LLM_MODE=stub
 PYTHONPATH=. uv run python - <<'PY'

@@ -5,7 +5,7 @@ WF: WF-0032
 Last Updated: 2026-02-26
 
 ## Purpose
-Traceability manifest for `backend/data/calls/erc/erc_stg_2026_full.yaml`.
+Traceability manifest for `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`.
 
 ## Source Files
 

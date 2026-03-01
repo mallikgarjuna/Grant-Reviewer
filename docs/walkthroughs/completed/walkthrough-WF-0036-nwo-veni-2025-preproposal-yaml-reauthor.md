@@ -13,7 +13,7 @@ Last Updated: 2026-02-26
 
 ```bash
 cd backend
-PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml --dry-run
+PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run
 ```
 
 Expected: exits 0; prints the ingested call payload (no DB writes).
@@ -22,7 +22,7 @@ Expected: exits 0; prints the ingested call payload (no DB writes).
 
 ```bash
 cd backend
-PYTHONPATH=. uv run python -c "from app.schemas.call_definitions_v2 import CallDefinitionV2; import yaml, pathlib; p=pathlib.Path('data/calls/nwo/nwo_veni_2025_preproposal.yaml'); CallDefinitionV2.model_validate(yaml.safe_load(p.read_text())); print('ok')"
+PYTHONPATH=. uv run python -c "from app.schemas.call_definitions_v2 import CallDefinitionV2; import yaml, pathlib; p=pathlib.Path('data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml'); CallDefinitionV2.model_validate(yaml.safe_load(p.read_text())); print('ok')"
 ```
 
 Expected: prints `ok`.
@@ -37,7 +37,7 @@ This is a lightweight runtime smoke-test to confirm DB ingest and the public cal
 cd backend
 export DATABASE_URL="postgresql://grant:grant@127.0.0.1:5433/grant_reviewer_test?sslmode=disable"
 ./scripts/reset_test_db.sh
-PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/nwo/nwo_veni_2025_preproposal.yaml
+PYTHONPATH=. uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml
 
 export LLM_MODE=stub
 PYTHONPATH=. uv run python - <<'PY'
@@ -66,6 +66,6 @@ Observed: flat call (no `parent_node_id` links), and `/api/public/...` endpoints
 
 ## What Shipped
 
-- Canonical call YAML: `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
-- Archived legacy YAML: `backend/data/calls/nwo/nwo_veni_2025_preproposal_legacy.yaml`
+- Canonical call YAML: `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`
+- Archived legacy YAML: `backend/data/calls/legacy/nwo/nwo_veni_2025_preproposal_legacy.yaml`
 - Source manifest: `backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md`

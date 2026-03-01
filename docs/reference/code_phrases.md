@@ -16,7 +16,8 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 |--------|--------|
 | **`context refresh`** | Re-ground agent context from current project state before deciding the next action. |
 | **`new chat kickoff`** | Generate a reusable 3-line starter for opening a new chat with clear scope/constraints. |
-| **`interactive Q&A`** | Run an iterative clarification loop: ask 1–5 questions at a time, each with 2–3 options + one recommended option with rationale; continue until decisions are made or the user says stop. |
+| **`interactive Q&A`** | Run an iterative clarification loop: ask 1–5 questions at a time, each with 2–4 options + one recommended option with rationale; continue until decisions are made or the user says stop. For WF brainstorms, write the detailed Q&A blocks into `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md` and keep the main brainstorm concise with links. |
+| **`adversarial critique`** | For a proposed decision: list the top 3 architectural risks/failure modes (authoring, runtime, downstream), and include a recommended mitigation/guardrail for each. |
 | **`repo reality check`** | Re-ground on repo + recent WF activity (status + relevant diffs + current WF registry), then propose 2–3 next-step options with one recommended option and rationale. |
 | **`run phase [N]`** | Execute WF phase runner (`0` runs `0.0 + 0.1` end-to-end, `1` PRD, `2` tasks, `3` implement). |
 | **`go ahead`** | Explicit approval to proceed to the next phase/step. |

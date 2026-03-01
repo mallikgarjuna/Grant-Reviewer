@@ -9,7 +9,7 @@ Last Updated: 2026-02-25
 *Date: 2026-02-25*
 - **Current Data State**: We have `erc/erc_cog_2026_full_official.yaml` but no `ERC-2026-STG` formal V2 YAML yet.
 - **Architectural Motivation**: The ingestion and `/app/reviews/[id]` UX currently assumes flat proposal structures (fitted to the existing Veni preproposal). We need an ERC STG (with deep `Part B1` / `Part B2` nesting) to force generalizations.
-- **Authoring Process**: Must explicitly adhere to `docs/workflow/call-yaml-authoring-workflow.md` (separation of compliance vs. evaluation, conservative Node↔Element mapping).
+- **Authoring Process**: Must explicitly adhere to `docs/call-yaml/authoring-workflow.md` (separation of compliance vs. evaluation, conservative Node↔Element mapping).
 - **Frontend Impact**: This workflow (WF-0032) focuses on authoring and ingesting the call definition to stress-test the backend, setting the stage for the universal Dynamic UI renderer in the next workflow.
 
 ## Preflight Checklist

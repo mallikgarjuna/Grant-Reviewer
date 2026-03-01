@@ -1,0 +1,60 @@
+scenarios:
+  - id: nwo_missing_required
+    archetype: NWO
+    source_call: nwo_veni_2025_preproposal
+    source_call_path: backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml
+    request:
+      request_id: stress-nwo-1
+      mode: DIAGNOSTIC
+      stage_ref: STEP_1
+      call_config_digest: sha256:fixture
+      call_config_snapshot:
+        expectations:
+          - expectation_id: exp-nwo-1
+            node_logical_id: research_idea
+            check_id: check.required
+            required: true
+      proposal_nodes:
+        research_idea: ""
+    expected:
+      severities: [ERROR]
+
+  - id: erc_present_content
+    archetype: ERC
+    source_call: erc_stg_2026_full
+    source_call_path: backend/data/calls/canonical/erc/erc_stg_2026_full.yaml
+    request:
+      request_id: stress-erc-1
+      mode: DIAGNOSTIC
+      stage_ref: STEP_2
+      call_config_digest: sha256:fixture
+      call_config_snapshot:
+        expectations:
+          - expectation_id: exp-erc-1
+            node_logical_id: b1_part1_scientific_proposal
+            check_id: check.required
+            required: true
+      proposal_nodes:
+        b1_part1_scientific_proposal: "Detailed scientific proposal text"
+    expected:
+      severities: [NOTE]
+
+  - id: msca_optional_like_behavior
+    archetype: MSCA
+    source_call: synthetic_msca_archetype
+    source_call_path: backend/data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml
+    request:
+      request_id: stress-msca-1
+      mode: DIAGNOSTIC
+      stage_ref: STEP_1
+      call_config_digest: sha256:fixture
+      call_config_snapshot:
+        expectations:
+          - expectation_id: exp-msca-1
+            node_logical_id: excellence
+            check_id: check.required
+            required: false
+      proposal_nodes:
+        excellence: ""
+    expected:
+      severities: [NOTE]

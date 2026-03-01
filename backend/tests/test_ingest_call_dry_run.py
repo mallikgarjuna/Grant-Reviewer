@@ -17,12 +17,12 @@ def test_dry_run_supports_v1_and_v2_without_database_url(
     monkeypatch.delenv("DATABASE_URL", raising=False)
 
     v2_result = ingest_call(
-        Path("data/calls/nwo/nwo_veni_2025_preproposal.yaml"),
+        Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml"),
         dry_run=True,
     )
     assert v2_result["dry_run"] is True
     assert v2_result["schema_version"] == "v2"
-    assert v2_result["source_path"] == "data/calls/nwo/nwo_veni_2025_preproposal.yaml"
+    assert v2_result["source_path"] == "data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml"
 
     v1_result = ingest_call(
         Path("tests/fixtures/edge_case_call.yaml"),

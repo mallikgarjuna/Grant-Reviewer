@@ -20,6 +20,7 @@ Mindset shift:
 ## Inputs Required
 
 - The brainstorm artifact path (e.g., `docs/brainstorms/brainstorm-WF-XXXX-<slug>.md`)
+- The brainstorm Q&A transcript path (e.g., `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`)
 - `docs/index.md` (to confirm WF/slug/phase)
 
 ## Phase Gate & Completion
@@ -54,6 +55,9 @@ Mindset shift:
 - Are external API contracts explicitly preserved (DTOs, error codes/semantics)?
 - Are idempotency semantics called out per endpoint (including payload-hash mismatch behavior)?
 - Are persistence side effects explicitly constrained?
+- Is it unambiguous that the **brainstorm is SSOT for contracts**, and the Q&A transcript is **rationale only**?
+- Are any contracts/requirements present only in Q&A (split-brain risk)?
+- Is there an explicit “Open Questions / Deferred” list so the brainstorm doesn’t imply false completeness?
 
 ### 3) Shared-Core Boundary Quality
 - Is the proposed shared-core *deep enough* to prevent drift?
@@ -77,10 +81,11 @@ Mindset shift:
 Print:
 
 1. `Reviewed artifact: <path> @ <version>`
-2. **Blocking findings** (if any): list with:
+2. `Reviewed Q&A: <path> @ <version>`
+3. **Blocking findings** (if any): list with:
    - Finding
    - Why it matters
    - Exact brainstorm edit to apply (copy-pasteable)
-3. **Non-blocking findings** (if any): same format
-4. **Clarification Questions** (only if blocking findings exist):
+4. **Non-blocking findings** (if any): same format
+5. **Clarification Questions** (only if blocking findings exist):
    - Up to 5, each with 2–3 options + recommended option

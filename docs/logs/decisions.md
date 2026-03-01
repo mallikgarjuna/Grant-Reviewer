@@ -1,5 +1,145 @@
 # Architectural Decisions
 
+## Date: 2026-02-28 (WF-0038: PeerLens review engine pipeline v1)
+
+### AD 38.1: `DiagnosticFinding v1` schema is trace-first (required traceability/determinism)
+- **WF ID**: WF-0038
+- **Decision**: `DiagnosticFinding v1` must include required traceability/determinism fields (not optional metadata).
+- **Constraints**:
+  - Minimum required trace set: `criterion_ref`, `element_ref`, `primary_expectation_ref` (value is the call-defined `expectation_id`), `check_id`, `subject_ref`, plus `call_config_ref` and `engine_ref`.
+  - Schema growth gate: add a new top-level field only if it is call-invariant AND cannot be derived from existing fields.
+  - `finding_kind` is explicit and required (not inferred from `check_id`).
+- **Why**: Researcher trust requires that every finding is defensible, deterministic, and expectation-grounded by construction.
+- **Status**: Approved.
+
+### AD 38.2: Interactive Q&A must include options + recommendation
+- **WF ID**: WF-0038
+- **Decision**: Every interactive Q&A question must include 2–4 explicit options and the assistant’s recommended option (with rationale).
+- **Why**: Prevents hidden defaults and forces explicit tradeoffs before architectural commitments.
+- **Status**: Approved.
+
+### AD 38.3: WF-tagging discipline for architecture logs
+- **WF ID**: WF-0038
+- **Decision**: All entries added for this initiative in `docs/logs/decisions.md` and `docs/logs/qa_history.md` must include the WF id tag/header.
+- **Why**: Provides a single trace spine and prevents rationale loss across chats.
+- **Status**: Approved.
+
+### AD 38.4: Adversarial critique standard is lifecycle-based and includes mitigations
+- **WF ID**: WF-0038
+- **Decision**: For each decision, adversarial critique must cover 3 risks across: (1) config authoring, (2) runtime execution, (3) downstream consumption/governance, and include a recommended mitigation/guardrail for each risk.
+- **Why**: Ensures systematic stress-testing without missing failure modes or leaving risks unowned.
+- **Status**: Approved.
+
+### AD 38.5: Call-agnostic pipeline v1 uses a two-pass model
+- **WF ID**: WF-0038
+- **Decision**: Define pipeline v1 as two-pass: Pass 1 produces normalized observations; Pass 2 maps observations → `DiagnosticFinding v1` (trace-first).
+- **Why**: Preserves call-agnostic purity by separating extraction/normalization from expectation-grounded diagnosis.
+- **Status**: Approved.
+
+### AD 38.6: Observation v1 is a strict catalog and requires anchors
+- **WF ID**: WF-0038
+- **Decision**: Pass 1 output (`Observation v1`) uses an engine-defined strict `observation_kind` catalog (no free-form payload-only observations in v1).
+- **Constraint**: All observations require anchors (not only content-claim observations).
+- **Why**: Enforces determinism and preserves trace-first mapping from observations → findings without silent context loss.
+- **Status**: Approved.
+
+### AD 38.7: Findings are single-primary; related refs are trace-only and same-kind
+- **WF ID**: WF-0038
+- **Decision**: Each `DiagnosticFinding v1` references exactly one `primary_expectation_ref`, with optional `related_expectation_refs[]`.
+- **Constraints**:
+  - Deterministic aggregation rule: one finding per (`primary_expectation_ref`, `subject_ref`, `check_id`).
+  - Only `primary_expectation_ref` drives grouping/counting; related refs are trace-only.
+  - `related_expectation_refs[]` must not cross `finding_kind` boundaries in v1.
+- **Why**: Keeps findings atomic and defensible while still allowing bounded cross-links without semantic drift.
+- **Status**: Approved.
+
+### AD 38.8: `finding_kind` enum is frozen (v1) to call-invariant invariants
+- **WF ID**: WF-0038
+- **Decision**: Freeze `finding_kind` values (v1) to: `STRUCTURE`, `COMPLIANCE`, `EXPECTATION_SATISFACTION`, `EVIDENCE_SUFFICIENCY`, `ALIGNMENT`, `FEASIBILITY`.
+- **Why**: Stable call-agnostic semantics for UI/analytics; prevents call-defined kind drift and pseudo-funder coupling.
+- **Status**: Approved.
+
+### AD 38.9: Expectation references are call-defined ids, scoped by `call_config_ref`
+- **WF ID**: WF-0038
+- **Decision**: Findings reference expectations via call-defined `expectation_id` (string) rather than runtime DB ids; each finding includes a required `call_config_ref`.
+- **Constraint**: `call_config_ref` includes both human and digest forms (e.g., `{call_code}@{semver}` + `{digest}`).
+- **Why**: Preserves WHAT vs HOW separation and keeps traceability stable-within-version across time.
+- **Status**: Approved.
+
+### AD 38.10: Severity + assessment status contract is explicit and non-numeric
+- **WF ID**: WF-0038
+- **Decision**: Freeze `severity` (v1) to `ERROR`, `WARNING`, `NOTE` (non-numeric); represent not-assessable outcomes per finding via `assessment_status`.
+- **Constraint**: `assessment_status` is required (`ASSESSED` | `NOT_ASSESSABLE`); when `NOT_ASSESSABLE`, a reason is required.
+- **Why**: Limits coupling/scoring pressure while preserving honest, expectation-grounded diagnostics under missing-context constraints.
+- **Status**: Approved.
+
+### AD 38.11: Anchors are typed and mandatory for all findings
+- **WF ID**: WF-0038
+- **Decision**: Require at least one anchor for every finding, including STRUCTURE/COMPLIANCE.
+- **Constraint**: Anchor types include `TEXT_SPAN`, `STRUCTURAL_LOCATOR`, and `DERIVED` (derived anchors still point to a structural locator).
+- **Why**: Ensures auditability and traceability even when failures are structural/non-textual.
+- **Status**: Approved.
+
+### AD 38.12: Modes are projection-only (filter-only) over a single canonical findings set
+- **WF ID**: WF-0038
+- **Context**: Modes risk semantic drift (“strict runs fewer checks”) which breaks call-agnostic determinism and auditability.
+- **Decision**: Define modes as projection-only over the same computed `DiagnosticFinding v1[]` list:
+  - `DIAGNOSTIC` returns the full ordered findings set.
+  - `STRICT` returns a deterministic subset by fixed predicate (`severity == ERROR`).
+- **Why**: Preserves a single canonical “truth set” per input and makes strict/diagnostic a deterministic view choice, not a different evaluation.
+- **Tradeoff**: Strict cannot reduce runtime cost by skipping checks; it only changes what is surfaced downstream.
+- **Status**: Approved.
+
+### AD 38.13: `ReviewRequest v1` requires embedding `call_config_snapshot` for replayability
+- **WF ID**: WF-0038
+- **Context**: Pointer-only call-config references couple replayability to external storage availability and version drift.
+- **Decision**: Require `call_config_snapshot` in every `ReviewRequest v1`, with `call_config_ref.digest` matching the snapshot.
+- **Why**: Ensures deterministic replay/audit of findings across time with no hidden dependency on config storage state.
+- **Tradeoff**: Request payloads are larger; config duplication is accepted for audit safety.
+- **Status**: Approved.
+
+### AD 38.14: Deterministic compatibility mapping groups findings into one `ReviewCard` per expectation per subject
+- **WF ID**: WF-0038
+- **Context**: Current product surface persists `ReviewCard` linked to an expectation; the new engine SSOT output is `DiagnosticFinding v1`.
+- **Decision**: Freeze mapping cardinality to exactly one `ReviewCard` per (`subject_ref`, `primary_expectation_ref`), aggregating grouped findings deterministically.
+- **Why**: Preserves stable UX and persistence semantics while keeping the engine atomic output trace-first and single-primary.
+- **Tradeoff**: Some per-check granularity becomes internal to `feedback_text` rather than separate cards.
+- **Status**: Approved.
+
+### AD 38.15: `DiagnosticFinding v1` is the engine SSOT; `ReviewCard` is a compatibility surface (deprecable)
+- **WF ID**: WF-0038
+- **Context**: The repo currently persists and serves `ReviewCard`, but WF-0038’s universal pipeline is defined to produce `DiagnosticFinding v1` as the atomic output.
+- **Decision**: Treat `DiagnosticFinding v1` as the canonical engine output and source of truth for evaluation semantics. Keep `DiagnosticFinding v1 → ReviewCard` mapping as an explicit compatibility adapter only, which may be deprecated in a follow-on workflow once UI/API can consume `DiagnosticFinding v1` directly.
+- **Why**: Avoids letting legacy persistence/UI constraints shape the universal engine contracts while still enabling incremental adoption without a big-bang rewrite.
+- **Tradeoff**: Temporarily maintains two representations (findings vs cards) and requires governance to prevent “card semantics” from leaking back into engine semantics.
+- **Status**: Approved.
+
+### AD 38.16: Contract failures are distinguished from execution failures (no partial results on contract failure)
+- **WF ID**: WF-0038
+- **Context**: Determinism and auditability collapse if malformed inputs or config mismatches yield partial/ambiguous outputs.
+- **Decision**: Define explicit error categories:
+  - Contract errors reject the request deterministically with no partial findings/cards (`CALL_CONFIG_DIGEST_MISMATCH`, `MALFORMED_REVIEW_REQUEST`, `EXPECTATION_REF_UNRESOLVABLE`).
+  - Execution failures indicate the engine failed despite a valid contract (`ENGINE_EXECUTION_FAILED`, `TIMEOUT`).
+- **Why**: Preserves replayability guarantees and prevents downstream consumers from treating partial output as authoritative.
+- **Tradeoff**: Some failures become “hard stops” rather than degraded output; this is intentional for trust/audit safety.
+- **Status**: Approved.
+
+### AD 38.17: `call_config_ref.digest` canonicalization is `sha256` over canonical JSON of `call_config_snapshot`
+- **WF ID**: WF-0038
+- **Context**: Replayability depends on a stable, unambiguous digest algorithm.
+- **Decision**: Define `call_config_ref.digest` as `sha256` of a canonical JSON serialization of `call_config_snapshot` (UTF-8, stable key ordering, stable list ordering).
+- **Why**: Makes digest verification deterministic across environments and prevents “same config, different digest” drift.
+- **Tradeoff**: Requires canonicalization discipline in tooling; payloads include snapshot to avoid storage coupling.
+- **Status**: Approved.
+
+### AD 38.18: Evidence-gap classification is encoded via engine-defined `check_id` taxonomy (not new finding fields)
+- **WF ID**: WF-0038
+- **Context**: We need consistent, deterministic classification of common issue types (evidence gaps, misalignment, overclaims, etc.) for downstream consumption and future scoring projection, without expanding the top-level `DiagnosticFinding v1` schema.
+- **Decision**: Encode issue classification as an engine-defined, stable `check_id` taxonomy (`{DOMAIN}.{CODE}`), with a bounded starter set. `NOT_ASSESSABLE` remains represented only via `assessment_status` (must not be duplicated as a `check_id` gap code).
+- **Why**: Preserves schema growth discipline, keeps semantics call-agnostic, and still provides stable tags for analytics/scoring projection.
+- **Tradeoff**: Requires governance over the `check_id` catalog and tests to prevent free-form drift.
+- **Status**: Approved.
+
 ## Date: 2026-02-28 (WF-0035: Universal form dynamic UI renderer)
 
 ### AD 35.1: Frontend render model composes flat nodes ordering + metadata enrichment

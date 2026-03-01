@@ -52,7 +52,7 @@ cd backend
 export DATABASE_URL='postgresql://...'
 
 uv run python scripts/ensure_prompt_template.py
-uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml
+uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml
 ```
 
 Verify bootstrap via deployed API:
@@ -104,3 +104,4 @@ Then do a one-shot end-to-end test from the frontend UI and capture:
 
 - Walkthrough: `docs/walkthroughs/walkthrough_task_8.0C_deployment_wiring.md`
 - Lessons: `docs/lessons.md` (Neon/Render + dotenv gotchas)
+- Call YAML docs hub: `docs/call-yaml/README.md`

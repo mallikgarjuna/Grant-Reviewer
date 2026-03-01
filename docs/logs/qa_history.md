@@ -1,5 +1,58 @@
 # Q&A History
 
+## 2026-02-28 (WF-0038: peerlens-review-engine-pipeline-v1)
+
+### Q: Should `DiagnosticFinding v1` require explicit traceability/determinism fields?
+**A**: Yes — trace-first is mandatory (Option 2 approved).
+
+### Q: What is the minimum non-negotiable trace field set in `DiagnosticFinding v1`?
+**A**: Option B — require `criterion_ref`, `element_ref`, `expectation_id`, `check_id`, `subject_ref`, plus `call_config_ref` and `engine_ref`.
+
+### Q: What is the hard rule for admitting a new top-level field into `DiagnosticFinding v1`?
+**A**: Option A — add only if call-invariant AND cannot be derived from existing fields.
+
+### Q: How do we disambiguate hard constraints vs expectation satisfaction in findings?
+**A**: Require an explicit `finding_kind` enum on every finding (do not infer from `check_id`).
+
+### Q: Should interactive Q&A always provide options + a recommendation?
+**A**: Yes — every interactive question includes 2–4 options + recommended option with rationale (approved as a standing rule).
+
+### Q: Where do decisions/approvals live for this WF?
+**A**: `docs/logs/decisions.md` and `docs/logs/qa_history.md`, with WF-tagging discipline (Option 1 approved).
+
+### Q: What should “top 3 architectural risks/failure modes” mean in this architecture decision loop?
+**A**: Use lifecycle standard: (1) config authoring, (2) runtime execution, (3) downstream consumption/governance; include coupling + traceability/determinism checks, and provide a recommended mitigation/guardrail per risk.
+
+### Q: What is the Pass 1 output contract shape for the two-pass pipeline?
+**A**: `Observation v1` is a strict `observation_kind` catalog (Option 1 approved), and anchors are mandatory for all observation kinds.
+
+### Q: Should findings reference a single expectation or multiple?
+**A**: Single-primary (Option 1 approved): exactly one `primary_expectation_ref` per finding, optional `related_expectation_refs[]`; deterministic aggregation is one finding per (`primary_expectation_ref`, `subject_ref`, `check_id`). Related refs are trace-only.
+
+### Q: Can `related_expectation_refs[]` cross `finding_kind` boundaries?
+**A**: No (Option 1 approved). Cross-kind causality is deferred to a future explicit/typed relation mechanism if needed.
+
+### Q: What is the `finding_kind` enum for `DiagnosticFinding v1`?
+**A**: Option 1 approved — fixed invariant-aligned set: `STRUCTURE`, `COMPLIANCE`, `EXPECTATION_SATISFACTION`, `EVIDENCE_SUFFICIENCY`, `ALIGNMENT`, `FEASIBILITY`.
+
+### Q: What is the stable identifier for `primary_expectation_ref` in `DiagnosticFinding v1`?
+**A**: Use the call-defined `expectation_id` (string) scoped by the required `call_config_ref` (Option A approved).
+
+### Q: What is the required `call_config_ref` shape?
+**A**: Include both a human version and a digest (e.g., `{call_code}@{semver}` + `{digest}`) (Option C approved).
+
+### Q: What are the v1 severity levels?
+**A**: `ERROR`, `WARNING`, `NOTE` (Option A approved).
+
+### Q: How is NOT_ASSESSABLE represented per finding?
+**A**: Add required `assessment_status = ASSESSED|NOT_ASSESSABLE` plus required reason when `NOT_ASSESSABLE`; keep `severity` present (Option A approved).
+
+### Q: What counts as an anchor (required for all findings)?
+**A**: Typed anchor union: `TEXT_SPAN` OR `STRUCTURAL_LOCATOR` OR `DERIVED` (Option A approved).
+
+### Q: Is WF-0038 fixated on the existing `ReviewCard` backend contract, or is it producing a new universal output?
+**A**: WF-0038’s engine SSOT output is `DiagnosticFinding v1`. The `DiagnosticFinding v1 → ReviewCard` mapping is a compatibility adapter for existing downstream/UI/persistence and may be deprecated in a follow-on workflow once UI/API can consume `DiagnosticFinding v1` directly.
+
 ## 2026-02-06
 
 ### Q: Hierarchy structure for proposal nodes?

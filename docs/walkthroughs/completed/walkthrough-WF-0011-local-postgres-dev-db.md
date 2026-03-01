@@ -35,7 +35,7 @@ Commands:
 ```bash
 cd backend
 DATABASE_URL='postgresql://grant:grant@localhost:5432/grant_reviewer_dev?sslmode=disable' uv run python scripts/ensure_prompt_template.py
-DATABASE_URL='postgresql://grant:grant@localhost:5432/grant_reviewer_dev?sslmode=disable' uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml
+DATABASE_URL='postgresql://grant:grant@localhost:5432/grant_reviewer_dev?sslmode=disable' uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml
 ```
 
 Observed outcome:
@@ -93,7 +93,7 @@ Observed outcome:
 2. Set local `DATABASE_URL` to localhost Postgres with `sslmode=disable`.
 3. Run:
    - `uv run python scripts/ensure_prompt_template.py`
-   - `uv run python scripts/ingest_call.py data/calls/erc/erc_cog_2026_full_official.yaml`
+   - `uv run python scripts/ingest_call.py data/calls/legacy/erc/erc_cog_2026_full_official.yaml`
 4. Run readiness count check command from `backend/README.md`.
 5. Run one stub review verification (`POST /reviews`) and confirm terminal status.
 

@@ -5,9 +5,18 @@ from __future__ import annotations
 import json
 import logging
 import os
+import hashlib
 from datetime import datetime
 from uuid import UUID
 
+from app.engine.errors import EngineContractError, EngineErrorCode
+from app.engine.contracts import PipelineResult
+from app.engine.pipeline_v1 import run_review_pipeline
+from app.engine.review_request_validator import (
+    ReviewRequestValidationError,
+    canonicalize_for_digest,
+    validate_review_request_payload,
+)
 from app.models.domain import (
     AssessmentStatus,
     NodeExpectation,
@@ -256,6 +265,206 @@ class StructuredReviewerService:
                 assessable.append(expectation)
 
         return assessable, not_assessable
+
+    def generate_structured_review_pipeline_v1(
+        self,
+        *,
+        review_stage: ReviewStage,
+        call_id: UUID,
+        nodes: list[tuple[str, str]],
+        external_user_id: str,
+        idempotency_key: str | None = None,
+        request_payload_sha256: str | None = None,
+        idempotency_expires_at: datetime | None = None,
+        call_config_digest_override: str | None = None,
+    ) -> tuple[Review, list[ReviewCard]]:
+        if not nodes:
+            raise ValueError("At least one node is required.")
+
+        template = self.repository.get_active_prompt_template()
+        if template is None:
+            raise ValueError("No active prompt template found.")
+
+        call = self.repository.get_call_by_id(call_id)
+        if call is None:
+            raise ValueError("Funding call not found.")
+
+        call_nodes = self.repository.get_nodes_for_call(call_id)
+        node_by_logical_id = {
+            node.logical_id: node
+            for node, _ in call_nodes
+            if isinstance(node.logical_id, str) and node.logical_id
+        }
+        submitted_text_by_node = {node_logical_id: text for node_logical_id, text in nodes}
+        structured_payload = {
+            "call_id": str(call_id),
+            "call_name": call.name,
+            "review_stage": review_stage,
+            "nodes": submitted_text_by_node,
+            "engine_path": "pipeline_v1",
+        }
+
+        review = self.repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=external_user_id,
+            idempotency_key=idempotency_key,
+            request_payload_sha256=request_payload_sha256,
+            idempotency_expires_at=idempotency_expires_at,
+            review_type="structured",
+            structured_payload=structured_payload,
+        )
+        review.llm_model = "engine-pipeline-v1"
+        self.repository.update_review(review)
+
+        expectation_map: dict[str, NodeExpectation] = {}
+        not_assessable_payloads: list[
+            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
+        ] = []
+        request_expectations: list[dict[str, object]] = []
+        for node_logical_id, _ in nodes:
+            node = node_by_logical_id.get(node_logical_id)
+            if node is None:
+                return self._fail_contract_error(
+                    review,
+                    code=EngineErrorCode.MALFORMED_REVIEW_REQUEST.value,
+                    message=f"Unknown node_logical_id: '{node_logical_id}'",
+                )
+            expectations = self.repository.get_expectations_for_node(node.id)
+            assessable, not_assessable = self._partition_expectations(
+                node_logical_id=node_logical_id,
+                expectations=expectations,
+                submitted_text_by_node=submitted_text_by_node,
+            )
+
+            for expectation, reason in not_assessable:
+                not_assessable_payloads.append(
+                    (
+                        expectation.id,
+                        ReviewRating.NOTE,
+                        "Not assessable due to missing cross-node context.",
+                        AssessmentStatus.NOT_ASSESSABLE,
+                        reason,
+                    )
+                )
+
+            for expectation in assessable:
+                expectation_id = str(expectation.id)
+                request_expectations.append(
+                    {
+                        "expectation_id": expectation_id,
+                        "node_logical_id": node_logical_id,
+                        "check_id": "check.presence",
+                        "required": expectation.expectation_strength.value == "MANDATORY",
+                    }
+                )
+                expectation_map[expectation_id] = expectation
+
+        call_config_snapshot = {"expectations": request_expectations}
+        canonical_snapshot = canonicalize_for_digest(call_config_snapshot)
+        computed_digest = "sha256:" + hashlib.sha256(
+            canonical_snapshot.encode("utf-8")
+        ).hexdigest()
+        payload = {
+            "request_id": str(review.id),
+            "mode": "DIAGNOSTIC",
+            "stage_ref": review_stage,
+            "call_config_snapshot": call_config_snapshot,
+            "call_config_digest": call_config_digest_override or computed_digest,
+            "proposal_nodes": submitted_text_by_node,
+        }
+
+        try:
+            review_request = validate_review_request_payload(payload)
+            result = (
+                run_review_pipeline(review_request)
+                if request_expectations
+                else PipelineResult(findings=[], review_cards=[], telemetry={})
+            )
+        except ReviewRequestValidationError as err:
+            return self._fail_contract_error(review, code=err.code, message=err.message)
+        except EngineContractError as err:
+            return self._fail_contract_error(
+                review,
+                code=err.code.value,
+                message=err.message,
+            )
+        except TimeoutError as err:
+            return self._fail_execution_error(
+                review,
+                code=EngineErrorCode.TIMEOUT.value,
+                message=str(err),
+            )
+        except Exception as err:
+            return self._fail_execution_error(
+                review,
+                code=EngineErrorCode.ENGINE_EXECUTION_FAILED.value,
+                message=str(err),
+            )
+
+        unresolved = [
+            card.expectation_id
+            for card in result.review_cards
+            if card.expectation_id not in expectation_map
+        ]
+        if unresolved:
+            return self._fail_contract_error(
+                review,
+                code=EngineErrorCode.EXPECTATION_REF_UNRESOLVABLE.value,
+                message=f"Unresolvable expectation ref: {sorted(set(unresolved))[0]}",
+            )
+
+        card_payloads: list[
+            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
+        ] = list(not_assessable_payloads)
+        for card in result.review_cards:
+            expectation = expectation_map[card.expectation_id]
+            card_payloads.append(
+                (
+                    expectation.id,
+                    ReviewRating[card.rating],
+                    card.feedback,
+                    AssessmentStatus.ASSESSED,
+                    None,
+                )
+            )
+
+        cards = self.repository.create_review_cards_batch(
+            review_id=review.id,
+            cards=card_payloads,
+        )
+
+        review.status = ReviewStatus.COMPLETED
+        review.overall_summary = (
+            f"Structured review completed with {len(cards)} findings via pipeline_v1."
+        )
+        review.overall_rating = ReviewRating.NOTE
+        self.repository.update_review(review)
+        return review, cards
+
+    def _fail_contract_error(
+        self,
+        review: Review,
+        *,
+        code: str,
+        message: str,
+    ) -> tuple[Review, list[ReviewCard]]:
+        review.status = ReviewStatus.FAILED
+        review.overall_summary = f"{code}: {message}"
+        self.repository.update_review(review)
+        return review, []
+
+    def _fail_execution_error(
+        self,
+        review: Review,
+        *,
+        code: str,
+        message: str,
+    ) -> tuple[Review, list[ReviewCard]]:
+        review.status = ReviewStatus.FAILED
+        review.overall_summary = f"{code}: {message}"
+        self.repository.update_review(review)
+        return review, []
 
     def _build_cross_node_context(
         self,

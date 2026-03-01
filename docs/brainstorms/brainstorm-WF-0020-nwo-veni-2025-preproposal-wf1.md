@@ -108,8 +108,8 @@ This WF is a loader + validation utility only; it exists to unblock authoring th
 ## File Reality Check (inputs reviewed)
 
 Reviewed files:
-- `backend/data/calls/nwo/nwo_veni_2025_preproposal.yaml`
-- `backend/data/calls/nwo/nwo_veni_2025_preproposal_design_summary.md`
+- `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`
+- `backend/data/calls/notes/nwo/nwo_veni_2025_preproposal_design_summary.md`
 
 Key concrete implications for the V2 loader:
 - The YAML is already parseable by `yaml.safe_load` (so “parse fix” is primarily schema/loader mismatch).
