@@ -1,5 +1,31 @@
 # Architectural Decisions
 
+## Date: 2026-03-01 (WF-0039: Structured pipeline v1 rollout)
+
+### AD 39.1: Production empty-allowlist guardrail fails closed to legacy
+- **WF ID**: WF-0039
+- **Context**: Existing gating semantics can route all calls to `pipeline_v1` when global flag is on and allowlist is empty, which is unsafe for production rollout.
+- **Decision**: In `APP_ENV=prod`, if `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=1` and `STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES` is empty, route fail-closed to legacy for all calls and emit loud misconfiguration telemetry/logging.
+- **Why**: Prevents accidental all-call cutover while preserving service availability.
+- **Tradeoff**: Misconfiguration may silently preserve legacy behavior unless alerts are monitored.
+- **Status**: Approved.
+
+### AD 39.2: Rollout parity gate is structural parity, not text parity
+- **WF ID**: WF-0039
+- **Context**: Textual output can vary from LLM non-determinism, but user-facing regressions are mostly structural in card shape and rating semantics.
+- **Decision**: Rollout gate compares legacy vs `pipeline_v1` using structural parity only (`ReviewCard` count/order/rating), plus status/error-code stability checks.
+- **Why**: Makes rollout verification deterministic and operationally actionable.
+- **Tradeoff**: Text-quality regressions are not blocked by this gate and need separate quality checks.
+- **Status**: Approved.
+
+### AD 39.3: Minimum replay evidence gate is fixed at 2 payloads x 20 replays
+- **WF ID**: WF-0039
+- **Context**: Manual smoke checks are too weak for safe allowlist expansion decisions.
+- **Decision**: Require automated replay evidence of at least two payload classes (happy + deterministic contract error), each replayed 20 times, with comparator outputs stored as deterministic JSON artifacts.
+- **Why**: Provides repeatable evidence for canary expansion/rollback decisions.
+- **Tradeoff**: Adds operational test runtime and artifact management overhead.
+- **Status**: Approved.
+
 ## Date: 2026-02-28 (WF-0038: PeerLens review engine pipeline v1)
 
 ### AD 38.1: `DiagnosticFinding v1` schema is trace-first (required traceability/determinism)

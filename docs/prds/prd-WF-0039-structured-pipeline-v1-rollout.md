@@ -1,8 +1,8 @@
 # WF-0039 — Structured Pipeline v1 Rollout
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-01
 
 ## 0. User Stories (MVP)
@@ -79,8 +79,9 @@ Last Updated: 2026-03-01
 
 - `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED`: `0|1` global rollout switch.
 - `STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES`: comma-separated call-code allowlist.
+- `APP_ENV`: environment discriminator used for guardrail activation (`prod` enables strict guardrail behavior).
 - Production guardrail:
-  - If `ENV=prod` (or equivalent runtime production indicator) and global flag is `1` with empty allowlist, system must fail-closed to legacy path.
+  - If `APP_ENV=prod` and global flag is `1` with empty allowlist, system must fail-closed to legacy path.
 
 ### 5.2 Request/Response Contract Preservation
 
@@ -99,6 +100,8 @@ Last Updated: 2026-03-01
   - structural parity (count/order/rating),
   - status/error-code stability,
   - latency window check vs baseline.
+- Replay baseline:
+  - capture legacy baseline from the same payload set and store comparator outputs as deterministic JSON artifacts committed to the WF branch.
 
 ## 6. Components / Modules
 
@@ -150,6 +153,15 @@ Design tree / ordering:
   - production guardrail activation (fail-closed reason).
   - rollback action execution marker.
 
+## 9.1 Rollback Threshold Defaults (MVP)
+
+- Error regression trigger:
+  - rollback if contract-error 4xx rate or 5xx rate is >= 1.5x legacy baseline and at least +2 percentage points over baseline for 10+ consecutive minutes.
+- Latency regression trigger:
+  - rollback if p95 latency for canary call is >20% above legacy baseline for 10+ consecutive minutes.
+- Parity trigger:
+  - rollback immediately on any structural parity failure in replay suite.
+
 ## 10. Deferred / Not in MVP
 
 - Full production shadow-mode.
@@ -159,10 +171,10 @@ Design tree / ordering:
 
 ## 11. Open Questions (if any)
 
-- Threshold values for “sustained regression” (error-rate and latency) to be fixed in task phase.
 - Exact observation window duration before allowlist expansion in production.
 - Whether non-prod should also hard-fail closed for empty allowlist or only warn.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-01): Initial PRD from brainstorm
+- v0.2 (2026-03-01): Applied risk-audit revisions (prod env contract, replay baseline artifact requirement, rollback threshold defaults, clarified readiness for tasks)
