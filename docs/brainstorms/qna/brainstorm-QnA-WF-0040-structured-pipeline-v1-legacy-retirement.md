@@ -1,7 +1,7 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: In progress
 Last Updated: 2026-03-01
 
@@ -144,6 +144,129 @@ The main brainstorm remains SSOT for decisions/contracts.
 - B) Option B: Product engineer (feature owner, not on-call).
 - C) Option C: SRE/DevOps only.
 > Recommendation: A — authority and operational responsibility should match ownership of gates and rollback.
+> **Selected: A**
+
+---
+
+## Section 4 — Rough Idea Exploration (2026-03-01)
+
+**Brainstorming Q&A:**
+
+**Q1: What is the simplest “v1-only” enforcement mechanism we should target?**
+- A) **Option A (Recommended):** Make `/api/structured-review` always route to `pipeline_v1` (while legacy code still exists temporarily for rollback-by-revert only).
+- B) Option B: Keep conditional routing but expand allowlist until it’s effectively “all calls”.
+- C) Option C: Add a new “retirement mode” flag that forces v1-only (extra config surface).
+> Recommendation: A — lowest config surface area long-term; B preserves hidden complexity; C adds a new toggle that can drift or be mis-set.
+> **Selected: A**
+
+**Q2: What is the preferred retirement sequence?**
+- A) **Option A (Recommended):** Evidence first (replay/health) -> v1-only switch -> observation window -> delete legacy.
+- B) Option B: Switch first -> observe -> if green, do evidence retroactively -> delete.
+- C) Option C: Delete first in staging -> then switch in prod.
+> Recommendation: A — prevents “we switched without knowing what good looks like” and preserves rollback options.
+> **Selected: A**
+
+**Q3: Where do we want the “readiness checklist” to live as SSOT?**
+- A) **Option A (Recommended):** In the WF-0040 walkthrough artifact (runbook-like, phase-gated, linkable).
+- B) Option B: In `backend/README.md` only.
+- C) Option C: In the task file only.
+> Recommendation: A — walkthrough is the natural place for operational gates and evidence references; README/tasks can link to it.
+> **Selected: A**
+
+**Q4: How do we want to treat environments?**
+- A) **Option A (Recommended):** Stage gates: dev/staging first, then prod; prod requires explicit approval checkpoint.
+- B) Option B: Only staging matters; prod follows automatically.
+- C) Option C: Treat staging+prod identically (same day).
+> Recommendation: A — matches a controlled deprecation program; B/C compress risk into prod.
+> **Selected: A**
+
+**Q5: What is our stance on “no behavior change first”?**
+- A) **Option A (Recommended):** First change is add/strengthen tests + evidence scripts/runbook references; routing behavior changes only after gates exist.
+- B) Option B: Routing change first (faster), then backfill tests.
+- C) Option C: No tests needed if dashboards are green.
+> Recommendation: A — ensures we can detect regressions before they happen in prod.
+> **Selected: A**
+
+---
+
+## Section 5 — Constraints (2026-03-01)
+
+**Brainstorming Q&A:**
+
+**Q1: What is the most important contract invariant during retirement?**
+- A) **Option A (Recommended):** Public API request/response schemas + error semantics remain stable.
+- B) Option B: Telemetry shape must remain stable.
+- C) Option C: Internal call YAML schema must remain stable even if API shifts.
+> Recommendation: A — client-facing contracts are the highest-risk; telemetry and YAML are still important but secondary.
+> **Selected: A**
+
+**Q2: How strict is the idempotency requirement?**
+- A) **Option A (Recommended):** Preserve idempotency semantics exactly, including digest mismatch and expectation resolution failure behavior.
+- B) Option B: Idempotency can change if outputs improve.
+- C) Option C: Idempotency is not relevant for structured reviews.
+> Recommendation: A — idempotency regressions can create duplicate/incorrect persisted results and break client assumptions.
+> **Selected: A**
+
+**Q3: How do we treat call YAML ingestion/canonicalization during retirement?**
+- A) **Option A (Recommended):** No changes to ingestion contracts; retirement work must be compatible with existing call YAML behaviors.
+- B) Option B: Permit small call YAML schema changes if tests pass.
+- C) Option C: Ignore call YAML; structured review is independent.
+> Recommendation: A — avoids coupling retirement to ingestion migration scope.
+> **Selected: A**
+
+**Q4: What rollback posture do we require?**
+- A) **Option A (Recommended):** While legacy code exists, rollback is operational and explicit; after deletion, rollback is revert-deploy (not “switch engines”).
+- B) Option B: Keep a permanent runtime engine switch for rollback.
+- C) Option C: No rollback required if staging is green.
+> Recommendation: A — aligns with the end-state goal and keeps rollback honest.
+> **Selected: A**
+
+**Q5: What is the time constraint and how should it influence scope?**
+- A) **Option A (Recommended):** Optimize for safety gates/observability; do not accelerate deletion at the cost of unclear rollback/evidence.
+- B) Option B: Optimize for speed; delete legacy ASAP.
+- C) Option C: No time constraints; we can take months.
+> Recommendation: A — balances momentum with risk control.
+> **Selected: A**
+
+---
+
+## Section 6 — Risks / Unknowns (2026-03-01)
+
+**Brainstorming Q&A:**
+
+**Q1: What is the highest-risk regression class during retirement?**
+- A) **Option A (Recommended):** Edge-case contract and error semantics regressions (timeouts, validation order, contract error codes/fields).
+- B) Option B: Latency regressions only.
+- C) Option C: Minor text/content differences only.
+> Recommendation: A — contract drift can silently break clients and workflows; latency is important but more detectable.
+> **Selected: A**
+
+**Q2: What do we treat as a blocker to flipping prod routing to v1-only?**
+- A) **Option A (Recommended):** Missing/insufficient observability (can’t detect regressions quickly) is a blocker.
+- B) Option B: Only failing tests are blockers.
+- C) Option C: Nothing is a blocker if staging is green.
+> Recommendation: A — without observability, you can’t manage the risk window in prod.
+> **Selected: A**
+
+**Q3: How do we handle the “legacy” naming collision risk in call-config/UI mode?**
+- A) **Option A (Recommended):** Document it; keep scope to engine-execution retirement; do not rename unless it blocks the work.
+- B) Option B: Rename everything now.
+- C) Option C: Ignore it.
+> Recommendation: A — keeps scope bounded while preventing confusion.
+> **Selected: A**
+
+**Q4: What is the failure mode we most want to prevent?**
+- A) **Option A (Recommended):** Premature legacy code deletion that removes rollback options before evidence gates pass.
+- B) Option B: Minor docs drift.
+- C) Option C: Slightly slower runtime.
+> Recommendation: A — this is the irreversible mistake; others are recoverable.
+> **Selected: A**
+
+**Q5: What is the biggest unknown that must be made explicit in Phase 1 planning?**
+- A) **Option A (Recommended):** Exact observation window definitions/thresholds + rollback source-of-truth config and runbook steps.
+- B) Option B: Which team owns the work.
+- C) Option C: Whether to do any tests.
+> Recommendation: A — those are the practical gates needed for safe execution.
 > **Selected: A**
 
 **Q2: Who is the primary “customer” harmed if we get this wrong?**

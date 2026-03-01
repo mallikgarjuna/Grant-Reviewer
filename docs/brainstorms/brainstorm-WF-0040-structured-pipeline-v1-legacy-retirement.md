@@ -1,7 +1,7 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: brainstorm
-Version: v0.4
+Version: v0.5
 Status: Draft Complete
 Last Updated: 2026-03-01
 
@@ -65,12 +65,30 @@ Actor decisions (selected):
   4. Remove fallback toggles and legacy execution code.
   5. Clean tests/docs and finalize runbooks.
 
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0040-structured-pipeline-v1-legacy-retirement.md` (Section 4)
+
+Rough idea decisions (selected):
+- Enforce v1-only by making `/api/structured-review` route to `pipeline_v1` (remove conditional selection once gates are satisfied).
+- Retirement sequence: evidence first (replay/health) -> v1-only switch -> observation window -> delete legacy.
+- Readiness checklist SSOT lives in the WF walkthrough artifact.
+- Environment progression: dev/staging first, then prod with explicit approval checkpoint.
+- “No behavior change first”: strengthen tests + evidence references before changing routing behavior.
+
 ## 5. Constraints
 
 - Do not change public API request/response schemas.
 - Keep idempotency behavior stable.
 - Do not break existing call YAML ingestion contracts.
 - Preserve auditability and telemetry during transition.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0040-structured-pipeline-v1-legacy-retirement.md` (Section 5)
+
+Constraint decisions (selected):
+- Public API contract invariants: request/response schemas + error semantics remain stable throughout.
+- Idempotency invariants: existing digest mismatch and expectation resolution error behavior remains unchanged.
+- Retirement must not alter call YAML ingestion/canonicalization contracts.
+- Rollback posture: while legacy exists, rollback is operational and explicit; after deletion, rollback is revert-deploy.
+- Time constraint: prioritize de-risking gates and observability over speed of deletion.
 
 ## 6. Risks / Unknowns
 
@@ -79,6 +97,14 @@ Actor decisions (selected):
 - Premature code deletion can remove practical rollback options.
 - Test suite may rely implicitly on legacy helpers.
 
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0040-structured-pipeline-v1-legacy-retirement.md` (Section 6)
+
+Risk/unknown decisions (selected):
+- Highest risk class: edge-case contract and error semantics regressions; guard with targeted API/contract tests.
+- Observability gaps are treated as blockers to switching prod routing to v1-only.
+- Naming collision risk ("legacy" in UI mode) is documented; scope remains engine-execution retirement only.
+- Deletion is gated by explicit evidence bundle + approval checkpoint.
+- Unknown: exact window durations/thresholds and rollback source-of-truth config must be made explicit in Phase 1 planning/runbook.
 ## 7. MVP Definition
 
 A safe MVP deprecation is complete when:
