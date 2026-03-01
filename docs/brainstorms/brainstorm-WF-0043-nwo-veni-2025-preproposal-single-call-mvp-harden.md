@@ -223,7 +223,7 @@ DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0043_policy.db uv run pytest -
 | validation_error_missing_idempotency_header | structured_api | 400 | VALIDATION_ERROR | false | null | null |
 | unknown_node_id | structured_api | 422 | UNKNOWN_NODE_ID | false | null | null |
 | review_stage_node_mismatch | structured_api | 422 | REVIEW_STAGE_NODE_MISMATCH | false | null | null |
-| idempotency_payload_mismatch | structured_api | 409 | IDEMPOTENCY_PAYLOAD_MISMATCH | true | COMPLETED | completed_nonempty |
+| idempotency_payload_mismatch | structured_api | 409 | IDEMPOTENCY_PAYLOAD_MISMATCH | true | null | null |
 | post_persist_unresolvable_expectation_failed | structured_api | 200 | null | true | FAILED | EXPECTATION_REF_UNRESOLVABLE |
 | policy_blocking | single_snippet_policy | 200 | null | true | FAILED | POLICY_BLOCKING |
 | policy_post_check | single_snippet_policy | 200 | null | true | COMPLETED | POST_CHECK_WARNING |

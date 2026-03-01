@@ -1590,8 +1590,6 @@ def test_wf0043_contract_structured_api_error_semantics_and_no_persistence_side_
 
 def test_wf0043_contract_structured_api_matrix_coverage() -> None:
     cases = _load_wf0043_matrix_cases()
-    assert 8 <= len(cases) <= 12
-
     required_fields = {
         "case_id",
         "surface",
@@ -1616,6 +1614,7 @@ def test_wf0043_contract_structured_api_matrix_coverage() -> None:
         "post_persist_unresolvable_expectation_failed",
     }
     assert structured_case_ids == covered_case_ids
+    assert len(structured_case_ids) == 6
 
 
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:

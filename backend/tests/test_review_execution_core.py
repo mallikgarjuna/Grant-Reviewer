@@ -32,6 +32,11 @@ pytestmark = pytest.mark.no_db
 class Wf0043PolicyCase(TypedDict):
     case_id: str
     surface: str
+    expected_http_status: int
+    expected_error_code: str | None
+    expect_review_persisted: bool
+    expected_review_status: str
+    expected_summary_convention: str
     enforcement_mode: str
     forbidden_term: str
     feedback_text: str
@@ -356,22 +361,35 @@ def test_wf0043_contract_single_snippet_policy_modes(case: Wf0043PolicyCase) -> 
         reviewer_policy_rules=[rule],
     )
 
+    assert case["expected_http_status"] == 200
+    assert case["expected_error_code"] is None
+    assert case["expect_review_persisted"] is True
+
     if case["enforcement_mode"] == "BLOCKING":
         assert result.failure is not None
         assert result.failure.category == ExecutionFailureCategory.POLICY_BLOCKING
+        assert case["expected_review_status"] == "FAILED"
+        assert case["expected_summary_convention"] == "POLICY_BLOCKING"
         return
 
     assert result.failure is None
+    assert case["expected_review_status"] == "COMPLETED"
     if case["enforcement_mode"] == "POST_CHECK":
         assert len(result.warning_violations) == 1
+        assert case["expected_summary_convention"] == "POST_CHECK_WARNING"
     else:
         assert result.warning_violations == []
+        assert case["expected_summary_convention"] == "PROMPT_ONLY_NON_BLOCKING"
+        assert "WF-0043 deterministic policy test rule" in result.prompt
 
 
 def test_wf0043_contract_single_snippet_policy_matrix_coverage() -> None:
     cases = _load_wf0043_policy_cases()
     case_ids = {case["case_id"] for case in cases}
     assert case_ids == {"policy_blocking", "policy_post_check", "policy_prompt_only"}
+    for case in cases:
+        assert case["surface"] == "single_snippet_policy"
+        assert isinstance(case["feedback_text"], str) and bool(case["feedback_text"].strip())
 
 
 def test_core_emits_telemetry_start_complete() -> None:

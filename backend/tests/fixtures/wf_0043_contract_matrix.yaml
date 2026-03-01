@@ -48,8 +48,8 @@ cases:
     expected_http_status: 409
     expected_error_code: IDEMPOTENCY_PAYLOAD_MISMATCH
     expect_review_persisted: true
-    expected_review_status: COMPLETED
-    expected_summary_convention: completed_nonempty
+    expected_review_status: null
+    expected_summary_convention: null
     idempotency_key: idem-wf0043-payload-mismatch-1
     request_nodes:
       - node_logical_id: academic_profile
