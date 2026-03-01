@@ -40,6 +40,7 @@ from app.models.domain import (
     NodeExpectation,
     NodeType,
     ProposalNode,
+    ReviewCard,
 )
 from app.schemas.call_definitions import (
     CallDefinition as CallDefinitionV1,
@@ -906,16 +907,20 @@ def _upsert_projection_v2(
             session.add(node)
             counters["nodes_archived"] += 1
 
-    for node in node_by_logical_id.values():
-        existing_expectations = session.exec(
-            select(NodeExpectation).where(NodeExpectation.proposal_node_id == node.id)
+    existing_expectations_by_node: dict[UUID, dict[UUID, NodeExpectation]] = {}
+    for node_record in node_by_logical_id.values():
+        node_exps = session.exec(
+            select(NodeExpectation).where(NodeExpectation.proposal_node_id == node_record.id)
         ).all()
-        counters["expectations_replaced"] += len(existing_expectations)
-        for expectation in existing_expectations:
-            session.delete(expectation)
+        existing_expectations_by_node[node_record.id] = {
+            exp.evaluation_element_id: exp for exp in node_exps
+        }
 
     for node_def in ordered_nodes:
         node = node_by_logical_id[node_def.id]
+        active_element_ids: set[UUID] = set()
+        node_existing = existing_expectations_by_node.get(node.id, {})
+
         for order_idx, expectation_def in enumerate(
             node_def.node_expectations, start=1
         ):
@@ -927,8 +932,11 @@ def _upsert_projection_v2(
                     "Missing evaluation element during expectation projection: "
                     f"{expectation_def.evaluation_element_id}"
                 )
-            session.add(
-                NodeExpectation(
+
+            active_element_ids.add(element_id)
+            exp = node_existing.get(element_id)
+            if exp is None:
+                exp = NodeExpectation(
                     proposal_node_id=node.id,
                     evaluation_element_id=element_id,
                     expectation_strength=ExpectationStrength(
@@ -940,8 +948,34 @@ def _upsert_projection_v2(
                     guidance_note=expectation_def.guidance_note,
                     order_index=order_idx,
                 )
-            )
+                session.add(exp)
+            else:
+                exp.expectation_strength = ExpectationStrength(
+                    expectation_def.expectation_strength
+                )
+                exp.evaluation_intent = EvaluationIntent(
+                    expectation_def.evaluation_intent
+                )
+                exp.guidance_note = expectation_def.guidance_note
+                exp.order_index = order_idx
+                session.add(exp)
             counters["expectations_replaced"] += 1
+
+        # Delete only orphaned expectations for this node
+        for el_id, exp in node_existing.items():
+            if el_id not in active_element_ids:
+                # Check for usage by review cards to avoid IntegrityError
+                usage = session.exec(
+                    select(ReviewCard).where(ReviewCard.node_expectation_id == exp.id)
+                ).first()
+                if usage:
+                    logger.warning(
+                        "Skipping deletion of orphaned expectation %s (used by review cards)",
+                        exp.id
+                    )
+                    continue
+
+                session.delete(exp)
 
     return counters
 

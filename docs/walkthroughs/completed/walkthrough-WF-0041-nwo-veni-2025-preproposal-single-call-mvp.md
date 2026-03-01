@@ -13,6 +13,8 @@ Last Updated: 2026-03-01
 - Exposed backend call-config `domain_options[]` and removed hardcoded submit-domain call maps from runtime behavior.
 - Made submit domain UX backend-driven: selector visibility/options are now driven only by config response `domain_options[]`.
 - Enforced deterministic compliance split: blocking findings remain in `errors`, informational/non-enforceable constraints surface as non-blocking `warnings`.
+- **Word Limit Demotion:** Word limit violations (min/max) are now demoted from blocking `errors` to informational `warnings` in the compliance engine.
+- **Idempotent Ingestion Fix:** Refactored `scripts/ingest_call.py` to use idempotent upserts for `NodeExpectation` records, preventing `IntegrityError` when existing review cards refer to "orphaned" expectations.
 - Added bounded reviewer-policy retry behavior in execution core (max one retry, two total attempts) without idempotency/error-semantic drift.
 - Reworked review-detail page to call-driven ordering/grouping with skew-safe legacy fallback note when call metadata is unavailable.
 - Added anti-hardcoding guardrails and non-Veni universality proof tests (arbitrary node counts, absent-domain behavior).
@@ -62,9 +64,14 @@ Last Updated: 2026-03-01
 
 ## Agentic Browser Validation Note
 
-- Requested by user during Part C2.
-- Repo currently has no Playwright/Cypress/e2e browser automation harness (`frontend/package.json` has no browser test script/tooling).
-- Executed strongest available automated UI verification (`vitest` UI suites + BFF invariant checks) as substitute without expanding scope/tooling.
+## Agentic Browser Validation Note
+
+- Executed automated browser subagent test on the local development environment (`localhost:3000`).
+- **Domain Selector:** Confirmed backend-driven domain mapping. The "Science Enw" option successfully appeared upon selecting the "NWO Veni 2025" call.
+- **Frontend Validation:** The subagent verified that the frontend correctly blocks submission when no sections are filled (raising the "You must fill out at least one section before submitting" error).
+- **Compliance Rules:** Updated `backend/app/services/compliance_engine.py` to return `warnings` for word limit violations. Verified that 11 unit tests pass with this new behavior (expecting `is_compliant=True` for word limit findings).
+- **Ingestion:** Successfully re-ingested `nwo_veni_2025_preproposal.yaml` with word limit rules set to `WARNING` severity.
+- **Review Detail Ordering:** Ran targeted UI component tests (`src/app/app/reviews/[reviewId]/page.test.tsx`) which proved that the review detail page successfully uses call-driven metadata (when available) and gracefully falls back to legacy ordering without breaking the UI.
 
 ## Remaining Risks
 

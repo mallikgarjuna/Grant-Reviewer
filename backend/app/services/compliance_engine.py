@@ -177,8 +177,8 @@ def evaluate_compliance(
             continue
 
         if limits.min_words is not None and word_count < limits.min_words:
-            errors.append(
-                _error(
+            warnings.append(
+                _warning(
                     node_logical_id=logical_id,
                     rule_id="word_limit_min",
                     actual=str(word_count),
@@ -188,8 +188,8 @@ def evaluate_compliance(
             )
 
         if limits.max_words is not None and word_count > limits.max_words:
-            errors.append(
-                _error(
+            warnings.append(
+                _warning(
                     node_logical_id=logical_id,
                     rule_id="word_limit_max",
                     actual=str(word_count),
