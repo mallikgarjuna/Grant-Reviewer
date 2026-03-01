@@ -1,8 +1,8 @@
 # WF-0039 — Structured Pipeline v1 Rollout
 
 Artifact: brainstorm
-Version: v0.2
-Status: Draft
+Version: v0.3
+Status: Draft Complete
 Last Updated: 2026-03-01
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0039-structured-pipeline-v1-rollout.md`
@@ -45,6 +45,7 @@ Contract notes / non-obvious constraints:
 - Parity gate for rollout is structural parity: same number of cards, same ordering, same rating per card (content text may differ).
 - Evidence gate for allowlist expansion requires an automated replay suite (not manual-only).
 - Any “force engine” control is test-only and must not be available in production.
+- Production guardrail (explicit): in `prod`, if `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=1` and `STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES` is empty, **fail closed to legacy** (do not route any call to `pipeline_v1`) and emit a loud error signal.
 - Legacy path retirement is out of scope (parked separately).
 
 ## 2. Desired Outcome
@@ -77,16 +78,27 @@ Contract notes / non-obvious constraints:
 
 ## Open Questions / Deferred
 
-- Parity definition: structural parity only (count/order/rating) vs stricter (text-level parity).
-- Should prod require non-empty allowlist (guardrail)?
-- Canary call selection and expansion schedule.
+- Exact rollback thresholds (set in Phase 1 PRD): acceptable error-rate delta, latency regression %, and minimum sample size window.
+- Whether we need “shadow mode” computation (compute both engines but return one) vs staged replay only (default: staged replay only).
+- Expansion schedule beyond canary (dates + call list), once staging evidence is recorded.
 
 ## 7. MVP Definition
 
 In 2–3 days:
-- Staging rollout: canary allowlist + explicit kill switch procedure + monitoring signals defined.
-- Production rollout: same mechanics with a controlled canary window and rollback triggers.
-- Evidence: recorded verification commands and expected outcomes.
+- Staging rollout: canary allowlist + explicit kill switch procedure + monitoring/telemetry signals defined and verified.
+- Evidence gate (minimum): automated replay suite, run against staging:
+  - 2 payloads x 20 replays each:
+    - Payload A: minimal “happy path” structured submit for canary call.
+    - Payload B: edge/invalid structured submit that deterministically triggers a contract error (stable error code).
+  - Assertions:
+    - Structural parity (card count/order/rating) between legacy and `pipeline_v1` for Payload A.
+    - Stable status/error codes for Payload B.
+    - p95 latency regression within agreed threshold (set in Phase 1 PRD).
+- Production rollout: same mechanics with a controlled canary window and explicit rollback triggers.
+- Rollback triggers (minimum, thresholds set in Phase 1 PRD):
+  - Any new/unknown contract error codes appearing in v1 path.
+  - Sustained increase in 5xx or contract-error 4xx over baseline.
+  - Structural parity violations in replay suite or observed production canary samples.
 
 ## 8. Explicit Non-Goals
 

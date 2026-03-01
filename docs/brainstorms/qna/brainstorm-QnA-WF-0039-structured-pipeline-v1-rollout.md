@@ -1,7 +1,7 @@
 # WF-0039 — Structured Pipeline v1 Rollout
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: Draft
 Last Updated: 2026-03-01
 
@@ -95,6 +95,26 @@ User instruction: "go with your recommendations" for Q1–Q5.
 - B) Manual smoke only: submit a few times, eyeball results.
 - C) Real-traffic only: monitor metrics, no replay harness.
 > Recommendation: A — Manual-only and traffic-only approaches let regressions slip; replay gives deterministic, repeatable evidence.
+> Selected: A
+
+---
+
+## Part B Clarifications (Applied in Part C)
+
+User instruction: "go with your recommendations".
+
+**Q1: In production, when `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=1` and `STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES` is empty, what do we do?**
+- A) Fail closed to legacy (Recommended): treat as misconfig; do not route to v1 for any call; log error loudly.
+- B) Hard fail startup: app refuses to boot (strong guardrail, but outage risk).
+- C) Allow all calls (not acceptable).
+> Recommendation: A — Prevents accidental global enablement while avoiding outage risk.
+> Selected: A
+
+**Q2: Minimum replay-suite definition for the evidence gate?**
+- A) 2 payloads x 20 replays (Recommended): one minimal “happy” payload + one “edge/invalid” payload; assert structural parity + stable error codes + p95 latency within threshold.
+- B) 1 payload x 5 replays (fast but weak).
+- C) 5 payloads x 50 replays (strong but slow).
+> Recommendation: A — Strong enough to catch regressions while staying within a short WF.
 > Selected: A
 
 **Q2: What’s the rollout unit?**
