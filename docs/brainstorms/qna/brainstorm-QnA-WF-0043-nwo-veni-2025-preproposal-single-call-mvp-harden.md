@@ -31,6 +31,7 @@ Last Updated: 2026-03-01
 - C) Persist the Review but still return an API error.
  > Recommendation: A — aligns with current runtime behavior and supports `/app/reviews` rendering (review exists even when execution fails). B/C would change semantics and break the “persistence first, then status update” model.
  > **Selected: A**
+ > Clarification (2026-03-01): “validation failure” here refers to service/engine execution/contract validation *after* a Review row exists (i.e., failures that surface as `ReviewStatus=FAILED` + `overall_summary`). Endpoint-level request validation errors (e.g., missing `Idempotency-Key`, unknown node IDs, stage mismatch) return API errors and must not create a Review.
 
 **Q4: What form should the “regression hardening” take (no new tooling)?**
 - A) Add/extend deterministic `pytest` contract tests (API + service seams) with a stubbed LLM client.

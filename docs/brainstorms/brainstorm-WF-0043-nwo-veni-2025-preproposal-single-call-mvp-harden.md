@@ -1,7 +1,7 @@
 # WF-0043 — NWO Veni 2025 Preproposal: Single-Call MVP Hardening
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-01
 
@@ -55,7 +55,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0043-nwo-veni-2025-
 
 - Hardening target flow: `POST /api/structured-review` for `nwo_veni_2025_preproposal` only. (Q1)
 - Primary “trust” risk: **contract drift** (error semantics + idempotency + persistence). (Q2)
-- Execution-time failure contract: persist Review + return `200` `{review_id, status}` even on timeout/LLM/validation/policy-blocking failures, with stable failure summary in `overall_summary`. (Q3)
+- Execution-time failure contract (after Review row exists): persist Review + return `200` `{review_id, status}` on service/engine execution failures (timeout/engine-contract/engine-exec failures), with stable failure summary conventions in `overall_summary`. Endpoint-level request/validation errors return API errors and must not create a Review. (Q3)
 - Regression hardening mechanism: deterministic `pytest` contract suite (API + service seams) using a stubbed LLM client. (Q4)
 - Deterministic verification bundle = docs checklist + explicit pytest subset + a versioned fixture matrix. (Q5)
 
@@ -149,7 +149,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0043-nwo-veni-2025-
 
 ## Open Questions / Deferred
 
-- If TTL expiry reuse is not fully assertable in tests, document the intended behavior precisely and assert what is feasible without adding new tooling.
+- TTL expiry reuse: document semantics; assert replay+mismatch within TTL; skip expiry-time travel without adding time-control tooling.
 - Keep the fixture matrix small (8–12 cases); do not expand into a full endpoint decision-table project in this WF.
 
 ---
@@ -217,6 +217,8 @@ uv run pytest -q -k wf_0043  # target: a small, focused contract suite added in 
 ```
 
 ### Fixture matrix (target)
+
+Target fixture location (to be created in Phase 3): `backend/tests/fixtures/wf_0043_contract_matrix.yaml`
 
 - 8–12 parametrized cases:
   - success
