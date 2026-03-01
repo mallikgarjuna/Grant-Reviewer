@@ -1,0 +1,12 @@
+cases:
+  - case_id: replay_persists_history
+    surface: structured_api
+    expected_http_status: 200
+    expected_error_code: null
+    expect_review_persisted: true
+    expected_review_status: COMPLETED
+    expected_summary_convention: completed_nonempty
+    idempotency_key: idem-wf0043-replay-1
+    request_nodes:
+      - node_logical_id: academic_profile
+        text: profile text for deterministic replay

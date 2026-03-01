@@ -7,7 +7,7 @@ Last Updated: 2026-03-01
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: deterministic success replay + persistence contract
+### [x] Task 1 — Tracer bullet: deterministic success replay + persistence contract
 
 Goal:
 - Prove one end-to-end hardening slice for `POST /api/structured-review` where identical payload + `Idempotency-Key` replay is deterministic and persisted review identity/status remain stable for `/app/reviews` retrieval behavior.

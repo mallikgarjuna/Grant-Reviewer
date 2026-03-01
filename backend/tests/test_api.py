@@ -9,9 +9,11 @@ import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any, TypedDict
 from uuid import UUID
 
 from fastapi.testclient import TestClient
+import yaml
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, select
 
@@ -55,6 +57,36 @@ class SeededIDs:
     other_call_node_id: UUID
     structured_call_id: UUID
     structured_call_code: str
+
+
+class Wf0043ContractCase(TypedDict):
+    case_id: str
+    surface: str
+    expected_http_status: int
+    expected_error_code: str | None
+    expect_review_persisted: bool
+    expected_review_status: str | None
+    expected_summary_convention: str | None
+    idempotency_key: str
+    request_nodes: list[dict[str, str]]
+
+
+def _load_wf0043_matrix_cases() -> list[Wf0043ContractCase]:
+    fixture_path = Path("tests/fixtures/wf_0043_contract_matrix.yaml")
+    loaded = yaml.safe_load(fixture_path.read_text(encoding="utf-8"))
+    raw_cases = loaded.get("cases", [])
+    return raw_cases if isinstance(raw_cases, list) else []
+
+
+def _get_wf0043_case(case_id: str, *, surface: str) -> Wf0043ContractCase:
+    for candidate in _load_wf0043_matrix_cases():
+        if candidate["case_id"] == case_id and candidate["surface"] == surface:
+            return candidate
+    raise AssertionError(f"WF-0043 case not found: {surface}/{case_id}")
+
+
+def _non_empty_str(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
 
 
 def reset_database() -> None:
@@ -1395,6 +1427,54 @@ def test_structured_review_contract_parity(monkeypatch) -> None:
     assert mismatch.status_code == 409
     mismatch_payload = mismatch.json()
     assert mismatch_payload["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+
+
+def test_wf0043_contract_structured_api_replay_persists_history(monkeypatch) -> None:
+    case = _get_wf0043_case("replay_persists_history", surface="structured_api")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    payload = {
+        "call_id": str(seeded_ids.structured_call_id),
+        "nodes": case["request_nodes"],
+    }
+
+    first = post_structured_review(
+        client=client,
+        payload=payload,
+        user_id="user_wf0043_contract",
+        idempotency_key=case["idempotency_key"],
+    )
+    second = post_structured_review(
+        client=client,
+        payload=payload,
+        user_id="user_wf0043_contract",
+        idempotency_key=case["idempotency_key"],
+    )
+
+    assert first.status_code == case["expected_http_status"]
+    assert second.status_code == case["expected_http_status"]
+    first_payload = first.json()
+    second_payload = second.json()
+    assert first_payload["review_id"] == second_payload["review_id"]
+    assert first_payload["status"] == case["expected_review_status"]
+    assert second_payload["status"] == case["expected_review_status"]
+
+    if case["expect_review_persisted"]:
+        list_response = list_reviews(client=client, user_id="user_wf0043_contract")
+        assert list_response.status_code == 200
+        listed_review_ids = {item["id"] for item in list_response.json()["reviews"]}
+        assert first_payload["review_id"] in listed_review_ids
+
+        detail_response = get_review_detail(
+            client=client,
+            review_id=first_payload["review_id"],
+            user_id="user_wf0043_contract",
+        )
+        assert detail_response.status_code == 200
+        detail_payload = detail_response.json()
+        assert detail_payload["review"]["status"] == case["expected_review_status"]
+
+        if case["expected_summary_convention"] == "completed_nonempty":
+            assert _non_empty_str(detail_payload["review"]["overall_summary"])
 
 
 def test_review_detail_retains_cards_when_evaluation_element_is_archived(
