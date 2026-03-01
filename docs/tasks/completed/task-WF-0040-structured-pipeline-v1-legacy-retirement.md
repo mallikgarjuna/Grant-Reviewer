@@ -71,7 +71,7 @@ Parallelizable: no
 Files to modify:
 - `backend/scripts/evaluate_rollout_health.py`
 - `backend/tests/test_rollout_health.py`
-- `docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
+- `docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
 Acceptance Criteria:
 - Health evaluator reports explicit pass/fail against retirement gate defaults.
 - Walkthrough checklist references evaluator outputs as deletion precondition evidence.
@@ -149,7 +149,7 @@ Depends on: Task 5
 Enables: none
 Parallelizable: no
 Files to modify:
-- `docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
+- `docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
 - `backend/README.md`
 - `docs/logs/decisions.md`
 Acceptance Criteria:
@@ -159,7 +159,7 @@ Acceptance Criteria:
 TDD Plan:
 - N/A (documentation and operational artifact consolidation only).
 Verification Steps:
-- `rg -n \"Replay/parity artifact|Rollout health output|owner approval|revert-deploy|config-first rollback\" docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md backend/README.md docs/logs/decisions.md`
+- `rg -n \"Replay/parity artifact|Rollout health output|owner approval|revert-deploy|config-first rollback\" docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md backend/README.md docs/logs/decisions.md`
 - `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t6.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py tests/test_rollout_health.py`
 Risks (if any):
 - Missing evidence links can delay approval even if code changes are complete.

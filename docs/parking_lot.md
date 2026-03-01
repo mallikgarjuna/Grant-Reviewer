@@ -89,6 +89,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 | 7 | Add node hierarchy selector | product | Implement only after P1 #1-#3 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
 | 8 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 | 9 | Migrate `erc_cog_2026_full_official.yaml` to v2 (WF-0038-native) | tech-debt | Re-author/migrate ERC CoG YAML from legacy v1 shape (`short_name` + recursive `children`) to v2 call-definition shape (`funding_agency.id`, flat `proposal_nodes`, `parent_logical_id`) so it can be validated/ingested and safely routed through pipeline-v1. (Ref: user request 2026-02-28; file `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml`.) | 2026-02-28 |
+| 10 | WF-0040 gate evidence backfill (runtime observation + counts) | ops | Capture real staging/prod observation-window evidence and per-call production counts for legacy-retirement safety confirmation; close residual waiver risk from WF-0040. (Ref: WF-0040 walkthrough waiver closure, 2026-03-01.) | 2026-03-01 |
 
 ### P1 Rationale Snapshot (2026-02-26)
 
@@ -205,3 +206,4 @@ Promotion dependency note:
 - **v2.2** (2026-02-28): Parked explicit follow-up to migrate `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml` from legacy v1 shape to v2 WF-0038-native call-definition format.
 - **v2.3** (2026-03-01): Added P1 #10 for legacy structured-review engine retirement after pipeline-v1 rollout and backfilled WF initiative log with WF-0037/WF-0038 plus new WF-0039.
 - **v2.4** (2026-03-01): Promoted P1 #10 to WF-0040 (`structured-pipeline-v1-legacy-retirement`) and removed it from active P1 backlog.
+- **v2.5** (2026-03-01): Added P1 #10 follow-up to backfill WF-0040 runtime evidence after waiver-based closure.

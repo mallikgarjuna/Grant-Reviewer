@@ -1140,3 +1140,13 @@
 - **Why**: Keeps the ingestion payload simple and avoids Alembic migration thrash while correctly expanding the schema for hierarchical data.
 - **Tradeoff**: Ingestion script must perform topological sorting/two-pass insertion to construct the tree and defend against cycle loops.
 - **Status**: Approved in PRD v0.2.
+
+## Date: 2026-03-01 (WF-0040: Structured Pipeline v1 Legacy Retirement)
+
+### AD 40.6: Waiver-Based Workflow Closure for Missing Runtime Evidence
+- **WF ID**: WF-0040
+- **Context**: WF-0040 implementation and automated verification are complete, but required staging/production observation-window evidence, per-call production counts, and formal owner sign-off artifacts are unavailable in current environment/session.
+- **Decision**: Close WF-0040 as a documented waiver-based closure (`Done`) with explicit residual risks, record owner chat approval, and park a mandatory follow-up item to collect real runtime evidence before public-launch hardening/scale commitments.
+- **Why**: Preserves delivery momentum while keeping risk/accountability explicit instead of falsely marking unavailable evidence as complete.
+- **Tradeoff**: Runtime retirement safety is not fully evidenced yet; this risk remains open until follow-up evidence is captured and reviewed.
+- **Status**: Approved (waiver recorded in walkthrough + index closure + parking-lot follow-up).

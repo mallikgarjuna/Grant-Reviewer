@@ -103,7 +103,7 @@ Last Updated: 2026-03-01
   - retained and required for rollout health threshold evaluation.
 - `backend/tests/`
   - update/remove dual-path tests; add v1-only routing unreachability and API contract invariants coverage.
-- `docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
+- `docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
   - readiness checklist SSOT with evidence links and approval checkpoint.
 - `backend/README.md` and workflow docs
   - update operator runbook text to single-engine truth.

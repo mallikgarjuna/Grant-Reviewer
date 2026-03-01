@@ -1,8 +1,8 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: walkthrough
-Version: v1.2
-Status: In progress
+Version: v1.3
+Status: Complete (Waived Gate Closure)
 Last Updated: 2026-03-01
 
 ---
@@ -25,6 +25,7 @@ Use this checklist as the gate before deleting legacy execution-path code.
 - [x] No contract-semantic regression in invariant errors (`CALL_CONFIG_DIGEST_MISMATCH`, `EXPECTATION_REF_UNRESOLVABLE`, timeout classification, validation ordering behavior).
 - [x] Rollback runbook validated in pre-delete posture (config-first while legacy code exists).
 - [ ] Explicit owner approval recorded (tech lead/repo owner sign-off).
+- [x] Waiver-based closure recorded with explicit residual risks and follow-up backlog item.
 
 ## Evidence Links
 
@@ -66,20 +67,26 @@ Use this checklist as the gate before deleting legacy execution-path code.
 - Re-opened WF status from `Done` to `Phase 3 (Gate Pending)` and moved WF artifacts back to active paths to match unchecked approval/evidence gates.
 - Removed stale call-level routing toggle references in call-yaml runtime docs.
 
+## Gate Closure Mode
+
+- WF-0040 is closed via documented waiver because required staging/production observation evidence and per-call production counts are unavailable in the current environment.
+- This closure confirms implementation completion and verification evidence only; it does **not** claim production observation-window validation.
+- A follow-up backlog item is required before public-launch hardening/scale commitments.
+
 ## Remaining Risks
 
-- Deletion approval remains blocked until staging/prod observation windows and per-call production sample thresholds are recorded with fresh artifacts.
-- Tech lead/repo owner sign-off is still pending in Approval Record.
-- Current replay/health artifacts are local simulated evidence; production/staging observation-window evidence still needs real environment captures before deletion approval.
+- Staging/prod observation windows and per-call production sample thresholds remain unproven and must be backfilled in a follow-up WF.
+- Current replay/health artifacts are local simulated evidence; they are not substitutes for real environment evidence.
+- If runtime incidents occur, fallback is operational rollback posture documented in backend runbook updates from this WF.
 
 ## Workflow Status Clarification
 
-- WF-0040 implementation tasks are complete, but ship/deletion gate evidence and explicit owner approval are still pending.
-- `docs/index.md` tracks this WF as `Phase 3 (Gate Pending)` until checklist/approval closure.
+- WF-0040 implementation tasks are complete and workflow closure is recorded as waiver-based.
+- `docs/index.md` now tracks this WF as `Done` with artifacts archived under `completed/`.
 
 ## Approval Record
 
-- Owner (tech lead/repo owner): TODO
-- Decision: TODO (`approve deletion gate` / `hold`)
-- Date: TODO
-- Notes: TODO
+- Owner (tech lead/repo owner): Repo owner (chat approval)
+- Decision: `waive-gate-close` (accept residual risk, close WF artifacts, track evidence backfill as follow-up)
+- Date: 2026-03-01
+- Notes: Missing staging/prod observation-window evidence + per-call production counts acknowledged; closure allowed for MVP momentum with explicit follow-up backlog item.
