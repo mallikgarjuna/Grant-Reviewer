@@ -5,9 +5,12 @@ from __future__ import annotations
 import json
 import re
 import time
+from pathlib import Path
+from typing import TypedDict
 from uuid import uuid4
 
 import pytest
+import yaml
 
 from app.models.domain import (
     EvaluationIntent,
@@ -24,6 +27,37 @@ from app.services.review_execution_core import (
 from app.services.reviewer_policy import ReviewerPolicyRule
 
 pytestmark = pytest.mark.no_db
+
+
+class Wf0043PolicyCase(TypedDict):
+    case_id: str
+    surface: str
+    expected_http_status: int
+    expected_error_code: str | None
+    expect_review_persisted: bool
+    expected_review_status: str
+    expected_summary_convention: str
+    enforcement_mode: str
+    forbidden_term: str
+    feedback_text: str
+
+
+def _load_wf0043_policy_cases() -> list[Wf0043PolicyCase]:
+    fixture = yaml.safe_load(
+        Path("tests/fixtures/wf_0043_contract_matrix.yaml").read_text(encoding="utf-8")
+    )
+    raw_cases = fixture.get("cases", [])
+    if not isinstance(raw_cases, list):
+        return []
+    return [
+        case
+        for case in raw_cases
+        if isinstance(case, dict) and case.get("surface") == "single_snippet_policy"
+    ]
+
+
+def _wf0043_policy_case_id(value: str) -> str:
+    return f"wf0043_contract_single_snippet_policy_{value}"
 
 
 class EchoExpectationLLMClient:
@@ -297,6 +331,65 @@ def test_core_policy_blocking_fails_after_single_retry() -> None:
     assert result.failure is not None
     assert result.failure.category == ExecutionFailureCategory.POLICY_BLOCKING
     assert llm_client.calls == 2
+
+
+@pytest.mark.parametrize(
+    "case",
+    _load_wf0043_policy_cases(),
+    ids=lambda case: _wf0043_policy_case_id(case["case_id"]),
+)
+def test_wf0043_contract_single_snippet_policy_modes(case: Wf0043PolicyCase) -> None:
+    rule = ReviewerPolicyRule(
+        id=f"wf0043_{case['case_id']}",
+        applies_to_stage="STEP_1",
+        applies_to_node_ids=(),
+        rule_type="criterion_scope",
+        instruction="WF-0043 deterministic policy test rule",
+        severity="WARNING",
+        enforcement_mode=case["enforcement_mode"],
+        forbidden_terms=(case["forbidden_term"],),
+    )
+    core = ReviewExecutionCore(
+        llm_client=PolicyTermLLMClient(case["feedback_text"]),
+        timeout_seconds=0.5,
+    )
+
+    result = core.execute_assessable_node(
+        node=_build_node(),
+        snippet_text="Some snippet text",
+        expectations=_build_expectations(count=1),
+        reviewer_policy_rules=[rule],
+    )
+
+    assert case["expected_http_status"] == 200
+    assert case["expected_error_code"] is None
+    assert case["expect_review_persisted"] is True
+
+    if case["enforcement_mode"] == "BLOCKING":
+        assert result.failure is not None
+        assert result.failure.category == ExecutionFailureCategory.POLICY_BLOCKING
+        assert case["expected_review_status"] == "FAILED"
+        assert case["expected_summary_convention"] == "POLICY_BLOCKING"
+        return
+
+    assert result.failure is None
+    assert case["expected_review_status"] == "COMPLETED"
+    if case["enforcement_mode"] == "POST_CHECK":
+        assert len(result.warning_violations) == 1
+        assert case["expected_summary_convention"] == "POST_CHECK_WARNING"
+    else:
+        assert result.warning_violations == []
+        assert case["expected_summary_convention"] == "PROMPT_ONLY_NON_BLOCKING"
+        assert "WF-0043 deterministic policy test rule" in result.prompt
+
+
+def test_wf0043_contract_single_snippet_policy_matrix_coverage() -> None:
+    cases = _load_wf0043_policy_cases()
+    case_ids = {case["case_id"] for case in cases}
+    assert case_ids == {"policy_blocking", "policy_post_check", "policy_prompt_only"}
+    for case in cases:
+        assert case["surface"] == "single_snippet_policy"
+        assert isinstance(case["feedback_text"], str) and bool(case["feedback_text"].strip())
 
 
 def test_core_emits_telemetry_start_complete() -> None:

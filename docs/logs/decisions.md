@@ -1176,3 +1176,39 @@
 - **Why**: Preserves delivery momentum while keeping risk/accountability explicit instead of falsely marking unavailable evidence as complete.
 - **Tradeoff**: Runtime retirement safety is not fully evidenced yet; this risk remains open until follow-up evidence is captured and reviewed.
 - **Status**: Approved (waiver recorded in walkthrough + index closure + parking-lot follow-up).
+
+## Date: 2026-03-01 (WF-0043: NWO Veni 2025 Preproposal Single-Call MVP Hardening)
+
+### AD 43.1: Preserve persistence semantics via explicit failure-boundary split
+- **WF ID**: WF-0043
+- **Context**: The hardening scope must preserve API error semantics/idempotency and `/app/reviews` persistence behavior without behavior changes.
+- **Decision**: Freeze a two-boundary contract:
+  - endpoint request/validation errors return API errors and do not persist `Review`
+  - post-persistence execution failures keep persisted `ReviewStatus=FAILED` semantics with stable summary conventions
+- **Why**: Prevents accidental contract drift while strengthening trust-critical regression coverage.
+- **Tradeoff**: Requires explicit fixture/assertion mapping per boundary case.
+- **Status**: Approved.
+
+### AD 43.2: Primary hardening surface is structured endpoint; policy seam hardening remains single-snippet
+- **WF ID**: WF-0043
+- **Context**: Brainstorm scope anchors on `POST /api/structured-review`, but reviewer-policy mode semantics are enforced in the single-snippet seam.
+- **Decision**: Keep primary hardening target as `POST /api/structured-review` for call `nwo_veni_2025_preproposal`, and include minimal deterministic policy-mode regression tests in single-snippet seam (`BLOCKING`/`POST_CHECK`/`PROMPT_ONLY`) without changing runtime behavior.
+- **Why**: Preserves atomic scope while covering the trust-critical policy regression surface.
+- **Tradeoff**: Hardening spans two seams and needs clear fixture partitioning to avoid confusion.
+- **Status**: Approved.
+
+### AD 43.3: Use a compact fixture matrix as the canonical WF-0043 regression contract source
+- **WF ID**: WF-0043
+- **Context**: Existing tests are broad but do not provide a single WF-specific deterministic contract suite.
+- **Decision**: Introduce a small fixture matrix (`8-12` cases) as the canonical source for WF-0043 assertions and map each case to HTTP semantics, persistence expectation, and status/summary convention.
+- **Why**: Creates a repeatable, fast verification bundle without adding new tooling.
+- **Tradeoff**: Case curation is strict; additional long-tail scenarios remain deferred.
+- **Status**: Approved.
+
+### AD 43.4: Focused-run contract suite must be explicitly selectable
+- **WF ID**: WF-0043
+- **Context**: Verification bundle value depends on maintainers being able to run only WF-0043 contract checks quickly and deterministically.
+- **Decision**: Require a stable focused-run selection convention (marker/name pattern) for WF-0043 tests, and document it in verification docs.
+- **Why**: Keeps pre-merge trust checks fast and reproducible without new tooling.
+- **Tradeoff**: Test naming/marker discipline becomes part of maintenance burden.
+- **Status**: Approved.

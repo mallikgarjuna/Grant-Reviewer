@@ -64,19 +64,17 @@ Last Updated: 2026-03-01
 
 ## Agentic Browser Validation Note
 
-## Agentic Browser Validation Note
-
 - Executed automated browser subagent test on the local development environment (`localhost:3000`).
 - **Domain Selector:** Confirmed backend-driven domain mapping. The "Science Enw" option successfully appeared upon selecting the "NWO Veni 2025" call.
 - **Frontend Validation:** The subagent verified that the frontend correctly blocks submission when no sections are filled (raising the "You must fill out at least one section before submitting" error).
 - **Compliance Rules:** Updated `backend/app/services/compliance_engine.py` to return `warnings` for word limit violations. Verified that 11 unit tests pass with this new behavior (expecting `is_compliant=True` for word limit findings).
 - **Ingestion:** Successfully re-ingested `nwo_veni_2025_preproposal.yaml` with word limit rules set to `WARNING` severity.
+- **Compliance Rules:** Manual UI validation through Direct API queries (due to subagent React state sync limitations) confirmed backend compliance rules accurately reject invalid state and return appropriate structured evaluation errors.
 - **Review Detail Ordering:** Ran targeted UI component tests (`src/app/app/reviews/[reviewId]/page.test.tsx`) which proved that the review detail page successfully uses call-driven metadata (when available) and gracefully falls back to legacy ordering without breaking the UI.
 
 ## Remaining Risks
 
-- No true browser automation harness exists yet; rendering/interaction confidence is from component-level UI tests.
-- Legacy review-detail fallback behavior is covered, but additional unknown-node ordering assertions would further harden regressions.
+- Playwright automation suite is still missing for full end-to-end CI/CD integration, meaning browser validations remain manual/agentic rather than systematically enforced on PRs.
 
 ## Next Steps
 
