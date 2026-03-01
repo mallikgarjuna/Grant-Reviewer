@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 from app.engine.compat.review_card_mapper import map_findings_to_review_cards
-from app.engine.contracts import DiagnosticFindingV1, PipelineResult, ReviewRequestV1, SubjectRef
+from app.engine.contracts import (
+    DiagnosticFindingV1,
+    PipelineResult,
+    ReviewRequestV1,
+    SubjectRef,
+)
 from app.engine.findings.aggregator import aggregate_findings
 from app.engine.modes import project_findings_for_mode
 from app.engine.telemetry import build_pipeline_telemetry

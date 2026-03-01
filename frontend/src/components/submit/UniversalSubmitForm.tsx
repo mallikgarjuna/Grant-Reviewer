@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { ComplianceBypassModal } from "@/components/submit/ComplianceBypassModal";
 import type {
   ApiError,
   CallNodesMetadataResponse,
@@ -13,9 +12,11 @@ import type {
   StructuredReviewNodeInput,
 } from "@/lib/bff/types";
 import { buildReviewDetailRoute, SIGN_IN_ROUTE } from "@/lib/routes";
-import { getDomainOptionsForCall } from "@/lib/submit/domainOptions";
 import { clearDraft, loadDraft, saveDraft } from "@/lib/submit/draftStore";
-import { loadStructuredCalls } from "@/lib/submit/loadStructuredCalls";
+import {
+  loadStructuredCalls,
+  type StructuredCallSummary,
+} from "@/lib/submit/loadStructuredCalls";
 import { buildRenderModel, type RenderModelResult } from "@/lib/submit/renderModel";
 import { trackClientEvent } from "@/lib/telemetry/clientTelemetry";
 
@@ -63,7 +64,7 @@ async function parseApiError(response: Response): Promise<ApiError> {
 
 export function UniversalSubmitForm() {
   const router = useRouter();
-  const [calls, setCalls] = useState<CallSummary[]>([]);
+  const [calls, setCalls] = useState<StructuredCallSummary[]>([]);
   const [isLoadingCalls, setIsLoadingCalls] = useState(true);
   const [callError, setCallError] = useState<string | null>(null);
   const [gatingWarning, setGatingWarning] = useState<string | null>(null);
@@ -78,9 +79,8 @@ export function UniversalSubmitForm() {
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const [hardBlockErrors, setHardBlockErrors] = useState<string[]>([]);
   const [complianceWarnings, setComplianceWarnings] = useState<
-    ComplianceCheckResponse["errors"]
+    ComplianceCheckResponse["warnings"]
   >([]);
-  const [isBypassModalOpen, setIsBypassModalOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -221,7 +221,7 @@ export function UniversalSubmitForm() {
   }, [calls, selectedCallId]);
 
   const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
-  const domainOptions = selectedCall ? getDomainOptionsForCall(selectedCall.code) : [];
+  const domainOptions = selectedCall?.domainOptions ?? [];
   const effectiveDomain =
     selectedDomain && domainOptions.some((option) => option.value === selectedDomain)
       ? selectedDomain
@@ -279,7 +279,6 @@ export function UniversalSubmitForm() {
     setFormError(null);
     setHardBlockErrors([]);
     setComplianceWarnings([]);
-    setIsBypassModalOpen(false);
     if (!selectedCallId) {
       setFormError("Funding call is required before submission.");
       return;
@@ -372,26 +371,24 @@ export function UniversalSubmitForm() {
       }
 
       const compliance = (await complianceResponse.json()) as ComplianceCheckResponse;
-      if (compliance.errors.length > 0) {
-        setComplianceWarnings(compliance.errors);
-        setIsBypassModalOpen(true);
+      setComplianceWarnings(compliance.warnings);
+
+      const blockingErrors = compliance.errors.filter((error) => error.is_blocking);
+      if (blockingErrors.length > 0) {
+        // Compliance errors can be duplicated across nodes (e.g., same word-limit rule);
+        // prefix with node label for clarity and stable disambiguation.
+        const labelByLogicalId = new Map(
+          renderModel.nodes.map((node) => [node.nodeLogicalId, node.label] as const),
+        );
+        setHardBlockErrors(
+          blockingErrors.map((error) => {
+            const prefix =
+              labelByLogicalId.get(error.node_logical_id) ?? error.node_logical_id;
+            return `${prefix}: ${error.message}`;
+          }),
+        );
         return;
       }
-      await submitStructuredReview(nonEmptyNodes);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handleBypassConfirm() {
-    setIsBypassModalOpen(false);
-    const nonEmptyNodes = buildNodesPayload();
-    if (nonEmptyNodes.length === 0) {
-      setFormError("You must fill out at least one section before submitting.");
-      return;
-    }
-    setIsSubmitting(true);
-    try {
       await submitStructuredReview(nonEmptyNodes);
     } finally {
       setIsSubmitting(false);
@@ -503,8 +500,20 @@ export function UniversalSubmitForm() {
             <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               <p className="font-medium">Submission blocked</p>
               <ul className="mt-1 list-disc pl-5">
-                {hardBlockErrors.map((line) => (
-                  <li key={line}>{line}</li>
+                {hardBlockErrors.map((line, index) => (
+                  <li key={`${index}:${line}`}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {complianceWarnings.length > 0 ? (
+            <div className="rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              <p className="font-medium">Informational guidance (non-blocking)</p>
+              <ul className="mt-1 list-disc pl-5">
+                {complianceWarnings.map((warning) => (
+                  <li key={`${warning.node_logical_id}:${warning.rule_id}`}>
+                    {warning.message}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -530,15 +539,6 @@ export function UniversalSubmitForm() {
           </button>
         </form>
       </div>
-      <ComplianceBypassModal
-        isOpen={isBypassModalOpen}
-        isSubmitting={isSubmitting}
-        onCancel={() => setIsBypassModalOpen(false)}
-        onConfirm={() => {
-          void handleBypassConfirm();
-        }}
-        warnings={complianceWarnings}
-      />
     </main>
   );
 }

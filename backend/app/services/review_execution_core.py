@@ -14,6 +14,7 @@ from app.services.prompt_builder import build_review_prompt
 from app.services.reviewer_policy import ReviewerPolicyRule, find_policy_violations
 
 logger = logging.getLogger(__name__)
+POLICY_BLOCKING_MAX_ATTEMPTS = 2
 
 
 class ExecutionFailureCategory(StrEnum):
@@ -159,17 +160,76 @@ class ReviewExecutionCore:
                 message=str(err),
             )
 
-        try:
-            parsed_response = parse_llm_response(raw_response)
-            self._validate_feedbacks(
-                feedbacks=parsed_response.feedbacks,
-                expectations=expectations,
-            )
-            blocking_violations, warning_violations = find_policy_violations(
-                feedback_texts=[feedback.feedback for feedback in parsed_response.feedbacks],
-                policy_rules=reviewer_policy_rules,
-            )
-            if blocking_violations:
+        while True:
+            try:
+                parsed_response = parse_llm_response(raw_response)
+                self._validate_feedbacks(
+                    feedbacks=parsed_response.feedbacks,
+                    expectations=expectations,
+                )
+                blocking_violations, warning_violations = find_policy_violations(
+                    feedback_texts=[feedback.feedback for feedback in parsed_response.feedbacks],
+                    policy_rules=reviewer_policy_rules,
+                )
+                if not blocking_violations:
+                    result = NodeExecutionResult(
+                        prompt=prompt,
+                        raw_response=raw_response,
+                        feedbacks=parsed_response.feedbacks,
+                        warning_violations=warning_violations,
+                    )
+                    self._emit_complete(base_payload)
+                    return result
+
+                attempts = 1
+                while attempts < POLICY_BLOCKING_MAX_ATTEMPTS:
+                    attempts += 1
+                    try:
+                        raw_response = generate_with_timeout(
+                            llm_client=self._llm_client,
+                            prompt=prompt,
+                            timeout_seconds=self._timeout_seconds,
+                        )
+                    except TimeoutError:
+                        return self._failure_result(
+                            payload=base_payload,
+                            prompt=prompt,
+                            raw_response=None,
+                            category=ExecutionFailureCategory.TIMEOUT,
+                            message=(
+                                f"LLM call timed out after {self._timeout_seconds:.2f}s."
+                            ),
+                        )
+                    except LLMClientError as err:
+                        return self._failure_result(
+                            payload=base_payload,
+                            prompt=prompt,
+                            raw_response=None,
+                            category=ExecutionFailureCategory.LLM_FAILURE,
+                            message=str(err),
+                        )
+
+                    parsed_response = parse_llm_response(raw_response)
+                    self._validate_feedbacks(
+                        feedbacks=parsed_response.feedbacks,
+                        expectations=expectations,
+                    )
+                    blocking_violations, warning_violations = find_policy_violations(
+                        feedback_texts=[
+                            feedback.feedback for feedback in parsed_response.feedbacks
+                        ],
+                        policy_rules=reviewer_policy_rules,
+                    )
+                    if not blocking_violations:
+                        result = NodeExecutionResult(
+                            prompt=prompt,
+                            raw_response=raw_response,
+                            feedbacks=parsed_response.feedbacks,
+                            warning_violations=warning_violations,
+                        )
+                        self._emit_complete(base_payload)
+                        return result
+
                 return self._failure_result(
                     payload=base_payload,
                     prompt=prompt,
@@ -178,22 +238,14 @@ class ReviewExecutionCore:
                     message="; ".join(blocking_violations),
                     warning_violations=warning_violations,
                 )
-            result = NodeExecutionResult(
-                prompt=prompt,
-                raw_response=raw_response,
-                feedbacks=parsed_response.feedbacks,
-                warning_violations=warning_violations,
-            )
-            self._emit_complete(base_payload)
-            return result
-        except ValueError as err:
-            return self._failure_result(
-                payload=base_payload,
-                prompt=prompt,
-                raw_response=raw_response,
-                category=ExecutionFailureCategory.VALIDATION_FAILURE,
-                message=str(err),
-            )
+            except ValueError as err:
+                return self._failure_result(
+                    payload=base_payload,
+                    prompt=prompt,
+                    raw_response=raw_response,
+                    category=ExecutionFailureCategory.VALIDATION_FAILURE,
+                    message=str(err),
+                )
 
     def _validate_feedbacks(
         self,

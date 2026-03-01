@@ -1,5 +1,31 @@
 # Architectural Decisions
 
+## Date: 2026-03-01 (WF-0041: NWO Veni 2025 preproposal single-call MVP)
+
+### AD 41.1: Review detail contract adds generic call identity
+- **WF ID**: WF-0041
+- **Context**: Review detail UI must remove Veni-only ordering/label hardcoding and order sections by call node `order_index`.
+- **Decision**: Extend review detail response generically with `call_id` and `call_code`, then resolve ordered nodes via call metadata instead of per-call frontend constants.
+- **Why**: Enables deterministic call-driven ordering/grouping with no per-call maps while keeping single-call MVP scope.
+- **Tradeoff**: Adds a small API response expansion that downstream clients must tolerate.
+- **Status**: Approved.
+
+### AD 41.2: Domain UX is backend-driven via `domain_options[]`
+- **WF ID**: WF-0041
+- **Context**: Frontend domain options were maintained in per-call maps, violating no-hardcoding constraints.
+- **Decision**: Treat backend metadata/config `domain_options[]` (possibly empty) as the only source for domain selector visibility/options.
+- **Why**: Keeps domain behavior call-specific by declaration and removes frontend/backend per-call branching for domain labels/options.
+- **Tradeoff**: Requires metadata availability/quality for each supported call context.
+- **Status**: Approved.
+
+### AD 41.3: Compliance honesty is deterministic-blocking only
+- **WF ID**: WF-0041
+- **Context**: Some call constraints are non-enforceable deterministically in plain text, but UX must remain trustworthy.
+- **Decision**: Block only deterministic enforceable checks (presence + word limits + domain-aware word limits); show non-enforceable constraints as informational guidance.
+- **Why**: Preserves trust by avoiding false-precision blocking while still enforcing clear deterministic constraints.
+- **Tradeoff**: Some policy guidance remains advisory until richer parsing/structured inputs are introduced.
+- **Status**: Approved.
+
 ## Date: 2026-03-01 (WF-0040: Structured pipeline v1 legacy retirement)
 
 ### AD 40.1: Legacy retirement scope is execution-path only

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 from app.models.domain import CallDefinition, FundingCall
 from app.repositories.review_repository import ReviewRepository
 from app.schemas.api import NodeMetadataDTO, NodeMetadataResponse
@@ -62,7 +64,7 @@ class NodeMetadataService:
                         else None
                     ),
                     content_constraints=(
-                        item.get("content_constraints")
+                        cast(dict[str, Any], item.get("content_constraints"))
                         if isinstance(item.get("content_constraints"), dict)
                         else {}
                     ),

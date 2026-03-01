@@ -122,7 +122,7 @@ def test_validator_rejects_duplicate_finding_identity() -> None:
                 "check_id": "check.a",
             },
             {
-                "expectation_id": "exp-2",
+                "expectation_id": "exp-1",
                 "node_logical_id": "research_idea",
                 "check_id": "check.a",
             },

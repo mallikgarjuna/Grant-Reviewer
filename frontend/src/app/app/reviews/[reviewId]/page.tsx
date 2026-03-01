@@ -10,23 +10,16 @@ import {
   getStoredReviewAttempt,
 } from "@/lib/review-attempt";
 import { APP_CREATE_REVIEW_ROUTE, APP_REVIEWS_ROUTE } from "@/lib/routes";
-import type { ApiError, ReviewDetailResponse } from "@/lib/bff/types";
+import type {
+  ApiError,
+  NodeSummary,
+  ReviewDetailResponse,
+} from "@/lib/bff/types";
 import { ReviewCard } from "@/components/review/ReviewCard";
 import { ReviewSummary } from "@/components/review/ReviewSummary";
 
 const POLL_INTERVAL_MS = 3_000;
 const POLL_MAX_DURATION_MS = 90_000;
-const VENI_NODE_LABELS: Record<string, string> = {
-  academic_profile: "2a. Academic Profile",
-  key_outputs: "2b. Key Outputs",
-  research_idea: "3. Research Idea",
-};
-// TODO(WF-followup): Replace this hardcoded Veni mapping with call-aware metadata for multi-call support.
-const VENI_NODE_ORDER = [
-  "academic_profile",
-  "key_outputs",
-  "research_idea",
-] as const;
 
 type ApiErrorEnvelope = {
   error?: {
@@ -43,6 +36,13 @@ function isObject(value: unknown): value is Record<string, unknown> {
 type ExportFeedback = {
   kind: "success" | "error";
   message: string;
+};
+
+type ReviewCardGroup = {
+  key: string;
+  title: string;
+  nodeLogicalId: string | null;
+  cards: ReviewDetailResponse["cards"];
 };
 
 async function parseApiError(response: Response): Promise<ApiError> {
@@ -130,6 +130,93 @@ function buildSignInRedirectHref(path: string): string {
   return `/sign-in?${params.toString()}`;
 }
 
+function sortCallNodes(nodes: NodeSummary[]): NodeSummary[] {
+  return [...nodes].sort((left, right) => {
+    if (left.order_index !== right.order_index) {
+      return left.order_index - right.order_index;
+    }
+    const leftLogicalId = left.logical_id ?? "";
+    const rightLogicalId = right.logical_id ?? "";
+    return leftLogicalId.localeCompare(rightLogicalId);
+  });
+}
+
+function buildOrderedCardGroups(
+  reviewDetail: ReviewDetailResponse,
+  sortedCallNodes: NodeSummary[],
+): ReviewCardGroup[] {
+  const groupsByKey = new Map<string, ReviewCardGroup>();
+  reviewDetail.cards.forEach((card) => {
+    const key = card.node_logical_id ?? `node:${card.node_title}`;
+    const existing = groupsByKey.get(key);
+    if (existing) {
+      existing.cards.push(card);
+      return;
+    }
+    groupsByKey.set(key, {
+      key,
+      title: card.node_title,
+      nodeLogicalId: card.node_logical_id ?? null,
+      cards: [card],
+    });
+  });
+
+  const shouldUseCallOrdering =
+    reviewDetail.ordering_source !== "review_payload_fallback" &&
+    sortedCallNodes.length > 0;
+  if (!shouldUseCallOrdering) {
+    return Array.from(groupsByKey.values());
+  }
+
+  const nodeTitleByLogicalId = new Map<string, string>();
+  const nodeIndexByLogicalId = new Map<string, number>();
+  sortedCallNodes.forEach((node, index) => {
+    if (typeof node.logical_id !== "string") {
+      return;
+    }
+    nodeTitleByLogicalId.set(node.logical_id, node.title);
+    nodeIndexByLogicalId.set(node.logical_id, index);
+  });
+
+  const groups = Array.from(groupsByKey.values()).map((group) => {
+    if (group.nodeLogicalId && nodeTitleByLogicalId.has(group.nodeLogicalId)) {
+      return {
+        ...group,
+        title: nodeTitleByLogicalId.get(group.nodeLogicalId) ?? group.title,
+      };
+    }
+    return group;
+  });
+
+  return groups.sort((left, right) => {
+    const leftId = left.nodeLogicalId ?? "";
+    const rightId = right.nodeLogicalId ?? "";
+    const leftIndex =
+      typeof left.nodeLogicalId === "string"
+        ? nodeIndexByLogicalId.get(left.nodeLogicalId)
+        : undefined;
+    const rightIndex =
+      typeof right.nodeLogicalId === "string"
+        ? nodeIndexByLogicalId.get(right.nodeLogicalId)
+        : undefined;
+    const leftMapped = typeof leftIndex === "number";
+    const rightMapped = typeof rightIndex === "number";
+    if (leftMapped && rightMapped) {
+      if (leftIndex !== rightIndex) {
+        return leftIndex - rightIndex;
+      }
+      return leftId.localeCompare(rightId);
+    }
+    if (leftMapped) {
+      return -1;
+    }
+    if (rightMapped) {
+      return 1;
+    }
+    return leftId.localeCompare(rightId);
+  });
+}
+
 export default function ReviewDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -141,6 +228,7 @@ export default function ReviewDetailPage() {
   const [reviewDetail, setReviewDetail] = useState<ReviewDetailResponse | null>(
     null,
   );
+  const [callNodes, setCallNodes] = useState<NodeSummary[] | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [exportFeedback, setExportFeedback] = useState<ExportFeedback | null>(
@@ -171,14 +259,31 @@ export default function ReviewDetailPage() {
         if (!cancelled) {
           setError(apiError);
           setReviewDetail(null);
+          setCallNodes(null);
           setIsLoading(false);
         }
         return;
       }
       const payload = (await response.json()) as ReviewDetailResponse;
+      let nextCallNodes: NodeSummary[] | null = null;
+      if (typeof payload.call_id === "string" && payload.call_id.length > 0) {
+        const callNodesResponse = await fetch(`/api/bff/calls/${payload.call_id}/nodes`, {
+          method: "GET",
+          cache: "no-store",
+        });
+        if (callNodesResponse.ok) {
+          const callNodesPayload = (await callNodesResponse.json()) as {
+            nodes?: NodeSummary[];
+          };
+          nextCallNodes = Array.isArray(callNodesPayload.nodes)
+            ? sortCallNodes(callNodesPayload.nodes)
+            : [];
+        }
+      }
       if (!cancelled) {
         setError(null);
         setReviewDetail(payload);
+        setCallNodes(nextCallNodes);
         setIsLoading(false);
       }
     }
@@ -481,46 +586,27 @@ export default function ReviewDetailPage() {
     .split(",")
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
-  const reviewedNodeLabels = submittedNodes
-    .map((nodeId) => VENI_NODE_LABELS[nodeId])
-    .filter(Boolean);
-  const notReviewedNodeIds = VENI_NODE_ORDER.filter(
-    (nodeId) => !submittedNodes.includes(nodeId),
+  const sortedCallNodes = callNodes ?? [];
+  const nodeTitleByLogicalId = new Map(
+    sortedCallNodes
+      .filter((node) => typeof node.logical_id === "string")
+      .map((node) => [node.logical_id as string, node.title]),
   );
-  const notReviewedNodeLabels = notReviewedNodeIds.map(
-    (nodeId) => VENI_NODE_LABELS[nodeId],
+  const reviewedNodeLabels = submittedNodes.map(
+    (nodeId) => nodeTitleByLogicalId.get(nodeId) ?? nodeId,
   );
-  const cardsByNodeMap = reviewDetail.cards.reduce<
-    Map<
-      string,
-      { key: string; title: string; cards: ReviewDetailResponse["cards"] }
-    >
-  >((groups, card) => {
-    const key = card.node_logical_id ?? `node:${card.node_title}`;
-    const existingGroup = groups.get(key);
-    if (existingGroup) {
-      existingGroup.cards.push(card);
-      return groups;
-    }
-
-    groups.set(key, {
-      key,
-      title: VENI_NODE_LABELS[card.node_logical_id ?? ""] ?? card.node_title,
-      cards: [card],
-    });
-    return groups;
-  }, new Map());
-  const orderedCardGroups = [
-    ...VENI_NODE_ORDER.flatMap((nodeId) => {
-      const group = cardsByNodeMap.get(nodeId);
-      if (!group) {
-        return [];
-      }
-      cardsByNodeMap.delete(nodeId);
-      return [group];
-    }),
-    ...Array.from(cardsByNodeMap.values()),
-  ];
+  const notReviewedNodeLabels = sortedCallNodes
+    .filter(
+      (node) =>
+        typeof node.logical_id === "string" &&
+        !submittedNodes.includes(node.logical_id),
+    )
+    .map((node) => node.title);
+  const orderedCardGroups = buildOrderedCardGroups(reviewDetail, sortedCallNodes);
+  const fallbackToPayloadOrder =
+    reviewDetail.ordering_source === "review_payload_fallback" ||
+    reviewDetail.call_id == null ||
+    sortedCallNodes.length === 0;
 
   return (
     <article
@@ -574,6 +660,11 @@ export default function ReviewDetailPage() {
                 : "None"}
             </p>
           </div>
+        ) : null}
+        {fallbackToPayloadOrder ? (
+          <p className="mt-3 text-sm text-[var(--color-muted-foreground)]">
+            Call metadata unavailable; using review payload order.
+          </p>
         ) : null}
 
         <nav aria-label="Review actions" className="mt-4 flex flex-wrap gap-3">
@@ -724,13 +815,13 @@ export default function ReviewDetailPage() {
               >
                 Reviewed section: {group.title}
               </h2>
-              <div className="mt-3 grid gap-4">
-                {group.cards.map((card, index) => (
-                  <ReviewCard
-                    key={card.id}
-                    index={index + 1}
-                    criterion={card.criterion}
-                    description={card.criterion_description}
+                <div className="mt-3 grid gap-4">
+                  {group.cards.map((card, index) => (
+                    <ReviewCard
+                      key={`${group.key}:${card.id}`}
+                      index={index + 1}
+                      criterion={card.criterion}
+                      description={card.criterion_description}
                     evaluationElementName={card.evaluation_element_name}
                     expectationGuidanceNote={card.expectation_guidance_note}
                     rating={card.rating}
@@ -743,17 +834,17 @@ export default function ReviewDetailPage() {
             </section>
           ))}
           {submittedNodes.length > 0
-            ? notReviewedNodeIds.map((nodeId) => (
+            ? notReviewedNodeLabels.map((nodeLabel) => (
                 <section
                   className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
-                  key={`not-reviewed-${nodeId}`}
-                  aria-labelledby={`heading-not-reviewed-${nodeId}`}
+                  key={`not-reviewed-${nodeLabel}`}
+                  aria-labelledby={`heading-not-reviewed-${nodeLabel}`}
                 >
                   <h2
-                    id={`heading-not-reviewed-${nodeId}`}
+                    id={`heading-not-reviewed-${nodeLabel}`}
                     className="text-base font-semibold text-[var(--color-foreground)]"
                   >
-                    Not reviewed section: {VENI_NODE_LABELS[nodeId]}
+                    Not reviewed section: {nodeLabel}
                   </h2>
                   <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
                     No text was submitted for this section in this review, so no

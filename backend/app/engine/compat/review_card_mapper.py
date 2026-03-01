@@ -1,6 +1,13 @@
 from __future__ import annotations
 
-from app.engine.contracts import DiagnosticFindingV1, ReviewCard
+from typing import Final
+
+from app.engine.contracts import (
+    DiagnosticFindingV1,
+    FindingSeverity,
+    ReviewCard,
+    ReviewRating,
+)
 
 _SEVERITY_PRIORITY = {
     "ERROR": 3,
@@ -8,7 +15,7 @@ _SEVERITY_PRIORITY = {
     "NOTE": 1,
 }
 
-_SEVERITY_TO_RATING = {
+_SEVERITY_TO_RATING: Final[dict[FindingSeverity, ReviewRating]] = {
     "ERROR": "CRITICAL",
     "WARNING": "WARNING",
     "NOTE": "NOTE",

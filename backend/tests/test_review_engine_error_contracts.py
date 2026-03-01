@@ -4,7 +4,10 @@ import hashlib
 
 import pytest
 
-from app.engine.compat.review_card_mapper import ReviewCardMappingError, map_findings_to_review_cards
+from app.engine.compat.review_card_mapper import (
+    ReviewCardMappingError,
+    map_findings_to_review_cards,
+)
 from app.engine.contracts import DiagnosticFindingV1, SubjectRef
 from app.engine.errors import EngineErrorCode
 from app.engine.review_request_validator import (

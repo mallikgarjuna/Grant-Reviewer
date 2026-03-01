@@ -694,7 +694,7 @@ def test_list_nodes_returns_parent_links_after_v2_hierarchy_ingest() -> None:
         assert node["parent_node_id"] in by_id
 
 
-def test_get_call_config_returns_structured_mode(monkeypatch) -> None:
+def test_get_call_config_returns_structured_mode_with_domain_options(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
 
     response = client.get(
@@ -711,16 +711,20 @@ def test_get_call_config_returns_structured_mode(monkeypatch) -> None:
             "knowledge_utilisation",
             "scientific_proposal",
         ],
+        "domain_options": [
+            {"value": "science_enw", "label": "Science Enw", "order_index": 0}
+        ],
     }
     assert set(response.json().keys()) == {
         "call_logical_id",
         "config_version",
         "ui_mode",
         "expected_nodes",
+        "domain_options",
     }
 
 
-def test_get_call_config_legacy_omits_expected_nodes(monkeypatch) -> None:
+def test_get_call_config_legacy_returns_empty_domain_options(monkeypatch) -> None:
     client, _ = create_client_with_seed(monkeypatch)
 
     response = client.get("/api/public/calls/ERC-2026-COG/config")
@@ -730,8 +734,14 @@ def test_get_call_config_legacy_omits_expected_nodes(monkeypatch) -> None:
     assert payload["call_logical_id"] == "ERC-2026-COG"
     assert payload["config_version"] == "1"
     assert payload["ui_mode"] == "legacy_single_snippet"
+    assert payload["domain_options"] == []
     assert "expected_nodes" not in payload
-    assert set(payload.keys()) == {"call_logical_id", "config_version", "ui_mode"}
+    assert set(payload.keys()) == {
+        "call_logical_id",
+        "config_version",
+        "ui_mode",
+        "domain_options",
+    }
 
 
 def test_get_call_config_unknown_call_returns_404(monkeypatch) -> None:
@@ -780,6 +790,175 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
     assert detail_payload["cards"][0]["rating"] == "NOTE"
     assert detail_payload["cards"][0]["assessment_status"] is None
     assert detail_payload["cards"][0]["not_assessable_reason"] is None
+
+
+def test_review_detail_includes_call_id_and_call_code(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert response.status_code == 200
+
+    detail_response = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert detail_payload["call_id"] == str(seeded_ids.structured_call_id)
+    assert detail_payload["call_code"] == seeded_ids.structured_call_code
+
+
+def test_review_detail_order_index_tie_uses_node_logical_id_fallback(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    session = get_session()
+    try:
+        call_definition = session.exec(
+            select(CallDefinition).where(
+                CallDefinition.funding_call_id == seeded_ids.structured_call_id
+            )
+        ).first()
+        assert call_definition is not None
+        assert isinstance(call_definition.canonical_json, dict)
+        proposal_nodes = call_definition.canonical_json.get("proposal_nodes")
+        assert isinstance(proposal_nodes, list)
+
+        for node_config in proposal_nodes:
+            if not isinstance(node_config, dict):
+                continue
+            if node_config.get("id") in {"academic_profile", "scientific_proposal"}:
+                node_config["order_index"] = 7
+        session.add(call_definition)
+        session.commit()
+    finally:
+        session.close()
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "profile text"},
+                {"node_logical_id": "scientific_proposal", "text": "science text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    ordered_nodes = [card["node_logical_id"] for card in payload["cards"]]
+    assert ordered_nodes == sorted(ordered_nodes)
+    assert payload["ordering_source"] == "call_nodes"
+    assert payload["unmapped_node_logical_ids"] == []
+
+
+def test_review_detail_unmapped_nodes_ordered_last_and_reported(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        structured_criterion = session.exec(
+            select(EvaluationCriterion).where(
+                EvaluationCriterion.funding_call_id == seeded_ids.structured_call_id
+            )
+        ).first()
+        assert structured_criterion is not None
+
+        unmapped_node = ProposalNode(
+            funding_call_id=seeded_ids.structured_call_id,
+            parent_node_id=None,
+            logical_id="unmapped_bonus_node",
+            node_type=NodeType.SECTION,
+            title="Unmapped bonus node",
+            order_index=99,
+        )
+        session.add(unmapped_node)
+        session.commit()
+        session.refresh(unmapped_node)
+
+        unmapped_element = EvaluationElement(
+            evaluation_criterion_id=structured_criterion.id,
+            logical_id="elem_unmapped_bonus",
+            name="Unmapped bonus element",
+            description="Assess bonus section",
+        )
+        session.add(unmapped_element)
+        session.commit()
+        session.refresh(unmapped_element)
+
+        unmapped_expectation = NodeExpectation(
+            proposal_node_id=unmapped_node.id,
+            evaluation_element_id=unmapped_element.id,
+            expectation_strength=ExpectationStrength.MANDATORY,
+            evaluation_intent=EvaluationIntent.QUALITY,
+            guidance_note="Assess bonus node quality",
+            order_index=1,
+        )
+        session.add(unmapped_expectation)
+        session.commit()
+    finally:
+        session.close()
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "profile text"},
+                {"node_logical_id": "unmapped_bonus_node", "text": "bonus text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+
+    payload = detail.json()
+    ordered_nodes = [card["node_logical_id"] for card in payload["cards"]]
+    assert ordered_nodes[-1] == "unmapped_bonus_node"
+    assert payload["unmapped_node_logical_ids"] == ["unmapped_bonus_node"]
+
+
+def test_review_detail_ordering_source_fallback_when_call_linkage_missing(
+    monkeypatch,
+) -> None:
+    client, _ = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        expectation = session.exec(select(NodeExpectation)).first()
+        assert template is not None
+        assert expectation is not None
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"legacy-fallback-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={"nodes": {"academic_profile": "profile text"}},
+        )
+        repository.create_review_card(
+            review_id=review.id,
+            expectation_id=expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback="Legacy fallback card",
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+    finally:
+        session.close()
+
+    detail = get_review_detail(client=client, review_id=str(review.id))
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["call_id"] is None
+    assert payload["call_code"] is None
+    assert payload["ordering_source"] == "review_payload_fallback"
 
 
 def test_create_review_shared_core_happy_path_parity(monkeypatch) -> None:
@@ -1881,6 +2060,50 @@ def test_list_reviews_excludes_other_users(monkeypatch) -> None:
     assert response.json()["reviews"] == []
 
 
+def test_structured_review_reviews_list_and_review_detail_and_idempotency_invariants(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    idempotency_key = "idem-structured-history-1"
+
+    create_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+        user_id="user_structured_history",
+        idempotency_key=idempotency_key,
+    )
+    assert create_response.status_code == 200
+    review_id = create_response.json()["review_id"]
+
+    list_response = list_reviews(client=client, user_id="user_structured_history")
+    assert list_response.status_code == 200
+    listed_ids = [item["id"] for item in list_response.json()["reviews"]]
+    assert review_id in listed_ids
+
+    detail_response = get_review_detail(
+        client=client,
+        review_id=review_id,
+        user_id="user_structured_history",
+    )
+    assert detail_response.status_code == 200
+    assert detail_response.json()["review"]["id"] == review_id
+
+    mismatch_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "changed text"}],
+        },
+        user_id="user_structured_history",
+        idempotency_key=idempotency_key,
+    )
+    assert mismatch_response.status_code == 409
+    assert mismatch_response.json()["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+
+
 def test_list_reviews_unauthenticated_returns_401(monkeypatch) -> None:
     client, _ = create_client_with_seed(monkeypatch)
     response = client.get("/reviews")
@@ -2326,9 +2549,9 @@ def test_structured_review_unresolvable_expectation_marks_failed_review(
 ) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
 
+    import app.services.structured_reviewer_service as structured_service_module
     from app.engine.contracts import PipelineResult
     from app.engine.contracts import ReviewCard as EngineReviewCard
-    import app.services.structured_reviewer_service as structured_service_module
 
     def run_pipeline_with_unknown_expectation(_request):
         return PipelineResult(

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from app.models.domain import CallDefinition
 
@@ -159,7 +159,7 @@ def _require_str(value: Any, field_name: str) -> str:
 
 def _parse_stage(value: str) -> Literal["STEP_1", "STEP_2", "BOTH"]:
     if value in {"STEP_1", "STEP_2", "BOTH"}:
-        return value
+        return cast(Literal["STEP_1", "STEP_2", "BOTH"], value)
     raise ValueError("Invalid applies_to_stage")
 
 

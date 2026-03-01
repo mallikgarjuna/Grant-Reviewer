@@ -76,6 +76,14 @@ def evaluate_rollout_health(
             }
         }
 
+    # mypy doesn't narrow union elements via `any(...)` checks; assert for type safety.
+    assert legacy_error is not None
+    assert pipeline_error is not None
+    assert legacy_contract_error is not None
+    assert pipeline_contract_error is not None
+    assert legacy_p95 is not None
+    assert pipeline_p95 is not None
+
     error_rate_regression = (
         pipeline_error >= legacy_error * ERROR_RATE_MULTIPLIER_THRESHOLD
         and (pipeline_error - legacy_error) >= ERROR_RATE_ABSOLUTE_DELTA_THRESHOLD

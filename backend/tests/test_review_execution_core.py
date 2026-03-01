@@ -73,6 +73,30 @@ class PolicyTermLLMClient:
         return "policy-term-model"
 
 
+class SequencePolicyLLMClient:
+    def __init__(self, feedbacks: list[str]) -> None:
+        self._feedbacks = feedbacks
+        self.calls = 0
+
+    def generate(self, prompt: str) -> str:
+        self.calls += 1
+        expectation_ids = re.findall(r"ID:\s*([0-9a-fA-F-]{36})", prompt)
+        feedback = self._feedbacks[min(self.calls - 1, len(self._feedbacks) - 1)]
+        return json.dumps(
+            {
+                "feedbacks": [
+                    {
+                        "node_expectation_id": expectation_ids[0],
+                        "feedback": feedback,
+                    }
+                ]
+            }
+        )
+
+    def get_model_name(self) -> str:
+        return "sequence-policy-model"
+
+
 class RecordingTelemetryHooks:
     def __init__(self) -> None:
         self.starts: list[ExecutionTelemetryPayload] = []
@@ -206,6 +230,73 @@ def test_core_policy_postcheck_classification() -> None:
     assert blocking_result.failure is not None
     assert blocking_result.failure.category == ExecutionFailureCategory.POLICY_BLOCKING
     assert "pol_block" in blocking_result.failure.message
+
+
+def test_core_policy_blocking_retries_once_then_succeeds() -> None:
+    rule_blocking = ReviewerPolicyRule(
+        id="pol_block",
+        applies_to_stage="STEP_1",
+        applies_to_node_ids=(),
+        rule_type="criterion_scope",
+        instruction="Block budget assessment",
+        severity="WARNING",
+        enforcement_mode="BLOCKING",
+        forbidden_terms=("insufficient budget",),
+    )
+    llm_client = SequencePolicyLLMClient(
+        [
+            "The proposal has insufficient budget.",
+            "The proposal scope is well supported.",
+        ]
+    )
+    core = ReviewExecutionCore(llm_client=llm_client, timeout_seconds=0.5)
+    node = _build_node()
+    expectations = _build_expectations(count=1)
+
+    result = core.execute_assessable_node(
+        node=node,
+        snippet_text="Some snippet text",
+        expectations=expectations,
+        reviewer_policy_rules=[rule_blocking],
+    )
+
+    assert result.failure is None
+    assert llm_client.calls == 2
+    assert len(result.feedbacks) == 1
+
+
+def test_core_policy_blocking_fails_after_single_retry() -> None:
+    rule_blocking = ReviewerPolicyRule(
+        id="pol_block",
+        applies_to_stage="STEP_1",
+        applies_to_node_ids=(),
+        rule_type="criterion_scope",
+        instruction="Block budget assessment",
+        severity="WARNING",
+        enforcement_mode="BLOCKING",
+        forbidden_terms=("insufficient budget",),
+    )
+    llm_client = SequencePolicyLLMClient(
+        [
+            "The proposal has insufficient budget.",
+            "The proposal has insufficient budget.",
+            "The proposal has insufficient budget.",
+        ]
+    )
+    core = ReviewExecutionCore(llm_client=llm_client, timeout_seconds=0.5)
+    node = _build_node()
+    expectations = _build_expectations(count=1)
+
+    result = core.execute_assessable_node(
+        node=node,
+        snippet_text="Some snippet text",
+        expectations=expectations,
+        reviewer_policy_rules=[rule_blocking],
+    )
+
+    assert result.failure is not None
+    assert result.failure.category == ExecutionFailureCategory.POLICY_BLOCKING
+    assert llm_client.calls == 2
 
 
 def test_core_emits_telemetry_start_complete() -> None:

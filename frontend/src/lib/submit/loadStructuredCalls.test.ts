@@ -55,7 +55,36 @@ describe("loadStructuredCalls", () => {
     });
 
     expect(result.calls.map((call) => call.id)).toEqual(["call-1"]);
+    expect(result.calls[0]?.domainOptions).toEqual([]);
     expect(result.warnings).toHaveLength(0);
+  });
+
+  it("propagates deterministic domain options from config", async () => {
+    const fetchImpl = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          call_logical_id: "call_1",
+          config_version: "1",
+          ui_mode: "structured_nodes",
+          expected_nodes: [],
+          domain_options: [
+            { value: "science_enw", label: "Science ENW", order_index: 4 },
+            { value: "alpha", label: "Alpha", order_index: 1 },
+          ],
+        }),
+        { status: 200 },
+      );
+    });
+
+    const result = await loadStructuredCalls({
+      calls: [CALLS[0]],
+      fetchImpl,
+    });
+
+    expect(result.calls[0]?.domainOptions).toEqual([
+      { value: "alpha", label: "Alpha" },
+      { value: "science_enw", label: "Science ENW" },
+    ]);
   });
 
   it("marks timeout warning and excludes timed out config", async () => {

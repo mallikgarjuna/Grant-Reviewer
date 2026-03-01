@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from app.engine.compat.review_card_mapper import ReviewCardMappingError, map_findings_to_review_cards
+from app.engine.compat.review_card_mapper import (
+    ReviewCardMappingError,
+    map_findings_to_review_cards,
+)
 from app.engine.contracts import DiagnosticFindingV1, SubjectRef
 
 pytestmark = pytest.mark.no_db

@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom/vitest";
+import fs from "node:fs";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -80,6 +81,9 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
           }),
           { status: 200 },
         );
@@ -152,6 +156,9 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
           }),
           { status: 200 },
         );
@@ -225,6 +232,9 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
           }),
           { status: 200 },
         );
@@ -640,6 +650,9 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
           }),
           { status: 200 },
         );
@@ -651,6 +664,7 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [],
           }),
           { status: 200 },
         );
@@ -803,6 +817,9 @@ describe("UniversalSubmitForm", () => {
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
           }),
           { status: 200 },
         );
@@ -871,6 +888,80 @@ describe("UniversalSubmitForm", () => {
     ).toBe(false);
   });
 
+  it("shows domain selector from backend domain_options for any call code", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "custom_call_code",
+                name: "Custom Call",
+                year: 2026,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/custom_call_code/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "custom_call_code",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [
+              { value: "beta", label: "Beta Domain", order_index: 2 },
+              { value: "alpha", label: "Alpha Domain", order_index: 1 },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/custom_call_code/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "custom_call_code",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    const domainSelect = await screen.findByLabelText("Domain");
+    const optionLabels = Array.from((domainSelect as HTMLSelectElement).options).map(
+      (option) => option.textContent,
+    );
+    expect(optionLabels).toEqual(["No domain override", "Alpha Domain", "Beta Domain"]);
+  });
+
   it("sends domain null after switching to call without domain options", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -897,13 +988,28 @@ describe("UniversalSubmitForm", () => {
           { status: 200 },
         );
       }
-      if (url.endsWith("/config")) {
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/other_call/config") {
         return new Response(
           JSON.stringify({
             call_logical_id: "call",
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [],
           }),
           { status: 200 },
         );
@@ -993,13 +1099,28 @@ describe("UniversalSubmitForm", () => {
           { status: 200 },
         );
       }
-      if (url.endsWith("/config")) {
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/other_call/config") {
         return new Response(
           JSON.stringify({
             call_logical_id: "call",
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [],
           }),
           { status: 200 },
         );
@@ -1075,13 +1196,28 @@ describe("UniversalSubmitForm", () => {
           { status: 200 },
         );
       }
-      if (url.endsWith("/config")) {
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [
+              { value: "science_enw", label: "Science ENW", order_index: 1 },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/other_call/config") {
         return new Response(
           JSON.stringify({
             call_logical_id: "call",
             config_version: "1",
             ui_mode: "structured_nodes",
             expected_nodes: [],
+            domain_options: [],
           }),
           { status: 200 },
         );
@@ -1224,7 +1360,107 @@ describe("UniversalSubmitForm", () => {
     expect(window.localStorage.getItem("draft_universal_submit_call-1_v1")).not.toBeNull();
   });
 
-  it("warning bypass modal gates submit until confirmation", async () => {
+  it("renders informational guidance and does not block submit", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        return new Response(
+          JSON.stringify({
+            is_compliant: true,
+            errors: [],
+            warnings: [
+              {
+                node_logical_id: "academic_profile",
+                rule_id: "comp_key_outputs_max_items",
+                severity: "WARNING",
+                actual: "not_evaluated",
+                expected: "guidance_only",
+                message: "List no more than 10 key output items.",
+                is_blocking: false,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/structured-review") {
+        return new Response(JSON.stringify({ review_id: "review-1" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "content" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/structured-review")),
+      ).toBe(true);
+    });
+    expect(
+      await screen.findByText("Informational guidance (non-blocking)"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps blocking failures separate from informational guidance", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url === "/api/bff/calls") {
@@ -1297,7 +1533,17 @@ describe("UniversalSubmitForm", () => {
                 is_blocking: true,
               },
             ],
-            warnings: [],
+            warnings: [
+              {
+                node_logical_id: "academic_profile",
+                rule_id: "comp_key_outputs_max_items",
+                severity: "WARNING",
+                actual: "not_evaluated",
+                expected: "guidance_only",
+                message: "List no more than 10 key output items.",
+                is_blocking: false,
+              },
+            ],
           }),
           { status: 200 },
         );
@@ -1314,17 +1560,131 @@ describe("UniversalSubmitForm", () => {
       target: { value: "content" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Submit" }));
-    expect(await screen.findByText("Submit with warnings?")).toBeInTheDocument();
+
+    expect(await screen.findByText("Submission blocked")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Informational guidance (non-blocking)"),
+    ).toBeInTheDocument();
     expect(
       fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/structured-review")),
     ).toBe(false);
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: "Submit Anyway" }));
-    await waitFor(() => {
-      expect(
-        fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/structured-review")),
-      ).toBe(true);
+  it("does not emit duplicate-key warning when blocking messages repeat", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+              {
+                id: "node-2",
+                logical_id: "key_outputs",
+                title: "Key outputs",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 2,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        return new Response(
+          JSON.stringify({
+            is_compliant: false,
+            errors: [
+              {
+                node_logical_id: "academic_profile",
+                rule_id: "word_limit_min",
+                severity: "ERROR",
+                actual: "1",
+                expected: "400",
+                message: "Minimum word limit is 400.",
+                is_blocking: true,
+              },
+              {
+                node_logical_id: "key_outputs",
+                rule_id: "word_limit_min",
+                severity: "ERROR",
+                actual: "1",
+                expected: "400",
+                message: "Minimum word limit is 400.",
+                is_blocking: true,
+              },
+            ],
+            warnings: [],
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
     });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "content" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    expect(await screen.findByText("Submission blocked")).toBeInTheDocument();
+    expect(
+      screen.getByText("Academic Profile: Minimum word limit is 400."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Key outputs: Minimum word limit is 400.")).toBeInTheDocument();
+    expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining("Encountered two children with the same key"),
+    );
   });
 
   it("does not create submit nodes from unmatched metadata", async () => {
@@ -1506,5 +1866,109 @@ describe("UniversalSubmitForm", () => {
         expect.objectContaining({ outcome: "success" }),
       );
     });
+  });
+
+  it("renders arbitrary non-veni node counts and hides domain selector when domain_options is empty", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "erc_demo_call",
+                name: "ERC Demo Call",
+                year: 2026,
+                agency_short_name: "ERC",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_demo_call/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_demo_call",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "node_a",
+                title: "Node A",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+              {
+                id: "node-2",
+                logical_id: "node_b",
+                title: "Node B",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 2,
+                has_expectations: true,
+              },
+              {
+                id: "node-3",
+                logical_id: "node_c",
+                title: "Node C",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 3,
+                has_expectations: true,
+              },
+              {
+                id: "node-4",
+                logical_id: "node_d",
+                title: "Node D",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 4,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_demo_call/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_demo_call",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    expect(await screen.findByLabelText("Node A")).toBeInTheDocument();
+    expect(screen.getByLabelText("Node B")).toBeInTheDocument();
+    expect(screen.getByLabelText("Node C")).toBeInTheDocument();
+    expect(screen.getByLabelText("Node D")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Domain")).not.toBeInTheDocument();
+  });
+
+  it("guardrail: submit path contains no legacy domain map constant", () => {
+    const source = fs.readFileSync("src/lib/submit/domainOptions.ts", "utf-8");
+    const legacyConstant = ["DOMAIN", "OPTIONS", "BY", "CALL"].join("_");
+    expect(source.includes(legacyConstant)).toBe(false);
   });
 });

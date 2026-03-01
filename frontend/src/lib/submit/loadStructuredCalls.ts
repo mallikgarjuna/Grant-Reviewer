@@ -11,6 +11,15 @@ export type StructuredCallsWarning = {
   reason: StructuredCallsWarningReason;
 };
 
+export type DomainOption = {
+  value: string;
+  label: string;
+};
+
+export type StructuredCallSummary = CallSummary & {
+  domainOptions: DomainOption[];
+};
+
 type LoadStructuredCallsInput = {
   calls: CallSummary[];
   fetchImpl?: typeof fetch;
@@ -19,7 +28,7 @@ type LoadStructuredCallsInput = {
 };
 
 type LoadStructuredCallsResult = {
-  calls: CallSummary[];
+  calls: StructuredCallSummary[];
   warnings: StructuredCallsWarning[];
 };
 
@@ -49,11 +58,44 @@ function isStructuredConfig(payload: unknown): payload is CallConfigResponse {
   return candidate.ui_mode === "structured_nodes";
 }
 
+function parseDomainOptions(payload: unknown): DomainOption[] {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+  const maybeOptions = (payload as { domain_options?: unknown }).domain_options;
+  if (!Array.isArray(maybeOptions)) {
+    return [];
+  }
+
+  return maybeOptions
+    .filter((item): item is { value: unknown; label: unknown; order_index?: unknown } => {
+      return Boolean(item) && typeof item === "object";
+    })
+    .map((item) => {
+      return {
+        value: typeof item.value === "string" ? item.value : "",
+        label: typeof item.label === "string" ? item.label : "",
+        orderIndex:
+          typeof item.order_index === "number" && Number.isFinite(item.order_index)
+            ? item.order_index
+            : Number.MAX_SAFE_INTEGER,
+      };
+    })
+    .filter((item) => item.value.length > 0 && item.label.length > 0)
+    .sort((left, right) => {
+      if (left.orderIndex !== right.orderIndex) {
+        return left.orderIndex - right.orderIndex;
+      }
+      return left.value.localeCompare(right.value);
+    })
+    .map((item) => ({ value: item.value, label: item.label }));
+}
+
 async function loadOneCall(
   call: CallSummary,
   fetchImpl: typeof fetch,
   timeoutMs: number,
-): Promise<{ call: CallSummary | null; warning: StructuredCallsWarning | null }> {
+): Promise<{ call: StructuredCallSummary | null; warning: StructuredCallsWarning | null }> {
   try {
     const response = await withTimeout(
       fetchImpl(`/api/bff/calls/${encodeURIComponent(call.code)}/config`, {
@@ -78,7 +120,13 @@ async function loadOneCall(
         warning: null,
       };
     }
-    return { call, warning: null };
+    return {
+      call: {
+        ...call,
+        domainOptions: parseDomainOptions(parsed),
+      },
+      warning: null,
+    };
   } catch (error) {
     const reason =
       error instanceof Error && error.message === "timeout"
@@ -102,7 +150,7 @@ export async function loadStructuredCalls(
   const concurrency = input.concurrency ?? 4;
   const calls = input.calls;
 
-  const eligible: CallSummary[] = [];
+  const eligible: StructuredCallSummary[] = [];
   const warnings: StructuredCallsWarning[] = [];
   let cursor = 0;
 
