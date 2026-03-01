@@ -1,8 +1,8 @@
 # WF-0043 — NWO Veni 2025 Preproposal: Single-Call MVP Hardening
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-01
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0043-nwo-veni-2025-preproposal-single-call-mvp-harden.md`
@@ -31,10 +31,14 @@ Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0043-nwo-veni
 
 ## Open Questions / Deferred (Phase 0.1)
 
-- Which single flow is the hardening target for this WF: `POST /api/structured-review`, `POST /reviews`, or both?
-- What *exactly* is the `/app/reviews` persistence contract for execution failures (timeout, policy blocking, response validation failure)?
-- What is the “deterministic verification bundle” artifact: documented checklist, pytest subset, fixture matrix, or a combination?
-- What are the top 3 regressions we’re guarding against (invariants, not just “trust”)?
+Resolved in Sections 1–2:
+- Primary hardening target: `POST /api/structured-review` for `nwo_veni_2025_preproposal` only.
+- Verification bundle = docs appendix + explicit pytest subset + small fixture matrix.
+- Primary “trust” risk = contract drift (error semantics + idempotency + persistence).
+
+Still deferred (explicitly):
+- TTL-expiry reuse test strategy (document semantics; assert replay+mismatch within TTL).
+- A scenario table enumerating, per case: expected HTTP status + error code (or 200), whether a Review row must exist, and expected ReviewStatus/`overall_summary` convention if persisted.
 
 ---
 
@@ -64,6 +68,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0043-nwo-veni-2025-
 - “Preserve `/app/reviews` persistence” explicitly includes:
   - review row creation and status transitions remain compatible with the UI’s “review exists even if execution fails” expectations
   - avoid changing side effects (e.g., creating duplicate reviews) while tightening tests
+- Persistence-on-failure applies only **after** a Review row is created inside the service layer; request/validation errors that return API errors must **not** create a Review.
 
 ---
 
@@ -157,7 +162,9 @@ If shipping in 2–3 days, WF-0043 ships:
   - success
   - representative validation failures (unknown node IDs, stage mismatch, missing idempotency key, etc.)
   - idempotency replay + payload mismatch
-  - persistence invariants (review row exists; stable status/summary conventions on failure paths where applicable)
+  - persistence invariants:
+    - API error paths do **not** persist Review rows
+    - execution-layer failures after review creation persist `FAILED` reviews with stable `overall_summary` conventions
 - Deterministic policy-enforcement regression tests for this call (single-snippet seam), covering:
   - blocking vs post-check vs prompt-only semantics
   - stable failure summary conventions when blocking persists as `FAILED`
@@ -198,7 +205,7 @@ Suggested flow:
 ```sh
 cd backend
 docker compose -f docker-compose.test.yml up -d
-export DATABASE_URL=...  # must match backend/docker-compose.test.yml
+export DATABASE_URL=...  # must match backend/docker-compose.test.yml; never use dev DB
 uv run pytest -q
 ```
 
@@ -220,3 +227,10 @@ uv run pytest -q -k wf_0043  # target: a small, focused contract suite added in 
   - review stage mismatch
   - representative quota/disabled cases (as applicable)
   - policy blocking + post-check warning cases (single-snippet seam)
+
+### Scenario table (to fill as cases are implemented)
+
+For each case in the fixture matrix, record:
+- HTTP: status + (error.code | `200`)
+- Persistence: Review row created? (yes/no)
+- If persisted: expected `ReviewStatus` + `overall_summary` convention (prefix/category; not exact string)
