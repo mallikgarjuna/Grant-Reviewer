@@ -125,6 +125,51 @@ Open questions suggested by this snapshot:
   > Recommendation: A — Aligns to the program and keeps product assumptions simple for MVP.
   > **Selected: A**
 
+## Section 4 — Rough Idea Exploration (Interactive)
+
+Repo grounding note (2026-03-01):
+- Review detail page currently contains explicit Veni-only hardcoding: `VENI_NODE_LABELS` / `VENI_NODE_ORDER` in `frontend/src/app/app/reviews/[reviewId]/page.tsx`.
+- Backend `GET /reviews/{review_id}` already returns per-card `node_title`, `criterion`, and `evaluation_element_name` (sufficient to render call-aware cards), but does not include call metadata needed to order sections without hardcoding.
+- Domain options are currently hardcoded client-side: `frontend/src/lib/submit/domainOptions.ts`.
+
+**Brainstorming Q&A:**
+
+**Q1: Where is the “no hardcoding / universal” work most urgent for MVP credibility?**
+- A) Review detail page: remove Veni hardcoded node labels/order; render cards grouped by `node_title` from backend
+- B) Submit page: remove any remaining call-specific assumptions; ensure it renders any number of nodes purely from API data
+- C) Domain: remove `DOMAIN_OPTIONS_BY_CALL` hardcoding and source domain options from call metadata/config
+  > Recommendation: A (with C close behind) — Review detail has the most obvious hardcoding; domain options are also explicitly hardcoded today.
+  > **Selected: A**
+
+**Q2: What should drive node labeling and ordering in UI (both submit + review detail)?**
+- A) DB node ordering + node titles from `/calls/{id}/nodes` and/or `/calls/{code}/metadata` (single source)
+- B) Call YAML shipped to frontend (client-side parsing)
+- C) A new backend “UI render model” endpoint tailored for frontend
+  > Recommendation: A — Leverages existing contracts and keeps frontend thin.
+  > **Selected: A**
+
+**Q3: How should domain options be handled given “no hardcoding anywhere”?**
+- A) Keep domain optional, but fetch options from backend metadata/config for the selected call (so non-domain calls show nothing)
+- B) Keep frontend map for now; fix later (violates “no hardcoding”)
+- C) Remove domain from MVP entirely
+  > Recommendation: A — Universal behavior: only show domain UX when declared by the call.
+  > **Selected: A**
+
+**Q4: How should results be presented to emphasize criteria/elements grounding?**
+- A) Default view groups cards by proposal section (`node_title`), each card shows evaluation element name + criterion
+- B) Default view groups by criterion first
+- C) No grouping; flat list
+  > Recommendation: A — Matches the trust bar and aligns to applicant mental model (“which section is this about?”).
+  > **Selected: A**
+  > User note: verify current repo behavior; only implement if the UI is not already doing this.
+
+**Q5: If we must add exactly one new backend capability to eliminate hardcoding, what should it be?**
+- A) Return domain options (and active word-limit context) in call metadata/config for the selected call
+- B) Return stable node display labels + order for review detail (explicitly)
+- C) Return a single “review detail render model” that includes everything the UI needs
+  > Recommendation: A — Node titles exist, but domain options are currently client-hardcoded. Also, domain should be call-specific and absent for calls that don’t use it.
+  > **Selected: A**
+
 **Q2: What “job-to-be-done” should the UI optimize for in this MVP?**
 - A) “I need to validate compliance fast before I submit”
 - B) “I need criteria/elements-grounded feedback to revise”

@@ -74,7 +74,19 @@ Contract notes / non-obvious constraints:
 
 ## 4. Rough Idea (Unstructured Thinking)
 
-TBD.
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md` (Section 4)
+
+Direction (MVP):
+- Remove all call-specific hardcoding in the applicant experience by making submit + review-detail UI entirely call-driven from backend call metadata/config.
+
+Concrete targets (repo-grounded):
+- Review detail page currently hardcodes Veni node labels/order (`VENI_NODE_LABELS` / `VENI_NODE_ORDER`) and must be made call-aware.
+- Backend already returns `node_title`, `criterion`, and `evaluation_element_name` per card in `GET /reviews/{review_id}`; UI should use these fields directly (and only add stable IDs as an optional “info” affordance).
+- Submit UI already renders nodes from APIs; ensure it supports arbitrary node counts without per-call assumptions.
+- Domain options are currently hardcoded client-side; domain selector must be driven by backend metadata/config and only appear when the selected call declares domain-limited constraints.
+
+Open questions / gaps to resolve:
+- Review detail ordering requires call-driven ordering metadata; today the review detail payload does not include `call_id`, so the page cannot fetch `/calls/{call_id}/nodes` without a contract change.
 
 ## 5. Constraints (Initial)
 
