@@ -1,8 +1,8 @@
 # WF-0041 — NWO Veni 2025 (Preproposal) Single-Call MVP
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-01
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md`
@@ -87,6 +87,7 @@ Concrete targets (repo-grounded):
 
 Open questions / gaps to resolve:
 - Review detail ordering requires call-driven ordering metadata; today the review detail payload does not include `call_id`, so the page cannot fetch `/calls/{call_id}/nodes` without a contract change.
+- Current review detail page uses a Veni-only coverage summary (`submitted_nodes` query param + hardcoded Veni labels/order); this must be replaced by call-driven coverage derived from stored structured payload + call nodes metadata.
 
 ## 5. Constraints (Initial)
 
@@ -105,6 +106,14 @@ Hard constraints (MVP):
 - Each submit persists a Review and appears in `/app/reviews`; do not break review history.
 - Review detail ordering/grouping must be call-driven (use DB node ordering); if current review-detail contracts lack what’s needed, extend them generically.
 
+Required generic contract changes (allowed in WF-0041):
+- Review detail response must include `call_id` (and `call_code`) so the UI can fetch call nodes and order/group sections deterministically by `order_index`.
+- Call metadata/config must expose `domain_options[]` (may be empty) when domain applies; frontend renders a selector only if non-empty.
+
+Contract safety / invariants (must preserve):
+- Preserve API error semantics and idempotency behavior (e.g., `DOMAIN_REQUIRED`, `DOMAIN_INVALID`, `UNKNOWN_NODE_ID`, `IDEMPOTENCY_PAYLOAD_MISMATCH`, `QUOTA_EXCEEDED`).
+- Preserve persistence side effects: each submit persists a Review and it appears in `/app/reviews`.
+
 ## 6. Risks / Unknowns
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md` (Section 6)
@@ -120,12 +129,30 @@ Compliance honesty risk:
 
 ## Open Questions / Deferred
 
-TBD.
+Deferred (explicitly not in WF-0041):
+- Iterative “revise/resubmit loop” UX improvements (beyond current persisted review history).
+- Assisted extraction UX (paste-only preview/confirm) and `.docx`/`.pdf` ingestion.
+- Multi-step evaluation gating (ERC Step 1 vs Step 2) and any ERC/MSCA-specific domain concepts.
+- Heuristic/approximate enforcement for non-enforceable constraints (e.g., parsing `max_items` from plain text).
+
+Open questions (must be resolved in planning before implementation):
+- Exact DTO additions for review detail (`call_id`, `call_code`, and whether to include ordered node list vs fetch nodes separately).
+- How to surface stable IDs as an “info” affordance per card (e.g., `evaluation_element_id`, `node_expectation_id`) without harming UX.
+- How to compute coverage summary deterministically from stored structured payload and call nodes (no query-param hacks).
 
 ## 7. MVP Definition
 
-TBD.
+MVP checklist (WF-0041 “done”):
+- Ingest+activate `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml` via standard ingestion (no manual per-call wiring).
+- Universal submit UI renders all call-defined nodes (arbitrary count) using backend nodes + metadata, with no per-call branching.
+- Domain selector appears only if backend exposes `domain_options[]`; domain affects only domain-limited constraints for calls that define it.
+- Deterministic compliance blocks on enforceable constraints (presence + word limits + domain-limited word limits); non-enforceable constraints are informational only.
+- Structured review runs via universal engine and produces cards that show proposal section + evaluation element + criterion (criteria/elements grounding).
+- Review detail page is fully call-driven (no Veni hardcoding): deterministic section grouping and ordering based on call nodes metadata (`order_index`), with optional “info” affordance for stable IDs.
 
 ## 8. Explicit Non-Goals
 
-TBD.
+Non-goals (WF-0041):
+- No multi-agency abstractions or “framework” work beyond generic contract/metadata needed to remove hardcoding.
+- No new calls added as product scope; use existing canonical calls only for tests to validate “arbitrary node count.”
+- No changes to evaluation logic beyond what’s required for universal call-driven execution and presentation.
