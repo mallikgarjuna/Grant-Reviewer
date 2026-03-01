@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from app.engine.review_request_validator import validate_review_request_payload
 from app.engine.pipeline_v1 import run_review_pipeline
+from app.engine.review_request_validator import validate_review_request_payload
 
 pytestmark = pytest.mark.no_db
 
