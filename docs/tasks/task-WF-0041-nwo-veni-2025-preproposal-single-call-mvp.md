@@ -168,7 +168,7 @@ Verification Steps:
 Risks (if any):
 - Mixed states may create confusing UX if labels are not explicit.
 
-### [ ] Task 7 — Review detail page call-driven ordering + skew-safe fallback
+### [x] Task 7 — Review detail page call-driven ordering + skew-safe fallback
 
 Goal:
 - Replace Veni-specific review-detail assumptions with call-driven ordering and compatibility fallbacks.

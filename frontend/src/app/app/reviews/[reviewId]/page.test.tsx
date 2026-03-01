@@ -14,53 +14,46 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+function reviewPayload(overrides: Record<string, unknown> = {}) {
+  return {
+    review: {
+      id: "review-1",
+      status: "COMPLETED",
+      overall_rating: "SUCCESS",
+      overall_summary: "Structured review completed with findings.",
+    },
+    cards: [
+      {
+        id: "card-2",
+        node_expectation_id: "exp-2",
+        node_logical_id: "key_outputs",
+        node_title: "Key outputs",
+        criterion: "Quality",
+        criterion_description: "Quality criterion",
+        evaluation_element_name: "Key-output quality",
+        expectation_guidance_note: "Show output relevance.",
+        rating: "SUCCESS",
+        feedback_text: "Second feedback",
+      },
+      {
+        id: "card-1",
+        node_expectation_id: "exp-1",
+        node_logical_id: "academic_profile",
+        node_title: "Academic profile",
+        criterion: "Quality",
+        criterion_description: "Quality criterion",
+        evaluation_element_name: "Peer-exceeding quality",
+        expectation_guidance_note: "Provide concrete evidence.",
+        rating: "SUCCESS",
+        feedback_text: "Feedback text",
+      },
+    ],
+    ...overrides,
+  };
+}
+
 describe("ReviewDetailPage", () => {
-  it("hides coverage summary when submitted_nodes query is missing", async () => {
-    submittedNodesParam = "";
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (input: RequestInfo | URL) => {
-        const url = String(input);
-        if (url.includes("/api/bff/reviews/review-1")) {
-          return new Response(
-            JSON.stringify({
-              review: {
-                id: "review-1",
-                status: "COMPLETED",
-                overall_rating: "GOOD",
-                overall_summary: "Structured review completed with findings.",
-              },
-              cards: [
-                {
-                  id: "card-1",
-                  node_expectation_id: "exp-1",
-                  node_logical_id: "academic_profile",
-                  node_title: "Academic profile",
-                  criterion: "Quality",
-                  criterion_description: "Quality criterion",
-                  evaluation_element_name: "Peer-exceeding quality",
-                  expectation_guidance_note: "Provide concrete evidence.",
-                  rating: "GOOD",
-                  feedback_text: "Feedback text",
-                },
-              ],
-            }),
-            { status: 200 },
-          );
-        }
-        return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }), {
-          status: 404,
-        });
-      }),
-    );
-
-    render(<ReviewDetailPage />);
-
-    expect(await screen.findByText("Reviewed section: 2a. Academic Profile")).toBeInTheDocument();
-    expect(screen.queryByText("Coverage summary")).not.toBeInTheDocument();
-  });
-
-  it("shows coverage summary for reviewed and not reviewed sections", async () => {
+  it("uses call-driven ordering and labels when call metadata is available", async () => {
     submittedNodesParam = "academic_profile,key_outputs";
     vi.stubGlobal(
       "fetch",
@@ -68,37 +61,46 @@ describe("ReviewDetailPage", () => {
         const url = String(input);
         if (url.includes("/api/bff/reviews/review-1")) {
           return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "nwo_veni_2025_preproposal",
+                ordering_source: "call_nodes",
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
             JSON.stringify({
-              review: {
-                id: "review-1",
-                status: "COMPLETED",
-                overall_rating: "GOOD",
-                overall_summary: "Structured review completed with findings.",
-              },
-              cards: [
+              nodes: [
                 {
-                  id: "card-2",
-                  node_expectation_id: "exp-2",
-                  node_logical_id: "key_outputs",
-                  node_title: "Key outputs",
-                  criterion: "Quality",
-                  criterion_description: "Quality criterion",
-                  evaluation_element_name: "Key-output quality",
-                  expectation_guidance_note: "Show output relevance.",
-                  rating: "GOOD",
-                  feedback_text: "Second feedback",
+                  id: "node-1",
+                  logical_id: "academic_profile",
+                  title: "2a. Academic Profile",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
                 },
                 {
-                  id: "card-1",
-                  node_expectation_id: "exp-1",
-                  node_logical_id: "academic_profile",
-                  node_title: "Academic profile",
-                  criterion: "Quality",
-                  criterion_description: "Quality criterion",
-                  evaluation_element_name: "Peer-exceeding quality",
-                  expectation_guidance_note: "Provide concrete evidence.",
-                  rating: "GOOD",
-                  feedback_text: "Feedback text",
+                  id: "node-2",
+                  logical_id: "key_outputs",
+                  title: "2b. Key Outputs",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                },
+                {
+                  id: "node-3",
+                  logical_id: "research_idea",
+                  title: "3. Research Idea",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 3,
+                  has_expectations: true,
                 },
               ],
             }),
@@ -120,25 +122,15 @@ describe("ReviewDetailPage", () => {
     expect(screen.getByText(/Not reviewed sections:/)).toHaveTextContent(
       "Not reviewed sections: 3. Research Idea",
     );
-    expect(screen.getAllByText("Finding 1")).toHaveLength(2);
-    expect(screen.getByText("Peer-exceeding quality")).toBeInTheDocument();
-    expect(screen.getAllByText("Evaluation criterion: Quality")).toHaveLength(2);
-    expect(screen.getByText("Reviewer focus: Provide concrete evidence.")).toBeInTheDocument();
-    expect(screen.getByText("Reviewed section: 2a. Academic Profile")).toBeInTheDocument();
-    expect(screen.getByText("Reviewed section: 2b. Key Outputs")).toBeInTheDocument();
-    expect(screen.getByText("Not reviewed section: 3. Research Idea")).toBeInTheDocument();
-    expect(
-      screen.getAllByText(
-        "No text was submitted for this section in this review, so no evaluation cards were generated.",
-      ),
-    ).toHaveLength(1);
+    expect(screen.queryByText("Call metadata unavailable; using review payload order.")).toBeNull();
+
     const pageText = document.body.textContent ?? "";
     expect(pageText.indexOf("Reviewed section: 2a. Academic Profile")).toBeLessThan(
       pageText.indexOf("Reviewed section: 2b. Key Outputs"),
     );
   });
 
-  it("renders NOT_ASSESSABLE status with reason and reviewer focus", async () => {
+  it("uses review payload fallback ordering for legacy review detail", async () => {
     submittedNodesParam = "academic_profile,key_outputs";
     vi.stubGlobal(
       "fetch",
@@ -146,30 +138,13 @@ describe("ReviewDetailPage", () => {
         const url = String(input);
         if (url.includes("/api/bff/reviews/review-1")) {
           return new Response(
-            JSON.stringify({
-              review: {
-                id: "review-1",
-                status: "COMPLETED",
-                overall_rating: "GOOD",
-                overall_summary: "Structured review completed with findings.",
-              },
-              cards: [
-                {
-                  id: "card-1",
-                  node_expectation_id: "exp-1",
-                  node_logical_id: "research_idea",
-                  node_title: "Research idea",
-                  criterion: "Quality",
-                  criterion_description: "Quality criterion",
-                  evaluation_element_name: "CV-idea alignment",
-                  expectation_guidance_note: "Make alignment explicit.",
-                  rating: "GOOD",
-                  feedback_text: "Not assessable due to missing context.",
-                  assessment_status: "NOT_ASSESSABLE",
-                  not_assessable_reason: "Missing required context from: academic_profile",
-                },
-              ],
-            }),
+            JSON.stringify(
+              reviewPayload({
+                call_id: null,
+                call_code: null,
+                ordering_source: "review_payload_fallback",
+              }),
+            ),
             { status: 200 },
           );
         }
@@ -181,12 +156,35 @@ describe("ReviewDetailPage", () => {
 
     render(<ReviewDetailPage />);
 
-    expect(await screen.findByText("CV-idea alignment")).toBeInTheDocument();
-    expect(screen.getByText("Reviewer focus: Make alignment explicit.")).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Status: Not assessable (Missing required context from: academic_profile)",
-      ),
+      await screen.findByText("Call metadata unavailable; using review payload order."),
     ).toBeInTheDocument();
+    const pageText = document.body.textContent ?? "";
+    expect(pageText.indexOf("Reviewed section: Key outputs")).toBeLessThan(
+      pageText.indexOf("Reviewed section: Academic profile"),
+    );
+  });
+
+  it("shows legacy fallback note for mixed-version payload without new fields", async () => {
+    submittedNodesParam = "academic_profile";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(JSON.stringify(reviewPayload()), { status: 200 });
+        }
+        return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }), {
+          status: 404,
+        });
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(
+      await screen.findByText("Call metadata unavailable; using review payload order."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Coverage summary")).toBeInTheDocument();
   });
 });

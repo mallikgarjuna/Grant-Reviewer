@@ -54,6 +54,11 @@ export type CallConfigResponse = {
   config_version: string;
   ui_mode: "legacy_single_snippet" | "structured_nodes";
   expected_nodes?: string[];
+  domain_options?: Array<{
+    value: string;
+    label: string;
+    order_index: number;
+  }>;
 };
 
 export type CallNodeMetadataDto = {
@@ -140,6 +145,10 @@ export type ReviewCardSummary = {
 };
 
 export type ReviewDetailResponse = {
+  call_id?: string | null;
+  call_code?: string | null;
+  ordering_source?: "call_nodes" | "review_payload_fallback";
+  unmapped_node_logical_ids?: string[];
   review: ReviewSummary;
   cards: ReviewCardSummary[];
 };
