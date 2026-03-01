@@ -140,7 +140,7 @@ Verification Steps:
 Risks (if any):
 - Selector convention can drift if case IDs/marks are not enforced consistently between modules.
 
-### [ ] Task 6 — Verification bundle docs for WF-0043 hardening
+### [x] Task 6 — Verification bundle docs for WF-0043 hardening
 
 Goal:
 - Publish the compact verification bundle documenting scenario expectations, deterministic commands, and invariants to preserve.

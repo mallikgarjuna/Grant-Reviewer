@@ -185,54 +185,55 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0043-nwo-veni-2025-
 
 ---
 
-## Appendix — Deterministic Verification Bundle (v0.1)
+## Appendix — Deterministic Verification Bundle (v0.2)
 
-### What this WF locks
+### Guardrails this WF enforces
 
-- `POST /api/structured-review` contract (single call: `nwo_veni_2025_preproposal`):
-  - error codes/status mapping and validation ordering
-  - idempotency replay + payload mismatch semantics
-  - review persistence invariants used by `/app/reviews`
-- Reviewer-policy enforcement semantics for this call in the single-snippet seam:
-  - `BLOCKING` vs `POST_CHECK` vs `PROMPT_ONLY` behavior remains stable
+- Preserve API error semantics and idempotency behavior for `POST /api/structured-review`.
+- Preserve `/app/reviews` persistence behavior (review discoverability + status conventions).
+- No new tooling in WF-0043.
 
-### How to run (local)
+### DB isolation + focused commands
 
-DB isolation rule: never run tests against the dev DB. Use the test docker compose file and set `DATABASE_URL` accordingly.
-
-Suggested flow:
+- DB isolation rule: run with a dedicated test DB (`DATABASE_URL` contains `test`); never use dev DB.
+- Focused WF-0043 suite:
 
 ```sh
 cd backend
-docker compose -f docker-compose.test.yml up -d
-export DATABASE_URL=...  # must match backend/docker-compose.test.yml; never use dev DB
-uv run pytest -q
+DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0043_suite.db uv run pytest -q tests/test_api.py tests/test_review_execution_core.py -k "wf0043_contract_"
 ```
 
-WF-0043 contract subset (to be implemented in Phase 3):
+- Surface-focused split:
 
 ```sh
 cd backend
-uv run pytest -q -k wf_0043  # target: a small, focused contract suite added in this WF
+DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0043_structured.db uv run pytest -q tests/test_api.py -k "wf0043_contract_structured_api"
+DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0043_policy.db uv run pytest -q tests/test_review_execution_core.py -k "wf0043_contract_single_snippet_policy"
 ```
 
-### Fixture matrix (target)
+### Fixture matrix path
 
-Target fixture location (to be created in Phase 3): `backend/tests/fixtures/wf_0043_contract_matrix.yaml`
+- `backend/tests/fixtures/wf_0043_contract_matrix.yaml`
 
-- 8–12 parametrized cases:
-  - success
-  - missing `Idempotency-Key`
-  - idempotency replay (same payload)
-  - idempotency payload mismatch
-  - unknown node ID
-  - review stage mismatch
-  - representative quota/disabled cases (as applicable)
-  - policy blocking + post-check warning cases (single-snippet seam)
+### Scenario table (matrix-aligned)
 
-### Scenario table (to fill as cases are implemented)
+| case_id | surface | expected_http_status | expected_error_code | expect_review_persisted | expected_review_status | expected_summary_convention |
+| --- | --- | --- | --- | --- | --- | --- |
+| replay_persists_history | structured_api | 200 | null | true | COMPLETED | completed_nonempty |
+| validation_error_missing_idempotency_header | structured_api | 400 | VALIDATION_ERROR | false | null | null |
+| unknown_node_id | structured_api | 422 | UNKNOWN_NODE_ID | false | null | null |
+| review_stage_node_mismatch | structured_api | 422 | REVIEW_STAGE_NODE_MISMATCH | false | null | null |
+| idempotency_payload_mismatch | structured_api | 409 | IDEMPOTENCY_PAYLOAD_MISMATCH | true | COMPLETED | completed_nonempty |
+| post_persist_unresolvable_expectation_failed | structured_api | 200 | null | true | FAILED | EXPECTATION_REF_UNRESOLVABLE |
+| policy_blocking | single_snippet_policy | 200 | null | true | FAILED | POLICY_BLOCKING |
+| policy_post_check | single_snippet_policy | 200 | null | true | COMPLETED | POST_CHECK_WARNING |
+| policy_prompt_only | single_snippet_policy | 200 | null | true | COMPLETED | PROMPT_ONLY_NON_BLOCKING |
 
-For each case in the fixture matrix, record:
-- HTTP: status + (error.code | `200`)
-- Persistence: Review row created? (yes/no)
-- If persisted: expected `ReviewStatus` + `overall_summary` convention (prefix/category; not exact string)
+### Notes
+
+- `Idempotency-Key` required behavior is locked by `validation_error_missing_idempotency_header`.
+- Deferred non-deterministic scenarios in this WF:
+  - `QUOTA_EXCEEDED`
+  - `REVIEWS_DISABLED`
+- Deferral reason: environment/time coupling in local deterministic runs.
+- Follow-up reference: next hardening WF after WF-0043 should add deterministic toggles for these two scenarios before promotion to required matrix rows.
