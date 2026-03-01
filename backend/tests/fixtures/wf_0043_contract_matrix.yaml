@@ -65,3 +65,39 @@ cases:
     request_nodes:
       - node_logical_id: academic_profile
         text: payload for deterministic failed review
+  - case_id: policy_blocking
+    surface: single_snippet_policy
+    expected_http_status: 200
+    expected_error_code: null
+    expect_review_persisted: true
+    expected_review_status: FAILED
+    expected_summary_convention: POLICY_BLOCKING
+    idempotency_key: ""
+    request_nodes: []
+    enforcement_mode: BLOCKING
+    forbidden_term: insufficient budget
+    feedback_text: The proposal has insufficient budget.
+  - case_id: policy_post_check
+    surface: single_snippet_policy
+    expected_http_status: 200
+    expected_error_code: null
+    expect_review_persisted: true
+    expected_review_status: COMPLETED
+    expected_summary_convention: POST_CHECK_WARNING
+    idempotency_key: ""
+    request_nodes: []
+    enforcement_mode: POST_CHECK
+    forbidden_term: maybe
+    feedback_text: This is maybe acceptable.
+  - case_id: policy_prompt_only
+    surface: single_snippet_policy
+    expected_http_status: 200
+    expected_error_code: null
+    expect_review_persisted: true
+    expected_review_status: COMPLETED
+    expected_summary_convention: PROMPT_ONLY_NON_BLOCKING
+    idempotency_key: ""
+    request_nodes: []
+    enforcement_mode: PROMPT_ONLY
+    forbidden_term: insufficient budget
+    feedback_text: The proposal has insufficient budget.

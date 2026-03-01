@@ -86,7 +86,7 @@ Verification Steps:
 Risks (if any):
 - Failure seam placement may accidentally exercise pre-persistence path unless test seam explicitly forces post-create failure.
 
-### [ ] Task 4 — Single-snippet reviewer-policy mode seam contracts
+### [x] Task 4 — Single-snippet reviewer-policy mode seam contracts
 
 Goal:
 - Add deterministic seam tests for `BLOCKING`, `POST_CHECK`, and `PROMPT_ONLY` enforcement behavior in single-snippet flow while preserving existing semantics.
