@@ -375,7 +375,18 @@ export function UniversalSubmitForm() {
 
       const blockingErrors = compliance.errors.filter((error) => error.is_blocking);
       if (blockingErrors.length > 0) {
-        setHardBlockErrors(blockingErrors.map((error) => error.message));
+        // Compliance errors can be duplicated across nodes (e.g., same word-limit rule);
+        // prefix with node label for clarity and stable disambiguation.
+        const labelByLogicalId = new Map(
+          renderModel.nodes.map((node) => [node.nodeLogicalId, node.label] as const),
+        );
+        setHardBlockErrors(
+          blockingErrors.map((error) => {
+            const prefix =
+              labelByLogicalId.get(error.node_logical_id) ?? error.node_logical_id;
+            return `${prefix}: ${error.message}`;
+          }),
+        );
         return;
       }
       await submitStructuredReview(nonEmptyNodes);

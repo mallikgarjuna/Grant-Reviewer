@@ -1614,6 +1614,15 @@ describe("UniversalSubmitForm", () => {
                 order_index: 1,
                 has_expectations: true,
               },
+              {
+                id: "node-2",
+                logical_id: "key_outputs",
+                title: "Key outputs",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 2,
+                has_expectations: true,
+              },
             ],
           }),
           { status: 200 },
@@ -1669,7 +1678,10 @@ describe("UniversalSubmitForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Submit" }));
 
     expect(await screen.findByText("Submission blocked")).toBeInTheDocument();
-    expect(screen.getAllByText("Minimum word limit is 400.")).toHaveLength(2);
+    expect(
+      screen.getByText("Academic Profile: Minimum word limit is 400."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Key outputs: Minimum word limit is 400.")).toBeInTheDocument();
     expect(consoleErrorSpy).not.toHaveBeenCalledWith(
       expect.stringContaining("Encountered two children with the same key"),
     );
