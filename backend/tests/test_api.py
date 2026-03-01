@@ -1584,6 +1584,68 @@ def test_wf0043_contract_structured_api_error_semantics_and_no_persistence_side_
     assert _count_reviews_in_db() == baseline_count
 
 
+def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:
+    case = _get_wf0043_case(
+        "post_persist_unresolvable_expectation_failed", surface="structured_api"
+    )
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    import app.services.structured_reviewer_service as structured_service_module
+    from app.engine.contracts import PipelineResult
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    def run_pipeline_with_unknown_expectation(_request):
+        return PipelineResult(
+            findings=[],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="academic_profile",
+                    expectation_id="exp-missing-from-map",
+                    rating="NOTE",
+                    feedback="unexpected expectation reference",
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        structured_service_module,
+        "run_review_pipeline",
+        run_pipeline_with_unknown_expectation,
+    )
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": case["request_nodes"],
+        },
+        user_id="user_wf0043_contract",
+        idempotency_key=case["idempotency_key"],
+    )
+
+    assert response.status_code == case["expected_http_status"]
+    response_payload = response.json()
+    assert response_payload["status"] == case["expected_review_status"]
+    review_id = response_payload["review_id"]
+
+    list_response = list_reviews(client=client, user_id="user_wf0043_contract")
+    assert list_response.status_code == 200
+    assert review_id in {item["id"] for item in list_response.json()["reviews"]}
+
+    detail_response = get_review_detail(
+        client=client,
+        review_id=review_id,
+        user_id="user_wf0043_contract",
+    )
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert detail_payload["review"]["status"] == case["expected_review_status"]
+    assert detail_payload["review"]["overall_summary"].startswith(
+        f"{case['expected_summary_convention']}:"
+    )
+
+
 def test_review_detail_retains_cards_when_evaluation_element_is_archived(
     monkeypatch,
 ) -> None:

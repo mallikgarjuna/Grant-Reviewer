@@ -54,3 +54,14 @@ cases:
     request_nodes:
       - node_logical_id: academic_profile
         text: changed payload for mismatch
+  - case_id: post_persist_unresolvable_expectation_failed
+    surface: structured_api
+    expected_http_status: 200
+    expected_error_code: null
+    expect_review_persisted: true
+    expected_review_status: FAILED
+    expected_summary_convention: EXPECTATION_REF_UNRESOLVABLE
+    idempotency_key: idem-wf0043-post-persist-failed-1
+    request_nodes:
+      - node_logical_id: academic_profile
+        text: payload for deterministic failed review

@@ -60,7 +60,7 @@ Verification Steps:
 Risks (if any):
 - Some quota/disable paths may require deterministic service stubbing to avoid flaky environment-dependent outcomes.
 
-### [ ] Task 3 — Structured API post-persistence failure semantics (`FAILED` review retained)
+### [x] Task 3 — Structured API post-persistence failure semantics (`FAILED` review retained)
 
 Goal:
 - Lock the split boundary where post-creation execution failures return stable API contract while persisting failed review state.
