@@ -35,7 +35,7 @@ Verification Steps:
 Risks (if any):
 - Legacy review records may not carry call linkage; must be handled in later compatibility tasks.
 
-### [ ] Task 2 — Backend review detail deterministic ordering + legacy fallback
+### [x] Task 2 — Backend review detail deterministic ordering + legacy fallback
 
 Goal:
 - Make review-detail ordering deterministic and backward-compatible for records lacking call metadata.

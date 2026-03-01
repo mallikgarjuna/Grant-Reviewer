@@ -800,6 +800,157 @@ def test_review_detail_includes_call_id_and_call_code(monkeypatch) -> None:
     assert detail_payload["call_code"] == seeded_ids.structured_call_code
 
 
+def test_review_detail_order_index_tie_uses_node_logical_id_fallback(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    session = get_session()
+    try:
+        call_definition = session.exec(
+            select(CallDefinition).where(
+                CallDefinition.funding_call_id == seeded_ids.structured_call_id
+            )
+        ).first()
+        assert call_definition is not None
+        assert isinstance(call_definition.canonical_json, dict)
+        proposal_nodes = call_definition.canonical_json.get("proposal_nodes")
+        assert isinstance(proposal_nodes, list)
+
+        for node_config in proposal_nodes:
+            if not isinstance(node_config, dict):
+                continue
+            if node_config.get("id") in {"academic_profile", "scientific_proposal"}:
+                node_config["order_index"] = 7
+        session.add(call_definition)
+        session.commit()
+    finally:
+        session.close()
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "profile text"},
+                {"node_logical_id": "scientific_proposal", "text": "science text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    ordered_nodes = [card["node_logical_id"] for card in payload["cards"]]
+    assert ordered_nodes == sorted(ordered_nodes)
+    assert payload["ordering_source"] == "call_nodes"
+    assert payload["unmapped_node_logical_ids"] == []
+
+
+def test_review_detail_unmapped_nodes_ordered_last_and_reported(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        structured_criterion = session.exec(
+            select(EvaluationCriterion).where(
+                EvaluationCriterion.funding_call_id == seeded_ids.structured_call_id
+            )
+        ).first()
+        assert structured_criterion is not None
+
+        unmapped_node = ProposalNode(
+            funding_call_id=seeded_ids.structured_call_id,
+            parent_node_id=None,
+            logical_id="unmapped_bonus_node",
+            node_type=NodeType.SECTION,
+            title="Unmapped bonus node",
+            order_index=99,
+        )
+        session.add(unmapped_node)
+        session.commit()
+        session.refresh(unmapped_node)
+
+        unmapped_element = EvaluationElement(
+            evaluation_criterion_id=structured_criterion.id,
+            logical_id="elem_unmapped_bonus",
+            name="Unmapped bonus element",
+            description="Assess bonus section",
+        )
+        session.add(unmapped_element)
+        session.commit()
+        session.refresh(unmapped_element)
+
+        unmapped_expectation = NodeExpectation(
+            proposal_node_id=unmapped_node.id,
+            evaluation_element_id=unmapped_element.id,
+            expectation_strength=ExpectationStrength.MANDATORY,
+            evaluation_intent=EvaluationIntent.QUALITY,
+            guidance_note="Assess bonus node quality",
+            order_index=1,
+        )
+        session.add(unmapped_expectation)
+        session.commit()
+    finally:
+        session.close()
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "profile text"},
+                {"node_logical_id": "unmapped_bonus_node", "text": "bonus text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+
+    payload = detail.json()
+    ordered_nodes = [card["node_logical_id"] for card in payload["cards"]]
+    assert ordered_nodes[-1] == "unmapped_bonus_node"
+    assert payload["unmapped_node_logical_ids"] == ["unmapped_bonus_node"]
+
+
+def test_review_detail_ordering_source_fallback_when_call_linkage_missing(
+    monkeypatch,
+) -> None:
+    client, _ = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        expectation = session.exec(select(NodeExpectation)).first()
+        assert template is not None
+        assert expectation is not None
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"legacy-fallback-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={"nodes": {"academic_profile": "profile text"}},
+        )
+        repository.create_review_card(
+            review_id=review.id,
+            expectation_id=expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback="Legacy fallback card",
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+    finally:
+        session.close()
+
+    detail = get_review_detail(client=client, review_id=str(review.id))
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["call_id"] is None
+    assert payload["call_code"] is None
+    assert payload["ordering_source"] == "review_payload_fallback"
+
+
 def test_create_review_shared_core_happy_path_parity(monkeypatch) -> None:
     from app.services.review_execution_core import ReviewExecutionCore
 

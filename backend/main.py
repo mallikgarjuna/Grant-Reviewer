@@ -339,6 +339,60 @@ def _resolve_review_call_id(review: Any, repository: ReviewRepository) -> UUID |
     return None
 
 
+def _build_call_order_index_map(
+    call_id: UUID,
+    repository: ReviewRepository,
+) -> dict[str, int | None]:
+    """Build logical-id to order-index map from call definition or persisted nodes."""
+    definition = repository.get_call_definition_by_call_id(call_id)
+    order_map: dict[str, int | None] = {}
+    if definition is not None and isinstance(definition.canonical_json, dict):
+        proposal_nodes = definition.canonical_json.get("proposal_nodes")
+        if isinstance(proposal_nodes, list):
+            for position, node in enumerate(proposal_nodes):
+                if not isinstance(node, dict):
+                    continue
+                logical_id = node.get("id")
+                if not isinstance(logical_id, str) or not logical_id.strip():
+                    continue
+                raw_order_index = node.get("order_index")
+                order_map[logical_id] = (
+                    raw_order_index if isinstance(raw_order_index, int) else position
+                )
+    if order_map:
+        return order_map
+
+    for node, _ in repository.get_nodes_for_call(call_id):
+        if isinstance(node.logical_id, str):
+            order_map[node.logical_id] = node.order_index
+    return order_map
+
+
+def _order_review_cards(
+    cards: list[ReviewCardSummary],
+    *,
+    order_map: dict[str, int | None],
+) -> tuple[list[ReviewCardSummary], list[str]]:
+    """Sort cards deterministically and report unmapped logical ids."""
+    unmapped = sorted(
+        {
+            card.node_logical_id
+            for card in cards
+            if isinstance(card.node_logical_id, str)
+            and card.node_logical_id not in order_map
+        }
+    )
+
+    def sort_key(card: ReviewCardSummary) -> tuple[int, int, str]:
+        logical_id = card.node_logical_id if isinstance(card.node_logical_id, str) else ""
+        order_index = order_map.get(logical_id)
+        is_unmapped = logical_id == "" or logical_id not in order_map
+        normalized_order = order_index if isinstance(order_index, int) else 1_000_000_000
+        return (1 if is_unmapped else 0, normalized_order, logical_id)
+
+    return sorted(cards, key=sort_key), unmapped
+
+
 def _extract_known_domains(node_config: dict[str, Any]) -> set[str]:
     """Extract canonical domain ids from word_limit_by_domain keys."""
     constraints = node_config.get("content_constraints")
@@ -1056,47 +1110,57 @@ def get_review(
 
     call_id = _resolve_review_call_id(review, repository)
     call = repository.get_call_by_id(call_id) if call_id is not None else None
+    cards = [
+        ReviewCardSummary(
+            id=card.id,
+            node_expectation_id=card.node_expectation_id,
+            node_logical_id=node_logical_id,
+            node_title=node_title,
+            criterion=criterion_name,
+            criterion_description=criterion_desc,
+            evaluation_element_name=element_name,
+            expectation_guidance_note=guidance_note,
+            rating=card.rating,
+            feedback_text=card.feedback_text,
+            assessment_status=(
+                card.assessment_status if review.review_type == "structured" else None
+            ),
+            not_assessable_reason=(
+                card.not_assessable_reason if review.review_type == "structured" else None
+            ),
+        )
+        for (
+            card,
+            criterion_name,
+            criterion_desc,
+            element_name,
+            guidance_note,
+            node_logical_id,
+            node_title,
+        ) in cards_with_criteria
+    ]
+
+    ordering_source: Literal["call_nodes", "review_payload_fallback"] = (
+        "review_payload_fallback"
+    )
+    unmapped_node_logical_ids: list[str] = []
+    if call_id is not None:
+        order_map = _build_call_order_index_map(call_id, repository)
+        cards, unmapped_node_logical_ids = _order_review_cards(cards, order_map=order_map)
+        ordering_source = "call_nodes"
 
     return ReviewDetailResponse(
         call_id=call_id,
         call_code=call.code if call is not None else None,
+        ordering_source=ordering_source,
+        unmapped_node_logical_ids=unmapped_node_logical_ids,
         review=ReviewSummary(
             id=review.id,
             status=review.status,
             overall_rating=review.overall_rating,
             overall_summary=review.overall_summary,
         ),
-        cards=[
-            ReviewCardSummary(
-                id=card.id,
-                node_expectation_id=card.node_expectation_id,
-                node_logical_id=node_logical_id,
-                node_title=node_title,
-                criterion=criterion_name,
-                criterion_description=criterion_desc,
-                evaluation_element_name=element_name,
-                expectation_guidance_note=guidance_note,
-                rating=card.rating,
-                feedback_text=card.feedback_text,
-                assessment_status=(
-                    card.assessment_status if review.review_type == "structured" else None
-                ),
-                not_assessable_reason=(
-                    card.not_assessable_reason
-                    if review.review_type == "structured"
-                    else None
-                ),
-            )
-            for (
-                card,
-                criterion_name,
-                criterion_desc,
-                element_name,
-                guidance_note,
-                node_logical_id,
-                node_title,
-            ) in cards_with_criteria
-        ],
+        cards=cards,
     )
 
 
