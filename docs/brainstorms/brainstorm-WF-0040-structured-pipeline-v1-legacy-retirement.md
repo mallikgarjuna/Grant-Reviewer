@@ -1,9 +1,19 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-01
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0040-structured-pipeline-v1-legacy-retirement.md`
+
+## Repo Reality Snapshot (Read-Only) (2026-03-01)
+
+- `backend/main.py` still selects `legacy` vs `pipeline_v1` for `/api/structured-review` using a feature flag + allowlist/per-call gating.
+- Rollout guardrails exist as scripts: `backend/scripts/replay_structured_rollout.py` + `backend/scripts/evaluate_rollout_health.py`.
+- Tests cover `pipeline_v1` engine behavior, determinism/stress, and telemetry (`engine_path`).
+- API tests already assert v1 routing when enabled; retirement likely needs tests asserting v1-only when in retirement mode.
+- “legacy” terminology exists in call-config/UI mode (`ui_mode="legacy_single_snippet"`) and may not be the same as the legacy engine path (naming collision risk).
 
 ## 1. Problem Statement
 
@@ -14,6 +24,8 @@ Contract notes / non-obvious constraints:
 - No API contract regressions for frontend/BFF clients during deprecation.
 - Rollback must remain configuration-first until final code deletion is complete.
 - Legacy code removal is allowed only after explicit evidence checkpoints pass.
+
+Primary driver (selected): drift + maintenance overhead; secondary: operational risk.
 
 ## 2. Desired Outcome
 
@@ -63,3 +75,9 @@ A safe MVP deprecation is complete when:
 - Re-architecture of prompt strategy beyond removing legacy code paths.
 - New frontend UX scope unrelated to engine retirement.
 - Expanding call coverage scope beyond validating current supported calls.
+
+## Open Questions / Deferred
+
+- Define parity acceptance: strict equality vs “no regressions” thresholds + spot checks (Phase 1).
+- Confirm rollback mechanism and which config/flags are the source of truth during observation windows (Phase 1).
+- Disambiguate scope: legacy engine execution retirement vs call-config/UI “legacy_*” fallbacks (Phase 1).
