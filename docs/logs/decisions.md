@@ -34,6 +34,14 @@
 - **Tradeoff**: Artifact producers must include `retirement_gate` metadata for full gate evaluation.
 - **Status**: Approved.
 
+### AD 40.5: `check_id` remains stable taxonomy; validator uniqueness includes expectation identity
+- **WF ID**: WF-0040
+- **Context**: A temporary fix encoded `expectation_id` into `check_id`, which violated stable taxonomy expectations and downstream grouping assumptions.
+- **Decision**: Keep `check_id` taxonomy stable (`check.presence`) and enforce request-snapshot uniqueness on (`expectation_id`, `node_logical_id`, `check_id`) in validator logic.
+- **Why**: Preserves cross-call analytical stability while still preventing duplicate expectation identity rows in request snapshots.
+- **Tradeoff**: Validator relies on expectation identity for uniqueness rather than `check_id` alone.
+- **Status**: Approved.
+
 ## Date: 2026-03-01 (WF-0039: Structured pipeline v1 rollout)
 
 ### AD 39.1: Production empty-allowlist guardrail fails closed to legacy

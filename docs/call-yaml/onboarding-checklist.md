@@ -35,9 +35,7 @@ Use this checklist when onboarding any new funding call YAML.
 
 ## 5. WF-0038 Runtime Readiness
 
-- Pipeline-v1 is enabled only for target call code:
-  - `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=1`
-  - `STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES=<call_code>`
+- Runtime uses v1-only structured-review execution for `POST /api/structured-review`.
 - At least one `POST /api/structured-review` smoke request succeeds for this call.
 
 ## 6. Ship Gate

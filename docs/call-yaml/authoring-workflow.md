@@ -343,10 +343,8 @@ Before enabling a new call on pipeline v1, complete all checks below.
 
 ## 11.3 Runtime Smoke for Structured Review
 
-- Enable pipeline-v1 only for the target call code:
-  - `STRUCTURED_REVIEW_PIPELINE_V1_ENABLED=1`
-  - `STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES=<call_code>`
-- Submit at least one `POST /api/structured-review` request for that call.
+- Ensure runtime is on the current v1-only structured-review path (`POST /api/structured-review` no longer uses call-level engine allowlist toggles).
+- Submit at least one `POST /api/structured-review` request for the target call.
 - Request must succeed without malformed-request errors caused by call config / expectation mapping.
 
 ## 11.4 Ship Decision

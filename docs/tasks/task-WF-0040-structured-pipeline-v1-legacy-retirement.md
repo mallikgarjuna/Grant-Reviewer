@@ -1,8 +1,8 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: task
-Version: v0.3
-Status: Ready for Implementation
+Version: v0.4
+Status: Complete
 Last Updated: 2026-03-01
 
 ## Task Breakdown (Sequential Order)
@@ -169,3 +169,4 @@ Risks (if any):
 - v0.1 (2026-03-01): Initial sequential task plan for controlled deprecation and legacy path retirement.
 - v0.2 (2026-03-01): Applied Phase 2 review revisions for atomicity, strict FR/US traceability, dependency DAG validity, and explicit TDD/verification per task.
 - v0.3 (2026-03-01): Added final aggregate automated verification step for end-of-phase confidence before Phase 3 execution.
+- v0.4 (2026-03-01): Marked all tasks complete and retained artifact in active path until WF gate evidence + approval closure.

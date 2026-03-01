@@ -1,8 +1,8 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: walkthrough
-Version: v1.0
-Status: Complete
+Version: v1.1
+Status: In progress
 Last Updated: 2026-03-01
 
 ---
@@ -34,6 +34,7 @@ Use this checklist as the gate before deleting legacy execution-path code.
   - `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t2.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py -k "idempotency or digest or expectation or timeout or validation"` (pass in this phase).
   - `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t6.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py tests/test_rollout_health.py` (pass in this phase).
   - `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_c2.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py tests/test_rollout_health.py tests/test_structured_reviewer_service.py` (pass: `92 passed`).
+  - `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_fixfull.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py tests/test_rollout_health.py tests/test_structured_reviewer_service.py` (adversarial-fix pass: `93 passed`).
 - Implementation commits:
   - `b86b6de` Task 1 (v1-only routing tracer bullet).
   - `9e27515` Task 2 (API invariant coverage + timeout message stability).
@@ -59,10 +60,21 @@ Use this checklist as the gate before deleting legacy execution-path code.
 - File was revised to pipeline_v1-only service tests aligned to WF-0040 scope and contracts.
 - Post-fix regression evidence: `92 passed` in combined API + pipeline + rollout + structured service test run.
 
+## Adversarial Corrective Pass (Post-Phase-3)
+
+- Restored stable `check_id` taxonomy (`check.presence`) for pipeline expectations and fixed validator identity semantics so same `check_id` across different expectations is valid.
+- Re-opened WF status from `Done` to `Phase 3 (Gate Pending)` and moved WF artifacts back to active paths to match unchecked approval/evidence gates.
+- Removed stale call-level routing toggle references in call-yaml runtime docs.
+
 ## Remaining Risks
 
 - Deletion approval remains blocked until staging/prod observation windows and per-call production sample thresholds are recorded with fresh artifacts.
 - Tech lead/repo owner sign-off is still pending in Approval Record.
+
+## Workflow Status Clarification
+
+- WF-0040 implementation tasks are complete, but ship/deletion gate evidence and explicit owner approval are still pending.
+- `docs/index.md` tracks this WF as `Phase 3 (Gate Pending)` until checklist/approval closure.
 
 ## Approval Record
 

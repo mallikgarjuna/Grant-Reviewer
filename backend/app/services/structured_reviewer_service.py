@@ -188,7 +188,7 @@ class StructuredReviewerService:
                     {
                         "expectation_id": expectation_id,
                         "node_logical_id": node_logical_id,
-                        "check_id": f"check.presence.{expectation_id}",
+                        "check_id": "check.presence",
                         "required": expectation.expectation_strength.value == "MANDATORY",
                     }
                 )
