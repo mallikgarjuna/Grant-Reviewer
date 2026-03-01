@@ -1,8 +1,8 @@
 # WF-0039 — Structured Pipeline v1 Rollout
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-01
 
 ## Task Breakdown (Sequential Order)
@@ -96,18 +96,18 @@ Enables: Task 5
 Parallelizable: no
 Files to modify:
 - `backend/scripts/replay_structured_rollout.py` (new)
-- `backend/tests/test_review_execution_core.py`
+- `backend/tests/test_rollout_replay.py` (new)
 Acceptance Criteria:
 - Comparator evaluates two runs (legacy vs v1) for:
   - card count/order/rating structural parity,
   - status/error-code stability.
 - Comparator output is deterministic JSON.
 TDD Plan:
-- RED: add failing test for comparator mismatch detection and deterministic output shape.
+- RED: add failing test in `backend/tests/test_rollout_replay.py` for comparator mismatch detection and deterministic output shape.
 - GREEN: implement minimal comparator in script/module.
 - REFACTOR: extract parity-check helpers if duplicated (`skip` if none).
 Verification Steps:
-- `cd backend && uv run pytest -q tests/test_review_execution_core.py -k "replay or parity"`
+- `cd backend && uv run pytest -q tests/test_rollout_replay.py -k "parity or comparator"`
 Risks (if any):
 - Comparator may accidentally include text parity; keep scope strictly structural.
 
@@ -123,18 +123,18 @@ Enables: Task 6
 Parallelizable: no
 Files to modify:
 - `backend/scripts/replay_structured_rollout.py`
-- `backend/tests/test_review_execution_core.py`
+- `backend/tests/test_rollout_replay.py`
 - `docs/guides/engineering-standards.md`
 Acceptance Criteria:
 - Script supports running `2 payloads x 20 replays` and writes deterministic JSON artifact under a documented path.
 - Docs include exact command and artifact location contract.
 TDD Plan:
-- RED: add failing test for artifact schema and deterministic key ordering.
+- RED: add failing test in `backend/tests/test_rollout_replay.py` for artifact schema and deterministic key ordering.
 - GREEN: implement artifact writer and iteration loop.
 - REFACTOR: isolate artifact-path resolver (`skip` if none).
 Verification Steps:
-- `cd backend && uv run pytest -q tests/test_review_execution_core.py -k "artifact or replay"`
-- `cd backend && uv run python scripts/replay_structured_rollout.py --help`
+- `cd backend && uv run pytest -q tests/test_rollout_replay.py -k "artifact or replay"`
+- `cd backend && uv run python scripts/replay_structured_rollout.py --replays 20 --output artifacts/rollout/replay_canary.json`
 Risks (if any):
 - Runtime cost; keep defaults aligned to PRD while allowing CLI overrides for local dev.
 
@@ -151,18 +151,18 @@ Parallelizable: no
 Files to modify:
 - `backend/scripts/evaluate_rollout_health.py` (new)
 - `backend/README.md`
-- `backend/tests/test_api.py`
+- `backend/tests/test_rollout_health.py` (new)
 Acceptance Criteria:
 - Script evaluates thresholds (error-rate/latency/parity) using replay/telemetry inputs and returns pass/fail.
 - Backend runbook documents rollback commands for global disable and call removal.
 - Tests validate threshold evaluation edge behavior.
 TDD Plan:
-- RED: add failing tests for threshold breach and pass cases.
+- RED: add failing tests in `backend/tests/test_rollout_health.py` for threshold breach and pass cases.
 - GREEN: implement evaluator script and runbook updates.
 - REFACTOR: centralize threshold constants (`skip` if none).
 Verification Steps:
-- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_phase2d.db uv run pytest -q tests/test_api.py -k "rollback or threshold"`
-- `cd backend && uv run python scripts/evaluate_rollout_health.py --help`
+- `cd backend && uv run pytest -q tests/test_rollout_health.py`
+- `cd backend && uv run python scripts/evaluate_rollout_health.py --input artifacts/rollout/replay_canary.json`
 Risks (if any):
 - Threshold inputs may be sparse; fail-safe output should recommend rollback when data is insufficient.
 
@@ -199,3 +199,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-03-01): Initial task breakdown from PRD
+- v0.2 (2026-03-01): Applied review edits (script-test boundary split, concrete replay/evaluator verification commands, readiness set to implementation)
