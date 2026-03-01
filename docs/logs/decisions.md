@@ -1204,3 +1204,11 @@
 - **Why**: Creates a repeatable, fast verification bundle without adding new tooling.
 - **Tradeoff**: Case curation is strict; additional long-tail scenarios remain deferred.
 - **Status**: Approved.
+
+### AD 43.4: Focused-run contract suite must be explicitly selectable
+- **WF ID**: WF-0043
+- **Context**: Verification bundle value depends on maintainers being able to run only WF-0043 contract checks quickly and deterministically.
+- **Decision**: Require a stable focused-run selection convention (marker/name pattern) for WF-0043 tests, and document it in verification docs.
+- **Why**: Keeps pre-merge trust checks fast and reproducible without new tooling.
+- **Tradeoff**: Test naming/marker discipline becomes part of maintenance burden.
+- **Status**: Approved.

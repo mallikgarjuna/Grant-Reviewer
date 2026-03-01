@@ -1,7 +1,7 @@
 # WF-0043 — NWO Veni 2025 Preproposal: Single-Call MVP Hardening
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-01
 
@@ -62,6 +62,7 @@ Last Updated: 2026-03-01
 - FR7 (US3): Add a small fixture matrix (`8-12` cases) as the single source for WF-0043 contract scenarios.
 - FR8 (US3): Add/update verification bundle docs to include exact commands, DB isolation requirement, and per-case scenario-table fields (HTTP, persistence, status/summary convention).
 - FR9 (US1, US2): Do not introduce new tooling or alter existing production API contracts while implementing FR1-FR8.
+- FR10 (US3): Provide a deterministic focused-run entrypoint for WF-0043 cases (stable test selection convention such as marker/name pattern) so maintainers can run only this suite before merge/release.
 
 ## 5. Data & API Contracts
 
@@ -89,14 +90,17 @@ Last Updated: 2026-03-01
   - `UNKNOWN_NODE_ID`
   - `REVIEW_STAGE_NODE_MISMATCH`
   - `IDEMPOTENCY_PAYLOAD_MISMATCH`
+  - `QUOTA_EXCEEDED` and `REVIEWS_DISABLED` when those scenarios are included in the fixture set
   - plus covered success replay semantics (`200` with existing review identity/status)
 
 ## 6. Components / Modules
 
 - `backend/tests/test_api.py`
   - Responsibility: endpoint-level contract assertions for `POST /api/structured-review` (FR1-FR5).
-- `backend/tests/test_review_execution_core.py` and/or `backend/tests/test_reviewer_service.py`
-  - Responsibility: deterministic reviewer-policy seam assertions for single-snippet flow (FR6).
+- `backend/tests/test_review_execution_core.py`
+  - Responsibility: deterministic reviewer-policy mode enforcement assertions at execution seam (FR6).
+- `backend/tests/test_api.py` (single-snippet related cases)
+  - Responsibility: assert persisted review/status API-surface invariants for policy-related single-snippet outcomes where applicable (FR6).
 - `backend/tests/fixtures/wf_0043_contract_matrix.yaml`
   - Responsibility: centralized fixture matrix for hardening scenarios (FR7).
 - `docs/brainstorms/brainstorm-WF-0043-nwo-veni-2025-preproposal-single-call-mvp-harden.md`
@@ -106,7 +110,7 @@ Design tree (dependencies + ordering):
 1. Define fixture matrix shape and baseline cases. (FR7)
 2. Add/adjust structured API contract assertions against fixture cases. (FR1-FR5)
 3. Add/adjust reviewer-policy seam assertions. (FR6)
-4. Align docs verification bundle with implemented cases and commands. (FR8)
+4. Align docs verification bundle with implemented cases and commands, including focused-run entrypoint. (FR8, FR10)
 
 Deep module boundaries:
 - Test data boundary: fixture matrix is declarative and call-scoped.
@@ -134,6 +138,7 @@ Deep module boundaries:
   - Prove-it tests: blocking vs warning vs prompt-only semantics.
 - TDD seam S3 (US3, FR7, FR8): fixture matrix + docs consistency.
   - Prove-it tests: every matrix case maps to an assertion path and documented expectation fields.
+  - Prove-it tests: focused-run entrypoint executes WF-0043 cases only. (FR10)
 
 ## 9. Telemetry (Minimal)
 
@@ -154,3 +159,4 @@ Deep module boundaries:
 
 - v0.1 (2026-03-01): Initial PRD from brainstorm.
 - v0.2 (2026-03-01): Applied risk-audit tightening edits for contract precision, SSOT boundary clarity, and test-scope defaults; marked Ready for Tasks.
+- v0.3 (2026-03-01): Adversarial pass tightening for implementation precision (focused-run entrypoint, explicit code coverage list, and module/test ownership clarity).
