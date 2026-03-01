@@ -181,6 +181,46 @@ Repo grounding note (2026-03-01):
   > Recommendation: A — Validating on one call is fine, but the implementation must remain universal and call-driven.
   > **Selected: A**
 
+## Section 6 — Risks / Unknowns (Interactive)
+
+**Brainstorming Q&A:**
+
+**Q1: Biggest delivery risk for “no hardcoding” review detail ordering**
+- A) Review detail payload lacks `call_id` (or equivalent) to fetch canonical node ordering; we must extend contracts generically
+- B) We can remove hardcoding without any backend changes
+- C) Ordering doesn’t matter; we can ignore it for MVP
+  > Recommendation: A — Without call identification or ordered nodes, any “ordering” will be implicit/fragile and risks reintroducing hardcoding.
+  > **Selected: A**
+
+**Q2: Risk posture for domain options (removing `DOMAIN_OPTIONS_BY_CALL`)**
+- A) Add backend-provided domain options metadata and render it only when present
+- B) Derive domain options by parsing node constraints client-side (fragile, implicit)
+- C) Keep the frontend map temporarily and refactor later
+  > Recommendation: A — Keeps frontend universal and makes domain call-specific by construction.
+  > **Selected: A**
+
+**Q3: Reviewer-policy blocking risk (LLM output contains forbidden terms)**
+- A) Implement one server-side retry with stricter instruction, then fail with clear message
+- B) Disable blocking policy enforcement for MVP
+- C) Always fail immediately; no retry
+  > Recommendation: A — Preserves policy enforcement while reducing false-negative failures.
+  > **Selected: A**
+
+**Q4: Universal “arbitrary node count” risk**
+- A) Ensure both submit + review detail behave correctly with >3 nodes by adding/using a second existing canonical call in tests only (no product expansion)
+- B) Trust Veni-only testing is enough since scope is single-call
+- C) Add a new call YAML as part of this WF to prove universality
+  > Recommendation: A — Use existing canonical calls as test fixtures to prevent “Veni-shaped MVP.”
+  > **Selected: A**
+
+**Q5: Compliance honesty risk**
+- A) Keep compliance strictly to enforceable deterministic checks (presence + word limits + domain-aware word limits) and label other guidance as non-enforceable
+- B) Add heuristic enforcement for non-enforceable constraints (e.g., “max_items=10”) even if parsing is unreliable
+- C) Skip compliance blocking for MVP to avoid false negatives
+  > Recommendation: A — Honest enforcement avoids false claims while still helping users.
+  > **Selected: A**
+  > User note: for non-enforceable constraints, display informational guidance to researchers (do not block).
+
 **Q2: What counts as “hardcoding” that is forbidden in WF-0041?**
 - A) Only backend hardcoding is forbidden; frontend can have call-specific maps temporarily
 - B) Any per-call branching/maps/constants in frontend or backend (e.g., `VENI_NODE_ORDER`, `DOMAIN_OPTIONS_BY_CALL`) are forbidden

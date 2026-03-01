@@ -107,7 +107,16 @@ Hard constraints (MVP):
 
 ## 6. Risks / Unknowns
 
-TBD.
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md` (Section 6)
+
+Key risks:
+- Review detail ordering can’t be truly call-driven without call identification/ordering metadata available to the page; may require a generic API contract extension (e.g., include `call_id` and/or ordered node list in review detail response).
+- Domain options are currently frontend-hardcoded; removing hardcoding requires backend-exposed domain options metadata that is present only for calls that define domain-limited constraints.
+- Reviewer-policy blocking can fail reviews if the LLM output contains forbidden terms; we need a single server-side retry seam to keep the happy path resilient without weakening policy enforcement.
+- “Arbitrary node count” can regress silently if we only test Veni; we need at least one additional structured call shape for test coverage (tests-only, not product scope expansion).
+
+Compliance honesty risk:
+- Some YAML constraints are non-enforceable deterministically in plain text (e.g., `max_items`); for MVP we will surface these as informational guidance to the researcher, not blocking enforcement.
 
 ## Open Questions / Deferred
 
