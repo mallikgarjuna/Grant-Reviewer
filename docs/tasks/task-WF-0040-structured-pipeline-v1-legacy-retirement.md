@@ -32,7 +32,7 @@ Verification Steps:
 Risks (if any):
 - Hidden runtime assumptions may still rely on legacy path in uncovered payload shapes.
 
-### [ ] Task 2 — Lock API invariant coverage for retirement
+### [x] Task 2 — Lock API invariant coverage for retirement
 
 Goal:
 - Ensure retirement keeps idempotency, validation ordering, and error semantics stable.

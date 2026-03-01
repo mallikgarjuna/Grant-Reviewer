@@ -5,6 +5,8 @@ import json
 import pytest
 
 from app.engine.contracts import ReviewRequestV1
+from app.engine.review_request_validator import ReviewRequestValidationError
+from app.engine.review_request_validator import validate_review_request_payload
 from app.engine.pipeline_v1 import run_review_pipeline
 from scripts.evaluate_rollout_health import evaluate_rollout_health
 from scripts.replay_structured_rollout import build_replay_artifact
@@ -184,3 +186,28 @@ def test_canary_rollout_replay_artifact_and_health_decision() -> None:
     assert rollback["overall"]["pass"] is False
     assert rollback["overall"]["recommended_action"] == "rollback"
     assert "structural_parity_failure" in rollback["overall"]["reasons"]
+
+
+def test_review_request_validator_rejects_digest_mismatch() -> None:
+    payload = {
+        "request_id": "req-digest-mismatch",
+        "mode": "DIAGNOSTIC",
+        "stage_ref": "STEP_1",
+        "call_config_digest": "sha256:not-the-real-digest",
+        "call_config_snapshot": {
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ]
+        },
+        "proposal_nodes": {"research_idea": "Clear proposal text."},
+    }
+
+    with pytest.raises(ReviewRequestValidationError) as err:
+        validate_review_request_payload(payload)
+
+    assert err.value.code == "CALL_CONFIG_DIGEST_MISMATCH"

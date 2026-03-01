@@ -2344,6 +2344,147 @@ def test_canary_rollout_routing_matrix_allowlist_and_fail_closed(
     assert calls["legacy"] == 0
 
 
+def test_structured_review_call_config_digest_mismatch_marks_failed_review(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    from app.services.structured_reviewer_service import StructuredReviewerService
+
+    original_pipeline = StructuredReviewerService.generate_structured_review_pipeline_v1
+
+    def forced_bad_digest(self, **kwargs):
+        return original_pipeline(
+            self,
+            **kwargs,
+            call_config_digest_override="sha256:not-the-canonical-digest",
+        )
+
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review_pipeline_v1",
+        forced_bad_digest,
+    )
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "FAILED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    assert detail.json()["review"]["overall_summary"].startswith(
+        "CALL_CONFIG_DIGEST_MISMATCH:"
+    )
+
+
+def test_structured_review_unresolvable_expectation_marks_failed_review(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    from app.engine.contracts import PipelineResult
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+    import app.services.structured_reviewer_service as structured_service_module
+
+    def run_pipeline_with_unknown_expectation(_request):
+        return PipelineResult(
+            findings=[],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="academic_profile",
+                    expectation_id="exp-missing-from-map",
+                    rating="NOTE",
+                    feedback="unexpected expectation reference",
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        structured_service_module,
+        "run_review_pipeline",
+        run_pipeline_with_unknown_expectation,
+    )
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "FAILED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    assert detail.json()["review"]["overall_summary"].startswith(
+        "EXPECTATION_REF_UNRESOLVABLE:"
+    )
+
+
+def test_structured_review_timeout_classification_uses_stable_timeout_message(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    import app.services.structured_reviewer_service as structured_service_module
+
+    def raise_timeout(_request):
+        raise TimeoutError()
+
+    monkeypatch.setattr(structured_service_module, "run_review_pipeline", raise_timeout)
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "FAILED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    overall_summary = detail.json()["review"]["overall_summary"]
+    assert overall_summary.startswith("TIMEOUT:")
+    assert "timed out" in overall_summary.lower()
+
+
+def test_structured_review_validation_error_precedes_idempotency_mismatch(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    idempotency_key = "idem-structured-validation-order"
+
+    first = post_structured_review(
+        client=client,
+        idempotency_key=idempotency_key,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert first.status_code == 200
+
+    malformed_payload = {"call_id": "not-a-uuid", "nodes": "not-a-list"}
+    body = json.dumps(malformed_payload).encode("utf-8")
+    headers = build_signature_headers(body=body)
+    headers["Content-Type"] = "application/json"
+    headers["Idempotency-Key"] = idempotency_key
+
+    invalid = client.post("/api/structured-review", content=body, headers=headers)
+    assert invalid.status_code == 400
+    assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
 def test_create_structured_review_non_idempotency_integrity_error_returns_500(
     monkeypatch,
 ) -> None:

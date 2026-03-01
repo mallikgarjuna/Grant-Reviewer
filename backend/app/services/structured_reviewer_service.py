@@ -461,8 +461,13 @@ class StructuredReviewerService:
         code: str,
         message: str,
     ) -> tuple[Review, list[ReviewCard]]:
+        normalized_message = message.strip()
+        if code == EngineErrorCode.TIMEOUT.value and not normalized_message:
+            normalized_message = (
+                f"Structured review execution timed out after {self._timeout_seconds:.2f}s."
+            )
         review.status = ReviewStatus.FAILED
-        review.overall_summary = f"{code}: {message}"
+        review.overall_summary = f"{code}: {normalized_message}"
         self.repository.update_review(review)
         return review, []
 
