@@ -101,6 +101,14 @@ class NodeMetadataResponse(BaseModel):
     unknown_node_logical_ids: list[str] | None = None
 
 
+class DomainOptionDTO(BaseModel):
+    """Backend-defined domain option for submit UX."""
+
+    value: str
+    label: str
+    order_index: int
+
+
 class CallConfigResponse(BaseModel):
     """Response for GET /api/public/calls/{call_logical_id}/config."""
 
@@ -108,6 +116,7 @@ class CallConfigResponse(BaseModel):
     config_version: str
     ui_mode: Literal["legacy_single_snippet", "structured_nodes"]
     expected_nodes: list[str] | None = None
+    domain_options: list[DomainOptionDTO] = Field(default_factory=list)
 
 
 class CreateReviewRequest(BaseModel):

@@ -31,6 +31,7 @@ from app.schemas.api import (
     CreateReviewRequest,
     CreateReviewResponse,
     DeleteReviewResponse,
+    DomainOptionDTO,
     NodeMetadataResponse,
     NodesResponse,
     NodesTreeResponse,
@@ -413,6 +414,52 @@ def _extract_known_domains(node_config: dict[str, Any]) -> set[str]:
     return domains
 
 
+def _to_domain_label(domain_id: str) -> str:
+    """Convert canonical domain ids to a human-readable fallback label."""
+    return domain_id.replace("_", " ").strip().title()
+
+
+def _extract_domain_options(canonical_json: dict[str, Any]) -> list[DomainOptionDTO]:
+    """Extract deterministic domain options from call definition metadata."""
+    value_to_rank: dict[str, int] = {}
+    value_to_label: dict[str, str] = {}
+
+    funding_call = canonical_json.get("funding_call")
+    if isinstance(funding_call, dict):
+        domain_notes = funding_call.get("domain_notes")
+        if isinstance(domain_notes, list):
+            for index, note in enumerate(domain_notes):
+                if not isinstance(note, dict):
+                    continue
+                domain_id = note.get("domain_id")
+                if not isinstance(domain_id, str) or not domain_id.strip():
+                    continue
+                value = domain_id.strip().lower()
+                value_to_rank.setdefault(value, index)
+                raw_label = note.get("label")
+                if isinstance(raw_label, str) and raw_label.strip():
+                    value_to_label.setdefault(value, raw_label.strip())
+
+    proposal_nodes = canonical_json.get("proposal_nodes")
+    if isinstance(proposal_nodes, list):
+        for node in proposal_nodes:
+            if not isinstance(node, dict):
+                continue
+            for domain in _extract_known_domains(node):
+                value_to_rank.setdefault(domain, 1_000_000_000)
+                value_to_label.setdefault(domain, _to_domain_label(domain))
+
+    sorted_values = sorted(value_to_rank.keys(), key=lambda value: (value_to_rank[value], value))
+    return [
+        DomainOptionDTO(
+            value=value,
+            label=value_to_label.get(value, _to_domain_label(value)),
+            order_index=index,
+        )
+        for index, value in enumerate(sorted_values)
+    ]
+
+
 RepositoryDep = Annotated[ReviewRepository, Depends(get_repository)]
 
 
@@ -472,6 +519,7 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
             call_logical_id=call_logical_id,
             config_version="1",
             ui_mode="legacy_single_snippet",
+            domain_options=[],
         )
 
     canonical_json = definition.canonical_json
@@ -485,6 +533,7 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
             call_logical_id=call_logical_id,
             config_version="1",
             ui_mode="legacy_single_snippet",
+            domain_options=[],
         )
 
     expected_nodes = [
@@ -503,13 +552,16 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
             call_logical_id=call_logical_id,
             config_version="1",
             ui_mode="legacy_single_snippet",
+            domain_options=[],
         )
 
+    domain_options = _extract_domain_options(canonical_json)
     return CallConfigResponse(
         call_logical_id=call_logical_id,
         config_version="1",
         ui_mode="structured_nodes",
         expected_nodes=expected_nodes,
+        domain_options=domain_options,
     )
 
 

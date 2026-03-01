@@ -63,7 +63,7 @@ Verification Steps:
 Risks (if any):
 - Existing persisted data may surface edge-case nulls that require explicit guardrails.
 
-### [ ] Task 3 — Backend call config contract exposes `domain_options[]`
+### [x] Task 3 — Backend call config contract exposes `domain_options[]`
 
 Goal:
 - Expose domain UX options from backend call metadata/config with stable shape and ordering.

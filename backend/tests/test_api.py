@@ -694,7 +694,7 @@ def test_list_nodes_returns_parent_links_after_v2_hierarchy_ingest() -> None:
         assert node["parent_node_id"] in by_id
 
 
-def test_get_call_config_returns_structured_mode(monkeypatch) -> None:
+def test_get_call_config_returns_structured_mode_with_domain_options(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
 
     response = client.get(
@@ -711,16 +711,20 @@ def test_get_call_config_returns_structured_mode(monkeypatch) -> None:
             "knowledge_utilisation",
             "scientific_proposal",
         ],
+        "domain_options": [
+            {"value": "science_enw", "label": "Science Enw", "order_index": 0}
+        ],
     }
     assert set(response.json().keys()) == {
         "call_logical_id",
         "config_version",
         "ui_mode",
         "expected_nodes",
+        "domain_options",
     }
 
 
-def test_get_call_config_legacy_omits_expected_nodes(monkeypatch) -> None:
+def test_get_call_config_legacy_returns_empty_domain_options(monkeypatch) -> None:
     client, _ = create_client_with_seed(monkeypatch)
 
     response = client.get("/api/public/calls/ERC-2026-COG/config")
@@ -730,8 +734,14 @@ def test_get_call_config_legacy_omits_expected_nodes(monkeypatch) -> None:
     assert payload["call_logical_id"] == "ERC-2026-COG"
     assert payload["config_version"] == "1"
     assert payload["ui_mode"] == "legacy_single_snippet"
+    assert payload["domain_options"] == []
     assert "expected_nodes" not in payload
-    assert set(payload.keys()) == {"call_logical_id", "config_version", "ui_mode"}
+    assert set(payload.keys()) == {
+        "call_logical_id",
+        "config_version",
+        "ui_mode",
+        "domain_options",
+    }
 
 
 def test_get_call_config_unknown_call_returns_404(monkeypatch) -> None:
