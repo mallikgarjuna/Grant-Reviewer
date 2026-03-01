@@ -170,6 +170,45 @@ Repo grounding note (2026-03-01):
   > Recommendation: A — Node titles exist, but domain options are currently client-hardcoded. Also, domain should be call-specific and absent for calls that don’t use it.
   > **Selected: A**
 
+## Section 5 — Constraints (Interactive)
+
+**Brainstorming Q&A:**
+
+**Q1: “Single-call MVP” vs “universal/no-hardcoding” — what’s the correct constraint?**
+- A) We can change/add generic contracts/metadata so UI is call-driven; validate primarily using Veni, but nothing is Veni-specific
+- B) No contract changes allowed; we accept temporary hardcoding to ship faster
+- C) Add Veni-only shortcuts now and refactor later
+  > Recommendation: A — Validating on one call is fine, but the implementation must remain universal and call-driven.
+  > **Selected: A**
+
+**Q2: What counts as “hardcoding” that is forbidden in WF-0041?**
+- A) Only backend hardcoding is forbidden; frontend can have call-specific maps temporarily
+- B) Any per-call branching/maps/constants in frontend or backend (e.g., `VENI_NODE_ORDER`, `DOMAIN_OPTIONS_BY_CALL`) are forbidden
+- C) It’s OK to hardcode display labels/order as long as the review engine is universal
+  > Recommendation: B — This is the only option that matches “no hardcoding anywhere.”
+  > **Selected: B**
+
+**Q3: How should the UI learn whether domain selection applies (and what the options are)?**
+- A) Backend exposes domain options in call metadata/config; frontend shows selector only when present
+- B) Frontend infers domain options by parsing node constraints (e.g., keys in `word_limit_by_domain`)
+- C) Always show a domain selector for every call
+  > Recommendation: A — Keeps frontend universal and ensures “domain applies only when the call defines it.”
+  > **Selected: A**
+
+**Q4: What’s the constraint on review runs/history given “single-pass MVP UX”?**
+- A) Keep current persistence: each submit creates a Review record and it appears in `/app/reviews`; idempotency prevents accidental duplicates
+- B) Don’t persist reviews for MVP; only show immediate results
+- C) Persist only the latest review per call (overwrite)
+  > Recommendation: A — Preserves current product behavior and avoids breaking review history.
+  > **Selected: A**
+
+**Q5: What’s the constraint on ordering/grouping in review detail once we remove hardcoding?**
+- A) Ordering must be call-driven (DB node `order_index`); if unavailable in current review detail payload, we extend contracts to enable it
+- B) Ordering doesn’t matter for MVP; any stable order is fine
+- C) Use alphabetical ordering by section title as a universal fallback
+  > Recommendation: A — Otherwise we’ll reintroduce implicit per-call behavior via arbitrary ordering.
+  > **Selected: A**
+
 **Q2: What “job-to-be-done” should the UI optimize for in this MVP?**
 - A) “I need to validate compliance fast before I submit”
 - B) “I need criteria/elements-grounded feedback to revise”

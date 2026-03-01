@@ -93,8 +93,17 @@ Open questions / gaps to resolve:
 - Scope: **single-call MVP only** for `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`.
 - Implementation: use the **universal engine** end-to-end; avoid multi-agency abstractions.
 - Success definition: happy-path “one call is fully usable” (ingest+activate call, call-driven submit UI, compliance blocking, run review, call-aware results).
-- No call-specific hardcoding: avoid “Veni-only” mappings in UI/API; behavior should be driven by canonical call definition + DB metadata (even though this WF ships only one call).
-- Domain options must not be hardcoded client-side; domain selection UX must be sourced from call metadata/config.
+- No call-specific hardcoding: avoid “Veni-only” mappings in UI/API; behavior must be driven by canonical call definition + DB/API metadata/config (even though this WF ships only one call).
+- Domain options must not be hardcoded client-side; domain selection UX must be sourced from backend call metadata/config.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md` (Section 5)
+
+Hard constraints (MVP):
+- We may extend/add **generic** contracts/metadata so UI is fully call-driven; validate primarily with Veni, but ship nothing Veni-specific.
+- Hardcoding is forbidden in both backend and frontend (no per-call maps/branches/constants for labels/order/domain options).
+- Domain selection is optional and call-specific: frontend shows a selector only when backend exposes domain options for the selected call.
+- Each submit persists a Review and appears in `/app/reviews`; do not break review history.
+- Review detail ordering/grouping must be call-driven (use DB node ordering); if current review-detail contracts lack what’s needed, extend them generically.
 
 ## 6. Risks / Unknowns
 
