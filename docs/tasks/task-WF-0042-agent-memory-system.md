@@ -7,11 +7,14 @@ Implement a persistent agent memory system natively in `docs/memory/` based on C
 - Goal is to allow the agent to incrementally document findings and gotchas without prompting.
 
 ## Checklist
-- [x] Create branch `wf/WF-0042-agent-memory-system`
-- [x] Add WF-0042 to `docs/index.md`
-- [x] Scaffold `docs/memory/` structure (index.md, domain, tools)
-- [x] Extract existing Project Gotchas from `AGENTS.md` and place them into new memory files
-- [x] Add explicit "Memory Management" instruction to `AGENTS.md` making it proactive ("Don't wait to be asked. Don't wait for session end.")
-- [x] Verify everything looks good and commit
-- [x] Scan `docs/logs/` and `docs/lessons.md` for historical rules
-- [x] Port valid rules to `docs/memory/` and deduplicate
+- [x] Create git branch `wf/WF-0042-agent-memory-system`
+- [x] Read `AGENTS.md`
+- [x] Create `docs/memory/index.md` with domain and tools categories
+- [x] Extract existing gotchas from `AGENTS.md` to `docs/memory/tools/`
+- [x] Update `AGENTS.md` core directives for memory management
+- [x] Re-architect code phrases SSOT and update memory
+- [x] Add scanning of old documentation for memory items
+- [x] Merge findings into `docs/memory/` and update index
+- [x] Deduplicate and prune outdated logic
+- [x] Verify using the walkthrough
+- [x] Mark WF-0042 as `Done` in `docs/index.md`
