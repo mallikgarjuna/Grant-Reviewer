@@ -32,7 +32,7 @@ Verification Steps:
 Risks (if any):
 - Existing test fixtures may not expose path selection cleanly; keep assertions focused on service call target.
 
-### [ ] Task 2 — Production guardrail: fail-closed on empty allowlist
+### [x] Task 2 — Production guardrail: fail-closed on empty allowlist
 
 Goal:
 - Enforce production-safe behavior when global flag is on and allowlist is empty.

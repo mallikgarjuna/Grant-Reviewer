@@ -79,12 +79,22 @@ def is_structured_review_pipeline_v1_enabled() -> bool:
     return os.getenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "0").strip() == "1"
 
 
+def _is_production_env() -> bool:
+    app_env = os.getenv("APP_ENV", "").strip().lower()
+    return app_env in {"prod", "production"}
+
+
 def is_structured_review_pipeline_v1_enabled_for_call(call_code: str) -> bool:
     if not is_structured_review_pipeline_v1_enabled():
         return False
 
     raw_allowlist = os.getenv("STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES", "").strip()
     if not raw_allowlist:
+        if _is_production_env():
+            logger.warning(
+                "Structured review pipeline_v1 disabled: empty call allowlist in prod; fail-closed to legacy."
+            )
+            return False
         return True
 
     allowlist = {code.strip() for code in raw_allowlist.split(",") if code.strip()}

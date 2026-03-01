@@ -2194,6 +2194,54 @@ def test_create_structured_review_uses_legacy_for_non_allowlisted_call(
     assert calls["pipeline_v1"] == 0
 
 
+def test_create_structured_review_prod_empty_allowlist_fail_closed(
+    monkeypatch, caplog
+) -> None:
+    monkeypatch.setenv("APP_ENV", "prod")
+    monkeypatch.setenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "1")
+    monkeypatch.delenv("STRUCTURED_REVIEW_PIPELINE_V1_CALL_CODES", raising=False)
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    from app.services.structured_reviewer_service import StructuredReviewerService
+
+    calls = {"pipeline_v1": 0, "legacy": 0}
+    original_pipeline = StructuredReviewerService.generate_structured_review_pipeline_v1
+    original_legacy = StructuredReviewerService.generate_structured_review
+
+    def traced_pipeline_v1(self, **kwargs):
+        calls["pipeline_v1"] += 1
+        return original_pipeline(self, **kwargs)
+
+    def traced_legacy(self, **kwargs):
+        calls["legacy"] += 1
+        return original_legacy(self, **kwargs)
+
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review_pipeline_v1",
+        traced_pipeline_v1,
+    )
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review",
+        traced_legacy,
+    )
+
+    with caplog.at_level("WARNING"):
+        response = post_structured_review(
+            client=client,
+            payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+            },
+        )
+
+    assert response.status_code == 200
+    assert calls["legacy"] == 1
+    assert calls["pipeline_v1"] == 0
+    assert "empty call allowlist in prod" in caplog.text.lower()
+
+
 def test_create_structured_review_non_idempotency_integrity_error_returns_500(
     monkeypatch,
 ) -> None:
