@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from typing import Final
 
-from app.engine.contracts import DiagnosticFindingV1, FindingSeverity, ReviewCard, ReviewRating
+from app.engine.contracts import (
+    DiagnosticFindingV1,
+    FindingSeverity,
+    ReviewCard,
+    ReviewRating,
+)
 
 _SEVERITY_PRIORITY = {
     "ERROR": 3,
