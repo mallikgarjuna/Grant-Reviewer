@@ -113,6 +113,46 @@ Open questions suggested by this snapshot:
 - C) UI-only proof: submit UI is call-driven; review can be stubbed
   > Recommendation: A — This matches the P0 intent (“one real call works end-to-end”) and avoids shipping an MVP that’s only partially user-visible.
   > **Selected: A**
+
+## Section 3 — Target User / Actor (Interactive)
+
+**Brainstorming Q&A:**
+
+**Q1: Who is the primary end-user persona for the single-call MVP?**
+- A) Early-career researcher applying to Veni (self-serve)
+- B) PI / senior researcher reviewing a junior’s draft (advisor)
+- C) Research support office / grant officer (internal reviewer)
+  > Recommendation: A — Aligns to the program and keeps product assumptions simple for MVP.
+  > **Selected: A**
+
+**Q2: What “job-to-be-done” should the UI optimize for in this MVP?**
+- A) “I need to validate compliance fast before I submit”
+- B) “I need criteria/elements-grounded feedback to revise”
+- C) “I need both equally; neither can be weak”
+  > Recommendation: B — This is the core product promise; compliance is necessary but supportive.
+  > **Selected: B**
+
+**Q3: What’s the expected usage pattern for the MVP?**
+- A) Single pass: paste once, get feedback, done
+- B) Iterative loop: paste → fix → resubmit multiple times
+- C) Collaborative: multiple people contribute text to different nodes
+  > Recommendation: B — Most real users iterate.
+  > **Selected: A**
+  > Constraint note: although UX is “single pass” for MVP, each run should still persist as a Review and appear in `/app/reviews` (current behavior); iteration UX can be a follow-up.
+
+**Q4: What’s the MVP stance on authentication friction?**
+- A) Sign-in required before submit/review (current pattern)
+- B) Allow one anonymous run then require sign-in
+- C) Fully anonymous MVP
+  > Recommendation: A — Keeps abuse/rate-limit controls and current flow intact.
+  > **Selected: A**
+
+**Q5: What’s the minimum “trust posture” we should communicate to the user?**
+- A) “This is structured feedback aligned to evaluation criteria/elements; still use judgement”
+- B) “This is a compliance checker; review feedback is secondary”
+- C) “This is an AI reviewer; treat it as authoritative”
+  > Recommendation: A — Honest positioning supports trust without overclaiming.
+  > **Selected: A**
   > Constraint note: although Veni currently has 3 nodes, the UI must support an arbitrary number of call-defined nodes without per-call hardcoding.
 
 **Q2: What’s the minimum acceptable “call-aware” evidence in the review detail UI?**

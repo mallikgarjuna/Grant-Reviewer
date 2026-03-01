@@ -59,7 +59,18 @@ Contract notes / non-obvious constraints:
 
 ## 3. Target User / Actor
 
-TBD.
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md` (Section 3)
+
+Primary persona (MVP): early-career researcher applying to Veni (self-serve).
+
+Primary job-to-be-done (MVP): criteria/elements-grounded feedback to revise (not “compliance-only”).
+
+Usage pattern (MVP): single-pass UX (paste once → submit → results). Multiple runs may exist, but we do not optimize for iterative loop UX in WF-0041.
+
+Trust posture copy: “Structured feedback aligned to evaluation criteria/elements; still use judgement.”
+
+Contract notes / non-obvious constraints:
+- Each submission should still create/persist a Review that appears in `/app/reviews` (current behavior); follow-up improvements to review history UX are allowed later, but do not break persistence/listing.
 
 ## 4. Rough Idea (Unstructured Thinking)
 
