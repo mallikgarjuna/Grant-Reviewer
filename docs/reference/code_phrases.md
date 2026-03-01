@@ -30,6 +30,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 
 | Phrase | Action |
 |--------|--------|
+| **`reorganize memory`** | `read docs/memory/`, deduplicate, merge, sort by date, and summarize. |
 | **`remember this`** `: [rule]` | Codify a new rule → `AGENTS.md` (workflow) or `docs/lessons.md` (project gotcha). |
 | **`log this`** `: [decision/Q&A]` | Record a decision or clarification in `docs/logs/`. |
 | **`update docs`** | Sync all doc artifacts (index, walkthrough, decisions, prompt history). |
@@ -58,6 +59,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | Decide if current WF is cleanly closed before moving to the next WF | **`workflow preflight`** |
 | Inspect branch delta against `main` | **`diff`** |
 | Persist new standing workflow rule | **`remember this`** |
+| Run memory maintenance | **`reorganize memory`** |
 | Capture decision/clarification in logs | **`log this`** |
 | Sync all docs after work changes | **`update docs`** |
 | Run final doc hygiene before starting next WF | **`docs cleanup`** |

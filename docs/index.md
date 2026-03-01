@@ -65,6 +65,7 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF-0039 | structured-pipeline-v1-rollout | [Brainstorm](brainstorms/completed/brainstorm-WF-0039-structured-pipeline-v1-rollout.md) | [PRD](prds/completed/prd-WF-0039-structured-pipeline-v1-rollout.md) | [Tasks](tasks/completed/task-WF-0039-structured-pipeline-v1-rollout.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0039-structured-pipeline-v1-rollout.md) | Done |
 | WF-0040 | structured-pipeline-v1-legacy-retirement | [Brainstorm](brainstorms/completed/brainstorm-WF-0040-structured-pipeline-v1-legacy-retirement.md) | [PRD](prds/completed/prd-WF-0040-structured-pipeline-v1-legacy-retirement.md) | [Tasks](tasks/completed/task-WF-0040-structured-pipeline-v1-legacy-retirement.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md) | Done |
 | WF-0041 | nwo-veni-2025-preproposal-single-call-mvp | [Brainstorm](brainstorms/completed/brainstorm-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md) | [PRD](prds/completed/prd-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md) | [Tasks](tasks/completed/task-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md) | Done |
+| WF-0042 | agent-memory-system | [Brainstorm](-) | [PRD](-) | [Tasks](tasks/task-WF-0042-agent-memory-system.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0042-agent-memory-system.md) | Done |
 
 ---
 
