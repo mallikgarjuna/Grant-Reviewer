@@ -10,3 +10,47 @@ cases:
     request_nodes:
       - node_logical_id: academic_profile
         text: profile text for deterministic replay
+  - case_id: validation_error_missing_idempotency_header
+    surface: structured_api
+    expected_http_status: 400
+    expected_error_code: VALIDATION_ERROR
+    expect_review_persisted: false
+    expected_review_status: null
+    expected_summary_convention: null
+    idempotency_key: ""
+    request_nodes:
+      - node_logical_id: academic_profile
+        text: payload without idempotency key
+  - case_id: unknown_node_id
+    surface: structured_api
+    expected_http_status: 422
+    expected_error_code: UNKNOWN_NODE_ID
+    expect_review_persisted: false
+    expected_review_status: null
+    expected_summary_convention: null
+    idempotency_key: idem-wf0043-unknown-node-1
+    request_nodes:
+      - node_logical_id: unknown_node
+        text: unknown node payload
+  - case_id: review_stage_node_mismatch
+    surface: structured_api
+    expected_http_status: 422
+    expected_error_code: REVIEW_STAGE_NODE_MISMATCH
+    expect_review_persisted: false
+    expected_review_status: null
+    expected_summary_convention: null
+    idempotency_key: idem-wf0043-stage-mismatch-1
+    request_nodes:
+      - node_logical_id: academic_profile
+        text: step mismatch payload
+  - case_id: idempotency_payload_mismatch
+    surface: structured_api
+    expected_http_status: 409
+    expected_error_code: IDEMPOTENCY_PAYLOAD_MISMATCH
+    expect_review_persisted: true
+    expected_review_status: COMPLETED
+    expected_summary_convention: completed_nonempty
+    idempotency_key: idem-wf0043-payload-mismatch-1
+    request_nodes:
+      - node_logical_id: academic_profile
+        text: changed payload for mismatch

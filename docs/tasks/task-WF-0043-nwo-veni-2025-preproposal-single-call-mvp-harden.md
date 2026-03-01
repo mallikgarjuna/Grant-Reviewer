@@ -33,7 +33,7 @@ Verification Steps:
 Risks (if any):
 - Historical-data assumptions for `/app/reviews` discoverability can create false negatives if assertions are not scoped to the created test record.
 
-### [ ] Task 2 — Structured API error semantics matrix (no persistence on API-side failures)
+### [x] Task 2 — Structured API error semantics matrix (no persistence on API-side failures)
 
 Goal:
 - Lock deterministic status/error semantics for API-side validation and pre-persistence failures without changing existing mappings.

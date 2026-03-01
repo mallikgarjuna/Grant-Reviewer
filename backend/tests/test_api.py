@@ -13,6 +13,7 @@ from typing import Any, TypedDict
 from uuid import UUID
 
 from fastapi.testclient import TestClient
+import pytest
 import yaml
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, select
@@ -87,6 +88,14 @@ def _get_wf0043_case(case_id: str, *, surface: str) -> Wf0043ContractCase:
 
 def _non_empty_str(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def _count_reviews_in_db() -> int:
+    session = get_session()
+    try:
+        return len(list(session.exec(select(Review)).all()))
+    finally:
+        session.close()
 
 
 def reset_database() -> None:
@@ -570,6 +579,28 @@ def post_structured_review(
         f"idem-{time.time_ns()}" if idempotency_key is None else idempotency_key
     )
     headers["Idempotency-Key"] = request_idempotency_key
+    headers["Content-Type"] = "application/json"
+    return client.post("/api/structured-review", content=body, headers=headers)
+
+
+def post_structured_review_without_idempotency(
+    *,
+    client: TestClient,
+    payload: dict[str, object],
+    user_id: str = TEST_USER_ID,
+    timestamp: int | None = None,
+    shared_secret: str = TEST_BFF_SHARED_SECRET,
+) -> object:
+    """Call POST /api/structured-review with signed headers and no idempotency key."""
+    if "review_stage" not in payload:
+        payload["review_stage"] = "STEP_1"
+    body = json.dumps(payload).encode("utf-8")
+    headers = build_signature_headers(
+        body=body,
+        user_id=user_id,
+        timestamp=timestamp,
+        shared_secret=shared_secret,
+    )
     headers["Content-Type"] = "application/json"
     return client.post("/api/structured-review", content=body, headers=headers)
 
@@ -1475,6 +1506,82 @@ def test_wf0043_contract_structured_api_replay_persists_history(monkeypatch) -> 
 
         if case["expected_summary_convention"] == "completed_nonempty":
             assert _non_empty_str(detail_payload["review"]["overall_summary"])
+
+
+@pytest.mark.parametrize(
+    "case_id",
+    [
+        "validation_error_missing_idempotency_header",
+        "unknown_node_id",
+        "review_stage_node_mismatch",
+        "idempotency_payload_mismatch",
+    ],
+    ids=lambda value: value,
+)
+def test_wf0043_contract_structured_api_error_semantics_and_no_persistence_side_effects(
+    monkeypatch, case_id: str
+) -> None:
+    case = _get_wf0043_case(case_id, surface="structured_api")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    baseline_count = _count_reviews_in_db()
+    payload = {
+        "call_id": str(seeded_ids.structured_call_id),
+        "nodes": case["request_nodes"],
+    }
+
+    if case_id == "validation_error_missing_idempotency_header":
+        response = post_structured_review_without_idempotency(
+            client=client,
+            payload=payload,
+            user_id="user_wf0043_contract",
+        )
+        assert response.status_code == case["expected_http_status"]
+        assert response.json()["error"]["code"] == case["expected_error_code"]
+        assert _count_reviews_in_db() == baseline_count
+        return
+
+    if case_id == "idempotency_payload_mismatch":
+        precondition = post_structured_review(
+            client=client,
+            payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "nodes": [
+                    {
+                        "node_logical_id": "academic_profile",
+                        "text": "baseline payload for mismatch",
+                    }
+                ],
+            },
+            user_id="user_wf0043_contract",
+            idempotency_key=case["idempotency_key"],
+        )
+        assert precondition.status_code == 200
+        precondition_count = _count_reviews_in_db()
+        assert precondition_count == baseline_count + 1
+
+        response = post_structured_review(
+            client=client,
+            payload=payload,
+            user_id="user_wf0043_contract",
+            idempotency_key=case["idempotency_key"],
+        )
+        assert response.status_code == case["expected_http_status"]
+        assert response.json()["error"]["code"] == case["expected_error_code"]
+        assert _count_reviews_in_db() == precondition_count
+        return
+
+    if case_id == "review_stage_node_mismatch":
+        payload["review_stage"] = "STEP_2"
+
+    response = post_structured_review(
+        client=client,
+        payload=payload,
+        user_id="user_wf0043_contract",
+        idempotency_key=case["idempotency_key"],
+    )
+    assert response.status_code == case["expected_http_status"]
+    assert response.json()["error"]["code"] == case["expected_error_code"]
+    assert _count_reviews_in_db() == baseline_count
 
 
 def test_review_detail_retains_cards_when_evaluation_element_is_archived(
