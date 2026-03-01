@@ -1,7 +1,7 @@
 # WF-0041 — NWO Veni 2025 (Preproposal) Single-Call MVP
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-01
 
@@ -10,7 +10,7 @@ Last Updated: 2026-03-01
 ### [ ] Task 1 — Tracer bullet: review detail call identity contract
 
 Goal:
-- Prove an end-to-end slice where review detail exposes generic call identity fields needed for call-driven rendering.
+- Prove a thin vertical slice where review detail exposes generic call identity fields and the frontend review detail path remains compatible.
 Slice: tracer-bullet-review-detail-contract
 User Stories: US3, US4
 PRD Requirements: FR8, FR9, FR10
@@ -24,12 +24,14 @@ Files to modify:
 Acceptance Criteria:
 - `GET /reviews/{review_id}` returns `call_id` and `call_code` for review detail.
 - Existing review-detail fields and error semantics remain unchanged.
+- Frontend review-detail path remains non-breaking when new fields are present.
 TDD Plan:
 - RED: add failing API contract test in `backend/tests/test_api.py` asserting `call_id`/`call_code` are present for review detail.
 - GREEN: minimally extend response schema/build path in `backend/app/schemas/api.py` and `backend/main.py`.
 - REFACTOR: deduplicate review-detail serialization helper usage (`skip` if none).
 Verification Steps:
 - `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0041_t1.db uv run pytest -q tests/test_api.py -k "review_detail and call_id and call_code"`
+- `cd frontend && npm run check:bff`
 Risks (if any):
 - Legacy review records may not carry call linkage; must be handled in later compatibility tasks.
 
@@ -51,10 +53,11 @@ Acceptance Criteria:
 - Ordering uses `order_index` ascending then `node_logical_id` ascending fallback.
 - Unknown/missing node mappings are ordered last and flagged as unmapped in response metadata.
 - Legacy records without call linkage return `ordering_source: "review_payload_fallback"` and remain retrievable.
+- Tests explicitly cover both response shapes (`call_id` present vs null/fallback ordering source) for skew-safe compatibility.
 TDD Plan:
 - RED: add failing tests in `backend/tests/test_api.py` for tie/null ordering, unknown nodes, and legacy fallback path.
 - GREEN: implement deterministic ordering and fallback response metadata in API layer.
-- REFACTOR: extract ordering comparator/fallback mapping helper for readability.
+- REFACTOR: extract ordering comparator/fallback mapping helper for readability and shared shape assertions.
 Verification Steps:
 - `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0041_t2.db uv run pytest -q tests/test_api.py -k "review_detail and (order_index or ordering_source or fallback)"`
 Risks (if any):
@@ -98,7 +101,7 @@ Enables: Task 6, Task 8
 Parallelizable: no
 Files to modify:
 - `frontend/src/components/submit/UniversalSubmitForm.tsx`
-- `frontend/src/lib/bff/types.ts`
+- `frontend/src/lib/submit/loadStructuredCalls.ts`
 - `frontend/src/components/submit/UniversalSubmitForm.test.tsx`
 Acceptance Criteria:
 - Runtime domain selector behavior is driven by backend `domain_options[]` contract.
@@ -106,10 +109,11 @@ Acceptance Criteria:
 - Existing submit behavior remains stable when options are absent.
 TDD Plan:
 - RED: add failing UI tests in `UniversalSubmitForm.test.tsx` for backend-driven domain selector visibility/options.
-- GREEN: wire form state to backend `domain_options` and update BFF type contracts used by the page.
+- GREEN: wire form state to backend `domain_options` and ensure structured-call loading path remains compatible.
 - REFACTOR: simplify domain-state reset logic on call changes.
 Verification Steps:
 - `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "domain"`
+- `cd frontend && npx vitest run src/lib/submit/loadStructuredCalls.test.ts -t "config"`
 Risks (if any):
 - Draft restore logic may preserve stale domain values if selector options change.
 
@@ -198,7 +202,7 @@ Goal:
 Slice: guardrails-and-universality
 User Stories: US1, US4
 PRD Requirements: FR18, FR19
-Depends on: Task 3, Task 4, Task 5, Task 6, Task 7
+Depends on: Task 3, Task 4, Task 6, Task 7, Task 9
 Enables: none
 Parallelizable: no
 Files to modify:
@@ -216,10 +220,40 @@ TDD Plan:
 Verification Steps:
 - `cd frontend && npm run test:ui`
 - `cd frontend && npm run check:bff`
+- `rg -n "VENI_NODE_LABELS|VENI_NODE_ORDER|DOMAIN_OPTIONS_BY_CALL" frontend/src -S`
 Risks (if any):
 - Guardrail tests can become brittle if assertions target implementation detail instead of behavior.
+
+### [ ] Task 9 — Persistence and `/app/reviews` history invariants
+
+Goal:
+- Prove FR10 invariants end-to-end: successful structured review persists and remains visible/retrievable in review history surfaces.
+Slice: persistence-history-invariants
+User Stories: US4
+PRD Requirements: FR10, FR9
+Depends on: Task 1, Task 2, Task 5, Task 7
+Enables: Task 8
+Parallelizable: no
+Files to modify:
+- `backend/tests/test_api.py`
+- `frontend/src/app/app/page.test.tsx`
+- `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
+Acceptance Criteria:
+- Successful structured review creation remains persisted and appears in `/app/reviews` list behavior.
+- Review detail remains retrievable from history path after contract/fallback changes.
+- Idempotency mismatch behavior remains unchanged while preserving persistence semantics.
+TDD Plan:
+- RED: add failing backend/frontend tests for review list visibility after create and detail retrieval from history route.
+- GREEN: apply minimal compatibility fixes only if tests expose regressions.
+- REFACTOR: consolidate repeated review-history fixtures/helpers across page tests.
+Verification Steps:
+- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0041_t9.db uv run pytest -q tests/test_api.py -k "structured_review and (reviews_list or review_detail or idempotency)"`
+- `cd frontend && npx vitest run src/app/app/page.test.tsx src/app/app/reviews/[reviewId]/page.test.tsx -t "reviews|history|detail"`
+Risks (if any):
+- Cross-layer fixture drift can produce false negatives if backend and frontend assumptions diverge.
 
 ## Changelog
 
 - v0.1 (2026-03-01): Initial task breakdown from PRD v0.3 with atomic slices, dependency metadata, and explicit TDD plans.
 - v0.2 (2026-03-01): Applied task-review revisions (explicit frontend type-sync seam for `domain_options[]`, hardcoded-domain-helper retirement tasking, and readiness polish); marked Ready for Implementation.
+- v0.3 (2026-03-01): Applied adversarial pass revisions (stronger tracer-bullet compatibility check, backend mixed-shape assertions, submit-loader integration seam, explicit FR10 persistence/history task, and hardened anti-hardcoding verification).
