@@ -58,7 +58,7 @@ Verification Steps:
 Risks (if any):
 - Environment detection drift; keep `APP_ENV` contract explicit and tested.
 
-### [ ] Task 3 — Engine-path telemetry tagging for structured-review requests
+### [x] Task 3 — Engine-path telemetry tagging for structured-review requests
 
 Goal:
 - Ensure rollout observability includes engine-path attribution per request.

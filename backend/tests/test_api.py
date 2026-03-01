@@ -2242,6 +2242,42 @@ def test_create_structured_review_prod_empty_allowlist_fail_closed(
     assert "empty call allowlist in prod" in caplog.text.lower()
 
 
+def test_create_structured_review_logs_engine_path_legacy(monkeypatch, caplog) -> None:
+    monkeypatch.setenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "0")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    with caplog.at_level("INFO"):
+        response = post_structured_review(
+            client=client,
+            payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+            },
+        )
+
+    assert response.status_code == 200
+    assert "structured_review.engine_path=legacy" in caplog.text
+
+
+def test_create_structured_review_logs_engine_path_pipeline_v1(
+    monkeypatch, caplog
+) -> None:
+    monkeypatch.setenv("STRUCTURED_REVIEW_PIPELINE_V1_ENABLED", "1")
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    with caplog.at_level("INFO"):
+        response = post_structured_review(
+            client=client,
+            payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+            },
+        )
+
+    assert response.status_code == 200
+    assert "structured_review.engine_path=pipeline_v1" in caplog.text
+
+
 def test_create_structured_review_non_idempotency_integrity_error_returns_500(
     monkeypatch,
 ) -> None:
