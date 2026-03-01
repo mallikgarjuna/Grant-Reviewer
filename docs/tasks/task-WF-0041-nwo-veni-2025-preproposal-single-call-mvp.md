@@ -7,7 +7,7 @@ Last Updated: 2026-03-01
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: review detail call identity contract
+### [x] Task 1 — Tracer bullet: review detail call identity contract
 
 Goal:
 - Prove a thin vertical slice where review detail exposes generic call identity fields and the frontend review detail path remains compatible.

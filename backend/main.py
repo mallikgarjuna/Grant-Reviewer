@@ -20,7 +20,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from app.db import create_db_and_tables, get_session, ping_database
-from app.models.domain import ReviewStatus
+from app.models.domain import ProposalSnippet, ReviewStatus
 from app.repositories.review_repository import ReviewRepository
 from app.schemas.api import (
     APIErrorBody,
@@ -318,6 +318,25 @@ def _has_domain_default_fallback(node_config: dict[str, Any]) -> bool:
     if not isinstance(by_domain, dict):
         return False
     return isinstance(by_domain.get("default_max_words"), int)
+
+
+def _resolve_review_call_id(review: Any, repository: ReviewRepository) -> UUID | None:
+    """Resolve call id for single or structured review records."""
+    if review.proposal_snippet_id is not None:
+        snippet = repository.session.get(ProposalSnippet, review.proposal_snippet_id)
+        if snippet is not None:
+            return snippet.funding_call_id
+
+    structured_payload = review.structured_payload
+    if isinstance(structured_payload, dict):
+        payload_call_id = structured_payload.get("call_id")
+        if isinstance(payload_call_id, str):
+            try:
+                return UUID(payload_call_id)
+            except ValueError:
+                return None
+
+    return None
 
 
 def _extract_known_domains(node_config: dict[str, Any]) -> set[str]:
@@ -1035,7 +1054,12 @@ def get_review(
     ):
         cards_with_criteria = repository.get_review_cards_with_criteria(review_id)
 
+    call_id = _resolve_review_call_id(review, repository)
+    call = repository.get_call_by_id(call_id) if call_id is not None else None
+
     return ReviewDetailResponse(
+        call_id=call_id,
+        call_code=call.code if call is not None else None,
         review=ReviewSummary(
             id=review.id,
             status=review.status,

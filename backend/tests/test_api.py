@@ -782,6 +782,24 @@ def test_create_review_success_with_stub_mode(monkeypatch) -> None:
     assert detail_payload["cards"][0]["not_assessable_reason"] is None
 
 
+def test_review_detail_includes_call_id_and_call_code(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert response.status_code == 200
+
+    detail_response = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert detail_payload["call_id"] == str(seeded_ids.structured_call_id)
+    assert detail_payload["call_code"] == seeded_ids.structured_call_code
+
+
 def test_create_review_shared_core_happy_path_parity(monkeypatch) -> None:
     from app.services.review_execution_core import ReviewExecutionCore
 

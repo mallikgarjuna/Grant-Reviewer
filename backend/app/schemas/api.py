@@ -155,6 +155,8 @@ class ReviewCardSummary(BaseModel):
 class ReviewDetailResponse(BaseModel):
     """Response for GET /reviews/{review_id}."""
 
+    call_id: UUID | None = None
+    call_code: str | None = None
     review: ReviewSummary
     cards: list[ReviewCardSummary]
 
