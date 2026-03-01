@@ -31,6 +31,7 @@ Contract notes / non-obvious constraints:
 - “Done” requires results to be traceable to both proposal sections and evaluation criteria/elements (not generic feedback).
 - Scope stays single-call; avoid multi-agency abstractions.
 - Universal engine only (no call-specific pipelines beyond what the existing engine already supports).
+- Avoid call-specific hardcoding (e.g., Veni-only label/order mappings); implement call-driven behavior even in the single-call MVP.
 
 ## Repo Reality Snapshot (Read-Only) (2026-03-01)
 
@@ -57,6 +58,8 @@ TBD.
 - Scope: **single-call MVP only** for `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`.
 - Implementation: use the **universal engine** end-to-end; avoid multi-agency abstractions.
 - Success definition: happy-path “one call is fully usable” (ingest+activate call, call-driven submit UI, compliance blocking, run review, call-aware results).
+- No call-specific hardcoding: avoid “Veni-only” mappings in UI/API; behavior should be driven by canonical call definition + DB metadata (even though this WF ships only one call).
+- Domain options must not be hardcoded client-side; domain selection UX must be sourced from call metadata/config.
 
 ## 6. Risks / Unknowns
 

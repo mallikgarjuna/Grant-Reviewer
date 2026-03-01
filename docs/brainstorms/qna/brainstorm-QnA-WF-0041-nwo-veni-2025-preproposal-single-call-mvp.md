@@ -91,3 +91,36 @@ Open questions suggested by this snapshot:
 - C) Operational confidence: “deterministic checks prevent obviously invalid submissions”
   > Recommendation: B (with A as the proof) — Trust is the core; repeatable demo is the evidence. C matters but is supportive, not primary.
   > **Selected: B**
+
+## Preflight Open Questions — Decisions (Interactive)
+
+**Brainstorming Q&A:**
+
+**Q1: Review detail page labeling/order (single-call MVP)**
+- A) Keep the current hardcoded Veni labels/order for WF-0041; defer call-aware mapping to P1 #2
+- B) Make it call-aware now (use call metadata / node labels) even though we’re single-call, to reduce “hardcoded trust” risk
+- C) Hide ordering/labels entirely in detail view for MVP; show flat cards only
+  > Recommendation: A — Fastest path to single-call MVP; avoids broadening scope.
+  > **Selected: B**
+  > User constraint override: no hardcoding anywhere; even single-call MVP should use universal/call-driven behavior.
+
+**Q2: Domain selection safety for ENW/Science pilot**
+- A) Optional selector with default “none” (100-word limit) and clear helper text
+- B) Require explicit domain choice before enabling submit (forces correctness)
+- C) Auto-detect domain from content (risky/implicit)
+  > Recommendation: A — Minimal friction; correctness remains user-controlled.
+  > **Selected: A**
+
+**Q3: “Call-aware results” display contract for MVP**
+- A) UI surfaces evaluation element identifiers/names per finding/card (explicit criteria/elements traceability)
+- B) UI groups by proposal section only; criteria/elements exist only inside the prompt/back-end but aren’t shown
+- C) Only overall summary + generic feedback; no structured traceability in UI
+  > Recommendation: A — Matches the trust bar set in Section 1.
+  > **Selected: A**
+
+**Q4: Reviewer-policy blocking failure UX (if it triggers)**
+- A) Fail the review with a clear error + one-click retry
+- B) Auto-retry once server-side with a stricter system instruction, then fail if still blocked
+- C) Never hard-block on policy for MVP (downgrade blocking to warning)
+  > Recommendation: B — Preserves the policy contract while keeping the happy path resilient.
+  > **Selected: B**
