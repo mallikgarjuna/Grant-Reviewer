@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom/vitest";
+import fs from "node:fs";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -1748,5 +1749,109 @@ describe("UniversalSubmitForm", () => {
         expect.objectContaining({ outcome: "success" }),
       );
     });
+  });
+
+  it("renders arbitrary non-veni node counts and hides domain selector when domain_options is empty", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "erc_demo_call",
+                name: "ERC Demo Call",
+                year: 2026,
+                agency_short_name: "ERC",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_demo_call/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_demo_call",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "node_a",
+                title: "Node A",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+              {
+                id: "node-2",
+                logical_id: "node_b",
+                title: "Node B",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 2,
+                has_expectations: true,
+              },
+              {
+                id: "node-3",
+                logical_id: "node_c",
+                title: "Node C",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 3,
+                has_expectations: true,
+              },
+              {
+                id: "node-4",
+                logical_id: "node_d",
+                title: "Node D",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 4,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_demo_call/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_demo_call",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    expect(await screen.findByLabelText("Node A")).toBeInTheDocument();
+    expect(screen.getByLabelText("Node B")).toBeInTheDocument();
+    expect(screen.getByLabelText("Node C")).toBeInTheDocument();
+    expect(screen.getByLabelText("Node D")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Domain")).not.toBeInTheDocument();
+  });
+
+  it("guardrail: submit path contains no legacy domain map constant", () => {
+    const source = fs.readFileSync("src/lib/submit/domainOptions.ts", "utf-8");
+    const legacyConstant = ["DOMAIN", "OPTIONS", "BY", "CALL"].join("_");
+    expect(source.includes(legacyConstant)).toBe(false);
   });
 });

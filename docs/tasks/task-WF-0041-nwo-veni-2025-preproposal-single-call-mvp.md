@@ -195,7 +195,7 @@ Verification Steps:
 Risks (if any):
 - Node metadata fetch timing can cause transient partial renders without robust guards.
 
-### [ ] Task 8 — Guardrails and universality proof tests
+### [x] Task 8 — Guardrails and universality proof tests
 
 Goal:
 - Add regression guardrails that enforce no-hardcoding seams and validate arbitrary node-count/domain-absence behavior with a non-Veni fixture.

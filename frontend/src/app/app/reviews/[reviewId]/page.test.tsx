@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom/vitest";
+import fs from "node:fs";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -186,5 +187,13 @@ describe("ReviewDetailPage", () => {
       await screen.findByText("Call metadata unavailable; using review payload order."),
     ).toBeInTheDocument();
     expect(screen.getByText("Coverage summary")).toBeInTheDocument();
+  });
+
+  it("guardrail: review detail path contains no hardcoded VENI constants", () => {
+    const source = fs.readFileSync("src/app/app/reviews/[reviewId]/page.tsx", "utf-8");
+    const legacyLabels = ["VENI", "NODE", "LABELS"].join("_");
+    const legacyOrder = ["VENI", "NODE", "ORDER"].join("_");
+    expect(source.includes(legacyLabels)).toBe(false);
+    expect(source.includes(legacyOrder)).toBe(false);
   });
 });
