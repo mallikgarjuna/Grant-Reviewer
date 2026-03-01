@@ -1359,7 +1359,107 @@ describe("UniversalSubmitForm", () => {
     expect(window.localStorage.getItem("draft_universal_submit_call-1_v1")).not.toBeNull();
   });
 
-  it("warning bypass modal gates submit until confirmation", async () => {
+  it("renders informational guidance and does not block submit", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        return new Response(
+          JSON.stringify({
+            is_compliant: true,
+            errors: [],
+            warnings: [
+              {
+                node_logical_id: "academic_profile",
+                rule_id: "comp_key_outputs_max_items",
+                severity: "WARNING",
+                actual: "not_evaluated",
+                expected: "guidance_only",
+                message: "List no more than 10 key output items.",
+                is_blocking: false,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/structured-review") {
+        return new Response(JSON.stringify({ review_id: "review-1" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "content" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/structured-review")),
+      ).toBe(true);
+    });
+    expect(
+      await screen.findByText("Informational guidance (non-blocking)"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps blocking failures separate from informational guidance", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url === "/api/bff/calls") {
@@ -1432,7 +1532,17 @@ describe("UniversalSubmitForm", () => {
                 is_blocking: true,
               },
             ],
-            warnings: [],
+            warnings: [
+              {
+                node_logical_id: "academic_profile",
+                rule_id: "comp_key_outputs_max_items",
+                severity: "WARNING",
+                actual: "not_evaluated",
+                expected: "guidance_only",
+                message: "List no more than 10 key output items.",
+                is_blocking: false,
+              },
+            ],
           }),
           { status: 200 },
         );
@@ -1449,17 +1559,14 @@ describe("UniversalSubmitForm", () => {
       target: { value: "content" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Submit" }));
-    expect(await screen.findByText("Submit with warnings?")).toBeInTheDocument();
+
+    expect(await screen.findByText("Submission blocked")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Informational guidance (non-blocking)"),
+    ).toBeInTheDocument();
     expect(
       fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/structured-review")),
     ).toBe(false);
-
-    fireEvent.click(screen.getByRole("button", { name: "Submit Anyway" }));
-    await waitFor(() => {
-      expect(
-        fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/structured-review")),
-      ).toBe(true);
-    });
   });
 
   it("does not create submit nodes from unmatched metadata", async () => {

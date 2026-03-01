@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { ComplianceBypassModal } from "@/components/submit/ComplianceBypassModal";
 import type {
   ApiError,
   CallNodesMetadataResponse,
@@ -80,9 +79,8 @@ export function UniversalSubmitForm() {
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const [hardBlockErrors, setHardBlockErrors] = useState<string[]>([]);
   const [complianceWarnings, setComplianceWarnings] = useState<
-    ComplianceCheckResponse["errors"]
+    ComplianceCheckResponse["warnings"]
   >([]);
-  const [isBypassModalOpen, setIsBypassModalOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -281,7 +279,6 @@ export function UniversalSubmitForm() {
     setFormError(null);
     setHardBlockErrors([]);
     setComplianceWarnings([]);
-    setIsBypassModalOpen(false);
     if (!selectedCallId) {
       setFormError("Funding call is required before submission.");
       return;
@@ -374,26 +371,13 @@ export function UniversalSubmitForm() {
       }
 
       const compliance = (await complianceResponse.json()) as ComplianceCheckResponse;
-      if (compliance.errors.length > 0) {
-        setComplianceWarnings(compliance.errors);
-        setIsBypassModalOpen(true);
+      setComplianceWarnings(compliance.warnings);
+
+      const blockingErrors = compliance.errors.filter((error) => error.is_blocking);
+      if (blockingErrors.length > 0) {
+        setHardBlockErrors(blockingErrors.map((error) => error.message));
         return;
       }
-      await submitStructuredReview(nonEmptyNodes);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handleBypassConfirm() {
-    setIsBypassModalOpen(false);
-    const nonEmptyNodes = buildNodesPayload();
-    if (nonEmptyNodes.length === 0) {
-      setFormError("You must fill out at least one section before submitting.");
-      return;
-    }
-    setIsSubmitting(true);
-    try {
       await submitStructuredReview(nonEmptyNodes);
     } finally {
       setIsSubmitting(false);
@@ -511,6 +495,18 @@ export function UniversalSubmitForm() {
               </ul>
             </div>
           ) : null}
+          {complianceWarnings.length > 0 ? (
+            <div className="rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              <p className="font-medium">Informational guidance (non-blocking)</p>
+              <ul className="mt-1 list-disc pl-5">
+                {complianceWarnings.map((warning) => (
+                  <li key={`${warning.node_logical_id}:${warning.rule_id}`}>
+                    {warning.message}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
           {formError ? (
             <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -532,15 +528,6 @@ export function UniversalSubmitForm() {
           </button>
         </form>
       </div>
-      <ComplianceBypassModal
-        isOpen={isBypassModalOpen}
-        isSubmitting={isSubmitting}
-        onCancel={() => setIsBypassModalOpen(false)}
-        onConfirm={() => {
-          void handleBypassConfirm();
-        }}
-        warnings={complianceWarnings}
-      />
     </main>
   );
 }

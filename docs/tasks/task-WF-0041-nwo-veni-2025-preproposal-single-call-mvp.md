@@ -143,7 +143,7 @@ Verification Steps:
 Risks (if any):
 - Retry path can unintentionally bypass policy if failure handling is not strict.
 
-### [ ] Task 6 — Submit UI informational guidance section (non-blocking)
+### [x] Task 6 — Submit UI informational guidance section (non-blocking)
 
 Goal:
 - Render non-enforceable constraints as a dedicated informational section without blocking submission.
