@@ -1,7 +1,7 @@
 # WF-0041 — NWO Veni 2025 (Preproposal) Single-Call MVP
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-01
 
@@ -87,13 +87,23 @@ Last Updated: 2026-03-01
 - FR9 (US4): Existing API error semantics and idempotency semantics must remain unchanged.
 - FR10 (US4): Submission side effects must remain unchanged: successful review execution persists Review records and keeps `/app/reviews` history intact.
 - FR11 (US3, US4): Structured-review execution must keep reviewer-policy enforcement and include one server-side retry seam before final failure when forbidden-term policy validation fails.
+- FR12 (US1, US2): `domain_options[]` contract must be explicit and stable (per option: machine `value`, human `label`, deterministic `order_index`), and sourced only from backend call metadata/config.
+- FR13 (US3): Review detail ordering must be deterministic with explicit fallback rules: primary sort `order_index` ascending, secondary sort `node_logical_id` ascending for ties/nulls.
+- FR14 (US4): Review detail must remain backward-compatible for persisted reviews lacking call linkage; API returns graceful nulls/flags and frontend shows stable fallback order without hardcoded call maps.
+- FR15 (US4): Frontend/backend rollout must be skew-safe: frontend tolerates absent new fields, backend tolerates optional consumer behavior, and no runtime hard-fail during phased deploy.
+- FR16 (US3, US4): Reviewer-policy retry semantics must be bounded and deterministic (max 1 retry, total attempts = 2) with unchanged idempotency and external error semantics.
+- FR17 (US2): Informational (non-enforceable) constraints must be surfaced in submit UX in a dedicated non-blocking section distinct from blocking issues.
+- FR18 (US1, US4): “No hardcoding anywhere” must be enforced by automated checks/tests that fail on per-call maps/branches/constants in targeted frontend/backend seams.
+- FR19 (US1): Universality proof gates are required in tests: one non-Veni structured-call fixture must pass node-count/order/domain-absence behavior checks.
 
 ## 5. Data & API Contracts
 
 ### 5.1 Call metadata / configuration contract
 
-- Backend metadata/config for selected call exposes `domain_options: string[]` (may be empty). (US1, US2, FR3)
-- Frontend treats `domain_options` as the sole source for domain selector visibility and option values. (US1, FR3)
+- Backend call metadata/config endpoint is the sole source for `domain_options` and returns:
+  - `domain_options: Array<{ value: string; label: string; order_index: number }>` (may be empty). (US1, US2, FR3, FR12)
+  - deterministic ordering by `order_index` then `value`.
+- Frontend treats `domain_options` as authoritative for selector visibility/options and must not derive options from call code or local constants. (US1, FR3, FR12, FR18)
 
 ### 5.2 Compliance contract
 
@@ -101,24 +111,36 @@ Last Updated: 2026-03-01
 - Response distinguishes deterministic blocking findings from informational findings.
 - Blocking findings map only to enforceable checks; informational findings include non-enforceable constraints. (US2, FR4, FR5)
 - Domain contract errors preserve existing semantics/codes. (US2, US4, FR9)
+- Submit UX renders informational findings in a dedicated non-blocking guidance section and never intermixes them with blocking list semantics. (US2, FR17)
 
 ### 5.3 Structured review create contract
 
 - Existing create request/response and idempotency behavior remain stable. (US4, FR9)
 - On success, review persistence behavior remains stable and history listing remains available in `/app/reviews`. (US4, FR10)
-- Reviewer-policy forbidden-term validation remains active; implementation may retry once server-side before emitting terminal failure while preserving existing external error semantics. (US3, US4, FR11)
+- Reviewer-policy forbidden-term validation remains active with bounded retry policy:
+  - maximum one retry per request (two total attempts),
+  - same idempotency key/payload context across attempts,
+  - unchanged external failure/error semantics if both attempts fail policy validation. (US3, US4, FR11, FR16)
 
 ### 5.4 Review detail contract (generic extension)
 
 - `GET /reviews/{review_id}` response adds `call_id` and `call_code` as generic fields. (US3, FR6, FR8)
 - Review card payload continues to provide section/evaluation trace fields used by UI (`node_title`, `evaluation_element_name`, `criterion`), with optional stable IDs as informational affordance if present. (US3, FR7)
-- Frontend can fetch call nodes by `call_id` to apply deterministic call-node ordering (`order_index`) without hardcoded per-call arrays. (US3, FR6, FR8)
+- Frontend fetches call nodes by `call_id` for deterministic ordering/grouping without hardcoded per-call arrays. (US3, FR6, FR8)
+- Deterministic ordering algorithm:
+  - primary: node `order_index` ascending,
+  - secondary fallback for ties/nulls: `node_logical_id` ascending,
+  - unknown/missing node references ordered last by `node_logical_id` ascending and labeled as unmapped. (US3, FR6, FR13)
+- Backward compatibility for legacy persisted reviews:
+  - if `call_id`/`call_code` unavailable, API returns null plus `ordering_source: "review_payload_fallback"`,
+  - UI uses stable in-review payload order fallback and displays non-blocking “call metadata unavailable” note. (US4, FR14, FR15)
 
 ### 5.5 State transitions
 
 - `Draft input` -> `Compliance blocked` (no review persisted) when deterministic enforceable checks fail. (US2, FR4)
 - `Draft input` -> `Compliance clear` -> `Review created` -> `Review visible in history` on successful execution. (US4, FR10)
 - `Retry with same idempotency key + same payload` -> existing result; `same key + different payload` -> `IDEMPOTENCY_PAYLOAD_MISMATCH`. (US4, FR9)
+- `Policy post-check fail on attempt 1` -> `retry attempt 2` -> `success` or `terminal failure` with unchanged external semantics. (US4, FR11, FR16)
 
 ## 6. Components / Modules
 
@@ -138,11 +160,11 @@ Last Updated: 2026-03-01
   - Call-driven review detail grouping/ordering and traceability presentation.
 
 Design tree / ordering:
-1. Lock generic contract seams (`domain_options[]`, review detail `call_id` + `call_code`) and preserve existing semantics. (FR3, FR8, FR9)
-2. Remove hardcoded frontend/backend call maps/branches and wire call-driven submit/review detail behavior. (FR1, FR2, FR6, FR7)
-3. Keep compliance honesty contract explicit and stable in API/UI surfaces. (FR4, FR5)
-4. Verify persistence/idempotency/history invariants remain unchanged. (FR9, FR10)
-5. Preserve reviewer-policy post-validation semantics with bounded retry seam (one retry max). (FR11)
+1. Lock generic contract seams (`domain_options[]` shape, review detail `call_id` + `call_code`, deterministic ordering/fallback rules) and preserve existing semantics. (FR3, FR8, FR9, FR12, FR13)
+2. Remove hardcoded frontend/backend call maps/branches and wire call-driven submit/review detail behavior with automated guardrails. (FR1, FR2, FR6, FR7, FR18)
+3. Keep compliance honesty contract explicit and stable in API/UI surfaces, including informational guidance rendering. (FR4, FR5, FR17)
+4. Implement skew-safe rollout and legacy-data compatibility for review detail. (FR14, FR15)
+5. Verify persistence/idempotency/history invariants remain unchanged and reviewer-policy retry remains bounded/deterministic. (FR9, FR10, FR11, FR16)
 
 Deep module seams:
 - Compliance engine remains deterministic-check authority with explicit enforceable vs informational partition.
@@ -156,20 +178,27 @@ Deep module seams:
 - Non-enforceable constraints exist in call definition (for example `max_items`): surfaced as informational only, never blocking. (US2, FR5)
 - Repeated submit attempts with idempotency collisions: preserve mismatch semantics and avoid duplicate persistence side effects. (US4, FR9, FR10)
 - Reviewer-policy validation fails after retry: response remains deterministic failure with unchanged external semantics and no silent policy bypass. (US4, FR11)
+- Multiple nodes share/miss `order_index`: ordering remains deterministic via secondary fallback rule and does not regress into arbitrary UI order. (US3, FR13)
+- Legacy persisted review lacks `call_id`: detail page remains viewable with documented fallback ordering and explicit note, no hard failure. (US4, FR14, FR15)
+- Frontend deployed before backend contract expansion (or vice versa): no fatal runtime error; feature degrades gracefully until both sides are upgraded. (US4, FR15)
 
 ## 8. Testing Decisions (TDD)
 
 - RED/GREEN/REFACTOR required for any behavioral edits affecting contracts, compliance decisions, and call-driven rendering.
 - Test seams (public):
   - compliance API behavior for enforceable blocking vs informational-only output. (FR4, FR5)
-  - review detail API schema includes `call_id` + `call_code` and preserves existing fields/error semantics. (FR8, FR9)
+  - review detail API schema includes `call_id` + `call_code`, deterministic ordering fallback behavior, and preserves existing fields/error semantics. (FR8, FR9, FR13, FR14)
   - submit/review-detail frontend behavior removes call-specific maps and consumes backend-driven metadata for nodes/domain/ordering. (FR1, FR2, FR3, FR6)
   - persistence/idempotency regression tests for structured review create and `/app/reviews` visibility invariants. (FR9, FR10)
   - reviewer-policy retry behavior test that proves one retry occurs and terminal failure semantics stay unchanged when both attempts violate policy. (FR11)
+  - skew-compat tests for frontend/backend mixed-version response shapes (with and without new fields) to prove graceful degradation. (FR15)
+  - informational-guidance UX test proving non-enforceable constraints are visible but never block submission. (FR17)
+  - static/contract guard tests that fail when per-call maps/branches/constants are introduced in protected seams. (FR18)
 - Boundary mocking:
   - mock external LLM boundary only; do not mock compliance logic, contract validation ordering, or persistence assertions.
 - Universality safety check (tests-only):
-  - include at least one existing non-Veni structured call fixture in tests to guard against hidden “3-node/Veni-shaped” assumptions, without expanding product scope. (FR2)
+  - include at least one existing non-Veni structured call fixture in tests to guard against hidden “3-node/Veni-shaped” assumptions, without expanding product scope.
+  - required assertions: arbitrary node-count rendering, deterministic ordering, and absent-domain behavior (no selector when `domain_options[]` empty). (FR2, FR19)
 
 ## 9. Telemetry (Minimal)
 
@@ -177,6 +206,8 @@ Deep module seams:
 - Structured review telemetry: success/failure rates and error-code distribution (including preserved contract codes).
 - Review detail telemetry: render failures caused by missing call metadata or ordering data.
 - Idempotency telemetry: mismatch/error counts to detect regressions in request-key behavior.
+- Reviewer-policy telemetry: attempt count per request (`attempt_1`, `attempt_2`) and terminal policy-failure counts.
+- Contract-compat telemetry: counts of review-detail responses using fallback `ordering_source`.
 
 ## 10. Deferred / Not in MVP
 
@@ -188,9 +219,10 @@ Deep module seams:
 
 ## 11. Open Questions (if any)
 
-- None for Phase 1 PRD draft; contract direction is fixed to generic `call_id` + `call_code` review-detail extension and backend-driven `domain_options[]`.
+- None for MVP; ordering fallback, legacy compatibility, domain contract shape, skew-safe rollout, and retry bounds are fixed in this PRD.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-01): Initial PRD from brainstorm SSOT for single-call universal MVP constraints.
 - v0.2 (2026-03-01): Applied risk-audit revisions (flow traceability tags, reviewer-policy retry requirement, and aligned contract/edge/test coverage); marked Ready for Tasks.
+- v0.3 (2026-03-01): Addressed principal-risk audit gaps by locking domain contract schema, deterministic ordering fallbacks, legacy/skew compatibility, bounded retry semantics, informational UX contract, no-hardcoding enforcement gates, and universality proof requirements.
