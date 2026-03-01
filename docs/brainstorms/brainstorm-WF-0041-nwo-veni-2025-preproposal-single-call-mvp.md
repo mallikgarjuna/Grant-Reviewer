@@ -43,7 +43,19 @@ Contract notes / non-obvious constraints:
 
 ## 2. Desired Outcome
 
-TBD.
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0041-nwo-veni-2025-preproposal-single-call-mvp.md` (Section 2)
+
+MVP success (demoable repeatedly):
+- User can complete full happy-path in UI: select call → fill all required nodes (arbitrary count) → compliance blocks/clears → submit → review detail shows per-card proposal section + evaluation element traceability.
+
+Measurable outcomes:
+- No per-call hardcoding in frontend for node label/order or domain options; submit and review-detail experiences are driven by canonical call definition + DB/API metadata/config.
+- Compliance is honest + enforceable: mandatory presence + min/max word limits (domain-aware for Veni pilot) block submission; warnings are visible but do not block.
+- Results UX surfaces explicit evaluation element names for each card/finding and ties each to a proposal section label.
+
+Contract notes / non-obvious constraints:
+- “Arbitrary count” means: do not assume 3 nodes; support any number of call-defined proposal nodes without code changes.
+- Domain UX must be call-specific and call-driven; do not assume a “domain” concept for other calls (e.g., ERC/MSCA) unless their call definition introduces it.
 
 ## 3. Target User / Actor
 

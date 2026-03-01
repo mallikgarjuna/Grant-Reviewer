@@ -112,6 +112,7 @@ After completing a Phase 0.1 brainstorm session:
    - Provide one recommended option (clearly labeled).
 5. Require explicit user selection or custom answer **for each question in the batch**.
    - Preferred answer format: `Q1:A, Q2:C, Q3:custom..., Q4:B, Q5:A`
+   - When presenting an interactive batch, end your message with a single copy-pasteable line listing the recommended selections in that same format (e.g., `Recommended: Q1:A, Q2:B, Q3:A, Q4:C, Q5:A`).
 6. Challenge vague answers.
 7. Avoid implementation details.
 8. Avoid architecture design.

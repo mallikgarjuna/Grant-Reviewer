@@ -102,6 +102,48 @@ Open questions suggested by this snapshot:
 - C) Hide ordering/labels entirely in detail view for MVP; show flat cards only
   > Recommendation: A — Fastest path to single-call MVP; avoids broadening scope.
   > **Selected: B**
+
+## Section 2 — Desired Outcome (Interactive)
+
+**Brainstorming Q&A:**
+
+**Q1: What’s the concrete MVP “success demo” for WF-0041?**
+- A) Full happy-path in UI: select call → fill 3 nodes → compliance blocks/clears → submit → review detail shows section + evaluation element traceability
+- B) Backend-only proof: ingest + compliance + structured-review returns call-aware results (UI can be rough)
+- C) UI-only proof: submit UI is call-driven; review can be stubbed
+  > Recommendation: A — This matches the P0 intent (“one real call works end-to-end”) and avoids shipping an MVP that’s only partially user-visible.
+  > **Selected: A**
+  > Constraint note: although Veni currently has 3 nodes, the UI must support an arbitrary number of call-defined nodes without per-call hardcoding.
+
+**Q2: What’s the minimum acceptable “call-aware” evidence in the review detail UI?**
+- A) Each card shows proposal section title + evaluation element name (and stable IDs available via an “info” affordance)
+- B) Cards show section title only; evaluation element name can be omitted
+- C) Cards show evaluation element only; section grouping can be omitted
+  > Recommendation: A — Visible element names are the trust signal; IDs can be present but should not be required to interpret feedback.
+  > **Selected: A**
+  > User note: verify whether backend already provides these fields; if missing, improve the existing contract to reach this bar.
+
+**Q3: What’s the minimum acceptable compliance behavior for MVP (honest + enforceable)?**
+- A) Enforce mandatory presence + min/max word limits (domain-aware), block on errors, warnings shown but don’t block
+- B) Enforce only mandatory presence; word limits are informational
+- C) No blocking; only informational messages
+  > Recommendation: A — Blocking on enforceable constraints is required for “usable” and prevents false trust.
+  > **Selected: A**
+
+**Q4: What’s the MVP stance on domain (ENW/Science pilot) correctness?**
+- A) Optional domain selector; if unset, we apply default limits and clearly show the active limit in the Research Idea UI + compliance output
+- B) Require explicit domain choice before enabling submit
+- C) Remove domain from UI; always treat as default
+  > Recommendation: A — Minimal friction while still supporting real call behavior.
+  > **Selected: A**
+  > Scope note: treat domain behavior as call-specific; do not assume it applies to ERC/MSCA unless their call definition introduces it.
+
+**Q5: What must be true to say “no hardcoding anywhere” is satisfied for this MVP?**
+- A) No hardcoded per-call node labels/order/domain options in frontend; everything comes from call metadata/config
+- B) Frontend can have call-specific constants as long as backend is universal
+- C) It’s enough that the backend is universal; frontend hardcoding is acceptable temporarily
+  > Recommendation: A — This prevents “Veni-shaped MVP” and keeps the product aligned to universal call support.
+  > **Selected: A**
   > User constraint override: no hardcoding anywhere; even single-call MVP should use universal/call-driven behavior.
 
 **Q2: Domain selection safety for ENW/Science pilot**
