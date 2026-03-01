@@ -1,8 +1,8 @@
 # WF-0043 — NWO Veni 2025 Preproposal: Single-Call MVP Hardening
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-01
 
 ## 0. User Stories (MVP)
@@ -84,6 +84,12 @@ Last Updated: 2026-03-01
   - `expect_review_persisted`
   - `expected_review_status` (nullable)
   - `expected_summary_convention` (nullable)
+- Contract C6 (US1, FR1, FR9): WF-0043 fixture cases must lock existing status/error semantics for covered scenarios (no remapping in this WF). Covered codes include:
+  - `VALIDATION_ERROR`
+  - `UNKNOWN_NODE_ID`
+  - `REVIEW_STAGE_NODE_MISMATCH`
+  - `IDEMPOTENCY_PAYLOAD_MISMATCH`
+  - plus covered success replay semantics (`200` with existing review identity/status)
 
 ## 6. Components / Modules
 
@@ -106,6 +112,9 @@ Deep module boundaries:
 - Test data boundary: fixture matrix is declarative and call-scoped.
 - Assertion boundary: tests assert contracts only (status/error/persistence/summary conventions), not generated prose quality.
 - Runtime boundary: production behavior unchanged unless tests reveal an existing regression.
+- Ownership note:
+  - `docs/brainstorms/brainstorm-WF-0043-nwo-veni-2025-preproposal-single-call-mvp-harden.md` remains SSOT for WF scope/verification intent.
+  - PRD remains SSOT for implementation contracts and task derivation.
 
 ## 7. Edge Cases
 
@@ -139,8 +148,9 @@ Deep module boundaries:
 
 ## 11. Open Questions (if any)
 
-- OQ1: Whether current test harness can practically assert TTL-expiry reuse without introducing new tooling; default is documented defer.
+- OQ1: TTL-expiry reuse remains deferred by default in this WF; assert replay+mismatch within TTL only, and document expiry-time-travel as a follow-on requiring explicit clock control.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-01): Initial PRD from brainstorm.
+- v0.2 (2026-03-01): Applied risk-audit tightening edits for contract precision, SSOT boundary clarity, and test-scope defaults; marked Ready for Tasks.
