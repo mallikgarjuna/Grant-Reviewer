@@ -1,8 +1,8 @@
 # WF-0041 — NWO Veni 2025 (Preproposal) Single-Call MVP
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-01
 
 ## 0. User Stories (MVP)
@@ -44,29 +44,35 @@ Last Updated: 2026-03-01
 1. Operator ingests and activates `nwo_veni_2025_preproposal` from canonical YAML with standard ingestion flow; call becomes selectable in app. (US1, US4)
 2. Applicant selects call; submit UI fetches call-driven nodes/metadata and renders all required proposal sections without per-call assumptions on count/order/labels. (US1)
 3. If selected call metadata exposes non-empty `domain_options[]`, UI shows domain selector; otherwise it remains hidden. (US1, US2)
-4. Applicant fills structured proposal text by node and submits.
+4. Applicant fills structured proposal text by node and submits. (US1)
 5. Compliance precheck runs deterministic enforceable checks and returns blocking/non-blocking output with clear separation. (US2)
-6. On compliant payload, universal structured-review endpoint executes and persists review/cards.
+6. On compliant payload, universal structured-review endpoint executes and persists review/cards. (US3, US4)
 7. Review detail fetches call-aware data, orders/groups sections by node `order_index`, and shows per-card proposal section + evaluation element + criterion traceability. (US3)
 8. Persisted review appears in `/app/reviews` history and remains retrievable. (US4)
 
 ### Failure path A — deterministic compliance block
 
 1. Compliance finds enforceable violations (for example missing required content or word-limit violation) and blocks review creation. (US2)
-2. UI surfaces blocking issues and keeps non-enforceable constraints informational-only.
+2. UI surfaces blocking issues and keeps non-enforceable constraints informational-only. (US2)
 3. Applicant revises input and resubmits. (US2)
 
 ### Failure path B — domain input contract error
 
-1. Selected call requires valid domain context for domain-limited checks and payload is missing/invalid domain.
+1. Selected call requires valid domain context for domain-limited checks and payload is missing/invalid domain. (US2)
 2. API returns existing domain error semantics (`DOMAIN_REQUIRED` or `DOMAIN_INVALID`) without behavior drift. (US2, US4)
-3. UI prompts correction and retry.
+3. UI prompts correction and retry. (US2)
 
 ### Failure path C — idempotency mismatch
 
-1. Client retries with same idempotency key but different payload.
+1. Client retries with same idempotency key but different payload. (US4)
 2. API returns unchanged `IDEMPOTENCY_PAYLOAD_MISMATCH`; no duplicate persisted review is created. (US4)
-3. User/client resolves conflict and retries with correct key behavior.
+3. User/client resolves conflict and retries with correct key behavior. (US4)
+
+### Failure path D — reviewer policy output block
+
+1. Structured-review output violates reviewer-policy forbidden-term checks during post-validation. (US3, US4)
+2. Server performs one retry with stricter instruction while preserving policy enforcement. (US3, US4)
+3. If retry still violates policy, request fails with existing failure semantics and no contract drift. (US4)
 
 ## 4. Functional Requirements
 
@@ -80,6 +86,7 @@ Last Updated: 2026-03-01
 - FR8 (US3, US4): Review detail response contract must include generic `call_id` and `call_code` fields to enable call-driven node lookup/rendering.
 - FR9 (US4): Existing API error semantics and idempotency semantics must remain unchanged.
 - FR10 (US4): Submission side effects must remain unchanged: successful review execution persists Review records and keeps `/app/reviews` history intact.
+- FR11 (US3, US4): Structured-review execution must keep reviewer-policy enforcement and include one server-side retry seam before final failure when forbidden-term policy validation fails.
 
 ## 5. Data & API Contracts
 
@@ -99,6 +106,7 @@ Last Updated: 2026-03-01
 
 - Existing create request/response and idempotency behavior remain stable. (US4, FR9)
 - On success, review persistence behavior remains stable and history listing remains available in `/app/reviews`. (US4, FR10)
+- Reviewer-policy forbidden-term validation remains active; implementation may retry once server-side before emitting terminal failure while preserving existing external error semantics. (US3, US4, FR11)
 
 ### 5.4 Review detail contract (generic extension)
 
@@ -134,6 +142,7 @@ Design tree / ordering:
 2. Remove hardcoded frontend/backend call maps/branches and wire call-driven submit/review detail behavior. (FR1, FR2, FR6, FR7)
 3. Keep compliance honesty contract explicit and stable in API/UI surfaces. (FR4, FR5)
 4. Verify persistence/idempotency/history invariants remain unchanged. (FR9, FR10)
+5. Preserve reviewer-policy post-validation semantics with bounded retry seam (one retry max). (FR11)
 
 Deep module seams:
 - Compliance engine remains deterministic-check authority with explicit enforceable vs informational partition.
@@ -146,6 +155,7 @@ Deep module seams:
 - Review contains cards referencing nodes while call metadata fetch fails transiently: UI must fail gracefully without falling back to hardcoded call mappings. (US3, FR1, FR6)
 - Non-enforceable constraints exist in call definition (for example `max_items`): surfaced as informational only, never blocking. (US2, FR5)
 - Repeated submit attempts with idempotency collisions: preserve mismatch semantics and avoid duplicate persistence side effects. (US4, FR9, FR10)
+- Reviewer-policy validation fails after retry: response remains deterministic failure with unchanged external semantics and no silent policy bypass. (US4, FR11)
 
 ## 8. Testing Decisions (TDD)
 
@@ -155,6 +165,7 @@ Deep module seams:
   - review detail API schema includes `call_id` + `call_code` and preserves existing fields/error semantics. (FR8, FR9)
   - submit/review-detail frontend behavior removes call-specific maps and consumes backend-driven metadata for nodes/domain/ordering. (FR1, FR2, FR3, FR6)
   - persistence/idempotency regression tests for structured review create and `/app/reviews` visibility invariants. (FR9, FR10)
+  - reviewer-policy retry behavior test that proves one retry occurs and terminal failure semantics stay unchanged when both attempts violate policy. (FR11)
 - Boundary mocking:
   - mock external LLM boundary only; do not mock compliance logic, contract validation ordering, or persistence assertions.
 - Universality safety check (tests-only):
@@ -182,3 +193,4 @@ Deep module seams:
 ## 12. Changelog
 
 - v0.1 (2026-03-01): Initial PRD from brainstorm SSOT for single-call universal MVP constraints.
+- v0.2 (2026-03-01): Applied risk-audit revisions (flow traceability tags, reviewer-policy retry requirement, and aligned contract/edge/test coverage); marked Ready for Tasks.
