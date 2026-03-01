@@ -73,6 +73,8 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
+| 1 | Ship single-call MVP for `nwo_veni_2025_preproposal` (happy path) | product | Make this one call fully usable end-to-end via universal engine: ingest+activate call, call-driven submit UI, compliance blocking, run review, call-aware results. Ref: 2026-03-01 chat; `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`. | 2026-03-01 |
+| 2 | Harden single-call MVP for `nwo_veni_2025_preproposal` (trust + regression) | tech-debt | Add reviewer-policy enforcement coverage (blocking/post-check/prompt-only), clearer failure states, and a deterministic verification bundle so this call doesn’t regress. Ref: 2026-03-01 chat; `backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml`. | 2026-03-01 |
 
 ---
 
