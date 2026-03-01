@@ -236,6 +236,38 @@ def test_node_with_no_constraints_passes_silently() -> None:
     assert response.errors == []
 
 
+def test_non_enforceable_constraints_are_informational_only() -> None:
+    """Non-enforceable max_items constraints should surface as warnings only."""
+    nodes = [
+        _hydrated_node(
+            "key_outputs",
+            {
+                "content_constraints": {
+                    "max_items": 10,
+                },
+                "compliance_rules": [
+                    {
+                        "id": "comp_key_outputs_max_items",
+                        "severity": "WARNING",
+                        "rule_type": "hard_limit",
+                        "description": "List no more than 10 key output items.",
+                    }
+                ],
+            },
+        )
+    ]
+    request = _request(DraftNode(node_logical_id="key_outputs", text="one two"))
+
+    response = evaluate_compliance(request, nodes)
+
+    assert response.is_compliant is True
+    assert response.errors == []
+    assert len(response.warnings) == 1
+    warning = response.warnings[0]
+    assert warning.rule_id == "comp_key_outputs_max_items"
+    assert warning.is_blocking is False
+
+
 def test_unrecognized_domain_alias_uses_default_fallback() -> None:
     """Engine should not validate domain aliases; route layer owns that validation."""
     nodes = [

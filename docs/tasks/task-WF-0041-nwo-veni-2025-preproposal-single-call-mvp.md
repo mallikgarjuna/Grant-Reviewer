@@ -117,7 +117,7 @@ Verification Steps:
 Risks (if any):
 - Draft restore logic may preserve stale domain values if selector options change.
 
-### [ ] Task 5 — Backend compliance and policy retry determinism
+### [x] Task 5 — Backend compliance and policy retry determinism
 
 Goal:
 - Lock deterministic compliance classification and bounded reviewer-policy retry semantics without changing external errors/idempotency.

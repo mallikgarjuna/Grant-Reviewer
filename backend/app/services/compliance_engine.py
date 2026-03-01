@@ -87,6 +87,26 @@ def _error(
     )
 
 
+def _warning(
+    *,
+    node_logical_id: str,
+    rule_id: str,
+    message: str,
+    actual: str = "not_evaluated",
+    expected: str = "guidance_only",
+) -> ComplianceViolation:
+    """Factory for informational non-blocking findings."""
+    return ComplianceViolation(
+        node_logical_id=node_logical_id,
+        rule_id=rule_id,
+        severity="WARNING",
+        actual=actual,
+        expected=expected,
+        message=message,
+        is_blocking=False,
+    )
+
+
 def evaluate_compliance(
     request: ComplianceCheckRequest,
     hydrated_nodes: list[HydratedNode],
@@ -108,6 +128,28 @@ def evaluate_compliance(
 
         constraints_raw = hydrated.config.get("content_constraints")
         content_constraints = constraints_raw if isinstance(constraints_raw, dict) else {}
+        compliance_rules = hydrated.config.get("compliance_rules")
+        if isinstance(compliance_rules, list):
+            for rule in compliance_rules:
+                if not isinstance(rule, dict):
+                    continue
+                severity = rule.get("severity")
+                rule_id = rule.get("id")
+                message = rule.get("description")
+                if severity != "WARNING":
+                    continue
+                if not isinstance(rule_id, str) or not rule_id.strip():
+                    continue
+                if not isinstance(message, str) or not message.strip():
+                    continue
+                warnings.append(
+                    _warning(
+                        node_logical_id=logical_id,
+                        rule_id=rule_id,
+                        message=message,
+                    )
+                )
+
         limits = _resolve_limits(
             content_constraints=content_constraints,
             domain=normalized_domain,
