@@ -51,6 +51,10 @@ def _load_wf0043_policy_cases() -> list[Wf0043PolicyCase]:
     ]
 
 
+def _wf0043_policy_case_id(value: str) -> str:
+    return f"wf0043_contract_single_snippet_policy_{value}"
+
+
 class EchoExpectationLLMClient:
     """Returns one feedback per expectation ID found in prompt."""
 
@@ -327,7 +331,7 @@ def test_core_policy_blocking_fails_after_single_retry() -> None:
 @pytest.mark.parametrize(
     "case",
     _load_wf0043_policy_cases(),
-    ids=lambda case: case["case_id"],
+    ids=lambda case: _wf0043_policy_case_id(case["case_id"]),
 )
 def test_wf0043_contract_single_snippet_policy_modes(case: Wf0043PolicyCase) -> None:
     rule = ReviewerPolicyRule(
@@ -362,6 +366,12 @@ def test_wf0043_contract_single_snippet_policy_modes(case: Wf0043PolicyCase) -> 
         assert len(result.warning_violations) == 1
     else:
         assert result.warning_violations == []
+
+
+def test_wf0043_contract_single_snippet_policy_matrix_coverage() -> None:
+    cases = _load_wf0043_policy_cases()
+    case_ids = {case["case_id"] for case in cases}
+    assert case_ids == {"policy_blocking", "policy_post_check", "policy_prompt_only"}
 
 
 def test_core_emits_telemetry_start_complete() -> None:

@@ -112,7 +112,7 @@ Verification Steps:
 Risks (if any):
 - Over-mocking can hide integration boundary drift unless assertions verify persisted outcome shape where relevant.
 
-### [ ] Task 5 — Deterministic fixture matrix coverage + focused-run selector
+### [x] Task 5 — Deterministic fixture matrix coverage + focused-run selector
 
 Goal:
 - Ensure fixture matrix is the single WF-0043 scenario source and provide deterministic focused-run convention for pre-merge verification.

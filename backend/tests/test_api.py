@@ -90,6 +90,10 @@ def _non_empty_str(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+def _wf0043_case_id(value: str, *, surface: str) -> str:
+    return f"wf0043_contract_{surface}_{value}"
+
+
 def _count_reviews_in_db() -> int:
     session = get_session()
     try:
@@ -1516,7 +1520,7 @@ def test_wf0043_contract_structured_api_replay_persists_history(monkeypatch) -> 
         "review_stage_node_mismatch",
         "idempotency_payload_mismatch",
     ],
-    ids=lambda value: value,
+    ids=lambda value: _wf0043_case_id(value, surface="structured_api"),
 )
 def test_wf0043_contract_structured_api_error_semantics_and_no_persistence_side_effects(
     monkeypatch, case_id: str
@@ -1582,6 +1586,36 @@ def test_wf0043_contract_structured_api_error_semantics_and_no_persistence_side_
     assert response.status_code == case["expected_http_status"]
     assert response.json()["error"]["code"] == case["expected_error_code"]
     assert _count_reviews_in_db() == baseline_count
+
+
+def test_wf0043_contract_structured_api_matrix_coverage() -> None:
+    cases = _load_wf0043_matrix_cases()
+    assert 8 <= len(cases) <= 12
+
+    required_fields = {
+        "case_id",
+        "surface",
+        "expected_http_status",
+        "expected_error_code",
+        "expect_review_persisted",
+        "expected_review_status",
+        "expected_summary_convention",
+    }
+    for case in cases:
+        assert required_fields.issubset(case.keys())
+
+    structured_case_ids = {
+        case["case_id"] for case in cases if case.get("surface") == "structured_api"
+    }
+    covered_case_ids = {
+        "replay_persists_history",
+        "validation_error_missing_idempotency_header",
+        "unknown_node_id",
+        "review_stage_node_mismatch",
+        "idempotency_payload_mismatch",
+        "post_persist_unresolvable_expectation_failed",
+    }
+    assert structured_case_ids == covered_case_ids
 
 
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:
