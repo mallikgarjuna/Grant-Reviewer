@@ -1,5 +1,31 @@
 # Architectural Decisions
 
+## Date: 2026-03-01 (WF-0040: Structured pipeline v1 legacy retirement)
+
+### AD 40.1: Legacy retirement scope is execution-path only
+- **WF ID**: WF-0040
+- **Context**: The codebase uses "legacy" terminology in both engine routing and call-config/UI naming, which risks scope creep.
+- **Decision**: Define WF-0040 scope as retiring only the legacy structured-review execution path for `POST /api/structured-review`; non-blocking `legacy_*` naming cleanup is deferred.
+- **Why**: Keeps the retirement program falsifiable and avoids accidental expansion into unrelated frontend/call-config refactors.
+- **Tradeoff**: Naming ambiguity remains in-place temporarily and must be documented in the runbook/checklist.
+- **Status**: Approved.
+
+### AD 40.2: Legacy deletion is checklist-gated with explicit approval checkpoint
+- **WF ID**: WF-0040
+- **Context**: Deleting legacy code prematurely would remove the pre-deletion rollback option and increase production risk.
+- **Decision**: Require a readiness checklist artifact in the WF walkthrough with replay/parity evidence, rollout-health outputs, API contract-test pass evidence, and explicit owner approval before deleting legacy path code.
+- **Why**: Preserves reversibility before deletion and forces evidence-based progression to single-engine runtime truth.
+- **Tradeoff**: Adds process overhead and can delay deletion if observability evidence is incomplete.
+- **Status**: Approved.
+
+### AD 40.3: Deletion gate defaults pin observation windows and production sample-size minimums
+- **WF ID**: WF-0040
+- **Context**: Open-ended gate durations and traffic-size expectations made readiness decisions ambiguous.
+- **Decision**: Freeze MVP gate defaults to 24 consecutive green hours in staging and 7 consecutive green days in production, with minimum 50 completed requests per currently-supported call code before deletion approval.
+- **Why**: Makes the retirement gate operationally unambiguous for Phase 2 task planning and execution.
+- **Tradeoff**: Low-traffic calls may take longer to satisfy deletion readiness criteria.
+- **Status**: Approved.
+
 ## Date: 2026-03-01 (WF-0039: Structured pipeline v1 rollout)
 
 ### AD 39.1: Production empty-allowlist guardrail fails closed to legacy

@@ -1,7 +1,7 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: prd
-Version: v0.1
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-01
 
@@ -18,8 +18,9 @@ Last Updated: 2026-03-01
 
 ## 1. In Scope
 
+- Legacy engine retirement for `POST /api/structured-review` execution path only.
 - Formal deprecation gates from dual-path to single-path execution.
-- Runtime switch to v1-only behavior after evidence gate.
+- Runtime switch to `pipeline_v1` only after evidence gates are green.
 - Removal of legacy structured-review execution branches.
 - Removal/cleanup of obsolete env logic tied to dual-engine routing.
 - Regression tests and docs/runbook updates for single-engine operations.
@@ -29,28 +30,29 @@ Last Updated: 2026-03-01
 - Public API schema changes.
 - Call-definition redesign.
 - New ingestion model scope.
+- Renaming call-config/UI `legacy_*` naming unless required to unblock engine-path retirement.
 
 ## 3. User / System Flow
 
 ### Happy path
 
-1. Operator runs readiness checks (replay/parity/error/latency windows) and confirms retirement gate criteria.
-2. Backend routes all structured-review requests via `pipeline_v1`.
-3. Observation window remains green.
-4. Legacy runtime code and dual-path flag logic are deleted.
-5. Regression suite passes; docs and runbook switch to single-engine instructions.
+1. Operator runs readiness checks (replay/parity/error/latency windows) and confirms retirement gate criteria. (US1, US2)
+2. Backend routes all structured-review requests through `pipeline_v1` while legacy code still exists for pre-deletion rollback. (US1, US2, US3)
+3. Staging and production observation windows stay green for the checklist-defined durations and thresholds. (US1, US2)
+4. Legacy runtime code and dual-path flag logic are deleted after explicit approval and evidence sign-off. (US1, US2)
+5. Regression suite passes; docs and runbook switch to single-engine operations. (US1, US2, US3)
 
 ### Failure path (pre-deletion gate fails)
 
-1. Gate checks show parity or reliability issues.
-2. Retirement pauses; no code deletion proceeds.
-3. Issues are fixed and gate checks rerun.
+1. Gate checks show parity, contract-semantic, or reliability regressions. (US2, US3)
+2. Retirement pauses and no routing change or code deletion proceeds. (US1, US2)
+3. Team fixes issues and reruns gate checks before reattempting cutover. (US1, US2)
 
 ### Failure path (post-switch instability before deletion)
 
-1. v1-only runtime switch shows threshold regressions during observation window.
-2. Operator uses pre-defined rollback mechanism (config/runbook) while legacy code still exists.
-3. Code deletion is blocked until new green window is achieved.
+1. v1-only routing shows threshold regressions during observation window. (US2, US3)
+2. Operator executes explicit, runbook-defined configuration rollback while legacy path still exists. (US1, US2)
+3. Legacy deletion remains blocked until a fresh green observation window is completed. (US1, US2)
 
 ## 4. Functional Requirements
 
@@ -61,57 +63,108 @@ Last Updated: 2026-03-01
 - FR5 (US2): Remove dual-engine routing env logic that is obsolete after v1-only cutover.
 - FR6 (US2, US3): Maintain telemetry signals needed to detect regressions in v1-only mode.
 - FR7 (US1): Update operational runbook to single-engine mode with rollback notes and escalation steps.
+- FR8 (US2, US3): Preserve concrete API error semantics during retirement (`CALL_CONFIG_DIGEST_MISMATCH`, `EXPECTATION_REF_UNRESOLVABLE`, `TIMEOUT`, validation ordering behavior).
+- FR9 (US1, US2): Require explicit approval checkpoint in walkthrough checklist before deleting legacy code.
+- FR10 (US1, US2): Use fixed observation-window thresholds and minimum production sample-size gates before deletion approval.
 
 ## 5. Data & API Contracts
 
-- No request/response shape change for:
-  - frontend -> BFF structured-review create flow,
-  - BFF -> backend structured-review call,
-  - backend review detail/listing endpoints.
-- Idempotency contract remains unchanged.
-- Error-code taxonomy must remain stable; any changes require explicit ADR and migration notice.
+### 5.1 Stable External Contracts
+
+- Frontend -> BFF structured-review create request shape remains unchanged. (US3, FR3)
+- BFF -> backend `POST /api/structured-review` request/response shape remains unchanged. (US3, FR3)
+- Backend review detail/listing endpoint payloads remain unchanged. (US3, FR3)
+
+### 5.2 Idempotency + Validation Contract
+
+- Idempotency behavior remains unchanged: same key/same payload returns existing result; key/payload mismatch returns idempotency mismatch error. (US3, FR3)
+- Validation ordering for malformed payloads stays stable relative to idempotency checks. (US3, FR8)
+
+### 5.3 Error Semantics Contract
+
+- Existing contract errors remain semantically stable during retirement, including digest mismatch and expectation resolution errors. (US3, FR8)
+- Existing execution-failure semantics remain stable, including timeout/error classification and status behavior. (US3, FR8)
+- Any contract-semantic change requires explicit architectural decision log entry before implementation. (US1, FR8)
+
+### 5.4 State Transition Contract
+
+- Pre-deletion: explicit configuration rollback is allowed and rehearsed while legacy code exists. (US1, FR7)
+- Post-deletion: rollback is revert-deploy only; there is no runtime engine-choice switch. (US1, FR4, FR5)
 
 ## 6. Components / Modules
 
-- `backend/main.py`: routing simplification to single v1 path.
-- `backend/app/services/structured_reviewer_service.py`: remove legacy-only execution entrypoints/helpers no longer needed.
-- `backend/scripts/replay_structured_rollout.py`: retained as regression gate.
-- `backend/scripts/evaluate_rollout_health.py`: retained as regression gate.
-- `backend/tests/`: update/remove dual-path tests; add v1-only contract coverage.
-- `backend/README.md` and docs workflow files: update operational instructions.
+- `backend/main.py`
+  - owns routing simplification to v1-only path for `POST /api/structured-review`.
+- `backend/app/services/structured_reviewer_service.py`
+  - remove legacy-only execution entrypoints/helpers after deletion gate.
+- `backend/scripts/replay_structured_rollout.py`
+  - retained and required for parity evidence gate.
+- `backend/scripts/evaluate_rollout_health.py`
+  - retained and required for rollout health threshold evaluation.
+- `backend/tests/`
+  - update/remove dual-path tests; add v1-only routing unreachability and API contract invariants coverage.
+- `docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
+  - readiness checklist SSOT with evidence links and approval checkpoint.
+- `backend/README.md` and workflow docs
+  - update operator runbook text to single-engine truth.
+
+Design tree / ordering:
+1. Strengthen contract tests + checklist evidence references (FR1, FR8).
+2. Flip runtime to v1-only and run observation windows (FR2, FR3, FR6).
+3. Delete legacy execution + obsolete routing logic (FR4, FR5, FR9).
+4. Finalize docs/runbook and preserve telemetry expectations (FR6, FR7).
 
 ## 7. Edge Cases
 
-- Requests for calls previously never canaried: must still execute deterministically via v1 and preserve contract semantics.
-- Missing/invalid call config must keep stable error behavior.
-- Observability must continue after legacy telemetry labels are removed/normalized.
+- Requests for currently-supported calls that were lightly exercised in canary still must execute deterministically through v1 and preserve contract semantics. (US3, FR3, FR8)
+- Missing/invalid call config keeps stable error behavior; no silent fallback contract changes. (US3, FR8)
+- Observation-window gaps (missing telemetry series, missing replay artifacts) block deletion readiness. (US1, US2, FR1, FR6)
+- UI/call-config `legacy_*` naming must not be interpreted as permission to widen scope beyond engine execution retirement. (US1)
 
 ## 8. Testing Decisions (TDD)
 
-- Use RED/GREEN/REFACTOR for all behavior edits.
-- Keep contract tests for API/status/error/idempotency unchanged where possible.
-- Add negative tests for unsupported or malformed structured submissions in v1-only mode.
-- Re-run replay and health scripts as part of verification gate before and after deletion.
+- Use RED/GREEN/REFACTOR for all behavior edits touching routing/deletion seams.
+- Test seams:
+  - API routing test that proves legacy path is unreachable when v1-only mode is active. (FR3, FR4)
+  - API contract tests for idempotency + core error semantics invariants listed in Section 5. (FR8)
+  - Script-level tests/verification for replay + rollout health gate output expectations. (FR1, FR2)
+- Boundary-only mocking:
+  - mock external LLM boundary only; do not mock routing-decision code or contract assertions.
+- Evidence gate execution:
+  - run replay and health scripts before v1-only switch,
+  - rerun across defined observation windows before legacy deletion.
 
 ## 9. Telemetry (Minimal)
 
 - Required signals in v1-only mode:
-  - structured-review request count by call code,
+  - structured-review request count by call code and `engine_path` (expected steady-state `pipeline_v1`),
   - status and error code distributions,
   - latency p50/p95,
   - explicit deployment marker for “legacy retired”.
 
-## 10. Rollback & Cutover Policy
+## 9.1 Observation Window + Sample Gates (MVP Defaults)
 
-- Phase R1 (pre-delete): config rollback allowed and tested.
-- Phase R2 (delete-ready): only enter after a full green observation window.
-- Phase R3 (post-delete): emergency rollback is code rollback (git deploy rollback), not runtime branch toggle.
+- Staging pre-delete gate:
+  - at least 24 consecutive green hours in v1-only mode,
+  - replay + rollout-health evidence captured and linked in walkthrough checklist.
+- Production pre-delete gate:
+  - at least 7 consecutive green days in v1-only mode,
+  - minimum 50 completed structured-review requests per currently-supported call code,
+  - no contract-semantic regressions for invariant errors in Section 5.
+- Deletion approval requires all FR1/FR2/FR9/FR10 checklist items to be marked complete in the walkthrough SSOT.
 
-## 11. Open Questions
+## 10. Deferred / Not in MVP
 
-- Required observation window duration before deletion (recommend 7 days).
-- Minimum production sample size per canaried call for removal confidence.
+- Shared-core/pipeline redesign beyond retiring legacy execution path.
+- Broad naming cleanup of `legacy_*` identifiers outside blocking retirement surfaces.
+- Expansion of call coverage scope beyond currently-supported calls.
+
+## 11. Open Questions (if any)
+
+- None for MVP Phase 2 planning.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-01): Initial PRD for controlled deprecation program after WF-0039 rollout completion.
+- v0.2 (2026-03-01): Applied Phase 1 risk-audit revisions (traceability tags, explicit legacy scope boundary, concrete API invariants, checklist/approval gate requirements, and test seam hardening).
+- v0.3 (2026-03-01): Resolved remaining audit deltas by pinning observation-window thresholds and production sample-size gates; cleared open questions for MVP planning.
