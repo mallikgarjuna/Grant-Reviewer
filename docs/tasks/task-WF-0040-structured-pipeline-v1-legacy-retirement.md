@@ -1,7 +1,7 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-01
 
@@ -160,6 +160,7 @@ TDD Plan:
 - N/A (documentation and operational artifact consolidation only).
 Verification Steps:
 - `rg -n \"Replay/parity artifact|Rollout health output|owner approval|revert-deploy|config-first rollback\" docs/walkthroughs/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md backend/README.md docs/logs/decisions.md`
+- `cd backend && DATABASE_URL=sqlite:////tmp/grant_reviewer_test_wf0040_t6.db uv run pytest -q tests/test_api.py tests/test_review_engine_pipeline_v1.py tests/test_rollout_health.py`
 Risks (if any):
 - Missing evidence links can delay approval even if code changes are complete.
 
@@ -167,3 +168,4 @@ Risks (if any):
 
 - v0.1 (2026-03-01): Initial sequential task plan for controlled deprecation and legacy path retirement.
 - v0.2 (2026-03-01): Applied Phase 2 review revisions for atomicity, strict FR/US traceability, dependency DAG validity, and explicit TDD/verification per task.
+- v0.3 (2026-03-01): Added final aggregate automated verification step for end-of-phase confidence before Phase 3 execution.
