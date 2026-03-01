@@ -307,11 +307,14 @@ Copy `.env.example` to `.env` for local development.
 # - DATABASE_URL must point to a test DB (name contains "test")
 # - pytest refuses to run DB-backed tests otherwise
 
-# 1) Start/reset isolated test DB (port 5433)
-./scripts/reset_test_db.sh
+# Fast local run (SQLite, DB-backed tests without Docker)
+./scripts/verify_tests_sqlite.sh
 
-# 2) Run tests against test DB explicitly
-DATABASE_URL=postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable uv run pytest -q
+# Postgres verification run (isolated test stack on port 5433)
+./scripts/verify_tests_postgres.sh
+
+# If you want to control args (example):
+./scripts/verify_tests_postgres.sh -q tests/test_review_engine_pipeline_v1.py
 ```
 
 If you only need dry-run ingest tests (no DB), run:
