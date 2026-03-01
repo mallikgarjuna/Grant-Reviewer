@@ -1,7 +1,7 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: brainstorm
-Version: v0.6
+Version: v0.7
 Status: Draft Complete
 Last Updated: 2026-03-01
 
@@ -66,6 +66,28 @@ Before deleting legacy engine code or removing routing/flag branches:
 
 - Pre-deletion (legacy still exists): rollback is operational and explicit (runbook-driven); switching engines is not the long-term posture.
 - Post-deletion: rollback is revert-deploy; there is no runtime engine-choice switch.
+
+## Rollback Semantics (Clarified)
+
+During the v1-only observation window (pre-deletion), we must support an explicit, configuration-first rollback to the legacy engine path (while legacy code still exists).
+After legacy code deletion, rollback is revert-deploy only; there is no runtime engine-choice switch.
+
+## API Contract Invariants (Concrete)
+
+Before any routing change, enumerate the concrete error/response semantics for `POST /api/structured-review` that must remain stable (idempotency digest mismatch, expectation resolution errors, timeout behavior, validation ordering).
+These invariants must be covered by targeted API/contract tests before switching prod routing.
+
+## Explicit Boundary (Not A Refactor WF)
+
+This WF is a controlled deprecation of the legacy engine execution path, not a shared-core refactor or pipeline redesign.
+
+## Reversibility Guarantee
+
+All steps prior to legacy code deletion must be reversible via runbook/config (no irreversible actions before the deletion gate).
+
+## Required Tests (Minimum)
+
+Add/confirm an API-level test that proves the legacy engine path is unreachable when v1-only mode is enabled, and a contract test suite covering the enumerated API invariants.
 
 ## 3. Target User / Actor
 
