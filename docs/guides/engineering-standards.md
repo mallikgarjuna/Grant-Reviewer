@@ -15,6 +15,7 @@ All commands should run from the repo root unless `cd backend` is specified.
 - Reset local DB (Postgres): `cd backend && docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d`
 - Fast backend test run (SQLite): `cd backend && ./scripts/verify_tests_sqlite.sh`
 - Backend Postgres verification test run: `cd backend && ./scripts/verify_tests_postgres.sh`
+- Rollout replay artifact (deterministic): `cd backend && uv run python scripts/replay_structured_rollout.py --replays 20 --output artifacts/rollout/replay_canary.json`
 - Lint: `cd backend && uv run ruff check .`
 - Lint (autofix): `cd backend && uv run ruff check . --fix`
 - Format: `cd backend && uv run ruff format .`

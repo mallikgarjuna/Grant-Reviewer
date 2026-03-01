@@ -111,7 +111,7 @@ Verification Steps:
 Risks (if any):
 - Comparator may accidentally include text parity; keep scope strictly structural.
 
-### [ ] Task 5 — Replay evidence artifact writer (2 payloads x 20 replays)
+### [x] Task 5 — Replay evidence artifact writer (2 payloads x 20 replays)
 
 Goal:
 - Produce deterministic replay evidence artifacts committed on branch for canary decisions.
