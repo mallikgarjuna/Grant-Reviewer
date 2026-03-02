@@ -16,8 +16,8 @@ Traceability manifest for `backend/data/calls/canonical/nwo/nwo_vidi_2025_full_p
 - Used for:
   - Proposal-node structure (`1b`, `1c`, `2a`, `2b`).
   - Node-level word/page constraints and explanatory notes.
-- Source URL / provenance note: Provided by user from NWO Vidi 2025 source package (`PeerLens_proj/NWO-Vidi-2025/Full-proposal`).
-- Provided/Downloaded date: `2026-02-26`
+- Source URL / provenance note: Uploaded by user in WF-0044 strict checkpoint (2026-03-02).
+- Provided/Downloaded date: `2026-03-02`
 
 2) **Call for Proposals (PDF)**
 - Path (origin): `/home/mgurram/Projects/Non-Github/PeerLens_proj/NWO-Vidi-2025/Full-proposal/Call-for-Proposals-Vidi-2025_Eng.pdf`
@@ -27,8 +27,8 @@ Traceability manifest for `backend/data/calls/canonical/nwo/nwo_vidi_2025_full_p
   - Evaluation criteria/elements and weighting (Section 4.3.2).
   - DORA policy constraints for `reviewer_policy` (Section 4.1).
   - Full proposal submission deadline and assessment procedure context.
-- Source URL / provenance note: Provided by user from NWO Vidi 2025 source package (`PeerLens_proj/NWO-Vidi-2025/Full-proposal`).
-- Provided/Downloaded date: `2026-02-26`
+- Source URL / provenance note: Uploaded by user in WF-0044 strict checkpoint (2026-03-02).
+- Provided/Downloaded date: `2026-03-02`
 
 ## Notes
 - Manifest records both source origin and copied-local retention paths for WF-0044 traceability.

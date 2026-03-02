@@ -49,6 +49,17 @@ Last Updated: 2026-03-02
   - Rerun verification evidence:
     - `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k nwo_veni_2025_preproposal` -> `1 passed`
     - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run` -> `schema_version=v2`, dry-run success
+- **Checkpoint 3 (NWO Vidi 2025 full proposal) — satisfied**
+  - User-uploaded sources accepted for this call:
+    - `Call-for-Proposals-Vidi-2025_Eng.pdf`
+    - `Vidi-2025-Full-proposal-form.docx`
+  - Applied rerun updates:
+    - Confirmed source hashes match uploaded files for both source entries.
+    - Added missing copied-local call PDF under `backend/data/calls/source_files/WF-0044/nwo_vidi_2025_full_proposal/`.
+    - Updated manifest provenance notes/dates to strict-checkpoint upload context.
+  - Rerun verification evidence:
+    - `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k nwo_vidi_2025_full_proposal` -> `1 passed`
+    - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml --dry-run` -> `schema_version=v2`, dry-run success
 
 ## Verification Evidence
 
