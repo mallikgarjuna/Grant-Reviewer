@@ -57,6 +57,7 @@ Examples:
 2. Author from official sources only:
    - proposal structure source
    - evaluation criteria/elements source
+   - sources may be PDF/DOCX/MD/TXT/etc.; gate on official provenance + completeness, not file extension
 3. Keep scope limited to:
    - evaluable proposal structure
    - evaluation criteria/elements
