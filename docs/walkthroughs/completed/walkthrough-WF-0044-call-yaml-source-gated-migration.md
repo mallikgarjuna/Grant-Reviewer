@@ -95,6 +95,9 @@ cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_review
 cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_api.py -k "structured_review and policy"
 ```
 
+Rerun status (strict upload-checkpoint pass, 2026-03-02):
+- Re-executed the full WF-0044 verification bundle above after checkpoint updates; all commands passed.
+
 ## Risks / Notes
 
 - DB-backed test commands require a `DATABASE_URL` whose database name includes `test`.
