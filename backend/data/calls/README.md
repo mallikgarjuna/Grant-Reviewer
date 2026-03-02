@@ -42,6 +42,12 @@ Guidelines for authoring call YAML that validates/ingests correctly:
 - WF-scoped copied source artifacts under `source_files/WF-<id>/`
 - Reusable starter templates under `templates/`
 
+## Node Numbering Convention (UI Labels)
+
+- Use `proposal_nodes[*].source_section` to preserve official section numbering for UI display.
+- Preferred forms: `1.b`, `2.a`, `3`, `B1`, `B1.I`.
+- Keep numbering source-grounded (from official call docs); do not invent section numbers.
+
 ## Source Retention Lifecycle (WF-0044)
 
 When source files are copied locally for source-gated authoring:

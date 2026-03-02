@@ -9,3 +9,4 @@
 - **2026-03-02 — WF-0044 traceability hardening:** Keep local source copies under `backend/data/calls/source_files/WF-0044/...` only as temporary workflow artifacts; durable traceability anchor is manifest provenance + SHA256.
 - **2026-03-02 — WF-0044 ID governance:** Baseline call re-authoring keeps `proposal_nodes[*].id` stable by default; if an ID must change, require explicit old→new mapping and WF decision-log reference.
 - **2026-03-02 — ERC SSOT override:** When user declares `wp_horizon-erc-2026_en.pdf` as ERC SSOT, treat it as primary source for criteria/elements and step-scope; retain ERC rules/guide/applicant docs as supplemental cross-check sources in manifests.
+- **2026-03-02 — UI section numbering:** `proposal_nodes[*].source_section` should carry display-ready numbering tokens when available (e.g., `1.b`, `2.a`, `B1`, `B1.I`) so structured form labels can render as `Title (section)`.

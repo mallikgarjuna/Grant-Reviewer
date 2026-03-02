@@ -41,6 +41,7 @@ Examples:
 - Every `proposal_nodes[*].node_expectations[*].evaluation_element_id` must reference an existing evaluation element.
 - `proposal_nodes[*].id` must be unique and stable across revisions.
 - Use `parent_logical_id` to encode hierarchy; do not encode hierarchy in IDs.
+- Populate `proposal_nodes[*].source_section` with source-grounded, display-ready section numbering when available (examples: `1.b`, `2.a`, `B1`, `B1.I`).
 
 ## V2 Enums You Must Respect
 

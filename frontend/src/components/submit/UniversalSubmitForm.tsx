@@ -167,10 +167,13 @@ export function UniversalSubmitForm() {
             ? ((await metadataResult.value.json()) as CallNodesMetadataResponse)
             : null;
         const metadataByLogicalId =
-          metadataPayload?.nodes?.reduce<Record<string, { title?: string | null }>>(
+          metadataPayload?.nodes?.reduce<
+            Record<string, { title?: string | null; sourceSection?: string | null }>
+          >(
             (acc, node) => {
               acc[node.logical_id] = {
                 title: node.title,
+                sourceSection: node.source_section,
               };
               return acc;
             },

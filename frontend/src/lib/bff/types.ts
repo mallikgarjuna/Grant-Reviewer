@@ -65,6 +65,7 @@ export type CallNodeMetadataDto = {
   logical_id: string;
   title: string | null;
   parent_logical_id: string | null;
+  source_section?: string | null;
   word_limit_min: number | null;
   word_limit_max: number | null;
 };

@@ -104,4 +104,49 @@ describe("buildRenderModel", () => {
       "Research Idea from Nodes",
     ]);
   });
+
+  it("appends normalized source section numbering when available", () => {
+    const result = buildRenderModel({
+      nodes: [
+        {
+          id: "node-1",
+          logical_id: "scientific_summary",
+          title: "Scientific summary",
+          parent_node_id: null,
+          node_type: "SECTION",
+          order_index: 1,
+          has_expectations: true,
+        },
+        {
+          id: "node-2",
+          logical_id: "research_proposal",
+          title: "Description of proposed research",
+          parent_node_id: null,
+          node_type: "SECTION",
+          order_index: 2,
+          has_expectations: true,
+        },
+      ],
+      metadataByLogicalId: {
+        scientific_summary: {
+          title: "Scientific summary",
+          sourceSection: "1b",
+        },
+        research_proposal: {
+          title: "Description of proposed research",
+          sourceSection: "2.a",
+        },
+      },
+    });
+
+    expect(result.state).toBe("ready");
+    if (result.state !== "ready") {
+      return;
+    }
+
+    expect(result.nodes.map((item) => item.label)).toEqual([
+      "Scientific summary (1.b)",
+      "Description of proposed research (2.a)",
+    ]);
+  });
 });
