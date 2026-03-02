@@ -1,0 +1,54 @@
+cases:
+  - case_id: prompt_only
+    surface: structured_api
+    enforcement_mode: PROMPT_ONLY
+    forbidden_term: insufficient budget
+    feedback_text: "The proposal has insufficient budget concerns."
+    expected_review_status: COMPLETED
+    expected_summary_convention: PROMPT_ONLY_NON_BLOCKING
+    expected_cards_count: 1
+
+  - case_id: post_check
+    surface: structured_api
+    enforcement_mode: POST_CHECK
+    forbidden_term: insufficient budget
+    feedback_text: "The proposal has insufficient budget concerns."
+    expected_review_status: COMPLETED
+    expected_summary_convention: POST_CHECK_WARNING
+    expected_cards_count: 1
+
+  - case_id: blocking
+    surface: structured_api
+    enforcement_mode: BLOCKING
+    forbidden_term: insufficient budget
+    feedback_text: "The proposal has insufficient budget concerns."
+    expected_review_status: FAILED
+    expected_summary_convention: POLICY_BLOCKING
+    expected_cards_count: 0
+
+  - case_id: prompt_only
+    surface: review_execution_core
+    enforcement_mode: PROMPT_ONLY
+    forbidden_term: insufficient budget
+    feedback_text: "The proposal has insufficient budget concerns."
+    expected_review_status: COMPLETED
+    expected_summary_convention: PROMPT_ONLY_NON_BLOCKING
+    expected_cards_count: 1
+
+  - case_id: post_check
+    surface: review_execution_core
+    enforcement_mode: POST_CHECK
+    forbidden_term: insufficient budget
+    feedback_text: "The proposal has insufficient budget concerns."
+    expected_review_status: COMPLETED
+    expected_summary_convention: POST_CHECK_WARNING
+    expected_cards_count: 1
+
+  - case_id: blocking
+    surface: review_execution_core
+    enforcement_mode: BLOCKING
+    forbidden_term: insufficient budget
+    feedback_text: "The proposal has insufficient budget concerns."
+    expected_review_status: FAILED
+    expected_summary_convention: POLICY_BLOCKING
+    expected_cards_count: 0

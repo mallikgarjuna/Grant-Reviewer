@@ -154,7 +154,7 @@ Verification Steps:
 Risks (if any):
 - Diverging policy-selection logic from single-snippet path can create inconsistent behavior.
 
-### [ ] Task 7 — Structured pipeline: deterministic POST_CHECK/BLOCKING enforcement
+### [x] Task 7 — Structured pipeline: deterministic POST_CHECK/BLOCKING enforcement
 
 Goal:
 Implement deterministic post-generation enforcement in structured pipeline v1 for `POST_CHECK` warnings and `BLOCKING` failures with no partial cards.

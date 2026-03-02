@@ -30,6 +30,7 @@ from app.services.review_execution_core import ReviewExecutionCore
 from app.services.reviewer_policy import (
     ReviewStage,
     ReviewerPolicyRule,
+    find_policy_violations,
     get_applicable_reviewer_policy_rules,
 )
 
@@ -40,6 +41,9 @@ ALIGNMENT_ELEMENT_IDS = {
     "elem_alignment_plan_credibility",
 }
 ALIGNMENT_REQUIRED_NODES = ("academic_profile", "key_outputs")
+STRUCTURED_SUMMARY_COMPLETED_PREFIX = "Structured review completed with"
+STRUCTURED_POLICY_BLOCKING_PREFIX = "POLICY_BLOCKING:"
+STRUCTURED_POLICY_WARNING_PREFIX = "Reviewer-policy warnings:"
 
 
 class StructuredReviewerService:
@@ -162,6 +166,7 @@ class StructuredReviewerService:
         ] = []
         request_expectations: list[dict[str, object]] = []
         prompt_policy_by_node: dict[str, list[dict[str, str]]] = {}
+        applicable_policy_by_node: dict[str, list[ReviewerPolicyRule]] = {}
         for node_logical_id, _ in nodes:
             node = node_by_logical_id.get(node_logical_id)
             if node is None:
@@ -175,6 +180,7 @@ class StructuredReviewerService:
                 node_logical_id=node_logical_id,
                 review_stage=review_stage,
             )
+            applicable_policy_by_node[node_logical_id] = applicable_rules
             prompt_policy = self._build_prompt_policy_payload(applicable_rules)
             if prompt_policy:
                 prompt_policy_by_node[node_logical_id] = prompt_policy
@@ -267,6 +273,29 @@ class StructuredReviewerService:
                 message=f"Unresolvable expectation ref: {sorted(set(unresolved))[0]}",
             )
 
+        feedback_texts_by_node: dict[str, list[str]] = {}
+        for card in result.review_cards:
+            feedback_texts_by_node.setdefault(card.node_logical_id, []).append(card.feedback)
+
+        blocking_policy_violations: list[str] = []
+        warning_policy_violations: list[str] = []
+        for node_logical_id, node_feedbacks in feedback_texts_by_node.items():
+            applicable_rules = applicable_policy_by_node.get(node_logical_id, [])
+            blocking, warning = find_policy_violations(
+                feedback_texts=node_feedbacks,
+                policy_rules=applicable_rules,
+            )
+            blocking_policy_violations.extend(blocking)
+            warning_policy_violations.extend(warning)
+        if blocking_policy_violations:
+            review.status = ReviewStatus.FAILED
+            review.overall_summary = (
+                f"{STRUCTURED_POLICY_BLOCKING_PREFIX} "
+                + "; ".join(blocking_policy_violations)
+            )
+            self.repository.update_review(review)
+            return review, []
+
         card_payloads: list[
             tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
         ] = list(not_assessable_payloads)
@@ -289,8 +318,13 @@ class StructuredReviewerService:
 
         review.status = ReviewStatus.COMPLETED
         review.overall_summary = (
-            f"Structured review completed with {len(cards)} findings via pipeline_v1."
+            f"{STRUCTURED_SUMMARY_COMPLETED_PREFIX} {len(cards)} findings via pipeline_v1."
         )
+        if warning_policy_violations:
+            review.overall_summary += (
+                f" {STRUCTURED_POLICY_WARNING_PREFIX} "
+                + "; ".join(warning_policy_violations)
+            )
         review.overall_rating = ReviewRating.NOTE
         self.repository.update_review(review)
         return review, cards
