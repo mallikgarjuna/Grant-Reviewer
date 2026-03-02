@@ -48,3 +48,32 @@ def test_dry_run_ingests_erc_cog_2026_full_canonical_v2(
     assert result["dry_run"] is True
     assert result["schema_version"] == "v2"
     assert result["source_path"] == "data/calls/canonical/erc/erc_cog_2026_full.yaml"
+
+
+@pytest.mark.no_db
+def test_dry_run_ingests_nwo_veni_2025_preproposal_with_wf0044_manifest_traceability(
+    monkeypatch,
+) -> None:
+    """NWO Veni dry-run should validate and expose WF-0044 source-copy traceability."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    result = ingest_call(
+        Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml"),
+        dry_run=True,
+    )
+
+    assert result["dry_run"] is True
+    assert result["schema_version"] == "v2"
+    assert (
+        result["source_path"]
+        == "data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml"
+    )
+
+    manifest = Path("data/calls/sources/nwo_veni_2025_preproposal.sources.md").read_text(
+        encoding="utf-8"
+    )
+    assert (
+        "Path (copied local): "
+        "`backend/data/calls/source_files/WF-0044/nwo_veni_2025_preproposal/"
+        in manifest
+    )

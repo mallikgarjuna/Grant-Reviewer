@@ -58,7 +58,7 @@ Verification Steps:
 Risks (if any):
 - Local DB fixture setup may need additional canonical call seed ordering.
 
-### [ ] Task 3 — Minimal-change refresh: NWO Veni call + manifest
+### [x] Task 3 — Minimal-change refresh: NWO Veni call + manifest
 
 Goal:
 Apply source-grounded minimal corrections to `nwo_veni_2025_preproposal` and refresh its manifest metadata without node-id churn.
