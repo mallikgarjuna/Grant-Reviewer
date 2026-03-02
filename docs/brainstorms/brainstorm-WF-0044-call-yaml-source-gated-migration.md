@@ -70,6 +70,20 @@ Contract notes / non-obvious constraints:
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-source-gated-migration.md` (Section 3)
 
+## 4. Rough Idea (Unstructured Thinking)
+
+- Use the existing call-yaml SSOT docs to drive a gated, per-call upload workflow:
+  - `docs/call-yaml/authoring-workflow.md` (living authoring spec)
+  - `docs/call-yaml/guidelines.md` (v2 schema/ingest rules + common mistakes)
+  - `backend/data/calls/templates/call_definition_v2_template.yaml` (starter template)
+  - Schema SSOT: `backend/app/schemas/call_definitions_v2.py`
+- Encode the per-call upload gate as a checklist section inside this brainstorm (no extra gate files).
+- Author canonical CoG at `backend/data/calls/canonical/erc/erc_cog_2026_full.yaml` with `funding_call.id/code = erc_cog_2026_full`.
+- Keep `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml` as a v1-shaped legacy mirror, but re-author its content from official sources and maintain a traceability manifest.
+- Universal structured review engine compatibility:
+  - Treat existing runtime tests (service + API) as the primary contract surface.
+  - When sources reveal missing/critical universal-engine details (policy constraints, stage gating, compliance semantics), capture them as explicit “engine-impact notes” and implement them only when they do not destabilize baseline call IDs/contracts.
+
 ## 5. Constraints
 
 - No expansion to P1 #13 (MSCA/ZonMw) unless explicitly pulled in.

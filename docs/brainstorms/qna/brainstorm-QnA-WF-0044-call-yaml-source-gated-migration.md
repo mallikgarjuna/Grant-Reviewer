@@ -123,3 +123,40 @@ Clarifications locked before WF minting:
 - C) Minimal internal notes only.
  > Recommendation: A.
  > **Selected: A**
+
+## Section 4 — Rough Idea Exploration (2026-03-02)
+
+**Q1: How should we structure the “upload gate” mechanics in artifacts?**
+- A) Add a per-call “Source Gate Checklist” section inside the WF-0044 brainstorm and keep it updated as we go.
+- B) Create a dedicated per-call gate file under `docs/workflow_gates/WF-0044/<call>.md`.
+- C) Track gates only in commit messages / PR description.
+ > Recommendation: A.
+ > **Selected: A**
+
+**Q2: Where should the new canonical file for CoG live and what should its id/code be?**
+- A) `backend/data/calls/canonical/erc/erc_cog_2026_full.yaml` with `funding_call.id: erc_cog_2026_full` and `funding_call.code: erc_cog_2026_full`.
+- B) `canonical/erc/erc_cog_2026_full_proposal.yaml` with stage `full_proposal`.
+- C) Keep it in `legacy/` first, move later.
+ > Recommendation: A.
+ > **Selected: A**
+
+**Q3: How do we handle the legacy mirror `erc_cog_2026_full_official.yaml` during re-authoring?**
+- A) Re-author content from sources but keep it v1 schema; add/refresh a `.sources.md` manifest for it anyway.
+- B) Freeze legacy; only author canonical.
+- C) Convert it into v2 as well.
+ > Recommendation: A.
+ > **Selected: A**
+
+**Q4: “Universal structured review engine compatibility” constraint: what should we treat as the primary contract surface?**
+- A) `backend/tests/test_structured_reviewer_service.py` + API tests as the contract; avoid changing baseline call logical IDs that those tests implicitly depend on.
+- B) Only schema/ingest are contract; runtime tests are secondary.
+- C) Add new contract tests now as part of Phase 0.
+ > Recommendation: A.
+ > **Selected: A**
+
+**Q5: When re-authoring baseline calls from official sources, what’s the stance if the current canonical YAML conflicts with the sources?**
+- A) Prefer minimal-change unless the conflict breaks ingest/schema or is clearly wrong; log discrepancies and defer “perfect alignment” unless required.
+- B) Always change YAML to match sources, even if it breaks compatibility.
+- C) Split into new call IDs to avoid changing existing ones.
+ > Recommendation: A.
+ > **Selected: A** (plus: capture any newly discovered info that is critical/useful for the universal structured review engine, without destabilizing existing contracts)
