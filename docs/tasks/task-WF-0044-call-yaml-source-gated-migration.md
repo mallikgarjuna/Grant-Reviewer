@@ -129,7 +129,7 @@ Verification Steps:
 Risks (if any):
 - Step-scoped guidance text is sensitive; accidental scope drift can affect policy behavior.
 
-### [ ] Task 6 — Structured pipeline: apply reviewer_policy scope at runtime
+### [x] Task 6 — Structured pipeline: apply reviewer_policy scope at runtime
 
 Goal:
 Ensure structured pipeline v1 resolves and applies call-definition `reviewer_policy` by stage/node scope for each submitted node.
