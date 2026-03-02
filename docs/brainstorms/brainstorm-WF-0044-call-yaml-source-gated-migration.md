@@ -107,6 +107,14 @@ Legend:
 Target requirement (WF-0044):
 - Wire call-definition `reviewer_policy` into structured pipeline v1 so call/agency-specific reviewer constraints are honored during structured review output (prompt-level + deterministic enforcement where applicable), without breaking existing runtime contracts.
 
+Acceptance tests (planned; implement in Phase 3):
+
+- **PROMPT_ONLY is injected:** For a call with `reviewer_policy.enforcement_mode=PROMPT_ONLY`, structured review execution must include a “Reviewer Policy” block in the prompt content sent to the LLM (or an equivalent engine-input field) for the applicable node/stage, and the review must complete successfully.
+- **POST_CHECK warns:** For a call with `reviewer_policy.enforcement_mode=POST_CHECK` + `forbidden_terms=["<term>"]`, if the returned feedback contains `<term>`, the structured review must still complete but record a deterministic warning signal (either in review summary and/or card metadata) that a reviewer-policy warning violation occurred.
+- **BLOCKING blocks deterministically:** For a call with `reviewer_policy.enforcement_mode=BLOCKING` + `forbidden_terms=["<term>"]`, if the returned feedback contains `<term>`, structured review must fail with a stable, contract-safe error summary/category (no partial cards) after bounded retry attempts.
+- **Stage + node scoping respected:** `applies_to_stage` and `applies_to_node_ids` must filter which rules apply per node review within the same structured request.
+- **No regression:** Existing structured endpoint contract tests (WF-0043 surfaces) must still pass for `nwo_veni_2025_preproposal`.
+
 ## 5. Constraints
 
 - No expansion to P1 #13 (MSCA/ZonMw) unless explicitly pulled in.
