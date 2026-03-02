@@ -1212,3 +1212,13 @@
 - **Why**: Keeps pre-merge trust checks fast and reproducible without new tooling.
 - **Tradeoff**: Test naming/marker discipline becomes part of maintenance burden.
 - **Status**: Approved.
+
+## Date: 2026-03-02 (WF-0044: Source-Gated Call YAML Re-Authoring + ERC CoG Canonical v2 Migration)
+
+### AD 44.1: Enforce call-definition reviewer_policy in structured pipeline v1
+- **WF ID**: WF-0044
+- **Context**: Call/agency-specific `reviewer_policy` rules are encoded in v2 YAML and are applied in the single-snippet flow (prompt injection + deterministic forbidden-term post-checks). Structured pipeline v1 is currently driven primarily by DB expectations and the engine request snapshot, and does not automatically enforce reviewer_policy.
+- **Decision**: Wire call-definition `reviewer_policy` into structured pipeline v1 so structured review outputs honor call/agency-specific reviewer constraints. Apply at least prompt-level guidance, and deterministic enforcement when rules are `POST_CHECK`/`BLOCKING` and have `forbidden_terms`, without breaking existing runtime contracts.
+- **Why**: Prevents “policy drift” where agency-specific reviewer instructions exist in YAML but are silently ignored in structured outputs.
+- **Tradeoff**: Expands structured pipeline surface; requires careful contract tests to avoid regressions and false blocking.
+- **Status**: Approved (Phase 0 decision; implement in Phase 3).

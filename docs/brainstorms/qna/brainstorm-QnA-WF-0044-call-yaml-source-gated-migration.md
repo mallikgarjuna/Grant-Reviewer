@@ -177,6 +177,10 @@ Clarifications locked before WF minting:
  > Recommendation: B.
  > **Selected: B**
 
+## Note — Runtime Utilization Gap (2026-03-02)
+
+We explicitly tracked that v2 call-definition `reviewer_policy` rules are applied in the single-snippet flow (prompt injection + deterministic forbidden-term post-checks), but structured pipeline v1 does not currently enforce them. WF-0044 scope includes wiring reviewer_policy into structured pipeline v1 so call/agency-specific reviewer constraints affect structured review outputs.
+
 **Q3: For the upload gate, what is the minimum acceptable “assessment-criteria document(s)” for each call?**
 - A) Exactly 1 criteria document per call.
 - B) As many as needed, but must include (1) evaluation criteria/elements and (2) any enforceable reviewer-policy constraints; may be 2+ documents of any type (PDF/DOCX/MD/TXT/etc.).

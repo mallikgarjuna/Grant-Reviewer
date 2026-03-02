@@ -1,13 +1,17 @@
 # WF-0044 — P1 #12: Source-Gated Call YAML Re-Authoring + ERC CoG Canonical v2 Migration
 
 Artifact: brainstorm
-Version: v0.0
-Status: Not started
+Version: v0.1
+Status: Draft
 Last Updated: 2026-03-02
 
 Q&A transcript (archived): docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-source-gated-migration.md
 
 ---
+
+## Changelog
+
+- v0.1 (2026-03-02): Capture scope lock + gating rules + runtime utilization matrix; add explicit requirement to wire `reviewer_policy` into structured pipeline v1.
 
 ## Repo Reality Snapshot (Read-Only) (2026-03-02)
 
@@ -83,6 +87,24 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-sour
 - Universal structured review engine compatibility:
   - Treat existing runtime tests (service + API) as the primary contract surface.
   - When sources reveal missing/critical universal-engine details (policy constraints, stage gating, compliance semantics), capture them as explicit “engine-impact notes” and implement them only when they do not destabilize baseline call IDs/contracts.
+
+## Runtime Utilization Matrix (Current vs Target)
+
+Purpose: ensure call- and agency-specific rules encoded in YAML are actually applied during review generation and output.
+
+Legend:
+- `Yes` = enforced/used today
+- `Partial` = present but not enforced end-to-end
+- `Target` = required outcome for WF-0044
+
+| Surface | Evaluation criteria/elements + expectations | `reviewer_policy` prompt injection | `reviewer_policy` deterministic post-check | Node `content_constraints` / `compliance_rules` |
+| --- | --- | --- | --- | --- |
+| Single-snippet review (`ReviewerService.generate_review`) | Yes (DB expectations) | Yes (call definition JSON -> prompt) | Yes (POST_CHECK/BLOCKING via forbidden_terms) | Partial (prompt guidance from DB node only; constraints mostly UI-driven) |
+| Structured pipeline v1 (`StructuredReviewerService.generate_structured_review_pipeline_v1`) | Yes (DB expectations -> engine snapshot) | Partial (not wired from call definition today) | Partial (not wired from call definition today) | Partial (context/constraints not currently part of engine snapshot) |
+| UI/node metadata (`CallDefinitionService.get_hydrated_nodes`) | N/A | N/A | N/A | Yes (hydrated from call definition JSON by node logical id) |
+
+Target requirement (WF-0044):
+- Wire call-definition `reviewer_policy` into structured pipeline v1 so call/agency-specific reviewer constraints are honored during structured review output (prompt-level + deterministic enforcement where applicable), without breaking existing runtime contracts.
 
 ## 5. Constraints
 
