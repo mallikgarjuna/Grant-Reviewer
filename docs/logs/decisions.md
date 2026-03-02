@@ -1238,3 +1238,27 @@
 - **Why**: Keeps trust-critical behavior deterministic and testable across policy modes.
 - **Tradeoff**: Strict blocking may reduce degraded-success behavior in violation scenarios.
 - **Status**: Approved.
+
+### AD 44.4: Source-file retention lifecycle is temporary-local with hash-first durability
+- **WF ID**: WF-0044
+- **Context**: Dual-path traceability requires local source copies during authoring, but indefinite local retention is ambiguous.
+- **Decision**: Treat `backend/data/calls/source_files/WF-0044/...` as temporary workflow storage: keep through WF completion/review, then move to approved secure storage or purge local copies once manifest hashes/provenance are verified.
+- **Why**: Clarifies operational hygiene while preserving reproducible traceability through manifest hashes.
+- **Tradeoff**: Future reproductions require secure-storage access when local copies are purged.
+- **Status**: Approved.
+
+### AD 44.5: Node-ID changes require explicit governance artifacts
+- **WF ID**: WF-0044
+- **Context**: Minimal-change re-authoring allows rare `proposal_nodes[*].id` changes when source contradictions force correction, which can break downstream assumptions.
+- **Decision**: Any node-ID change must include a WF decision-log reference and explicit old→new ID mapping note in implementation artifacts before merge.
+- **Why**: Prevents silent identifier drift and preserves migration traceability for runtime/UI contracts.
+- **Tradeoff**: Adds process overhead to rare correction cases.
+- **Status**: Approved.
+
+### AD 44.6: WF-0044 policy tests require deterministic selector namespace
+- **WF ID**: WF-0044
+- **Context**: Contract verification becomes brittle when policy tests are not easily selectable by a stable naming convention.
+- **Decision**: Reserve selector namespace `wf0044_policy_<surface>_<case_id>` for WF-0044 policy-contract tests, including no-partial-card assertions for blocking failures.
+- **Why**: Keeps verification repeatable and fast for pre-merge checks.
+- **Tradeoff**: Requires disciplined naming upkeep in tests.
+- **Status**: Approved.

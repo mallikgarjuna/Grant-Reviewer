@@ -1,7 +1,7 @@
 # WF-0044 — P1 #12: Source-Gated Call YAML Re-Authoring + ERC CoG Canonical v2 Migration
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-02
 
@@ -67,6 +67,9 @@ Last Updated: 2026-03-02
 - FR9 (US4): Existing structured endpoint contracts for `nwo_veni_2025_preproposal` must remain non-regressed.
 - FR10 (US2): Primary target acceptance for `erc_cog_2026_full` includes one successful local structured-review API request returning review cards.
 - FR11 (US4): `BLOCKING` reviewer-policy violations in structured pipeline must emit a stable, contract-safe failure category and return no partial cards.
+- FR12 (US1, US3): Local copied source files under `backend/data/calls/source_files/WF-0044/...` must follow a retention rule: keep through WF completion/review, then move to approved secure storage or purge local copies after manifests and hashes are verified.
+- FR13 (US3): Any baseline `proposal_nodes[*].id` change requires explicit WF-0044 decision-log entry and an old→new ID mapping note in implementation artifacts before merge.
+- FR14 (US4): WF-0044 policy-contract tests must use deterministic selector naming (`wf0044_policy_<surface>_<case_id>`) and include an assertion that blocking-failure payloads contain no review cards.
 
 ## 5. Data & API Contracts
 
@@ -80,6 +83,9 @@ Last Updated: 2026-03-02
   - `BLOCKING`: deterministic failure signal and no partial cards on violation.
 - Contract C6 (US4, FR9, FR10): API-level behavior remains stable for existing call contracts; new CoG call code must satisfy the same structured response contract shape.
 - Contract C7 (US2, US4, FR10, FR11): Structured API acceptance checks target `POST /api/structured-review` with `call_code=erc_cog_2026_full`; `BLOCKING` policy failures return deterministic failure semantics without partial card payloads.
+- Contract C8 (US1, FR12): Source-file retention lifecycle is explicit: local copies are temporary workflow artifacts, with manifest hashes as durable traceability anchors.
+- Contract C9 (US3, FR13): Node-ID stability is default; if an ID must change, implementation must carry a decision-log reference and migration mapping note.
+- Contract C10 (US4, FR14): Blocking-policy API failure response must include no cards (missing/empty cards list per existing contract shape) and must be covered by deterministic WF-0044 test selectors.
 
 ## 6. Components / Modules
 
@@ -92,7 +98,7 @@ Last Updated: 2026-03-02
 - `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`
   - Responsibility: minimal-change re-authoring from official sources. (FR5, FR6)
 - `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml`
-  - Responsibility: legacy mirror retained but refreshed for traceability parity. (FR5)
+  - Responsibility: legacy mirror retained but refreshed for traceability parity only (not behavior-parity expansion scope). (FR5)
 - `backend/data/calls/sources/*.sources.md`
   - Responsibility: per-call traceability manifests with required metadata. (FR2, FR3)
 - Structured review engine service modules (`backend/app/services/...structured...`)
@@ -132,6 +138,12 @@ Deep module boundaries:
   - Prove-it tests: successful minimal-node review-card response for happy path and deterministic no-partial-cards failure path for `BLOCKING` violations.
 - TDD seam S3 (US1, FR1-FR3): manifest completeness and source-gate checklist verification.
   - Prove-it checks: each scoped call has required source classes and manifest fields with hash + usage labeling.
+- Verification command checklist (US2, US3, US4; FR6, FR14):
+  - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
+  - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml --dry-run`
+  - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml --dry-run`
+  - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_cog_2026_full.yaml --dry-run`
+  - `cd backend && uv run pytest -k wf0044_policy_`
 
 ## 9. Telemetry (Minimal)
 
@@ -154,3 +166,4 @@ Deep module boundaries:
 
 - v0.1 (2026-03-02): Initial PRD from brainstorm.
 - v0.2 (2026-03-02): Applied risk-audit edits for deterministic structured-policy failure contract, explicit API acceptance seam, and locked MVP defaults; marked Ready for Tasks.
+- v0.3 (2026-03-02): Applied adversarial-pass tightening: source-file retention lifecycle, node-ID change governance, deterministic WF-0044 test selector contract, explicit verification checklist, and legacy mirror parity clarification.
