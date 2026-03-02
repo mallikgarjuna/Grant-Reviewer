@@ -42,6 +42,18 @@ class Wf0043PolicyCase(TypedDict):
     feedback_text: str
 
 
+class Wf0044PolicyCase(TypedDict):
+    case_id: str
+    surface: str
+    selector: str
+    enforcement_mode: str
+    forbidden_term: str
+    feedback_text: str
+    expected_review_status: str
+    expected_summary_convention: str
+    expected_cards_count: int
+
+
 def _load_wf0043_policy_cases() -> list[Wf0043PolicyCase]:
     fixture = yaml.safe_load(
         Path("tests/fixtures/wf_0043_contract_matrix.yaml").read_text(encoding="utf-8")
@@ -58,6 +70,24 @@ def _load_wf0043_policy_cases() -> list[Wf0043PolicyCase]:
 
 def _wf0043_policy_case_id(value: str) -> str:
     return f"wf0043_contract_single_snippet_policy_{value}"
+
+
+def _load_wf0044_policy_cases() -> list[Wf0044PolicyCase]:
+    fixture = yaml.safe_load(
+        Path("tests/fixtures/wf_0044_policy_matrix.yaml").read_text(encoding="utf-8")
+    )
+    raw_cases = fixture.get("cases", [])
+    if not isinstance(raw_cases, list):
+        return []
+    return [
+        case
+        for case in raw_cases
+        if isinstance(case, dict) and case.get("surface") == "review_execution_core"
+    ]
+
+
+def _wf0044_policy_case_id(value: str, *, surface: str) -> str:
+    return f"wf0044_policy_{surface}_{value}"
 
 
 class EchoExpectationLLMClient:
@@ -390,6 +420,65 @@ def test_wf0043_contract_single_snippet_policy_matrix_coverage() -> None:
     for case in cases:
         assert case["surface"] == "single_snippet_policy"
         assert isinstance(case["feedback_text"], str) and bool(case["feedback_text"].strip())
+
+
+@pytest.mark.parametrize(
+    "case",
+    _load_wf0044_policy_cases(),
+    ids=lambda case: _wf0044_policy_case_id(
+        case["case_id"], surface="review_execution_core"
+    ),
+)
+def test_wf0044_policy_review_execution_core_modes(case: Wf0044PolicyCase) -> None:
+    rule = ReviewerPolicyRule(
+        id=f"wf0044_{case['case_id']}",
+        applies_to_stage="STEP_1",
+        applies_to_node_ids=(),
+        rule_type="criterion_scope",
+        instruction="WF-0044 deterministic policy test rule",
+        severity="WARNING",
+        enforcement_mode=case["enforcement_mode"],
+        forbidden_terms=(case["forbidden_term"],),
+    )
+    core = ReviewExecutionCore(
+        llm_client=PolicyTermLLMClient(case["feedback_text"]),
+        timeout_seconds=0.5,
+    )
+
+    result = core.execute_assessable_node(
+        node=_build_node(),
+        snippet_text="Some snippet text",
+        expectations=_build_expectations(count=1),
+        reviewer_policy_rules=[rule],
+    )
+
+    if case["enforcement_mode"] == "BLOCKING":
+        assert result.failure is not None
+        assert result.failure.category == ExecutionFailureCategory.POLICY_BLOCKING
+        assert result.feedbacks == []
+        assert case["expected_review_status"] == "FAILED"
+        assert case["expected_summary_convention"] == "POLICY_BLOCKING"
+        return
+
+    assert result.failure is None
+    assert len(result.feedbacks) == case["expected_cards_count"]
+    assert case["expected_review_status"] == "COMPLETED"
+    if case["enforcement_mode"] == "POST_CHECK":
+        assert len(result.warning_violations) == 1
+        assert case["expected_summary_convention"] == "POST_CHECK_WARNING"
+        return
+
+    assert result.warning_violations == []
+    assert case["expected_summary_convention"] == "PROMPT_ONLY_NON_BLOCKING"
+
+
+def test_wf0044_policy_review_execution_core_matrix_coverage() -> None:
+    cases = _load_wf0044_policy_cases()
+    case_ids = {case["case_id"] for case in cases}
+    assert case_ids == {"prompt_only", "post_check", "blocking"}
+    for case in cases:
+        assert case["surface"] == "review_execution_core"
+        assert case["selector"].startswith("wf0044_policy_review_execution_core_")
 
 
 def test_core_emits_telemetry_start_complete() -> None:

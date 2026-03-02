@@ -179,7 +179,7 @@ Verification Steps:
 Risks (if any):
 - If enforcement occurs after persistence, partial-card leakage can violate contract.
 
-### [ ] Task 8 — Contract matrix fixture update for WF-0044 policy selectors
+### [x] Task 8 — Contract matrix fixture update for WF-0044 policy selectors
 
 Goal:
 Add WF-0044 policy contract fixture cases covering `PROMPT_ONLY`, `POST_CHECK`, and `BLOCKING` for structured surface.
