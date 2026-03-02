@@ -1,8 +1,8 @@
 # WF-0044 — P1 #12: Source-Gated Call YAML Re-Authoring + ERC CoG Canonical v2 Migration
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-02
 
 Q&A transcript (archived): docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-source-gated-migration.md
@@ -12,6 +12,7 @@ Q&A transcript (archived): docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml
 ## Changelog
 
 - v0.1 (2026-03-02): Capture scope lock + gating rules + runtime utilization matrix; add explicit requirement to wire `reviewer_policy` into structured pipeline v1.
+- v0.2 (2026-03-02): Resolve Phase 0.2 blockers: define “minimal-change re-authoring”, add planned verification commands, and lock applicability tagging approach.
 
 ## Repo Reality Snapshot (Read-Only) (2026-03-02)
 
@@ -58,7 +59,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-sour
 
 Contract notes / non-obvious constraints:
 - **Acceptance is staged for primary target**: for canonical v2 `erc_cog_2026_full`, require (1) `--dry-run` passes, (2) real local DB ingest succeeds, and (3) at least one structured review request can run end-to-end locally using that call code. (See Q&A Section 2 Q1.)
-- **Baseline calls: minimal-change policy**: for `nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`, only change YAML to fix schema/ingest breakage and preserve compatibility with the universal structured review engine outputs/contracts. (See Q&A Section 2 Q2.)
+- **Baseline calls: minimal-change re-authoring**: for `nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`, re-authoring means (1) refresh traceability from official sources, and (2) apply targeted corrections only when sources clearly contradict the current YAML, while preserving `proposal_nodes[*].id` and universal structured review engine contracts. Any behavior-affecting change requires explicit notes + verification. (See Q&A Part B Clarifications Q1.)
 - **Baseline node ID stability**: keep existing `proposal_nodes[*].id` stable unless clearly wrong. (See Q&A Section 2 Q3.)
 - **Traceability minimum**: each `.sources.md` includes `Path`, `SHA256`, `Used for`, plus official URL/source page (if available) and downloaded/provided date. (See Q&A Section 2 Q4.)
 - **Do not commit PDFs/DOCX**: keep local copied sources gitignored; still record SHA256 + local path(s) in manifests. (See Q&A Section 2 Q5.)
@@ -124,6 +125,27 @@ Contract notes / non-obvious constraints:
 Note: current baseline decision is dry-run + local DB ingest; pytest is optional unless needed for engine-compat confidence.
 
 - How we represent “pattern applicability” in `docs/call-yaml/` (e.g., agency-scoped notes, or explicitly labeled “ERC-only”, “NWO-only”, “general” patterns) to avoid over-generalizing from a single call.
+
+---
+
+## Verification Commands (Planned; Local)
+
+Baseline (all 3 must pass):
+
+- `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
+- `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml --dry-run`
+- `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml --dry-run`
+
+Baseline (real DB ingest into local Postgres dev DB):
+
+- Set `DATABASE_URL` to local Postgres dev DB URL (project standard).
+- Run the same three calls without `--dry-run`.
+
+Primary target acceptance (erc_cog_2026_full):
+
+- `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_cog_2026_full.yaml --dry-run`
+- Ingest into local Postgres dev DB (no Docker).
+- One structured-review API request (minimal node payload) returns review cards for `call_code=erc_cog_2026_full`.
 
 ## 7. MVP Definition
 

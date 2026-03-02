@@ -181,6 +181,16 @@ Clarifications locked before WF minting:
 
 We explicitly tracked that v2 call-definition `reviewer_policy` rules are applied in the single-snippet flow (prompt injection + deterministic forbidden-term post-checks), but structured pipeline v1 does not currently enforce them. WF-0044 scope includes wiring reviewer_policy into structured pipeline v1 so call/agency-specific reviewer constraints affect structured review outputs.
 
+## PART B Clarifications (2026-03-02)
+
+User selected “go with recommendations” for the Part B clarification set:
+
+- Q1: Selected B (traceability refresh + targeted corrections when sources clearly contradict; preserve node IDs; explicit verification notes).
+- Q2: Selected A (local Postgres dev DB URL, no Docker).
+- Q3: Selected A (one structured-review API request with minimal node payload that returns review cards).
+- Q4: Selected B (per call under WF: `backend/data/calls/source_files/WF-0044/<call_code>/...`).
+- Q5: Selected A (tag applicability in docs as `[ERC-only]`, `[NWO-only]`, `[General]`).
+
 **Q3: For the upload gate, what is the minimum acceptable “assessment-criteria document(s)” for each call?**
 - A) Exactly 1 criteria document per call.
 - B) As many as needed, but must include (1) evaluation criteria/elements and (2) any enforceable reviewer-policy constraints; may be 2+ documents of any type (PDF/DOCX/MD/TXT/etc.).
