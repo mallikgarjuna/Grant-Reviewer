@@ -431,8 +431,8 @@ describe("UniversalSubmitForm", () => {
     render(<UniversalSubmitForm />);
 
     expect(await screen.findByText("Some calls were hidden due to config loading issues.")).toBeInTheDocument();
-    expect(screen.getByRole("combobox")).toHaveTextContent("call_1 - Call 1");
-    expect(screen.getByRole("combobox")).not.toHaveTextContent("call_2 - Call 2");
+    expect(screen.getByRole("combobox")).toHaveTextContent("Call 1");
+    expect(screen.getByRole("combobox")).not.toHaveTextContent("Call 2");
   });
 
   it("shows unsupported state for nested node calls", async () => {
