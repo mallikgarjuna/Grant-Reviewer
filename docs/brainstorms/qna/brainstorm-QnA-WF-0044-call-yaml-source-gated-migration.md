@@ -160,3 +160,40 @@ Clarifications locked before WF minting:
 - C) Split into new call IDs to avoid changing existing ones.
  > Recommendation: A.
  > **Selected: A** (plus: capture any newly discovered info that is critical/useful for the universal structured review engine, without destabilizing existing contracts)
+
+## Section 5 — Constraints (2026-03-02)
+
+**Q1: “Engine-critical info” discovery: where do we record it when sources reveal something we missed originally?**
+- A) Append an “Engine-impact notes” section inside the WF-0044 brainstorm only.
+- B) Log it in `docs/logs/decisions.md` with a WF-0044 entry + link from brainstorm.
+- C) Add it to `docs/memory/` files (when it’s a recurring gotcha/pattern).
+ > Recommendation: B (and optionally also summarize in brainstorm).
+ > **Selected: B + C**
+
+**Q2: Baseline-call compatibility: are we allowed to change behavior-affecting fields (e.g., `reviewer_policy`, `evaluation_stage`, compliance severities) if sources show they’re wrong?**
+- A) Only if needed to make ingestion/validation pass.
+- B) Allowed if it improves correctness, but must keep node IDs stable and preserve universal-engine runtime contracts; any behavior changes require explicit notes + verification.
+- C) Always update to match sources even if it breaks tests; we’ll fix tests later.
+ > Recommendation: B.
+ > **Selected: B**
+
+**Q3: For the upload gate, what is the minimum acceptable “assessment-criteria document(s)” for each call?**
+- A) Exactly 1 criteria document per call.
+- B) As many as needed, but must include (1) evaluation criteria/elements and (2) any enforceable reviewer-policy constraints; may be 2+ documents of any type (PDF/DOCX/MD/TXT/etc.).
+- C) Anything you upload is fine; we won’t gate on content completeness.
+ > Recommendation: B.
+ > **Selected: B** (explicitly not fixated on PDF file type)
+
+**Q4: Are we allowed to update `docs/call-yaml/authoring-workflow.md` / `docs/call-yaml/guidelines.md` within this WF if sources force new universal patterns?**
+- A) No, keep WF limited to call YAMLs only.
+- B) Yes, but only small surgical updates (1–10 lines) when we learn something generalizable.
+- C) Yes, freely refactor the docs.
+ > Recommendation: B.
+ > **Selected: B** (note: not all patterns apply to all calls; capture applicability/limits when updating)
+
+**Q5: Strictness of “STOP and ask for uploads before authoring each call YAML”: does “authoring” include creating an empty YAML skeleton/template file?**
+- A) Yes: no file creation/edits at all before uploads.
+- B) No: we can create skeleton placeholders and TODO blocks, but no substantive content derived from sources until uploads.
+- C) Only applies to criteria/elements; structure can be drafted without sources.
+ > Recommendation: B.
+ > **Selected: B**

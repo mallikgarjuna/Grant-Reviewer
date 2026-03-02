@@ -89,11 +89,19 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-sour
 - No expansion to P1 #13 (MSCA/ZonMw) unless explicitly pulled in.
 - Keep changes narrowly scoped to call definitions, ingestion/validation, and traceability.
 
+Contract notes / non-obvious constraints:
+- Engine-critical discoveries from sources must be recorded in `docs/logs/decisions.md` (WF-linked) and in `docs/memory/` when generalizable/recurring.
+- Upload gate accepts official documents in any file type as needed (PDF/DOCX/MD/TXT/etc.); require completeness of content (criteria/elements + enforceable reviewer-policy constraints), not a specific file extension.
+- We may update `docs/call-yaml/authoring-workflow.md` / `docs/call-yaml/guidelines.md` with small surgical changes when we learn a generalizable pattern, explicitly noting applicability limits (not all patterns apply to all calls/agencies).
+- “STOP for uploads” allows creating skeleton YAML placeholders/TODOs, but forbids substantive authoring derived from sources until those sources are uploaded and traced.
+
 ## Open Questions / Deferred
 
 - Whether to commit `backend/data/calls/source_files/WF-0044/...` into git or keep it gitignored while still hashing and referencing the local copy path.
 - Whether baseline validation additionally requires targeted pytest selectors (vs ingest-only).
 Note: current baseline decision is dry-run + local DB ingest; pytest is optional unless needed for engine-compat confidence.
+
+- How we represent “pattern applicability” in `docs/call-yaml/` (e.g., agency-scoped notes, or explicitly labeled “ERC-only”, “NWO-only”, “general” patterns) to avoid over-generalizing from a single call.
 
 ## 7. MVP Definition
 
