@@ -1,8 +1,8 @@
 ---
 title: "Funding Call YAML Files"
-version: "1.1"
+version: "1.2"
 status: "Active"
-updated: "2026-02-28"
+updated: "2026-03-02"
 ---
 
 # Funding Call YAML Files
@@ -39,7 +39,16 @@ Guidelines for authoring call YAML that validates/ingests correctly:
 - Legacy/superseded YAMLs under `legacy/`
 - Design/authoring notes under `notes/`
 - Source traceability manifests under `sources/`
+- WF-scoped copied source artifacts under `source_files/WF-<id>/`
 - Reusable starter templates under `templates/`
+
+## Source Retention Lifecycle (WF-0044)
+
+When source files are copied locally for source-gated authoring:
+- Keep copied files through WF implementation and technical review gates.
+- Verify manifest metadata (`Path`, `SHA256`, `Used for`, provenance/date) before closeout.
+- After WF completion, move retained copies to secure long-term storage or purge local copies that are not required in-repo.
+- Keep manifests committed even when copied binaries are not retained in git.
 
 ## Test Files
 

@@ -201,7 +201,7 @@ Verification Steps:
 Risks (if any):
 - Reusing the WF-0043 fixture file can cause accidental collisions in selector IDs.
 
-### [ ] Task 9 — Verification sweep + retention lifecycle notes
+### [x] Task 9 — Verification sweep + retention lifecycle notes
 
 Goal:
 Run and document WF-0044 verification bundle and finalize retention/lifecycle notes for local source copies.
