@@ -82,7 +82,7 @@ Verification Steps:
 Risks (if any):
 - Hidden ID drift from manual edits can break downstream expectations.
 
-### [ ] Task 4 — Minimal-change refresh: NWO Vidi call + manifest
+### [x] Task 4 — Minimal-change refresh: NWO Vidi call + manifest
 
 Goal:
 Apply source-grounded minimal corrections to `nwo_vidi_2025_full_proposal` and refresh its manifest metadata.

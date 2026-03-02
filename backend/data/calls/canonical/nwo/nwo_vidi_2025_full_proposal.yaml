@@ -7,6 +7,10 @@
 # - Vidi-2025-Full-proposal-form.docx (proposal-node structure + constraints)
 # - Call-for-Proposals-Vidi-2025_Eng.pdf (DORA + assessment criteria + deadlines)
 #
+# WF-0044 refresh note:
+# - Source manifest now tracks origin + copied-local retention paths under
+#   backend/data/calls/source_files/WF-0044/nwo_vidi_2025_full_proposal/.
+#
 funding_agency:
   id: nwo
   name: Dutch Research Council (NWO)
