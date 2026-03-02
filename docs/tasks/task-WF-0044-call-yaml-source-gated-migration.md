@@ -1,7 +1,7 @@
 # WF-0044 — P1 #12: Source-Gated Call YAML Re-Authoring + ERC CoG Canonical v2 Migration
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-02
 
@@ -13,16 +13,18 @@ Goal:
 Deliver a tracer bullet proving `erc_cog_2026_full` can be authored in canonical v2 format, traced to sources, and validated via ingest dry-run.
 Slice: tracer-bullet
 User Stories: US1, US2
-PRD Requirements: FR1, FR2, FR3, FR4, FR6
+PRD Requirements: FR1, FR2, FR3, FR4, FR5, FR6
 Depends on: none
 Enables: Task 2, Task 6
 Parallelizable: no
 Files to modify:
 - `backend/data/calls/canonical/erc/erc_cog_2026_full.yaml`
+- `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml`
 - `backend/data/calls/sources/erc_cog_2026_full.sources.md`
 - `backend/tests/test_ingest_call_dry_run.py`
 Acceptance Criteria:
 - Canonical file `erc_cog_2026_full.yaml` exists and is v2-valid (no mixed v1 keys).
+- Legacy mirror `erc_cog_2026_full_official.yaml` is refreshed for traceability parity only (no behavior expansion).
 - Source manifest includes both source classes (application form + evaluation criteria elements) with required metadata fields.
 - Manifest entries include both origin context and copied-local path under `backend/data/calls/source_files/WF-0044/...`.
 - Dry-run ingest test explicitly validates `erc_cog_2026_full`.
@@ -229,3 +231,4 @@ Risks (if any):
 
 - v0.1 (2026-03-02): Initial task breakdown from PRD.
 - v0.2 (2026-03-02): Applied Phase 2.2 review edits (FR3 dual-path traceability explicitness, dedicated WF-0044 policy matrix fixture, clearer RED test targets); marked Ready for Implementation.
+- v0.3 (2026-03-02): Applied adversarial-pass delta by adding explicit legacy CoG mirror parity coverage (FR5) to tracer-bullet task; kept Ready for Implementation.
