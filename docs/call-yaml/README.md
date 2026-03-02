@@ -65,6 +65,18 @@ If official sources reveal something new that is critical/useful for the univers
 
 Important: not all patterns apply to all agencies/calls; treat these docs as guidance + gates, not as a claim that every call has the same structure/criteria semantics.
 
+## When To Update Schema/Template SSOTs
+
+Sometimes a “universal pattern” requires changes beyond call YAML authoring:
+
+- Update `backend/app/schemas/call_definitions_v2.py` (schema SSOT) only if:
+  - the pattern cannot be represented cleanly with existing fields/enums, and
+  - it is truly cross-call (not agency-specific), and
+  - we are willing to treat it as a versioned contract change (ingestion + validation + tests).
+- Update `backend/data/calls/templates/call_definition_v2_template.yaml` (starter template) if:
+  - the pattern is broadly applicable and will prevent repeated authoring mistakes, and
+  - it can be expressed with the current schema without encoding agency-specific assumptions.
+
 ## Compatibility note
 
 Legacy doc paths remain as pointer files:
