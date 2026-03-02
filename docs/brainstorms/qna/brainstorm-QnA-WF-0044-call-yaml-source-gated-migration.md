@@ -49,3 +49,40 @@ Clarifications locked before WF minting:
 - C) Re-author baseline calls first (from uploaded sources), then do CoG migration.
  > Recommendation: B.
  > **Selected: B**
+
+## Section 2 — Desired Outcome (2026-03-02)
+
+**Q1: What is the minimum “canonical v2 migration done” signal for `erc_cog_2026_full`?**
+- A) YAML exists + `ingest_call.py --dry-run` passes.
+- B) Dry-run passes + real DB ingest succeeds into local non-prod DB.
+- C) DB ingest succeeds + we can run at least 1 structured review request end-to-end locally using that call code.
+ > Recommendation: B.
+ > **Selected: A + B + C** (treat as staged DoD: A/B as required gates; C as final acceptance for WF completion)
+
+**Q2: For the “baseline calls” (`nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`), what are we allowed to change?**
+- A) No YAML changes allowed; only validate current state.
+- B) YAML changes allowed only to fix validation/ingest breakage; otherwise keep content stable.
+- C) Full re-author from official sources even if it changes node IDs/elements, as long as it validates.
+ > Recommendation: B.
+ > **Selected: B** (with additional constraint: keep compatibility with the universal structured review engine outputs/contracts)
+
+**Q3: Node ID stability constraint for re-authoring (baseline calls):**
+- A) Keep all existing `proposal_nodes[*].id` stable unless an ID is clearly wrong.
+- B) IDs may change freely if more “official aligned”.
+- C) Keep IDs stable, but allow adding new nodes/elements as needed.
+ > Recommendation: A.
+ > **Selected: A**
+
+**Q4: Traceability “minimum required fields” for each `.sources.md` in this WF:**
+- A) `Path` + `SHA256` + `Used for` mapping only.
+- B) A + add “official URL” (or source page) and `Downloaded/Provided date`.
+- C) B + page/section citations for every mapped YAML field.
+ > Recommendation: B.
+ > **Selected: B**
+
+**Q5: Source-file handling: do you want the local copied sources (`backend/data/calls/source_files/WF-0044/...`) committed to git?**
+- A) Yes, commit them.
+- B) No, keep them gitignored; manifests still record SHA256 + local path, and external/original context when available.
+- C) Commit only small text sources; ignore PDFs/DOCX.
+ > Recommendation: B.
+ > **Selected: B**

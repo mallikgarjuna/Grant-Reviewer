@@ -44,12 +44,20 @@ Contract notes / non-obvious constraints:
 - **One traceability manifest per call**: keep a single `backend/data/calls/sources/<call>.sources.md` covering both application-form + criteria sources. (See Q&A Section 1 Q4.)
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-source-gated-migration.md` (Preflight — Intake; Section 1)
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-source-gated-migration.md` (Section 2)
 
 ## 2. Desired Outcome
 
 - Canonical v2 `erc_cog_2026_full` exists, validates, and is ingestable.
 - Baseline/preflight validation passes for `nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`.
 - `erc_cog_2026_full_official` (legacy mirror), `nwo_vidi_2025_full_proposal`, and `erc_stg_2026_full` are re-authored from official sources with updated traceability manifests.
+
+Contract notes / non-obvious constraints:
+- **Acceptance is staged for primary target**: for canonical v2 `erc_cog_2026_full`, require (1) `--dry-run` passes, (2) real local DB ingest succeeds, and (3) at least one structured review request can run end-to-end locally using that call code. (See Q&A Section 2 Q1.)
+- **Baseline calls: minimal-change policy**: for `nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`, only change YAML to fix schema/ingest breakage and preserve compatibility with the universal structured review engine outputs/contracts. (See Q&A Section 2 Q2.)
+- **Baseline node ID stability**: keep existing `proposal_nodes[*].id` stable unless clearly wrong. (See Q&A Section 2 Q3.)
+- **Traceability minimum**: each `.sources.md` includes `Path`, `SHA256`, `Used for`, plus official URL/source page (if available) and downloaded/provided date. (See Q&A Section 2 Q4.)
+- **Do not commit PDFs/DOCX**: keep local copied sources gitignored; still record SHA256 + local path(s) in manifests. (See Q&A Section 2 Q5.)
 
 ## 3. Target User / Actor
 
@@ -64,6 +72,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-sour
 
 - Whether to commit `backend/data/calls/source_files/WF-0044/...` into git or keep it gitignored while still hashing and referencing the local copy path.
 - Whether baseline validation additionally requires targeted pytest selectors (vs ingest-only).
+Note: current baseline decision is dry-run + local DB ingest; pytest is optional unless needed for engine-compat confidence.
 
 ## 7. MVP Definition
 
