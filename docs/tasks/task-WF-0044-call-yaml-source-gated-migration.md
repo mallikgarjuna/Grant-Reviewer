@@ -7,7 +7,7 @@ Last Updated: 2026-03-02
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer Bullet: Canonical CoG v2 ingest path
+### [x] Task 1 — Tracer Bullet: Canonical CoG v2 ingest path
 
 Goal:
 Deliver a tracer bullet proving `erc_cog_2026_full` can be authored in canonical v2 format, traced to sources, and validated via ingest dry-run.
