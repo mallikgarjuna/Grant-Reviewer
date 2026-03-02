@@ -27,3 +27,47 @@ Key open questions raised by repo reality:
 - What exactly constitutes the “validation baseline/preflight”: schema validate only, `ingest_call.py --dry-run` only, or also full DB ingest + selected pytest?
 - For NWO Vidi: confirm we treat official `.docx` as acceptable application-form source (you answered Q2:A) and record it in traceability.
 - For ERC calls: do we require both Work Programme PDF and Reviewer Guide PDF as “assessment-criteria sources”, or is one sufficient if it contains criteria/elements?
+
+---
+
+## 1. Problem Statement
+
+This WF needs a source-grounded, upload-gated workflow to migrate and (re-)author call YAML definitions so they are defensible, ingestable, and consistent with canonical v2 schema.
+
+Contract notes / non-obvious constraints:
+- **Upload gate is hard**: before authoring each call YAML, stop and request that call’s official application-form document(s) and assessment-criteria PDF(s) separately; do not proceed without traceability references.
+- **Scope lock**: primary target is legacy `erc_cog_2026_full_official` -> canonical v2 `erc_cog_2026_full`, with required validation baseline calls: `nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`.
+- **Legacy mirror preserved**: `erc_cog_2026_full_official` remains a legacy mirror file; it is re-authored from official sources for traceability parity, not converted into v2.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-source-gated-migration.md` (Preflight — Intake)
+
+## 2. Desired Outcome
+
+- Canonical v2 `erc_cog_2026_full` exists, validates, and is ingestable.
+- Baseline/preflight validation passes for `nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`.
+- `erc_cog_2026_full_official` (legacy mirror), `nwo_vidi_2025_full_proposal`, and `erc_stg_2026_full` are re-authored from official sources with updated traceability manifests.
+
+## 3. Target User / Actor
+
+- Primary actor: internal developer/operator maintaining call definitions as code and needing legally-defensible traceability.
+
+## 5. Constraints
+
+- No expansion to P1 #13 (MSCA/ZonMw) unless explicitly pulled in.
+- Keep changes narrowly scoped to call definitions, ingestion/validation, and traceability.
+
+## Open Questions / Deferred
+
+- Where to store uploaded source documents (repo-controlled folder vs external absolute paths) while preserving reproducible hashing.
+- Exact definition of “validation baseline/preflight” (schema validate vs dry-run ingest vs DB ingest vs pytest).
+- ERC criteria sources: whether Work Programme PDF and Reviewer Guide PDF are both required as “assessment-criteria sources” for each ERC call.
+
+## 7. MVP Definition
+
+- Implement the per-call upload gating + traceability update loop for the 3 calls in scope.
+- Deliver canonical v2 migration for ERC CoG with no v1/v2 schema ambiguity.
+
+## 8. Explicit Non-Goals
+
+- Any new non-NWO call expansion (P1 #13) stays parked.
+- Generalized assisted document extraction is out of scope.
