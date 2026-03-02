@@ -25,6 +25,14 @@ Examples:
 - `erc_stg_2026_full.yaml`
 - `nwo_veni_2025_preproposal.yaml`
 
+## Stage Naming Convention (Canonical)
+
+Use one convention consistently:
+- Machine-facing identifiers (`funding_call.code`, filenames, internal slugs): `preproposal`, `full_proposal`
+- Human-facing labels/titles (`funding_call.title`, UI copy): `Pre-proposal`, `Full proposal`
+
+Do not introduce mixed variants like `pre-proposal` or `full-proposal` in machine-facing identifiers.
+
 ## Required Top-Level Keys (v2)
 
 - `funding_agency`

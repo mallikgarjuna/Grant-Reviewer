@@ -33,6 +33,14 @@ Guidelines for authoring call YAML that validates/ingests correctly:
 - `canonical/msca/msca_pf_2026_full.yaml` - MSCA Postdoctoral Fellowship 2026, full
 - `canonical/nsf/nsf_career_2026_full.yaml` - NSF CAREER Award 2026, full
 
+## Stage Naming Convention
+
+Use this repo-wide convention:
+- Machine-facing (`funding_call.code`, file names, slugs): `preproposal`, `full_proposal`
+- Human-facing (`funding_call.title`, UI labels): `Pre-proposal`, `Full proposal`
+
+Avoid machine-facing variants with hyphens such as `pre-proposal` / `full-proposal`.
+
 ## Suggested Layout
 
 - Agency-specific canonical call YAMLs under `canonical/<agency>/`
