@@ -36,10 +36,12 @@ Guidelines for authoring call YAML that validates/ingests correctly:
 ## Stage Naming Convention
 
 Use this repo-wide convention:
-- Machine-facing (`funding_call.code`, file names, slugs): `preproposal`, `full_proposal`
-- Human-facing (`funding_call.title`, UI labels): `Pre-proposal`, `Full proposal`
+- Machine-facing stage tokens (`funding_call.stage`, stage slugs): `pre_proposal`, `full_proposal`
+- Human-facing (`funding_call.title`, UI labels): `Pre-proposal`, `Full-proposal`
 
-Avoid machine-facing variants with hyphens such as `pre-proposal` / `full-proposal`.
+Compatibility note:
+- Existing call codes/file names that already use `preproposal` are kept for backward compatibility.
+- New/updated stage fields should use `pre_proposal`.
 
 ## Suggested Layout
 

@@ -181,7 +181,7 @@ describe("UniversalSubmitForm", () => {
 
     const callSelect = await screen.findByLabelText("Funding Call");
     const renderedOption = await screen.findByRole("option", {
-      name: "NWO Talent Programme - Vidi 2025 - Full proposal",
+      name: "NWO Talent Programme - Vidi 2025 - Full-proposal",
     });
 
     expect(callSelect).toBeInTheDocument();

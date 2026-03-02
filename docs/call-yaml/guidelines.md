@@ -28,10 +28,12 @@ Examples:
 ## Stage Naming Convention (Canonical)
 
 Use one convention consistently:
-- Machine-facing identifiers (`funding_call.code`, filenames, internal slugs): `preproposal`, `full_proposal`
-- Human-facing labels/titles (`funding_call.title`, UI copy): `Pre-proposal`, `Full proposal`
+- Machine-facing stage tokens (`funding_call.stage`, stage slugs): `pre_proposal`, `full_proposal`
+- Human-facing labels/titles (`funding_call.title`, UI copy): `Pre-proposal`, `Full-proposal`
 
-Do not introduce mixed variants like `pre-proposal` or `full-proposal` in machine-facing identifiers.
+Compatibility note:
+- Existing legacy call codes/filenames that already contain `preproposal` remain valid.
+- For new authoring and stage fields, use `pre_proposal` / `full_proposal`.
 
 ## Required Top-Level Keys (v2)
 
