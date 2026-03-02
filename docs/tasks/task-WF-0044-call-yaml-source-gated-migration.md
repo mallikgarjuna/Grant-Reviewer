@@ -35,7 +35,7 @@ Verification Steps:
 Risks (if any):
 - Existing legacy CoG wording may contain v1-era naming that needs careful minimal-change normalization.
 
-### [ ] Task 2 — CoG real ingest + structured API acceptance
+### [x] Task 2 — CoG real ingest + structured API acceptance
 
 Goal:
 Prove primary acceptance path: local DB ingest succeeds and one structured review API request returns review cards for `erc_cog_2026_full`.

@@ -511,6 +511,32 @@ def create_client_with_structured_alignment_seed(
     return TestClient(app), call_id
 
 
+def create_client_with_erc_cog_seed(monkeypatch) -> tuple[TestClient, UUID, str]:
+    """Create test client with ERC CoG call ingested from canonical YAML."""
+    monkeypatch.setenv("LLM_MODE", "stub")
+    monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    reset_database()
+    ingest_call(Path("data/calls/canonical/erc/erc_cog_2026_full.yaml"), dry_run=False)
+
+    session = get_session()
+    try:
+        template = PromptTemplate(
+            name="ERC CoG structured template",
+            template_text="Template",
+            is_active=True,
+        )
+        session.add(template)
+        session.commit()
+
+        call = session.exec(
+            select(FundingCall).where(FundingCall.code == "erc_cog_2026_full")
+        ).first()
+        assert call is not None
+        return TestClient(app), call.id, call.code
+    finally:
+        session.close()
+
+
 def build_signature_headers(
     *,
     body: bytes,
@@ -1325,6 +1351,30 @@ def test_structured_review_e2e_happy_path_three_nodes(monkeypatch) -> None:
     assert ordered_nodes[2:] == ["research_idea", "research_idea", "research_idea"]
     assert all(card["assessment_status"] == "ASSESSED" for card in cards)
     assert all(card["not_assessable_reason"] is None for card in cards)
+
+
+def test_structured_review_erc_cog_2026_full_happy_path(monkeypatch) -> None:
+    client, call_id, call_code = create_client_with_erc_cog_seed(monkeypatch)
+    assert call_code == "erc_cog_2026_full"
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "nodes": [
+                {
+                    "node_logical_id": "b1_part1_state_of_knowledge",
+                    "text": "The proposal explains current state of knowledge and frontier gap.",
+                },
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    assert cards
 
 
 def test_structured_review_e2e_partial_submission_marks_alignment_not_assessable(
