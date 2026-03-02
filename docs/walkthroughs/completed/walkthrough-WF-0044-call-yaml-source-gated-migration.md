@@ -60,6 +60,20 @@ Last Updated: 2026-03-02
   - Rerun verification evidence:
     - `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k nwo_vidi_2025_full_proposal` -> `1 passed`
     - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml --dry-run` -> `schema_version=v2`, dry-run success
+- **Checkpoint 4 (ERC StG 2026) — satisfied**
+  - User-uploaded sources accepted for this call:
+    - `wp_horizon-erc-2026_en.pdf` (SSOT for ERC criteria/elements)
+    - `af_he-erc-stg_en.pdf`
+    - `erc-rules-for-submission-and-evaluation_he-erc_en.pdf`
+    - `guide-for-peer-reviewers_he-erc-stg-cog_en.pdf`
+    - `information-for-applicants_he-erc-stg-cog_en.pdf`
+  - Applied rerun updates:
+    - Updated StG canonical source-header comments to reflect ERC SSOT + supplemental sources.
+    - Expanded StG source manifest from 2 to 5 source entries with strict-checkpoint provenance and hashes.
+    - Added missing copied-local source files under `backend/data/calls/source_files/WF-0044/erc_stg_2026_full/` for traceability completeness.
+  - Rerun verification evidence:
+    - `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k erc_stg_2026_full` -> `1 passed`
+    - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml --dry-run` -> `schema_version=v2`, dry-run success
 
 ## Verification Evidence
 
