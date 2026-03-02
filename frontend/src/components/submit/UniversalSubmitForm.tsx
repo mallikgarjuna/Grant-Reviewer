@@ -34,8 +34,8 @@ function formatCallDisplayName(callName: string, callCode: string): string {
   const normalizedName = callName
     .replace(/[–—]/g, "-")
     .replace(/\s*-\s*/g, " - ")
-    .replace(/\bPre[ -]?proposal\b/gi, "Pre-proposal")
-    .replace(/\bFull[ -]?proposal\b/gi, "Full-proposal")
+    .replace(/\bPre(?:\s*-\s*|\s+)proposal\b/gi, "Pre-proposal")
+    .replace(/\bFull(?:\s*-\s*|\s+)proposal\b/gi, "Full-proposal")
     .trim();
   if (normalizedName.length > 0) {
     return normalizedName;

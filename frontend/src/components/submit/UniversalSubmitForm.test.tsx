@@ -122,7 +122,7 @@ describe("UniversalSubmitForm", () => {
               {
                 id: "call-1",
                 code: "nwo_vidi_2025_full_proposal",
-                name: "NWO Talent Programme — Vidi 2025 — Full proposal",
+                name: "NWO Talent Programme — Vidi 2025 — Full - proposal",
                 year: 2025,
                 agency_short_name: "NWO",
               },
