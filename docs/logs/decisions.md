@@ -1222,3 +1222,19 @@
 - **Why**: Prevents “policy drift” where agency-specific reviewer instructions exist in YAML but are silently ignored in structured outputs.
 - **Tradeoff**: Expands structured pipeline surface; requires careful contract tests to avoid regressions and false blocking.
 - **Status**: Approved (Phase 0 decision; implement in Phase 3).
+
+### AD 44.2: Source traceability policy is dual-path + hash with gitignored binaries
+- **WF ID**: WF-0044
+- **Context**: Official source documents are required for defensible call authoring, but storing binaries in git is out of scope for this workflow.
+- **Decision**: For each scoped call, manifests must record both original/external provenance and local copied path under `backend/data/calls/source_files/WF-0044/<call_code>/...`, plus SHA256 and usage metadata; source binaries remain gitignored.
+- **Why**: Preserves auditability and reproducibility without adding binary artifacts to repo history.
+- **Tradeoff**: Reproduction depends on local/secure artifact retention outside git.
+- **Status**: Approved.
+
+### AD 44.3: Structured BLOCKING policy failures are deterministic and no-partial-card
+- **WF ID**: WF-0044
+- **Context**: Structured pipeline policy wiring requires a contract-safe failure rule when `reviewer_policy` enforcement mode is `BLOCKING`.
+- **Decision**: `BLOCKING` violations in structured flow must return a stable failure category and no partial cards; `POST_CHECK` remains warning-only and `PROMPT_ONLY` remains non-blocking prompt guidance.
+- **Why**: Keeps trust-critical behavior deterministic and testable across policy modes.
+- **Tradeoff**: Strict blocking may reduce degraded-success behavior in violation scenarios.
+- **Status**: Approved.
