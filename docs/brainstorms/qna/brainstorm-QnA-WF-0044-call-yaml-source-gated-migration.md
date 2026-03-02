@@ -86,3 +86,40 @@ Clarifications locked before WF minting:
 - C) Commit only small text sources; ignore PDFs/DOCX.
  > Recommendation: B.
  > **Selected: B**
+
+## Section 3 — Target User / Actor (2026-03-02)
+
+**Q1: Who is the primary actor for WF-0044 execution?**
+- A) Internal developer/operator maintaining call YAML + ingestion + tests.
+- B) Researcher using the product UI.
+- C) Mixed: internal operator + researcher-facing documentation as an output.
+ > Recommendation: A.
+ > **Selected: A**
+
+**Q2: Who supplies the official source documents (per the hard upload gate)?**
+- A) User uploads per call (application-form docs + assessment-criteria PDFs); authoring only after upload + traceability reference.
+- B) Agent may fetch official sources from the web if user provides URLs.
+- C) Hybrid: user uploads some, agent fetches some.
+ > Recommendation: A.
+ > **Selected: A**
+
+**Q3: For the “real DB ingest” validation, what environment should we treat as the target?**
+- A) Local Postgres dev DB.
+- B) SQLite local file DB.
+- C) Disposable Docker Postgres used only for this WF verification.
+ > Recommendation: A.
+ > **Selected: A**
+
+**Q4: For the “run 1 structured review end-to-end locally” acceptance, what counts as E2E?**
+- A) Call the FastAPI endpoint locally (API-level contract).
+- B) Call the internal service function directly (unit-level).
+- C) Either is fine.
+ > Recommendation: A.
+ > **Selected: A**
+
+**Q5: Who is the intended consumer of traceability manifests (`backend/data/calls/sources/*.sources.md`)?**
+- A) Internal engineering only, but written defensibly (path, hash, mapping, dates).
+- B) External audit-grade with full page/section citations for each YAML mapping.
+- C) Minimal internal notes only.
+ > Recommendation: A.
+ > **Selected: A**

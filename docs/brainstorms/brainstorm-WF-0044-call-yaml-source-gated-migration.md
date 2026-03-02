@@ -63,6 +63,13 @@ Contract notes / non-obvious constraints:
 
 - Primary actor: internal developer/operator maintaining call definitions as code and needing legally-defensible traceability.
 
+Contract notes / non-obvious constraints:
+- Official sources are supplied by user upload per call; no authoring proceeds without the upload + traceability reference. (See Q&A Section 3 Q2.)
+- “Real DB ingest” validation targets local Postgres dev DB. (See Q&A Section 3 Q3.)
+- “E2E structured review” acceptance means calling the FastAPI endpoint locally with `call_code=erc_cog_2026_full` (API-level contract). (See Q&A Section 3 Q4.)
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-source-gated-migration.md` (Section 3)
+
 ## 5. Constraints
 
 - No expansion to P1 #13 (MSCA/ZonMw) unless explicitly pulled in.
