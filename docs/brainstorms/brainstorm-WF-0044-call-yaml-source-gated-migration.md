@@ -38,8 +38,12 @@ Contract notes / non-obvious constraints:
 - **Upload gate is hard**: before authoring each call YAML, stop and request that call’s official application-form document(s) and assessment-criteria PDF(s) separately; do not proceed without traceability references.
 - **Scope lock**: primary target is legacy `erc_cog_2026_full_official` -> canonical v2 `erc_cog_2026_full`, with required validation baseline calls: `nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`.
 - **Legacy mirror preserved**: `erc_cog_2026_full_official` remains a legacy mirror file; it is re-authored from official sources for traceability parity, not converted into v2.
+- **Source storage policy (hybrid)**: for each official source file, keep external/original path context when available, and also store a copy under `backend/data/calls/source_files/WF-0044/<call_code>/...`; manifests reference both paths + SHA256. (See Q&A Section 1 Q1.)
+- **Baseline validation is strong**: for the required baseline calls, run both `--dry-run` and a real DB ingest into a non-prod local DB. (See Q&A Section 1 Q2.)
+- **ERC criteria sources are dual**: for ERC calls, require both Work Programme PDF and Reviewer Guide PDF as assessment-criteria sources. (See Q&A Section 1 Q3.)
+- **One traceability manifest per call**: keep a single `backend/data/calls/sources/<call>.sources.md` covering both application-form + criteria sources. (See Q&A Section 1 Q4.)
 
-Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-source-gated-migration.md` (Preflight — Intake)
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-source-gated-migration.md` (Preflight — Intake; Section 1)
 
 ## 2. Desired Outcome
 
@@ -58,9 +62,8 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0044-call-yaml-sour
 
 ## Open Questions / Deferred
 
-- Where to store uploaded source documents (repo-controlled folder vs external absolute paths) while preserving reproducible hashing.
-- Exact definition of “validation baseline/preflight” (schema validate vs dry-run ingest vs DB ingest vs pytest).
-- ERC criteria sources: whether Work Programme PDF and Reviewer Guide PDF are both required as “assessment-criteria sources” for each ERC call.
+- Whether to commit `backend/data/calls/source_files/WF-0044/...` into git or keep it gitignored while still hashing and referencing the local copy path.
+- Whether baseline validation additionally requires targeted pytest selectors (vs ingest-only).
 
 ## 7. MVP Definition
 
