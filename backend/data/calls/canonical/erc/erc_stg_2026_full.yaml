@@ -5,8 +5,11 @@
 #
 # Primary sources:
 # - af_he-erc-stg_en.pdf (Part B1/B2 structure, page/character constraints, Step visibility)
-# - wp_horizon-erc-2026_en.pdf (1.6.1, 1.6.3, 1.6.5 + Research Proposal definition)
-# - guide-for-peer-reviewers_he-erc-stg-cog_en.pdf (2.1 + reviewer guidelines)
+# - erc-rules-for-submission-and-evaluation_he-erc_en.pdf (excellence-only criterion + stage process)
+#
+# WF-0044 refresh note:
+# - Source manifest now tracks origin + copied-local retention paths under
+#   backend/data/calls/source_files/WF-0044/erc_stg_2026_full/.
 #
 funding_agency:
   id: erc

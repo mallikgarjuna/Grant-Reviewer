@@ -106,3 +106,29 @@ def test_dry_run_ingests_nwo_vidi_2025_full_proposal_with_wf0044_manifest_tracea
         "`backend/data/calls/source_files/WF-0044/nwo_vidi_2025_full_proposal/"
         in manifest
     )
+
+
+@pytest.mark.no_db
+def test_dry_run_ingests_erc_stg_2026_full_with_wf0044_manifest_traceability(
+    monkeypatch,
+) -> None:
+    """ERC StG dry-run should validate and expose WF-0044 source-copy traceability."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    result = ingest_call(
+        Path("data/calls/canonical/erc/erc_stg_2026_full.yaml"),
+        dry_run=True,
+    )
+
+    assert result["dry_run"] is True
+    assert result["schema_version"] == "v2"
+    assert result["source_path"] == "data/calls/canonical/erc/erc_stg_2026_full.yaml"
+
+    manifest = Path("data/calls/sources/erc_stg_2026_full.sources.md").read_text(
+        encoding="utf-8"
+    )
+    assert (
+        "Path (copied local): "
+        "`backend/data/calls/source_files/WF-0044/erc_stg_2026_full/"
+        in manifest
+    )

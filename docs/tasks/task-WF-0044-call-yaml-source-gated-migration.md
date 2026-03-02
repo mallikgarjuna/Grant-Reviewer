@@ -105,7 +105,7 @@ Verification Steps:
 Risks (if any):
 - Over-editing this mature baseline could regress prompt/node assumptions.
 
-### [ ] Task 5 — Minimal-change refresh: ERC StG call + manifest
+### [x] Task 5 — Minimal-change refresh: ERC StG call + manifest
 
 Goal:
 Apply source-grounded minimal corrections to `erc_stg_2026_full` and refresh its manifest metadata.
