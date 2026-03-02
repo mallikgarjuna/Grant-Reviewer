@@ -22,6 +22,23 @@ Last Updated: 2026-03-02
   - `BLOCKING` fails with stable `POLICY_BLOCKING:` prefix and persists zero cards.
 - Added dedicated WF-0044 policy matrix fixture and selector-based tests (`wf0044_policy_*`).
 
+## Strict Upload Checkpoints (Rerun 2026-03-02)
+
+- Re-ran WF-0044 Phase 3 with explicit per-call upload gate enforcement before authoring refreshes.
+- **Checkpoint 1 (ERC CoG 2026) — satisfied**
+  - User-uploaded sources accepted for this call:
+    - `wp_horizon-erc-2026_en.pdf` (declared SSOT for ERC evaluation criteria/elements)
+    - `af_he-erc-cog_en.pdf`
+    - `erc-rules-for-submission-and-evaluation_he-erc_en.pdf`
+    - `guide-for-peer-reviewers_he-erc-stg-cog_en.pdf`
+    - `information-for-applicants_he-erc-stg-cog_en.pdf`
+  - Applied rerun updates:
+    - Refreshed canonical CoG source-header comments to include SSOT + supplemental cross-check sources.
+    - Expanded CoG source manifest to include all uploaded source files and corrected SHA traceability metadata.
+  - Rerun verification evidence:
+    - `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k erc_cog_2026_full` -> `1 passed`
+    - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_cog_2026_full.yaml --dry-run` -> `schema_version=v2`, dry-run success
+
 ## Verification Evidence
 
 Commands run and passing in this workflow:
