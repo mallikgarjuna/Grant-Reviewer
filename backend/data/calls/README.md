@@ -1,8 +1,8 @@
 ---
 title: "Funding Call YAML Files"
-version: "1.1"
+version: "1.2"
 status: "Active"
-updated: "2026-02-28"
+updated: "2026-03-02"
 ---
 
 # Funding Call YAML Files
@@ -33,13 +33,38 @@ Guidelines for authoring call YAML that validates/ingests correctly:
 - `canonical/msca/msca_pf_2026_full.yaml` - MSCA Postdoctoral Fellowship 2026, full
 - `canonical/nsf/nsf_career_2026_full.yaml` - NSF CAREER Award 2026, full
 
+## Stage Naming Convention
+
+Use this repo-wide convention:
+- Machine-facing stage tokens (`funding_call.stage`, stage slugs): `pre_proposal`, `full_proposal`
+- Human-facing (`funding_call.title`, UI labels): `Pre-proposal`, `Full-proposal`
+
+Compatibility note:
+- Existing call codes/file names that already use `preproposal` are kept for backward compatibility.
+- New/updated stage fields should use `pre_proposal`.
+
 ## Suggested Layout
 
 - Agency-specific canonical call YAMLs under `canonical/<agency>/`
 - Legacy/superseded YAMLs under `legacy/`
 - Design/authoring notes under `notes/`
 - Source traceability manifests under `sources/`
+- WF-scoped copied source artifacts under `source_files/WF-<id>/`
 - Reusable starter templates under `templates/`
+
+## Node Numbering Convention (UI Labels)
+
+- Use `proposal_nodes[*].source_section` to preserve official section numbering for UI display.
+- Preferred forms: `1.b`, `2.a`, `3`, `B1`, `B1.I`.
+- Keep numbering source-grounded (from official call docs); do not invent section numbers.
+
+## Source Retention Lifecycle (WF-0044)
+
+When source files are copied locally for source-gated authoring:
+- Keep copied files through WF implementation and technical review gates.
+- Verify manifest metadata (`Path`, `SHA256`, `Used for`, provenance/date) before closeout.
+- After WF completion, move retained copies to secure long-term storage or purge local copies that are not required in-repo.
+- Keep manifests committed even when copied binaries are not retained in git.
 
 ## Test Files
 

@@ -25,6 +25,16 @@ Examples:
 - `erc_stg_2026_full.yaml`
 - `nwo_veni_2025_preproposal.yaml`
 
+## Stage Naming Convention (Canonical)
+
+Use one convention consistently:
+- Machine-facing stage tokens (`funding_call.stage`, stage slugs): `pre_proposal`, `full_proposal`
+- Human-facing labels/titles (`funding_call.title`, UI copy): `Pre-proposal`, `Full-proposal`
+
+Compatibility note:
+- Existing legacy call codes/filenames that already contain `preproposal` remain valid.
+- For new authoring and stage fields, use `pre_proposal` / `full_proposal`.
+
 ## Required Top-Level Keys (v2)
 
 - `funding_agency`
@@ -41,6 +51,7 @@ Examples:
 - Every `proposal_nodes[*].node_expectations[*].evaluation_element_id` must reference an existing evaluation element.
 - `proposal_nodes[*].id` must be unique and stable across revisions.
 - Use `parent_logical_id` to encode hierarchy; do not encode hierarchy in IDs.
+- Populate `proposal_nodes[*].source_section` with source-grounded, display-ready section numbering when available (examples: `1.b`, `2.a`, `B1`, `B1.I`).
 
 ## V2 Enums You Must Respect
 
@@ -57,6 +68,7 @@ Examples:
 2. Author from official sources only:
    - proposal structure source
    - evaluation criteria/elements source
+   - sources may be PDF/DOCX/MD/TXT/etc.; gate on official provenance + completeness, not file extension
 3. Keep scope limited to:
    - evaluable proposal structure
    - evaluation criteria/elements

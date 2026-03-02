@@ -30,6 +30,19 @@ type ApiErrorEnvelope = {
 
 const DOMAIN_DRAFT_KEY = "__selected_domain";
 
+function formatCallDisplayName(callName: string, callCode: string): string {
+  const normalizedName = callName
+    .replace(/[–—]/g, "-")
+    .replace(/\s*-\s*/g, " - ")
+    .replace(/\bPre(?:\s*-\s*|\s+)proposal\b/gi, "Pre-proposal")
+    .replace(/\bFull(?:\s*-\s*|\s+)proposal\b/gi, "Full-proposal")
+    .trim();
+  if (normalizedName.length > 0) {
+    return normalizedName;
+  }
+  return callCode.replace(/_/g, " ").trim();
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -167,10 +180,13 @@ export function UniversalSubmitForm() {
             ? ((await metadataResult.value.json()) as CallNodesMetadataResponse)
             : null;
         const metadataByLogicalId =
-          metadataPayload?.nodes?.reduce<Record<string, { title?: string | null }>>(
+          metadataPayload?.nodes?.reduce<
+            Record<string, { title?: string | null; sourceSection?: string | null }>
+          >(
             (acc, node) => {
               acc[node.logical_id] = {
                 title: node.title,
+                sourceSection: node.source_section,
               };
               return acc;
             },
@@ -426,7 +442,7 @@ export function UniversalSubmitForm() {
             >
               {calls.map((call) => (
                 <option key={call.id} value={call.id}>
-                  {call.code} - {call.name}
+                  {formatCallDisplayName(call.name, call.code)}
                 </option>
               ))}
             </select>

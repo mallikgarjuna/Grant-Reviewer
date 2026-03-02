@@ -2,6 +2,7 @@ import type { NodeSummary } from "@/lib/bff/types";
 
 export type NodeMetadata = {
   title?: string | null;
+  sourceSection?: string | null;
 };
 
 export type RenderNode = {
@@ -44,6 +45,45 @@ function toFallbackLabel(logicalId: string): string {
     .replace(/\b\w/g, (chunk) => chunk.toUpperCase());
 }
 
+function normalizeSectionNumber(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const compact = trimmed.replace(/\s+/g, "");
+  const numericAlpha = compact.match(/^(\d+)([A-Za-z])$/);
+  if (numericAlpha) {
+    return `${numericAlpha[1]}.${numericAlpha[2].toLowerCase()}`;
+  }
+
+  const alreadyDotted = compact.match(/^(\d+)\.([A-Za-z])$/);
+  if (alreadyDotted) {
+    return `${alreadyDotted[1]}.${alreadyDotted[2].toLowerCase()}`;
+  }
+
+  const numericOnly = compact.match(/^\d+$/);
+  if (numericOnly) {
+    return compact;
+  }
+
+  const alphaNumericPart = compact.match(/^([A-Za-z]\d(?:\.[A-Za-z0-9]+)?)$/);
+  if (alphaNumericPart) {
+    return alphaNumericPart[1].toUpperCase();
+  }
+
+  const partMatch = trimmed.match(/Part\s+([A-Za-z]\d)/i);
+  if (partMatch) {
+    const subpartMatch = trimmed.match(/Part\s+(I{1,3}|IV|V)\b/i);
+    if (subpartMatch) {
+      return `${partMatch[1].toUpperCase()}.${subpartMatch[1].toUpperCase()}`;
+    }
+    return partMatch[1].toUpperCase();
+  }
+
+  return null;
+}
+
 export function buildRenderModel(input: BuildRenderModelInput): RenderModelResult {
   const nestedNodes = input.nodes.filter((node) => node.parent_node_id !== null);
   if (nestedNodes.length > 0) {
@@ -77,9 +117,14 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
           : null;
       const nodeTitle =
         typeof node.title === "string" && node.title.trim() ? node.title : null;
+      const sectionNumber =
+        typeof metadata?.sourceSection === "string"
+          ? normalizeSectionNumber(metadata.sourceSection)
+          : null;
+      const baseLabel = metadataTitle ?? nodeTitle ?? toFallbackLabel(nodeLogicalId);
       return {
         nodeLogicalId,
-        label: metadataTitle ?? nodeTitle ?? toFallbackLabel(nodeLogicalId),
+        label: sectionNumber ? `${baseLabel} (${sectionNumber})` : baseLabel,
       };
     }),
     metadataFallbackCount: input.nodes.filter((node) => {

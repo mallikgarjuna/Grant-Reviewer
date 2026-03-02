@@ -213,3 +213,29 @@ def test_v2_ingest_persists_stage_in_canonical_json() -> None:
         assert first_element["stage"] == "STEP_1"
     finally:
         session.close()
+
+
+def test_v2_ingest_supports_erc_cog_2026_full() -> None:
+    """ERC CoG canonical v2 should ingest and persist as active call definition."""
+    reset_database()
+
+    result = ingest_call(
+        Path("data/calls/canonical/erc/erc_cog_2026_full.yaml"),
+        dry_run=False,
+    )
+    assert result["schema_version"] == "v2"
+
+    session = get_session()
+    try:
+        funding_call = session.exec(
+            select(FundingCall).where(FundingCall.code == "erc_cog_2026_full")
+        ).first()
+        assert funding_call is not None
+
+        call_definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == funding_call.id)
+        ).first()
+        assert call_definition is not None
+        assert call_definition.schema_version == "v2"
+    finally:
+        session.close()

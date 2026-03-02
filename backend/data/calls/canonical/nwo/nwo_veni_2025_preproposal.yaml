@@ -7,6 +7,10 @@
 # - veni_pre-proposal_form_2025.docx (proposal-node structure + constraints)
 # - Call for Proposals Veni 2025_EN_0.pdf (DORA + assessment criterion)
 #
+# WF-0044 refresh note:
+# - Source manifest now tracks origin + copied-local retention paths under
+#   backend/data/calls/source_files/WF-0044/nwo_veni_2025_preproposal/.
+#
 funding_agency:
   id: nwo
   name: Dutch Research Council (NWO)
@@ -72,7 +76,7 @@ proposal_nodes:
   - id: academic_profile
     label: Academic profile
     node_type: narrative
-    source_section: "2a"
+    source_section: "2.a"
     content_constraints:
       total_word_limit:
         min_words: 400
@@ -112,7 +116,7 @@ proposal_nodes:
   - id: key_outputs
     label: Key outputs
     node_type: narrative
-    source_section: "2b"
+    source_section: "2.b"
     content_constraints:
       max_items: 10
       total_word_limit:

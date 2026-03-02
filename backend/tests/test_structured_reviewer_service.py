@@ -11,6 +11,7 @@ from sqlmodel import SQLModel
 from app.db import engine, get_session
 from app.models.domain import (
     AssessmentStatus,
+    CallDefinition,
     EvaluationCriterion,
     EvaluationElement,
     EvaluationIntent,
@@ -188,6 +189,23 @@ def _build_service(monkeypatch):
     return service, call_id
 
 
+def _set_call_definition_reviewer_policy(
+    service: StructuredReviewerService,
+    *,
+    call_id: UUID,
+    rules: list[dict[str, object]],
+) -> None:
+    definition = CallDefinition(
+        funding_call_id=call_id,
+        schema_version="v2",
+        checksum="wf0044-test-checksum",
+        canonical_json={"reviewer_policy": rules},
+        source_path="tests/fixtures/wf0044-policy-test.yaml",
+    )
+    service.repository.session.add(definition)
+    service.repository.session.commit()
+
+
 def test_structured_pipeline_v1_happy_path(monkeypatch) -> None:
     service, call_id = _build_service(monkeypatch)
     try:
@@ -348,5 +366,134 @@ def test_structured_pipeline_v1_contract_error_unknown_node_logical_id(
         assert cards == []
         assert review.overall_summary is not None
         assert "MALFORMED_REVIEW_REQUEST" in review.overall_summary
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_pipeline_v1_reviewer_policy_scope_filters_prompt_rules(
+    monkeypatch,
+) -> None:
+    service, call_id = _build_service(monkeypatch)
+    _set_call_definition_reviewer_policy(
+        service,
+        call_id=call_id,
+        rules=[
+            {
+                "id": "pol_global_prompt",
+                "applies_to_stage": "BOTH",
+                "applies_to_node_ids": [],
+                "rule_type": "criterion_scope",
+                "instruction": "Global prompt rule.",
+                "severity": "WARNING",
+                "enforcement_mode": "PROMPT_ONLY",
+                "forbidden_terms": [],
+            },
+            {
+                "id": "pol_step1_academic_prompt",
+                "applies_to_stage": "STEP_1",
+                "applies_to_node_ids": ["academic_profile"],
+                "rule_type": "stage_scope",
+                "instruction": "Academic profile rule.",
+                "severity": "WARNING",
+                "enforcement_mode": "PROMPT_ONLY",
+                "forbidden_terms": [],
+            },
+            {
+                "id": "pol_step2_prompt",
+                "applies_to_stage": "STEP_2",
+                "applies_to_node_ids": [],
+                "rule_type": "stage_scope",
+                "instruction": "Step2-only rule.",
+                "severity": "WARNING",
+                "enforcement_mode": "PROMPT_ONLY",
+                "forbidden_terms": [],
+            },
+            {
+                "id": "pol_step1_other_node",
+                "applies_to_stage": "STEP_1",
+                "applies_to_node_ids": ["research_idea"],
+                "rule_type": "scope_guardrail",
+                "instruction": "Other node rule.",
+                "severity": "WARNING",
+                "enforcement_mode": "PROMPT_ONLY",
+                "forbidden_terms": [],
+            },
+        ],
+    )
+    captured_snapshot: dict[str, object] = {}
+
+    def capture_run_review_pipeline(review_request):
+        captured_snapshot.update(review_request.call_config_snapshot)
+        from app.engine.pipeline_v1 import run_review_pipeline as original_pipeline
+
+        return original_pipeline(review_request)
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        capture_run_review_pipeline,
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Academic profile text")],
+            external_user_id="wf0044-reviewer-policy-scope",
+            idempotency_key="wf0044-reviewer-policy-scope",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert cards
+
+        by_node = captured_snapshot.get("reviewer_policy_prompt_by_node")
+        assert isinstance(by_node, dict)
+        node_rules = by_node.get("academic_profile")
+        assert isinstance(node_rules, list)
+        assert {rule["id"] for rule in node_rules} == {
+            "pol_global_prompt",
+            "pol_step1_academic_prompt",
+        }
+    finally:
+        service.repository.session.close()
+
+
+def test_structured_pipeline_v1_reviewer_policy_prompt_only_has_no_side_effects(
+    monkeypatch,
+) -> None:
+    service, call_id = _build_service(monkeypatch)
+    _set_call_definition_reviewer_policy(
+        service,
+        call_id=call_id,
+        rules=[
+            {
+                "id": "pol_prompt_only_forbidden_term",
+                "applies_to_stage": "STEP_1",
+                "applies_to_node_ids": ["academic_profile"],
+                "rule_type": "criterion_scope",
+                "instruction": "Prompt-only rule with forbidden term metadata.",
+                "severity": "WARNING",
+                "enforcement_mode": "PROMPT_ONLY",
+                "forbidden_terms": ["insufficient budget"],
+            },
+        ],
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "academic_profile",
+                    "This text includes insufficient budget wording for test coverage.",
+                )
+            ],
+            external_user_id="wf0044-reviewer-policy-prompt-only",
+            idempotency_key="wf0044-reviewer-policy-prompt-only",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert cards
+        assert review.overall_summary is not None
+        assert "policy" not in review.overall_summary.lower()
+        assert all(card.assessment_status == AssessmentStatus.ASSESSED for card in cards)
     finally:
         service.repository.session.close()

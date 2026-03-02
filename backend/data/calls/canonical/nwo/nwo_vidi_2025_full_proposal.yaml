@@ -7,6 +7,10 @@
 # - Vidi-2025-Full-proposal-form.docx (proposal-node structure + constraints)
 # - Call-for-Proposals-Vidi-2025_Eng.pdf (DORA + assessment criteria + deadlines)
 #
+# WF-0044 refresh note:
+# - Source manifest now tracks origin + copied-local retention paths under
+#   backend/data/calls/source_files/WF-0044/nwo_vidi_2025_full_proposal/.
+#
 funding_agency:
   id: nwo
   name: Dutch Research Council (NWO)
@@ -111,7 +115,7 @@ proposal_nodes:
   - id: scientific_summary
     label: Scientific summary
     node_type: narrative
-    source_section: "1b"
+    source_section: "1.b"
     content_constraints:
       total_word_limit:
         max_words: 300
@@ -137,7 +141,7 @@ proposal_nodes:
   - id: public_summary_en
     label: Public summary (English)
     node_type: narrative
-    source_section: "1c"
+    source_section: "1.c"
     content_constraints:
       total_word_limit:
         min_words: 50
@@ -160,7 +164,7 @@ proposal_nodes:
   - id: research_proposal
     label: Description of proposed research
     node_type: narrative
-    source_section: "2a"
+    source_section: "2.a"
     content_constraints:
       max_pages: 8
       total_word_limit:
@@ -212,7 +216,7 @@ proposal_nodes:
   - id: impact
     label: Scientific and/or societal impact
     node_type: narrative
-    source_section: "2b"
+    source_section: "2.b"
     content_constraints:
       max_pages: 2
       total_word_limit:

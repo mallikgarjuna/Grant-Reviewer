@@ -1,6 +1,7 @@
 # Project Documentation
 
 - **2026-03-01**: All new code phrases and agent chat triggers must be added to `docs/reference/code_phrases.md` (the SSOT), not directly to `AGENTS.md`. `AGENTS.md` should remain as tiny as possible.
+- **2026-03-02**: WF interactive Q&A decisions must be written into `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`; the main brainstorm remains the SSOT for contracts/decisions and must link to the Q&A section(s) used.
 - **Traceability in outputs**: Workflow runner completion summaries must always include explicit provenance: which files were considered/edited and which skills/instructions were used.
 - **Traceability in commits**: Every WF commit message must include both the WF ID and the relevant slug so history is self-describing (e.g., `WF-0012: alembic-migration-baseline - <change>`). (Do not rewrite history; enforce going forward).
 - **Push Docs Rule**: Always update `docs/` with all relevant branch work (status/index, decisions, Q&A, prompt history, workflow artifacts) *before* pushing a branch to remote. After every successful push, explicitly confirm that docs/WF artifacts were updated (or state that none were required).

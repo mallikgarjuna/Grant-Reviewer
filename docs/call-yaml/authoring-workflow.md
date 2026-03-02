@@ -126,10 +126,10 @@ Never encode brittle numbering into logical IDs.
 Minimum required documents:
 
 1. Proposal narrative structure source
-   (Application form template)
+   (Application form template; may be PDF/DOCX/MD/TXT/etc.)
 
 2. Evaluation criteria source
-   (Guide for reviewers or criteria section of call)
+   (Guide for reviewers or criteria section of call; may be PDF/MD/TXT/etc.)
 
 Optional but useful:
 

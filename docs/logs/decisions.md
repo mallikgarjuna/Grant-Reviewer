@@ -1212,3 +1212,53 @@
 - **Why**: Keeps pre-merge trust checks fast and reproducible without new tooling.
 - **Tradeoff**: Test naming/marker discipline becomes part of maintenance burden.
 - **Status**: Approved.
+
+## Date: 2026-03-02 (WF-0044: Source-Gated Call YAML Re-Authoring + ERC CoG Canonical v2 Migration)
+
+### AD 44.1: Enforce call-definition reviewer_policy in structured pipeline v1
+- **WF ID**: WF-0044
+- **Context**: Call/agency-specific `reviewer_policy` rules are encoded in v2 YAML and are applied in the single-snippet flow (prompt injection + deterministic forbidden-term post-checks). Structured pipeline v1 is currently driven primarily by DB expectations and the engine request snapshot, and does not automatically enforce reviewer_policy.
+- **Decision**: Wire call-definition `reviewer_policy` into structured pipeline v1 so structured review outputs honor call/agency-specific reviewer constraints. Apply at least prompt-level guidance, and deterministic enforcement when rules are `POST_CHECK`/`BLOCKING` and have `forbidden_terms`, without breaking existing runtime contracts.
+- **Why**: Prevents “policy drift” where agency-specific reviewer instructions exist in YAML but are silently ignored in structured outputs.
+- **Tradeoff**: Expands structured pipeline surface; requires careful contract tests to avoid regressions and false blocking.
+- **Status**: Approved (Phase 0 decision; implement in Phase 3).
+
+### AD 44.2: Source traceability policy is dual-path + hash with gitignored binaries
+- **WF ID**: WF-0044
+- **Context**: Official source documents are required for defensible call authoring, but storing binaries in git is out of scope for this workflow.
+- **Decision**: For each scoped call, manifests must record both original/external provenance and local copied path under `backend/data/calls/source_files/WF-0044/<call_code>/...`, plus SHA256 and usage metadata; source binaries remain gitignored.
+- **Why**: Preserves auditability and reproducibility without adding binary artifacts to repo history.
+- **Tradeoff**: Reproduction depends on local/secure artifact retention outside git.
+- **Status**: Approved.
+
+### AD 44.3: Structured BLOCKING policy failures are deterministic and no-partial-card
+- **WF ID**: WF-0044
+- **Context**: Structured pipeline policy wiring requires a contract-safe failure rule when `reviewer_policy` enforcement mode is `BLOCKING`.
+- **Decision**: `BLOCKING` violations in structured flow must return a stable failure category and no partial cards; `POST_CHECK` remains warning-only and `PROMPT_ONLY` remains non-blocking prompt guidance.
+- **Why**: Keeps trust-critical behavior deterministic and testable across policy modes.
+- **Tradeoff**: Strict blocking may reduce degraded-success behavior in violation scenarios.
+- **Status**: Approved.
+
+### AD 44.4: Source-file retention lifecycle is temporary-local with hash-first durability
+- **WF ID**: WF-0044
+- **Context**: Dual-path traceability requires local source copies during authoring, but indefinite local retention is ambiguous.
+- **Decision**: Treat `backend/data/calls/source_files/WF-0044/...` as temporary workflow storage: keep through WF completion/review, then move to approved secure storage or purge local copies once manifest hashes/provenance are verified.
+- **Why**: Clarifies operational hygiene while preserving reproducible traceability through manifest hashes.
+- **Tradeoff**: Future reproductions require secure-storage access when local copies are purged.
+- **Status**: Approved.
+
+### AD 44.5: Node-ID changes require explicit governance artifacts
+- **WF ID**: WF-0044
+- **Context**: Minimal-change re-authoring allows rare `proposal_nodes[*].id` changes when source contradictions force correction, which can break downstream assumptions.
+- **Decision**: Any node-ID change must include a WF decision-log reference and explicit old→new ID mapping note in implementation artifacts before merge.
+- **Why**: Prevents silent identifier drift and preserves migration traceability for runtime/UI contracts.
+- **Tradeoff**: Adds process overhead to rare correction cases.
+- **Status**: Approved.
+
+### AD 44.6: WF-0044 policy tests require deterministic selector namespace
+- **WF ID**: WF-0044
+- **Context**: Contract verification becomes brittle when policy tests are not easily selectable by a stable naming convention.
+- **Decision**: Reserve selector namespace `wf0044_policy_<surface>_<case_id>` for WF-0044 policy-contract tests, including no-partial-card assertions for blocking failures.
+- **Why**: Keeps verification repeatable and fast for pre-merge checks.
+- **Tradeoff**: Requires disciplined naming upkeep in tests.
+- **Status**: Approved.

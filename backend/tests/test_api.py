@@ -72,6 +72,17 @@ class Wf0043ContractCase(TypedDict):
     request_nodes: list[dict[str, str]]
 
 
+class Wf0044PolicyCase(TypedDict):
+    case_id: str
+    surface: str
+    enforcement_mode: str
+    forbidden_term: str
+    feedback_text: str
+    expected_review_status: str
+    expected_summary_convention: str
+    expected_cards_count: int
+
+
 def _load_wf0043_matrix_cases() -> list[Wf0043ContractCase]:
     fixture_path = Path("tests/fixtures/wf_0043_contract_matrix.yaml")
     loaded = yaml.safe_load(fixture_path.read_text(encoding="utf-8"))
@@ -92,6 +103,23 @@ def _non_empty_str(value: Any) -> bool:
 
 def _wf0043_case_id(value: str, *, surface: str) -> str:
     return f"wf0043_contract_{surface}_{value}"
+
+
+def _load_wf0044_policy_cases() -> list[Wf0044PolicyCase]:
+    fixture_path = Path("tests/fixtures/wf_0044_policy_matrix.yaml")
+    loaded = yaml.safe_load(fixture_path.read_text(encoding="utf-8"))
+    raw_cases = loaded.get("cases", [])
+    if not isinstance(raw_cases, list):
+        return []
+    return [
+        case
+        for case in raw_cases
+        if isinstance(case, dict) and case.get("surface") == "structured_api"
+    ]
+
+
+def _wf0044_policy_case_id(value: str, *, surface: str) -> str:
+    return f"wf0044_policy_{surface}_{value}"
 
 
 def _count_reviews_in_db() -> int:
@@ -509,6 +537,52 @@ def create_client_with_structured_alignment_seed(
     reset_database()
     call_id = seed_structured_alignment_api_data()
     return TestClient(app), call_id
+
+
+def create_client_with_erc_cog_seed(monkeypatch) -> tuple[TestClient, UUID, str]:
+    """Create test client with ERC CoG call ingested from canonical YAML."""
+    monkeypatch.setenv("LLM_MODE", "stub")
+    monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    reset_database()
+    ingest_call(Path("data/calls/canonical/erc/erc_cog_2026_full.yaml"), dry_run=False)
+
+    session = get_session()
+    try:
+        template = PromptTemplate(
+            name="ERC CoG structured template",
+            template_text="Template",
+            is_active=True,
+        )
+        session.add(template)
+        session.commit()
+
+        call = session.exec(
+            select(FundingCall).where(FundingCall.code == "erc_cog_2026_full")
+        ).first()
+        assert call is not None
+        return TestClient(app), call.id, call.code
+    finally:
+        session.close()
+
+
+def _set_call_definition_reviewer_policy_rules(
+    *,
+    call_id: UUID,
+    rules: list[dict[str, object]],
+) -> None:
+    session = get_session()
+    try:
+        definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        canonical_json = dict(definition.canonical_json)
+        canonical_json["reviewer_policy"] = rules
+        definition.canonical_json = canonical_json
+        session.add(definition)
+        session.commit()
+    finally:
+        session.close()
 
 
 def build_signature_headers(
@@ -1327,6 +1401,30 @@ def test_structured_review_e2e_happy_path_three_nodes(monkeypatch) -> None:
     assert all(card["not_assessable_reason"] is None for card in cards)
 
 
+def test_structured_review_erc_cog_2026_full_happy_path(monkeypatch) -> None:
+    client, call_id, call_code = create_client_with_erc_cog_seed(monkeypatch)
+    assert call_code == "erc_cog_2026_full"
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "nodes": [
+                {
+                    "node_logical_id": "b1_part1_state_of_knowledge",
+                    "text": "The proposal explains current state of knowledge and frontier gap.",
+                },
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    cards = detail.json()["cards"]
+    assert cards
+
+
 def test_structured_review_e2e_partial_submission_marks_alignment_not_assessable(
     monkeypatch,
 ) -> None:
@@ -1615,6 +1713,94 @@ def test_wf0043_contract_structured_api_matrix_coverage() -> None:
     }
     assert structured_case_ids == covered_case_ids
     assert len(structured_case_ids) == 6
+
+
+@pytest.mark.parametrize(
+    "case",
+    _load_wf0044_policy_cases(),
+    ids=lambda case: _wf0044_policy_case_id(case["case_id"], surface="structured_api"),
+)
+def test_structured_review_wf0044_policy_structured_api_modes(
+    monkeypatch,
+    case: Wf0044PolicyCase,
+) -> None:
+    from app.engine.contracts import PipelineResult
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    client, call_id, _ = create_client_with_erc_cog_seed(monkeypatch)
+    _set_call_definition_reviewer_policy_rules(
+        call_id=call_id,
+        rules=[
+            {
+                "id": f"wf0044_rule_{case['case_id']}",
+                "applies_to_stage": "STEP_1",
+                "applies_to_node_ids": ["b1_part1_state_of_knowledge"],
+                "rule_type": "criterion_scope",
+                "instruction": "WF-0044 structured policy contract test rule.",
+                "severity": "WARNING",
+                "enforcement_mode": case["enforcement_mode"],
+                "forbidden_terms": [case["forbidden_term"]],
+            }
+        ],
+    )
+
+    def run_pipeline_with_case_feedback(request):
+        expectation = request.call_config_snapshot["expectations"][0]
+        return PipelineResult(
+            findings=[],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="b1_part1_state_of_knowledge",
+                    expectation_id=str(expectation["expectation_id"]),
+                    rating="NOTE",
+                    feedback=case["feedback_text"],
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        run_pipeline_with_case_feedback,
+    )
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "b1_part1_state_of_knowledge",
+                    "text": "Structured submission text for policy contract coverage.",
+                }
+            ],
+        },
+        idempotency_key=f"wf0044-{case['case_id']}-{time.time_ns()}",
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == case["expected_review_status"]
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    detail_payload = detail.json()
+    summary = detail_payload["review"]["overall_summary"]
+    if case["expected_summary_convention"] == "POLICY_BLOCKING":
+        assert summary.startswith("POLICY_BLOCKING:")
+    elif case["expected_summary_convention"] == "POST_CHECK_WARNING":
+        assert "Reviewer-policy warnings:" in summary
+    else:
+        assert summary.startswith("Structured review completed with")
+        assert "Reviewer-policy warnings:" not in summary
+    assert len(detail_payload["cards"]) == case["expected_cards_count"]
+
+
+def test_wf0044_policy_structured_api_matrix_coverage() -> None:
+    cases = _load_wf0044_policy_cases()
+    case_ids = {case["case_id"] for case in cases}
+    assert case_ids == {"prompt_only", "post_check", "blocking"}
+    for case in cases:
+        assert case["surface"] == "structured_api"
 
 
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:
