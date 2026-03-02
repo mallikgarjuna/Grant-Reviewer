@@ -38,6 +38,17 @@ Last Updated: 2026-03-02
   - Rerun verification evidence:
     - `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k erc_cog_2026_full` -> `1 passed`
     - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_cog_2026_full.yaml --dry-run` -> `schema_version=v2`, dry-run success
+- **Checkpoint 2 (NWO Veni 2025 pre-proposal) — satisfied**
+  - User-uploaded sources accepted for this call:
+    - `Call for Proposals Veni 2025_EN_0.pdf`
+    - `veni_pre-proposal_form_2025.docx`
+  - Applied rerun updates:
+    - Corrected manifest origin paths to uploaded `PeerLens_proj/NWO-Veni-2025/...` sources.
+    - Added missing copied-local call PDF under `backend/data/calls/source_files/WF-0044/nwo_veni_2025_preproposal/`.
+    - Updated provenance notes to strict-checkpoint upload context.
+  - Rerun verification evidence:
+    - `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k nwo_veni_2025_preproposal` -> `1 passed`
+    - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run` -> `schema_version=v2`, dry-run success
 
 ## Verification Evidence
 
