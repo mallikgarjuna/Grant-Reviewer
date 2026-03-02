@@ -1,8 +1,8 @@
 # WF-0044 — P1 #12: Source-Gated Call YAML Re-Authoring + ERC CoG Canonical v2 Migration
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-02
 
 ## Task Breakdown (Sequential Order)
@@ -13,7 +13,7 @@ Goal:
 Deliver a tracer bullet proving `erc_cog_2026_full` can be authored in canonical v2 format, traced to sources, and validated via ingest dry-run.
 Slice: tracer-bullet
 User Stories: US1, US2
-PRD Requirements: FR1, FR2, FR4, FR6
+PRD Requirements: FR1, FR2, FR3, FR4, FR6
 Depends on: none
 Enables: Task 2, Task 6
 Parallelizable: no
@@ -24,6 +24,7 @@ Files to modify:
 Acceptance Criteria:
 - Canonical file `erc_cog_2026_full.yaml` exists and is v2-valid (no mixed v1 keys).
 - Source manifest includes both source classes (application form + evaluation criteria elements) with required metadata fields.
+- Manifest entries include both origin context and copied-local path under `backend/data/calls/source_files/WF-0044/...`.
 - Dry-run ingest test explicitly validates `erc_cog_2026_full`.
 TDD Plan: RED: add failing dry-run test case in `test_ingest_call_dry_run.py` for missing/non-valid CoG file; GREEN: author YAML + manifest to make dry-run pass; REFACTOR: normalize comments/ordering in YAML for deterministic diffs.
 Verification Steps:
@@ -71,8 +72,9 @@ Files to modify:
 Acceptance Criteria:
 - YAML updates are source-proven only; no unnecessary structure rewrites.
 - Manifest has required fields (`Path`, `SHA256`, `Used for`, source URL/page or provenance note, provided/downloaded date).
+- Manifest records both source origin and local copied path for WF-0044 source-gate traceability.
 - Any node-id change (if unavoidable) includes explicit decision-log reference note in task implementation artifacts.
-TDD Plan: RED: run dry-run ingest and capture failing mismatch if introduced by edits; GREEN: apply minimal corrections until dry-run passes; REFACTOR: tighten comments for traceability without changing semantics.
+TDD Plan: RED: add/update failing case in `tests/test_ingest_call_dry_run.py` for `nwo_veni_2025_preproposal`; GREEN: apply minimal corrections until dry-run passes; REFACTOR: tighten comments for traceability without changing semantics.
 Verification Steps:
 - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml --dry-run`
 Risks (if any):
@@ -95,7 +97,7 @@ Acceptance Criteria:
 - YAML reflects only source-backed corrections.
 - Manifest is complete with required traceability metadata and dual-path context.
 - Node IDs remain stable unless explicitly justified and mapped.
-TDD Plan: RED: run dry-run ingest and capture failure when inconsistencies appear; GREEN: apply minimal corrections until ingest succeeds; REFACTOR: remove redundant wording while preserving behavior.
+TDD Plan: RED: add/update failing case in `tests/test_ingest_call_dry_run.py` for `nwo_vidi_2025_full_proposal`; GREEN: apply minimal corrections until ingest succeeds; REFACTOR: remove redundant wording while preserving behavior.
 Verification Steps:
 - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml --dry-run`
 Risks (if any):
@@ -117,8 +119,9 @@ Files to modify:
 Acceptance Criteria:
 - YAML changes remain minimal-change and source-grounded.
 - Manifest includes required fields and updated provenance/hash metadata.
+- Manifest explicitly captures dual-path traceability (source origin + local copied path).
 - Node IDs stay stable unless explicitly governed with mapping notes.
-TDD Plan: RED: run dry-run ingest and capture failing state if edits break schema; GREEN: apply minimal corrections until dry-run passes; REFACTOR: clean source comments for consistency.
+TDD Plan: RED: add/update failing case in `tests/test_ingest_call_dry_run.py` for `erc_stg_2026_full`; GREEN: apply minimal corrections until dry-run passes; REFACTOR: clean source comments for consistency.
 Verification Steps:
 - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_stg_2026_full.yaml --dry-run`
 Risks (if any):
@@ -185,12 +188,12 @@ Depends on: Task 7
 Enables: Task 9
 Parallelizable: no
 Files to modify:
-- `backend/tests/fixtures/wf_0043_contract_matrix.yaml`
+- `backend/tests/fixtures/wf_0044_policy_matrix.yaml`
 - `backend/tests/test_review_execution_core.py`
 Acceptance Criteria:
 - Fixture contains WF-0044-targeted case IDs/selectors and expected conventions for all 3 modes.
 - Tests assert no-card payload behavior for blocking failure cases.
-TDD Plan: RED: introduce failing matrix cases named with `wf0044_policy_...`; GREEN: update test loader/expectations to satisfy new cases; REFACTOR: keep fixture schema backward-compatible with existing WF-0043 entries.
+TDD Plan: RED: introduce failing matrix cases named with `wf0044_policy_...`; GREEN: add dedicated WF-0044 fixture + loader updates to satisfy new cases; REFACTOR: keep fixture schema aligned with existing matrix conventions.
 Verification Steps:
 - `cd backend && uv run pytest tests/test_review_execution_core.py -k wf0044_policy_`
 Risks (if any):
@@ -225,3 +228,4 @@ Risks (if any):
 ## Changelog
 
 - v0.1 (2026-03-02): Initial task breakdown from PRD.
+- v0.2 (2026-03-02): Applied Phase 2.2 review edits (FR3 dual-path traceability explicitness, dedicated WF-0044 policy matrix fixture, clearer RED test targets); marked Ready for Implementation.
