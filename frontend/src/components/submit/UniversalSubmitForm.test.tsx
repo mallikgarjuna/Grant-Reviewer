@@ -112,6 +112,87 @@ describe("UniversalSubmitForm", () => {
     expect(fields[1]).toHaveAccessibleName("Academic Profile");
   });
 
+  it("renders funding call dropdown labels without code prefixes or em dashes", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "nwo_vidi_2025_full_proposal",
+                name: "NWO Talent Programme — Vidi 2025 — Full proposal",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "scientific_summary",
+                title: "Scientific summary",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_vidi_2025_full_proposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_vidi_2025_full_proposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_vidi_2025_full_proposal/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_vidi_2025_full_proposal",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+        status: 200,
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<UniversalSubmitForm />);
+
+    const callSelect = await screen.findByLabelText("Funding Call");
+    const renderedOption = await screen.findByRole("option", {
+      name: "NWO Talent Programme - Vidi 2025 - Full proposal",
+    });
+
+    expect(callSelect).toBeInTheDocument();
+    expect(renderedOption).toBeInTheDocument();
+    expect(
+      screen.queryByRole("option", {
+        name: /nwo_vidi_2025_full_proposal/i,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
   it("blocks submit when all dynamic nodes are empty", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);

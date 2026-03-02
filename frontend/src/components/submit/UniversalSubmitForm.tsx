@@ -30,6 +30,17 @@ type ApiErrorEnvelope = {
 
 const DOMAIN_DRAFT_KEY = "__selected_domain";
 
+function formatCallDisplayName(callName: string, callCode: string): string {
+  const normalizedName = callName
+    .replace(/[–—]/g, "-")
+    .replace(/\s*-\s*/g, " - ")
+    .trim();
+  if (normalizedName.length > 0) {
+    return normalizedName;
+  }
+  return callCode.replace(/_/g, " ").trim();
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -429,7 +440,7 @@ export function UniversalSubmitForm() {
             >
               {calls.map((call) => (
                 <option key={call.id} value={call.id}>
-                  {call.code} - {call.name}
+                  {formatCallDisplayName(call.name, call.code)}
                 </option>
               ))}
             </select>
