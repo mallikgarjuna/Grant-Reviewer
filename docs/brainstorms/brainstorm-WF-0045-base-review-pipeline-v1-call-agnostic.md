@@ -1,13 +1,20 @@
 # WF-0045 — Base Review Pipeline v1.0 (call-agnostic core)
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-03
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0045-base-review-pipeline-v1-call-agnostic.md`
 
 ---
+
+## Contract Safety (SSOT)
+
+- This brainstorm is SSOT for contracts/decisions; the Q&A transcript is rationale only.
+- Base pipeline v1.0 must preserve deterministic diagnostics and compatibility mapping semantics.
+- Phase 1 must state persistence side-effect boundaries explicitly (no new core persistence coupling by default).
+- Any deviation from existing compatibility semantics requires explicit rationale and acceptance criteria.
 
 ## 0. Preflight Intake (Narrative Locked)
 
@@ -184,6 +191,23 @@ Contract Notes / Non-obvious constraints:
 - Non-goals are hard scope boundaries for Phase 1 and may be promoted only via new parked items/WFs.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0045-base-review-pipeline-v1-call-agnostic.md` (Section 8)
+
+## Core Stage Contract Matrix (v1.0)
+
+| Stage | Entry Invariant | Exit Invariant |
+|---|---|---|
+| Structural Validation | Request/config shape resolvable for target subject | Deterministic validity result and normalized subject scope |
+| Compliance Gate | Structural validation complete | Deterministic compliance outcomes with explicit checks |
+| Expectation-Level Evaluation | Active expectations resolved from call config | Per-expectation assessed/not-assessable outcomes |
+| Cross-Node Alignment | Declared dependency context available/flagged missing | Deterministic alignment findings or explicit not-assessable reasons |
+| Risk Audit | Expectation/alignment outputs available | Deterministic risk findings scoped to core taxonomy |
+| Output Aggregation | All prior stage outputs finalized | Stable ordered diagnostics and compatibility-safe aggregation output |
+
+## Phase 1 Handoff Guardrails
+
+- No-behavior-change-first posture for existing deterministic compatibility surfaces.
+- Define parity assertions for core outputs before/after any proposed contract tightening.
+- Any internal refactor must be justified by a specific core-stage invariant, not general cleanup.
 
 ## Open Questions / Deferred
 
