@@ -155,7 +155,7 @@ Verification Steps:
 Risks (if any):
 - Aggregator sort precedence changes can alter downstream card ordering.
 
-### [ ] Task 7 — Call-agnostic governance guardrail tests
+### [x] Task 7 — Call-agnostic governance guardrail tests
 
 Goal:
 Prevent core stage branching by call/funder/program and keep optional modules out of base pipeline semantics.

@@ -528,3 +528,30 @@ def test_core_emits_telemetry_failure_category() -> None:
     assert hooks.completes == []
     assert len(hooks.failures) == 1
     assert hooks.failures[0].failure_category == ExecutionFailureCategory.TIMEOUT.value
+
+
+def test_wf0045_contract_call_agnostic_core() -> None:
+    core = ReviewExecutionCore(llm_client=EchoExpectationLLMClient(), timeout_seconds=0.5)
+    node = _build_node()
+    expectations = _build_expectations(count=1)
+
+    result_a = core.execute_assessable_node(
+        node=node,
+        snippet_text="Some snippet text",
+        expectations=expectations,
+        reviewer_policy_rules=[],
+        call_identity="call-A",
+    )
+    result_b = core.execute_assessable_node(
+        node=node,
+        snippet_text="Some snippet text",
+        expectations=expectations,
+        reviewer_policy_rules=[],
+        call_identity="call-B",
+    )
+
+    assert result_a.failure is None
+    assert result_b.failure is None
+    assert [feedback.feedback for feedback in result_a.feedbacks] == [
+        feedback.feedback for feedback in result_b.feedbacks
+    ]
