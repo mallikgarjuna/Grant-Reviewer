@@ -123,3 +123,6 @@ next-env.d.ts
 
 # Local scratch files
 Dont-read-this-AGENTS copy.md
+
+# Local source documents for call authoring (never commit binaries)
+backend/data/calls/source_files/
