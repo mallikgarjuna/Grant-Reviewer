@@ -1,7 +1,7 @@
 # WF-0045 — Base Review Pipeline v1.0 (call-agnostic core)
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-03
 
@@ -319,6 +319,38 @@ Read-only grounding was performed against WF-0038 artifacts and current engine/t
 - C) Both A and B.
 > Recommendation: C — this provides the strongest anti-bloat guardrail.
 > **Selected: C**
+
+---
+
+## Post-Audit Clarification Q&A (Critical Findings Resolution)
+
+**Q1: Resolve scope contradiction (governance-only vs possible restructuring). What is the rule for WF-0045?**
+- A) Governance-only in Phase 1; restructuring is out-of-scope unless a specific invariant cannot be met.
+- B) Allow limited restructuring now if “seems useful”.
+- C) Explicitly include restructuring as planned scope.
+> Recommendation: A — removes ambiguity while preserving an invariant-driven escape hatch.
+> **Selected: A**
+
+**Q2: How do we map the 6 stages to runtime seams in the brainstorm?**
+- A) Add a stage-to-existing-seam mapping table (module/boundary per stage) with “no new seams by default”.
+- B) Keep abstract only; leave mapping to Phase 2.
+- C) Add rough prose notes only.
+> Recommendation: A — constrains interpretation drift and reduces Phase 1 rework.
+> **Selected: A**
+
+**Q3: Stage failure semantics: what should we lock now?**
+- A) Add per-stage error posture: contract-failure vs execution-failure classification + propagation rule to aggregation.
+- B) Only mention “deterministic failures” generally.
+- C) Defer all error semantics.
+> Recommendation: A — prevents hidden failure behavior divergence during planning/implementation.
+> **Selected: A**
+
+**Q4: Deferred agency/call policy gating for Phase 1—what is allowed before that policy is defined?**
+- A) Phase 1 may proceed only with existing “no engine branching + call-config activation” rule; extra policy assumptions are prohibited.
+- B) Phase 1 can add temporary assumptions and clean up later.
+- C) Block Phase 1 entirely until policy WF is done.
+> Recommendation: A — preserves momentum without introducing unmanaged policy drift.
+> **Selected: A**
 
 **Q4: Which decision should remain out of scope now (deferred)?**
 - A) Detailed agency/call-specific handling policy beyond current constraints.

@@ -1,7 +1,7 @@
 # WF-0045 — Base Review Pipeline v1.0 (call-agnostic core)
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-03
 
@@ -204,8 +204,31 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0045-base-review-pi
 - No-behavior-change-first posture for existing deterministic compatibility surfaces.
 - Define parity assertions for core outputs before/after any proposed contract tightening.
 - Any internal refactor must be justified by a specific core-stage invariant, not general cleanup.
+- Governance-only rule for Phase 1: no planned restructuring scope; restructuring is allowed only if a specific frozen invariant cannot be satisfied otherwise, and must be explicitly justified.
+
+## Stage-to-Seam Mapping (Current Baseline, No New Seams by Default)
+
+| Stage | Baseline seam (current runtime boundary) | Mapping rule |
+|---|---|---|
+| Structural Validation | Request validation + call-config activation boundary | Reuse existing validation/activation seams; no new core validator path by default |
+| Compliance Gate | Deterministic compliance check boundary | Keep deterministic check posture; no call-specific branching hooks |
+| Expectation-Level Evaluation | Pass-level expectation evaluation boundary | Stay on existing expectation-driven evaluation seam |
+| Cross-Node Alignment | Dependency-context handling boundary | Use declared dependency context only; no implicit cross-node heuristics |
+| Risk Audit | Finding classification/governance boundary | Risk signals must remain deterministic and call-agnostic |
+| Output Aggregation | Finding ordering + compatibility mapping boundary | Preserve deterministic ordering and compatibility mapping semantics |
+
+## Stage Failure Semantics (Locked for Phase 1)
+
+- Each stage must classify failures as either:
+  - `contract-failure` (input/config/identity/integrity violations), or
+  - `execution-failure` (runtime processing failure despite valid contract input).
+- Aggregation boundary must preserve deterministic failure propagation:
+  - no silent drops,
+  - no best-effort mutation of core semantics,
+  - explicit pass-through of failure class to downstream compatibility surfaces.
 
 ## Open Questions / Deferred
 
 - Deferred policy design: agency/call-specific requirement handling details beyond current call-config-only boundary.
 - Deferred optional-module design: competitive analysis extension architecture (kept out of core pipeline v1.0).
+- Phase 1 gating for deferred agency/call policy: Phase 1 may proceed only under existing constraints (`no engine branching` + `call-config activation/expectation variability`). Additional policy assumptions are prohibited until the deferred item is promoted and resolved.
