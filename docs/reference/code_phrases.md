@@ -46,6 +46,12 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | **`wrap up`** | End-of-session save: update docs, commit, push. Does **not** merge. |
 | **`ship it`** | Push feature branch → Create PR → Merge (remote + delete branch) → Sync local `main`. |
 
+## Communication
+
+| Phrase | Action |
+|--------|--------|
+| **`ELI5`** `: [topic]` | Explain Like I'm 5: break down the topic into the simplest possible terms using plain language, analogies, and zero jargon. |
+
 ## Phrase Selection Guide (When to Use What)
 
 | If you need... | Use this phrase |
@@ -66,6 +72,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | Quick project snapshot and next priorities | **`status`**, **`what's next`** |
 | End session without merge | **`wrap up`** |
 | Complete PR-based merge flow to `main` | **`ship it`** |
+| Get a simple, jargon-free explanation of a concept | **`ELI5`** |
 
 ## Composition Guideline
 
