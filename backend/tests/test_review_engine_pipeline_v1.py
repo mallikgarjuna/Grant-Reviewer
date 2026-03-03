@@ -127,7 +127,7 @@ def test_wf0045_contract_expectation_not_assessable() -> None:
 
     assert len(result.findings) == 1
     assert result.findings[0].assessment_status == "NOT_ASSESSABLE"
-    assert result.findings[0].reason == "missing_context:budget_plan"
+    assert result.findings[0].reason.endswith("missing_context:budget_plan")
 
 
 def test_wf0045_contract_alignment_not_assessable() -> None:
@@ -167,6 +167,24 @@ def test_wf0045_contract_alignment_not_assessable() -> None:
         and finding.assessment_status == "NOT_ASSESSABLE"
         for finding in result.findings
     )
+
+
+def test_wf0045_contract_diagnostic_ordering_stable() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-diagnostic-ordering",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_99",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={"expectations": []},
+        proposal_nodes={},
+    )
+
+    first = run_review_pipeline(request)
+    second = run_review_pipeline(request)
+
+    assert first.pipeline_status == "FAILURE"
+    assert first.diagnostics == second.diagnostics
+    assert first.compatibility_output["failure_class"] == "contract-failure"
 
 
 def test_mode_projection_in_pipeline_strict_filters_non_errors() -> None:

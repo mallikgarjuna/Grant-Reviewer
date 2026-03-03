@@ -180,7 +180,7 @@ Verification Steps:
 Risks (if any):
 - Existing rollout fixtures may encode implicit call-specific assumptions.
 
-### [ ] Task 8 — Output aggregation and compatibility-safe failure propagation
+### [x] Task 8 — Output aggregation and compatibility-safe failure propagation
 
 Goal:
 Finalize aggregation contract so stable ordered diagnostics and compatibility output always preserve upstream failure class.

@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from app.engine.compat.review_card_mapper import map_findings_to_review_cards
+from app.engine.compat.review_card_mapper import (
+    ReviewCardMappingError,
+    build_compatibility_output,
+    map_findings_to_review_cards,
+)
 from app.engine.contracts import (
     DiagnosticFindingV1,
     PipelineResult,
@@ -49,11 +53,11 @@ def _build_failure_result(
         pipeline_status="FAILURE",
         failure_code=failure_code,
         diagnostics=[str(error)],
-        compatibility_output={
-            "status": "FAILED",
-            "failure_class": failure_class,
-            "cards": [],
-        },
+        compatibility_output=build_compatibility_output(
+            review_cards=[],
+            failure_class=failure_class,
+            diagnostics=[str(error)],
+        ),
         findings=[],
         review_cards=[],
         telemetry=telemetry,
@@ -136,13 +140,16 @@ def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
             pipeline_status="SUCCESS",
             failure_code=None,
             diagnostics=[],
-            compatibility_output={
-                "status": "COMPLETED",
-                "cards": [card.__dict__ for card in cards],
-            },
+            compatibility_output=build_compatibility_output(review_cards=cards),
             findings=projected_findings,
             review_cards=cards,
             telemetry=telemetry,
+        )
+    except ReviewCardMappingError as err:
+        return _build_failure_result(
+            request=request,
+            stage_transitions=stage_transitions,
+            error=PipelineContractFailure(str(err)),
         )
     except PipelineContractFailure as err:
         return _build_failure_result(

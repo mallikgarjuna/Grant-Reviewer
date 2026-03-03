@@ -33,6 +33,27 @@ def _join_reasons_stably(reasons: list[str]) -> str:
     return " | ".join(sorted(set(reasons)))
 
 
+def build_compatibility_output(
+    *,
+    review_cards: list[ReviewCard],
+    failure_class: str | None = None,
+    diagnostics: list[str] | None = None,
+) -> dict[str, object]:
+    stable_diagnostics = sorted(set(diagnostics or []))
+    if failure_class is None:
+        return {
+            "status": "COMPLETED",
+            "cards": [card.__dict__ for card in review_cards],
+            "diagnostics": stable_diagnostics,
+        }
+    return {
+        "status": "FAILED",
+        "failure_class": failure_class,
+        "cards": [card.__dict__ for card in review_cards],
+        "diagnostics": stable_diagnostics,
+    }
+
+
 def map_findings_to_review_cards(
     *,
     findings: list[DiagnosticFindingV1],
