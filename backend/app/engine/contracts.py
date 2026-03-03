@@ -53,6 +53,7 @@ class DiagnosticFindingV1:
     severity: FindingSeverity
     assessment_status: AssessmentStatus
     reason: str
+    risk_taxonomy: str | None = None
 
 
 @dataclass(frozen=True)

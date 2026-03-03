@@ -3,10 +3,7 @@ from __future__ import annotations
 import pytest
 
 from app.engine.contracts import DiagnosticFindingV1, SubjectRef
-from app.engine.findings.aggregator import (
-    FindingAggregationError,
-    aggregate_findings,
-)
+from app.engine.findings.aggregator import aggregate_findings
 
 pytestmark = pytest.mark.no_db
 
@@ -30,7 +27,7 @@ def _finding(
     )
 
 
-def test_duplicate_identity_tuple_fails_deterministically() -> None:
+def test_duplicate_identity_tuple_merges_deterministically() -> None:
     findings = [
         _finding(
             expectation_ref="exp-1",
@@ -44,12 +41,23 @@ def test_duplicate_identity_tuple_fails_deterministically() -> None:
             check_id="check.presence",
             severity="ERROR",
         ),
+        DiagnosticFindingV1(
+            finding_id="finding:obs:node-1:exp-1:check.presence",
+            primary_expectation_ref="exp-1",
+            subject_ref=SubjectRef(node_logical_id="node-1"),
+            check_id="check.presence",
+            finding_kind="PRESENT_CONTENT",
+            severity="NOTE",
+            assessment_status="ASSESSED",
+            reason="alignment_reason",
+        ),
     ]
 
-    with pytest.raises(FindingAggregationError) as err_info:
-        aggregate_findings(findings=findings, expectation_order={"exp-1": 1})
+    merged = aggregate_findings(findings=findings, expectation_order={"exp-1": 1})
 
-    assert err_info.value.code == "DUPLICATE_FINDING_IDENTITY"
+    assert len(merged) == 1
+    assert merged[0].severity == "ERROR"
+    assert merged[0].reason == "alignment_reason | reason"
 
 
 def test_deterministic_order_uses_severity_then_expectation_order_then_check_id() -> None:
@@ -112,5 +120,6 @@ def test_wf0045_contract_risk_taxonomy_deterministic() -> None:
     )
 
     assert [item.reason for item in first] == [item.reason for item in second]
-    assert all("risk_taxonomy=" in item.reason for item in first)
+    assert all(item.risk_taxonomy is not None for item in first)
+    assert all(not item.reason.startswith("risk_taxonomy=") for item in first)
     assert any(item.assessment_status == "NOT_ASSESSABLE" for item in first)

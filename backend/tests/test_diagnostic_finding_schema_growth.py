@@ -18,6 +18,7 @@ ALLOWED_TOP_LEVEL_FIELDS_V1 = {
     "severity",
     "assessment_status",
     "reason",
+    "risk_taxonomy",
 }
 
 

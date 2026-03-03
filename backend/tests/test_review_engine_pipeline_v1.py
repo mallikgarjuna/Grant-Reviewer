@@ -65,7 +65,8 @@ def test_wf0045_contract_tracer_happy_path() -> None:
     assert first.diagnostics == []
     assert first.compatibility_output["status"] == "COMPLETED"
     assert first.compatibility_output["cards"] == [card.__dict__ for card in first.review_cards]
-    assert first.telemetry["run"]["stage_transitions"] == list(CORE_STAGE_SEQUENCE)
+    assert first.telemetry["run"]["planned_stage_sequence"] == list(CORE_STAGE_SEQUENCE)
+    assert first.telemetry["run"]["executed_stages"] == list(CORE_STAGE_SEQUENCE)
 
     assert json.dumps(first.to_dict(), sort_keys=True) == json.dumps(
         second.to_dict(),
@@ -98,10 +99,8 @@ def test_wf0045_contract_compliance_gate_blocks_downstream() -> None:
     assert result.failure_code == "CONTRACT_FAILURE"
     assert result.findings == []
     assert result.review_cards == []
-    assert result.telemetry["run"]["stage_transitions"] == [
-        "structural_validation",
-        "compliance_gate",
-    ]
+    assert result.telemetry["run"]["planned_stage_sequence"] == list(CORE_STAGE_SEQUENCE)
+    assert result.telemetry["run"]["executed_stages"] == ["structural_validation"]
 
 
 def test_wf0045_contract_expectation_not_assessable() -> None:
@@ -167,6 +166,43 @@ def test_wf0045_contract_alignment_not_assessable() -> None:
         and finding.assessment_status == "NOT_ASSESSABLE"
         for finding in result.findings
     )
+
+
+def test_wf0045_contract_alignment_overlap_merges_without_execution_failure() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-alignment-overlap",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_1",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ],
+            "proposal_nodes": [
+                {
+                    "id": "research_idea",
+                    "node_expectations": [
+                        {
+                            "evaluation_element_id": "exp-1",
+                            "dependencies": [],
+                        }
+                    ],
+                }
+            ],
+        },
+        proposal_nodes={"research_idea": "clear text"},
+    )
+
+    result = run_review_pipeline(request)
+
+    assert result.pipeline_status == "SUCCESS"
+    assert result.failure_code is None
+    assert len(result.findings) == 1
 
 
 def test_wf0045_contract_diagnostic_ordering_stable() -> None:

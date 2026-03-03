@@ -13,6 +13,7 @@ import pytest
 import yaml
 
 from app.engine.contracts import ReviewRequestV1
+import app.engine.pipeline_v1 as pipeline_v1
 from app.engine.pipeline_v1 import run_review_pipeline
 from app.models.domain import (
     EvaluationIntent,
@@ -525,7 +526,10 @@ def test_wf0045_contract_matrix_coverage() -> None:
     _load_wf0045_contract_cases(),
     ids=_wf0045_contract_case_id,
 )
-def test_wf0045_contract_matrix_execution(case: Wf0045ContractCase) -> None:
+def test_wf0045_contract_matrix_execution(
+    case: Wf0045ContractCase,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     if case["case_id"] == "call_agnostic_guardrails":
         core = ReviewExecutionCore(llm_client=EchoExpectationLLMClient(), timeout_seconds=0.5)
         node = _build_node()
@@ -552,13 +556,31 @@ def test_wf0045_contract_matrix_execution(case: Wf0045ContractCase) -> None:
         return
 
     if case["case_id"] == "execution_failure":
+        def _raise_execution_failure(*args, **kwargs):  # type: ignore[no-untyped-def]
+            del args, kwargs
+            raise RuntimeError("forced execution failure")
+
+        monkeypatch.setattr(
+            pipeline_v1,
+            "evaluate_expectations",
+            _raise_execution_failure,
+        )
         request = ReviewRequestV1(
             request_id="wf0045-matrix-execution-failure",
             mode="DIAGNOSTIC",
             stage_ref="STEP_1",
             call_config_digest="sha256:demo",
-            call_config_snapshot={"expectations": None},
-            proposal_nodes={},
+            call_config_snapshot={
+                "expectations": [
+                    {
+                        "expectation_id": "exp-exec",
+                        "node_logical_id": "research_idea",
+                        "check_id": "check.presence",
+                        "required": True,
+                    }
+                ]
+            },
+            proposal_nodes={"research_idea": "text"},
         )
         result = run_review_pipeline(request)
     elif case["case_id"] == "contract_failure":

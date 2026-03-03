@@ -28,9 +28,9 @@ def classify_risk_taxonomy(finding: DiagnosticFindingV1) -> str:
 
 def apply_risk_taxonomy(finding: DiagnosticFindingV1) -> DiagnosticFindingV1:
     taxonomy = classify_risk_taxonomy(finding)
-    if finding.reason.startswith("risk_taxonomy="):
+    if finding.risk_taxonomy is not None:
         return finding
     return replace(
         finding,
-        reason=f"risk_taxonomy={taxonomy}|{finding.reason}",
+        risk_taxonomy=taxonomy,
     )

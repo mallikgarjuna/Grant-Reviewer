@@ -89,4 +89,5 @@ def test_wf0045_contract_tracer_happy_path() -> None:
 
     result = run_review_pipeline(request)
 
-    assert result.telemetry["run"]["stage_transitions"] == list(CORE_STAGE_SEQUENCE)
+    assert result.telemetry["run"]["planned_stage_sequence"] == list(CORE_STAGE_SEQUENCE)
+    assert result.telemetry["run"]["executed_stages"] == list(CORE_STAGE_SEQUENCE)
