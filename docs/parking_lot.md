@@ -184,6 +184,7 @@ Promotion dependency note:
 | 32 | WF-0041 | nwo-veni-2025-preproposal-single-call-mvp | promoted | P0 #1 | 2026-03-01 |
 | 33 | WF-0042 | agent-memory-system | started-directly | - | 2026-03-01 |
 | 34 | WF-0043 | nwo-veni-2025-preproposal-single-call-mvp-harden | promoted | P0 #1 | 2026-03-01 |
+| 35 | WF-0045 | base-review-pipeline-v1-call-agnostic | promoted | P1 #15 (same-day park/pick) | 2026-03-03 |
 
 ---
 
@@ -218,3 +219,4 @@ Promotion dependency note:
 - **v2.7** (2026-03-02): Added P1 #11 for cross-call deterministic contract hardening of pipeline-v1 (`QUOTA_EXCEEDED`/`REVIEWS_DISABLED` included).
 - **v2.8** (2026-03-02): Added P1 #12 for source-grounded, per-call upload-gated re-authoring of `erc_cog_2026_full`, `nwo_vidi_2025_full_proposal`, and `erc_stg_2026_full`.
 - **v2.9** (2026-03-02): Refined P1 #12 to explicitly encode primary target + validation baseline + mandatory per-call source upload gates; added P1 #13 for separately parked optional non-NWO expansion (MSCA first, ZonMw follow-up).
+- **v3.0** (2026-03-03): Parked then immediately promoted a new P1 item to `WF-0045` — “Base Review Pipeline v1.0 (call-agnostic): structural validation, compliance gate, expectation-level evaluation, cross-node alignment, risk audit, output aggregation; optional competitive analysis kept out of core.”
