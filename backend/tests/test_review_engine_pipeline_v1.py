@@ -73,6 +73,37 @@ def test_wf0045_contract_tracer_happy_path() -> None:
     )
 
 
+def test_wf0045_contract_compliance_gate_blocks_downstream() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-compliance-block",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_99",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ]
+        },
+        proposal_nodes={"research_idea": "Clear proposal text."},
+    )
+
+    result = run_review_pipeline(request)
+
+    assert result.pipeline_status == "FAILURE"
+    assert result.failure_code == "CONTRACT_FAILURE"
+    assert result.findings == []
+    assert result.review_cards == []
+    assert result.telemetry["run"]["stage_transitions"] == [
+        "structural_validation",
+        "compliance_gate",
+    ]
+
+
 def test_mode_projection_in_pipeline_strict_filters_non_errors() -> None:
     request = ReviewRequestV1(
         request_id="req-002",

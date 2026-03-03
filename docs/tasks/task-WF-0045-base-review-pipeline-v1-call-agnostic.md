@@ -56,7 +56,7 @@ Verification Steps:
 Risks (if any):
 - Legacy engine error codes may need compatibility aliasing to avoid regressions.
 
-### [ ] Task 3 — Structural validation and compliance gate invariants
+### [x] Task 3 — Structural validation and compliance gate invariants
 
 Goal:
 Enforce stage entry/exit invariants for structural validation and compliance gate before expectation evaluation.

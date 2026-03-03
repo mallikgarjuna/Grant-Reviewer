@@ -137,3 +137,17 @@ def test_validator_rejects_duplicate_finding_identity() -> None:
         validate_review_request_payload(payload)
 
     assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
+
+
+def test_wf0045_contract_structural_gate_rejects_invalid() -> None:
+    payload = _payload()
+    payload["call_config_snapshot"] = {"expectations": "not-a-list"}
+    digest = hashlib.sha256(
+        canonicalize_for_digest(payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    payload["call_config_digest"] = f"sha256:{digest}"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
