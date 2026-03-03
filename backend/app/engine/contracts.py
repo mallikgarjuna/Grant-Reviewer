@@ -8,6 +8,7 @@ FindingKind = Literal["MISSING_CONTENT", "PRESENT_CONTENT"]
 FindingSeverity = Literal["ERROR", "WARNING", "NOTE"]
 AssessmentStatus = Literal["ASSESSED", "NOT_ASSESSABLE"]
 ReviewRating = Literal["CRITICAL", "WARNING", "NOTE"]
+FailureCode = Literal["CONTRACT_FAILURE", "EXECUTION_FAILURE"]
 
 
 @dataclass(frozen=True)
@@ -66,7 +67,7 @@ class ReviewCard:
 class PipelineResult:
     request_id: str
     pipeline_status: Literal["SUCCESS", "FAILURE"]
-    failure_code: str | None
+    failure_code: FailureCode | None
     diagnostics: list[str]
     compatibility_output: dict[str, object]
     findings: list[DiagnosticFindingV1]

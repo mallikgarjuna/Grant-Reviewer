@@ -32,7 +32,7 @@ Verification Steps:
 Risks (if any):
 - Existing pipeline payload format may require compatibility-preserving adapter fields.
 
-### [ ] Task 2 — Failure contract taxonomy and stable code mapping
+### [x] Task 2 — Failure contract taxonomy and stable code mapping
 
 Goal:
 Introduce explicit contract vs execution failure classes with stable WF-0045 codes and deterministic response mapping.
