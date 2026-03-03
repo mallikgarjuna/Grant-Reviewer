@@ -1,4 +1,5 @@
 from __future__ import annotations
+import re
 
 from app.engine.compat.review_card_mapper import (
     ReviewCardMappingError,
@@ -29,7 +30,6 @@ CORE_STAGE_SEQUENCE: tuple[str, ...] = (
     "risk_audit",
     "output_aggregation",
 )
-_SUPPORTED_STAGE_REFS = {"STEP_1"}
 
 
 def _build_failure_result(
@@ -65,7 +65,7 @@ def _build_failure_result(
 
 
 def _run_compliance_gate(request: ReviewRequestV1) -> None:
-    if request.stage_ref not in _SUPPORTED_STAGE_REFS:
+    if not re.fullmatch(r"STEP_[0-9]+", request.stage_ref.strip()):
         raise PipelineContractFailure(f"Unsupported stage_ref: {request.stage_ref}")
 
 
