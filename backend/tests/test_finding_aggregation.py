@@ -80,3 +80,37 @@ def test_deterministic_order_uses_severity_then_expectation_order_then_check_id(
     )
 
     assert [item.check_id for item in ordered] == ["check.a", "check.y", "check.z"]
+
+
+def test_wf0045_contract_risk_taxonomy_deterministic() -> None:
+    findings = [
+        _finding(
+            expectation_ref="exp-2",
+            subject_ref="node-2",
+            check_id="check.presence",
+            severity="NOTE",
+        ),
+        DiagnosticFindingV1(
+            finding_id="node-3:exp-3:check.dependency.context_missing",
+            primary_expectation_ref="exp-3",
+            subject_ref=SubjectRef(node_logical_id="node-3"),
+            check_id="check.dependency.context_missing",
+            finding_kind="MISSING_CONTENT",
+            severity="ERROR",
+            assessment_status="NOT_ASSESSABLE",
+            reason="missing_dependencies=['academic_profile']",
+        ),
+    ]
+
+    first = aggregate_findings(
+        findings=findings,
+        expectation_order={"exp-2": 1, "exp-3": 2},
+    )
+    second = aggregate_findings(
+        findings=findings,
+        expectation_order={"exp-2": 1, "exp-3": 2},
+    )
+
+    assert [item.reason for item in first] == [item.reason for item in second]
+    assert all("risk_taxonomy=" in item.reason for item in first)
+    assert any(item.assessment_status == "NOT_ASSESSABLE" for item in first)

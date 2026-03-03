@@ -131,7 +131,7 @@ Verification Steps:
 Risks (if any):
 - Context sourcing format differences between fixtures may require adapter normalization.
 
-### [ ] Task 6 — Risk audit deterministic taxonomy pass
+### [x] Task 6 — Risk audit deterministic taxonomy pass
 
 Goal:
 Derive risk findings deterministically from expectation/alignment outputs using a fixed taxonomy.
