@@ -1,8 +1,8 @@
 # WF-0045 — Base Review Pipeline v1.0 (call-agnostic core)
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-03
 
 ## Task Breakdown (Sequential Order)
@@ -144,6 +144,7 @@ Parallelizable: no
 Files to modify:
 - `backend/app/engine/findings/check_catalog.py`
 - `backend/app/engine/findings/aggregator.py`
+- `backend/app/engine/pipeline_v1.py`
 - `backend/tests/test_finding_aggregation.py`
 Acceptance Criteria:
 - Risk audit emits deterministic risk findings for same inputs.
@@ -164,7 +165,7 @@ User Stories: US1, US3
 PRD Requirements: FR5, FR6, FR9, FR10, FR12
 Depends on: Task 4
 Enables: Task 9
-Parallelizable: yes
+Parallelizable: no
 Files to modify:
 - `backend/app/services/review_execution_core.py`
 - `backend/tests/test_review_execution_core.py`
@@ -227,9 +228,11 @@ TDD Plan: RED: add failing matrix-driven test selectors `wf0045_contract_*`; GRE
 Verification Steps:
 - `cd backend && uv run pytest tests/test_review_execution_core.py -k wf0045_contract_`
 - `cd backend && uv run pytest -k wf0045_contract_`
+- `rg -n "wf0045_contract_" docs/walkthroughs/walkthrough-WF-0045-base-review-pipeline-v1-call-agnostic.md`
 Risks (if any):
 - New fixture selectors can collide with prior WF selector namespaces if naming is inconsistent.
 
 ## Changelog
 
 - v0.1 (2026-03-03): Initial task breakdown from PRD.
+- v0.2 (2026-03-03): Applied Phase 2.2 review refinements (risk-stage pipeline glue path, sequential metadata clarity, explicit walkthrough verification command); marked Ready for Implementation.
