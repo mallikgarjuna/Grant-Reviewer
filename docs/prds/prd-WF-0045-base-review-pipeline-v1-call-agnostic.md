@@ -1,8 +1,8 @@
 # WF-0045 — Base Review Pipeline v1.0 (call-agnostic core) PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-03
 
 ## 0. User Stories (MVP)
@@ -67,6 +67,8 @@ Last Updated: 2026-03-03
 - FR8 (US2, US4): Base output must preserve compatibility mapping semantics for downstream compatibility surfaces.
 - FR9 (US1, US2): Any proposed internal refactor must be justified by a specific locked stage invariant.
 - FR10 (US1, US3): No additional core stage may be introduced unless explicitly justified as cross-call mandatory in a new workflow.
+- FR11 (US2, US4): Core failure outputs must use stable failure codes and preserve class mapping (`contract-failure` vs `execution-failure`) through aggregation.
+- FR12 (US1, US2): Six-stage governance must map to existing runtime seams without requiring a mandatory engine rewrite in this WF.
 
 ## 5. Data & API Contracts
 
@@ -78,6 +80,10 @@ Last Updated: 2026-03-03
 - C6 (US2, US4, FR7, FR8): Compatibility output contract requires stable ordered diagnostics and compatibility-safe mapping behavior.
 - C7 (US1, US2, FR9): Governance contract for refactor requests requires explicit invariant linkage and parity assertions.
 - C8 (US1, US3, FR10): Core-stage growth policy is frozen for this WF; new stage proposals are deferred.
+- C9 (US2, US4, FR11): Failure output contract uses stable codes:
+  - `CONTRACT_FAILURE`: contract-invalid stage boundary input.
+  - `EXECUTION_FAILURE`: runtime stage failure despite valid contract input.
+- C10 (US1, US2, FR12): Stage governance is normative over existing seams; parity-first posture applies before any internal restructuring.
 
 State transitions:
 - `structural_validation_complete` -> `compliance_gate_complete` -> `expectation_evaluation_complete` -> `cross_node_alignment_complete` -> `risk_audit_complete` -> `aggregation_complete`.
@@ -103,6 +109,14 @@ Design tree (dependencies + ordering):
 1. Freeze stage and failure contracts in PRD. (FR1-FR4)
 2. Map contracts to existing engine seams and parity assertions. (FR5, FR7-FR9)
 3. Lock non-goals/deferred boundaries for optional modules. (FR6, FR10)
+
+Stage-to-seam mapping (baseline, no new seams required in this WF):
+- Structural validation -> request/call-config activation boundary. (FR2, FR12)
+- Compliance gate -> deterministic compliance checks boundary. (FR2, FR12)
+- Expectation-level evaluation -> expectation evaluation boundary. (FR2, FR12)
+- Cross-node alignment -> dependency-context handling boundary. (FR2, FR12)
+- Risk audit -> deterministic risk classification boundary. (FR2, FR12)
+- Output aggregation -> ordered diagnostics + compatibility mapping boundary. (FR7, FR8, FR12)
 
 Deep modules:
 - Core stage governance should expose small stable boundaries with hidden implementation detail.
@@ -132,6 +146,11 @@ Suggested file paths (coarse):
   - Verify stable ordering and compatibility mapping semantics remain unchanged for representative payloads.
 - Seam S4 (US2; FR9): Refactor-justification tests/documentation checks.
   - Verify any behavior-affecting change references a specific stage invariant and parity assertion.
+- Verification checklist (US2, US4; FR7, FR8, FR11, FR12):
+  - Run deterministic replay/parity tests for representative payloads against compatibility outputs.
+  - Assert stable diagnostic ordering for identical inputs.
+  - Assert failure code/class propagation for both contract-invalid and runtime-failure scenarios.
+  - Assert stage-to-seam mapping coverage in task-level test plan artifacts.
 
 ## 9. Telemetry (Minimal)
 
@@ -153,3 +172,4 @@ Suggested file paths (coarse):
 ## 12. Changelog
 
 - v0.1 (2026-03-03): Initial PRD from brainstorm.
+- v0.2 (2026-03-03): Applied risk-audit edits for stable failure-code contract, explicit stage-to-seam mapping, and verification checklist; marked Ready for Tasks.

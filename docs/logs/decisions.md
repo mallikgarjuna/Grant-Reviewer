@@ -1,5 +1,31 @@
 # Architectural Decisions
 
+## Date: 2026-03-03 (WF-0045: Base review pipeline v1 call-agnostic core)
+
+### AD 45.1: Six-stage governance contract is locked and call-agnostic
+- **WF ID**: WF-0045
+- **Context**: The existing runtime has deterministic behavior, but stage boundaries were not frozen as one explicit product-level contract.
+- **Decision**: Lock v1.0 base pipeline to six required stages with explicit entry/exit invariants; preserve call variability only through call configuration surfaces.
+- **Why**: Prevents hidden call/funder-specific branching and keeps the core reusable across calls.
+- **Tradeoff**: Limits near-term flexibility to add ad hoc core stages without starting a new workflow.
+- **Status**: Approved.
+
+### AD 45.2: Failure semantics are classed and compatibility-safe
+- **WF ID**: WF-0045
+- **Context**: Tightening stage governance can accidentally introduce ambiguous or partial failure behavior downstream.
+- **Decision**: Freeze failure classes at stage boundaries (`contract-failure`, `execution-failure`) and require deterministic propagation through aggregation with stable compatibility-safe output behavior.
+- **Why**: Preserves auditability and deterministic downstream behavior while contracts are formalized.
+- **Tradeoff**: Some degraded/best-effort behavior is intentionally disallowed.
+- **Status**: Approved.
+
+### AD 45.3: Competitive analysis is explicit out-of-core for v1.0
+- **WF ID**: WF-0045
+- **Context**: Optional analyses can create scope creep and mutate core semantics if not clearly bounded.
+- **Decision**: Keep competitive analysis and other optional modules out of the core v1.0 path; treat them as deferred extension work.
+- **Why**: Protects MVP delivery and keeps the base pipeline minimal, deterministic, and call-agnostic.
+- **Tradeoff**: Optional insights are deferred to a follow-on workflow.
+- **Status**: Approved.
+
 ## Date: 2026-03-01 (WF-0041: NWO Veni 2025 preproposal single-call MVP)
 
 ### AD 41.1: Review detail contract adds generic call identity
