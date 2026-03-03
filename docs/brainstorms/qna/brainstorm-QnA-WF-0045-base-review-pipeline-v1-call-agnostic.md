@@ -1,8 +1,8 @@
 # WF-0045 — Base Review Pipeline v1.0 (call-agnostic core)
 
 Artifact: brainstorm-qna
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-03
 
 ---

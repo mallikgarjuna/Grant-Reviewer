@@ -61,10 +61,6 @@ Contract Notes / Non-obvious constraints:
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0045-base-review-pipeline-v1-call-agnostic.md` (Section 1)
 
-## Open Questions / Deferred
-
-- Deferred (Phase 0/1 refinement): precise policy for agency/call-specific requirements handling within strict call-agnostic semantics (user requested to park this decision for later thought).
-
 ---
 
 ## 2. Desired Outcome (Section 2)
