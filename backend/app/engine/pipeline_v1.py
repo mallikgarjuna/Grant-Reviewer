@@ -12,8 +12,9 @@ from app.engine.errors import (
     map_failure_code,
 )
 from app.engine.findings.aggregator import aggregate_findings
-from app.engine.findings.evaluator import evaluate_expectations
+from app.engine.findings.evaluator import evaluate_expectations, evaluate_observations
 from app.engine.modes import project_findings_for_mode
+from app.engine.observations.extractor import extract_observations
 from app.engine.telemetry import build_pipeline_telemetry
 
 CORE_STAGE_SEQUENCE: tuple[str, ...] = (
@@ -66,10 +67,30 @@ def _run_compliance_gate(request: ReviewRequestV1) -> None:
 
 def _compute_diagnostic_findings(request: ReviewRequestV1) -> list[DiagnosticFindingV1]:
     expectations = list(request.call_config_snapshot.get("expectations", []))
-    findings = evaluate_expectations(
+    expectation_findings = evaluate_expectations(
         call_config_snapshot=request.call_config_snapshot,
         proposal_nodes=request.proposal_nodes,
     )
+    alignment_observations = extract_observations(
+        request.call_config_snapshot,
+        request.proposal_nodes,
+    )
+    expectation_to_check_id = {
+        str(expectation["expectation_id"]): str(expectation.get("check_id", "check.presence"))
+        for expectation in expectations
+    }
+    for observation in alignment_observations:
+        if observation.observation_kind == "DEPENDENCY_CONTEXT_MISSING":
+            expectation_to_check_id[observation.expectation_ref] = (
+                "check.dependency.context_missing"
+            )
+            continue
+        expectation_to_check_id.setdefault(observation.expectation_ref, "check.presence")
+    alignment_findings = evaluate_observations(
+        observations=alignment_observations,
+        expectation_to_check_id=expectation_to_check_id,
+    )
+    findings = expectation_findings + alignment_findings
     expectation_order = {
         str(expectation["expectation_id"]): index
         for index, expectation in enumerate(expectations)

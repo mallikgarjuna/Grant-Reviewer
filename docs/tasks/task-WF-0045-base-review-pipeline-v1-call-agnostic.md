@@ -106,7 +106,7 @@ Verification Steps:
 Risks (if any):
 - Existing evaluator assumptions may conflate missing content with not-assessable context.
 
-### [ ] Task 5 — Cross-node alignment stage with explicit dependency-context handling
+### [x] Task 5 — Cross-node alignment stage with explicit dependency-context handling
 
 Goal:
 Add deterministic cross-node alignment stage outputs, including explicit not-assessable reasons when dependency context is absent.

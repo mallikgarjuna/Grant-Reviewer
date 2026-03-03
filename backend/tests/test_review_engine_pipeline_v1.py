@@ -130,6 +130,45 @@ def test_wf0045_contract_expectation_not_assessable() -> None:
     assert result.findings[0].reason == "missing_context:budget_plan"
 
 
+def test_wf0045_contract_alignment_not_assessable() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-alignment-not-assessable",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_1",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "elem_cv_idea_alignment",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ],
+            "proposal_nodes": [
+                {
+                    "id": "research_idea",
+                    "node_expectations": [
+                        {
+                            "evaluation_element_id": "elem_cv_idea_alignment",
+                            "dependencies": ["academic_profile"],
+                        }
+                    ],
+                }
+            ],
+        },
+        proposal_nodes={"research_idea": "My research idea text"},
+    )
+
+    result = run_review_pipeline(request)
+
+    assert any(
+        finding.check_id == "check.dependency.context_missing"
+        and finding.assessment_status == "NOT_ASSESSABLE"
+        for finding in result.findings
+    )
+
+
 def test_mode_projection_in_pipeline_strict_filters_non_errors() -> None:
     request = ReviewRequestV1(
         request_id="req-002",

@@ -4,6 +4,9 @@ import hashlib
 
 from app.engine.contracts import AnchorV1, ObservationV1, SubjectRef
 
+ALIGNMENT_REASON_CONTEXT_PRESENT = "TEXT_PRESENT"
+ALIGNMENT_REASON_CONTEXT_MISSING = "DEPENDENCY_CONTEXT_MISSING"
+
 
 def _stable_hash(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
@@ -48,7 +51,7 @@ def extract_observations(
                         ),
                         subject_ref=SubjectRef(node_logical_id=node_id),
                         expectation_ref=expectation_ref,
-                        observation_kind="DEPENDENCY_CONTEXT_MISSING",
+                        observation_kind=ALIGNMENT_REASON_CONTEXT_MISSING,
                         anchor=anchor,
                         details={"missing_dependencies": missing_dependencies},
                     )
@@ -60,7 +63,7 @@ def extract_observations(
                     observation_id=f"obs:{node_id}:{expectation_ref}:present",
                     subject_ref=SubjectRef(node_logical_id=node_id),
                     expectation_ref=expectation_ref,
-                    observation_kind="TEXT_PRESENT",
+                    observation_kind=ALIGNMENT_REASON_CONTEXT_PRESENT,
                     anchor=anchor,
                     details={"has_text": bool(node_text.strip())},
                 )
