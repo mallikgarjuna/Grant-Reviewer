@@ -9,7 +9,12 @@ from app.engine.compat.review_card_mapper import (
     map_findings_to_review_cards,
 )
 from app.engine.contracts import DiagnosticFindingV1, SubjectRef
-from app.engine.errors import EngineErrorCode
+from app.engine.errors import (
+    EngineErrorCode,
+    PipelineContractFailure,
+    PipelineExecutionFailure,
+    map_failure_code,
+)
 from app.engine.review_request_validator import (
     ReviewRequestValidationError,
     canonicalize_for_digest,
@@ -74,3 +79,13 @@ def test_error_contract_expectation_ref_unresolvable() -> None:
         )
 
     assert err_info.value.code == "EXPECTATION_REF_UNRESOLVABLE"
+
+
+def test_wf0045_contract_failure_code_mapping() -> None:
+    contract_error = PipelineContractFailure("bad request shape")
+    execution_error = PipelineExecutionFailure("runtime crash")
+    unknown_error = RuntimeError("unexpected")
+
+    assert map_failure_code(contract_error) == "CONTRACT_FAILURE"
+    assert map_failure_code(execution_error) == "EXECUTION_FAILURE"
+    assert map_failure_code(unknown_error) == "EXECUTION_FAILURE"

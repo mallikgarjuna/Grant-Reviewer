@@ -50,3 +50,31 @@ def test_no_funder_specific_branching_in_stress_harness() -> None:
     source_calls = {scenario["source_call"] for scenario in fixture["scenarios"]}
     assert "nwo_veni_2025_preproposal" in source_calls
     assert "erc_stg_2026_full" in source_calls
+
+
+def test_wf0045_contract_stage_ref_variants_supported() -> None:
+    payload = _with_valid_digest(
+        {
+            "request_id": "wf0045-stage-variant",
+            "mode": "DIAGNOSTIC",
+            "stage_ref": "STEP_2",
+            "call_config_digest": "sha256:fixture",
+            "call_config_snapshot": {
+                "expectations": [
+                    {
+                        "expectation_id": "exp-stage-2",
+                        "node_logical_id": "b1_part1_scientific_proposal",
+                        "check_id": "check.required",
+                        "required": True,
+                    }
+                ]
+            },
+            "proposal_nodes": {
+                "b1_part1_scientific_proposal": "Detailed scientific proposal text"
+            },
+        }
+    )
+    request = validate_review_request_payload(payload)
+    result = run_review_pipeline(request)
+    assert result.pipeline_status == "SUCCESS"
+    assert [finding.severity for finding in result.findings] == ["NOTE"]

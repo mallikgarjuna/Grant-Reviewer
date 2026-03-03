@@ -6,7 +6,7 @@ import json
 import pytest
 
 from app.engine.contracts import ReviewRequestV1
-from app.engine.pipeline_v1 import run_review_pipeline
+from app.engine.pipeline_v1 import CORE_STAGE_SEQUENCE, run_review_pipeline
 from app.engine.review_request_validator import (
     ReviewRequestValidationError,
     canonicalize_for_digest,
@@ -51,6 +51,176 @@ def test_tracer_bullet_deterministic_pipeline_path() -> None:
         result_b.to_dict(),
         sort_keys=True,
     )
+
+
+def test_wf0045_contract_tracer_happy_path() -> None:
+    request = _minimal_request()
+
+    first = run_review_pipeline(request)
+    second = run_review_pipeline(request)
+
+    assert first.request_id == request.request_id
+    assert first.pipeline_status == "SUCCESS"
+    assert first.failure_code is None
+    assert first.diagnostics == []
+    assert first.compatibility_output["status"] == "COMPLETED"
+    assert first.compatibility_output["cards"] == [card.__dict__ for card in first.review_cards]
+    assert first.telemetry["run"]["planned_stage_sequence"] == list(CORE_STAGE_SEQUENCE)
+    assert first.telemetry["run"]["executed_stages"] == list(CORE_STAGE_SEQUENCE)
+
+    assert json.dumps(first.to_dict(), sort_keys=True) == json.dumps(
+        second.to_dict(),
+        sort_keys=True,
+    )
+
+
+def test_wf0045_contract_compliance_gate_blocks_downstream() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-compliance-block",
+        mode="DIAGNOSTIC",
+        stage_ref="BAD_STAGE",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ]
+        },
+        proposal_nodes={"research_idea": "Clear proposal text."},
+    )
+
+    result = run_review_pipeline(request)
+
+    assert result.pipeline_status == "FAILURE"
+    assert result.failure_code == "CONTRACT_FAILURE"
+    assert result.findings == []
+    assert result.review_cards == []
+    assert result.telemetry["run"]["planned_stage_sequence"] == list(CORE_STAGE_SEQUENCE)
+    assert result.telemetry["run"]["executed_stages"] == ["structural_validation"]
+
+
+def test_wf0045_contract_expectation_not_assessable() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-expectation-not-assessable",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_1",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "budget_plan",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ]
+        },
+        proposal_nodes={},
+    )
+
+    result = run_review_pipeline(request)
+
+    assert len(result.findings) == 1
+    assert result.findings[0].assessment_status == "NOT_ASSESSABLE"
+    assert result.findings[0].reason.endswith("missing_context:budget_plan")
+
+
+def test_wf0045_contract_alignment_not_assessable() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-alignment-not-assessable",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_1",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "elem_cv_idea_alignment",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ],
+            "proposal_nodes": [
+                {
+                    "id": "research_idea",
+                    "node_expectations": [
+                        {
+                            "evaluation_element_id": "elem_cv_idea_alignment",
+                            "dependencies": ["academic_profile"],
+                        }
+                    ],
+                }
+            ],
+        },
+        proposal_nodes={"research_idea": "My research idea text"},
+    )
+
+    result = run_review_pipeline(request)
+
+    assert any(
+        finding.check_id == "check.dependency.context_missing"
+        and finding.assessment_status == "NOT_ASSESSABLE"
+        for finding in result.findings
+    )
+
+
+def test_wf0045_contract_alignment_overlap_merges_without_execution_failure() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-alignment-overlap",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_1",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ],
+            "proposal_nodes": [
+                {
+                    "id": "research_idea",
+                    "node_expectations": [
+                        {
+                            "evaluation_element_id": "exp-1",
+                            "dependencies": [],
+                        }
+                    ],
+                }
+            ],
+        },
+        proposal_nodes={"research_idea": "clear text"},
+    )
+
+    result = run_review_pipeline(request)
+
+    assert result.pipeline_status == "SUCCESS"
+    assert result.failure_code is None
+    assert len(result.findings) == 1
+
+
+def test_wf0045_contract_diagnostic_ordering_stable() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-diagnostic-ordering",
+        mode="DIAGNOSTIC",
+        stage_ref="BAD_STAGE",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={"expectations": []},
+        proposal_nodes={},
+    )
+
+    first = run_review_pipeline(request)
+    second = run_review_pipeline(request)
+
+    assert first.pipeline_status == "FAILURE"
+    assert first.diagnostics == second.diagnostics
+    assert first.compatibility_output["failure_class"] == "contract-failure"
 
 
 def test_mode_projection_in_pipeline_strict_filters_non_errors() -> None:

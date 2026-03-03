@@ -4,6 +4,7 @@ import pytest
 
 from app.engine.compat.review_card_mapper import (
     ReviewCardMappingError,
+    build_compatibility_output,
     map_findings_to_review_cards,
 )
 from app.engine.contracts import DiagnosticFindingV1, SubjectRef
@@ -76,3 +77,36 @@ def test_mapper_raises_unresolvable_expectation_contract_error() -> None:
         )
 
     assert err_info.value.code == "EXPECTATION_REF_UNRESOLVABLE"
+
+
+def test_wf0045_contract_aggregation_failure_passthrough() -> None:
+    contract_output = build_compatibility_output(
+        review_cards=[],
+        failure_class="contract-failure",
+        diagnostics=["invalid contract input"],
+    )
+    execution_output = build_compatibility_output(
+        review_cards=[],
+        failure_class="execution-failure",
+        diagnostics=["engine crashed"],
+    )
+
+    assert contract_output["status"] == "FAILED"
+    assert contract_output["failure_class"] == "contract-failure"
+    assert execution_output["failure_class"] == "execution-failure"
+
+
+def test_wf0045_contract_diagnostic_ordering_stable() -> None:
+    output_a = build_compatibility_output(
+        review_cards=[],
+        failure_class="execution-failure",
+        diagnostics=["z-last", "a-first", "m-mid", "a-first"],
+    )
+    output_b = build_compatibility_output(
+        review_cards=[],
+        failure_class="execution-failure",
+        diagnostics=["m-mid", "z-last", "a-first"],
+    )
+
+    assert output_a["diagnostics"] == ["a-first", "m-mid", "z-last"]
+    assert output_a["diagnostics"] == output_b["diagnostics"]

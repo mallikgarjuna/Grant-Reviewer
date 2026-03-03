@@ -46,3 +46,27 @@ def test_missing_dependency_context_emits_observation() -> None:
     observations = extract_observations(snapshot, proposal_nodes)
 
     assert any(item.observation_kind == "DEPENDENCY_CONTEXT_MISSING" for item in observations)
+
+
+def test_wf0045_contract_alignment_with_context() -> None:
+    snapshot = _snapshot_with_dependency()
+    proposal_nodes = {
+        "research_idea": "My research idea text",
+        "academic_profile": "Academic profile text",
+    }
+
+    observations = extract_observations(snapshot, proposal_nodes)
+
+    assert len(observations) == 1
+    assert observations[0].observation_kind == "TEXT_PRESENT"
+
+
+def test_wf0045_contract_alignment_not_assessable() -> None:
+    snapshot = _snapshot_with_dependency()
+    proposal_nodes = {"research_idea": "My research idea text"}
+
+    observations = extract_observations(snapshot, proposal_nodes)
+
+    assert len(observations) == 1
+    assert observations[0].observation_kind == "DEPENDENCY_CONTEXT_MISSING"
+    assert observations[0].details["missing_dependencies"] == ["academic_profile"]

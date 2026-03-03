@@ -78,3 +78,23 @@ def test_write_json_deterministic_has_stable_ordering(tmp_path) -> None:
 
     assert first == second
     assert first.index('"a"') < first.index('"z"')
+
+
+def test_wf0045_contract_optional_extension_noop() -> None:
+    legacy_payload = _completed_payload()
+    pipeline_payload = {
+        **_completed_payload(),
+        "optional_extensions": {
+            "program_specific_policy": True,
+            "deep_alignment": True,
+        },
+    }
+
+    result = compare_structured_runs(
+        legacy_payload=legacy_payload,
+        pipeline_payload=pipeline_payload,
+    )
+
+    assert result["checks"]["structural_parity"] is True
+    assert result["checks"]["status_match"] is True
+    assert result["checks"]["error_code_match"] is True

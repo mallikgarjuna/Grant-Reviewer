@@ -94,6 +94,8 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 | 12 | Re-author ERC CoG + canonical validation baseline (source-gated per call) | product | Next WF scope: (1) primary target migrate `erc_cog_2026_full_official` legacy -> canonical v2 `erc_cog_2026_full`; (2) preflight validation baseline must pass for existing canonical calls `nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`; (3) in the same WF, re-author `nwo_vidi_2025_full_proposal` and `erc_stg_2026_full` from source PDFs too. For each call, stop and request official application-form + assessment-criteria PDFs separately before authoring that call YAML. (Ref: user directives, 2026-03-02.) | 2026-03-02 |
 | 13 | Optional follow-up expansion: add one new non-NWO call (MSCA first) | product | Parked separately from P1 #12: only if scope/time allows, add one new non-NWO call to maximize agency diversity without WF bloat; prefer MSCA first, then ZonMw in a follow-up WF. (Ref: user clarification on optional expansion, 2026-03-02.) | 2026-03-02 |
 | 14 | Universal Form: support nested call sections (ERC currently blocked) | product | Remove current nested-node gating in universal submit UI and render hierarchical calls (parent/child nodes) with stable ordering and clear labels so ERC calls no longer show “not yet supported”. (Ref: user report + screenshot, 2026-03-02.) | 2026-03-02 |
+| 15 | Define agency/call-specific variability policy under call-agnostic core | product | Formalize how agency/call-specific requirements are expressed via call config and activation without introducing hidden core branching; this was explicitly deferred during WF-0045 Phase 0.1 and should be resolved in a focused follow-up. (Ref: WF-0045 brainstorm deferred list, 2026-03-03.) | 2026-03-03 |
+| 16 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
 
 ### P1 Rationale Snapshot (2026-02-26)
 
@@ -184,6 +186,7 @@ Promotion dependency note:
 | 32 | WF-0041 | nwo-veni-2025-preproposal-single-call-mvp | promoted | P0 #1 | 2026-03-01 |
 | 33 | WF-0042 | agent-memory-system | started-directly | - | 2026-03-01 |
 | 34 | WF-0043 | nwo-veni-2025-preproposal-single-call-mvp-harden | promoted | P0 #1 | 2026-03-01 |
+| 35 | WF-0045 | base-review-pipeline-v1-call-agnostic | promoted | P1 #15 (historical same-day park/pick; numbering later reused) | 2026-03-03 |
 
 ---
 
@@ -218,3 +221,6 @@ Promotion dependency note:
 - **v2.7** (2026-03-02): Added P1 #11 for cross-call deterministic contract hardening of pipeline-v1 (`QUOTA_EXCEEDED`/`REVIEWS_DISABLED` included).
 - **v2.8** (2026-03-02): Added P1 #12 for source-grounded, per-call upload-gated re-authoring of `erc_cog_2026_full`, `nwo_vidi_2025_full_proposal`, and `erc_stg_2026_full`.
 - **v2.9** (2026-03-02): Refined P1 #12 to explicitly encode primary target + validation baseline + mandatory per-call source upload gates; added P1 #13 for separately parked optional non-NWO expansion (MSCA first, ZonMw follow-up).
+- **v3.0** (2026-03-03): Parked then immediately promoted a new P1 item to `WF-0045` — “Base Review Pipeline v1.0 (call-agnostic): structural validation, compliance gate, expectation-level evaluation, cross-node alignment, risk audit, output aggregation; optional competitive analysis kept out of core.”
+- **v3.1** (2026-03-03): Parked two critical deferred follow-ups from WF-0045 Phase 0.1: agency/call-specific variability policy definition and optional competitive-analysis extension boundary design.
+- **v3.2** (2026-03-03): Clarified WF-0045 initiative-log backlog reference as historical to avoid confusion with later reused active P1 numbering.

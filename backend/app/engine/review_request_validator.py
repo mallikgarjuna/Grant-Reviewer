@@ -30,6 +30,18 @@ class ReviewRequestValidationError(ValueError):
         }
 
 
+def _raise_malformed_request(
+    message: str,
+    *,
+    details: dict | None = None,
+) -> None:
+    raise ReviewRequestValidationError(
+        code="MALFORMED_REVIEW_REQUEST",
+        message=message,
+        details=details,
+    )
+
+
 def canonicalize_for_digest(payload: dict) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
@@ -37,9 +49,8 @@ def canonicalize_for_digest(payload: dict) -> str:
 def _validate_required_fields(payload: dict) -> None:
     missing = sorted(field for field in _REQUIRED_FIELDS if field not in payload)
     if missing:
-        raise ReviewRequestValidationError(
-            code="MALFORMED_REVIEW_REQUEST",
-            message="Missing required fields",
+        _raise_malformed_request(
+            "Missing required fields",
             details={"missing_fields": missing},
         )
 
@@ -62,23 +73,16 @@ def _validate_digest(call_config_snapshot: dict, call_config_digest: str) -> Non
 def _validate_snapshot_shape(call_config_snapshot: dict) -> None:
     expectations = call_config_snapshot.get("expectations")
     if not isinstance(expectations, list):
-        raise ReviewRequestValidationError(
-            code="MALFORMED_REVIEW_REQUEST",
-            message="call_config_snapshot.expectations must be a list",
-        )
+        _raise_malformed_request("call_config_snapshot.expectations must be a list")
 
     required_fields = {"expectation_id", "node_logical_id"}
     for index, expectation in enumerate(expectations):
         if not isinstance(expectation, dict):
-            raise ReviewRequestValidationError(
-                code="MALFORMED_REVIEW_REQUEST",
-                message=f"expectations[{index}] must be an object",
-            )
+            _raise_malformed_request(f"expectations[{index}] must be an object")
         missing = sorted(field for field in required_fields if field not in expectation)
         if missing:
-            raise ReviewRequestValidationError(
-                code="MALFORMED_REVIEW_REQUEST",
-                message=f"expectations[{index}] missing required fields",
+            _raise_malformed_request(
+                f"expectations[{index}] missing required fields",
                 details={"missing_fields": missing, "index": index},
             )
 
@@ -104,9 +108,8 @@ def _validate_snapshot_shape(call_config_snapshot: dict) -> None:
         seen_finding_identities.add(identity)
 
         if expectation_id in seen_expectation_ids:
-            raise ReviewRequestValidationError(
-                code="MALFORMED_REVIEW_REQUEST",
-                message=f"Duplicate expectation_id at expectations[{index}]",
+            _raise_malformed_request(
+                f"Duplicate expectation_id at expectations[{index}]",
                 details={"expectation_id": expectation_id, "index": index},
             )
         seen_expectation_ids.add(expectation_id)
@@ -115,35 +118,25 @@ def _validate_snapshot_shape(call_config_snapshot: dict) -> None:
 def _validate_proposal_nodes_shape(proposal_nodes: dict) -> None:
     for key, value in proposal_nodes.items():
         if not isinstance(key, str) or not isinstance(value, str):
-            raise ReviewRequestValidationError(
-                code="MALFORMED_REVIEW_REQUEST",
-                message="proposal_nodes must map string keys to string values",
+            _raise_malformed_request(
+                "proposal_nodes must map string keys to string values"
             )
 
 
 def validate_review_request_payload(payload: dict) -> ReviewRequestV1:
     if not isinstance(payload, dict):
-        raise ReviewRequestValidationError(
-            code="MALFORMED_REVIEW_REQUEST",
-            message="Review request payload must be an object",
-        )
+        _raise_malformed_request("Review request payload must be an object")
 
     _validate_required_fields(payload)
 
     mode = payload["mode"]
     if mode not in {"DIAGNOSTIC", "STRICT"}:
-        raise ReviewRequestValidationError(
-            code="MALFORMED_REVIEW_REQUEST",
-            message="mode must be DIAGNOSTIC or STRICT",
-        )
+        _raise_malformed_request("mode must be DIAGNOSTIC or STRICT")
 
     call_config_snapshot = payload["call_config_snapshot"]
     proposal_nodes = payload["proposal_nodes"]
     if not isinstance(call_config_snapshot, dict) or not isinstance(proposal_nodes, dict):
-        raise ReviewRequestValidationError(
-            code="MALFORMED_REVIEW_REQUEST",
-            message="call_config_snapshot and proposal_nodes must be objects",
-        )
+        _raise_malformed_request("call_config_snapshot and proposal_nodes must be objects")
 
     _validate_snapshot_shape(call_config_snapshot)
     _validate_proposal_nodes_shape(proposal_nodes)

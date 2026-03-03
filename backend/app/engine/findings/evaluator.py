@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from app.engine.contracts import DiagnosticFindingV1, ObservationV1
+from app.engine.contracts import DiagnosticFindingV1, ObservationV1, SubjectRef
 from app.engine.findings.check_catalog import ALLOWED_CHECK_IDS
 
 
@@ -14,6 +14,12 @@ class FindingEvaluationError(ValueError):
 def _build_reason(observation: ObservationV1) -> str:
     if observation.observation_kind == "DEPENDENCY_CONTEXT_MISSING":
         return f"missing_dependencies={observation.details.get('missing_dependencies', [])}"
+    return "content_evaluated"
+
+
+def _expectation_reason(*, is_missing_context: bool) -> str:
+    if is_missing_context:
+        return "missing_context"
     return "content_evaluated"
 
 
@@ -50,4 +56,47 @@ def evaluate_observations(
             )
         )
 
+    return findings
+
+
+def evaluate_expectations(
+    *,
+    call_config_snapshot: dict,
+    proposal_nodes: dict[str, str],
+) -> list[DiagnosticFindingV1]:
+    findings: list[DiagnosticFindingV1] = []
+    for expectation in call_config_snapshot.get("expectations", []):
+        expectation_id = str(expectation["expectation_id"])
+        node_logical_id = str(expectation["node_logical_id"])
+        check_id = str(expectation.get("check_id", "check.presence"))
+
+        if node_logical_id not in proposal_nodes:
+            findings.append(
+                DiagnosticFindingV1(
+                    finding_id=f"{node_logical_id}:{expectation_id}:{check_id}",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id=node_logical_id),
+                    check_id=check_id,
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="NOT_ASSESSABLE",
+                    reason=f"{_expectation_reason(is_missing_context=True)}:{node_logical_id}",
+                )
+            )
+            continue
+
+        node_text = proposal_nodes.get(node_logical_id, "")
+        is_missing = not node_text.strip() and bool(expectation.get("required", False))
+        findings.append(
+            DiagnosticFindingV1(
+                finding_id=f"{node_logical_id}:{expectation_id}:{check_id}",
+                primary_expectation_ref=expectation_id,
+                subject_ref=SubjectRef(node_logical_id=node_logical_id),
+                check_id=check_id,
+                finding_kind="MISSING_CONTENT" if is_missing else "PRESENT_CONTENT",
+                severity="ERROR" if is_missing else "NOTE",
+                assessment_status="ASSESSED",
+                reason=_expectation_reason(is_missing_context=False),
+            )
+        )
     return findings

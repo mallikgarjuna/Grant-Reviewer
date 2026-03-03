@@ -122,7 +122,11 @@ class ReviewExecutionCore:
         expectations: list[NodeExpectation],
         reviewer_policy_rules: list[ReviewerPolicyRule],
         cross_node_context: dict[str, str] | None = None,
+        call_identity: str | None = None,
+        optional_extensions: dict[str, bool] | None = None,
     ) -> NodeExecutionResult:
+        del call_identity
+        del optional_extensions
         base_payload = self._build_telemetry_payload(
             node_logical_id=node.logical_id,
             expectation_count=len(expectations),
