@@ -64,6 +64,11 @@ class ReviewCard:
 
 @dataclass(frozen=True)
 class PipelineResult:
+    request_id: str
+    pipeline_status: Literal["SUCCESS", "FAILURE"]
+    failure_code: str | None
+    diagnostics: list[str]
+    compatibility_output: dict[str, object]
     findings: list[DiagnosticFindingV1]
     review_cards: list[ReviewCard]
     telemetry: dict[str, object] = field(default_factory=dict)

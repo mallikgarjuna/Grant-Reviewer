@@ -22,6 +22,7 @@ def build_pipeline_telemetry(
     request: ReviewRequestV1,
     findings: list[DiagnosticFindingV1],
     status: str,
+    stage_transitions: list[str],
 ) -> dict[str, object]:
     request_scope_salt = f"{request.call_config_digest}:{request.request_id}"
     redacted_nodes = {
@@ -42,6 +43,7 @@ def build_pipeline_telemetry(
             "stage_ref": request.stage_ref,
             "engine_path": "pipeline_v1",
             "status": status,
+            "stage_transitions": stage_transitions,
         },
         "counters": {
             "finding_kind": _count_by([finding.finding_kind for finding in findings]),

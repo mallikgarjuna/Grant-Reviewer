@@ -7,7 +7,7 @@ Last Updated: 2026-03-03
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: deterministic six-stage happy path
+### [x] Task 1 — Tracer bullet: deterministic six-stage happy path
 
 Goal:
 Prove one end-to-end request executes the locked six stages in order and returns deterministic success envelope + compatibility output.

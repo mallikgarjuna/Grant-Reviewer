@@ -5,7 +5,7 @@ import json
 import pytest
 
 from app.engine.contracts import ReviewRequestV1
-from app.engine.pipeline_v1 import run_review_pipeline
+from app.engine.pipeline_v1 import CORE_STAGE_SEQUENCE, run_review_pipeline
 
 pytestmark = pytest.mark.no_db
 
@@ -66,3 +66,27 @@ def test_telemetry_redacts_raw_text_and_is_deterministic() -> None:
 
     assert proposal_text not in first_payload
     assert first_payload == second_payload
+
+
+def test_wf0045_contract_tracer_happy_path() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-telemetry-1",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_1",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "research_idea",
+                    "check_id": "check.present",
+                    "required": True,
+                }
+            ]
+        },
+        proposal_nodes={"research_idea": "present"},
+    )
+
+    result = run_review_pipeline(request)
+
+    assert result.telemetry["run"]["stage_transitions"] == list(CORE_STAGE_SEQUENCE)

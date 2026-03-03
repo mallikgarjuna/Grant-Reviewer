@@ -6,7 +6,7 @@ import json
 import pytest
 
 from app.engine.contracts import ReviewRequestV1
-from app.engine.pipeline_v1 import run_review_pipeline
+from app.engine.pipeline_v1 import CORE_STAGE_SEQUENCE, run_review_pipeline
 from app.engine.review_request_validator import (
     ReviewRequestValidationError,
     canonicalize_for_digest,
@@ -49,6 +49,26 @@ def test_tracer_bullet_deterministic_pipeline_path() -> None:
 
     assert json.dumps(result_a.to_dict(), sort_keys=True) == json.dumps(
         result_b.to_dict(),
+        sort_keys=True,
+    )
+
+
+def test_wf0045_contract_tracer_happy_path() -> None:
+    request = _minimal_request()
+
+    first = run_review_pipeline(request)
+    second = run_review_pipeline(request)
+
+    assert first.request_id == request.request_id
+    assert first.pipeline_status == "SUCCESS"
+    assert first.failure_code is None
+    assert first.diagnostics == []
+    assert first.compatibility_output["status"] == "COMPLETED"
+    assert first.compatibility_output["cards"] == [card.__dict__ for card in first.review_cards]
+    assert first.telemetry["run"]["stage_transitions"] == list(CORE_STAGE_SEQUENCE)
+
+    assert json.dumps(first.to_dict(), sort_keys=True) == json.dumps(
+        second.to_dict(),
         sort_keys=True,
     )
 

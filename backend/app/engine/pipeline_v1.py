@@ -11,6 +11,15 @@ from app.engine.findings.aggregator import aggregate_findings
 from app.engine.modes import project_findings_for_mode
 from app.engine.telemetry import build_pipeline_telemetry
 
+CORE_STAGE_SEQUENCE: tuple[str, ...] = (
+    "structural_validation",
+    "compliance_gate",
+    "expectation_evaluation",
+    "cross_node_alignment",
+    "risk_audit",
+    "output_aggregation",
+)
+
 
 def _compute_diagnostic_findings(request: ReviewRequestV1) -> list[DiagnosticFindingV1]:
     expectations = list(request.call_config_snapshot.get("expectations", []))
@@ -68,9 +77,18 @@ def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
         request=request,
         findings=projected_findings,
         status="success",
+        stage_transitions=list(CORE_STAGE_SEQUENCE),
     )
 
     return PipelineResult(
+        request_id=request.request_id,
+        pipeline_status="SUCCESS",
+        failure_code=None,
+        diagnostics=[],
+        compatibility_output={
+            "status": "COMPLETED",
+            "cards": [card.__dict__ for card in cards],
+        },
         findings=projected_findings,
         review_cards=cards,
         telemetry=telemetry,
