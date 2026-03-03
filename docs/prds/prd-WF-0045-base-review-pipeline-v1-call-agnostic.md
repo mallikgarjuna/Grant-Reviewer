@@ -1,7 +1,7 @@
 # WF-0045 — Base Review Pipeline v1.0 (call-agnostic core) PRD
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-03
 
@@ -69,6 +69,7 @@ Last Updated: 2026-03-03
 - FR10 (US1, US3): No additional core stage may be introduced unless explicitly justified as cross-call mandatory in a new workflow.
 - FR11 (US2, US4): Core failure outputs must use stable failure codes and preserve class mapping (`contract-failure` vs `execution-failure`) through aggregation.
 - FR12 (US1, US2): Six-stage governance must map to existing runtime seams without requiring a mandatory engine rewrite in this WF.
+- FR13 (US2, US4): Base pipeline contract must define a minimal request/response envelope for deterministic execution metadata and compatibility-safe output delivery.
 
 ## 5. Data & API Contracts
 
@@ -84,6 +85,31 @@ Last Updated: 2026-03-03
   - `CONTRACT_FAILURE`: contract-invalid stage boundary input.
   - `EXECUTION_FAILURE`: runtime stage failure despite valid contract input.
 - C10 (US1, US2, FR12): Stage governance is normative over existing seams; parity-first posture applies before any internal restructuring.
+- C11 (US2, US4, FR13): Request/response envelope contract is mandatory and stable for this workflow.
+
+Stage contract matrix (normative for v1.0):
+| Stage | Entry Invariant | Exit Invariant |
+|---|---|---|
+| Structural validation | Request envelope and call-config identity are present/resolvable | Deterministic validation result with normalized subject scope |
+| Compliance gate | Structural validation completed successfully | Deterministic compliance outcomes with explicit check results |
+| Expectation-level evaluation | Active expectations resolved from call configuration | Per-expectation assessed/not-assessable outcomes |
+| Cross-node alignment | Declared dependency context provided or explicitly absent | Deterministic alignment findings or explicit not-assessable reasons |
+| Risk audit | Expectation/alignment outputs finalized | Deterministic risk findings under core taxonomy |
+| Output aggregation | All prior stage outputs terminal (`success`/`failed_*`) | Stable ordered diagnostics + compatibility-safe aggregation output |
+
+Minimal request envelope:
+- `request_id`: stable request identifier for deterministic traceability.
+- `call_config_ref`: call identity/version/digest reference.
+- `subject_ref`: target subject identity/scope.
+- `mode`: execution projection mode over canonical findings set.
+- `input_payload`: proposal/evidence payload surface.
+
+Minimal response envelope:
+- `request_id`: echoes request identity.
+- `pipeline_status`: `success` | `failed_contract` | `failed_execution`.
+- `failure_code`: `CONTRACT_FAILURE` | `EXECUTION_FAILURE` | `null` on success.
+- `diagnostics`: stable ordered findings list.
+- `compatibility_output`: downstream-compatible aggregated output surface.
 
 State transitions:
 - `structural_validation_complete` -> `compliance_gate_complete` -> `expectation_evaluation_complete` -> `cross_node_alignment_complete` -> `risk_audit_complete` -> `aggregation_complete`.
@@ -146,11 +172,15 @@ Suggested file paths (coarse):
   - Verify stable ordering and compatibility mapping semantics remain unchanged for representative payloads.
 - Seam S4 (US2; FR9): Refactor-justification tests/documentation checks.
   - Verify any behavior-affecting change references a specific stage invariant and parity assertion.
+- Seam S5 (US2, US4; FR11, FR13): Failure-envelope and compatibility contract tests.
+  - Verify deterministic response envelope shape and failure-code propagation.
+  - Selector convention: `wf0045_contract_<surface>_<case_id>`.
 - Verification checklist (US2, US4; FR7, FR8, FR11, FR12):
   - Run deterministic replay/parity tests for representative payloads against compatibility outputs.
   - Assert stable diagnostic ordering for identical inputs.
   - Assert failure code/class propagation for both contract-invalid and runtime-failure scenarios.
   - Assert stage-to-seam mapping coverage in task-level test plan artifacts.
+  - Assert at least one deterministic pytest selector per contract surface using `wf0045_contract_<surface>_<case_id>`.
 
 ## 9. Telemetry (Minimal)
 
@@ -166,10 +196,11 @@ Suggested file paths (coarse):
 
 ## 11. Open Questions (if any)
 
-- None blocking for MVP PRD v0.1.
+- None blocking for MVP PRD v0.3.
 - Deferred item remains open: how to design optional competitive-analysis extension contract without altering core semantics.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-03): Initial PRD from brainstorm.
 - v0.2 (2026-03-03): Applied risk-audit edits for stable failure-code contract, explicit stage-to-seam mapping, and verification checklist; marked Ready for Tasks.
+- v0.3 (2026-03-03): Adversarial-pass hardening: added explicit normative stage matrix, minimal request/response envelope contract, and deterministic WF-0045 selector convention for contract tests.
