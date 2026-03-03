@@ -206,7 +206,7 @@ Verification Steps:
 Risks (if any):
 - Card-mapper hard failures may need adaptation to emit envelope-safe failure payloads.
 
-### [ ] Task 9 — WF-0045 contract matrix fixture and verification bundle
+### [x] Task 9 — WF-0045 contract matrix fixture and verification bundle
 
 Goal:
 Create WF-0045 contract matrix coverage and lock a repeatable verification command set for phase handoff.

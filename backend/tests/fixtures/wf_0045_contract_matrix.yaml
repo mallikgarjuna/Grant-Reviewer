@@ -1,0 +1,30 @@
+cases:
+  - case_id: happy_path
+    surface: pipeline_v1
+    selector: wf0045_contract_matrix_happy_path
+    expected_pipeline_status: SUCCESS
+    expected_failure_class: null
+
+  - case_id: contract_failure
+    surface: pipeline_v1
+    selector: wf0045_contract_matrix_contract_failure
+    expected_pipeline_status: FAILURE
+    expected_failure_class: contract-failure
+
+  - case_id: execution_failure
+    surface: pipeline_v1
+    selector: wf0045_contract_matrix_execution_failure
+    expected_pipeline_status: FAILURE
+    expected_failure_class: execution-failure
+
+  - case_id: ordering_parity
+    surface: pipeline_v1
+    selector: wf0045_contract_matrix_ordering_parity
+    expected_pipeline_status: SUCCESS
+    expected_failure_class: null
+
+  - case_id: call_agnostic_guardrails
+    surface: review_execution_core
+    selector: wf0045_contract_matrix_call_agnostic_guardrails
+    expected_pipeline_status: SUCCESS
+    expected_failure_class: null

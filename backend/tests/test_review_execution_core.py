@@ -12,6 +12,8 @@ from uuid import uuid4
 import pytest
 import yaml
 
+from app.engine.contracts import ReviewRequestV1
+from app.engine.pipeline_v1 import run_review_pipeline
 from app.models.domain import (
     EvaluationIntent,
     ExpectationStrength,
@@ -54,6 +56,14 @@ class Wf0044PolicyCase(TypedDict):
     expected_cards_count: int
 
 
+class Wf0045ContractCase(TypedDict):
+    case_id: str
+    surface: str
+    selector: str
+    expected_pipeline_status: str
+    expected_failure_class: str | None
+
+
 def _load_wf0043_policy_cases() -> list[Wf0043PolicyCase]:
     fixture = yaml.safe_load(
         Path("tests/fixtures/wf_0043_contract_matrix.yaml").read_text(encoding="utf-8")
@@ -88,6 +98,20 @@ def _load_wf0044_policy_cases() -> list[Wf0044PolicyCase]:
 
 def _wf0044_policy_case_id(value: str, *, surface: str) -> str:
     return f"wf0044_policy_{surface}_{value}"
+
+
+def _load_wf0045_contract_cases() -> list[Wf0045ContractCase]:
+    fixture = yaml.safe_load(
+        Path("tests/fixtures/wf_0045_contract_matrix.yaml").read_text(encoding="utf-8")
+    )
+    raw_cases = fixture.get("cases", [])
+    if not isinstance(raw_cases, list):
+        return []
+    return [case for case in raw_cases if isinstance(case, dict)]
+
+
+def _wf0045_contract_case_id(case: Wf0045ContractCase) -> str:
+    return case["selector"]
 
 
 class EchoExpectationLLMClient:
@@ -479,6 +503,105 @@ def test_wf0044_policy_review_execution_core_matrix_coverage() -> None:
     for case in cases:
         assert case["surface"] == "review_execution_core"
         assert case["selector"].startswith("wf0044_policy_review_execution_core_")
+
+
+def test_wf0045_contract_matrix_coverage() -> None:
+    cases = _load_wf0045_contract_cases()
+    case_ids = {case["case_id"] for case in cases}
+    assert case_ids == {
+        "happy_path",
+        "contract_failure",
+        "execution_failure",
+        "ordering_parity",
+        "call_agnostic_guardrails",
+    }
+    selectors = {case["selector"] for case in cases}
+    assert len(selectors) == len(cases)
+    assert all(selector.startswith("wf0045_contract_") for selector in selectors)
+
+
+@pytest.mark.parametrize(
+    "case",
+    _load_wf0045_contract_cases(),
+    ids=_wf0045_contract_case_id,
+)
+def test_wf0045_contract_matrix_execution(case: Wf0045ContractCase) -> None:
+    if case["case_id"] == "call_agnostic_guardrails":
+        core = ReviewExecutionCore(llm_client=EchoExpectationLLMClient(), timeout_seconds=0.5)
+        node = _build_node()
+        expectations = _build_expectations(count=1)
+        first = core.execute_assessable_node(
+            node=node,
+            snippet_text="Some snippet text",
+            expectations=expectations,
+            reviewer_policy_rules=[],
+            call_identity="matrix-call-a",
+            optional_extensions={"program_specific_policy": True},
+        )
+        second = core.execute_assessable_node(
+            node=node,
+            snippet_text="Some snippet text",
+            expectations=expectations,
+            reviewer_policy_rules=[],
+            call_identity="matrix-call-b",
+            optional_extensions={"program_specific_policy": False},
+        )
+        assert case["expected_pipeline_status"] == "SUCCESS"
+        assert first.failure is None
+        assert second.failure is None
+        return
+
+    if case["case_id"] == "execution_failure":
+        request = ReviewRequestV1(
+            request_id="wf0045-matrix-execution-failure",
+            mode="DIAGNOSTIC",
+            stage_ref="STEP_1",
+            call_config_digest="sha256:demo",
+            call_config_snapshot={"expectations": None},
+            proposal_nodes={},
+        )
+        result = run_review_pipeline(request)
+    elif case["case_id"] == "contract_failure":
+        request = ReviewRequestV1(
+            request_id="wf0045-matrix-contract-failure",
+            mode="DIAGNOSTIC",
+            stage_ref="STEP_99",
+            call_config_digest="sha256:demo",
+            call_config_snapshot={"expectations": []},
+            proposal_nodes={},
+        )
+        result = run_review_pipeline(request)
+    else:
+        request = ReviewRequestV1(
+            request_id=f"wf0045-matrix-{case['case_id']}",
+            mode="DIAGNOSTIC",
+            stage_ref="STEP_1",
+            call_config_digest="sha256:demo",
+            call_config_snapshot={
+                "expectations": [
+                    {
+                        "expectation_id": "exp-1",
+                        "node_logical_id": "research_idea",
+                        "check_id": "check.presence",
+                        "required": True,
+                    }
+                ]
+            },
+            proposal_nodes={"research_idea": "clear text"},
+        )
+        first = run_review_pipeline(request)
+        second = run_review_pipeline(request)
+        if case["case_id"] == "ordering_parity":
+            assert [item.finding_id for item in first.findings] == [
+                item.finding_id for item in second.findings
+            ]
+        result = first
+
+    assert result.pipeline_status == case["expected_pipeline_status"]
+    if case["expected_failure_class"] is None:
+        assert result.compatibility_output.get("failure_class") is None
+    else:
+        assert result.compatibility_output["failure_class"] == case["expected_failure_class"]
 
 
 def test_core_emits_telemetry_start_complete() -> None:
