@@ -1,7 +1,7 @@
 # WF-0045 — Base Review Pipeline v1.0 (call-agnostic core)
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-03
 
@@ -77,7 +77,7 @@ Acceptance Criteria:
 TDD Plan: RED: add failing selectors `wf0045_contract_structural_gate_rejects_invalid` and `wf0045_contract_compliance_gate_blocks_downstream`; GREEN: implement invariant checks + stage short-circuiting; REFACTOR: normalize validator error construction helpers.
 Verification Steps:
 - `cd backend && uv run pytest tests/test_review_request_validator.py -k wf0045_contract_`
-- `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k compliance_gate`
+- `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k wf0045_contract_compliance_gate_blocks_downstream`
 Risks (if any):
 - Tightened validation may expose previously tolerated malformed fixtures.
 
@@ -102,7 +102,7 @@ Acceptance Criteria:
 TDD Plan: RED: add failing selectors `wf0045_contract_expectation_assessed` and `wf0045_contract_expectation_not_assessable`; GREEN: implement expectation outcome mapping in evaluator + pipeline integration; REFACTOR: extract expectation iteration helper for deterministic ordering.
 Verification Steps:
 - `cd backend && uv run pytest tests/test_finding_evaluator.py -k wf0045_contract_expectation_`
-- `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k not_assessable`
+- `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k wf0045_contract_expectation_not_assessable`
 Risks (if any):
 - Existing evaluator assumptions may conflate missing content with not-assessable context.
 
@@ -127,7 +127,7 @@ Acceptance Criteria:
 TDD Plan: RED: add failing selectors `wf0045_contract_alignment_with_context` and `wf0045_contract_alignment_not_assessable`; GREEN: implement alignment-stage extraction and pipeline wiring; REFACTOR: isolate alignment reason constants.
 Verification Steps:
 - `cd backend && uv run pytest tests/test_observation_extractor.py -k wf0045_contract_alignment_`
-- `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k alignment`
+- `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k wf0045_contract_alignment_not_assessable`
 Risks (if any):
 - Context sourcing format differences between fixtures may require adapter normalization.
 
@@ -144,7 +144,6 @@ Parallelizable: no
 Files to modify:
 - `backend/app/engine/findings/check_catalog.py`
 - `backend/app/engine/findings/aggregator.py`
-- `backend/app/engine/pipeline_v1.py`
 - `backend/tests/test_finding_aggregation.py`
 Acceptance Criteria:
 - Risk audit emits deterministic risk findings for same inputs.
@@ -199,10 +198,11 @@ Acceptance Criteria:
 - Diagnostic ordering remains deterministic for identical inputs.
 - Compatibility output preserves failure class mapping without silent mutation.
 - Contract-invalid and execution-failed paths emit distinct, stable final envelope states.
+- Pipeline aggregation path includes risk-audit outcomes without call-specific branching.
 TDD Plan: RED: add failing selectors `wf0045_contract_aggregation_failure_passthrough` and `wf0045_contract_diagnostic_ordering_stable`; GREEN: implement failure propagation + ordering guards across pipeline/mapper; REFACTOR: centralize compatibility output shaping.
 Verification Steps:
 - `cd backend && uv run pytest tests/test_review_card_mapper.py -k wf0045_contract_`
-- `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k ordering`
+- `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k wf0045_contract_diagnostic_ordering_stable`
 Risks (if any):
 - Card-mapper hard failures may need adaptation to emit envelope-safe failure payloads.
 
@@ -236,3 +236,4 @@ Risks (if any):
 
 - v0.1 (2026-03-03): Initial task breakdown from PRD.
 - v0.2 (2026-03-03): Applied Phase 2.2 review refinements (risk-stage pipeline glue path, sequential metadata clarity, explicit walkthrough verification command); marked Ready for Implementation.
+- v0.3 (2026-03-03): Adversarial Part B/C pass: tightened WF-0045 deterministic verification selectors, restored Task 6 atomicity (<=3 files), and clarified Task 8 risk-audit aggregation coverage.
