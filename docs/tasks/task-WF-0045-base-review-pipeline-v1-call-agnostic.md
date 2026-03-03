@@ -81,7 +81,7 @@ Verification Steps:
 Risks (if any):
 - Tightened validation may expose previously tolerated malformed fixtures.
 
-### [ ] Task 4 — Expectation-level evaluation contract (assessed/not-assessable)
+### [x] Task 4 — Expectation-level evaluation contract (assessed/not-assessable)
 
 Goal:
 Produce deterministic per-expectation outcomes with explicit assessed vs not-assessable semantics from call-config expectations.

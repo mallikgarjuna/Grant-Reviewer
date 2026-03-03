@@ -5,7 +5,6 @@ from app.engine.contracts import (
     DiagnosticFindingV1,
     PipelineResult,
     ReviewRequestV1,
-    SubjectRef,
 )
 from app.engine.errors import (
     PipelineContractFailure,
@@ -13,6 +12,7 @@ from app.engine.errors import (
     map_failure_code,
 )
 from app.engine.findings.aggregator import aggregate_findings
+from app.engine.findings.evaluator import evaluate_expectations
 from app.engine.modes import project_findings_for_mode
 from app.engine.telemetry import build_pipeline_telemetry
 
@@ -66,28 +66,10 @@ def _run_compliance_gate(request: ReviewRequestV1) -> None:
 
 def _compute_diagnostic_findings(request: ReviewRequestV1) -> list[DiagnosticFindingV1]:
     expectations = list(request.call_config_snapshot.get("expectations", []))
-    findings: list[DiagnosticFindingV1] = []
-
-    for expectation in expectations:
-        expectation_id = str(expectation["expectation_id"])
-        node_logical_id = str(expectation["node_logical_id"])
-        check_id = str(expectation.get("check_id", "check.unspecified"))
-        node_text = request.proposal_nodes.get(node_logical_id, "")
-        is_missing = not node_text.strip() and bool(expectation.get("required", False))
-
-        findings.append(
-            DiagnosticFindingV1(
-                finding_id=f"{node_logical_id}:{expectation_id}:{check_id}",
-                primary_expectation_ref=expectation_id,
-                subject_ref=SubjectRef(node_logical_id=node_logical_id),
-                check_id=check_id,
-                finding_kind="MISSING_CONTENT" if is_missing else "PRESENT_CONTENT",
-                severity="ERROR" if is_missing else "NOTE",
-                assessment_status="ASSESSED",
-                reason="Missing required content" if is_missing else "Content present",
-            )
-        )
-
+    findings = evaluate_expectations(
+        call_config_snapshot=request.call_config_snapshot,
+        proposal_nodes=request.proposal_nodes,
+    )
     expectation_order = {
         str(expectation["expectation_id"]): index
         for index, expectation in enumerate(expectations)

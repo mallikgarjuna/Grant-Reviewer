@@ -104,6 +104,32 @@ def test_wf0045_contract_compliance_gate_blocks_downstream() -> None:
     ]
 
 
+def test_wf0045_contract_expectation_not_assessable() -> None:
+    request = ReviewRequestV1(
+        request_id="req-wf0045-expectation-not-assessable",
+        mode="DIAGNOSTIC",
+        stage_ref="STEP_1",
+        call_config_digest="sha256:demo",
+        call_config_snapshot={
+            "expectations": [
+                {
+                    "expectation_id": "exp-1",
+                    "node_logical_id": "budget_plan",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ]
+        },
+        proposal_nodes={},
+    )
+
+    result = run_review_pipeline(request)
+
+    assert len(result.findings) == 1
+    assert result.findings[0].assessment_status == "NOT_ASSESSABLE"
+    assert result.findings[0].reason == "missing_context:budget_plan"
+
+
 def test_mode_projection_in_pipeline_strict_filters_non_errors() -> None:
     request = ReviewRequestV1(
         request_id="req-002",
