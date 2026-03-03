@@ -77,7 +77,7 @@ def test_wf0045_contract_compliance_gate_blocks_downstream() -> None:
     request = ReviewRequestV1(
         request_id="req-wf0045-compliance-block",
         mode="DIAGNOSTIC",
-        stage_ref="STEP_99",
+        stage_ref="BAD_STAGE",
         call_config_digest="sha256:demo",
         call_config_snapshot={
             "expectations": [
@@ -173,7 +173,7 @@ def test_wf0045_contract_diagnostic_ordering_stable() -> None:
     request = ReviewRequestV1(
         request_id="req-wf0045-diagnostic-ordering",
         mode="DIAGNOSTIC",
-        stage_ref="STEP_99",
+        stage_ref="BAD_STAGE",
         call_config_digest="sha256:demo",
         call_config_snapshot={"expectations": []},
         proposal_nodes={},

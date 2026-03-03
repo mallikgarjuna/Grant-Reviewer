@@ -565,7 +565,7 @@ def test_wf0045_contract_matrix_execution(case: Wf0045ContractCase) -> None:
         request = ReviewRequestV1(
             request_id="wf0045-matrix-contract-failure",
             mode="DIAGNOSTIC",
-            stage_ref="STEP_99",
+            stage_ref="BAD_STAGE",
             call_config_digest="sha256:demo",
             call_config_snapshot={"expectations": []},
             proposal_nodes={},
