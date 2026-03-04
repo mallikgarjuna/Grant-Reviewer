@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Literal
+from typing import Any, Literal, NoReturn
 
 from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic_core import ErrorDetails
 
 from app.engine.contracts import ActivatedCallConfigSnapshotV1, ReviewRequestV1
 
@@ -46,7 +47,7 @@ def _raise_malformed_request(
     message: str,
     *,
     details: dict | None = None,
-) -> None:
+) -> NoReturn:
     raise ReviewRequestValidationError(
         code="MALFORMED_REVIEW_REQUEST",
         message=message,
@@ -77,7 +78,7 @@ def _map_error_kind(error_type: str) -> str:
     return "value_error"
 
 
-def _normalize_validation_error_entry(error: dict[str, Any]) -> dict[str, str]:
+def _normalize_validation_error_entry(error: ErrorDetails) -> dict[str, str]:
     kind = _map_error_kind(str(error["type"]))
     return {
         "path": _to_json_pointer(tuple(error["loc"])),
