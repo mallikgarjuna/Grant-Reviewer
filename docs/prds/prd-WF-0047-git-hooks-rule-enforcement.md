@@ -1,13 +1,14 @@
 # WF-0047 — Git Hooks Rule Enforcement
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-04
 
 ## Changelog
 
 - v0.1 (2026-03-04): Initial PRD from brainstorm
+- v0.2 (2026-03-04): Applied risk audit edits (isolation constraints and regex fix)
 
 ## 0. User Stories (MVP)
 
@@ -45,10 +46,11 @@ Last Updated: 2026-03-04
 
 - FR1 (US1): The system shall provide a `check_agents_md.py` script that reads `AGENTS.md` and exits 1 if the line count exceeds 45.
 - FR2 (US1): The line counting logic must account for `pre-commit`'s trailing EOF newline (i.e. if the file is exactly 45 text lines plus one trailing newline, it must pass).
-- FR3 (US2): The system shall provide a `check_commit_msg.py` script that reads the `.git/COMMIT_EDITMSG` file and exits 1 if the first line does not match the regex `^WF-\d{4}: `.
+- FR3 (US2): The system shall provide a `check_commit_msg.py` script that reads the `.git/COMMIT_EDITMSG` file and exits 1 if the first line does not match the regex `^WF-\d{4}.*: `.
 - FR4 (US3): The `check_commit_msg.py` script must exit 0 immediately if the commit message begins with `Merge branch` or `Revert`.
 - FR5 (US1, US2): The hook scripts must use only Python standard library modules (`sys`, `re`, `os`, etc.).
 - FR6 (US1, US2): The hooks must be integrated into `.pre-commit-config.yaml` under `repo: local` for the `pre-commit` and `commit-msg` stages respectively.
+- FR7 (US1, US2): The pre-commit hooks must be configured with `language: python` to guarantee execution isolation, avoiding host-system dependency issues.
 
 ## 5. Data & API Contracts
 
@@ -57,7 +59,7 @@ Last Updated: 2026-03-04
   - Output: Exit 0 if line count <= 45 (excluding trailing EOF newline). Exit 1 with error message otherwise.
 - **Commit Message Check Contract** (US2, US3, FR3, FR4, FR5):
   - Input: File path to `.git/COMMIT_EDITMSG` passed by `pre-commit` during the `commit-msg` stage.
-  - Output: Exit 0 if match `^WF-\d{4}: ` or starts with `Merge branch`/`Revert`. Exit 1 with error message otherwise.
+  - Output: Exit 0 if match `^WF-\d{4}.*: ` or starts with `Merge branch`/`Revert`. Exit 1 with error message otherwise.
 
 ## 6. Components / Modules
 
