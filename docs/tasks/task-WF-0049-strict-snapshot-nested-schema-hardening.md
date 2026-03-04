@@ -1,7 +1,7 @@
 # WF-0049 — Strict Snapshot Nested Schema Hardening
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-04
 
@@ -55,7 +55,7 @@ TDD Plan:
 - REFACTOR: Consolidate shared strict model base config for nested surfaces.
 Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_elements_surface_strict`
-- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_tracer_`
+- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_tracer_criteria_nested_unknown_rejected`
 Risks (if any): Producer fixtures with legacy extra keys may begin failing and require explicit compatibility expectations.
 
 ### [ ] Task 3 — Strict nested models for `reviewer_policy` and `prompt_knobs`
@@ -80,7 +80,7 @@ TDD Plan:
 - REFACTOR: Reuse common nested strictness helpers/constants to avoid duplicate model config.
 Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0049_contract_reviewer_policy_surface_strict or wf0049_contract_prompt_knobs_surface_strict"`
-- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_tracer_`
+- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_tracer_criteria_nested_unknown_rejected`
 Risks (if any): Prompt knob defaults may require careful optional typing to avoid accidental required-field regressions.
 
 ### [ ] Task 4 — Deterministic nested field error contract normalization
@@ -155,7 +155,7 @@ TDD Plan:
 - REFACTOR: Normalize matrix loader/helper to keep fixture schema stable.
 Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_compat_`
-- `cd backend && uv run pytest -k wf0049_contract_`
+- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0049_contract_compat_happy_valid_payload or wf0049_contract_compat_legacy_extra_nested_key or wf0049_contract_compat_nested_type_mismatch or wf0049_contract_compat_omitted_optional_default_equivalence"`
 - `rg -n "wf0049_contract_compat_|fail-closed" docs/walkthroughs/walkthrough-WF-0049-strict-snapshot-nested-schema-hardening.md`
 Risks (if any): Matrix fixture schema drift can hide rollout blockers unless selector coverage remains explicit.
 
@@ -182,10 +182,11 @@ TDD Plan:
 Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_scope_request_boundary_only`
 - `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k wf0049_contract_scope_pipeline_semantics_stable`
-- `cd backend && uv run pytest -k wf0049_contract_`
+- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0049_contract_scope_request_boundary_only or wf0049_contract_tracer_schema_precedes_digest"`
 Risks (if any): Existing pipeline fixtures may implicitly encode call-specific assumptions and need normalization.
 
 ## Changelog
 
 - v0.1 (2026-03-04): Initial task breakdown from PRD
 - v0.2 (2026-03-04): Applied Part B review edits (tightened tracer-bullet coherence, split criteria/elements atomicity, added explicit FR11/FR12 scope-guard task); marked Ready for Implementation
+- v0.3 (2026-03-04): Adversarial Part B/C pass: tightened task-level verification commands to deterministic WF-0049 selectors; retained Ready for Implementation

@@ -11,3 +11,4 @@
 
 - **2026-03-04 — WF-0048 Phase 2 scope lock:** Keep tasks constrained to `ActivatedCallConfigSnapshotV1` boundary + deterministic contract-failure semantics + deterministic contract tests; avoid adding broader pipeline/UI refactors in task plans.
 - **2026-03-04 — Phase 2 PRD scope FR coverage:** If PRD includes explicit scope-guard requirements (for example `FR11`, `FR12`), include a dedicated atomic scope-guard task with deterministic verification selectors before marking `Ready for Implementation`.
+- **2026-03-04 — Adversarial Task Review delta pattern:** Treat broad verification filters (for example `-k wfXXXX_contract_`) as non-blocking precision gaps; tighten to task-specific deterministic selectors in Part C before final readiness handoff.
