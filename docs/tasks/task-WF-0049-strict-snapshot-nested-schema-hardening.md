@@ -83,7 +83,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_tracer_criteria_nested_unknown_rejected`
 Risks (if any): Prompt knob defaults may require careful optional typing to avoid accidental required-field regressions.
 
-### [ ] Task 4 — Deterministic nested field error contract normalization
+### [x] Task 4 — Deterministic nested field error contract normalization
 Goal:
 Normalize nested validation errors into stable `{path, kind, message}` entries sorted deterministically and aligned to frozen kind enum.
 Slice: error-contract-stability

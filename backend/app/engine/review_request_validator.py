@@ -70,24 +70,27 @@ def _map_error_kind(error_type: str) -> str:
         return "unknown_field"
     if error_type == "missing":
         return "missing_field"
+    if error_type.endswith("_type") or error_type.endswith("_parsing"):
+        return "type_error"
     if error_type == "literal_error" or error_type.startswith("value_error"):
         return "value_error"
-    if error_type.endswith("_type"):
-        return "type_error"
     return "value_error"
 
 
+def _normalize_validation_error_entry(error: dict[str, Any]) -> dict[str, str]:
+    kind = _map_error_kind(str(error["type"]))
+    return {
+        "path": _to_json_pointer(tuple(error["loc"])),
+        "kind": kind,
+        "message": _FIELD_ERROR_MESSAGE_TEMPLATES[kind],
+    }
+
+
 def _normalize_field_errors(validation_error: ValidationError) -> list[dict[str, str]]:
-    field_errors: list[dict[str, str]] = []
-    for error in validation_error.errors(include_url=False):
-        kind = _map_error_kind(str(error["type"]))
-        field_errors.append(
-            {
-                "path": _to_json_pointer(tuple(error["loc"])),
-                "kind": kind,
-                "message": _FIELD_ERROR_MESSAGE_TEMPLATES[kind],
-            }
-        )
+    field_errors = [
+        _normalize_validation_error_entry(error)
+        for error in validation_error.errors(include_url=False)
+    ]
     return sorted(field_errors, key=lambda item: (item["path"], item["kind"], item["message"]))
 
 

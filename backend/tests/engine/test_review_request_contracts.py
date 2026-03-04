@@ -65,6 +65,17 @@ def _assert_malformed_request_with_field_error(
     } in err.details["field_errors"]
 
 
+def _find_field_error_by_path(
+    errors: list[dict[str, str]],
+    *,
+    path: str,
+) -> dict[str, str]:
+    for entry in errors:
+        if entry["path"] == path:
+            return entry
+    raise AssertionError(f"Expected field error for path {path!r}, got {errors!r}")
+
+
 def test_wf0048_contract_tracer_valid_snapshot_digest_ok() -> None:
     payload = _build_payload()
 
@@ -421,4 +432,100 @@ def test_wf0049_contract_prompt_knobs_surface_strict() -> None:
         path="/call_config_snapshot/prompt_knobs/unknown_knob",
         kind="unknown_field",
         message="Unknown field is not allowed.",
+    )
+
+
+def test_wf0049_contract_nested_field_error_sort() -> None:
+    payload = _build_payload()
+    del payload["request_id"]
+    payload["unknown_top_level"] = "bad"
+    payload["proposal_nodes"] = {"research_idea": 123}
+    payload["call_config_snapshot"]["evaluation_criteria"] = [
+        {
+            "name": "Criterion 1",
+            "stage": "STEP_1",
+            "weight_percent": "heavy",
+            "evaluation_elements": [
+                {
+                    "id": "elem-1",
+                    "name": "Element 1",
+                    "description": "desc",
+                    "unknown_nested": "bad",
+                }
+            ],
+            "unexpected_field": "bad",
+        }
+    ]
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    errors = err_info.value.details["field_errors"]
+    _assert_field_errors_are_sorted(errors)
+
+
+def test_wf0049_contract_kind_enum_frozen() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["evaluation_criteria"] = [
+        {
+            "name": "Criterion 1",
+            "stage": "STEP_1",
+            "weight_percent": "heavy",
+            "evaluation_elements": [],
+            "unexpected_field": "bad",
+        }
+    ]
+    digest = hashlib.sha256(
+        canonicalize_for_digest(payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    payload["call_config_digest"] = f"sha256:{digest}"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    errors = err_info.value.details["field_errors"]
+    kinds = {entry["kind"] for entry in errors}
+    assert kinds <= {"unknown_field", "missing_field", "type_error", "value_error"}
+    assert _find_field_error_by_path(
+        errors,
+        path="/call_config_snapshot/evaluation_criteria/0/weight_percent",
+    )["kind"] == "type_error"
+
+
+def test_wf0049_contract_message_template_stable() -> None:
+    payload = _build_payload()
+    del payload["request_id"]
+    payload["call_config_snapshot"]["schema_version"] = "v2"
+    payload["call_config_snapshot"]["evaluation_criteria"] = [
+        {
+            "name": "Criterion 1",
+            "stage": "STEP_1",
+            "weight_percent": "heavy",
+            "evaluation_elements": [],
+            "unexpected_field": "bad",
+        }
+    ]
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    errors = err_info.value.details["field_errors"]
+    assert _find_field_error_by_path(errors, path="/request_id")["message"] == "Field is required."
+    assert (
+        _find_field_error_by_path(errors, path="/call_config_snapshot/schema_version")["message"]
+        == "Invalid field value."
+    )
+    assert (
+        _find_field_error_by_path(
+            errors,
+            path="/call_config_snapshot/evaluation_criteria/0/weight_percent",
+        )["message"]
+        == "Invalid field type."
+    )
+    assert (
+        _find_field_error_by_path(
+            errors,
+            path="/call_config_snapshot/evaluation_criteria/0/unexpected_field",
+        )["message"]
+        == "Unknown field is not allowed."
     )
