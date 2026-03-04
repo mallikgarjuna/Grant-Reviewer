@@ -7,7 +7,7 @@ Last Updated: 2026-03-04
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: strict snapshot contract accepted on happy path
+### [x] Task 1 — Tracer bullet: strict snapshot contract accepted on happy path
 Goal:
 Prove one end-to-end contract request succeeds only when `call_config_snapshot` matches strict `ActivatedCallConfigSnapshotV1` with deterministic digest validation.
 Slice: tracer-bullet
@@ -32,7 +32,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0048_contract_tracer_valid_snapshot_digest_ok`
 Risks (if any): Existing fixtures may rely on loose snapshot dict behavior and require updates.
 
-### [ ] Task 2 — Deterministic malformed-request contract semantics
+### [x] Task 2 — Deterministic malformed-request contract semantics
 Goal:
 Enforce deterministic `MALFORMED_REVIEW_REQUEST` behavior for unknown/missing/type/value errors with stable JSON Pointer paths and stable sort order.
 Slice: contract-failure-semantics
@@ -57,7 +57,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0048_contract_unknown_field_stable_pointer or wf0048_contract_field_error_sort_order or wf0048_contract_kind_message_templates"`
 Risks (if any): Pydantic/native validation detail ordering may vary unless fully normalized in validator.
 
-### [ ] Task 3 — Schema-before-digest precedence with deterministic mismatch failure
+### [x] Task 3 — Schema-before-digest precedence with deterministic mismatch failure
 Goal:
 Lock validation precedence so schema validation runs first and digest mismatch is emitted only after schema success.
 Slice: precedence-and-digest
@@ -81,7 +81,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0048_contract_schema_precedes_digest or wf0048_contract_digest_mismatch_post_schema"`
 Risks (if any): Existing validator call sites may assume digest check can occur before full schema normalization.
 
-### [ ] Task 4 — Deterministic replay contract for success serialization
+### [x] Task 4 — Deterministic replay contract for success serialization
 Goal:
 Prove deterministic contract behavior for success path and guard against call-identity branching regressions within this scope.
 Slice: deterministic-replay-proof
