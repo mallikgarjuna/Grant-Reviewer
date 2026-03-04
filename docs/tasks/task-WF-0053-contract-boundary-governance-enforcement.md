@@ -7,7 +7,7 @@ Last Updated: 2026-03-04
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: fail-closed governance gate for one boundary trigger
+### [x] Task 1 — Tracer bullet: fail-closed governance gate for one boundary trigger
 
 Goal:
 Prove end-to-end governance coupling for one boundary trigger class by failing deterministically when required evidence is missing.

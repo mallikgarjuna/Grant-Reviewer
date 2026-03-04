@@ -37,6 +37,9 @@ jobs:
       - name: Type Check (MyPy)
         run: uv run mypy .
 
+      - name: Contract Boundary Governance Check
+        run: uv run python scripts/check_contract_boundary_governance.py
+
       - name: Contract Gate (Marker)
         run: uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate --strict-markers -q
         env:
