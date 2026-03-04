@@ -3,7 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 
-from app.engine.contracts import ReviewRequestV1
+from pydantic import ValidationError
+
+from app.engine.contracts import ActivatedCallConfigSnapshotV1, ReviewRequestV1
 
 _REQUIRED_FIELDS = {
     "request_id",
@@ -55,8 +57,11 @@ def _validate_required_fields(payload: dict) -> None:
         )
 
 
-def _validate_digest(call_config_snapshot: dict, call_config_digest: str) -> None:
-    canonical = canonicalize_for_digest(call_config_snapshot)
+def _validate_digest(
+    call_config_snapshot: ActivatedCallConfigSnapshotV1,
+    call_config_digest: str,
+) -> None:
+    canonical = canonicalize_for_digest(call_config_snapshot.to_canonical_payload())
     expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     expected_with_prefix = f"sha256:{expected}"
     if call_config_digest != expected_with_prefix:
@@ -70,28 +75,14 @@ def _validate_digest(call_config_snapshot: dict, call_config_digest: str) -> Non
         )
 
 
-def _validate_snapshot_shape(call_config_snapshot: dict) -> None:
-    expectations = call_config_snapshot.get("expectations")
-    if not isinstance(expectations, list):
-        _raise_malformed_request("call_config_snapshot.expectations must be a list")
-
-    required_fields = {"expectation_id", "node_logical_id"}
-    for index, expectation in enumerate(expectations):
-        if not isinstance(expectation, dict):
-            _raise_malformed_request(f"expectations[{index}] must be an object")
-        missing = sorted(field for field in required_fields if field not in expectation)
-        if missing:
-            _raise_malformed_request(
-                f"expectations[{index}] missing required fields",
-                details={"missing_fields": missing, "index": index},
-            )
-
+def _validate_snapshot_shape(call_config_snapshot: ActivatedCallConfigSnapshotV1) -> None:
+    expectations = call_config_snapshot.expectations
     seen_expectation_ids: set[str] = set()
     seen_finding_identities: set[tuple[str, str, str]] = set()
     for index, expectation in enumerate(expectations):
-        expectation_id = str(expectation["expectation_id"])
-        node_logical_id = str(expectation["node_logical_id"])
-        check_id = str(expectation.get("check_id", "check.presence"))
+        expectation_id = expectation.expectation_id
+        node_logical_id = expectation.node_logical_id
+        check_id = expectation.check_id
 
         identity = (expectation_id, node_logical_id, check_id)
         if identity in seen_finding_identities:
@@ -106,7 +97,6 @@ def _validate_snapshot_shape(call_config_snapshot: dict) -> None:
                 },
             )
         seen_finding_identities.add(identity)
-
         if expectation_id in seen_expectation_ids:
             _raise_malformed_request(
                 f"Duplicate expectation_id at expectations[{index}]",
@@ -133,10 +123,22 @@ def validate_review_request_payload(payload: dict) -> ReviewRequestV1:
     if mode not in {"DIAGNOSTIC", "STRICT"}:
         _raise_malformed_request("mode must be DIAGNOSTIC or STRICT")
 
-    call_config_snapshot = payload["call_config_snapshot"]
+    call_config_snapshot_payload = payload["call_config_snapshot"]
     proposal_nodes = payload["proposal_nodes"]
-    if not isinstance(call_config_snapshot, dict) or not isinstance(proposal_nodes, dict):
+    if not isinstance(call_config_snapshot_payload, dict) or not isinstance(
+        proposal_nodes, dict
+    ):
         _raise_malformed_request("call_config_snapshot and proposal_nodes must be objects")
+
+    try:
+        call_config_snapshot = ActivatedCallConfigSnapshotV1.model_validate(
+            call_config_snapshot_payload
+        )
+    except ValidationError as err:
+        _raise_malformed_request(
+            "call_config_snapshot failed schema validation",
+            details={"errors": err.errors()},
+        )
 
     _validate_snapshot_shape(call_config_snapshot)
     _validate_proposal_nodes_shape(proposal_nodes)
