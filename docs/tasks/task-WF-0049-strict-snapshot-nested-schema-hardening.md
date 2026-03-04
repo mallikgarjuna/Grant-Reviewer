@@ -1,40 +1,42 @@
 # WF-0049 — Strict Snapshot Nested Schema Hardening
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-04
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: nested unknown-field rejection with schema-first precedence
+### [ ] Task 1 — Tracer bullet: strict `evaluation_criteria` nested rejection + schema-first digest gating
 Goal:
-Prove one end-to-end request-boundary path rejects undeclared nested snapshot keys deterministically and suppresses digest mismatch when schema is invalid.
+Prove one end-to-end request-boundary path with a strict `evaluation_criteria` nested model rejects undeclared keys deterministically and suppresses digest mismatch when schema is invalid.
 Slice: tracer-bullet
 User Stories: US1, US2, US3
-PRD Requirements: FR2, FR4, FR6
+PRD Requirements: FR1, FR2, FR4, FR6
 Depends on: none
 Enables: 2, 3
 Parallelizable: no
 Files to modify:
+- `backend/app/engine/contracts.py`
 - `backend/app/engine/review_request_validator.py`
 - `backend/tests/engine/test_review_request_contracts.py`
 Acceptance Criteria:
-- A payload containing an unknown key under an in-scope nested surface fails with `MALFORMED_REVIEW_REQUEST`.
+- `evaluation_criteria` is represented by an explicit strict nested model in snapshot v1.
+- A payload containing an unknown key under `evaluation_criteria` fails with `MALFORMED_REVIEW_REQUEST`.
 - Returned `details.field_errors[]` includes a nested JSON Pointer path for the offending field.
 - When payload is schema-invalid and digest is wrong, response remains schema failure only (no digest mismatch emission).
 TDD Plan:
-- RED: Add failing selectors `wf0049_contract_tracer_nested_unknown_rejected` and `wf0049_contract_tracer_schema_precedes_digest` in `backend/tests/engine/test_review_request_contracts.py`.
-- GREEN: Implement minimal validator changes to enforce deterministic nested unknown-field failure and schema-before-digest precedence.
+- RED: Add failing selectors `wf0049_contract_tracer_criteria_nested_unknown_rejected` and `wf0049_contract_tracer_schema_precedes_digest` in `backend/tests/engine/test_review_request_contracts.py`.
+- GREEN: Implement minimal strict `evaluation_criteria` nested contract model and validator changes for schema-before-digest precedence.
 - REFACTOR: Extract shared malformed-request assertion helper for nested-path checks.
 Verification Steps:
-- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0049_contract_tracer_nested_unknown_rejected or wf0049_contract_tracer_schema_precedes_digest"`
+- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0049_contract_tracer_criteria_nested_unknown_rejected or wf0049_contract_tracer_schema_precedes_digest"`
 Risks (if any): Existing fixtures may assume permissive nested payload handling.
 
-### [ ] Task 2 — Strict nested models for `evaluation_criteria` and `evaluation_elements`
+### [ ] Task 2 — Strict nested model for `evaluation_elements`
 Goal:
-Replace loose nested dict/list surfaces for criteria/elements with explicit strict models at snapshot boundary typing.
-Slice: nested-modeling-core
+Replace loose nested dict/list surface for elements with explicit strict model wiring at snapshot boundary typing.
+Slice: nested-modeling-elements
 User Stories: US1
 PRD Requirements: FR1, FR2, FR3
 Depends on: 1
@@ -44,15 +46,15 @@ Files to modify:
 - `backend/app/engine/contracts.py`
 - `backend/tests/engine/test_review_request_contracts.py`
 Acceptance Criteria:
-- `evaluation_criteria` and `evaluation_elements` no longer rely on `dict[str, object]` or `list[dict[str, object]]` in active snapshot contract paths.
-- Unknown nested fields for these surfaces are rejected by strict model config.
-- Existing valid fixture payload class for these surfaces still parses successfully.
+- `evaluation_elements` no longer relies on loose nested dict/list typing in active snapshot contract paths.
+- Unknown nested fields for `evaluation_elements` are rejected by strict model config.
+- Existing valid fixture payload class for `evaluation_elements` still parses successfully.
 TDD Plan:
-- RED: Add failing selectors `wf0049_contract_criteria_surface_strict` and `wf0049_contract_elements_surface_strict`.
-- GREEN: Add explicit nested Pydantic models and wire them into `ActivatedCallConfigSnapshotV1` for active surfaces.
+- RED: Add failing selector `wf0049_contract_elements_surface_strict`.
+- GREEN: Add explicit `evaluation_elements` strict nested model wiring into `ActivatedCallConfigSnapshotV1`.
 - REFACTOR: Consolidate shared strict model base config for nested surfaces.
 Verification Steps:
-- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0049_contract_criteria_surface_strict or wf0049_contract_elements_surface_strict"`
+- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_elements_surface_strict`
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_tracer_`
 Risks (if any): Producer fixtures with legacy extra keys may begin failing and require explicit compatibility expectations.
 
@@ -112,7 +114,7 @@ Slice: digest-determinism
 User Stories: US3
 PRD Requirements: FR7, FR8
 Depends on: 4
-Enables: 6
+Enables: 6, 7
 Parallelizable: no
 Files to modify:
 - `backend/app/engine/review_request_validator.py`
@@ -137,7 +139,7 @@ Slice: producer-compatibility-gate
 User Stories: US4
 PRD Requirements: FR9, FR10, FR10a
 Depends on: 5
-Enables: none
+Enables: 7
 Parallelizable: no
 Files to modify:
 - `backend/tests/engine/test_review_request_contracts.py`
@@ -157,6 +159,33 @@ Verification Steps:
 - `rg -n "wf0049_contract_compat_|fail-closed" docs/walkthroughs/walkthrough-WF-0049-strict-snapshot-nested-schema-hardening.md`
 Risks (if any): Matrix fixture schema drift can hide rollout blockers unless selector coverage remains explicit.
 
+### [ ] Task 7 — Scope guard: request-boundary-only hardening and stable downstream semantics
+Goal:
+Prove WF-0049 changes remain at request boundary and do not introduce call-identity branching or pipeline output contract drift.
+Slice: scope-guard
+User Stories: US1, US4
+PRD Requirements: FR11, FR12
+Depends on: 5, 6
+Enables: none
+Parallelizable: no
+Files to modify:
+- `backend/tests/engine/test_review_request_contracts.py`
+- `backend/tests/test_review_engine_pipeline_v1.py`
+Acceptance Criteria:
+- Tests assert no call-identity branching is introduced by nested hardening paths.
+- Existing pipeline output contract semantics remain unchanged for schema-valid requests.
+- Scope guard selectors are deterministic and WF-0049 namespaced.
+TDD Plan:
+- RED: Add failing selectors `wf0049_contract_scope_request_boundary_only` and `wf0049_contract_scope_pipeline_semantics_stable`.
+- GREEN: Apply minimal implementation changes only if guards fail due to unintended drift.
+- REFACTOR: Consolidate common request fixture setup used by scope guard tests.
+Verification Steps:
+- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_scope_request_boundary_only`
+- `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k wf0049_contract_scope_pipeline_semantics_stable`
+- `cd backend && uv run pytest -k wf0049_contract_`
+Risks (if any): Existing pipeline fixtures may implicitly encode call-specific assumptions and need normalization.
+
 ## Changelog
 
 - v0.1 (2026-03-04): Initial task breakdown from PRD
+- v0.2 (2026-03-04): Applied Part B review edits (tightened tracer-bullet coherence, split criteria/elements atomicity, added explicit FR11/FR12 scope-guard task); marked Ready for Implementation
