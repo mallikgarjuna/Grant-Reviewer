@@ -369,12 +369,12 @@ def test_review_request_validator_rejects_digest_mismatch() -> None:
         "stage_ref": "STEP_1",
         "call_config_digest": "sha256:not-the-real-digest",
         "call_config_snapshot": {
+            "schema_version": "v1",
             "expectations": [
                 {
                     "expectation_id": "exp-1",
                     "node_logical_id": "research_idea",
                     "check_id": "check.presence",
-                    "required": True,
                 }
             ]
         },
@@ -393,18 +393,17 @@ def test_review_request_validator_allows_same_check_id_for_different_expectation
         "mode": "DIAGNOSTIC",
         "stage_ref": "STEP_1",
         "call_config_snapshot": {
+            "schema_version": "v1",
             "expectations": [
                 {
                     "expectation_id": "exp-1",
                     "node_logical_id": "research_idea",
                     "check_id": "check.presence",
-                    "required": True,
                 },
                 {
                     "expectation_id": "exp-2",
                     "node_logical_id": "research_idea",
                     "check_id": "check.presence",
-                    "required": True,
                 },
             ]
         },
@@ -425,18 +424,17 @@ def test_review_request_validator_rejects_duplicate_expectation_finding_identity
         "mode": "DIAGNOSTIC",
         "stage_ref": "STEP_1",
         "call_config_snapshot": {
+            "schema_version": "v1",
             "expectations": [
                 {
                     "expectation_id": "exp-1",
                     "node_logical_id": "research_idea",
                     "check_id": "check.presence",
-                    "required": True,
                 },
                 {
                     "expectation_id": "exp-1",
                     "node_logical_id": "research_idea",
                     "check_id": "check.presence",
-                    "required": True,
                 },
             ]
         },
