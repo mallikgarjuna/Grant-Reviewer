@@ -1040,3 +1040,37 @@ def test_wf0052_contract_compat_omitted_optional_default_equivalence_real_snapsh
 
     validated = validate_review_request_payload(payload)
     assert validated.call_config_snapshot.evaluation_criteria is not None
+
+
+def test_wf0052_contract_digest_validated_projection_equivalence_real_snapshot() -> None:
+    case = _load_wf0052_compat_matrix()["omitted_optional_default_equivalence_real_snapshot"]
+    _assert_case_grounded_to_source_call(case)
+    baseline_snapshot = case["baseline_snapshot"]
+    explicit_default_snapshot = case["explicit_default_snapshot"]
+    assert isinstance(baseline_snapshot, dict)
+    assert isinstance(explicit_default_snapshot, dict)
+
+    baseline_digest = _canonical_digest_for_snapshot(baseline_snapshot)
+    explicit_digest = _canonical_digest_for_snapshot(explicit_default_snapshot)
+
+    assert baseline_digest == explicit_digest
+
+
+def test_wf0052_contract_digest_raw_snapshot_mismatch_real_snapshot() -> None:
+    case = _load_wf0052_compat_matrix()["omitted_optional_default_equivalence_real_snapshot"]
+    _assert_case_grounded_to_source_call(case)
+    explicit_default_snapshot = case["explicit_default_snapshot"]
+    assert isinstance(explicit_default_snapshot, dict)
+
+    raw_digest = "sha256:" + hashlib.sha256(
+        canonicalize_for_digest(explicit_default_snapshot).encode("utf-8")
+    ).hexdigest()
+    payload = _build_payload_for_snapshot(
+        explicit_default_snapshot,
+        digest=raw_digest,
+    )
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "CALL_CONFIG_DIGEST_MISMATCH"

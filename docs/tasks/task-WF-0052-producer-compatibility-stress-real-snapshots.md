@@ -1,7 +1,7 @@
 # WF-0052 — Producer Compatibility Stress (Real Snapshots)
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: In Progress
 Last Updated: 2026-03-04
 
@@ -16,7 +16,7 @@ Verification:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0052_contract_compat_`
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate`
 
-### [ ] Task 2 — Digest determinism on real snapshot classes
+### [x] Task 2 — Digest determinism on real snapshot classes
 Files:
 - `backend/tests/engine/test_review_request_contracts.py`
 - `backend/app/engine/review_request_validator.py`
@@ -41,3 +41,4 @@ Verification:
 ## Changelog
 - v0.1 (2026-03-04): Initial task artifact.
 - v0.2 (2026-03-04): Completed Task 1 with real-snapshot matrix fixture, deterministic WF-0052 contract compatibility tests, and walkthrough evidence.
+- v0.3 (2026-03-04): Completed Task 2 with real-snapshot digest determinism tests and walkthrough evidence.

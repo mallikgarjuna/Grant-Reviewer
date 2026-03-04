@@ -22,6 +22,13 @@ Last Updated: 2026-03-04
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate -q` -> pass (`35 passed`)
 - `cd backend && uv run ruff check tests/engine/test_review_request_contracts.py` -> pass
 
+## Task 2 Implementation
+- Added real-snapshot digest determinism tests:
+  - `wf0052_contract_digest_validated_projection_equivalence_real_snapshot`
+  - `wf0052_contract_digest_raw_snapshot_mismatch_real_snapshot`
+- Proven behavior:
+  - canonical digests computed from schema-validated projections are equivalent for omitted-vs-explicit defaults.
+  - raw snapshot JSON digesting (without schema projection) is rejected deterministically as `CALL_CONFIG_DIGEST_MISMATCH`.
+
 ## Residual Work
-- Task 2: digest determinism cases on additional real snapshot classes.
 - Task 3: CI contract-gate labeling update for WF-0052 stage completion evidence.
