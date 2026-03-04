@@ -1,13 +1,13 @@
 # WF-0052 — Producer Compatibility Stress (Real Snapshots)
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: In Progress
 Last Updated: 2026-03-04
 
 ## Task Breakdown
 
-### [ ] Task 1 — Real snapshot matrix coverage
+### [x] Task 1 — Real snapshot matrix coverage
 Files:
 - `backend/tests/fixtures/wf_0052_real_snapshot_compat_matrix.yaml`
 - `backend/tests/engine/test_review_request_contracts.py`
@@ -37,3 +37,7 @@ Verification:
 ## Notes
 - Keep slices atomic and bounded to request-boundary contract behavior.
 - Do not broaden scope into runtime pipeline behavior.
+
+## Changelog
+- v0.1 (2026-03-04): Initial task artifact.
+- v0.2 (2026-03-04): Completed Task 1 with real-snapshot matrix fixture, deterministic WF-0052 contract compatibility tests, and walkthrough evidence.

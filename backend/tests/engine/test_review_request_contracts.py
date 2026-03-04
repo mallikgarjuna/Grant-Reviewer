@@ -97,6 +97,62 @@ def _load_wf0049_compat_matrix() -> dict[str, dict[str, object]]:
     return by_case
 
 
+def _load_wf0052_compat_matrix() -> dict[str, dict[str, object]]:
+    fixture = yaml.safe_load(
+        Path("tests/fixtures/wf_0052_real_snapshot_compat_matrix.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
+    cases: list[dict[str, object]] = fixture["cases"]
+    by_case = {str(case["class_id"]): case for case in cases}
+    required = {
+        "happy_valid_payload_real_snapshot",
+        "legacy_extra_nested_key_real_snapshot",
+        "nested_type_mismatch_real_snapshot",
+        "omitted_optional_default_equivalence_real_snapshot",
+    }
+    missing = sorted(required - by_case.keys())
+    assert not missing, f"Missing required WF-0052 compatibility classes: {missing}"
+    return by_case
+
+
+def _load_source_call(path: str) -> dict[str, object]:
+    raw = Path(path).read_text(encoding="utf-8")
+    loaded = yaml.safe_load(raw)
+    assert isinstance(loaded, dict)
+    return loaded
+
+
+def _source_call_element_ids(call_payload: dict[str, object]) -> set[str]:
+    criteria = call_payload.get("evaluation_criteria", [])
+    assert isinstance(criteria, list)
+    element_ids: set[str] = set()
+    for criterion in criteria:
+        if not isinstance(criterion, dict):
+            continue
+        elements = criterion.get("evaluation_elements", [])
+        if not isinstance(elements, list):
+            continue
+        for element in elements:
+            if isinstance(element, dict) and isinstance(element.get("id"), str):
+                element_ids.add(element["id"])
+    return element_ids
+
+
+def _assert_case_grounded_to_source_call(case: dict[str, object]) -> None:
+    source_call_path = case["source_call_path"]
+    assert isinstance(source_call_path, str)
+    source_call = _load_source_call(source_call_path)
+    source_element_ids = _source_call_element_ids(source_call)
+    grounding_element_ids = case["grounding_element_ids"]
+    assert isinstance(grounding_element_ids, list)
+    for element_id in grounding_element_ids:
+        assert isinstance(element_id, str)
+        assert element_id in source_element_ids, (
+            f"Element {element_id!r} not found in source call {source_call_path}"
+        )
+
+
 def _build_payload_for_snapshot(snapshot: dict[str, object], *, digest: str) -> dict[str, object]:
     payload = _build_payload()
     payload["call_config_snapshot"] = snapshot
@@ -907,3 +963,80 @@ def test_wf0049_contract_scope_request_boundary_only() -> None:
         message="Unknown field is not allowed.",
     )
     assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
+
+
+def test_wf0052_contract_compat_happy_valid_payload_real_snapshot() -> None:
+    case = _load_wf0052_compat_matrix()["happy_valid_payload_real_snapshot"]
+    _assert_case_grounded_to_source_call(case)
+    snapshot = case["snapshot"]
+    assert isinstance(snapshot, dict)
+    payload = _build_payload_for_snapshot(
+        snapshot,
+        digest=_canonical_digest_for_snapshot(snapshot),
+    )
+
+    validated = validate_review_request_payload(payload)
+    assert validated.call_config_snapshot.schema_version == "v1"
+    assert validated.call_config_snapshot.evaluation_criteria is not None
+
+
+def test_wf0052_contract_compat_legacy_extra_nested_key_real_snapshot() -> None:
+    case = _load_wf0052_compat_matrix()["legacy_extra_nested_key_real_snapshot"]
+    _assert_case_grounded_to_source_call(case)
+    snapshot = case["snapshot"]
+    expected_error = case["expected_error"]
+    assert isinstance(snapshot, dict)
+    assert isinstance(expected_error, dict)
+    payload = _build_payload_for_snapshot(
+        snapshot,
+        digest=_canonical_digest_for_snapshot(_build_snapshot()),
+    )
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path=str(expected_error["path"]),
+        kind=str(expected_error["kind"]),
+        message=str(expected_error["message"]),
+    )
+
+
+def test_wf0052_contract_compat_nested_type_mismatch_real_snapshot() -> None:
+    case = _load_wf0052_compat_matrix()["nested_type_mismatch_real_snapshot"]
+    _assert_case_grounded_to_source_call(case)
+    snapshot = case["snapshot"]
+    expected_error = case["expected_error"]
+    assert isinstance(snapshot, dict)
+    assert isinstance(expected_error, dict)
+    payload = _build_payload_for_snapshot(
+        snapshot,
+        digest=_canonical_digest_for_snapshot(_build_snapshot()),
+    )
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path=str(expected_error["path"]),
+        kind=str(expected_error["kind"]),
+        message=str(expected_error["message"]),
+    )
+
+
+def test_wf0052_contract_compat_omitted_optional_default_equivalence_real_snapshot() -> None:
+    case = _load_wf0052_compat_matrix()["omitted_optional_default_equivalence_real_snapshot"]
+    _assert_case_grounded_to_source_call(case)
+    baseline_snapshot = case["baseline_snapshot"]
+    explicit_default_snapshot = case["explicit_default_snapshot"]
+    assert isinstance(baseline_snapshot, dict)
+    assert isinstance(explicit_default_snapshot, dict)
+    payload = _build_payload_for_snapshot(
+        explicit_default_snapshot,
+        digest=_canonical_digest_for_snapshot(baseline_snapshot),
+    )
+
+    validated = validate_review_request_payload(payload)
+    assert validated.call_config_snapshot.evaluation_criteria is not None

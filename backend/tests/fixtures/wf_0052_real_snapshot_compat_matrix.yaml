@@ -1,0 +1,138 @@
+cases:
+  - class_id: happy_valid_payload_real_snapshot
+    expected: pass
+    source_call_path: data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml
+    grounding_element_ids:
+      - elem_cv_idea_alignment
+    snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-veni-1
+          node_logical_id: research_idea
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit_quality_of_researcher
+          name: Quality of the researcher
+          stage: preproposal
+          weight_percent: 100
+          evaluation_elements:
+            - id: elem_cv_idea_alignment
+              name: CV and key output align with research idea
+              description: Key output and academic profile align with research idea.
+      reviewer_policy:
+        - id: pol_dora_merits_over_surrogates
+          applies_to_stage: BOTH
+          applies_to_node_ids: []
+          rule_type: assessment_principle
+          instruction: Assess researchers on merits; avoid surrogate measures.
+          severity: WARNING
+          enforcement_mode: PROMPT_ONLY
+      stage_gating:
+        active_stage: STEP_1
+        allowed_stages: [STEP_1, STEP_2]
+        stage_map:
+          STEP_1: [research_idea]
+      hierarchy:
+        nodes:
+          - id: research_idea
+            parent_id: null
+        root_ids: [research_idea]
+      nesting:
+        mode: flat
+        max_depth: 1
+        allow_cross_refs: false
+
+  - class_id: legacy_extra_nested_key_real_snapshot
+    expected: malformed
+    source_call_path: data/calls/canonical/erc/erc_stg_2026_full.yaml
+    grounding_element_ids:
+      - elem_project_importance_questions
+    expected_error:
+      path: /call_config_snapshot/hierarchy/nodes/0/unexpected_nested
+      kind: unknown_field
+      message: Unknown field is not allowed.
+    snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-erc-1
+          node_logical_id: b1_part1_scientific_proposal
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit_excellence
+          name: Excellence
+          stage: step1_step2
+          weight_percent: 100
+          evaluation_elements:
+            - id: elem_project_importance_questions
+              name: Research addresses important scientific questions
+              description: Research should address important scientific questions.
+      hierarchy:
+        nodes:
+          - id: b1_part1_scientific_proposal
+            parent_id: b1
+            unexpected_nested: legacy
+        root_ids: [b1]
+
+  - class_id: nested_type_mismatch_real_snapshot
+    expected: malformed
+    source_call_path: data/calls/canonical/nwo/nwo_vidi_2025_full_proposal.yaml
+    grounding_element_ids:
+      - elem_scientific_contribution
+    expected_error:
+      path: /call_config_snapshot/prompt_knobs/max_tokens
+      kind: type_error
+      message: Invalid field type.
+    snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-vidi-1
+          node_logical_id: research_proposal
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit_quality_and_innovation
+          name: Quality and innovative character of the research proposal
+          stage: full_proposal
+          weight_percent: 75
+          evaluation_elements:
+            - id: elem_scientific_contribution
+              name: Important contribution to advancement of science
+              description: Proposed research contributes to science advancement.
+      prompt_knobs:
+        max_tokens: many
+
+  - class_id: omitted_optional_default_equivalence_real_snapshot
+    expected: pass
+    source_call_path: data/calls/canonical/erc/erc_stg_2026_full.yaml
+    grounding_element_ids:
+      - elem_project_ambition_frontier
+    baseline_snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-erc-2
+          node_logical_id: b1_part1_scientific_proposal
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit_excellence
+          name: Excellence
+          stage: step1_step2
+          weight_percent: 100
+          evaluation_elements:
+            - id: elem_project_ambition_frontier
+              name: Objectives are ambitious and advance frontier of knowledge
+              description: Objectives are ambitious and advance frontier of knowledge.
+    explicit_default_snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-erc-2
+          node_logical_id: b1_part1_scientific_proposal
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit_excellence
+          name: Excellence
+          stage: step1_step2
+          weight_percent: 100
+          evaluation_elements:
+            - id: elem_project_ambition_frontier
+              name: Objectives are ambitious and advance frontier of knowledge
+              description: Objectives are ambitious and advance frontier of knowledge.
+              stage: BOTH
