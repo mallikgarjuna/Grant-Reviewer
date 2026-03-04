@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
-from dataclasses import dataclass
-from typing import Sequence
-
 import argparse
+from collections.abc import Sequence
+from dataclasses import dataclass
+from pathlib import Path
 
 REQUEST_BOUNDARY_TRIGGER_CLASS = "request_boundary_contract_surface"
 CONTRACT_GATE_SELECTOR_TRIGGER_CLASS = "contract_gate_selector_surface"
