@@ -1,7 +1,7 @@
 # WF-0046 — Agent Instruction Optimization Brainstorm
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-04
 
@@ -99,6 +99,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0046-agent-instruct
 - **Dependencies:** None — Codex proves the project works fine without the 361-line user-global.
 - **Other projects:** Grant-Reviewer is the primary project; the ~10-line user-global safety net covers others.
 - **External:** No external dependency on `GEMINI.md` in the repo (no CI, tooling, or hooks reference it).
+- **Line caps (Part B fix):** `AGENTS.md` ≤ 45 lines; `~/.gemini/GEMINI.md` ≤ 15 lines. Use these as concrete "done" thresholds.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0046-agent-instruction-optimization.md` (Section 5)
 
@@ -130,9 +131,10 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0046-agent-instruct
   1. Audit user-global rules against project docs
   2. Grab unique rules into `AGENTS.md`
   3. Delete repo `GEMINI.md`
-  4. Trim `~/.gemini/GEMINI.md` to ~10 lines
-  5. Add parking lot stories D and G to `docs/parking_lot.md`
-  6. Verify: `ls GEMINI.md` → not found, `wc -l AGENTS.md` ≤ 45, `wc -l ~/.gemini/GEMINI.md` ≤ 15
+  4. Back up `~/.gemini/GEMINI.md` to `/tmp/GEMINI.md.bak` (Part B fix)
+  5. Trim `~/.gemini/GEMINI.md` to ≤15 lines
+  6. Add parking lot stories D and G to `docs/parking_lot.md`
+  7. Verify: `ls GEMINI.md` → not found, `wc -l AGENTS.md` ≤ 45, `wc -l ~/.gemini/GEMINI.md` ≤ 15
 - **Explicitly excluded:** Any changes to `docs/guides/` content; long-session behavior testing.
 
 **Contract Notes:**
@@ -148,6 +150,6 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0046-agent-instruct
 - **NOT creating `~/.codex/AGENTS.md`** — Codex works fine without user-global.
 - **NOT refactoring how project docs reference agent rules** — not broken.
 - **NOT building file size cap enforcement (Story F)** — add a one-line note in `AGENTS.md`, no pre-commit hook.
-- **NOT keeping the "Acknowledge" heartbeat policy** — drop it when trimming user-global (questionable value, wastes tokens).
+- **NOT keeping the "Acknowledge" heartbeat policy** — drop it as part of trimming user-global to ≤15 lines (in scope as a deletion, not as designing a replacement). (Part B fix: clarified scope.)
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0046-agent-instruction-optimization.md` (Section 8)
