@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import operator
 
 import pytest
 
 from app.engine.contracts import ActivatedCallConfigSnapshotV1
+from app.engine.pipeline_v1 import run_review_pipeline
 from app.engine.review_request_validator import (
     ReviewRequestValidationError,
     canonicalize_for_digest,
@@ -133,3 +135,39 @@ def test_wf0048_contract_digest_mismatch_post_schema() -> None:
         validate_review_request_payload(payload)
 
     assert err_info.value.code == "CALL_CONFIG_DIGEST_MISMATCH"
+
+
+def test_wf0048_contract_replay_byte_stable_success() -> None:
+    validated = validate_review_request_payload(_build_payload())
+
+    first = run_review_pipeline(validated)
+    second = run_review_pipeline(validated)
+
+    first_canonical = json.dumps(
+        first.to_dict(),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    )
+    second_canonical = json.dumps(
+        second.to_dict(),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    )
+    assert first_canonical == second_canonical
+
+
+def test_wf0048_contract_snapshot_driven_not_identity_driven() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["call_code"] = "nwo_veni_2025_preproposal"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
+    assert err_info.value.details["field_errors"][0] == {
+        "path": "/call_config_snapshot/call_code",
+        "kind": "unknown_field",
+        "message": "Unknown field is not allowed.",
+    }
