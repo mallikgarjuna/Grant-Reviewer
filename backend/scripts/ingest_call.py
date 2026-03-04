@@ -22,6 +22,7 @@ from uuid import UUID, uuid4
 
 import yaml  # type: ignore[import-untyped]
 from pydantic import ValidationError
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 
 # Add backend to path for imports (per lessons.md L1)
@@ -1045,49 +1046,62 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
             v2_call_def = call_def
             canonical_json, canonical_json_text = _build_canonical_json(v2_call_def)
             checksum = _compute_semantic_checksum(canonical_json_text)
+            # Concurrent ingest of the same call can race on unique constraints
+            # (agency/call/doc keys). Retry once so the loser resolves to checksum-skip.
+            for attempt in range(2):
+                try:
+                    with session.begin():
+                        agency, call = _upsert_agency_and_call_v2(session, v2_call_def)
+                        existing_definition = session.exec(
+                            select(CallDefinitionRecord).where(
+                                CallDefinitionRecord.funding_call_id == call.id
+                            )
+                        ).first()
+                        if existing_definition and existing_definition.checksum == checksum:
+                            return {
+                                "dry_run": False,
+                                "schema_version": "v2",
+                                "skipped": True,
+                                "reason": "checksum_match",
+                                "call_id": str(call.id),
+                                "checksum": checksum,
+                            }
 
-            with session.begin():
-                agency, call = _upsert_agency_and_call_v2(session, v2_call_def)
-                existing_definition = session.exec(
-                    select(CallDefinitionRecord).where(
-                        CallDefinitionRecord.funding_call_id == call.id
-                    )
-                ).first()
-                if existing_definition and existing_definition.checksum == checksum:
-                    return {
+                        _upsert_call_definition_document(
+                            session,
+                            funding_call_id=call.id,
+                            schema_version="v2",
+                            checksum=checksum,
+                            raw_yaml=raw_yaml,
+                            canonical_json=canonical_json,
+                            source_path=str(yaml_path),
+                        )
+                        counters = _upsert_projection_v2(
+                            session,
+                            call_id=call.id,
+                            call_def=v2_call_def,
+                        )
+                        logger.info("V2 projection upsert counters: %s", counters)
+
+                    result = {
                         "dry_run": False,
                         "schema_version": "v2",
-                        "skipped": True,
-                        "reason": "checksum_match",
+                        "skipped": False,
+                        "agency_id": str(agency.id),
                         "call_id": str(call.id),
                         "checksum": checksum,
+                        **counters,
                     }
-
-                _upsert_call_definition_document(
-                    session,
-                    funding_call_id=call.id,
-                    schema_version="v2",
-                    checksum=checksum,
-                    raw_yaml=raw_yaml,
-                    canonical_json=canonical_json,
-                    source_path=str(yaml_path),
-                )
-                counters = _upsert_projection_v2(
-                    session,
-                    call_id=call.id,
-                    call_def=v2_call_def,
-                )
-                logger.info("V2 projection upsert counters: %s", counters)
-
-            result = {
-                "dry_run": False,
-                "schema_version": "v2",
-                "skipped": False,
-                "agency_id": str(agency.id),
-                "call_id": str(call.id),
-                "checksum": checksum,
-                **counters,
-            }
+                    break
+                except IntegrityError:
+                    session.rollback()
+                    if attempt == 0:
+                        logger.info(
+                            "Detected concurrent v2 ingest collision for %s; retrying once",
+                            v2_call_def.funding_call.code,
+                        )
+                        continue
+                    raise
 
     finally:
         session.close()

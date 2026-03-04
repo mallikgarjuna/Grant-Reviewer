@@ -82,3 +82,14 @@ Implemented Phase 3 for WF-0021 end-to-end:
 ## Notes
 
 - No push/PR/merge performed in this phase.
+
+## Post-Completion Hardening Addendum (2026-03-04)
+
+- Added regression coverage for concurrent ingest idempotency collisions:
+  - `test_v2_ingest_handles_concurrent_idempotency_collision`
+  - Validates no duplicate `FundingCall`/`CallDefinition` persistence when two ingests race on the same v2 payload.
+- Added migration smoke coverage for WF-0021 schema lifecycle on isolated PostgreSQL test DB:
+  - `test_wf0021_migration_downgrade_reupgrade_smoke`
+  - Executes `alembic upgrade head -> alembic downgrade -1 -> alembic upgrade head` against a temporary test database.
+- Verification evidence:
+  - `cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_ingest_call_v2_db.py -k "concurrent_idempotency_collision or migration_downgrade_reupgrade" -q` -> pass (`2 passed`)

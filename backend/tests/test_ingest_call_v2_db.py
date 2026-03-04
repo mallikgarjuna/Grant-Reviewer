@@ -2,10 +2,18 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
+import uuid
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse
 
+import psycopg
 import pytest
 import yaml
+from psycopg import errors as psycopg_errors
+from psycopg import sql
 from sqlmodel import SQLModel, select
 
 from app.db import engine, get_session
@@ -239,3 +247,88 @@ def test_v2_ingest_supports_erc_cog_2026_full() -> None:
         assert call_definition.schema_version == "v2"
     finally:
         session.close()
+
+
+def test_v2_ingest_handles_concurrent_idempotency_collision() -> None:
+    """Concurrent ingest of the same v2 payload should not duplicate persisted state."""
+    reset_database()
+    source = Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml")
+
+    def _ingest_once() -> dict[str, object]:
+        return ingest_call(source, dry_run=False)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first_future = pool.submit(_ingest_once)
+        second_future = pool.submit(_ingest_once)
+        first = first_future.result()
+        second = second_future.result()
+
+    session = get_session()
+    try:
+        definitions = list(session.exec(select(CallDefinition)).all())
+        calls = list(session.exec(select(FundingCall)).all())
+
+        assert len(definitions) == 1
+        assert len(calls) == 1
+        assert definitions[0].funding_call_id == calls[0].id
+    finally:
+        session.close()
+
+    outcomes = {bool(first.get("skipped")), bool(second.get("skipped"))}
+    assert outcomes.issubset({False, True})
+    assert False in outcomes
+
+
+def test_wf0021_migration_downgrade_reupgrade_smoke(tmp_path: Path) -> None:
+    """WF-0021 migration path should support upgrade->downgrade->upgrade on clean DB."""
+    current_db_url = os.getenv("DATABASE_URL", "").strip()
+    if not (
+        current_db_url.startswith("postgres://")
+        or current_db_url.startswith("postgresql://")
+        or current_db_url.startswith("postgresql+psycopg://")
+    ):
+        pytest.skip("Migration smoke requires PostgreSQL test DATABASE_URL.")
+
+    def _replace_db_name(url: str, db_name: str) -> str:
+        parsed = urlparse(url)
+        return urlunparse(parsed._replace(path=f"/{db_name}"))
+
+    temp_db_name = f"wf0021_migration_smoke_test_{uuid.uuid4().hex[:8]}"
+    admin_db_url = _replace_db_name(current_db_url, "postgres")
+    temp_db_url = _replace_db_name(current_db_url, temp_db_name)
+
+    try:
+        with psycopg.connect(admin_db_url, autocommit=True) as conn, conn.cursor() as cur:
+            cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(temp_db_name)))
+    except psycopg_errors.InsufficientPrivilege:
+        pytest.skip("Current PostgreSQL test user cannot create temporary databases.")
+
+    env = dict(os.environ)
+    env["DATABASE_URL"] = temp_db_url
+    commands = [
+        ["uv", "run", "alembic", "upgrade", "head"],
+        ["uv", "run", "alembic", "downgrade", "-1"],
+        ["uv", "run", "alembic", "upgrade", "head"],
+    ]
+    try:
+        for command in commands:
+            completed = subprocess.run(
+                command,
+                cwd=Path.cwd(),
+                env=env,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            assert completed.returncode == 0, (
+                f"Command failed: {' '.join(command)}\n"
+                f"stdout:\n{completed.stdout}\n"
+                f"stderr:\n{completed.stderr}"
+            )
+    finally:
+        with psycopg.connect(admin_db_url, autocommit=True) as conn, conn.cursor() as cur:
+            cur.execute(
+                sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(
+                    sql.Identifier(temp_db_name)
+                )
+            )
