@@ -55,6 +55,13 @@ class ActivatedReviewerPolicyRuleV1(_StrictContractModel):
     source_hint: str | None = None
 
 
+class ActivatedComplianceRuleV1(_StrictContractModel):
+    id: str = Field(min_length=1)
+    severity: RuleSeverity
+    rule_type: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+
+
 class ActivatedPromptKnobsV1(_StrictContractModel):
     temperature: float | None = None
     top_p: float | None = None
@@ -71,7 +78,7 @@ class ActivatedCallConfigSnapshotV1(_StrictContractModel):
     nesting: dict[str, object] | None = None
     evaluation_criteria: list[ActivatedEvaluationCriterionV1] | None = None
     evaluation_elements: list[ActivatedEvaluationElementV1] | None = None
-    compliance_rules: list[dict[str, object]] | None = None
+    compliance_rules: list[ActivatedComplianceRuleV1] | None = None
     reviewer_policy: list[ActivatedReviewerPolicyRuleV1] | None = None
     prompt_knobs: ActivatedPromptKnobsV1 | None = None
 
