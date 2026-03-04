@@ -1,7 +1,7 @@
 # WF-0048 — Agency/Call Variability Policy Contract
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-04
 
@@ -59,6 +59,52 @@ Contract Notes / Non-obvious constraints (Section 2):
 - Determinism scope: guarantee `PipelineResult.to_dict()` determinism for the same payload (not “content-only”).
 - Harden the `ReviewRequestV1` boundary first (snapshot + proposal_nodes + digest); keep broader API DTO changes out of the initial tracer-bullet slice.
 - Phase 0 “good enough”: contract surfaces + error semantics + testable invariants; avoid architecture/implementation plan bloat.
+
+## 2.1 Contract — Activated Call Config Snapshot (Boundary Schema Sketch)
+
+Goal: the core pipeline consumes a single strict, versioned activated snapshot contract so it remains 100% call-agnostic (no call identity branching) while still allowing per-call variability via declared surfaces.
+
+Proposed contract (v1 sketch; strict-by-default):
+
+- Top-level request payload:
+  - `request_id: str` (required)
+  - `mode: "DIAGNOSTIC"|"STRICT"` (required)
+  - `stage_ref: str` (required; validated)
+  - `call_config_snapshot: ActivatedCallConfigSnapshotV1` (required; strict; unknown fields rejected)
+  - `call_config_digest: "sha256:<hex>"` (required; must match canonical JSON of validated snapshot)
+  - `proposal_nodes: dict[str, str]` (required)
+  - Unknown top-level fields: rejected
+
+- `ActivatedCallConfigSnapshotV1`:
+  - `schema_version: "v1"` (required; enables explicit evolution)
+  - `expectations: list[ActivatedExpectationV1]` (required)
+  - Allowed extension points (all optional; strict sub-models; unknown fields rejected):
+    - `stage_gating`
+    - `hierarchy` / `nesting`
+    - `evaluation_criteria` / `evaluation_elements`
+    - `compliance_rules`
+    - `reviewer_policy`
+    - `prompt_knobs`
+  - Unknown fields: rejected everywhere
+
+Why this enforces “no identity branching”:
+
+- The activated snapshot contains no agency/call identity inputs; variability is only expressed through declared config/activation surfaces inside the snapshot.
+
+## 2.2 Contract — Deterministic Failure Semantics (WF-0045 compatible)
+
+All boundary violations map to deterministic contract failures with stable codes and stable field-path details. Minimum required semantics:
+
+- `CALL_CONFIG_DIGEST_MISMATCH`: digest does not match the canonical JSON of the validated snapshot.
+- `MALFORMED_REVIEW_REQUEST`: schema violations (including unknown fields) with:
+  - `details.field_errors: list[{path, kind, message}]` (stable ordering by path)
+
+## 2.3 Contract — Deterministic Success Semantics
+
+The same validated payload yields identical serialized results:
+
+- Determinism target: `PipelineResult.to_dict()` canonical JSON (sorted keys, stable list ordering).
+- No nondeterministic data (timestamps, random IDs) may enter the serialized result contract (including telemetry).
 
 ## 3. Target User / Actor
 
@@ -141,6 +187,12 @@ Explicitly excluded from MVP:
 - Refactoring frontend/BFF consumers (beyond relying on the now-strict boundary).
 - Reworking broader API DTOs for review results beyond what is needed to keep determinism tests stable.
 - Hardening call-definition ingestion pipelines (separate follow-up once snapshot contract is proven).
+
+## 7.1 Migration / Rollout Notes (Incremental + Reversible)
+
+- Land the strict activated snapshot parsing in the request validator behind deterministic tests first (no functional expansion of variability).
+- Ensure existing internal producers are updated to emit the new required `schema_version` and to remove any unknown fields before flipping strict rejection in prod.
+- If a break is discovered, revert by rolling back the strict validator change (tests remain as the safety net for re-landing).
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0048-agency-call-variability-policy.md` (Section 7)
 
