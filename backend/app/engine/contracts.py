@@ -70,7 +70,7 @@ class ActivatedCallConfigSnapshotV1(_StrictContractModel):
     hierarchy: dict[str, object] | None = None
     nesting: dict[str, object] | None = None
     evaluation_criteria: list[ActivatedEvaluationCriterionV1] | None = None
-    evaluation_elements: list[dict[str, object]] | None = None
+    evaluation_elements: list[ActivatedEvaluationElementV1] | None = None
     compliance_rules: list[dict[str, object]] | None = None
     reviewer_policy: list[ActivatedReviewerPolicyRuleV1] | None = None
     prompt_knobs: ActivatedPromptKnobsV1 | None = None

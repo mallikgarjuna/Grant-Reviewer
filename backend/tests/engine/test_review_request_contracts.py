@@ -378,6 +378,49 @@ def test_wf0049_contract_elements_surface_strict() -> None:
     )
 
 
+def test_wf0049_contract_elements_root_surface_strict() -> None:
+    valid_payload = _build_payload()
+    valid_payload["call_config_snapshot"]["evaluation_elements"] = [
+        {
+            "id": "elem-1",
+            "name": "Element 1",
+            "description": "Element description",
+            "stage": "STEP_1",
+        }
+    ]
+    valid_payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        valid_payload["call_config_snapshot"]
+    )
+
+    validated = validate_review_request_payload(valid_payload)
+    assert validated.call_config_snapshot.evaluation_elements is not None
+    assert validated.call_config_snapshot.evaluation_elements[0].id == "elem-1"
+
+    invalid_payload = _build_payload()
+    invalid_payload["call_config_snapshot"]["evaluation_elements"] = [
+        {
+            "id": "elem-1",
+            "name": "Element 1",
+            "description": "Element description",
+            "stage": "STEP_1",
+            "unexpected_field": "bad",
+        }
+    ]
+    invalid_payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        _build_snapshot()
+    )
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(invalid_payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/evaluation_elements/0/unexpected_field",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
+
+
 def test_wf0049_contract_reviewer_policy_surface_strict() -> None:
     valid_payload = _build_payload()
     valid_payload["call_config_snapshot"]["reviewer_policy"] = [
