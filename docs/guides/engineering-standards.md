@@ -60,3 +60,4 @@ All commands should run from the repo root unless `cd backend` is specified.
 - AGENTS.md is the SSOT for project rules and lessons. Any coding agent must update `AGENTS.md` (or the relevant guide in `docs/guides/`) — never agent-specific files like `GEMINI.md`.
 - After promoting a parking lot item to a WF, **renumber** remaining items in that priority tier so `#1` is always the top item.
 - **Before any manual local app QA after backend tests**: run `backend/scripts/reset_dev_db.sh` to restore canonical local data and avoid seeded-test data leaking into UI checks.
+- **Governance gate event scope**: For evidence-coupling/traceability governance checks (for example WF-0053 contract-boundary governance), enforce fail-closed policy on `pull_request` events where merge gating happens. Do not hard-fail post-merge `push` events on `main` for missing PR-coupled artifacts.

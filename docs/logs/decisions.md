@@ -26,6 +26,14 @@
 - **Tradeoff**: Adds small ongoing maintenance overhead for smoke fixture/check wiring.
 - **Status**: Approved.
 
+### AD 53.4: Governance enforcement scope is PR-gate only; main push remains health verification
+- **WF ID**: WF-0053
+- **Context**: Running PR-coupled governance evidence checks on `push` to `main` caused post-merge CI failures for follow-up hotfix commits that legitimately lacked same-PR workflow artifacts.
+- **Decision**: Scope governance coupling and negative-smoke checks to `pull_request` events only. Keep lint/type/test/contract-marker checks on both PR and push so `main` still has strong health signals.
+- **Why**: Preserves strict fail-closed merge gating while avoiding `main` deadlock from non-PR artifact expectations.
+- **Tradeoff**: Governance coupling is no longer re-asserted on post-merge push runs; assurance depends on PR gate correctness and branch protection.
+- **Status**: Implemented.
+
 ## Date: 2026-03-04 (WF-0049: strict snapshot nested schema hardening)
 
 ### AD 49.1: Nested request-boundary strictness is active-surface scoped and explicit
