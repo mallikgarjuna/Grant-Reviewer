@@ -74,6 +74,8 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF-0048 | agency-call-variability-policy | [Brainstorm](brainstorms/completed/brainstorm-WF-0048-agency-call-variability-policy.md) | [PRD](prds/completed/prd-WF-0048-agency-call-variability-policy.md) | [Tasks](tasks/completed/task-WF-0048-agency-call-variability-policy.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0048-agency-call-variability-policy.md) | Done |
 | WF-0049 | strict-snapshot-nested-schema-hardening | [Brainstorm](brainstorms/completed/brainstorm-WF-0049-strict-snapshot-nested-schema-hardening.md) | [PRD](prds/completed/prd-WF-0049-strict-snapshot-nested-schema-hardening.md) | [Tasks](tasks/completed/task-WF-0049-strict-snapshot-nested-schema-hardening.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0049-strict-snapshot-nested-schema-hardening.md) | Done |
 | WF-0050 | extension-surface-strictness-and-ci-gate | [Brainstorm](brainstorms/completed/brainstorm-WF-0050-extension-surface-strictness-and-ci-gate.md) | [PRD](prds/completed/prd-WF-0050-extension-surface-strictness-and-ci-gate.md) | [Tasks](tasks/completed/task-WF-0050-extension-surface-strictness-and-ci-gate.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0050-extension-surface-strictness-and-ci-gate.md) | Done |
+| WF-0051 | contract-gate-marker-hardening | - | - | [Maintenance](maintenance.md) | - | Done |
+| WF-0052 | producer-compatibility-stress-real-snapshots | [Brainstorm](brainstorms/brainstorm-WF-0052-producer-compatibility-stress-real-snapshots.md) | - | [Tasks](tasks/task-WF-0052-producer-compatibility-stress-real-snapshots.md) | - | Phase 0 (Ready) |
 
 ---
 
