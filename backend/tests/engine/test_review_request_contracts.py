@@ -508,6 +508,167 @@ def test_wf0049_contract_prompt_knobs_surface_strict() -> None:
     )
 
 
+def test_wf0050_contract_compliance_rules_surface_strict() -> None:
+    valid_payload = _build_payload()
+    valid_payload["call_config_snapshot"]["compliance_rules"] = [
+        {
+            "id": "rule-1",
+            "severity": "WARNING",
+            "rule_type": "word_limit",
+            "description": "Respect section word limit.",
+        }
+    ]
+    valid_payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        valid_payload["call_config_snapshot"]
+    )
+
+    validated = validate_review_request_payload(valid_payload)
+    assert validated.call_config_snapshot.compliance_rules is not None
+    assert validated.call_config_snapshot.compliance_rules[0].id == "rule-1"
+
+    invalid_payload = _build_payload()
+    invalid_payload["call_config_snapshot"]["compliance_rules"] = [
+        {
+            "id": "rule-1",
+            "severity": "WARNING",
+            "rule_type": "word_limit",
+            "description": "Respect section word limit.",
+            "unexpected_field": "bad",
+        }
+    ]
+    invalid_payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        _build_snapshot()
+    )
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(invalid_payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/compliance_rules/0/unexpected_field",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
+
+
+def test_wf0050_contract_producer_stress_fixture_requests_validate() -> None:
+    fixture = yaml.safe_load(
+        Path("tests/fixtures/review_engine_stress_matrix.yaml").read_text(encoding="utf-8")
+    )
+    scenarios: list[dict[str, object]] = fixture["scenarios"]
+    assert scenarios
+
+    for scenario in scenarios:
+        request_payload = dict(scenario["request"])
+        snapshot = request_payload["call_config_snapshot"]
+        assert isinstance(snapshot, dict)
+        request_payload["call_config_digest"] = _canonical_digest_for_snapshot(snapshot)
+
+        validated = validate_review_request_payload(request_payload)
+        assert validated.call_config_snapshot.schema_version == "v1"
+
+
+def test_wf0050_contract_stage_gating_surface_strict() -> None:
+    valid_payload = _build_payload()
+    valid_payload["call_config_snapshot"]["stage_gating"] = {
+        "active_stage": "STEP_1",
+        "allowed_stages": ["STEP_1", "STEP_2"],
+        "stage_map": {"STEP_1": ["research_idea"]},
+    }
+    valid_payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        valid_payload["call_config_snapshot"]
+    )
+
+    validated = validate_review_request_payload(valid_payload)
+    assert validated.call_config_snapshot.stage_gating is not None
+    assert validated.call_config_snapshot.stage_gating.active_stage == "STEP_1"
+
+    invalid_payload = _build_payload()
+    invalid_payload["call_config_snapshot"]["stage_gating"] = {
+        "active_stage": "STEP_1",
+        "allowed_stages": ["STEP_1"],
+        "unexpected_field": "bad",
+    }
+    invalid_payload["call_config_digest"] = _canonical_digest_for_snapshot(_build_snapshot())
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(invalid_payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/stage_gating/unexpected_field",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
+
+
+def test_wf0050_contract_hierarchy_surface_strict() -> None:
+    valid_payload = _build_payload()
+    valid_payload["call_config_snapshot"]["hierarchy"] = {
+        "nodes": [{"id": "research_idea", "parent_id": None}],
+        "root_ids": ["research_idea"],
+    }
+    valid_payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        valid_payload["call_config_snapshot"]
+    )
+
+    validated = validate_review_request_payload(valid_payload)
+    assert validated.call_config_snapshot.hierarchy is not None
+    assert validated.call_config_snapshot.hierarchy.root_ids == ["research_idea"]
+
+    invalid_payload = _build_payload()
+    invalid_payload["call_config_snapshot"]["hierarchy"] = {
+        "nodes": [{"id": "research_idea", "parent_id": None, "unexpected_nested": "bad"}],
+        "root_ids": ["research_idea"],
+    }
+    invalid_payload["call_config_digest"] = _canonical_digest_for_snapshot(_build_snapshot())
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(invalid_payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/hierarchy/nodes/0/unexpected_nested",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
+
+
+def test_wf0050_contract_nesting_surface_strict() -> None:
+    valid_payload = _build_payload()
+    valid_payload["call_config_snapshot"]["nesting"] = {
+        "mode": "tree",
+        "max_depth": 3,
+        "allow_cross_refs": False,
+    }
+    valid_payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        valid_payload["call_config_snapshot"]
+    )
+
+    validated = validate_review_request_payload(valid_payload)
+    assert validated.call_config_snapshot.nesting is not None
+    assert validated.call_config_snapshot.nesting.max_depth == 3
+
+    invalid_payload = _build_payload()
+    invalid_payload["call_config_snapshot"]["nesting"] = {
+        "mode": "tree",
+        "max_depth": 3,
+        "allow_cross_refs": False,
+        "unexpected_field": "bad",
+    }
+    invalid_payload["call_config_digest"] = _canonical_digest_for_snapshot(_build_snapshot())
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(invalid_payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/nesting/unexpected_field",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
+
+
 def test_wf0049_contract_nested_field_error_sort() -> None:
     payload = _build_payload()
     del payload["request_id"]

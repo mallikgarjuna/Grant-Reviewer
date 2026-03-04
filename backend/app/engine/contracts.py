@@ -55,6 +55,35 @@ class ActivatedReviewerPolicyRuleV1(_StrictContractModel):
     source_hint: str | None = None
 
 
+class ActivatedComplianceRuleV1(_StrictContractModel):
+    id: str = Field(min_length=1)
+    severity: RuleSeverity
+    rule_type: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+
+
+class ActivatedStageGatingV1(_StrictContractModel):
+    active_stage: str | None = None
+    allowed_stages: list[str] = Field(default_factory=list)
+    stage_map: dict[str, list[str]] = Field(default_factory=dict)
+
+
+class ActivatedHierarchyNodeV1(_StrictContractModel):
+    id: str = Field(min_length=1)
+    parent_id: str | None = None
+
+
+class ActivatedHierarchyV1(_StrictContractModel):
+    nodes: list[ActivatedHierarchyNodeV1] = Field(default_factory=list)
+    root_ids: list[str] = Field(default_factory=list)
+
+
+class ActivatedNestingV1(_StrictContractModel):
+    mode: str | None = None
+    max_depth: int | None = None
+    allow_cross_refs: bool | None = None
+
+
 class ActivatedPromptKnobsV1(_StrictContractModel):
     temperature: float | None = None
     top_p: float | None = None
@@ -66,12 +95,12 @@ class ActivatedPromptKnobsV1(_StrictContractModel):
 class ActivatedCallConfigSnapshotV1(_StrictContractModel):
     schema_version: Literal["v1"]
     expectations: list[ActivatedExpectationV1]
-    stage_gating: dict[str, object] | None = None
-    hierarchy: dict[str, object] | None = None
-    nesting: dict[str, object] | None = None
+    stage_gating: ActivatedStageGatingV1 | None = None
+    hierarchy: ActivatedHierarchyV1 | None = None
+    nesting: ActivatedNestingV1 | None = None
     evaluation_criteria: list[ActivatedEvaluationCriterionV1] | None = None
     evaluation_elements: list[ActivatedEvaluationElementV1] | None = None
-    compliance_rules: list[dict[str, object]] | None = None
+    compliance_rules: list[ActivatedComplianceRuleV1] | None = None
     reviewer_policy: list[ActivatedReviewerPolicyRuleV1] | None = None
     prompt_knobs: ActivatedPromptKnobsV1 | None = None
 
