@@ -69,6 +69,7 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF-0042 | agent-memory-system | [Brainstorm](-) | [PRD](-) | [Tasks](tasks/task-WF-0042-agent-memory-system.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0042-agent-memory-system.md) | Done |
 | WF-0043 | nwo-veni-2025-preproposal-single-call-mvp-harden | [Brainstorm](brainstorms/completed/brainstorm-WF-0043-nwo-veni-2025-preproposal-single-call-mvp-harden.md) | [PRD](prds/completed/prd-WF-0043-nwo-veni-2025-preproposal-single-call-mvp-harden.md) | [Tasks](tasks/completed/task-WF-0043-nwo-veni-2025-preproposal-single-call-mvp-harden.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0043-nwo-veni-2025-preproposal-single-call-mvp-harden.md) | Done |
 | WF-0045 | base-review-pipeline-v1-call-agnostic | [Brainstorm](brainstorms/completed/brainstorm-WF-0045-base-review-pipeline-v1-call-agnostic.md) | [PRD](prds/completed/prd-WF-0045-base-review-pipeline-v1-call-agnostic.md) | [Tasks](tasks/completed/task-WF-0045-base-review-pipeline-v1-call-agnostic.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0045-base-review-pipeline-v1-call-agnostic.md) | Done |
+| WF-0046 | agent-instruction-optimization | [Brainstorm](brainstorms/brainstorm-WF-0046-agent-instruction-optimization.md) | [PRD](prds/prd-WF-0046-agent-instruction-optimization.md) | [Tasks](tasks/task-WF-0046-agent-instruction-optimization.md) | [Walkthrough](walkthroughs/walkthrough-WF-0046-agent-instruction-optimization.md) | Phase 0 |
 
 ---
 
