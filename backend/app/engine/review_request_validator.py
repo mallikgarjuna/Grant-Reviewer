@@ -91,6 +91,16 @@ def _normalize_field_errors(validation_error: ValidationError) -> list[dict[str,
     return sorted(field_errors, key=lambda item: (item["path"], item["kind"], item["message"]))
 
 
+def _parse_request_schema(payload: dict) -> _StrictRequestModel:
+    try:
+        return _StrictRequestModel.model_validate(payload)
+    except ValidationError as err:
+        _raise_malformed_request(
+            "Review request failed schema validation",
+            details={"field_errors": _normalize_field_errors(err)},
+        )
+
+
 def _validate_digest(
     call_config_snapshot: ActivatedCallConfigSnapshotV1,
     call_config_digest: str,
@@ -139,29 +149,22 @@ def _validate_snapshot_shape(call_config_snapshot: ActivatedCallConfigSnapshotV1
         seen_expectation_ids.add(expectation_id)
 
 
-def _validate_proposal_nodes_shape(proposal_nodes: dict) -> None:
-    for key, value in proposal_nodes.items():
-        if not isinstance(key, str) or not isinstance(value, str):
-            _raise_malformed_request(
-                "proposal_nodes must map string keys to string values"
-            )
+def _validate_post_schema_contract(validated_payload: _StrictRequestModel) -> None:
+    _validate_snapshot_shape(validated_payload.call_config_snapshot)
+    _validate_digest(
+        validated_payload.call_config_snapshot,
+        validated_payload.call_config_digest,
+    )
 
 
 def validate_review_request_payload(payload: dict) -> ReviewRequestV1:
     if not isinstance(payload, dict):
         _raise_malformed_request("Review request payload must be an object")
 
-    try:
-        validated_payload = _StrictRequestModel.model_validate(payload)
-    except ValidationError as err:
-        _raise_malformed_request(
-            "Review request failed schema validation",
-            details={"field_errors": _normalize_field_errors(err)},
-        )
+    validated_payload = _parse_request_schema(payload)
 
     call_config_snapshot = validated_payload.call_config_snapshot
-    _validate_snapshot_shape(call_config_snapshot)
-    _validate_digest(call_config_snapshot, validated_payload.call_config_digest)
+    _validate_post_schema_contract(validated_payload)
 
     return ReviewRequestV1(
         request_id=validated_payload.request_id,

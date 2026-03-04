@@ -111,3 +111,25 @@ def test_wf0048_contract_kind_message_templates() -> None:
     assert actual_kind_to_message["missing_field"] == "Field is required."
     assert actual_kind_to_message["type_error"] == "Invalid field type."
     assert actual_kind_to_message["value_error"] == "Invalid field value."
+
+
+def test_wf0048_contract_schema_precedes_digest() -> None:
+    payload = _build_payload()
+    payload["call_config_digest"] = "sha256:deadbeef"
+    del payload["request_id"]
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
+    assert "field_errors" in err_info.value.details
+
+
+def test_wf0048_contract_digest_mismatch_post_schema() -> None:
+    payload = _build_payload()
+    payload["call_config_digest"] = "sha256:deadbeef"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "CALL_CONFIG_DIGEST_MISMATCH"
