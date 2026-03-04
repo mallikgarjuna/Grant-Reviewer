@@ -238,7 +238,16 @@ class StructuredReviewerService:
             result = (
                 run_review_pipeline(review_request)
                 if request_expectations
-                else PipelineResult(findings=[], review_cards=[], telemetry={})
+                else PipelineResult(
+                    request_id=str(review.id),
+                    pipeline_status="SUCCESS",
+                    failure_code=None,
+                    diagnostics=[],
+                    compatibility_output={},
+                    findings=[],
+                    review_cards=[],
+                    telemetry={},
+                )
             )
         except ReviewRequestValidationError as err:
             return self._fail_contract_error(review, code=err.code, message=err.message)

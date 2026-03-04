@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from typing import Any, cast
 
 from app.engine.compat.review_card_mapper import (
     ReviewCardMappingError,
@@ -8,6 +9,8 @@ from app.engine.compat.review_card_mapper import (
     map_findings_to_review_cards,
 )
 from app.engine.contracts import (
+    ActivatedCallConfigSnapshotV1,
+    FailureCode,
     PipelineResult,
     ReviewRequestV1,
 )
@@ -38,7 +41,7 @@ def _build_failure_result(
     executed_stages: list[str],
     error: Exception,
 ) -> PipelineResult:
-    failure_code = map_failure_code(error)
+    failure_code = cast(FailureCode, map_failure_code(error))
     failure_class = (
         "contract-failure" if failure_code == "CONTRACT_FAILURE" else "execution-failure"
     )
@@ -82,6 +85,15 @@ def _run_compliance_gate(request: ReviewRequestV1) -> None:
     if not re.fullmatch(r"STEP_[0-9]+", request.stage_ref.strip()):
         raise PipelineContractFailure(f"Unsupported stage_ref: {request.stage_ref}")
 
+
+def _coerce_snapshot_dict(snapshot: object) -> dict[str, Any]:
+    if isinstance(snapshot, ActivatedCallConfigSnapshotV1):
+        return snapshot.model_dump(mode="python", exclude_none=True)
+    if isinstance(snapshot, dict):
+        return snapshot
+    raise PipelineContractFailure("call_config_snapshot must be an object")
+
+
 def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
     executed_stages: list[str] = []
     try:
@@ -91,19 +103,29 @@ def run_review_pipeline(request: ReviewRequestV1) -> PipelineResult:
         _run_compliance_gate(request)
         executed_stages.append(CORE_STAGE_SEQUENCE[1])
 
-        expectations = list(request.call_config_snapshot.get("expectations", []))
+        snapshot_dict = _coerce_snapshot_dict(request.call_config_snapshot)
+        expectations_obj = snapshot_dict.get("expectations", [])
+        if not isinstance(expectations_obj, list):
+            raise PipelineContractFailure("call_config_snapshot.expectations must be a list")
+        expectations: list[dict[str, Any]] = []
+        for index, expectation in enumerate(expectations_obj):
+            if not isinstance(expectation, dict):
+                raise PipelineContractFailure(
+                    f"expectations[{index}] must be an object",
+                )
+            expectations.append(expectation)
         resolvable_expectation_refs = {
             str(expectation["expectation_id"])
             for expectation in expectations
         }
         expectation_findings = evaluate_expectations(
-            call_config_snapshot=request.call_config_snapshot,
+            call_config_snapshot=snapshot_dict,
             proposal_nodes=request.proposal_nodes,
         )
         executed_stages.append(CORE_STAGE_SEQUENCE[2])
 
         alignment_observations = extract_observations(
-            request.call_config_snapshot,
+            snapshot_dict,
             request.proposal_nodes,
         )
         expectation_to_check_id = {
