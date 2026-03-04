@@ -13,6 +13,8 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -38,7 +40,22 @@ jobs:
         run: uv run mypy .
 
       - name: Contract Boundary Governance Check
-        run: uv run python scripts/check_contract_boundary_governance.py
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            diff_range="origin/${{ github.base_ref }}...HEAD"
+          else
+            before_sha="${{ github.event.before }}"
+            if [ "$before_sha" = "0000000000000000000000000000000000000000" ]; then
+              diff_range="HEAD~1...HEAD"
+            else
+              diff_range="$before_sha...HEAD"
+            fi
+          fi
+          git diff --name-only "$diff_range" > /tmp/wf0053_changed_paths.txt
+          cat /tmp/wf0053_changed_paths.txt
+          uv run python scripts/check_contract_boundary_governance.py \
+            --changed-path-file /tmp/wf0053_changed_paths.txt
 
       - name: WF-0053 Negative Smoke (Expected Fail-Closed)
         run: |

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from pathlib import Path
 import subprocess
 
 import pytest
 
 from scripts.check_contract_boundary_governance import (
+    derive_evidence_bundle_ids,
     evaluate_governance,
+    resolve_governance_inputs,
 )
 
 pytestmark = [pytest.mark.no_db]
@@ -148,3 +151,46 @@ def test_wf0053_contract_negative_smoke_reason() -> None:
     assert (
         "MISSING_REQUIRED_EVIDENCE_BUNDLES: negative_smoke_evidence" in proc.stdout
     )
+
+
+def test_wf0053_contract_derived_bundle_ids_from_changed_paths() -> None:
+    evidence_bundle_ids = derive_evidence_bundle_ids(
+        [
+            ".github/workflows/ci.yml",
+            "docs/tasks/task-WF-0053-contract-boundary-governance-enforcement.md",
+            "docs/walkthroughs/walkthrough-WF-0053-contract-boundary-governance-enforcement.md",
+        ]
+    )
+
+    assert evidence_bundle_ids == [
+        "artifact_traceability_evidence",
+        "contract_gate_evidence",
+        "negative_smoke_evidence",
+    ]
+
+
+def test_wf0053_contract_resolve_inputs_changed_path_file(tmp_path: Path) -> None:
+    changed_path_file = tmp_path / "changed_paths.txt"
+    changed_path_file.write_text(
+        "\n".join(
+            [
+                "backend/app/engine/contracts.py",
+                ".github/workflows/ci.yml",
+                "docs/tasks/task-WF-0053-contract-boundary-governance-enforcement.md",
+                "docs/walkthroughs/walkthrough-WF-0053-contract-boundary-governance-enforcement.md",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    changed_paths, evidence_bundle_ids = resolve_governance_inputs(
+        changed_paths=[],
+        evidence_bundle_ids=[],
+        changed_path_file=str(changed_path_file),
+    )
+    result = evaluate_governance(
+        changed_paths=changed_paths,
+        evidence_bundle_ids=evidence_bundle_ids,
+    )
+
+    assert result.exit_code == 0
