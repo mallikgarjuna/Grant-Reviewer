@@ -1,8 +1,8 @@
 # WF-0053 — Contract Boundary Governance Enforcement Tasks
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-04
 
 ## Task Breakdown (Sequential Order)
@@ -13,7 +13,7 @@ Goal:
 Prove end-to-end governance coupling for one boundary trigger class by failing deterministically when required evidence is missing.
 Slice: tracer-bullet
 User Stories: US1, US2
-PRD Requirements: FR1, FR2, FR3, FR4, FR7
+PRD Requirements: FR1, FR2, FR3, FR4
 Depends on: none
 Enables: 2, 3
 Parallelizable: no
@@ -97,7 +97,6 @@ Depends on: 2, 3
 Enables: 5
 Parallelizable: no
 Files to modify:
-- `backend/pytest.ini`
 - `backend/tests/scripts/test_check_contract_boundary_governance.py`
 - `backend/scripts/check_contract_boundary_governance.py`
 Acceptance Criteria:
@@ -163,9 +162,11 @@ TDD Plan:
 - REFACTOR: Normalize fixture naming/loader usage for consistency with existing compatibility tests.
 Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0053_contract_compat_omitted_vs_explicit_default_three_surface"`
+- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0053_contract_compat_omitted_vs_explicit_default_three_surface or wf0049_contract_scope_pipeline_semantics_stable"`
 - `rg -n "wf0053_contract_compat_omitted_vs_explicit_default_three_surface|governance-only" docs/walkthroughs/walkthrough-WF-0053-contract-boundary-governance-enforcement.md`
 Risks (if any): Existing matrix schema assumptions may need minor alignment for the additional case id.
 
 ## Changelog
 
 - v0.1 (2026-03-04): Initial task breakdown from PRD.
+- v0.2 (2026-03-04): Applied review edits: removed unnecessary `pytest.ini` touch from Task 4, tightened tracer requirement mapping, and added runtime-semantics regression verification to Task 6; marked Ready for Implementation.
