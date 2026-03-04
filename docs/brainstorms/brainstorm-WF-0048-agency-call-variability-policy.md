@@ -2,7 +2,7 @@
 
 Artifact: brainstorm
 Version: v0.1
-Status: Draft
+Status: Draft Complete
 Last Updated: 2026-03-04
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0048-agency-call-variability-policy.md`
@@ -60,8 +60,95 @@ Contract Notes / Non-obvious constraints (Section 2):
 - Harden the `ReviewRequestV1` boundary first (snapshot + proposal_nodes + digest); keep broader API DTO changes out of the initial tracer-bullet slice.
 - Phase 0 “good enough”: contract surfaces + error semantics + testable invariants; avoid architecture/implementation plan bloat.
 
+## 3. Target User / Actor
+
+Primary contract consumer we optimize for: Frontend BFF route handlers.
+
+First “shape guessing” to eliminate: snapshot/request payload shape guessing (before expanding to results/telemetry).
+
+Activated snapshot producer responsibility: backend service layer assembles the activated snapshot from call-definition/config + stage_ref + submitted nodes; the engine only consumes the strict snapshot (no DB lookups and no call identity branching in core execution).
+
+Allowed “call variability input” to the producer: call-definition config + stage_ref + submitted nodes only (no agency/call_code hints and no ad-hoc runtime switches).
+
+Minimum documentation target (Phase 1): a single strict schema doc for `ActivatedCallConfigSnapshotV1` with examples + rejection cases.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0048-agency-call-variability-policy.md` (Section 3)
+
+Contract Notes / Non-obvious constraints (Section 3):
+
+- “Frontend/BFF first-class consumer” means: examples and tests are written from BFF integration perspective (what must be sent; what gets rejected; how errors are surfaced).
+- Snapshot contract precedes result-contract cleanups; do not broaden v1 into review-result DTO changes.
+
+## 4. Rough Idea (Unstructured Thinking)
+
+High-level direction: define a strict, versioned `ActivatedCallConfigSnapshotV1` contract and enforce it at the engine boundary (request validator). The engine consumes only the typed snapshot object; core stages remain call-agnostic and interpret variability only through declared config/activation surfaces.
+
+Design principles (non-architectural, contract-first):
+
+- Declare explicit extension points (stage gating, hierarchy/nesting, evaluation criteria/elements, compliance rules, reviewer-policy, prompt knobs) rather than accepting ad-hoc fields.
+- Reject unknown fields deterministically; evolve the contract via explicit version bumps.
+- Preserve digest semantics: digest is computed from canonical JSON serialization of the validated snapshot.
+- Determinism is a first-class requirement: the same validated payload yields identical serialized results (`PipelineResult.to_dict()`).
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0048-agency-call-variability-policy.md` (Section 4)
+
+Contract Notes / Non-obvious constraints (Section 4):
+
+- No “escape hatches” (`extensions: dict`) in v1; if flexibility is needed, add it explicitly and version it.
+- Engine must not infer behavior from call identity; only from the snapshot’s declared surfaces.
+
+## 5. Constraints
+
+- Hard requirement: no `if agency == ...` / call-code branching in core execution; all variability is config/activation-driven.
+- Strict contracts at boundaries (Pydantic strict models; reject unknown fields).
+- Deterministic contract-failure semantics compatible with WF-0045.
+- Keep implementation changes within the 3-file limit per task slice; if it needs more, split.
+- For behavior changes, use TDD (RED/GREEN) with deterministic contract tests.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0048-agency-call-variability-policy.md` (Section 5)
+
+## 6. Risks / Unknowns
+
+- Risk: “Strict-by-default” breaks existing internal producers that currently send extra fields; mitigation is incremental adoption via explicit contract evolution and targeted tests.
+- Risk: Determinism fails due to nondeterministic IDs or ordering; mitigation is tests asserting stable `PipelineResult.to_dict()` output for identical payloads.
+- Unknown: exact error taxonomy/details format for contract failures expected by downstream consumers (must stay WF-0045-compatible).
+- Unknown: snapshot versioning strategy (`schema_version` vs implicit versioned model selection).
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0048-agency-call-variability-policy.md` (Section 6)
+
 ## Open Questions / Deferred
 
 - What is the versioning strategy for the activated snapshot contract (e.g., `schema_version`)?
 - Which fields are required vs optional for v1 (minimum viable strictness without blocking current calls)?
 - Exact error taxonomy/details format for contract failures (stable field-paths; stable codes) to keep compatibility guarantees.
+
+## 7. MVP Definition
+
+If shipping in 2–3 days (MVP slice):
+
+- Introduce a strict, typed `ActivatedCallConfigSnapshotV1` model (Pydantic strict, `extra="forbid"` or equivalent) as the sole engine-consumed snapshot boundary (no loose dict).
+- Enforce validation in `validate_review_request_payload()` with deterministic contract-failure semantics:
+  - unknown fields rejected
+  - malformed variability rejected
+  - errors include stable codes and stable field-path details
+- Add deterministic contract tests proving:
+  - unknown fields are rejected
+  - no call-identity branching is required
+  - identical payload yields identical serialized results
+
+Explicitly excluded from MVP:
+
+- Refactoring frontend/BFF consumers (beyond relying on the now-strict boundary).
+- Reworking broader API DTOs for review results beyond what is needed to keep determinism tests stable.
+- Hardening call-definition ingestion pipelines (separate follow-up once snapshot contract is proven).
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0048-agency-call-variability-policy.md` (Section 7)
+
+## 8. Explicit Non-Goals
+
+- No agency/call identity branching inside the core engine (this is a prohibition, not a deliverable).
+- No new competitive-analysis features inside the core pipeline (keep any such work out-of-core / separate WF).
+- No broad redesign of the review UI or cross-endpoint API harmonization in this WF’s first tracer-bullet slice.
+- No “forward-compat via unknown fields” mechanism; contract evolution is explicit and versioned.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0048-agency-call-variability-policy.md` (Section 8)
