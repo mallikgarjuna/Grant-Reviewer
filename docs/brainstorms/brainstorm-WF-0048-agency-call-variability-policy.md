@@ -1,7 +1,7 @@
 # WF-0048 — Agency/Call Variability Policy Contract
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-04
 
@@ -98,6 +98,16 @@ All boundary violations map to deterministic contract failures with stable codes
 - `CALL_CONFIG_DIGEST_MISMATCH`: digest does not match the canonical JSON of the validated snapshot.
 - `MALFORMED_REVIEW_REQUEST`: schema violations (including unknown fields) with:
   - `details.field_errors: list[{path, kind, message}]` (stable ordering by path)
+
+Additional required clarifications:
+
+- Field path format: use JSON Pointer paths (e.g., `/call_config_snapshot/expectations/0/check_id`).
+- Field error ordering: stable sort ascending by `path`, then by `kind`, then by `message`.
+- Validation ordering / precedence:
+  1) Parse + strict schema validation (including unknown-field rejection) for the top-level payload and the activated snapshot.
+  2) Only if (1) succeeds, validate `call_config_digest` against canonical JSON of the validated snapshot.
+  - Implication: schema violations always return `MALFORMED_REVIEW_REQUEST` even if the digest also would have mismatched.
+- Minimum `kind` vocabulary (stable): `unknown_field`, `missing_field`, `type_error`, `value_error`.
 
 ## 2.3 Contract — Deterministic Success Semantics
 
