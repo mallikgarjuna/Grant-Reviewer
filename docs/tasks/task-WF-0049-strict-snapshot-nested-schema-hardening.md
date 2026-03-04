@@ -58,7 +58,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_tracer_criteria_nested_unknown_rejected`
 Risks (if any): Producer fixtures with legacy extra keys may begin failing and require explicit compatibility expectations.
 
-### [ ] Task 3 — Strict nested models for `reviewer_policy` and `prompt_knobs`
+### [x] Task 3 — Strict nested models for `reviewer_policy` and `prompt_knobs`
 Goal:
 Apply the same strict nested boundary hardening to reviewer policy and prompt knob surfaces, keeping scope to active request schema only.
 Slice: nested-modeling-policy-knobs

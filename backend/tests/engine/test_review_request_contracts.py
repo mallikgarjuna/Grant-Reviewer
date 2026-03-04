@@ -333,3 +333,92 @@ def test_wf0049_contract_elements_surface_strict() -> None:
         kind="unknown_field",
         message="Unknown field is not allowed.",
     )
+
+
+def test_wf0049_contract_reviewer_policy_surface_strict() -> None:
+    valid_payload = _build_payload()
+    valid_payload["call_config_snapshot"]["reviewer_policy"] = [
+        {
+            "id": "policy-1",
+            "applies_to_stage": "STEP_1",
+            "applies_to_node_ids": ["research_idea"],
+            "rule_type": "tone",
+            "instruction": "Keep language specific.",
+            "severity": "WARNING",
+            "enforcement_mode": "PROMPT_ONLY",
+            "forbidden_terms": ["always"],
+            "source_hint": "call-doc",
+        }
+    ]
+    valid_digest = hashlib.sha256(
+        canonicalize_for_digest(valid_payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    valid_payload["call_config_digest"] = f"sha256:{valid_digest}"
+    validated = validate_review_request_payload(valid_payload)
+    assert validated.call_config_snapshot.reviewer_policy is not None
+    assert validated.call_config_snapshot.reviewer_policy[0].id == "policy-1"
+
+    invalid_payload = _build_payload()
+    invalid_payload["call_config_snapshot"]["reviewer_policy"] = [
+        {
+            "id": "policy-1",
+            "applies_to_stage": "STEP_1",
+            "applies_to_node_ids": ["research_idea"],
+            "rule_type": "tone",
+            "instruction": "Keep language specific.",
+            "severity": "WARNING",
+            "enforcement_mode": "PROMPT_ONLY",
+            "forbidden_terms": ["always"],
+            "unknown_nested": "bad",
+        }
+    ]
+    invalid_digest = hashlib.sha256(
+        canonicalize_for_digest(invalid_payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    invalid_payload["call_config_digest"] = f"sha256:{invalid_digest}"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(invalid_payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/reviewer_policy/0/unknown_nested",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
+
+
+def test_wf0049_contract_prompt_knobs_surface_strict() -> None:
+    valid_payload = _build_payload()
+    valid_payload["call_config_snapshot"]["prompt_knobs"] = {
+        "temperature": 0.2,
+        "max_tokens": 600,
+        "top_p": 0.9,
+    }
+    valid_digest = hashlib.sha256(
+        canonicalize_for_digest(valid_payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    valid_payload["call_config_digest"] = f"sha256:{valid_digest}"
+    validated = validate_review_request_payload(valid_payload)
+    assert validated.call_config_snapshot.prompt_knobs is not None
+    assert validated.call_config_snapshot.prompt_knobs.temperature == 0.2
+
+    invalid_payload = _build_payload()
+    invalid_payload["call_config_snapshot"]["prompt_knobs"] = {
+        "temperature": 0.2,
+        "unknown_knob": 1,
+    }
+    invalid_digest = hashlib.sha256(
+        canonicalize_for_digest(invalid_payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    invalid_payload["call_config_digest"] = f"sha256:{invalid_digest}"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(invalid_payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/prompt_knobs/unknown_knob",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
