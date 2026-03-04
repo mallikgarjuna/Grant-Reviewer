@@ -14,10 +14,11 @@ scenarios:
           - expectation_id: exp-nwo-1
             node_logical_id: research_idea
             check_id: check.required
+            required: true
       proposal_nodes:
         research_idea: ""
     expected:
-      severities: [NOTE]
+      severities: [ERROR]
 
   - id: erc_present_content
     archetype: ERC
@@ -34,6 +35,7 @@ scenarios:
           - expectation_id: exp-erc-1
             node_logical_id: b1_part1_scientific_proposal
             check_id: check.required
+            required: true
       proposal_nodes:
         b1_part1_scientific_proposal: "Detailed scientific proposal text"
     expected:
@@ -54,6 +56,7 @@ scenarios:
           - expectation_id: exp-msca-1
             node_logical_id: excellence
             check_id: check.required
+            required: false
       proposal_nodes:
         excellence: ""
     expected:

@@ -66,6 +66,7 @@ def test_wf0045_contract_stage_ref_variants_supported() -> None:
                         "expectation_id": "exp-stage-2",
                         "node_logical_id": "b1_part1_scientific_proposal",
                         "check_id": "check.required",
+                        "required": True,
                     }
                 ]
             },

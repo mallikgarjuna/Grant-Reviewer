@@ -21,11 +21,12 @@ class ActivatedExpectationV1(_StrictContractModel):
     expectation_id: str = Field(min_length=1)
     node_logical_id: str = Field(min_length=1)
     check_id: str = Field(default="check.presence", min_length=1)
+    required: bool = False
 
 
 class ActivatedCallConfigSnapshotV1(_StrictContractModel):
     schema_version: Literal["v1"]
-    expectations: list[ActivatedExpectationV1] = Field(default_factory=list)
+    expectations: list[ActivatedExpectationV1]
     stage_gating: dict[str, object] | None = None
     hierarchy: dict[str, object] | None = None
     nesting: dict[str, object] | None = None
@@ -36,7 +37,7 @@ class ActivatedCallConfigSnapshotV1(_StrictContractModel):
     prompt_knobs: dict[str, object] | None = None
 
     def to_canonical_payload(self) -> dict[str, object]:
-        return self.model_dump(mode="json", exclude_none=True)
+        return self.model_dump(mode="json", exclude_none=True, exclude_defaults=True)
 
     def get(self, key: str, default: object | None = None) -> object:
         return self.to_canonical_payload().get(key, default)

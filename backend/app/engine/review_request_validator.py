@@ -102,10 +102,10 @@ def _parse_request_schema(payload: dict) -> _StrictRequestModel:
 
 
 def _validate_digest(
-    call_config_snapshot: ActivatedCallConfigSnapshotV1,
+    call_config_snapshot: dict[str, object],
     call_config_digest: str,
 ) -> None:
-    canonical = canonicalize_for_digest(call_config_snapshot.to_canonical_payload())
+    canonical = canonicalize_for_digest(call_config_snapshot)
     expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     expected_with_prefix = f"sha256:{expected}"
     if call_config_digest != expected_with_prefix:
@@ -152,7 +152,11 @@ def _validate_snapshot_shape(call_config_snapshot: ActivatedCallConfigSnapshotV1
 def _validate_post_schema_contract(validated_payload: _StrictRequestModel) -> None:
     _validate_snapshot_shape(validated_payload.call_config_snapshot)
     _validate_digest(
-        validated_payload.call_config_snapshot,
+        validated_payload.call_config_snapshot.model_dump(
+            mode="json",
+            exclude_none=True,
+            exclude_unset=True,
+        ),
         validated_payload.call_config_digest,
     )
 

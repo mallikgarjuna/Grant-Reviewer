@@ -171,3 +171,33 @@ def test_wf0048_contract_snapshot_driven_not_identity_driven() -> None:
         "kind": "unknown_field",
         "message": "Unknown field is not allowed.",
     }
+
+
+def test_wf0048_contract_expectations_required_field_error() -> None:
+    payload = _build_payload()
+    del payload["call_config_snapshot"]["expectations"]
+    payload["call_config_digest"] = "sha256:deadbeef"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
+    assert {
+        "path": "/call_config_snapshot/expectations",
+        "kind": "missing_field",
+        "message": "Field is required.",
+    } in err_info.value.details["field_errors"]
+
+
+def test_wf0048_contract_required_true_drives_error_severity() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["expectations"][0]["required"] = True
+    payload["proposal_nodes"]["research_idea"] = ""
+    digest = hashlib.sha256(
+        canonicalize_for_digest(payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    payload["call_config_digest"] = f"sha256:{digest}"
+
+    result = run_review_pipeline(validate_review_request_payload(payload))
+
+    assert [finding.severity for finding in result.findings] == ["ERROR"]
