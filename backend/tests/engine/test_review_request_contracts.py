@@ -17,7 +17,7 @@ from app.engine.review_request_validator import (
     validate_review_request_payload,
 )
 
-pytestmark = pytest.mark.no_db
+pytestmark = [pytest.mark.no_db, pytest.mark.contract_gate]
 
 
 def _build_snapshot() -> dict[str, object]:

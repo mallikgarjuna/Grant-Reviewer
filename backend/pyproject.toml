@@ -58,4 +58,5 @@ ignore = []
 [tool.pytest.ini_options]
 markers = [
     "no_db: test does not require a database connection",
+    "contract_gate: required deterministic contract-boundary gate tests for merge",
 ]
