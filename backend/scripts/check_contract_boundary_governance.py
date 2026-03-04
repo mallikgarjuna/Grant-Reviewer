@@ -127,6 +127,7 @@ def main() -> int:
         changed_paths=args.changed_path,
         evidence_bundle_ids=args.evidence_bundle,
     )
+    print("reason_code=" + result.reason_code)
     print(result.message)
     if result.triggered_classes:
         print("triggered_classes=" + ",".join(result.triggered_classes))

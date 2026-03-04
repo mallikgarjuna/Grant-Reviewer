@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import subprocess
+
 import pytest
 
 from scripts.check_contract_boundary_governance import (
@@ -119,3 +121,30 @@ def test_wf0053_contract_selector_marker_trigger() -> None:
 
     assert result.exit_code == 1
     assert result.triggered_classes == ["contract_gate_selector_surface"]
+
+
+def test_wf0053_contract_negative_smoke_reason() -> None:
+    proc = subprocess.run(
+        [
+            "uv",
+            "run",
+            "python",
+            "scripts/check_contract_boundary_governance.py",
+            "--changed-path",
+            "backend/app/engine/contracts.py",
+            "--evidence-bundle",
+            "contract_gate_evidence",
+            "--evidence-bundle",
+            "artifact_traceability_evidence",
+        ],
+        cwd=".",
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert proc.returncode == 1
+    assert "reason_code=MISSING_REQUIRED_EVIDENCE_BUNDLES" in proc.stdout
+    assert (
+        "MISSING_REQUIRED_EVIDENCE_BUNDLES: negative_smoke_evidence" in proc.stdout
+    )

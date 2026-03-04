@@ -40,6 +40,23 @@ jobs:
       - name: Contract Boundary Governance Check
         run: uv run python scripts/check_contract_boundary_governance.py
 
+      - name: WF-0053 Negative Smoke (Expected Fail-Closed)
+        run: |
+          set +e
+          output=$(uv run python scripts/check_contract_boundary_governance.py \
+            --changed-path backend/app/engine/contracts.py \
+            --evidence-bundle contract_gate_evidence \
+            --evidence-bundle artifact_traceability_evidence 2>&1)
+          status=$?
+          set -e
+          echo "$output"
+          if [ "$status" -eq 0 ]; then
+            echo "Expected governance checker failure for negative smoke, but got success."
+            exit 1
+          fi
+          echo "$output" | grep -q "reason_code=MISSING_REQUIRED_EVIDENCE_BUNDLES"
+          echo "$output" | grep -q "negative_smoke_evidence"
+
       - name: Contract Gate (Marker)
         run: uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate --strict-markers -q
         env:
