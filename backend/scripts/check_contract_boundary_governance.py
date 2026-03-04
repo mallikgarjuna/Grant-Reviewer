@@ -6,10 +6,38 @@ from typing import Sequence
 import argparse
 
 REQUEST_BOUNDARY_TRIGGER_CLASS = "request_boundary_contract_surface"
-REQUEST_BOUNDARY_PREFIXES: tuple[str, ...] = (
-    "backend/app/engine/contracts.py",
-    "backend/app/engine/review_request_validator.py",
+CONTRACT_GATE_SELECTOR_TRIGGER_CLASS = "contract_gate_selector_surface"
+CI_CONTRACT_GATE_WIRING_TRIGGER_CLASS = "ci_contract_gate_wiring_surface"
+WORKFLOW_TRACEABILITY_TRIGGER_CLASS = "workflow_traceability_surface"
+
+TRIGGER_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    (
+        REQUEST_BOUNDARY_TRIGGER_CLASS,
+        (
+            "backend/app/engine/contracts.py",
+            "backend/app/engine/review_request_validator.py",
+        ),
+    ),
+    (
+        CONTRACT_GATE_SELECTOR_TRIGGER_CLASS,
+        (
+            "backend/tests/engine/test_review_request_contracts.py",
+            "backend/pytest.ini",
+        ),
+    ),
+    (
+        CI_CONTRACT_GATE_WIRING_TRIGGER_CLASS,
+        (".github/workflows/ci.yml",),
+    ),
+    (
+        WORKFLOW_TRACEABILITY_TRIGGER_CLASS,
+        (
+            "docs/tasks/task-WF-0053-contract-boundary-governance-enforcement.md",
+            "docs/walkthroughs/walkthrough-WF-0053-contract-boundary-governance-enforcement.md",
+        ),
+    ),
 )
+
 CONTRACT_GATE_EVIDENCE_BUNDLE_ID = "contract_gate_evidence"
 
 
@@ -21,8 +49,8 @@ class GovernanceResult:
     message: str
 
 
-def _is_request_boundary_change(path: str) -> bool:
-    return any(path.startswith(prefix) for prefix in REQUEST_BOUNDARY_PREFIXES)
+def _path_matches_prefixes(path: str, prefixes: Sequence[str]) -> bool:
+    return any(path.startswith(prefix) for prefix in prefixes)
 
 
 def evaluate_governance(
@@ -30,9 +58,11 @@ def evaluate_governance(
     changed_paths: Sequence[str],
     evidence_bundle_ids: Sequence[str],
 ) -> GovernanceResult:
-    triggered_classes: list[str] = []
-    if any(_is_request_boundary_change(path) for path in changed_paths):
-        triggered_classes.append(REQUEST_BOUNDARY_TRIGGER_CLASS)
+    triggered_classes = [
+        trigger_class
+        for trigger_class, prefixes in TRIGGER_RULES
+        if any(_path_matches_prefixes(path, prefixes) for path in changed_paths)
+    ]
 
     required_bundle_ids: set[str] = set()
     if REQUEST_BOUNDARY_TRIGGER_CLASS in triggered_classes:
