@@ -691,3 +691,20 @@ def test_wf0049_contract_compat_omitted_optional_default_equivalence() -> None:
 
     validated = validate_review_request_payload(payload)
     assert validated.call_config_snapshot.evaluation_criteria is not None
+
+
+def test_wf0049_contract_scope_request_boundary_only() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["funding_agency_id"] = "agency-123"
+    payload["call_config_digest"] = "sha256:deadbeef"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/funding_agency_id",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"

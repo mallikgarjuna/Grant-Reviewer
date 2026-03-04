@@ -159,7 +159,7 @@ Verification Steps:
 - `rg -n "wf0049_contract_compat_|fail-closed" docs/walkthroughs/walkthrough-WF-0049-strict-snapshot-nested-schema-hardening.md`
 Risks (if any): Matrix fixture schema drift can hide rollout blockers unless selector coverage remains explicit.
 
-### [ ] Task 7 — Scope guard: request-boundary-only hardening and stable downstream semantics
+### [x] Task 7 — Scope guard: request-boundary-only hardening and stable downstream semantics
 Goal:
 Prove WF-0049 changes remain at request boundary and do not introduce call-identity branching or pipeline output contract drift.
 Slice: scope-guard
