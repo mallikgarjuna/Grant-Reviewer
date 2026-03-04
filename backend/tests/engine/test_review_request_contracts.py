@@ -17,6 +17,7 @@ from app.engine.review_request_validator import (
     validate_review_request_payload,
 )
 
+# Module-level marker keeps all WF contract suites (including WF-0052) in CI gate scope.
 pytestmark = [pytest.mark.no_db, pytest.mark.contract_gate]
 
 

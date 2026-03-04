@@ -1,8 +1,8 @@
 # WF-0052 — Producer Compatibility Stress (Real Snapshots)
 
 Artifact: task
-Version: v0.3
-Status: In Progress
+Version: v0.4
+Status: Completed
 Last Updated: 2026-03-04
 
 ## Task Breakdown
@@ -25,7 +25,7 @@ Verification:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0052_contract_digest_ or wf0052_contract_compat_omitted_optional_default_equivalence_real_snapshot"`
 - `cd backend && uv run pytest -m no_db`
 
-### [ ] Task 3 — CI contract-gate inclusion for WF-0052 selectors
+### [x] Task 3 — CI contract-gate inclusion for WF-0052 selectors
 Files:
 - `backend/tests/engine/test_review_request_contracts.py`
 - `.github/workflows/ci.yml`
@@ -42,3 +42,4 @@ Verification:
 - v0.1 (2026-03-04): Initial task artifact.
 - v0.2 (2026-03-04): Completed Task 1 with real-snapshot matrix fixture, deterministic WF-0052 contract compatibility tests, and walkthrough evidence.
 - v0.3 (2026-03-04): Completed Task 2 with real-snapshot digest determinism tests and walkthrough evidence.
+- v0.4 (2026-03-04): Completed Task 3 with strict-marker CI contract gate and verification evidence.

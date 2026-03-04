@@ -30,5 +30,10 @@ Last Updated: 2026-03-04
   - canonical digests computed from schema-validated projections are equivalent for omitted-vs-explicit defaults.
   - raw snapshot JSON digesting (without schema projection) is rejected deterministically as `CALL_CONFIG_DIGEST_MISMATCH`.
 
+## Task 3 Implementation
+- Hardened CI marker gate command:
+  - `pytest tests/engine/test_review_request_contracts.py -m contract_gate --strict-markers -q`
+- Kept WF-0052 inclusion fail-closed through module-level `contract_gate` marker on contract suites.
+
 ## Residual Work
-- Task 3: CI contract-gate labeling update for WF-0052 stage completion evidence.
+- None for Phase 3 implementation tasks.

@@ -38,7 +38,7 @@ jobs:
         run: uv run mypy .
 
       - name: Contract Gate (Marker)
-        run: uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate
+        run: uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate --strict-markers -q
         env:
           LLM_MODE: stub
           DATABASE_URL: "sqlite:///./ci_test.db"
