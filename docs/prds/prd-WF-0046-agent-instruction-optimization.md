@@ -1,8 +1,8 @@
 # WF-0046 — Agent Instruction Optimization PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-04
 
 ## 0. User Stories (MVP)
@@ -96,3 +96,4 @@ Last Updated: 2026-03-04
 ## 12. Changelog
 
 - v0.1 (2026-03-04): Initial PRD from brainstorm
+- v0.2 (2026-03-04): Applied risk audit review (no edits required), marked Ready for Tasks
