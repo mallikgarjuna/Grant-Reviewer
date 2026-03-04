@@ -40,6 +40,7 @@ jobs:
         run: uv run mypy .
 
       - name: Contract Boundary Governance Check
+        if: github.event_name == 'pull_request'
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch origin "${{ github.base_ref }}" --depth=1
@@ -58,6 +59,7 @@ jobs:
             --changed-path-file /tmp/wf0053_changed_paths.txt
 
       - name: WF-0053 Negative Smoke (Expected Fail-Closed)
+        if: github.event_name == 'pull_request'
         run: |
           set +e
           output=$(uv run python scripts/check_contract_boundary_governance.py \
