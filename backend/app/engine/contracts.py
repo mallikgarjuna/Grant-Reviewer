@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Literal
 
+from pydantic import BaseModel, ConfigDict, Field
+
 EngineMode = Literal["DIAGNOSTIC", "STRICT"]
 FindingKind = Literal["MISSING_CONTENT", "PRESENT_CONTENT"]
 FindingSeverity = Literal["ERROR", "WARNING", "NOTE"]
@@ -11,13 +13,43 @@ ReviewRating = Literal["CRITICAL", "WARNING", "NOTE"]
 FailureCode = Literal["CONTRACT_FAILURE", "EXECUTION_FAILURE"]
 
 
+class _StrictContractModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class ActivatedExpectationV1(_StrictContractModel):
+    expectation_id: str = Field(min_length=1)
+    node_logical_id: str = Field(min_length=1)
+    check_id: str = Field(default="check.presence", min_length=1)
+    required: bool = False
+
+
+class ActivatedCallConfigSnapshotV1(_StrictContractModel):
+    schema_version: Literal["v1"]
+    expectations: list[ActivatedExpectationV1]
+    stage_gating: dict[str, object] | None = None
+    hierarchy: dict[str, object] | None = None
+    nesting: dict[str, object] | None = None
+    evaluation_criteria: list[dict[str, object]] | None = None
+    evaluation_elements: list[dict[str, object]] | None = None
+    compliance_rules: list[dict[str, object]] | None = None
+    reviewer_policy: list[dict[str, object]] | None = None
+    prompt_knobs: dict[str, object] | None = None
+
+    def to_canonical_payload(self) -> dict[str, object]:
+        return self.model_dump(mode="json", exclude_none=True, exclude_defaults=True)
+
+    def get(self, key: str, default: object | None = None) -> object:
+        return self.to_canonical_payload().get(key, default)
+
+
 @dataclass(frozen=True)
 class ReviewRequestV1:
     request_id: str
     mode: EngineMode
     stage_ref: str
     call_config_digest: str
-    call_config_snapshot: dict
+    call_config_snapshot: ActivatedCallConfigSnapshotV1
     proposal_nodes: dict[str, str]
 
 

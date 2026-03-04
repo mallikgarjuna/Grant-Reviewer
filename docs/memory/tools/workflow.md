@@ -8,3 +8,5 @@
 - **2026-03-01 — Branch cleanup hygiene:** After PR merge/branch deletion, always run `git fetch --prune origin` locally to remove stale remote-tracking refs before reporting branch cleanup status.
 - **2026-03-02 — Unified Phase 1 runner status cadence:** For `phase-1-or-2-run-planning`, Phase 1 should update `docs/index.md` to `Phase 1` after Part A and `Phase 1 (Ready)` only after Part C marks PRD `Ready for Tasks`; keeps runner traceability and avoids premature readiness signaling.
 - **2026-03-02 — Unified Phase 2 runner handoff discipline:** For `phase-1-or-2-run-planning`, commit Task v0.1 after Part A before Part B review, then mark `docs/index.md` as `Phase 2 (Ready)` only after Part C sets task artifact to `Ready for Implementation`.
+
+- **2026-03-04 — WF-0048 Phase 2 scope lock:** Keep tasks constrained to `ActivatedCallConfigSnapshotV1` boundary + deterministic contract-failure semantics + deterministic contract tests; avoid adding broader pipeline/UI refactors in task plans.

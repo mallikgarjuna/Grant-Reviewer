@@ -16,11 +16,12 @@ pytestmark = pytest.mark.no_db
 
 def _payload() -> dict:
     snapshot = {
+        "schema_version": "v1",
         "expectations": [
             {
                 "expectation_id": "exp-1",
                 "node_logical_id": "research_idea",
-                "required": True,
+                "check_id": "check.presence",
             }
         ]
     }
@@ -62,6 +63,7 @@ def test_validator_rejects_malformed_payload_with_deterministic_code() -> None:
 def test_validator_rejects_malformed_expectation_entry_shape() -> None:
     payload = _payload()
     payload["call_config_snapshot"] = {
+        "schema_version": "v1",
         "expectations": [{"node_logical_id": "research_idea"}]
     }
     digest = hashlib.sha256(
@@ -88,6 +90,7 @@ def test_validator_rejects_non_string_proposal_node_payload_values() -> None:
 def test_validator_rejects_duplicate_expectation_ids() -> None:
     payload = _payload()
     payload["call_config_snapshot"] = {
+        "schema_version": "v1",
         "expectations": [
             {
                 "expectation_id": "exp-dup",
@@ -115,6 +118,7 @@ def test_validator_rejects_duplicate_expectation_ids() -> None:
 def test_validator_rejects_duplicate_finding_identity() -> None:
     payload = _payload()
     payload["call_config_snapshot"] = {
+        "schema_version": "v1",
         "expectations": [
             {
                 "expectation_id": "exp-1",
@@ -141,7 +145,10 @@ def test_validator_rejects_duplicate_finding_identity() -> None:
 
 def test_wf0045_contract_structural_gate_rejects_invalid() -> None:
     payload = _payload()
-    payload["call_config_snapshot"] = {"expectations": "not-a-list"}
+    payload["call_config_snapshot"] = {
+        "schema_version": "v1",
+        "expectations": "not-a-list",
+    }
     digest = hashlib.sha256(
         canonicalize_for_digest(payload["call_config_snapshot"]).encode("utf-8")
     ).hexdigest()

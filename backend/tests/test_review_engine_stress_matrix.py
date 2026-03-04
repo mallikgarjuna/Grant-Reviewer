@@ -60,6 +60,7 @@ def test_wf0045_contract_stage_ref_variants_supported() -> None:
             "stage_ref": "STEP_2",
             "call_config_digest": "sha256:fixture",
             "call_config_snapshot": {
+                "schema_version": "v1",
                 "expectations": [
                     {
                         "expectation_id": "exp-stage-2",

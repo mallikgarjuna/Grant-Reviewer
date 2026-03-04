@@ -2,17 +2,29 @@ from __future__ import annotations
 
 import hashlib
 import json
+from typing import Any, Literal
 
-from app.engine.contracts import ReviewRequestV1
+from pydantic import BaseModel, ConfigDict, ValidationError
 
-_REQUIRED_FIELDS = {
-    "request_id",
-    "mode",
-    "stage_ref",
-    "call_config_snapshot",
-    "call_config_digest",
-    "proposal_nodes",
+from app.engine.contracts import ActivatedCallConfigSnapshotV1, ReviewRequestV1
+
+_FIELD_ERROR_MESSAGE_TEMPLATES = {
+    "unknown_field": "Unknown field is not allowed.",
+    "missing_field": "Field is required.",
+    "type_error": "Invalid field type.",
+    "value_error": "Invalid field value.",
 }
+
+
+class _StrictRequestModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: str
+    mode: Literal["DIAGNOSTIC", "STRICT"]
+    stage_ref: str
+    call_config_snapshot: ActivatedCallConfigSnapshotV1
+    call_config_digest: str
+    proposal_nodes: dict[str, str]
 
 
 class ReviewRequestValidationError(ValueError):
@@ -46,16 +58,53 @@ def canonicalize_for_digest(payload: dict) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
-def _validate_required_fields(payload: dict) -> None:
-    missing = sorted(field for field in _REQUIRED_FIELDS if field not in payload)
-    if missing:
+def _to_json_pointer(location: tuple[Any, ...]) -> str:
+    if not location:
+        return "/"
+    escaped = [str(token).replace("~", "~0").replace("/", "~1") for token in location]
+    return "/" + "/".join(escaped)
+
+
+def _map_error_kind(error_type: str) -> str:
+    if error_type == "extra_forbidden":
+        return "unknown_field"
+    if error_type == "missing":
+        return "missing_field"
+    if error_type == "literal_error" or error_type.startswith("value_error"):
+        return "value_error"
+    if error_type.endswith("_type"):
+        return "type_error"
+    return "value_error"
+
+
+def _normalize_field_errors(validation_error: ValidationError) -> list[dict[str, str]]:
+    field_errors: list[dict[str, str]] = []
+    for error in validation_error.errors(include_url=False):
+        kind = _map_error_kind(str(error["type"]))
+        field_errors.append(
+            {
+                "path": _to_json_pointer(tuple(error["loc"])),
+                "kind": kind,
+                "message": _FIELD_ERROR_MESSAGE_TEMPLATES[kind],
+            }
+        )
+    return sorted(field_errors, key=lambda item: (item["path"], item["kind"], item["message"]))
+
+
+def _parse_request_schema(payload: dict) -> _StrictRequestModel:
+    try:
+        return _StrictRequestModel.model_validate(payload)
+    except ValidationError as err:
         _raise_malformed_request(
-            "Missing required fields",
-            details={"missing_fields": missing},
+            "Review request failed schema validation",
+            details={"field_errors": _normalize_field_errors(err)},
         )
 
 
-def _validate_digest(call_config_snapshot: dict, call_config_digest: str) -> None:
+def _validate_digest(
+    call_config_snapshot: dict[str, object],
+    call_config_digest: str,
+) -> None:
     canonical = canonicalize_for_digest(call_config_snapshot)
     expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     expected_with_prefix = f"sha256:{expected}"
@@ -70,28 +119,14 @@ def _validate_digest(call_config_snapshot: dict, call_config_digest: str) -> Non
         )
 
 
-def _validate_snapshot_shape(call_config_snapshot: dict) -> None:
-    expectations = call_config_snapshot.get("expectations")
-    if not isinstance(expectations, list):
-        _raise_malformed_request("call_config_snapshot.expectations must be a list")
-
-    required_fields = {"expectation_id", "node_logical_id"}
-    for index, expectation in enumerate(expectations):
-        if not isinstance(expectation, dict):
-            _raise_malformed_request(f"expectations[{index}] must be an object")
-        missing = sorted(field for field in required_fields if field not in expectation)
-        if missing:
-            _raise_malformed_request(
-                f"expectations[{index}] missing required fields",
-                details={"missing_fields": missing, "index": index},
-            )
-
+def _validate_snapshot_shape(call_config_snapshot: ActivatedCallConfigSnapshotV1) -> None:
+    expectations = call_config_snapshot.expectations
     seen_expectation_ids: set[str] = set()
     seen_finding_identities: set[tuple[str, str, str]] = set()
     for index, expectation in enumerate(expectations):
-        expectation_id = str(expectation["expectation_id"])
-        node_logical_id = str(expectation["node_logical_id"])
-        check_id = str(expectation.get("check_id", "check.presence"))
+        expectation_id = expectation.expectation_id
+        node_logical_id = expectation.node_logical_id
+        check_id = expectation.check_id
 
         identity = (expectation_id, node_logical_id, check_id)
         if identity in seen_finding_identities:
@@ -106,7 +141,6 @@ def _validate_snapshot_shape(call_config_snapshot: dict) -> None:
                 },
             )
         seen_finding_identities.add(identity)
-
         if expectation_id in seen_expectation_ids:
             _raise_malformed_request(
                 f"Duplicate expectation_id at expectations[{index}]",
@@ -115,38 +149,32 @@ def _validate_snapshot_shape(call_config_snapshot: dict) -> None:
         seen_expectation_ids.add(expectation_id)
 
 
-def _validate_proposal_nodes_shape(proposal_nodes: dict) -> None:
-    for key, value in proposal_nodes.items():
-        if not isinstance(key, str) or not isinstance(value, str):
-            _raise_malformed_request(
-                "proposal_nodes must map string keys to string values"
-            )
+def _validate_post_schema_contract(validated_payload: _StrictRequestModel) -> None:
+    _validate_snapshot_shape(validated_payload.call_config_snapshot)
+    _validate_digest(
+        validated_payload.call_config_snapshot.model_dump(
+            mode="json",
+            exclude_none=True,
+            exclude_unset=True,
+        ),
+        validated_payload.call_config_digest,
+    )
 
 
 def validate_review_request_payload(payload: dict) -> ReviewRequestV1:
     if not isinstance(payload, dict):
         _raise_malformed_request("Review request payload must be an object")
 
-    _validate_required_fields(payload)
+    validated_payload = _parse_request_schema(payload)
 
-    mode = payload["mode"]
-    if mode not in {"DIAGNOSTIC", "STRICT"}:
-        _raise_malformed_request("mode must be DIAGNOSTIC or STRICT")
-
-    call_config_snapshot = payload["call_config_snapshot"]
-    proposal_nodes = payload["proposal_nodes"]
-    if not isinstance(call_config_snapshot, dict) or not isinstance(proposal_nodes, dict):
-        _raise_malformed_request("call_config_snapshot and proposal_nodes must be objects")
-
-    _validate_snapshot_shape(call_config_snapshot)
-    _validate_proposal_nodes_shape(proposal_nodes)
-    _validate_digest(call_config_snapshot, str(payload["call_config_digest"]))
+    call_config_snapshot = validated_payload.call_config_snapshot
+    _validate_post_schema_contract(validated_payload)
 
     return ReviewRequestV1(
-        request_id=str(payload["request_id"]),
-        mode=mode,
-        stage_ref=str(payload["stage_ref"]),
-        call_config_digest=str(payload["call_config_digest"]),
+        request_id=validated_payload.request_id,
+        mode=validated_payload.mode,
+        stage_ref=validated_payload.stage_ref,
+        call_config_digest=validated_payload.call_config_digest,
         call_config_snapshot=call_config_snapshot,
-        proposal_nodes={str(key): str(value) for key, value in proposal_nodes.items()},
+        proposal_nodes=validated_payload.proposal_nodes,
     )

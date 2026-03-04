@@ -54,7 +54,7 @@ def test_error_contract_malformed_request_is_deterministic() -> None:
 
 
 def test_error_contract_digest_mismatch_classification() -> None:
-    snapshot = {"expectations": []}
+    snapshot = {"schema_version": "v1", "expectations": []}
     digest = hashlib.sha256(canonicalize_for_digest(snapshot).encode("utf-8")).hexdigest()
     payload = {
         "request_id": "req-1",

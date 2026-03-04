@@ -1,5 +1,31 @@
 # Architectural Decisions
 
+## Date: 2026-03-04 (WF-0048: Agency/call variability policy contract)
+
+### AD 48.1: Engine boundary is strict `ActivatedCallConfigSnapshotV1` only
+- **WF ID**: WF-0048
+- **Context**: `call_config_snapshot` was an untyped dict boundary and allowed ad-hoc variability drift.
+- **Decision**: Require strict typed `ActivatedCallConfigSnapshotV1` with `schema_version: "v1"` and unknown-field rejection at all levels.
+- **Why**: Locks variability to declared surfaces and keeps core execution call-agnostic.
+- **Tradeoff**: Existing producers with extra fields will fail until aligned.
+- **Status**: Approved.
+
+### AD 48.2: Contract-failure semantics are deterministic with schema-first precedence
+- **WF ID**: WF-0048
+- **Context**: Mixed schema/digest failures could produce ambiguous or unstable error behavior for integrators.
+- **Decision**: Enforce validation order: strict schema first (`MALFORMED_REVIEW_REQUEST`), digest check second (`CALL_CONFIG_DIGEST_MISMATCH`) only after schema success; include stable JSON Pointer field paths and sorted field errors.
+- **Why**: Preserves deterministic failure behavior and actionable BFF integration feedback.
+- **Tradeoff**: Digest mismatch is intentionally suppressed when schema is invalid.
+- **Status**: Approved.
+
+### AD 48.3: Deterministic contract tests are mandatory and task slices are capped at 3 files
+- **WF ID**: WF-0048
+- **Context**: Contract hardening can sprawl and regress determinism if tests/slices are not constrained.
+- **Decision**: Require deterministic contract tests for unknown-field rejection, schema-vs-digest precedence, and replay-stable `PipelineResult.to_dict()`; enforce Phase 3 slices of <=3 files with split dependencies when larger.
+- **Why**: Keeps implementation auditable, incremental, and aligned with strict MVP scope.
+- **Tradeoff**: More granular task decomposition overhead during implementation.
+- **Status**: Approved.
+
 ## Date: 2026-03-03 (WF-0045: Base review pipeline v1 call-agnostic core)
 
 ### AD 45.1: Six-stage governance contract is locked and call-agnostic
