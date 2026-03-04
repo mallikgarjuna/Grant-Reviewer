@@ -1,13 +1,14 @@
 # WF-0047 — Git Hooks Rule Enforcement
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-04
 
 ## Changelog
 
 - v0.1 (2026-03-04): Initial tasks from PRD
+- v0.2 (2026-03-04): Applied review edits (Validated as MVP minimal, no changes needed)
 
 ## Task Breakdown (Sequential Order)
 
