@@ -138,7 +138,7 @@ Verification Steps:
 - `rg -n "negative_smoke|wf0053|check_contract_boundary_governance" .github/workflows/ci.yml`
 Risks (if any): Incorrect smoke assertion polarity can produce false-green CI behavior.
 
-### [ ] Task 6 — Add bounded compatibility matrix extension + traceability evidence
+### [x] Task 6 — Add bounded compatibility matrix extension + traceability evidence
 
 Goal:
 Add one targeted omitted-vs-explicit-default digest-equivalence case across `stage_gating`, `prompt_knobs`, and `reviewer_policy`, and capture traceability evidence.

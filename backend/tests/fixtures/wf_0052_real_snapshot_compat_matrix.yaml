@@ -136,3 +136,65 @@ cases:
               name: Objectives are ambitious and advance frontier of knowledge
               description: Objectives are ambitious and advance frontier of knowledge.
               stage: BOTH
+
+  - class_id: wf0053_contract_compat_omitted_vs_explicit_default_three_surface
+    expected: pass
+    source_call_path: data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml
+    grounding_element_ids:
+      - elem_cv_idea_alignment
+    baseline_snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-veni-wf0053
+          node_logical_id: research_idea
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit_quality_of_researcher
+          name: Quality of the researcher
+          stage: preproposal
+          weight_percent: 100
+          evaluation_elements:
+            - id: elem_cv_idea_alignment
+              name: CV and key output align with research idea
+              description: Key output and academic profile align with research idea.
+      stage_gating:
+        active_stage: STEP_1
+        allowed_stages: [STEP_1]
+      prompt_knobs:
+        temperature: 0.2
+      reviewer_policy:
+        - id: pol_wf0053_defaults
+          rule_type: assessment_principle
+          instruction: Keep evaluation criteria grounded in provided evidence.
+    explicit_default_snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-veni-wf0053
+          node_logical_id: research_idea
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit_quality_of_researcher
+          name: Quality of the researcher
+          stage: preproposal
+          weight_percent: 100
+          evaluation_elements:
+            - id: elem_cv_idea_alignment
+              name: CV and key output align with research idea
+              description: Key output and academic profile align with research idea.
+      stage_gating:
+        active_stage: STEP_1
+        allowed_stages: [STEP_1]
+        stage_map: {}
+      prompt_knobs:
+        temperature: 0.2
+        top_p: null
+        max_tokens: null
+      reviewer_policy:
+        - id: pol_wf0053_defaults
+          applies_to_stage: BOTH
+          applies_to_node_ids: []
+          rule_type: assessment_principle
+          instruction: Keep evaluation criteria grounded in provided evidence.
+          severity: WARNING
+          enforcement_mode: PROMPT_ONLY
+          forbidden_terms: []
