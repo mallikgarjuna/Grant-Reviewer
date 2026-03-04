@@ -145,8 +145,7 @@ Promotion dependency note:
 | 28 | Universal Form: large-form navigation for >10 nodes | product | Add section navigation/stepper/TOC patterns for larger flat calls once MVP universality is stable; avoid bundling this UX expansion into WF-0035’s 3–10 node target. (Ref: WF-0035 brainstorm “Target User / Actor” Q5 selected A; PRD v0.2 Target scope.) | 2026-02-28 |
 | 29 | Universal Submit: split orchestration into dedicated hooks/modules | tech-debt | Defer large `UniversalSubmitForm` decomposition into focused hooks (`gating`, `render-model`, `submit orchestration`, `draft persistence`) to a new WF to reduce regression risk post-WF-0035 ship gate. (Ref: WF-0035 adversarial audit follow-up, branch `wf/WF-0035-universal-form-dynamic-ui-renderer`.) | 2026-02-28 |
 | 30 | Surface `DiagnosticFinding v1` directly in UI/API (deprecate `ReviewCard` adapter) | idea | Follow-on to WF-0038: make `DiagnosticFinding v1` the externally consumed contract (UI/API/analytics) and retire `DiagnosticFinding v1 → ReviewCard` compatibility mapping after a transition window. (Ref: WF-0038 PRD v0.2 + AD 38.15.) | 2026-02-28 |
-| 31 | Embed rule enforcement in git hooks / Makefiles | tech-debt | Deferral from WF-0046: Move enforceable conventions (like 45-line limits for AGENTS.md, or git commit prefix rules) into physical hooks/Makefiles rather than prompting LLMs. | 2026-03-04 |
-| 32 | [IGNORED] Adopt Ralph-style fresh-context execution | idea | Deferral from WF-0046. Ignored (2026-03-04): User rejected this because forcing the developer to manually swap chat windows and copy-paste prompts for every single task introduces far too much manual overhead and slows down the flow state. | 2026-03-04 |
+| 31 | [IGNORED] Adopt Ralph-style fresh-context execution | idea | Deferral from WF-0046. Ignored (2026-03-04): User rejected this because forcing the developer to manually swap chat windows and copy-paste prompts for every single task introduces far too much manual overhead and slows down the flow state. | 2026-03-04 |
 
 ---
 
@@ -189,6 +188,8 @@ Promotion dependency note:
 | 33 | WF-0042 | agent-memory-system | started-directly | - | 2026-03-01 |
 | 34 | WF-0043 | nwo-veni-2025-preproposal-single-call-mvp-harden | promoted | P0 #1 | 2026-03-01 |
 | 35 | WF-0045 | base-review-pipeline-v1-call-agnostic | promoted | P1 #15 (historical same-day park/pick; numbering later reused) | 2026-03-03 |
+| 36 | WF-0046 | agent-instruction-optimization | started-directly | - | 2026-03-04 |
+| 37 | WF-0047 | git-hooks-rule-enforcement | promoted | P2 #31 | 2026-03-04 |
 
 ---
 
