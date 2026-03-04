@@ -132,7 +132,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0049_contract_tracer_schema_precedes_digest`
 Risks (if any): Canonicalization changes can alter historical digest fixtures if equivalence rules are not tightly bounded.
 
-### [ ] Task 6 — Producer compatibility matrix and fail-closed rollout gate
+### [x] Task 6 — Producer compatibility matrix and fail-closed rollout gate
 Goal:
 Add fixture-backed compatibility evidence for required payload classes and enforce fail-closed readiness expectations for strict nested hardening.
 Slice: producer-compatibility-gate

@@ -4,8 +4,10 @@ import hashlib
 import json
 import operator
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
+import yaml
 
 from app.engine.contracts import ActivatedCallConfigSnapshotV1
 from app.engine.pipeline_v1 import run_review_pipeline
@@ -75,6 +77,38 @@ def _find_field_error_by_path(
         if entry["path"] == path:
             return entry
     raise AssertionError(f"Expected field error for path {path!r}, got {errors!r}")
+
+
+def _load_wf0049_compat_matrix() -> dict[str, dict[str, object]]:
+    fixture = yaml.safe_load(
+        Path("tests/fixtures/wf_0049_nested_schema_compat_matrix.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
+    cases: list[dict[str, object]] = fixture["cases"]
+    by_case = {str(case["class_id"]): case for case in cases}
+    required = {
+        "happy_valid_payload",
+        "legacy_extra_nested_key",
+        "nested_type_mismatch",
+        "omitted_optional_default_equivalence",
+    }
+    missing = sorted(required - by_case.keys())
+    assert not missing, f"Missing required compatibility classes: {missing}"
+    return by_case
+
+
+def _build_payload_for_snapshot(snapshot: dict[str, object], *, digest: str) -> dict[str, object]:
+    payload = _build_payload()
+    payload["call_config_snapshot"] = snapshot
+    payload["call_config_digest"] = digest
+    return payload
+
+
+def _canonical_digest_for_snapshot(snapshot: dict[str, object]) -> str:
+    validated_snapshot = ActivatedCallConfigSnapshotV1.model_validate(snapshot)
+    canonical = canonicalize_for_digest(validated_snapshot.to_canonical_payload())
+    return "sha256:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def test_wf0048_contract_tracer_valid_snapshot_digest_ok() -> None:
@@ -588,3 +622,72 @@ def test_wf0049_contract_digest_projection_from_validated_schema() -> None:
     validated = validate_review_request_payload(payload)
     assert validated.call_config_snapshot.evaluation_criteria is not None
     assert validated.call_config_snapshot.evaluation_criteria[0].weight_percent == 50
+
+
+def test_wf0049_contract_compat_happy_valid_payload() -> None:
+    case = _load_wf0049_compat_matrix()["happy_valid_payload"]
+    snapshot = case["snapshot"]
+    assert isinstance(snapshot, dict)
+    payload = _build_payload_for_snapshot(
+        snapshot,
+        digest=_canonical_digest_for_snapshot(snapshot),
+    )
+
+    validated = validate_review_request_payload(payload)
+    assert validated.call_config_snapshot.schema_version == "v1"
+
+
+def test_wf0049_contract_compat_legacy_extra_nested_key() -> None:
+    case = _load_wf0049_compat_matrix()["legacy_extra_nested_key"]
+    snapshot = case["snapshot"]
+    assert isinstance(snapshot, dict)
+    payload = _build_payload_for_snapshot(
+        snapshot,
+        digest=_canonical_digest_for_snapshot(_build_snapshot()),
+    )
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/evaluation_criteria/0/unexpected_field",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
+
+
+def test_wf0049_contract_compat_nested_type_mismatch() -> None:
+    case = _load_wf0049_compat_matrix()["nested_type_mismatch"]
+    snapshot = case["snapshot"]
+    assert isinstance(snapshot, dict)
+    payload = _build_payload_for_snapshot(
+        snapshot,
+        digest=_canonical_digest_for_snapshot(_build_snapshot()),
+    )
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/prompt_knobs/max_tokens",
+        kind="type_error",
+        message="Invalid field type.",
+    )
+
+
+def test_wf0049_contract_compat_omitted_optional_default_equivalence() -> None:
+    case = _load_wf0049_compat_matrix()["omitted_optional_default_equivalence"]
+    baseline_snapshot = case["baseline_snapshot"]
+    explicit_default_snapshot = case["explicit_default_snapshot"]
+    assert isinstance(baseline_snapshot, dict)
+    assert isinstance(explicit_default_snapshot, dict)
+
+    payload = _build_payload_for_snapshot(
+        explicit_default_snapshot,
+        digest=_canonical_digest_for_snapshot(baseline_snapshot),
+    )
+
+    validated = validate_review_request_payload(payload)
+    assert validated.call_config_snapshot.evaluation_criteria is not None

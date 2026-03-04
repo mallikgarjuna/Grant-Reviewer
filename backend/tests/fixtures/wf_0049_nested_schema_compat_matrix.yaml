@@ -1,0 +1,98 @@
+cases:
+  - class_id: happy_valid_payload
+    expected: pass
+    rationale: Fully strict nested payload should validate and digest-check cleanly.
+    snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-1
+          node_logical_id: research_idea
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit-1
+          name: Criterion 1
+          stage: STEP_1
+          weight_percent: 50
+          evaluation_elements:
+            - id: elem-1
+              name: Element 1
+              description: Element description
+              stage: STEP_1
+      reviewer_policy:
+        - id: policy-1
+          applies_to_stage: STEP_1
+          applies_to_node_ids: [research_idea]
+          rule_type: tone
+          instruction: Keep language specific.
+          severity: WARNING
+          enforcement_mode: PROMPT_ONLY
+      prompt_knobs:
+        temperature: 0.2
+        max_tokens: 400
+
+  - class_id: legacy_extra_nested_key
+    expected: malformed
+    rationale: Legacy extra nested key must fail closed under strict models.
+    snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-1
+          node_logical_id: research_idea
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit-1
+          name: Criterion 1
+          stage: STEP_1
+          weight_percent: 50
+          unexpected_field: legacy
+          evaluation_elements:
+            - id: elem-1
+              name: Element 1
+              description: Element description
+
+  - class_id: nested_type_mismatch
+    expected: malformed
+    rationale: Nested prompt knobs with wrong type must return deterministic field error.
+    snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-1
+          node_logical_id: research_idea
+          check_id: check.presence
+      prompt_knobs:
+        max_tokens: many
+
+  - class_id: omitted_optional_default_equivalence
+    expected: pass
+    rationale: Explicit default and omitted optional nested fields are digest-equivalent.
+    baseline_snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-1
+          node_logical_id: research_idea
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit-1
+          name: Criterion 1
+          stage: STEP_1
+          weight_percent: 50
+          evaluation_elements:
+            - id: elem-1
+              name: Element 1
+              description: Element description
+    explicit_default_snapshot:
+      schema_version: v1
+      expectations:
+        - expectation_id: exp-1
+          node_logical_id: research_idea
+          check_id: check.presence
+      evaluation_criteria:
+        - id: crit-1
+          name: Criterion 1
+          stage: STEP_1
+          weight_percent: 50
+          evaluation_elements:
+            - id: elem-1
+              name: Element 1
+              description: Element description
+              stage: BOTH
