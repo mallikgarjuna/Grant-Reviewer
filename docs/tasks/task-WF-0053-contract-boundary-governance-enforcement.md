@@ -112,7 +112,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate --strict-markers -q`
 Risks (if any): Marker namespace edits may affect unrelated test suites if not isolated.
 
-### [ ] Task 5 — Assertion-safe negative CI smoke for fail-closed proof
+### [x] Task 5 — Assertion-safe negative CI smoke for fail-closed proof
 
 Goal:
 Add one deterministic negative smoke that proves missing-coupling conditions fail as expected without destabilizing normal CI semantics.
