@@ -32,7 +32,7 @@ class ActivatedEvaluationCriterionV1(_StrictContractModel):
     name: str = Field(min_length=1)
     stage: str = Field(min_length=1)
     weight_percent: int
-    evaluation_elements: list["ActivatedEvaluationElementV1"] = Field(default_factory=list)
+    evaluation_elements: list[ActivatedEvaluationElementV1] = Field(default_factory=list)
 
 
 class ActivatedEvaluationElementV1(_StrictContractModel):

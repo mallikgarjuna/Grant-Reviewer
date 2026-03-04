@@ -37,8 +37,8 @@ jobs:
       - name: Type Check (MyPy)
         run: uv run mypy .
 
-      - name: Contract Gate (WF-0048/WF-0049)
-        run: uv run pytest tests/engine/test_review_request_contracts.py -k "wf0048_contract_ or wf0049_contract_"
+      - name: Contract Gate (WF-0048/WF-0049/WF-0050)
+        run: uv run pytest tests/engine/test_review_request_contracts.py -k "wf0048_contract_ or wf0049_contract_ or wf0050_contract_"
         env:
           LLM_MODE: stub
           DATABASE_URL: "sqlite:///./ci_test.db"

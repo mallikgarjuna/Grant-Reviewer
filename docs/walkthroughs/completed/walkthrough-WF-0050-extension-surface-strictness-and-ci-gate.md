@@ -13,7 +13,7 @@ Last Updated: 2026-03-04
   - `nesting`
 - Added WF-0050 contract selectors validating strict unknown-key rejection and valid parse behavior.
 - Added explicit CI contract-gate step:
-  - `pytest tests/engine/test_review_request_contracts.py -k "wf0048_contract_ or wf0049_contract_"`
+  - `pytest tests/engine/test_review_request_contracts.py -k "wf0048_contract_ or wf0049_contract_ or wf0050_contract_"`
 - Updated backend CI test lane to:
   - `pytest -m no_db`
 
