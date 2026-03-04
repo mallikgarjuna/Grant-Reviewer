@@ -7,7 +7,7 @@ def check_commit_msg(filepath):
         print(f"Error: Commit message file {filepath} not found.", file=sys.stderr)
         return 1
 
-    with open(filepath, 'r') as f:
+    with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read().strip()
 
     if not content:
@@ -26,7 +26,9 @@ def check_commit_msg(filepath):
     if re.match(pattern, first_line):
         return 0
 
-    print(f"Error: Invalid commit message prefix. Must start with 'WF-XXXX: ' or be a Merge/Revert. (Current: {first_line})", file=sys.stderr)
+    print(f"Error: Invalid commit message prefix. (Current: '{first_line}')", file=sys.stderr)
+    print("Format must be: 'WF-XXXX: <slug> — Task <N> — <short title>'", file=sys.stderr)
+    print("Exceptions: 'Merge branch ...' or 'Revert ...'", file=sys.stderr)
     return 1
 
 def main():

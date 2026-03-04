@@ -6,12 +6,13 @@ def check_file(filepath, max_lines=45):
         print(f"Error: File {filepath} not found.", file=sys.stderr)
         return 1
 
-    with open(filepath, 'r') as f:
+    with open(filepath, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
     count = len(lines)
     if count > max_lines:
-        print(f"Error: {filepath} exceeds {max_lines} lines (current: {count}). Please consolidate or move instructions to code.", file=sys.stderr)
+        print(f"Error: {filepath} exceeds {max_lines} lines (current: {count}).", file=sys.stderr)
+        print("Please consolidate instructions or move them to specific code modules to keep AGENTS.md concise.", file=sys.stderr)
         return 1
     return 0
 

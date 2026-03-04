@@ -37,7 +37,8 @@ def test_check_commit_msg_invalid_prefix(temp_commit_msg_file):
     f = temp_commit_msg_file("Fixed a bug")
     result = run_hook(f)
     assert result.returncode == 1
-    assert "prefix" in result.stderr.lower()
+    assert "invalid commit message prefix" in result.stderr.lower()
+    assert "format must be" in result.stderr.lower()
 
 def test_check_commit_msg_invalid_wf_format(temp_commit_msg_file):
     f = temp_commit_msg_file("WF-47: missed a digit")
