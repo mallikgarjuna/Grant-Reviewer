@@ -1,5 +1,7 @@
-import pytest
 from uuid import uuid4
+
+import pytest
+
 from app.models.domain import NodeType, ProposalNode
 from app.schemas.compliance import ComplianceCheckRequest, DraftNode
 from app.services.call_definition_service import HydratedNode

@@ -12,9 +12,9 @@ from pathlib import Path
 from typing import Any, TypedDict
 from uuid import UUID
 
-from fastapi.testclient import TestClient
 import pytest
 import yaml
+from fastapi.testclient import TestClient
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, select
 

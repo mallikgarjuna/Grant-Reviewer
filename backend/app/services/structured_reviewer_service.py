@@ -28,8 +28,8 @@ from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import LLMClientProtocol, OpenAIClient
 from app.services.review_execution_core import ReviewExecutionCore
 from app.services.reviewer_policy import (
-    ReviewStage,
     ReviewerPolicyRule,
+    ReviewStage,
     find_policy_violations,
     get_applicable_reviewer_policy_rules,
 )
