@@ -35,13 +35,12 @@ def _build_snapshot() -> dict[str, object]:
 
 def _build_payload() -> dict[str, object]:
     snapshot = _build_snapshot()
-    digest = hashlib.sha256(canonicalize_for_digest(snapshot).encode("utf-8")).hexdigest()
     return {
         "request_id": "req-1",
         "mode": "DIAGNOSTIC",
         "stage_ref": "STEP_1",
         "call_config_snapshot": snapshot,
-        "call_config_digest": f"sha256:{digest}",
+        "call_config_digest": _canonical_digest_for_snapshot(snapshot),
         "proposal_nodes": {"research_idea": "text"},
     }
 
@@ -254,10 +253,9 @@ def test_wf0048_contract_required_true_drives_error_severity() -> None:
     payload = _build_payload()
     payload["call_config_snapshot"]["expectations"][0]["required"] = True
     payload["proposal_nodes"]["research_idea"] = ""
-    digest = hashlib.sha256(
-        canonicalize_for_digest(payload["call_config_snapshot"]).encode("utf-8")
-    ).hexdigest()
-    payload["call_config_digest"] = f"sha256:{digest}"
+    payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        payload["call_config_snapshot"]
+    )
 
     result = run_review_pipeline(validate_review_request_payload(payload))
 
@@ -338,10 +336,9 @@ def test_wf0049_contract_elements_surface_strict() -> None:
             ],
         }
     ]
-    valid_digest = hashlib.sha256(
-        canonicalize_for_digest(valid_payload["call_config_snapshot"]).encode("utf-8")
-    ).hexdigest()
-    valid_payload["call_config_digest"] = f"sha256:{valid_digest}"
+    valid_payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        valid_payload["call_config_snapshot"]
+    )
 
     validated = validate_review_request_payload(valid_payload)
     assert validated.call_config_snapshot.evaluation_criteria is not None
@@ -396,10 +393,9 @@ def test_wf0049_contract_reviewer_policy_surface_strict() -> None:
             "source_hint": "call-doc",
         }
     ]
-    valid_digest = hashlib.sha256(
-        canonicalize_for_digest(valid_payload["call_config_snapshot"]).encode("utf-8")
-    ).hexdigest()
-    valid_payload["call_config_digest"] = f"sha256:{valid_digest}"
+    valid_payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        valid_payload["call_config_snapshot"]
+    )
     validated = validate_review_request_payload(valid_payload)
     assert validated.call_config_snapshot.reviewer_policy is not None
     assert validated.call_config_snapshot.reviewer_policy[0].id == "policy-1"
@@ -441,10 +437,9 @@ def test_wf0049_contract_prompt_knobs_surface_strict() -> None:
         "max_tokens": 600,
         "top_p": 0.9,
     }
-    valid_digest = hashlib.sha256(
-        canonicalize_for_digest(valid_payload["call_config_snapshot"]).encode("utf-8")
-    ).hexdigest()
-    valid_payload["call_config_digest"] = f"sha256:{valid_digest}"
+    valid_payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        valid_payload["call_config_snapshot"]
+    )
     validated = validate_review_request_payload(valid_payload)
     assert validated.call_config_snapshot.prompt_knobs is not None
     assert validated.call_config_snapshot.prompt_knobs.temperature == 0.2

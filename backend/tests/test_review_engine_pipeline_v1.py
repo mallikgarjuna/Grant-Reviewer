@@ -409,7 +409,11 @@ def test_review_request_validator_allows_same_check_id_for_different_expectation
         },
         "proposal_nodes": {"research_idea": "text"},
     }
-    canonical = canonicalize_for_digest(payload["call_config_snapshot"])
+    canonical = canonicalize_for_digest(
+        ActivatedCallConfigSnapshotV1.model_validate(
+            payload["call_config_snapshot"]
+        ).to_canonical_payload()
+    )
     payload["call_config_digest"] = "sha256:" + hashlib.sha256(
         canonical.encode("utf-8")
     ).hexdigest()
@@ -440,7 +444,11 @@ def test_review_request_validator_rejects_duplicate_expectation_finding_identity
         },
         "proposal_nodes": {"research_idea": "text"},
     }
-    canonical = canonicalize_for_digest(payload["call_config_snapshot"])
+    canonical = canonicalize_for_digest(
+        ActivatedCallConfigSnapshotV1.model_validate(
+            payload["call_config_snapshot"]
+        ).to_canonical_payload()
+    )
     payload["call_config_digest"] = "sha256:" + hashlib.sha256(
         canonical.encode("utf-8")
     ).hexdigest()
