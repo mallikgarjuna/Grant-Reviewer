@@ -1,7 +1,7 @@
 # WF-0053 — Contract Boundary Governance Enforcement
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-04
 
@@ -80,6 +80,10 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0053-contract-bound
 - Technical constraint: do not destabilize CI runtime materially; keep checks deterministic and bounded.
 - Policy constraint: merge safety must be fail-closed for in-scope boundary-change classes.
 - Documentation constraint: artifact traceability must remain explicit in workflow docs.
+- Boundary trigger inventory (candidate, to be finalized in PRD):
+  - Request-boundary contract models/schemas (engine contracts and request validator surfaces).
+  - Contract-gate test selectors/markers and CI contract-gate invocation wiring.
+  - Workflow artifacts providing contract traceability evidence (task + walkthrough).
 - Contract Notes / Non-obvious constraints:
   - Keep scope to governance and bounded compatibility hardening only.
   - Preserve existing boundary semantics and error contracts.
@@ -109,6 +113,11 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0053-contract-bound
   - Runtime pipeline behavior changes.
   - Broad contract model redesign.
   - Multi-dimensional producer realism expansion beyond one targeted case.
+- Acceptance checklist (all required):
+  - Positive path: in-scope boundary changes with required evidence pass CI.
+  - Negative path: missing required coupling fails CI deterministically (fail-closed smoke).
+  - Marker guard: unregistered marker usage fails under strict-marker enforcement.
+  - Compatibility add-on: one multi-surface omitted-vs-explicit-default digest-equivalence case is covered and documented.
 - Contract Notes / Non-obvious constraints:
   - MVP enforces policy correctness first; optimization can follow.
 
