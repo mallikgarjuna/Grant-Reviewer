@@ -12,8 +12,8 @@ from uuid import uuid4
 import pytest
 import yaml
 
-from app.engine.contracts import ReviewRequestV1
 import app.engine.pipeline_v1 as pipeline_v1
+from app.engine.contracts import ReviewRequestV1
 from app.engine.pipeline_v1 import run_review_pipeline
 from app.models.domain import (
     EvaluationIntent,
