@@ -111,6 +111,7 @@ def _load_wf0052_compat_matrix() -> dict[str, dict[str, object]]:
         "legacy_extra_nested_key_real_snapshot",
         "nested_type_mismatch_real_snapshot",
         "omitted_optional_default_equivalence_real_snapshot",
+        "wf0053_contract_compat_omitted_vs_explicit_default_three_surface",
     }
     missing = sorted(required - by_case.keys())
     assert not missing, f"Missing required WF-0052 compatibility classes: {missing}"
@@ -1075,3 +1076,28 @@ def test_wf0052_contract_digest_raw_snapshot_mismatch_real_snapshot() -> None:
         validate_review_request_payload(payload)
 
     assert err_info.value.code == "CALL_CONFIG_DIGEST_MISMATCH"
+
+
+def test_wf0053_contract_compat_omitted_vs_explicit_default_three_surface() -> None:
+    case = _load_wf0052_compat_matrix()[
+        "wf0053_contract_compat_omitted_vs_explicit_default_three_surface"
+    ]
+    _assert_case_grounded_to_source_call(case)
+    baseline_snapshot = case["baseline_snapshot"]
+    explicit_default_snapshot = case["explicit_default_snapshot"]
+    assert isinstance(baseline_snapshot, dict)
+    assert isinstance(explicit_default_snapshot, dict)
+
+    baseline_digest = _canonical_digest_for_snapshot(baseline_snapshot)
+    explicit_digest = _canonical_digest_for_snapshot(explicit_default_snapshot)
+    assert baseline_digest == explicit_digest
+
+    payload = _build_payload_for_snapshot(
+        explicit_default_snapshot,
+        digest=baseline_digest,
+    )
+    validated = validate_review_request_payload(payload)
+
+    assert validated.call_config_snapshot.stage_gating is not None
+    assert validated.call_config_snapshot.prompt_knobs is not None
+    assert validated.call_config_snapshot.reviewer_policy is not None

@@ -13,6 +13,8 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -36,6 +38,41 @@ jobs:
 
       - name: Type Check (MyPy)
         run: uv run mypy .
+
+      - name: Contract Boundary Governance Check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            diff_range="origin/${{ github.base_ref }}...HEAD"
+          else
+            before_sha="${{ github.event.before }}"
+            if [ "$before_sha" = "0000000000000000000000000000000000000000" ]; then
+              diff_range="HEAD~1...HEAD"
+            else
+              diff_range="$before_sha...HEAD"
+            fi
+          fi
+          git diff --name-only "$diff_range" > /tmp/wf0053_changed_paths.txt
+          cat /tmp/wf0053_changed_paths.txt
+          uv run python scripts/check_contract_boundary_governance.py \
+            --changed-path-file /tmp/wf0053_changed_paths.txt
+
+      - name: WF-0053 Negative Smoke (Expected Fail-Closed)
+        run: |
+          set +e
+          output=$(uv run python scripts/check_contract_boundary_governance.py \
+            --changed-path backend/app/engine/contracts.py \
+            --evidence-bundle contract_gate_evidence \
+            --evidence-bundle artifact_traceability_evidence 2>&1)
+          status=$?
+          set -e
+          echo "$output"
+          if [ "$status" -eq 0 ]; then
+            echo "Expected governance checker failure for negative smoke, but got success."
+            exit 1
+          fi
+          echo "$output" | grep -q "reason_code=MISSING_REQUIRED_EVIDENCE_BUNDLES"
+          echo "$output" | grep -q "negative_smoke_evidence"
 
       - name: Contract Gate (Marker)
         run: uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate --strict-markers -q

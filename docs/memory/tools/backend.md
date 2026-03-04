@@ -4,3 +4,5 @@
 - **Database variables:** `DATABASE_URL` is explicitly required; the backend no longer falls back to SQLite when unset.
 - **2026-03-02 — Test/asset guardrails:** DB-backed tests fail-fast unless `DATABASE_URL` DB name contains `test` (local safe default used: `localhost:5433/grant_reviewer_test`); pre-commit blocks newly added files over 500KB.
 - **2026-03-04 — Review-request digest canonicalization:** validate digest against schema-validated snapshot projection with `exclude_unset=True`; including defaulted fields in canonicalization (e.g., `required=False`) can create false `CALL_CONFIG_DIGEST_MISMATCH` regressions.
+
+- 2026-03-04: WF-0053 governance gate uses `backend/scripts/check_contract_boundary_governance.py --changed-path-file`; CI computes git diff paths and checker derives evidence bundles when none are passed. Why: prevents vacuous pass when no explicit args are supplied.
