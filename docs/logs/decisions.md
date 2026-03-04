@@ -1,5 +1,31 @@
 # Architectural Decisions
 
+## Date: 2026-03-04 (WF-0053: contract boundary governance enforcement)
+
+### AD 53.1: Boundary-governance trigger inventory is explicit and path-mapped
+- **WF ID**: WF-0053
+- **Context**: Governance coupling can drift if boundary-change detection is heuristic or under-specified.
+- **Decision**: Freeze MVP trigger classes to explicit path-mapped surfaces: request-boundary contracts/validators, contract-gate selector/marker surfaces, CI contract-gate wiring, and WF traceability artifacts.
+- **Why**: Ensures deterministic trigger behavior and reduces false-negative bypass risk.
+- **Tradeoff**: Trigger inventory needs deliberate maintenance when boundary surfaces expand.
+- **Status**: Approved.
+
+### AD 53.2: Evidence coupling is fail-closed with three mandatory bundle IDs
+- **WF ID**: WF-0053
+- **Context**: Boundary-affecting PRs currently rely on reviewer memory for evidence coupling.
+- **Decision**: Require `contract_gate_evidence`, `artifact_traceability_evidence`, and `negative_smoke_evidence` for triggered classes; missing any bundle is a deterministic hard fail.
+- **Why**: Converts governance policy from advisory practice to machine-checkable merge gate.
+- **Tradeoff**: Contributors must supply additional bounded evidence in the same PR.
+- **Status**: Approved.
+
+### AD 53.3: Fail-closed semantics require assertion-safe negative CI smoke
+- **WF ID**: WF-0053
+- **Context**: Policy claims are weak unless a negative path is proven in CI without destabilizing normal runs.
+- **Decision**: Use one deterministic assertion-style negative smoke that proves missing-coupling conditions fail with explicit reason codes/messages.
+- **Why**: Demonstrates enforceability while keeping CI behavior predictable.
+- **Tradeoff**: Adds small ongoing maintenance overhead for smoke fixture/check wiring.
+- **Status**: Approved.
+
 ## Date: 2026-03-04 (WF-0049: strict snapshot nested schema hardening)
 
 ### AD 49.1: Nested request-boundary strictness is active-surface scoped and explicit

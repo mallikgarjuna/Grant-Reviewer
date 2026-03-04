@@ -1,8 +1,8 @@
 # WF-0053 — Contract Boundary Governance Enforcement PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-04
 
 ## 0. User Stories (MVP)
@@ -59,7 +59,9 @@ Last Updated: 2026-03-04
 ## 4. Functional Requirements
 
 - FR1 (US1): The workflow shall define a canonical boundary-change trigger map for governance enforcement.
+- FR1a (US1): The initial canonical trigger inventory is frozen to these classes: request-boundary contract models/validators, contract-gate selector/marker surfaces, CI contract-gate invocation wiring, and workflow traceability artifacts.
 - FR2 (US1, US2): For each trigger class, the workflow shall define a mandatory evidence bundle that must be present in the same PR.
+- FR2a (US1, US2): Mandatory evidence bundle IDs are frozen for MVP as `contract_gate_evidence`, `artifact_traceability_evidence`, and `negative_smoke_evidence`.
 - FR3 (US1, US2): Governance checks shall fail closed when required evidence is missing for triggered classes.
 - FR4 (US2): Governance check output shall provide deterministic, actionable missing-evidence diagnostics.
 - FR5 (US3): Existing contract-gate strict-marker enforcement shall remain mandatory and unchanged in strictness.
@@ -71,15 +73,21 @@ Last Updated: 2026-03-04
 
 ## 5. Data & API Contracts
 
-- C1 (US1, FR1, FR2): Governance trigger contract:
-  - Input: changed file paths and change classes in PR diff.
-  - Output: list of triggered boundary classes and required evidence bundle IDs.
-  - Behavior: deterministic mapping; no heuristic-only fallback.
+- C1 (US1, FR1, FR1a, FR2): Governance trigger contract:
+  - Input: changed file paths in PR diff.
+  - Trigger classes (frozen for MVP):
+    - `request_boundary_contract_surface`: files under request-boundary model/validator surfaces (for example `backend/app/engine/contracts.py`, `backend/app/engine/review_request_validator.py`).
+    - `contract_gate_selector_surface`: contract-gate test selector/marker surfaces (for example `backend/tests/engine/test_review_request_contracts.py`, `backend/pytest.ini`).
+    - `ci_contract_gate_wiring_surface`: CI invocation wiring (for example `.github/workflows/ci.yml`).
+    - `workflow_traceability_surface`: WF task and walkthrough artifact files for WF-0053.
+  - Output: list of triggered classes + required evidence bundle IDs.
+  - Behavior: deterministic map by explicit path rules only; no heuristic-only fallback.
 
-- C2 (US1, US2, FR2, FR3, FR4): Required evidence bundle contract:
-  - `contract_gate_evidence`: CI execution evidence for contract-gate path.
-  - `artifact_traceability_evidence`: required workflow artifact updates for the triggered boundary class.
-  - Missing any required bundle item -> deterministic fail status.
+- C2 (US1, US2, FR2, FR2a, FR3, FR4): Required evidence bundle contract:
+  - `contract_gate_evidence`: CI execution evidence for contract-gate path including strict-marker behavior.
+  - `artifact_traceability_evidence`: required workflow artifact updates for the triggered boundary class (`docs/tasks/task-WF-0053-...` and `docs/walkthroughs/walkthrough-WF-0053-...` when governance surfaces are changed).
+  - `negative_smoke_evidence`: deterministic proof artifact from one missing-coupling failure scenario.
+  - Missing any required bundle item -> deterministic fail status with explicit missing bundle IDs.
 
 - C3 (US3, FR5, FR6): Marker/selector guard contract:
   - Contract-gate test execution uses strict marker validation.
@@ -87,8 +95,9 @@ Last Updated: 2026-03-04
   - Selector or marker namespace updates on boundary surfaces are governed by coupling policy.
 
 - C4 (US1, US3, FR7): Negative smoke contract:
-  - Simulate/validate a missing-coupling scenario.
-  - Expected outcome: deterministic CI failure with explicit reason.
+  - Simulate/validate one missing-coupling scenario by intentionally withholding one required evidence bundle in a controlled check path.
+  - Expected outcome: deterministic failure verdict with explicit reason code/message.
+  - Safety: smoke check is assertion-style so successful CI run requires proving the negative case fails as expected.
 
 - C5 (US4, FR8, FR9): Compatibility extension contract:
   - One new matrix case verifies digest equivalence between omitted optional defaults and explicit defaults across `stage_gating`, `prompt_knobs`, `reviewer_policy`.
@@ -145,14 +154,23 @@ Suggested file paths (coarse):
 - TDD rule: behavior changes start with failing tests/checks (RED), then minimal implementation (GREEN), then refactor.
 - Seam S1 (US1, US2; FR1-FR4): Governance trigger/evidence mapping tests.
   - Validate trigger class detection and missing-evidence failures.
+  - Include positive and negative cases for each frozen trigger class.
   - Boundary-only mocks; no mocking of CI runner semantics.
 - Seam S2 (US3; FR5, FR6): Marker/selector guard tests.
   - Prove strict-marker hard-fail on unregistered marker usage.
   - Prove selector-wiring governance check fails when coupling requirements are unmet.
 - Seam S3 (US1, US3; FR7): Negative smoke proof.
   - Deterministic CI-path test/check that intentionally omits required coupling and must fail.
+  - Assert expected failure reason code/message to prove fail-closed semantics, not generic failure.
 - Seam S4 (US4; FR8, FR9): Compatibility extension test.
   - Add one deterministic omitted-vs-explicit-default digest-equivalence case across all three surfaces.
+  - Include a no-trigger-path prove-it test showing non-boundary-only PR changes do not require governance bundles.
+
+Minimal test types per story:
+- US1: integration-ish governance policy tests + CI wiring smoke.
+- US2: unit tests for deterministic missing-evidence diagnostics.
+- US3: integration-ish strict-marker/selector guard tests.
+- US4: integration-ish compatibility fixture test for three-surface digest equivalence.
 
 ## 9. Telemetry (Minimal)
 
@@ -168,9 +186,9 @@ Suggested file paths (coarse):
 
 ## 11. Open Questions (if any)
 
-- OQ1: Final canonical boundary-trigger file inventory needs explicit lock in Phase 2 tasks.
-- OQ2: Exact CI implementation locus for negative smoke (same job vs dedicated deterministic lane) should be finalized in task planning.
+- None blocking for Phase 2 task generation.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-04): Initial PRD from brainstorm.
+- v0.2 (2026-03-04): Applied risk-audit edits: frozen trigger inventory, explicit required evidence bundle IDs, assertion-safe negative smoke contract, expanded TDD prove-it coverage, and marked Ready for Tasks.
