@@ -39,6 +39,14 @@ TRIGGER_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 CONTRACT_GATE_EVIDENCE_BUNDLE_ID = "contract_gate_evidence"
+ARTIFACT_TRACEABILITY_EVIDENCE_BUNDLE_ID = "artifact_traceability_evidence"
+NEGATIVE_SMOKE_EVIDENCE_BUNDLE_ID = "negative_smoke_evidence"
+MISSING_BUNDLES_REASON_CODE = "MISSING_REQUIRED_EVIDENCE_BUNDLES"
+REQUIRED_BUNDLE_IDS: tuple[str, ...] = (
+    CONTRACT_GATE_EVIDENCE_BUNDLE_ID,
+    ARTIFACT_TRACEABILITY_EVIDENCE_BUNDLE_ID,
+    NEGATIVE_SMOKE_EVIDENCE_BUNDLE_ID,
+)
 
 
 @dataclass(frozen=True)
@@ -46,6 +54,7 @@ class GovernanceResult:
     exit_code: int
     triggered_classes: list[str]
     missing_bundle_ids: list[str]
+    reason_code: str
     message: str
 
 
@@ -65,8 +74,8 @@ def evaluate_governance(
     ]
 
     required_bundle_ids: set[str] = set()
-    if REQUEST_BOUNDARY_TRIGGER_CLASS in triggered_classes:
-        required_bundle_ids.add(CONTRACT_GATE_EVIDENCE_BUNDLE_ID)
+    if triggered_classes:
+        required_bundle_ids.update(REQUIRED_BUNDLE_IDS)
 
     provided_bundle_ids = set(evidence_bundle_ids)
     missing_bundle_ids = sorted(required_bundle_ids - provided_bundle_ids)
@@ -76,18 +85,21 @@ def evaluate_governance(
             exit_code=1,
             triggered_classes=triggered_classes,
             missing_bundle_ids=missing_bundle_ids,
-            message=(
-                "MISSING_REQUIRED_EVIDENCE_BUNDLES: "
-                + ",".join(missing_bundle_ids)
-            ),
+            reason_code=MISSING_BUNDLES_REASON_CODE,
+            message=_render_missing_bundle_diagnostic(missing_bundle_ids),
         )
 
     return GovernanceResult(
         exit_code=0,
         triggered_classes=triggered_classes,
         missing_bundle_ids=[],
+        reason_code="GOVERNANCE_CHECK_OK",
         message="GOVERNANCE_CHECK_OK",
     )
+
+
+def _render_missing_bundle_diagnostic(missing_bundle_ids: Sequence[str]) -> str:
+    return f"{MISSING_BUNDLES_REASON_CODE}: {','.join(missing_bundle_ids)}"
 
 
 def _build_parser() -> argparse.ArgumentParser:

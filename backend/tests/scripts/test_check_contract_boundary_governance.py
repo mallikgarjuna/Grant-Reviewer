@@ -17,7 +17,11 @@ def test_wf0053_contract_tracer_missing_evidence_fails() -> None:
 
     assert result.exit_code == 1
     assert result.triggered_classes == ["request_boundary_contract_surface"]
-    assert result.missing_bundle_ids == ["contract_gate_evidence"]
+    assert result.missing_bundle_ids == [
+        "artifact_traceability_evidence",
+        "contract_gate_evidence",
+        "negative_smoke_evidence",
+    ]
     assert "MISSING_REQUIRED_EVIDENCE_BUNDLES" in result.message
     assert "contract_gate_evidence" in result.message
 
@@ -59,3 +63,49 @@ def test_wf0053_contract_no_trigger_path() -> None:
     assert result.triggered_classes == []
     assert result.missing_bundle_ids == []
     assert result.message == "GOVERNANCE_CHECK_OK"
+
+
+def test_wf0053_contract_missing_bundle_diagnostics() -> None:
+    result_single_missing = evaluate_governance(
+        changed_paths=["backend/app/engine/contracts.py"],
+        evidence_bundle_ids=[
+            "artifact_traceability_evidence",
+            "negative_smoke_evidence",
+        ],
+    )
+
+    assert result_single_missing.exit_code == 1
+    assert result_single_missing.missing_bundle_ids == ["contract_gate_evidence"]
+    assert result_single_missing.reason_code == "MISSING_REQUIRED_EVIDENCE_BUNDLES"
+    assert result_single_missing.message == (
+        "MISSING_REQUIRED_EVIDENCE_BUNDLES: contract_gate_evidence"
+    )
+
+    result_multiple_missing = evaluate_governance(
+        changed_paths=["backend/app/engine/contracts.py"],
+        evidence_bundle_ids=["contract_gate_evidence"],
+    )
+
+    assert result_multiple_missing.exit_code == 1
+    assert result_multiple_missing.missing_bundle_ids == [
+        "artifact_traceability_evidence",
+        "negative_smoke_evidence",
+    ]
+    assert result_multiple_missing.reason_code == "MISSING_REQUIRED_EVIDENCE_BUNDLES"
+    assert result_multiple_missing.message == (
+        "MISSING_REQUIRED_EVIDENCE_BUNDLES: "
+        "artifact_traceability_evidence,negative_smoke_evidence"
+    )
+
+
+def test_wf0053_contract_required_bundle_ids() -> None:
+    result = evaluate_governance(
+        changed_paths=["backend/app/engine/contracts.py"],
+        evidence_bundle_ids=[],
+    )
+
+    assert result.missing_bundle_ids == [
+        "artifact_traceability_evidence",
+        "contract_gate_evidence",
+        "negative_smoke_evidence",
+    ]

@@ -60,7 +60,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/scripts/test_check_contract_boundary_governance.py -k "wf0053_contract_no_trigger_path"`
 Risks (if any): Over-broad path patterns can create false positives if not tightly scoped.
 
-### [ ] Task 3 — Enforce mandatory evidence bundle IDs with deterministic diagnostics
+### [x] Task 3 — Enforce mandatory evidence bundle IDs with deterministic diagnostics
 
 Goal:
 Lock bundle contract IDs and ensure deterministic error messaging for missing evidence.
