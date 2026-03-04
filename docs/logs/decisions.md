@@ -1,5 +1,31 @@
 # Architectural Decisions
 
+## Date: 2026-03-04 (WF-0049: strict snapshot nested schema hardening)
+
+### AD 49.1: Nested request-boundary strictness is active-surface scoped and explicit
+- **WF ID**: WF-0049
+- **Context**: Top-level strictness exists, but nested extension surfaces still allow ambiguous loose shapes.
+- **Decision**: Enforce strict nested models for active request-boundary surfaces (`evaluation_criteria`, `evaluation_elements`, `reviewer_policy`, `prompt_knobs`) and reject unknown nested fields at every modeled level.
+- **Why**: Reduces producer drift risk while keeping hardening narrowly scoped to currently used nested surfaces.
+- **Tradeoff**: Legacy producer payloads with undeclared nested keys will fail until aligned.
+- **Status**: Approved.
+
+### AD 49.2: Digest determinism uses schema-validated projection with explicit-vs-omitted equivalence checks
+- **WF ID**: WF-0049
+- **Context**: Nested strictness can cause digest drift if defaults/omissions are canonicalized inconsistently.
+- **Decision**: Compute digest from schema-validated projection, exclude unset optional nested fields, avoid synthetic defaults, and require tests proving explicit-default vs omitted-optional equivalence where semantics are equivalent.
+- **Why**: Preserves deterministic digest behavior and avoids false mismatch regressions for compatible producers.
+- **Tradeoff**: Canonicalization constraints reduce flexibility in how nested defaults are introduced.
+- **Status**: Approved.
+
+### AD 49.3: Rollout gate is fail-closed with required producer compatibility matrix classes
+- **WF ID**: WF-0049
+- **Context**: Compatibility evidence without minimum fixture coverage can pass while missing high-risk producer classes.
+- **Decision**: Release readiness requires CI pass on required fixture classes (`happy_valid_payload`, `legacy_extra_nested_key`, `nested_type_mismatch`, `omitted_optional_default_equivalence`) with deterministic expected outcomes; gate fails closed on missing/failing required classes.
+- **Why**: Makes rollout risk explicit and prevents under-sampled compatibility sign-off.
+- **Tradeoff**: Adds fixture maintenance overhead and can delay rollout when producer classes evolve.
+- **Status**: Approved.
+
 ## Date: 2026-03-04 (WF-0048: Agency/call variability policy contract)
 
 ### AD 48.1: Engine boundary is strict `ActivatedCallConfigSnapshotV1` only

@@ -1,8 +1,8 @@
 # WF-0049 — Strict Snapshot Nested Schema Hardening PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-04
 
 ## 0. User Stories (MVP)
@@ -20,7 +20,11 @@ Last Updated: 2026-03-04
 
 ## 1. In Scope
 
-- Replace loose nested extension surfaces (`dict[str, object]` / `list[dict[str, object]]`) with strict, versioned nested models for currently active/used request-boundary surfaces. (US1)
+- Replace loose nested extension surfaces (`dict[str, object]` / `list[dict[str, object]]`) with strict, versioned nested models for currently active request-boundary surfaces:
+  - `evaluation_criteria`
+  - `evaluation_elements`
+  - `reviewer_policy`
+  - `prompt_knobs` (US1)
 - Enforce unknown-field rejection at every nested level within `ActivatedCallConfigSnapshotV1`. (US1, US2)
 - Preserve schema-first then digest validation precedence with deterministic failure semantics. (US2, US3)
 - Define deterministic malformed-field error shape/path ordering for nested failures. (US2)
@@ -62,23 +66,25 @@ Last Updated: 2026-03-04
 - FR3 (US1): Nested strictness shall apply only to active/used extension surfaces in MVP; inactive/deferred surfaces remain out of scope and must not introduce permissive catch-alls.
 - FR4 (US2): Nested validation failures shall return `MALFORMED_REVIEW_REQUEST` with stable `details.field_errors[]` entries.
 - FR5 (US2): Each `field_errors[]` entry shall include deterministic JSON Pointer `path`, stable `kind`, and stable message template.
+- FR5a (US2): `field_errors.kind` enum is frozen for WF-0049 as `unknown_field`, `missing_field`, `type_error`, `value_error`.
 - FR6 (US2, US3): Validation precedence shall remain schema-first; digest mismatch evaluation occurs only after full schema success.
 - FR7 (US3): Digest input shall be canonicalized from the schema-validated projection to avoid nondeterminism from omitted/default nested fields.
 - FR8 (US3): Deterministic digest tests shall prove equivalent semantic payloads (including omitted optional nested defaults) yield stable digest behavior.
 - FR9 (US4): A producer compatibility fixture matrix shall cover known payload classes and assert pass/fail expectations deterministically.
 - FR10 (US4): Rollout policy for this WF shall require compatibility evidence before strict nested hardening is treated as release-ready.
+- FR10a (US4): Rollout gate is fail-closed; release readiness requires CI pass for all required producer compatibility matrix classes with expected deterministic outcomes.
 - FR11 (US1-US4): No call-identity branching or product behavior expansion is allowed in implementation for this WF.
 - FR12 (US2, US4): Contract hardening changes shall remain request-boundary only and preserve existing pipeline response contract semantics.
 
 ## 5. Data & API Contracts
 
-- C1 (US1, FR1, FR2, FR3): `ReviewRequestV1.call_config_snapshot` remains `ActivatedCallConfigSnapshotV1` with `schema_version: "v1"`; nested active extension surfaces are strict typed models with unknown-field rejection.
+- C1 (US1, FR1, FR2, FR3): `ReviewRequestV1.call_config_snapshot` remains `ActivatedCallConfigSnapshotV1` with `schema_version: "v1"`; strict nested surfaces in scope are `evaluation_criteria`, `evaluation_elements`, `reviewer_policy`, and `prompt_knobs`, all with unknown-field rejection.
 - C2 (US2, FR4, FR5): Malformed request contract for nested violations:
   - `error.code = "MALFORMED_REVIEW_REQUEST"`
   - `details.field_errors[]` entries include:
     - `path` (JSON Pointer, nested-capable)
-    - `kind` (stable controlled vocabulary)
-    - `message` (stable template wording)
+    - `kind` (`unknown_field` | `missing_field` | `type_error` | `value_error`)
+    - `message` (stable template wording derived by app-owned templates, not raw validator text)
   - ordering is deterministic by `path`, then `kind`, then `message`.
 - C3 (US2, US3, FR6, FR7): Digest contract:
   - Step 1: strict full schema validation (top-level + nested).
@@ -87,10 +93,17 @@ Last Updated: 2026-03-04
 - C4 (US3, FR8): Canonicalization rules for digest determinism:
   - exclude unset optional nested fields from projection.
   - avoid synthetic default injection unless field is explicitly set.
+  - treat explicit default-valued nested fields as semantically equivalent to omitted optional fields where contract semantics are equivalent.
   - ensure deterministic key ordering and serialization.
 - C5 (US4, FR9, FR10): Producer compatibility matrix contract:
+  - required fixture classes:
+    - `happy_valid_payload`
+    - `legacy_extra_nested_key`
+    - `nested_type_mismatch`
+    - `omitted_optional_default_equivalence`
   - each fixture case includes payload class id, expected outcome (`pass` or deterministic `field_errors`), and rationale.
   - fixture outputs are stable and CI-selectable.
+  - release gate fails closed if any required class is missing or fails expected outcome.
 
 State transitions:
 - `received` -> `schema_validated` -> `digest_validated` -> `accepted`
@@ -142,10 +155,14 @@ Suggested file paths (coarse):
   - prove digest mismatch triggers only after schema success.
 - Seam S3 (US3; FR7, FR8): Digest determinism tests.
   - replay semantically equivalent payloads with omitted/default nested fields and assert deterministic digest behavior.
+  - prove explicit-default vs omitted-optional nested equivalence vectors for digest stability.
 - Seam S4 (US4; FR9, FR10): Producer compatibility matrix tests.
-  - fixture-driven pass/fail expectations for known producer payload classes.
+  - fixture-driven pass/fail expectations for required producer payload classes.
+  - version-tag each fixture class for traceable producer compatibility ownership.
 - Seam S5 (US1-US4; FR11, FR12): Scope guard tests.
   - verify request-boundary-only changes do not alter pipeline output contract semantics.
+- Seam S6 (US2; FR5, FR5a): Error contract stability tests.
+  - assert `kind` enum stability and template-based message stability across validator-library upgrades.
 
 Deterministic selector naming:
 - `wf0049_contract_<surface>_<case_id>`
@@ -168,3 +185,4 @@ Deterministic selector naming:
 ## 12. Changelog
 
 - v0.1 (2026-03-04): Initial PRD from brainstorm.
+- v0.2 (2026-03-04): Applied risk-audit edits: explicit active surfaces, frozen error kind/templates, required compatibility matrix classes, fail-closed rollout gate, and determinism test vectors; marked Ready for Tasks.
