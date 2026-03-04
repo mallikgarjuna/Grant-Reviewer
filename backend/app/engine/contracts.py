@@ -29,7 +29,15 @@ class ActivatedEvaluationCriterionV1(_StrictContractModel):
     name: str = Field(min_length=1)
     stage: str = Field(min_length=1)
     weight_percent: int
-    evaluation_elements: list[dict[str, object]] = Field(default_factory=list)
+    evaluation_elements: list["ActivatedEvaluationElementV1"] = Field(default_factory=list)
+
+
+class ActivatedEvaluationElementV1(_StrictContractModel):
+    id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+    source_hint: str | None = None
+    stage: str | None = "BOTH"
 
 
 class ActivatedCallConfigSnapshotV1(_StrictContractModel):

@@ -33,7 +33,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0049_contract_tracer_criteria_nested_unknown_rejected or wf0049_contract_tracer_schema_precedes_digest"`
 Risks (if any): Existing fixtures may assume permissive nested payload handling.
 
-### [ ] Task 2 — Strict nested model for `evaluation_elements`
+### [x] Task 2 — Strict nested model for `evaluation_elements`
 Goal:
 Replace loose nested dict/list surface for elements with explicit strict model wiring at snapshot boundary typing.
 Slice: nested-modeling-elements

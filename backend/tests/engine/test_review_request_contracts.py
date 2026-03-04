@@ -271,3 +271,65 @@ def test_wf0049_contract_tracer_schema_precedes_digest() -> None:
     )
     assert "field_errors" in err_info.value.details
     assert not {"expected", "received"}.intersection(err_info.value.details)
+
+
+def test_wf0049_contract_elements_surface_strict() -> None:
+    valid_payload = _build_payload()
+    valid_payload["call_config_snapshot"]["evaluation_criteria"] = [
+        {
+            "id": "crit-1",
+            "name": "Criterion 1",
+            "stage": "STEP_1",
+            "weight_percent": 50,
+            "evaluation_elements": [
+                {
+                    "id": "elem-1",
+                    "name": "Element 1",
+                    "description": "Element description",
+                    "source_hint": "proposal",
+                    "stage": "STEP_1",
+                }
+            ],
+        }
+    ]
+    valid_digest = hashlib.sha256(
+        canonicalize_for_digest(valid_payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    valid_payload["call_config_digest"] = f"sha256:{valid_digest}"
+
+    validated = validate_review_request_payload(valid_payload)
+    assert validated.call_config_snapshot.evaluation_criteria is not None
+    assert validated.call_config_snapshot.evaluation_criteria[0].evaluation_elements[0].id == "elem-1"
+
+    invalid_payload = _build_payload()
+    invalid_payload["call_config_snapshot"]["evaluation_criteria"] = [
+        {
+            "id": "crit-1",
+            "name": "Criterion 1",
+            "stage": "STEP_1",
+            "weight_percent": 50,
+            "evaluation_elements": [
+                {
+                    "id": "elem-1",
+                    "name": "Element 1",
+                    "description": "Element description",
+                    "stage": "STEP_1",
+                    "unknown_nested": "bad",
+                }
+            ],
+        }
+    ]
+    invalid_digest = hashlib.sha256(
+        canonicalize_for_digest(invalid_payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    invalid_payload["call_config_digest"] = f"sha256:{invalid_digest}"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(invalid_payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/evaluation_criteria/0/evaluation_elements/0/unknown_nested",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
