@@ -145,6 +145,8 @@ Promotion dependency note:
 | 28 | Universal Form: large-form navigation for >10 nodes | product | Add section navigation/stepper/TOC patterns for larger flat calls once MVP universality is stable; avoid bundling this UX expansion into WF-0035’s 3–10 node target. (Ref: WF-0035 brainstorm “Target User / Actor” Q5 selected A; PRD v0.2 Target scope.) | 2026-02-28 |
 | 29 | Universal Submit: split orchestration into dedicated hooks/modules | tech-debt | Defer large `UniversalSubmitForm` decomposition into focused hooks (`gating`, `render-model`, `submit orchestration`, `draft persistence`) to a new WF to reduce regression risk post-WF-0035 ship gate. (Ref: WF-0035 adversarial audit follow-up, branch `wf/WF-0035-universal-form-dynamic-ui-renderer`.) | 2026-02-28 |
 | 30 | Surface `DiagnosticFinding v1` directly in UI/API (deprecate `ReviewCard` adapter) | idea | Follow-on to WF-0038: make `DiagnosticFinding v1` the externally consumed contract (UI/API/analytics) and retire `DiagnosticFinding v1 → ReviewCard` compatibility mapping after a transition window. (Ref: WF-0038 PRD v0.2 + AD 38.15.) | 2026-02-28 |
+| 31 | Embed rule enforcement in git hooks / Makefiles | tech-debt | Deferral from WF-0046: Move enforceable conventions (like 45-line limits for AGENTS.md, or git commit prefix rules) into physical hooks/Makefiles rather than prompting LLMs. | 2026-03-04 |
+| 32 | Adopt Ralph-style fresh-context execution | idea | Deferral from WF-0046: Experiment with loop-style Phase 3 execution (spawning fresh zero-context agents per task) rather than continuous context accumulation, as practiced by the Ralph Wiggum codebase pattern. | 2026-03-04 |
 
 ---
 
@@ -224,3 +226,4 @@ Promotion dependency note:
 - **v3.0** (2026-03-03): Parked then immediately promoted a new P1 item to `WF-0045` — “Base Review Pipeline v1.0 (call-agnostic): structural validation, compliance gate, expectation-level evaluation, cross-node alignment, risk audit, output aggregation; optional competitive analysis kept out of core.”
 - **v3.1** (2026-03-03): Parked two critical deferred follow-ups from WF-0045 Phase 0.1: agency/call-specific variability policy definition and optional competitive-analysis extension boundary design.
 - **v3.2** (2026-03-03): Clarified WF-0045 initiative-log backlog reference as historical to avoid confusion with later reused active P1 numbering.
+- **v3.3** (2026-03-04): Appended deferred improvements from WF-0046 brainstorm to P2 tracking (hooks-based rule enforcement and Ralph-style zero-context loops).
