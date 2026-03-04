@@ -152,14 +152,16 @@ def _validate_snapshot_shape(call_config_snapshot: ActivatedCallConfigSnapshotV1
         seen_expectation_ids.add(expectation_id)
 
 
+def _build_canonical_snapshot_projection(
+    call_config_snapshot: ActivatedCallConfigSnapshotV1,
+) -> dict[str, object]:
+    return call_config_snapshot.to_canonical_payload()
+
+
 def _validate_post_schema_contract(validated_payload: _StrictRequestModel) -> None:
     _validate_snapshot_shape(validated_payload.call_config_snapshot)
     _validate_digest(
-        validated_payload.call_config_snapshot.model_dump(
-            mode="json",
-            exclude_none=True,
-            exclude_unset=True,
-        ),
+        _build_canonical_snapshot_projection(validated_payload.call_config_snapshot),
         validated_payload.call_config_digest,
     )
 

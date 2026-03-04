@@ -107,7 +107,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0049_contract_nested_field_error_sort or wf0049_contract_kind_enum_frozen or wf0049_contract_message_template_stable"`
 Risks (if any): Raw validator error structures may change across dependency upgrades if not fully normalized.
 
-### [ ] Task 5 — Digest canonicalization determinism for omitted/default nested fields
+### [x] Task 5 — Digest canonicalization determinism for omitted/default nested fields
 Goal:
 Ensure digest computation uses schema-validated projection and remains stable for omitted optional nested defaults versus explicit default equivalents.
 Slice: digest-determinism

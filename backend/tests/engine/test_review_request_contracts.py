@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import operator
+from copy import deepcopy
 
 import pytest
 
@@ -529,3 +530,61 @@ def test_wf0049_contract_message_template_stable() -> None:
         )["message"]
         == "Unknown field is not allowed."
     )
+
+
+def test_wf0049_contract_digest_omitted_default_equivalence() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["evaluation_criteria"] = [
+        {
+            "id": "crit-1",
+            "name": "Criterion 1",
+            "stage": "STEP_1",
+            "weight_percent": 50,
+            "evaluation_elements": [
+                {
+                    "id": "elem-1",
+                    "name": "Element 1",
+                    "description": "desc",
+                }
+            ],
+        }
+    ]
+    canonical_projection = ActivatedCallConfigSnapshotV1.model_validate(
+        payload["call_config_snapshot"]
+    ).to_canonical_payload()
+    digest = hashlib.sha256(
+        canonicalize_for_digest(canonical_projection).encode("utf-8")
+    ).hexdigest()
+    payload["call_config_digest"] = f"sha256:{digest}"
+
+    explicit_default_payload = deepcopy(payload)
+    explicit_default_payload["call_config_snapshot"]["evaluation_criteria"][0]["evaluation_elements"][0][
+        "stage"
+    ] = "BOTH"
+
+    validated = validate_review_request_payload(explicit_default_payload)
+    assert validated.call_config_snapshot.evaluation_criteria is not None
+    assert validated.call_config_snapshot.evaluation_criteria[0].evaluation_elements[0].stage == "BOTH"
+
+
+def test_wf0049_contract_digest_projection_from_validated_schema() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["evaluation_criteria"] = [
+        {
+            "id": "crit-1",
+            "name": "Criterion 1",
+            "stage": "STEP_1",
+            "weight_percent": "50",
+            "evaluation_elements": [],
+        }
+    ]
+
+    validated_snapshot = ActivatedCallConfigSnapshotV1.model_validate(payload["call_config_snapshot"])
+    digest = hashlib.sha256(
+        canonicalize_for_digest(validated_snapshot.to_canonical_payload()).encode("utf-8")
+    ).hexdigest()
+    payload["call_config_digest"] = f"sha256:{digest}"
+
+    validated = validate_review_request_payload(payload)
+    assert validated.call_config_snapshot.evaluation_criteria is not None
+    assert validated.call_config_snapshot.evaluation_criteria[0].weight_percent == 50
