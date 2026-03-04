@@ -22,7 +22,7 @@ TRIGGER_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
         CONTRACT_GATE_SELECTOR_TRIGGER_CLASS,
         (
             "backend/tests/engine/test_review_request_contracts.py",
-            "backend/pytest.ini",
+            "backend/pyproject.toml",
         ),
     ),
     (

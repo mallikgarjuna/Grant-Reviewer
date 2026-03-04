@@ -109,3 +109,13 @@ def test_wf0053_contract_required_bundle_ids() -> None:
         "contract_gate_evidence",
         "negative_smoke_evidence",
     ]
+
+
+def test_wf0053_contract_selector_marker_trigger() -> None:
+    result = evaluate_governance(
+        changed_paths=["backend/pyproject.toml"],
+        evidence_bundle_ids=[],
+    )
+
+    assert result.exit_code == 1
+    assert result.triggered_classes == ["contract_gate_selector_surface"]

@@ -86,7 +86,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/scripts/test_check_contract_boundary_governance.py -k "wf0053_contract_required_bundle_ids"`
 Risks (if any): Non-deterministic set ordering could leak into diagnostics without explicit sorting.
 
-### [ ] Task 4 — Marker/selector governance coupling and strict-marker guard
+### [x] Task 4 — Marker/selector governance coupling and strict-marker guard
 
 Goal:
 Ensure governance gate covers marker/selector drift surfaces and preserves strict-marker invariant.
