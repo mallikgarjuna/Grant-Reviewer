@@ -1,8 +1,8 @@
 # WF-0048 — Agency/Call Variability Policy Contract
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-04
 
 ## Task Breakdown (Sequential Order)
@@ -97,13 +97,15 @@ Acceptance Criteria:
 - Contract test coverage includes no call-identity branching assumption in request-boundary behavior.
 TDD Plan:
 - RED: Add failing selectors `wf0048_contract_replay_byte_stable_success` and `wf0048_contract_snapshot_driven_not_identity_driven`.
-- GREEN: Apply minimal implementation updates only if replay/branching assertions fail.
+- GREEN: Apply minimal implementation updates in `backend/app/engine/review_request_validator.py` only if replay/branching assertions fail.
 - REFACTOR: Normalize shared canonical JSON assertion helper for deterministic comparisons.
 Verification Steps:
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "wf0048_contract_replay_byte_stable_success or wf0048_contract_snapshot_driven_not_identity_driven"`
+- `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0048_contract_replay_byte_stable_success && uv run pytest tests/engine/test_review_request_contracts.py -k wf0048_contract_replay_byte_stable_success`
 - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k wf0048_contract_`
 Risks (if any): Existing success payload may include unstable fields requiring explicit exclusion from contract assertions.
 
 ## Changelog
 
 - v0.1 (2026-03-04): Initial task breakdown from PRD
+- v0.2 (2026-03-04): Applied Part B review edits (tightened deterministic replay verification command; clarified minimal GREEN touchpoint); marked Ready for Implementation
