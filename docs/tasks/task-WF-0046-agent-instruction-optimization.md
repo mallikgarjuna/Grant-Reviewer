@@ -37,7 +37,7 @@ TDD Plan: N/A
 Verification Steps:
 - Run `ls GEMINI.md` and verify it fails.
 
-### [ ] Task 3 — Backup and trim global GEMINI.md
+### [x] Task 3 — Backup and trim global GEMINI.md
 Goal: Backup the user-global file to `/tmp/` and trim it to safety nets only.
 Slice: global-safety-trim
 User Stories: US2, US3
@@ -54,7 +54,7 @@ Verification Steps:
 - Run `ls /tmp/GEMINI.md.bak` to ensure backup exists.
 - Run `wc -l ~/.gemini/GEMINI.md` and verify output is <= 15.
 
-### [ ] Task 4 — Append deferred improvements to Parking Lot
+### [x] Task 4 — Append deferred improvements to Parking Lot
 Goal: Document deferred architectural stories.
 Slice: documentation
 User Stories: US3
