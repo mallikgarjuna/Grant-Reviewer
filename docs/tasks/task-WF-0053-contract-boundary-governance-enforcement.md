@@ -34,7 +34,7 @@ Verification Steps:
 - `rg -n "check_contract_boundary_governance|wf0053" .github/workflows/ci.yml`
 Risks (if any): CI wiring differences across jobs may require lane-specific command normalization.
 
-### [ ] Task 2 — Freeze full trigger inventory and deterministic path mapping
+### [x] Task 2 — Freeze full trigger inventory and deterministic path mapping
 
 Goal:
 Expand governance checker from tracer scope to full PRD trigger inventory with explicit path-mapped classes.
