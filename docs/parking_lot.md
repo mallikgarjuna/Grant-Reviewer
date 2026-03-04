@@ -146,7 +146,7 @@ Promotion dependency note:
 | 29 | Universal Submit: split orchestration into dedicated hooks/modules | tech-debt | Defer large `UniversalSubmitForm` decomposition into focused hooks (`gating`, `render-model`, `submit orchestration`, `draft persistence`) to a new WF to reduce regression risk post-WF-0035 ship gate. (Ref: WF-0035 adversarial audit follow-up, branch `wf/WF-0035-universal-form-dynamic-ui-renderer`.) | 2026-02-28 |
 | 30 | Surface `DiagnosticFinding v1` directly in UI/API (deprecate `ReviewCard` adapter) | idea | Follow-on to WF-0038: make `DiagnosticFinding v1` the externally consumed contract (UI/API/analytics) and retire `DiagnosticFinding v1 → ReviewCard` compatibility mapping after a transition window. (Ref: WF-0038 PRD v0.2 + AD 38.15.) | 2026-02-28 |
 | 31 | Embed rule enforcement in git hooks / Makefiles | tech-debt | Deferral from WF-0046: Move enforceable conventions (like 45-line limits for AGENTS.md, or git commit prefix rules) into physical hooks/Makefiles rather than prompting LLMs. | 2026-03-04 |
-| 32 | Adopt Ralph-style fresh-context execution | idea | Deferral from WF-0046: Experiment with loop-style Phase 3 execution (spawning fresh zero-context agents per task) rather than continuous context accumulation, as practiced by the Ralph Wiggum codebase pattern. | 2026-03-04 |
+| 32 | [IGNORED] Adopt Ralph-style fresh-context execution | idea | Deferral from WF-0046. Ignored (2026-03-04): User rejected this because forcing the developer to manually swap chat windows and copy-paste prompts for every single task introduces far too much manual overhead and slows down the flow state. | 2026-03-04 |
 
 ---
 
