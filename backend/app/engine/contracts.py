@@ -24,13 +24,21 @@ class ActivatedExpectationV1(_StrictContractModel):
     required: bool = False
 
 
+class ActivatedEvaluationCriterionV1(_StrictContractModel):
+    id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+    weight_percent: int
+    evaluation_elements: list[dict[str, object]] = Field(default_factory=list)
+
+
 class ActivatedCallConfigSnapshotV1(_StrictContractModel):
     schema_version: Literal["v1"]
     expectations: list[ActivatedExpectationV1]
     stage_gating: dict[str, object] | None = None
     hierarchy: dict[str, object] | None = None
     nesting: dict[str, object] | None = None
-    evaluation_criteria: list[dict[str, object]] | None = None
+    evaluation_criteria: list[ActivatedEvaluationCriterionV1] | None = None
     evaluation_elements: list[dict[str, object]] | None = None
     compliance_rules: list[dict[str, object]] | None = None
     reviewer_policy: list[dict[str, object]] | None = None

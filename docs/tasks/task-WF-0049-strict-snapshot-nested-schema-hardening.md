@@ -7,7 +7,7 @@ Last Updated: 2026-03-04
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: strict `evaluation_criteria` nested rejection + schema-first digest gating
+### [x] Task 1 — Tracer bullet: strict `evaluation_criteria` nested rejection + schema-first digest gating
 Goal:
 Prove one end-to-end request-boundary path with a strict `evaluation_criteria` nested model rejects undeclared keys deterministically and suppresses digest mismatch when schema is invalid.
 Slice: tracer-bullet

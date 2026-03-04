@@ -50,6 +50,21 @@ def _assert_field_errors_are_sorted(errors: list[dict[str, str]]) -> None:
     )
 
 
+def _assert_malformed_request_with_field_error(
+    err: ReviewRequestValidationError,
+    *,
+    path: str,
+    kind: str,
+    message: str,
+) -> None:
+    assert err.code == "MALFORMED_REVIEW_REQUEST"
+    assert {
+        "path": path,
+        "kind": kind,
+        "message": message,
+    } in err.details["field_errors"]
+
+
 def test_wf0048_contract_tracer_valid_snapshot_digest_ok() -> None:
     payload = _build_payload()
 
@@ -201,3 +216,58 @@ def test_wf0048_contract_required_true_drives_error_severity() -> None:
     result = run_review_pipeline(validate_review_request_payload(payload))
 
     assert [finding.severity for finding in result.findings] == ["ERROR"]
+
+
+def test_wf0049_contract_tracer_criteria_nested_unknown_rejected() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["evaluation_criteria"] = [
+        {
+            "id": "crit-1",
+            "name": "Criterion 1",
+            "stage": "STEP_1",
+            "weight_percent": 50,
+            "evaluation_elements": [],
+            "unexpected_field": "bad",
+        }
+    ]
+    digest = hashlib.sha256(
+        canonicalize_for_digest(payload["call_config_snapshot"]).encode("utf-8")
+    ).hexdigest()
+    payload["call_config_digest"] = f"sha256:{digest}"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/evaluation_criteria/0/unexpected_field",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
+
+
+def test_wf0049_contract_tracer_schema_precedes_digest() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["evaluation_criteria"] = [
+        {
+            "id": "crit-1",
+            "name": "Criterion 1",
+            "stage": "STEP_1",
+            "weight_percent": 50,
+            "evaluation_elements": [],
+            "unexpected_field": "bad",
+        }
+    ]
+    payload["call_config_digest"] = "sha256:deadbeef"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/evaluation_criteria/0/unexpected_field",
+        kind="unknown_field",
+        message="Unknown field is not allowed.",
+    )
+    assert "field_errors" in err_info.value.details
+    assert not {"expected", "received"}.intersection(err_info.value.details)
