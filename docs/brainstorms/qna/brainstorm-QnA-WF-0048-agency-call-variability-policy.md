@@ -18,6 +18,54 @@ Last Updated: 2026-03-04
 > Why not C: “Both” is true but dilutes prioritization and can bloat scope.
 > **Selected: A**
 
+---
+
+## Section 2 — Desired Outcome (Q&A)
+
+**Q1: What is the primary measurable “success signal” for WF-0048?**
+- A) Engine rejects unknown fields + malformed variability with deterministic contract failures. (Recommended)
+- B) Frontend/BFF no longer needs per-call parsing/branching.
+- C) Both A+B as hard gates.
+> Recommendation: A — It is directly testable at the engine boundary and is the minimal tracer-bullet that unblocks call-agnostic integration; B becomes a downstream consequence once the contract exists.
+> Why not B: It depends on frontend changes and broader API cleanup beyond this WF’s first slice.
+> Why not C: Valuable as a roadmap goal, but bundling both as hard gates risks scope creep and delays the strict contract foundation.
+> **Selected: A**
+
+**Q2: What is the v1 “activated snapshot” contract stance on forward-compat?**
+- A) Strict-by-default: reject unknown fields everywhere; version bump for any new field. (Recommended)
+- B) Allow `extensions` free-form dict for forward-compat.
+- C) Allow unknown fields only under one reserved namespace.
+> Recommendation: A — Unknown-field rejection is the core mechanism that stops drift and guessing; contract evolution should be explicit and versioned rather than opportunistic.
+> Why not B: A free-form `extensions` bag becomes an unofficial API surface and reintroduces silent variability.
+> Why not C: Better than B, but still risks “shadow contracts” unless heavily governed; v1 should start maximally strict.
+> **Selected: A**
+
+**Q3: Where do we pin determinism for “same payload ⇒ same serialized result”?**
+- A) `PipelineResult.to_dict()` JSON stable ordering + stable IDs derived only from payload. (Recommended)
+- B) Only guarantee same review_cards content, ignore telemetry.
+- C) Determinism only for contract-failure cases.
+> Recommendation: A — This is the cleanest contract: the serialized result is deterministic, full stop, so downstream systems (BFF, caching, audit) can rely on it.
+> Why not B: It leaves ambiguity (telemetry is often used for debugging/audit) and creates “mostly deterministic” behavior that still breaks caching semantics.
+> Why not C: Too weak; determinism is most valuable on success paths.
+> **Selected: A**
+
+**Q4: What is the boundary I/O contract we harden in v1?**
+- A) `ReviewRequestV1` boundary only (call_config_snapshot + proposal_nodes + digest). (Recommended)
+- B) Also harden BFF-facing API DTOs in the same WF slice.
+- C) Harden call-definition ingestion outputs first.
+> Recommendation: A — Smallest tracer-bullet with immediate value; keeps file-touch count low and avoids coupling this WF to UI/ingestion refactors.
+> Why not B: Likely >3-file change and mixes responsibilities; better as a follow-up once snapshot is strict.
+> Why not C: Larger, riskier scope; ingestion hardening is important but not the fastest route to stopping boundary drift.
+> **Selected: A**
+
+**Q5: What’s “good enough” for Phase 0 completion?**
+- A) Clear contract surfaces + error semantics + testable invariants; implementation details deferred. (Recommended)
+- B) Full draft PRD-level API schemas for all endpoints.
+- C) Full implementation plan down to file-by-file changes.
+> Recommendation: A — Phase 0 should converge on a tight, testable MVP contract without prematurely designing full architecture or broad endpoint refactors.
+> Why not B: Too broad and not required to lock the engine boundary contract.
+> Why not C: Premature specificity; we should validate the contract and error semantics first.
+> **Selected: A**
 **Q2: Where is the single canonical contract boundary we enforce first?**
 - A) `validate_review_request_payload()` strict-parse of `call_config_snapshot`. (Recommended)
 - B) Earlier: call-definition ingestion/activation pipeline.

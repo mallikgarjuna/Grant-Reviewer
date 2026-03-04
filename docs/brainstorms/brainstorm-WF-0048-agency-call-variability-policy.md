@@ -41,6 +41,25 @@ Contract Notes / Non-obvious constraints (Section 1):
 - Contract boundary requirement: strict typed input/output models (Pydantic strict) that reject unknown fields; violations map to deterministic contract-failure semantics (compatible with WF-0045).
 - Activated snapshot must include explicit allowed extension points: stage gating, hierarchy/nesting, evaluation criteria/elements, compliance rules, reviewer-policy, prompt knobs.
 
+## 2. Desired Outcome
+
+Primary success signal: the engine rejects unknown fields and malformed variability with deterministic contract-failure semantics (stable code + field-path details) at the `call_config_snapshot` boundary.
+
+Outcomes this enables (not necessarily fully implemented in this WF):
+
+- Frontend/BFF stops guessing API shapes and can rely on a versioned, strict activated snapshot contract.
+- Core pipeline remains call-agnostic (no identity branching); variability is expressed only through declared config/activation surfaces.
+- Deterministic behavior: identical payloads yield identical serialized pipeline results (including telemetry policy as defined in contract tests).
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0048-agency-call-variability-policy.md` (Section 2)
+
+Contract Notes / Non-obvious constraints (Section 2):
+
+- Strict-by-default stance: reject unknown fields everywhere; introduce new fields only via version bump / explicit contract evolution.
+- Determinism scope: guarantee `PipelineResult.to_dict()` determinism for the same payload (not “content-only”).
+- Harden the `ReviewRequestV1` boundary first (snapshot + proposal_nodes + digest); keep broader API DTO changes out of the initial tracer-bullet slice.
+- Phase 0 “good enough”: contract surfaces + error semantics + testable invariants; avoid architecture/implementation plan bloat.
+
 ## Open Questions / Deferred
 
 - What is the versioning strategy for the activated snapshot contract (e.g., `schema_version`)?
