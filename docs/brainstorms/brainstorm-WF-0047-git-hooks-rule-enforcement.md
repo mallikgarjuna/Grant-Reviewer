@@ -1,8 +1,8 @@
 # WF-0047 — Git Hooks Rule Enforcement Brainstorm
 
 Artifact: brainstorm
-Version: v0.0
-Status: Not started
+Version: v0.1
+Status: Draft Complete
 Last Updated: 2026-03-04
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0047-git-hooks-rule-enforcement.md`
@@ -33,7 +33,9 @@ Date: 2026-03-04
 
 What problem are we solving?
 - We rely on AI agents reading `AGENTS.md` and following conventions like prompt length (< 45 lines) and git commit prefixes (e.g., `WF-XXXX:`). Using LLM tokens and instructions to enforce structural formatting is unreliable and expensive.
-- Contract Notes / Non-obvious constraints: We will mechanically enforce these rules using `pre-commit` local hooks rather than a standalone `Makefile` or loose bash scripts. [Ref: Q1]
+- Contract Notes / Non-obvious constraints:
+  - We will mechanically enforce these rules using `pre-commit` local hooks rather than a standalone `Makefile` or loose bash scripts. [Ref: Q1]
+  - The commit prefix regex must strictly match `^WF-\d{4}: ` (case-sensitive) to prevent loose rule following.
 
 Who experiences it?
 - The project maintainer and the AI agents looping during coding tasks.
@@ -64,7 +66,9 @@ What is their current behavior?
 
 What frustration or inefficiency exists?
 - The human developer has to intervene, correct the commit messages, or manually revert `AGENTS.md` bloat, which takes time and breaks flow state.
-- Contract Notes / Non-obvious constraints: The hook must validate that commit messages start with `WF-\d{4}: ` (or similar regex). [Ref: Q2]
+- Contract Notes / Non-obvious constraints:
+  - The hook must validate that commit messages start with `WF-\d{4}: ` (or similar regex). [Ref: Q2]
+  - The `check_commit_msg.py` script must exit 0 immediately if the commit message begins with `Merge branch` or `Revert`. [Ref: Q3]
 
 ---
 
@@ -87,6 +91,7 @@ No implementation details yet.
 
 Technical constraints?
 - Must run cross-platform (using `pre-commit` python/bash hooks).
+- Python scripts must use only the standard library (`sys`, `re`, `os`, etc.) to guarantee execution in `pre-commit`'s isolated `repo: local` environment.
 
 Time constraints?
 - Fast delivery (MVP), focused squarely on local agent looping.
