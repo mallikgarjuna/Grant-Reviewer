@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from app.engine.contracts import ReviewRequestV1
+from app.engine.contracts import ActivatedCallConfigSnapshotV1, ReviewRequestV1
 from app.engine.pipeline_v1 import CORE_STAGE_SEQUENCE, run_review_pipeline
 from app.engine.review_request_validator import (
     ReviewRequestValidationError,
@@ -409,7 +409,11 @@ def test_review_request_validator_allows_same_check_id_for_different_expectation
         },
         "proposal_nodes": {"research_idea": "text"},
     }
-    canonical = canonicalize_for_digest(payload["call_config_snapshot"])
+    canonical = canonicalize_for_digest(
+        ActivatedCallConfigSnapshotV1.model_validate(
+            payload["call_config_snapshot"]
+        ).to_canonical_payload()
+    )
     payload["call_config_digest"] = "sha256:" + hashlib.sha256(
         canonical.encode("utf-8")
     ).hexdigest()
@@ -440,7 +444,11 @@ def test_review_request_validator_rejects_duplicate_expectation_finding_identity
         },
         "proposal_nodes": {"research_idea": "text"},
     }
-    canonical = canonicalize_for_digest(payload["call_config_snapshot"])
+    canonical = canonicalize_for_digest(
+        ActivatedCallConfigSnapshotV1.model_validate(
+            payload["call_config_snapshot"]
+        ).to_canonical_payload()
+    )
     payload["call_config_digest"] = "sha256:" + hashlib.sha256(
         canonical.encode("utf-8")
     ).hexdigest()
@@ -450,3 +458,99 @@ def test_review_request_validator_rejects_duplicate_expectation_finding_identity
 
     assert err.value.code == "MALFORMED_REVIEW_REQUEST"
     assert "Duplicate expectation finding identity" in err.value.message
+
+
+def test_wf0049_contract_scope_pipeline_semantics_stable() -> None:
+    base_snapshot = {
+        "schema_version": "v1",
+        "expectations": [
+            {
+                "expectation_id": "exp-1",
+                "node_logical_id": "research_idea",
+                "check_id": "check.presence",
+                "required": True,
+            }
+        ],
+    }
+    strict_nested_snapshot = {
+        "schema_version": "v1",
+        "expectations": [
+            {
+                "expectation_id": "exp-1",
+                "node_logical_id": "research_idea",
+                "check_id": "check.presence",
+                "required": True,
+            }
+        ],
+        "evaluation_criteria": [
+            {
+                "id": "crit-1",
+                "name": "Criterion 1",
+                "stage": "STEP_1",
+                "weight_percent": 50,
+                "evaluation_elements": [
+                    {
+                        "id": "elem-1",
+                        "name": "Element 1",
+                        "description": "Element description",
+                        "stage": "STEP_1",
+                    }
+                ],
+            }
+        ],
+        "reviewer_policy": [
+            {
+                "id": "policy-1",
+                "applies_to_stage": "STEP_1",
+                "applies_to_node_ids": ["research_idea"],
+                "rule_type": "tone",
+                "instruction": "Keep language specific.",
+                "severity": "WARNING",
+                "enforcement_mode": "PROMPT_ONLY",
+            }
+        ],
+        "prompt_knobs": {
+            "temperature": 0.2,
+            "max_tokens": 300,
+        },
+    }
+
+    base_payload = {
+        "request_id": "req-wf0049-scope-base",
+        "mode": "DIAGNOSTIC",
+        "stage_ref": "STEP_1",
+        "call_config_snapshot": base_snapshot,
+        "proposal_nodes": {"research_idea": ""},
+    }
+    base_payload["call_config_digest"] = "sha256:" + hashlib.sha256(
+        canonicalize_for_digest(
+            ActivatedCallConfigSnapshotV1.model_validate(base_snapshot).to_canonical_payload()
+        ).encode("utf-8")
+    ).hexdigest()
+
+    strict_payload = {
+        "request_id": "req-wf0049-scope-strict",
+        "mode": "DIAGNOSTIC",
+        "stage_ref": "STEP_1",
+        "call_config_snapshot": strict_nested_snapshot,
+        "proposal_nodes": {"research_idea": ""},
+    }
+    strict_payload["call_config_digest"] = "sha256:" + hashlib.sha256(
+        canonicalize_for_digest(
+            ActivatedCallConfigSnapshotV1.model_validate(
+                strict_nested_snapshot
+            ).to_canonical_payload()
+        ).encode("utf-8")
+    ).hexdigest()
+
+    base_result = run_review_pipeline(validate_review_request_payload(base_payload))
+    strict_result = run_review_pipeline(validate_review_request_payload(strict_payload))
+
+    assert base_result.pipeline_status == strict_result.pipeline_status
+    assert base_result.failure_code == strict_result.failure_code
+    assert [finding.check_id for finding in base_result.findings] == [
+        finding.check_id for finding in strict_result.findings
+    ]
+    assert [card.rating for card in base_result.review_cards] == [
+        card.rating for card in strict_result.review_cards
+    ]

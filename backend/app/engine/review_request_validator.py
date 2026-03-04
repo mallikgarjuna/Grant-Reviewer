@@ -70,24 +70,27 @@ def _map_error_kind(error_type: str) -> str:
         return "unknown_field"
     if error_type == "missing":
         return "missing_field"
+    if error_type.endswith("_type") or error_type.endswith("_parsing"):
+        return "type_error"
     if error_type == "literal_error" or error_type.startswith("value_error"):
         return "value_error"
-    if error_type.endswith("_type"):
-        return "type_error"
     return "value_error"
 
 
+def _normalize_validation_error_entry(error: dict[str, Any]) -> dict[str, str]:
+    kind = _map_error_kind(str(error["type"]))
+    return {
+        "path": _to_json_pointer(tuple(error["loc"])),
+        "kind": kind,
+        "message": _FIELD_ERROR_MESSAGE_TEMPLATES[kind],
+    }
+
+
 def _normalize_field_errors(validation_error: ValidationError) -> list[dict[str, str]]:
-    field_errors: list[dict[str, str]] = []
-    for error in validation_error.errors(include_url=False):
-        kind = _map_error_kind(str(error["type"]))
-        field_errors.append(
-            {
-                "path": _to_json_pointer(tuple(error["loc"])),
-                "kind": kind,
-                "message": _FIELD_ERROR_MESSAGE_TEMPLATES[kind],
-            }
-        )
+    field_errors = [
+        _normalize_validation_error_entry(error)
+        for error in validation_error.errors(include_url=False)
+    ]
     return sorted(field_errors, key=lambda item: (item["path"], item["kind"], item["message"]))
 
 
@@ -149,14 +152,16 @@ def _validate_snapshot_shape(call_config_snapshot: ActivatedCallConfigSnapshotV1
         seen_expectation_ids.add(expectation_id)
 
 
+def _build_canonical_snapshot_projection(
+    call_config_snapshot: ActivatedCallConfigSnapshotV1,
+) -> dict[str, object]:
+    return call_config_snapshot.to_canonical_payload()
+
+
 def _validate_post_schema_contract(validated_payload: _StrictRequestModel) -> None:
     _validate_snapshot_shape(validated_payload.call_config_snapshot)
     _validate_digest(
-        validated_payload.call_config_snapshot.model_dump(
-            mode="json",
-            exclude_none=True,
-            exclude_unset=True,
-        ),
+        _build_canonical_snapshot_projection(validated_payload.call_config_snapshot),
         validated_payload.call_config_digest,
     )
 

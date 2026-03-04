@@ -5,8 +5,12 @@ from pathlib import Path
 import pytest
 import yaml
 
+from app.engine.contracts import ActivatedCallConfigSnapshotV1
 from app.engine.pipeline_v1 import run_review_pipeline
-from app.engine.review_request_validator import validate_review_request_payload
+from app.engine.review_request_validator import (
+    canonicalize_for_digest,
+    validate_review_request_payload,
+)
 
 pytestmark = pytest.mark.no_db
 
@@ -14,10 +18,11 @@ pytestmark = pytest.mark.no_db
 
 def _with_valid_digest(payload: dict) -> dict:
     import hashlib
-    import json
 
     snapshot = payload["call_config_snapshot"]
-    canonical = json.dumps(snapshot, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    canonical = canonicalize_for_digest(
+        ActivatedCallConfigSnapshotV1.model_validate(snapshot).to_canonical_payload()
+    )
     payload["call_config_digest"] = "sha256:" + hashlib.sha256(
         canonical.encode("utf-8")
     ).hexdigest()

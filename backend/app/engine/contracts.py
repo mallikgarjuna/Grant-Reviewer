@@ -11,6 +11,9 @@ FindingSeverity = Literal["ERROR", "WARNING", "NOTE"]
 AssessmentStatus = Literal["ASSESSED", "NOT_ASSESSABLE"]
 ReviewRating = Literal["CRITICAL", "WARNING", "NOTE"]
 FailureCode = Literal["CONTRACT_FAILURE", "EXECUTION_FAILURE"]
+EvaluationStage = Literal["STEP_1", "STEP_2", "BOTH"]
+RuleSeverity = Literal["ERROR", "WARNING"]
+ReviewerPolicyEnforcementMode = Literal["PROMPT_ONLY", "POST_CHECK", "BLOCKING"]
 
 
 class _StrictContractModel(BaseModel):
@@ -24,17 +27,53 @@ class ActivatedExpectationV1(_StrictContractModel):
     required: bool = False
 
 
+class ActivatedEvaluationCriterionV1(_StrictContractModel):
+    id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+    weight_percent: int
+    evaluation_elements: list["ActivatedEvaluationElementV1"] = Field(default_factory=list)
+
+
+class ActivatedEvaluationElementV1(_StrictContractModel):
+    id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+    source_hint: str | None = None
+    stage: str | None = "BOTH"
+
+
+class ActivatedReviewerPolicyRuleV1(_StrictContractModel):
+    id: str = Field(min_length=1)
+    applies_to_stage: EvaluationStage = "BOTH"
+    applies_to_node_ids: list[str] = Field(default_factory=list)
+    rule_type: str = Field(min_length=1)
+    instruction: str = Field(min_length=1)
+    severity: RuleSeverity = "WARNING"
+    enforcement_mode: ReviewerPolicyEnforcementMode = "PROMPT_ONLY"
+    forbidden_terms: list[str] = Field(default_factory=list)
+    source_hint: str | None = None
+
+
+class ActivatedPromptKnobsV1(_StrictContractModel):
+    temperature: float | None = None
+    top_p: float | None = None
+    max_tokens: int | None = None
+    presence_penalty: float | None = None
+    frequency_penalty: float | None = None
+
+
 class ActivatedCallConfigSnapshotV1(_StrictContractModel):
     schema_version: Literal["v1"]
     expectations: list[ActivatedExpectationV1]
     stage_gating: dict[str, object] | None = None
     hierarchy: dict[str, object] | None = None
     nesting: dict[str, object] | None = None
-    evaluation_criteria: list[dict[str, object]] | None = None
-    evaluation_elements: list[dict[str, object]] | None = None
+    evaluation_criteria: list[ActivatedEvaluationCriterionV1] | None = None
+    evaluation_elements: list[ActivatedEvaluationElementV1] | None = None
     compliance_rules: list[dict[str, object]] | None = None
-    reviewer_policy: list[dict[str, object]] | None = None
-    prompt_knobs: dict[str, object] | None = None
+    reviewer_policy: list[ActivatedReviewerPolicyRuleV1] | None = None
+    prompt_knobs: ActivatedPromptKnobsV1 | None = None
 
     def to_canonical_payload(self) -> dict[str, object]:
         return self.model_dump(mode="json", exclude_none=True, exclude_defaults=True)
