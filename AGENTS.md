@@ -28,3 +28,9 @@ When you discover something valuable for future sessions — architectural decis
 Don't wait to be asked. Don't wait for session end.
 
 Keep entries short: date, what, why. Read `docs/memory/index.md` at the start of every session. Load other files only when relevant. If a file doesn't exist yet, create it and update `docs/memory/index.md`.
+
+## Task Rules
+
+- **Wait for Signal**: Always wait for the user's explicit signal BEFORE moving to writing code, changing files, or implementing a feature. "LGTM" on an artifact means approved (finish phase), not proceed to next phase.
+- **3-File Limit**: If a task requires changes to more than 3 files, stop and break it into smaller sub-tasks first.
+- **TDD Behavior Changes**: For bug fixes/behavior changes, write a test that reproduces it (RED), implement the minimal code change (GREEN), refactor.

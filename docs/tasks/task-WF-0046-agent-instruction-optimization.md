@@ -7,7 +7,7 @@ Last Updated: 2026-03-04
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Centralize project-specific rules in AGENTS.md
+### [x] Task 1 — Centralize project-specific rules in AGENTS.md
 Goal: Extract unique global rules from `~/.gemini/GEMINI.md` into `AGENTS.md` and ensure length constraints.
 Slice: rule-consolidation
 User Stories: US1, US2
@@ -22,7 +22,7 @@ TDD Plan: N/A
 Verification Steps:
 - Run `wc -l AGENTS.md` and verify output is <= 45.
 
-### [ ] Task 2 — Delete duplicate repo GEMINI.md
+### [x] Task 2 — Delete duplicate repo GEMINI.md
 Goal: Remove the redundant repo-level `GEMINI.md` file.
 Slice: cleanup
 User Stories: US2
