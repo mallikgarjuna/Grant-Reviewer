@@ -1,7 +1,7 @@
 # WF-0047 — Git Hooks Rule Enforcement Brainstorm
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-04
 
@@ -92,6 +92,7 @@ No implementation details yet.
 Technical constraints?
 - Must run cross-platform (using `pre-commit` python/bash hooks).
 - Python scripts must use only the standard library (`sys`, `re`, `os`, etc.) to guarantee execution in `pre-commit`'s isolated `repo: local` environment.
+- The line-counting logic must explicitly account for the trailing newline enforced by pre-commit's end-of-file-fixer to avoid off-by-one errors.
 
 Time constraints?
 - Fast delivery (MVP), focused squarely on local agent looping.
@@ -107,7 +108,7 @@ External requirements?
 ## 6. Risks / Unknowns
 
 What assumptions are we making?
-- The Python virtual environment or system Python is available to run `.pre-commit-config.yaml` `repo: local` plugins.
+- The Python virtual environment or system Python is available to run `.pre-commit-config.yaml` `repo: local` plugins, AND the developer/agent has successfully run `pre-commit install`.
 - Agents or developers will not bypass hooks manually via `git commit -n` (if they do, it's out of scope for local hooks).
 
 What might fail?
