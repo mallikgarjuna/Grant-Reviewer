@@ -61,7 +61,7 @@ Verification Steps:
 - `rg -n "required_checks|enforce_admins|strict_required_status_checks" config/platform_policy/main_policy.yaml`
 Risks (if any): Strict validation may require explicit ordering rules for required checks.
 
-### [ ] Task 3 — GitHub live policy reader with rulesets-first fallback
+### [x] Task 3 — GitHub live policy reader with rulesets-first fallback
 
 Goal:
 Implement read-only GitHub client logic that tries rulesets first and falls back to branch protection with deterministic plan/permission error mapping.
