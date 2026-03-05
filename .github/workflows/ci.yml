@@ -77,7 +77,7 @@ jobs:
           echo "$output" | grep -q "negative_smoke_evidence"
 
       - name: WF-0054 CI Policy Regression Sweep
-        run: uv run pytest tests/scripts/test_ci_policy_event_scope.py -k "wf0054_ci_policy_"
+        run: uv run pytest tests/scripts/test_ci_policy_event_scope.py -k "wf0054_ci_policy_ or wf0055_platform_policy_"
 
       - name: Contract Gate (Marker)
         run: uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate --strict-markers -q

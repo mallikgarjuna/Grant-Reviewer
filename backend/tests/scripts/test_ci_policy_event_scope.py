@@ -22,6 +22,13 @@ def _load_ci_workflow() -> dict[str, Any]:
     return yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
 
 
+def _load_verify_platform_policy_workflow() -> dict[str, Any]:
+    workflow_path = (
+        Path(__file__).resolve().parents[3] / ".github/workflows/verify-platform-policy.yml"
+    )
+    return yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+
+
 def _read_header_status(path: Path) -> str:
     for line in path.read_text(encoding="utf-8").splitlines():
         if line.startswith("Status:"):
@@ -167,3 +174,70 @@ def test_wf0054_ci_policy_wf0047_status_alignment() -> None:
         )
 
     assert not mismatches, "WF-0047 status mismatch: " + "; ".join(mismatches)
+
+
+def _wf0055_verify_workflow_violations(workflow: dict[str, Any]) -> list[str]:
+    violations: list[str] = []
+    if workflow.get("name") != "verify-platform-policy":
+        violations.append("workflow name must be verify-platform-policy")
+
+    trigger_config = workflow.get("on")
+    if trigger_config is None:
+        trigger_config = workflow.get(True, {})
+    pull_request_trigger = trigger_config.get("pull_request") if isinstance(trigger_config, dict) else None
+    if not isinstance(pull_request_trigger, dict):
+        violations.append("workflow must define pull_request trigger mapping")
+    else:
+        branches = pull_request_trigger.get("branches")
+        if branches != ["main"]:
+            violations.append("workflow pull_request trigger must target main branch")
+
+    jobs = workflow.get("jobs", {})
+    verify_job = jobs.get("verify_platform_policy", {})
+    if not isinstance(verify_job, dict):
+        violations.append("workflow must define verify_platform_policy job")
+        return violations
+
+    if verify_job.get("name") != "backend / Verify Platform Policy":
+        violations.append("verify job context name mismatch")
+
+    steps = verify_job.get("steps", [])
+    verify_step = None
+    for step in steps:
+        if isinstance(step, dict) and step.get("name") == "Verify platform policy (verify-only)":
+            verify_step = step
+            break
+    if verify_step is None:
+        violations.append("missing verify-only execution step")
+        return violations
+
+    run_command = verify_step.get("run")
+    if not isinstance(run_command, str):
+        violations.append("verify-only step must define string run command")
+    else:
+        if "python -m tools.gh_policy.cli verify" not in run_command:
+            violations.append("verify-only step must run policy verify CLI")
+        if "--verify-only" not in run_command:
+            violations.append("verify-only step must pass --verify-only")
+
+    env_config = verify_step.get("env")
+    if not isinstance(env_config, dict) or env_config.get("GITHUB_TOKEN") != "${{ github.token }}":
+        violations.append("verify-only step must export GITHUB_TOKEN from github.token")
+
+    return violations
+
+
+def test_wf0055_platform_policy_verify_workflow_contract() -> None:
+    workflow = _load_verify_platform_policy_workflow()
+    violations = _wf0055_verify_workflow_violations(workflow)
+
+    assert violations == []
+
+
+def test_wf0055_platform_policy_verify_workflow_missing_pr_trigger_fails() -> None:
+    workflow = _load_verify_platform_policy_workflow()
+    workflow["on"] = {"push": {"branches": ["main"]}}
+
+    violations = _wf0055_verify_workflow_violations(workflow)
+
+    assert "workflow must define pull_request trigger mapping" in violations
