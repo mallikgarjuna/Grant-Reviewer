@@ -16,6 +16,8 @@ class _FakeApplyClient:
     def __init__(self) -> None:
         self.apply_calls = 0
         self.apply_snapshot_seen = False
+        self.discover_calls = 0
+        self._discovered_contexts: set[str] = set(REQUIRED_CHECK_CONTEXTS)
 
     def read_live_policy(self, *, repo: str, branch: str) -> dict[str, Any]:
         return {
@@ -41,6 +43,11 @@ class _FakeApplyClient:
         self.apply_calls += 1
         self.apply_snapshot_seen = snapshot_path.exists()
         return {"repo": repo, "branch": branch, "mechanism": mechanism, "expected": expected_policy}
+
+    def discover_check_contexts(self, *, repo: str, branch: str) -> set[str]:
+        _ = (repo, branch)
+        self.discover_calls += 1
+        return set(self._discovered_contexts)
 
 
 def _repo_root() -> Path:
@@ -71,6 +78,7 @@ def test_apply_requires_explicit_intent(tmp_path: Path) -> None:
 
 def test_apply_preflight_missing_required_checks(tmp_path: Path) -> None:
     client = _FakeApplyClient()
+    client._discovered_contexts = set(REQUIRED_CHECK_CONTEXTS[:-1])
     evidence_path = tmp_path / "apply-evidence.json"
 
     exit_code = run_apply(
@@ -80,7 +88,7 @@ def test_apply_preflight_missing_required_checks(tmp_path: Path) -> None:
         evidence_path=evidence_path,
         snapshot_dir=tmp_path / "snapshots",
         apply_intent=True,
-        available_check_contexts=set(REQUIRED_CHECK_CONTEXTS[:-1]),
+        available_check_contexts=set(REQUIRED_CHECK_CONTEXTS),
         can_mutate=True,
         client=client,
     )
@@ -115,3 +123,30 @@ def test_apply_writes_snapshot_before_mutation(tmp_path: Path) -> None:
     assert snapshot_files
     snapshot_payload = json.loads(snapshot_files[0].read_text(encoding="utf-8"))
     assert isinstance(snapshot_payload["snapshot_sha256"], str)
+
+
+def test_apply_preflight_uses_live_context_discovery_and_fails_closed(tmp_path: Path) -> None:
+    client = _FakeApplyClient()
+    client._discovered_contexts = set(REQUIRED_CHECK_CONTEXTS[:-1])
+    evidence_path = tmp_path / "apply-evidence.json"
+
+    exit_code = run_apply(
+        repo="octo-org/octo-repo",
+        branch="policy-rehearsal",
+        expected_policy_path=_repo_root() / "config/platform_policy/main_policy.yaml",
+        evidence_path=evidence_path,
+        snapshot_dir=tmp_path / "snapshots",
+        apply_intent=True,
+        available_check_contexts=set(REQUIRED_CHECK_CONTEXTS),
+        can_mutate=True,
+        client=client,
+    )
+
+    assert exit_code == 1
+    assert client.discover_calls == 1
+    assert client.apply_calls == 0
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert payload["error"]["kind"] == "missing_required_checks"
+    assert payload["preflight"]["decision"] == "fail_closed_missing_required_checks"
+    assert payload["preflight"]["available_check_contexts"] == sorted(client._discovered_contexts)
+    assert payload["preflight"]["missing_required_checks"] == [REQUIRED_CHECK_CONTEXTS[-1]]

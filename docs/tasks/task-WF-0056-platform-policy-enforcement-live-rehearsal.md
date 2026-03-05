@@ -62,7 +62,7 @@ Verification Steps:
 - `cd backend && uv run python -m tools.gh_policy.cli apply --help`
 Risks (if any): Existing automation depending on WF-0055 defaults may require explicit override flags.
 
-### [ ] Task 3 — Live required-check discovery integration in apply preflight
+### [x] Task 3 — Live required-check discovery integration in apply preflight
 
 Goal:
 Replace static required-check assumptions with live check-context discovery before apply mutation.
