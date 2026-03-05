@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 
 from tools.gh_policy.rollback import run_rollback
+from tools.gh_policy.cli import main
 
 pytestmark = [pytest.mark.no_db]
 
@@ -50,3 +51,28 @@ def test_rollback_restore_mismatch_emits_error_evidence(tmp_path: Path) -> None:
     assert exit_code == 1
     payload = json.loads(evidence_path.read_text(encoding="utf-8"))
     assert payload["error"]["kind"] == "restore_mismatch"
+
+
+def test_rollback_requires_existing_snapshot_path(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    snapshot_path = tmp_path / "missing-snapshot.json"
+    evidence_path = tmp_path / "rollback-evidence.json"
+
+    exit_code = main(
+        [
+            "rollback",
+            "--repo",
+            "octo-org/octo-repo",
+            "--branch",
+            "policy-rehearsal",
+            "--snapshot-path",
+            str(snapshot_path),
+            "--evidence-path",
+            str(evidence_path),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert f"snapshot path does not exist: {snapshot_path}" in captured.err

@@ -34,7 +34,7 @@ Verification Steps:
 - `rg -n "workflow_dispatch|verify-main|upload-artifact|tools.gh_policy.cli verify" .github/workflows/platform-policy-live-rehearsal.yml`
 Risks (if any): Workflow naming drift can break required-check context traceability.
 
-### [ ] Task 2 — CLI rehearsal targeting and WF-0056 evidence path contracts
+### [x] Task 2 — CLI rehearsal targeting and WF-0056 evidence path contracts
 
 Goal:
 Harden CLI defaults and argument validation so live rehearsal targets `main` for verify and `policy-rehearsal` for mutation flows with WF-0056 evidence paths.

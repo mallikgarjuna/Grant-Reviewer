@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 
 from tools.gh_policy.apply import run_apply
+from tools.gh_policy.cli import main
 from tools.gh_policy.policy_schema import REQUIRED_CHECK_CONTEXTS
 
 pytestmark = [pytest.mark.no_db]
@@ -91,3 +92,27 @@ def test_apply_failure_still_writes_evidence(tmp_path: Path) -> None:
     payload = json.loads(evidence_path.read_text(encoding="utf-8"))
     assert payload["error"]["kind"] == "api_unreachable"
     assert "simulated mutation failure" in payload["error"]["message"]
+
+
+def test_apply_rejects_main_branch_for_live_rehearsal(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    evidence_path = tmp_path / "apply-evidence.json"
+    snapshot_dir = tmp_path / "snapshots"
+
+    exit_code = main(
+        [
+            "apply",
+            "--repo",
+            "octo-org/octo-repo",
+            "--branch",
+            "main",
+            "--apply-intent",
+            "--evidence-path",
+            str(evidence_path),
+            "--snapshot-dir",
+            str(snapshot_dir),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "apply forbids --branch main during WF-0056 live rehearsal" in captured.err
