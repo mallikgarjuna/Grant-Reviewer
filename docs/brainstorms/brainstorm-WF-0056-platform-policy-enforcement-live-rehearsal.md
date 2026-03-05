@@ -1,8 +1,8 @@
 # WF-0056 — Platform Policy Enforcement Live Rehearsal
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-05
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0056-platform-policy-enforcement-live-rehearsal.md`
@@ -34,6 +34,19 @@ Open questions this snapshot suggests (to be resolved in this WF):
 
 ---
 
+## Scope Contract (MVP)
+
+- Target repo: `mallikgarjuna/Grant-Reviewer`
+- Verify target: `main`
+- Apply/rollback rehearsal target: dedicated rehearsal branch `policy-rehearsal` (created for this purpose; never `main` for MVP).
+- Enforcement mechanism: prefer rulesets, fall back to classic branch protection (inherit WF-0055 contract; record mechanism used in evidence).
+
+Evidence retention contract (MVP):
+- Primary: GitHub Actions workflow artifacts uploaded from live runs (verify/apply/rollback) and referenced in the walkthrough.
+- Fallback: local evidence files stored under `docs/walkthroughs/evidence/WF-0056/` and referenced in the walkthrough, including `evidence_sha256`/`snapshot_sha256` fields.
+
+---
+
 ## 1. Problem Statement
 
 We have a platform policy enforcement stack (WF-0055) that is largely validated via local/tracer evidence and tests, but not yet proven under live GitHub enforcement for this repo.
@@ -45,6 +58,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0056-platform-polic
 Contract notes / non-obvious constraints:
 - WF-0056 is not re-designing WF-0055; it is operationalizing it in the live repo with auditable evidence.
 - CI remains verify-only; apply/rollback are explicit admin actions with safeguards.
+- Evidence retention is part of "done": console output alone does not count as proof.
 
 ---
 
@@ -60,6 +74,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0056-platform-polic
 Contract notes / non-obvious constraints:
 - Evidence must be retained and reviewable (not just console logs).
 - Rehearsal must be low-risk: no accidental weakening of `main` branch protection, and a deterministic rollback path.
+- Rehearsal applies to `policy-rehearsal` for MVP; `main` is verify-only for this WF.
 
 ---
 
@@ -103,8 +118,8 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0056-platform-polic
 ## Open Questions / Deferred
 
 - Which repo(s) are in scope beyond `mallikgarjuna/Grant-Reviewer` (assumed only this repo for MVP).
-- Whether rehearsal must touch `main` protections or can use a rehearsal branch for apply/rollback while still verifying `main`.
 - Whether to extend GitHub Actions to upload evidence artifacts as workflow run artifacts (preferred) vs committing evidence into the repo.
+  - Resolved for MVP: use workflow artifacts as primary retention; local evidence under `docs/walkthroughs/evidence/WF-0056/` is fallback.
 
 ---
 
