@@ -1,5 +1,15 @@
 # Architectural Decisions
 
+## Date: 2026-03-05 (WF-0056: platform policy live rehearsal)
+
+### AD 56.1: Rehearse apply/rollback on a dedicated branch; verify targets main
+- **WF ID**: WF-0056
+- **Context**: Apply/rollback mutation is risky if exercised directly on `main` protections; however, live verification of `main` is still required to prove enforcement.
+- **Decision**: For MVP, run live `verify` against `main`, but run controlled `apply`/`rollback` rehearsal against a dedicated rehearsal branch (same expected policy surface, branch-specific), with explicit snapshot and evidence artifacts.
+- **Why**: Proves the mutation + rollback path end-to-end while minimizing the probability of weakening `main` protections.
+- **Tradeoff**: Rehearsal branch semantics may differ slightly from `main` (e.g., required checks event scope), so the walkthrough must explicitly justify parity and note residual risk.
+- **Status**: Approved.
+
 ## Date: 2026-03-05 (WF-0055: platform policy enforcement)
 
 ### AD 55.1: Enforcement mechanism prefers rulesets with classic branch-protection fallback
