@@ -1,8 +1,8 @@
 # WF-0055 — Platform Policy Enforcement
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-05
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0055-platform-policy-enforcement.md`
@@ -26,6 +26,11 @@ Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0055-platform
 - This implies branch protection/rulesets enforcement may be plan-gated (private repo + current plan), so WF-0055 must include a plan/permissions preflight and a read/verify fallback.
 - Any “required checks” enforcement must target check-run contexts GitHub recognizes for required status checks (not YAML step names).
 
+## Prerequisites (Hard Gates)
+
+- GitHub branch protection / rulesets must be enabled for this repo (currently API read returns HTTP 403 on private repo). Without enabling this feature, WF-0055 cannot satisfy “main branch protection is enforced” done criteria.
+- Applying policy requires an actor/token with admin permission to modify branch protection/rulesets. CI is assumed to be verify-only by default.
+
 ## 1. Problem Statement
 
 What problem are we solving?
@@ -37,7 +42,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0055-platform-polic
 
 Contract Notes / Non-obvious constraints (Section 1):
 
-- “Required checks” must refer to GitHub status check contexts. Current observed contexts are job-level (`backend`, `frontend`); the step names listed in `ci.yml` are not currently enforceable as branch protection required checks without CI refactor.
+- “Required checks” must refer to GitHub status check contexts. To enforce the six checks listed in the WF-0055 request, CI must emit those six as distinct check-run contexts (by splitting jobs and naming jobs accordingly).
 - Branch protection/rulesets APIs can be disabled by plan for private repos; enforcement must detect and surface this deterministically (no silent partial application).
 - Preserve WF-0054 event-scope intent: PR-context-coupled governance must not be required on push-only contexts in a way that can deadlock `main`.
 
@@ -56,6 +61,7 @@ Contract Notes / Non-obvious constraints (Section 2):
 - Enforcement must be automatable (API/CLI/Terraform/script), but must also support a “verify-only” mode when tokens lack admin mutation permissions.
 - Evidence must be generated from the same tool path used to read/apply (avoid manual transcription).
 - Required checks selection must align with current CI naming, or the workflow must be reshaped so the intended checks exist as enforceable contexts.
+  - Contract: WF-0055 will treat the below list as the required check-run context set for `main` (not YAML step names unless CI is refactored to produce those contexts).
 
 ## 3. Target User / Actor
 
@@ -82,6 +88,7 @@ Contract Notes / Non-obvious constraints (Section 3):
 - Must verify current live platform state before changing anything (no assumptions).
 - Must support plan/permission gating: if branch protection is unavailable (plan) or token cannot mutate admin settings, workflow must degrade to verify-only with a documented controlled apply path.
 - Must preserve WF-0054 event-scope intent: PR-context-coupled checks should be enforced on PRs, not incorrectly required for push-only contexts.
+- Evidence artifact must be generated deterministically from the same API read path used for verification/apply.
 
 ## 6. Risks / Unknowns
 
@@ -91,9 +98,26 @@ Contract Notes / Non-obvious constraints (Section 3):
 
 ## Open Questions / Deferred
 
-- Do we require `backend`/`frontend` as required checks (current enforceable contexts), or refactor CI so the intended six checks exist as separate jobs/check contexts?
+- CI shape decision: we will refactor CI so the intended six checks exist as separate jobs/check contexts, so GitHub branch protection can require them deterministically.
 - Do we need rulesets (org-level) vs classic branch protection, or either is acceptable?
 - Which toggles beyond required checks are mandatory: PR review count, stale dismissal, admin bypass, force-push/delete, linear history?
+
+## Required Checks (Contract)
+
+Target branch: `main`
+
+Required status check contexts (must exist as distinct GitHub check-run contexts on PRs targeting `main`):
+
+1. `backend / Contract Boundary Governance Check`
+2. `backend / WF-0054 CI Policy Regression Sweep`
+3. `backend / Contract Gate (Marker)`
+4. `backend / Test (Pytest no_db)`
+5. `frontend / Lint`
+6. `frontend / Build`
+
+Contract Notes:
+
+- Today, these are step names inside two jobs (`backend`, `frontend`). WF-0055 will reshape the CI workflow so each item above becomes its own job check context (job `name:`), allowing branch protection required checks to enforce them.
 
 ## 7. MVP Definition
 
@@ -106,6 +130,21 @@ If we had to ship in 2–3 days:
   - fails if mismatched,
   - writes evidence JSON with UTC timestamp.
 - Add a controlled apply command for admins that applies the policy and writes the same evidence artifact.
+
+## Evidence Artifact Contract (Machine-Verifiable)
+
+- Store under: `docs/walkthroughs/evidence/WF-0055/`
+- Filename format: `branch-protection_<repo>_<branch>_<utc-timestamp>.json`
+- Must include (minimum):
+  - `timestamp_utc` (RFC3339)
+  - `repo` (nameWithOwner)
+  - `branch`
+  - `actor` (login)
+  - `tooling` (gh version + command path + API endpoints used)
+  - `required_checks` (full ordered list)
+  - `toggles` (admin enforcement, force-push/delete, review requirements, stale dismissal, bypass allowances)
+  - `live_policy_raw` (raw API response or raw rule payload)
+  - `evidence_sha256` (hash of normalized evidence payload section)
 
 ## 8. Explicit Non-Goals
 

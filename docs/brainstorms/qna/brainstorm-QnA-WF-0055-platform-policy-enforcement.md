@@ -1,8 +1,8 @@
 # WF-0055 — Platform Policy Enforcement
 
 Artifact: brainstorm-qna
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-05
 
 This transcript records the interactive brainstorm decisions and rationale.
@@ -11,6 +11,11 @@ The SSOT for contracts/decisions is: `docs/brainstorms/brainstorm-WF-0055-platfo
 ---
 
 Note: User instruction on 2026-03-05: “Go with your recommendations for rest of the Phase 0 run.”
+
+### Addendum (Phase 0.3 risk-audit application)
+
+- The Phase 0.1 recommendation for required checks was “require current job contexts (`backend`, `frontend`)”.
+- The WF-0055 request explicitly requires six distinct required checks (backend/frontend sub-checks). Because GitHub required status checks operate on check-run contexts, WF-0055 will reshape CI so those six checks exist as separate job check contexts and can be required on `main`.
 
 ## Section 1 — Problem Statement
 
