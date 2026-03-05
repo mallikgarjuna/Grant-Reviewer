@@ -46,5 +46,5 @@ Implemented end-to-end platform policy tooling for verify/apply/rollback with de
   - `cd backend && uv run python -m tools.gh_policy.cli rollback --help` -> pass.
 
 ## Risks and Follow-up Notes
-- GitHub network/API integration is currently fixture-driven/offline in tests; live endpoint integration should be validated with an admin token before production enforcement.
+- Verify CLI now runs fail-closed in live mode when `GITHUB_TOKEN` is absent (`permission_denied` evidence); use `--offline` only for deterministic local fixture checks.
 - Evidence file naming in CLI defaults is deterministic and writable in repo context; CI artifact collection policy should retain these outputs for audit traceability.

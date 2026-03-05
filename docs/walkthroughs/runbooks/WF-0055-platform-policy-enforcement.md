@@ -11,13 +11,15 @@ Operate verify/apply/rollback flows for `main` platform policy enforcement with 
 ## Prerequisites Matrix
 | Operation | Required Inputs | Required Permission | Mutation |
 | :--- | :--- | :--- | :--- |
-| verify | repo, branch, expected policy file | read policy endpoints | no |
+| verify | repo, branch, expected policy file | `GITHUB_TOKEN` for live mode read access | no |
 | apply | repo, branch, expected policy file, apply intent, check contexts present | admin mutation permission | yes |
 | rollback | repo, branch, snapshot artifact | admin mutation permission | yes |
 
 ## Commands
 - Verify (CI-safe, verify-only):
   - `cd backend && uv run python -m tools.gh_policy.cli verify --repo <owner/repo> --branch main --verify-only`
+- Verify (local deterministic/offline mode):
+  - `cd backend && uv run python -m tools.gh_policy.cli verify --repo <owner/repo> --branch main --verify-only --offline`
 - Apply (explicit intent required):
   - `cd backend && uv run python -m tools.gh_policy.cli apply --repo <owner/repo> --branch main --apply-intent`
 - Rollback (snapshot-driven restore):

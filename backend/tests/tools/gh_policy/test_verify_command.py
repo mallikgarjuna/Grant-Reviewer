@@ -54,3 +54,22 @@ def test_verify_drift_returns_nonzero_and_no_mutation(tmp_path: Path) -> None:
     payload = json.loads(evidence_path.read_text(encoding="utf-8"))
     assert payload["drift"]["is_drifted"] is True
     assert payload["drift"]["diff"]
+
+
+def test_verify_live_mode_without_token_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    evidence_path = tmp_path / "verify-live-evidence.json"
+
+    exit_code = run_verify(
+        repo="octo-org/octo-repo",
+        branch="main",
+        expected_policy_path=_repo_root() / "config/platform_policy/main_policy.yaml",
+        evidence_path=evidence_path,
+    )
+
+    assert exit_code == 1
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert payload["error"]["kind"] == "permission_denied"

@@ -9,3 +9,4 @@
 
 - 2026-03-04: Pipeline typing must support both `ActivatedCallConfigSnapshotV1` and plain dict snapshots in `run_review_pipeline`; coercing model-only broke WF-0045 contract tests. Why: contract suites instantiate `ReviewRequestV1` directly with dict snapshots for matrix cases.
 - 2026-03-05: PyYAML can parse unquoted GitHub workflow key `on:` as boolean `True`; CI-workflow tests should read `workflow.get("on")` with fallback to `workflow.get(True)` for deterministic trigger validation. Why: avoids false negatives in YAML-based workflow contract tests.
+- 2026-03-05: GitHub Actions `run:` steps should explicitly export `GITHUB_TOKEN: ${{ github.token }}` when backend tooling expects `GITHUB_TOKEN` env var; context availability alone is not enough for subprocess/env-based API auth.

@@ -23,6 +23,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Explicitly acknowledge this command is verify-only.",
     )
     verify.add_argument(
+        "--offline",
+        action="store_true",
+        help="Use deterministic offline fixture mode (for local testing).",
+    )
+    verify.add_argument(
         "--mechanism",
         default="branch_protection",
         choices=("rulesets", "branch_protection"),
@@ -85,6 +90,7 @@ def _run_verify(args: argparse.Namespace) -> int:
         branch=args.branch,
         expected_policy_path=Path(args.expected_policy_path),
         evidence_path=Path(args.evidence_path),
+        offline=bool(args.offline),
     )
     print(str(args.evidence_path))
     return exit_code

@@ -21,6 +21,7 @@ def test_verify_tracer_writes_evidence_json_has_drift_surface(tmp_path: Path) ->
             "--branch",
             "main",
             "--verify-only",
+            "--offline",
             "--evidence-path",
             str(evidence_path),
         ]

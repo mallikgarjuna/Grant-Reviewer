@@ -220,6 +220,10 @@ def _wf0055_verify_workflow_violations(workflow: dict[str, Any]) -> list[str]:
         if "--verify-only" not in run_command:
             violations.append("verify-only step must pass --verify-only")
 
+    env_config = verify_step.get("env")
+    if not isinstance(env_config, dict) or env_config.get("GITHUB_TOKEN") != "${{ github.token }}":
+        violations.append("verify-only step must export GITHUB_TOKEN from github.token")
+
     return violations
 
 

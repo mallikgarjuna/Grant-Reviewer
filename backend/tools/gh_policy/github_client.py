@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
+from urllib import request
+from urllib.error import HTTPError, URLError
 
 
 @dataclass(frozen=True)
@@ -17,6 +20,44 @@ class GitHubApiError(Exception):
 
 
 Fetcher = Callable[[str], tuple[int, dict[str, Any] | list[Any]]]
+
+
+def make_github_rest_fetcher(
+    *,
+    token: str,
+    api_base: str = "https://api.github.com",
+) -> Fetcher:
+    def _fetch(endpoint: str) -> tuple[int, dict[str, Any] | list[Any]]:
+        url = api_base.rstrip("/") + endpoint
+        req = request.Request(
+            url=url,
+            headers={
+                "Accept": "application/vnd.github+json",
+                "Authorization": f"Bearer {token}",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "User-Agent": "wf-0055-platform-policy-enforcement",
+            },
+            method="GET",
+        )
+        try:
+            with request.urlopen(req, timeout=30) as resp:  # noqa: S310
+                body = resp.read().decode("utf-8")
+                return int(resp.status), json.loads(body) if body else {}
+        except HTTPError as err:
+            body = err.read().decode("utf-8")
+            payload: dict[str, Any] | list[Any]
+            if not body:
+                payload = {"message": str(err)}
+            else:
+                try:
+                    payload = json.loads(body)
+                except json.JSONDecodeError:
+                    payload = {"message": body}
+            return int(err.code), payload
+        except URLError as err:
+            return 503, {"message": str(err)}
+
+    return _fetch
 
 
 def _classify_error_kind(*, status_code: int, payload: dict[str, Any]) -> str:
