@@ -1,7 +1,7 @@
 # WF-0054 — Repo-side CI Policy Hardening
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-05
 
@@ -188,3 +188,4 @@ Risks (if any): Broad selector patterns could hide missing-case coverage if not 
 
 - v0.1 (2026-03-05): Initial task breakdown from PRD
 - v0.2 (2026-03-05): Applied review edits by splitting WF-0047 test-vs-doc alignment into separate atomic tasks, removing self-editing task coupling, and marking plan Ready for Implementation
+- v0.3 (2026-03-05): Adversarial Part B re-audit completed; confirmed blocker-free plan and retained task structure
