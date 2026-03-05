@@ -110,7 +110,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/scripts/test_ci_policy_event_scope.py -k "wf0054_ci_policy_wf0047_status_alignment"`
 Risks (if any): Loose status parsing can mask drift if semantic equivalence rules are not explicit.
 
-### [ ] Task 5 — WF-0047 artifact status consistency cleanup
+### [x] Task 5 — WF-0047 artifact status consistency cleanup
 
 Goal:
 Normalize WF-0047 task/walkthrough/index statuses to consistent completed semantics required by WF-0054.
