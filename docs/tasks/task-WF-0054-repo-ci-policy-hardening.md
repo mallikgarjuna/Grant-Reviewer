@@ -1,8 +1,8 @@
 # WF-0054 — Repo-side CI Policy Hardening
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-05
 
 ## Task Breakdown (Sequential Order)
@@ -87,15 +87,38 @@ Verification Steps:
 - `rg -n "if: github.event_name == 'pull_request'|Contract Boundary Governance Check|WF-0053 Negative Smoke" .github/workflows/ci.yml`
 Risks (if any): Over-tightening guards could accidentally skip expected governance checks on pull requests.
 
-### [ ] Task 4 — WF-0047 artifact status consistency cleanup
+### [ ] Task 4 — Add deterministic WF-0047 status-alignment selector
 
 Goal:
-Normalize WF-0047 task/walkthrough/index statuses to consistent completed semantics required by WF-0054.
-Slice: wf0047-status-alignment
+Add deterministic test coverage that enforces semantic status alignment across WF-0047 task/walkthrough/index artifacts.
+Slice: wf0047-status-alignment-test
 User Stories: US3
 PRD Requirements: FR6
 Depends on: 3
 Enables: 5
+Parallelizable: no
+Files to modify:
+- `backend/tests/scripts/test_ci_policy_event_scope.py`
+Acceptance Criteria:
+- Selector `wf0054_ci_policy_wf0047_status_alignment` deterministically validates WF-0047 task/walkthrough/index status semantics.
+- Assertion output identifies which WF-0047 artifact field is mismatched.
+TDD Plan:
+- RED: Add `wf0054_ci_policy_wf0047_status_alignment` expecting failure against current WF-0047 status mismatch.
+- GREEN: Implement minimal artifact-status parser/assertion helper in the test module to render deterministic mismatch diagnostics.
+- REFACTOR: Centralize accepted completed-status semantics in one helper constant.
+Verification Steps:
+- `cd backend && uv run pytest tests/scripts/test_ci_policy_event_scope.py -k "wf0054_ci_policy_wf0047_status_alignment"`
+Risks (if any): Loose status parsing can mask drift if semantic equivalence rules are not explicit.
+
+### [ ] Task 5 — WF-0047 artifact status consistency cleanup
+
+Goal:
+Normalize WF-0047 task/walkthrough/index statuses to consistent completed semantics required by WF-0054.
+Slice: wf0047-status-alignment-fix
+User Stories: US3
+PRD Requirements: FR6
+Depends on: 4
+Enables: 6
 Parallelizable: no
 Files to modify:
 - `docs/tasks/completed/task-WF-0047-git-hooks-rule-enforcement.md`
@@ -106,27 +129,26 @@ Acceptance Criteria:
 - WF-0047 walkthrough header remains/updates to matching completed semantics.
 - `docs/index.md` WF-0047 row status text remains semantically aligned with both artifacts.
 TDD Plan:
-- RED: Add deterministic status-alignment assertion in existing WF-0054 CI-policy test module for WF-0047 artifacts.
-- GREEN: Update WF-0047 artifact status fields and index row to satisfy the alignment assertion.
-- REFACTOR: Keep status token constants centralized in the WF-0054 test module.
+- RED: Run `wf0054_ci_policy_wf0047_status_alignment` and confirm failure against pre-fix artifact state.
+- GREEN: Update WF-0047 status fields and index row to satisfy the selector.
+- REFACTOR: skip
 Verification Steps:
 - `cd backend && uv run pytest tests/scripts/test_ci_policy_event_scope.py -k "wf0054_ci_policy_wf0047_status_alignment"`
 - `rg -n "WF-0047|Status: Completed|Status: Done" docs/tasks/completed/task-WF-0047-git-hooks-rule-enforcement.md docs/walkthroughs/completed/walkthrough-WF-0047-git-hooks-rule-enforcement.md docs/index.md`
 Risks (if any): Historical status wording conventions may conflict with strict equality checks if not explicitly normalized.
 
-### [ ] Task 5 — Branch-protection enforcement handoff mapping artifact
+### [ ] Task 6 — Branch-protection enforcement handoff mapping artifact
 
 Goal:
 Produce the explicit check mapping needed for a follow-on WF that handles GitHub branch protection enforcement.
 Slice: branch-protection-handoff
 User Stories: US4
 PRD Requirements: FR7
-Depends on: 4
-Enables: 6
+Depends on: 5
+Enables: 7
 Parallelizable: no
 Files to modify:
 - `docs/walkthroughs/walkthrough-WF-0054-repo-ci-policy-hardening.md`
-- `docs/tasks/task-WF-0054-repo-ci-policy-hardening.md`
 Acceptance Criteria:
 - WF-0054 walkthrough includes a dedicated branch-protection mapping section.
 - Mapping rows include `check_name`, `event_scope`, `enforcement_recommendation`, and `notes`.
@@ -134,17 +156,16 @@ Acceptance Criteria:
 TDD Plan: N/A (documentation handoff contract)
 Verification Steps:
 - `rg -n "Branch Protection Handoff Mapping|check_name|event_scope|enforcement_recommendation|repo-only" docs/walkthroughs/walkthrough-WF-0054-repo-ci-policy-hardening.md`
-- `rg -n "Task 5 — Branch-protection enforcement handoff mapping artifact" docs/tasks/task-WF-0054-repo-ci-policy-hardening.md`
 Risks (if any): Missing event-scope caveats in mapping can cause incorrect required-check setup in the follow-on WF.
 
-### [ ] Task 6 — Final governance regression sweep and walkthrough evidence
+### [ ] Task 7 — Final governance regression sweep and walkthrough evidence
 
 Goal:
 Freeze deterministic verification evidence for repo-side policy hardening without expanding to admin settings.
 Slice: verification-and-evidence
 User Stories: US1, US2, US3, US4
 PRD Requirements: FR4, FR5, FR6, FR7, FR8, FR9
-Depends on: 5
+Depends on: 6
 Enables: none
 Parallelizable: no
 Files to modify:
@@ -166,3 +187,4 @@ Risks (if any): Broad selector patterns could hide missing-case coverage if not 
 ## Changelog
 
 - v0.1 (2026-03-05): Initial task breakdown from PRD
+- v0.2 (2026-03-05): Applied review edits by splitting WF-0047 test-vs-doc alignment into separate atomic tasks, removing self-editing task coupling, and marking plan Ready for Implementation
