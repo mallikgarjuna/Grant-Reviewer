@@ -170,7 +170,7 @@ Verification Steps:
 - `rg -n "missing_required_checks|snapshot_sha256|apply intent" tools/gh_policy/apply.py tools/gh_policy/snapshot.py`
 Risks (if any): Context-existence checks can be brittle if CI job naming conventions are inconsistent.
 
-### [ ] Task 7 — Apply mutation and post-apply verification evidence
+### [x] Task 7 — Apply mutation and post-apply verification evidence
 
 Goal:
 Execute controlled policy apply from CLI, then re-read and assert live policy matches expected before marking success.

@@ -1,0 +1,93 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from tools.gh_policy.apply import run_apply
+from tools.gh_policy.policy_schema import REQUIRED_CHECK_CONTEXTS
+
+pytestmark = [pytest.mark.no_db]
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[4]
+
+
+class _MismatchClient:
+    def __init__(self) -> None:
+        self.read_count = 0
+
+    def read_live_policy(self, *, repo: str, branch: str) -> dict[str, Any]:
+        self.read_count += 1
+        if self.read_count == 1:
+            return {
+                "mechanism": "branch_protection",
+                "live_policy_raw": {
+                    "required_status_checks": {"strict": True, "contexts": list(REQUIRED_CHECK_CONTEXTS)},
+                    "enforce_admins": {"enabled": True},
+                    "allow_force_pushes": {"enabled": False},
+                    "allow_deletions": {"enabled": False},
+                },
+                "endpoints_used": [f"/repos/{repo}/branches/{branch}/protection"],
+            }
+        return {
+            "mechanism": "branch_protection",
+            "live_policy_raw": {
+                "required_status_checks": {"strict": False, "contexts": list(REQUIRED_CHECK_CONTEXTS)},
+                "enforce_admins": {"enabled": True},
+                "allow_force_pushes": {"enabled": False},
+                "allow_deletions": {"enabled": False},
+            },
+            "endpoints_used": [f"/repos/{repo}/branches/{branch}/protection"],
+        }
+
+    def apply_policy(self, **_kwargs: Any) -> dict[str, Any]:
+        return {"ok": True}
+
+
+class _FailingApplyClient(_MismatchClient):
+    def apply_policy(self, **_kwargs: Any) -> dict[str, Any]:
+        raise RuntimeError("simulated mutation failure")
+
+
+def test_apply_post_apply_mismatch_returns_nonzero(tmp_path: Path) -> None:
+    evidence_path = tmp_path / "apply-evidence.json"
+    exit_code = run_apply(
+        repo="octo-org/octo-repo",
+        branch="main",
+        expected_policy_path=_repo_root() / "config/platform_policy/main_policy.yaml",
+        evidence_path=evidence_path,
+        snapshot_dir=tmp_path / "snapshots",
+        apply_intent=True,
+        available_check_contexts=set(REQUIRED_CHECK_CONTEXTS),
+        can_mutate=True,
+        client=_MismatchClient(),
+    )
+
+    assert exit_code == 1
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert payload["error"]["kind"] == "post_apply_mismatch"
+    assert payload["drift"]["is_drifted"] is True
+
+
+def test_apply_failure_still_writes_evidence(tmp_path: Path) -> None:
+    evidence_path = tmp_path / "apply-evidence.json"
+    exit_code = run_apply(
+        repo="octo-org/octo-repo",
+        branch="main",
+        expected_policy_path=_repo_root() / "config/platform_policy/main_policy.yaml",
+        evidence_path=evidence_path,
+        snapshot_dir=tmp_path / "snapshots",
+        apply_intent=True,
+        available_check_contexts=set(REQUIRED_CHECK_CONTEXTS),
+        can_mutate=True,
+        client=_FailingApplyClient(),
+    )
+
+    assert exit_code == 1
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert payload["error"]["kind"] == "api_unreachable"
+    assert "simulated mutation failure" in payload["error"]["message"]
