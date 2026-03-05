@@ -126,3 +126,41 @@ class GitHubPolicyClient:
             endpoint=branch_endpoint,
             status_code=branch_status,
         )
+
+    def discover_check_contexts(self, *, repo: str, branch: str) -> set[str]:
+        endpoint = f"/repos/{repo}/commits/{branch}/check-runs"
+        status_code, payload = self._fetcher(endpoint)
+        if status_code != 200:
+            if not isinstance(payload, dict):
+                payload = {"message": "Unexpected non-object error payload"}
+            kind = _classify_error_kind(status_code=status_code, payload=payload)
+            raise GitHubApiError(
+                kind=kind,
+                message=str(payload.get("message", "GitHub API request failed")),
+                endpoint=endpoint,
+                status_code=status_code,
+            )
+        if not isinstance(payload, dict):
+            raise GitHubApiError(
+                kind="api_unreachable",
+                message="check-runs response must be an object",
+                endpoint=endpoint,
+                status_code=status_code,
+            )
+        check_runs = payload.get("check_runs", [])
+        if not isinstance(check_runs, list):
+            raise GitHubApiError(
+                kind="api_unreachable",
+                message="check-runs payload must include a list check_runs field",
+                endpoint=endpoint,
+                status_code=status_code,
+            )
+
+        contexts: set[str] = set()
+        for check_run in check_runs:
+            if not isinstance(check_run, dict):
+                continue
+            name = check_run.get("name")
+            if isinstance(name, str) and name.strip():
+                contexts.add(name)
+        return contexts

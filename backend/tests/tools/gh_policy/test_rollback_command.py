@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 
 from tools.gh_policy.rollback import run_rollback
+from tools.gh_policy.cli import main
 
 pytestmark = [pytest.mark.no_db]
 
@@ -50,3 +51,53 @@ def test_rollback_restore_mismatch_emits_error_evidence(tmp_path: Path) -> None:
     assert exit_code == 1
     payload = json.loads(evidence_path.read_text(encoding="utf-8"))
     assert payload["error"]["kind"] == "restore_mismatch"
+
+
+def test_rollback_requires_existing_snapshot_path(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    snapshot_path = tmp_path / "missing-snapshot.json"
+    evidence_path = tmp_path / "rollback-evidence.json"
+
+    exit_code = main(
+        [
+            "rollback",
+            "--repo",
+            "octo-org/octo-repo",
+            "--branch",
+            "policy-rehearsal",
+            "--snapshot-path",
+            str(snapshot_path),
+            "--evidence-path",
+            str(evidence_path),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert f"snapshot path does not exist: {snapshot_path}" in captured.err
+
+
+def test_rollback_evidence_includes_source_snapshot_linkage(tmp_path: Path) -> None:
+    snapshot_path = tmp_path / "snapshot.json"
+    snapshot_payload = {
+        "mechanism": "branch_protection",
+        "live_policy_raw": {
+            "required_status_checks": {"strict": True, "contexts": ["backend / Test (Pytest no_db)"]}
+        },
+    }
+    snapshot_path.write_text(json.dumps(snapshot_payload), encoding="utf-8")
+
+    evidence_path = tmp_path / "rollback-evidence.json"
+    exit_code = run_rollback(
+        repo="octo-org/octo-repo",
+        branch="policy-rehearsal",
+        snapshot_path=snapshot_path,
+        evidence_path=evidence_path,
+        client=_RollbackClient(mismatch_after_restore=False),
+    )
+
+    assert exit_code == 0
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert payload["source_snapshot"]["path"] == str(snapshot_path)
+    assert payload["linked_artifacts"] == [str(snapshot_path)]

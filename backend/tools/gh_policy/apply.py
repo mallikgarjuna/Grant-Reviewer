@@ -14,6 +14,9 @@ class ApplyPolicyClient(Protocol):
     def read_live_policy(self, *, repo: str, branch: str) -> dict[str, Any]:
         ...
 
+    def discover_check_contexts(self, *, repo: str, branch: str) -> set[str]:
+        ...
+
     def apply_policy(
         self,
         *,
@@ -44,6 +47,14 @@ class _StaticApplyClient:
             "live_policy_raw": self._state,
             "endpoints_used": [f"/repos/{repo}/branches/{branch}/protection"],
         }
+
+    def discover_check_contexts(self, *, repo: str, branch: str) -> set[str]:
+        _ = (repo, branch)
+        required_status_checks = self._state.get("required_status_checks", {})
+        contexts = required_status_checks.get("contexts", [])
+        if not isinstance(contexts, list):
+            return set()
+        return {str(item) for item in contexts}
 
     def apply_policy(
         self,
@@ -76,6 +87,7 @@ def _write_evidence(
     error: dict[str, Any] | None,
     snapshot_path: Path | None = None,
     normalized_policy: dict[str, Any] | None = None,
+    preflight: dict[str, Any] | None = None,
 ) -> None:
     payload: dict[str, Any] = {
         "repo": repo,
@@ -88,6 +100,8 @@ def _write_evidence(
         payload["snapshot_path"] = str(snapshot_path)
     if normalized_policy is not None:
         payload["normalized_policy"] = normalized_policy
+    if preflight is not None:
+        payload["preflight"] = preflight
     write_evidence_json(payload=payload, output_path=evidence_path)
 
 
@@ -133,17 +147,52 @@ def run_apply(
             message="Apply requires explicit apply intent",
         )
 
-    missing_checks = [
-        check for check in expected_policy["required_checks"] if check not in available_check_contexts
-    ]
+    discovered_contexts: set[str]
+    if hasattr(apply_client, "discover_check_contexts"):
+        try:
+            discovered_contexts = set(apply_client.discover_check_contexts(repo=repo, branch=branch))
+        except Exception as err:
+            error_kind = str(getattr(err, "kind", "api_failure"))
+            _write_evidence(
+                evidence_path=evidence_path,
+                repo=repo,
+                branch=branch,
+                mechanism=None,
+                drift={"is_drifted": False, "diff": []},
+                error={"kind": error_kind, "message": str(err), "endpoint": None},
+                preflight={
+                    "required_check_contexts": list(expected_policy["required_checks"]),
+                    "available_check_contexts": [],
+                    "missing_required_checks": list(expected_policy["required_checks"]),
+                    "decision": "fail_closed_discovery_error",
+                },
+            )
+            return 1
+    else:
+        discovered_contexts = set(available_check_contexts)
+
+    missing_checks = [check for check in expected_policy["required_checks"] if check not in discovered_contexts]
+    preflight = {
+        "required_check_contexts": list(expected_policy["required_checks"]),
+        "available_check_contexts": sorted(discovered_contexts),
+        "missing_required_checks": missing_checks,
+        "decision": "allow_apply",
+    }
     if missing_checks:
-        return _write_failure_evidence(
+        _write_evidence(
             evidence_path=evidence_path,
             repo=repo,
             branch=branch,
-            kind="missing_required_checks",
-            message="Missing required checks: " + ", ".join(missing_checks),
+            mechanism=None,
+            drift={"is_drifted": False, "diff": []},
+            error={
+                "kind": "missing_required_checks",
+                "message": "Missing required checks: " + ", ".join(missing_checks),
+                "endpoint": None,
+            },
+            preflight={**preflight, "decision": "fail_closed_missing_required_checks"},
         )
+        return 1
 
     if not can_mutate:
         return _write_failure_evidence(
@@ -181,6 +230,7 @@ def run_apply(
             drift={"is_drifted": False, "diff": []},
             error={"kind": "api_unreachable", "message": str(err), "endpoint": None},
             snapshot_path=snapshot_path,
+            preflight=preflight,
         )
         return 1
 
@@ -204,6 +254,7 @@ def run_apply(
             },
             snapshot_path=snapshot_path,
             normalized_policy=post_normalized,
+            preflight=preflight,
         )
         return 1
 
@@ -216,5 +267,6 @@ def run_apply(
         error=None,
         snapshot_path=snapshot_path,
         normalized_policy=post_normalized,
+        preflight=preflight,
     )
     return 0
