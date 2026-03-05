@@ -1,0 +1,73 @@
+{
+  "branch": "main",
+  "drift": {
+    "diff": [],
+    "is_drifted": false
+  },
+  "error": null,
+  "evidence_sha256": "a5ceb65f0583aa86dec20970ec442791503f79558b47bc55be7a66504072d007",
+  "live_policy_raw": {
+    "allow_deletions": {
+      "enabled": false
+    },
+    "allow_force_pushes": {
+      "enabled": false
+    },
+    "enforce_admins": {
+      "enabled": true
+    },
+    "required_status_checks": {
+      "contexts": [
+        "backend / Contract Boundary Governance Check",
+        "backend / WF-0054 CI Policy Regression Sweep",
+        "backend / Contract Gate (Marker)",
+        "backend / Test (Pytest no_db)",
+        "frontend / Lint",
+        "frontend / Build"
+      ],
+      "strict": true
+    }
+  },
+  "mechanism": "branch_protection",
+  "normalized_policy": {
+    "required_checks": [
+      "backend / Contract Boundary Governance Check",
+      "backend / WF-0054 CI Policy Regression Sweep",
+      "backend / Contract Gate (Marker)",
+      "backend / Test (Pytest no_db)",
+      "frontend / Lint",
+      "frontend / Build"
+    ],
+    "toggles": {
+      "allow_deletions": false,
+      "allow_force_pushes": false,
+      "bypass_allowances": [],
+      "enforce_admins": true,
+      "require_conversation_resolution": false,
+      "require_linear_history": false,
+      "require_signed_commits": false,
+      "required_pull_request_reviews": false,
+      "strict_required_status_checks": true
+    }
+  },
+  "repo": "owner/repo",
+  "required_checks": [
+    "backend / Contract Boundary Governance Check",
+    "backend / WF-0054 CI Policy Regression Sweep",
+    "backend / Contract Gate (Marker)",
+    "backend / Test (Pytest no_db)",
+    "frontend / Lint",
+    "frontend / Build"
+  ],
+  "toggles": {
+    "allow_deletions": false,
+    "allow_force_pushes": false,
+    "bypass_allowances": [],
+    "enforce_admins": true,
+    "require_conversation_resolution": false,
+    "require_linear_history": false,
+    "require_signed_commits": false,
+    "required_pull_request_reviews": false,
+    "strict_required_status_checks": true
+  }
+}

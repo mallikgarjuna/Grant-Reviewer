@@ -8,3 +8,4 @@
 - 2026-03-04: WF-0053 governance gate uses `backend/scripts/check_contract_boundary_governance.py --changed-path-file`; CI computes git diff paths and checker derives evidence bundles when none are passed. Why: prevents vacuous pass when no explicit args are supplied.
 
 - 2026-03-04: Pipeline typing must support both `ActivatedCallConfigSnapshotV1` and plain dict snapshots in `run_review_pipeline`; coercing model-only broke WF-0045 contract tests. Why: contract suites instantiate `ReviewRequestV1` directly with dict snapshots for matrix cases.
+- 2026-03-05: PyYAML can parse unquoted GitHub workflow key `on:` as boolean `True`; CI-workflow tests should read `workflow.get("on")` with fallback to `workflow.get(True)` for deterministic trigger validation. Why: avoids false negatives in YAML-based workflow contract tests.
