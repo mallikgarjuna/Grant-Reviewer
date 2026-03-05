@@ -142,7 +142,7 @@ Verification Steps:
 - `uv run python -m tools.gh_policy.cli verify --repo owner/repo --branch main`
 Risks (if any): Exit-code handling can drift if CLI wrapper swallows command errors.
 
-### [ ] Task 6 — Apply preflight and rollback snapshot capture
+### [x] Task 6 — Apply preflight and rollback snapshot capture
 
 Goal:
 Implement controlled apply preflight checks (intent, permissions, required contexts) and deterministic snapshot capture before mutation.
