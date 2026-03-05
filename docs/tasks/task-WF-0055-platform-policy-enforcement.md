@@ -115,7 +115,7 @@ Verification Steps:
 - `uv run pytest tests/tools/gh_policy/test_verify_tracer.py -k "drift"`
 Risks (if any): Missing default handling can create noisy false-positive drift.
 
-### [ ] Task 5 — Verify command: drift failure semantics and CI-safe behavior
+### [x] Task 5 — Verify command: drift failure semantics and CI-safe behavior
 
 Goal:
 Harden verify behavior so CI is strictly mutation-free, emits evidence on every run, and exits non-zero when drift exists.

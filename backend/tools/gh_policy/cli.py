@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 from typing import Sequence
 
-from tools.gh_policy.evidence import write_evidence_json
+from tools.gh_policy.verify import run_verify
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -27,28 +27,26 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     verify.add_argument(
         "--evidence-path",
-        default="docs/walkthroughs/evidence/WF-0055/tracer_verify_evidence.json",
+        default="../docs/walkthroughs/evidence/WF-0055/tracer_verify_evidence.json",
         help="Filesystem path for evidence JSON.",
+    )
+    verify.add_argument(
+        "--expected-policy-path",
+        default="../config/platform_policy/main_policy.yaml",
+        help="Expected policy definition path.",
     )
     return parser
 
 
 def _run_verify(args: argparse.Namespace) -> int:
-    if not args.verify_only:
-        raise ValueError("verify requires --verify-only to guarantee mutation-free mode")
-
-    evidence_path = Path(args.evidence_path)
-    write_evidence_json(
-        payload={
-            "repo": args.repo,
-            "branch": args.branch,
-            "mechanism": args.mechanism,
-            "drift": {"is_drifted": False, "diff": []},
-        },
-        output_path=evidence_path,
+    exit_code = run_verify(
+        repo=args.repo,
+        branch=args.branch,
+        expected_policy_path=Path(args.expected_policy_path),
+        evidence_path=Path(args.evidence_path),
     )
-    print(str(evidence_path))
-    return 0
+    print(str(args.evidence_path))
+    return exit_code
 
 
 def main(argv: Sequence[str] | None = None) -> int:
