@@ -1,7 +1,7 @@
 # WF-0056 — Platform Policy Enforcement Live Rehearsal
 
 Artifact: brainstorm
-Version: v0.3
+Version: v0.4
 Status: Draft Complete
 Last Updated: 2026-03-05
 
@@ -28,9 +28,9 @@ Date: 2026-03-05
 - Critical reality check: `apply` and `rollback` currently use static clients (no live GitHub mutation); they produce evidence but do not change repo policy.
 
 Open questions this snapshot suggests (to be resolved in this WF):
-- How to capture and retain evidence from live runs (local files, uploaded workflow artifacts, or committed evidence in a controlled PR).
-- Safe rehearsal target: whether apply/rollback must touch `main` protections or can use a rehearsal branch (preferred) without weakening `main`.
 - Token/permissions model: where an admin-scoped token lives and how we prevent accidental mutation.
+- How to implement durable evidence retention for live runs (workflow artifacts as primary; local docs evidence as fallback).
+- How to implement required-check-context discovery for apply preflight (fail-closed).
 
 ---
 
