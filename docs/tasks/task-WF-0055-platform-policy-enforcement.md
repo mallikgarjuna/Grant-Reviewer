@@ -253,7 +253,7 @@ Verification Steps:
 - `rg -n "verify-platform-policy|Contract Boundary Governance Check|WF-0054 CI Policy Regression Sweep|Contract Gate \\(Marker\\)|Test \\(Pytest no_db\\)|frontend / Lint|frontend / Build" .github/workflows`
 Risks (if any): Existing workflow naming conventions may conflict with exact required-check string contracts.
 
-### [ ] Task 10 — Runbook and walkthrough evidence documentation
+### [x] Task 10 — Runbook and walkthrough evidence documentation
 
 Goal:
 Document operational verify/apply/rollback flows, prerequisites, and failure modes with evidence path contracts.
