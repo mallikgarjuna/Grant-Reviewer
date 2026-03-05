@@ -42,6 +42,31 @@ def _load_snapshot(snapshot_path: Path) -> dict[str, Any]:
     return snapshot
 
 
+def _build_rollback_evidence_payload(
+    *,
+    repo: str,
+    branch: str,
+    mechanism: str,
+    drift: dict[str, Any],
+    error: dict[str, Any] | None,
+    snapshot_path: Path,
+    snapshot: dict[str, Any],
+) -> dict[str, Any]:
+    source_snapshot: dict[str, Any] = {"path": str(snapshot_path)}
+    snapshot_sha = snapshot.get("snapshot_sha256")
+    if isinstance(snapshot_sha, str):
+        source_snapshot["snapshot_sha256"] = snapshot_sha
+    return {
+        "repo": repo,
+        "branch": branch,
+        "mechanism": mechanism,
+        "drift": drift,
+        "error": error,
+        "source_snapshot": source_snapshot,
+        "linked_artifacts": [str(snapshot_path)],
+    }
+
+
 def run_rollback(
     *,
     repo: str,
@@ -65,13 +90,15 @@ def run_rollback(
         post_restore = rollback_client.read_live_policy(repo=repo, branch=branch)
     except Exception as err:
         write_evidence_json(
-            payload={
-                "repo": repo,
-                "branch": branch,
-                "mechanism": mechanism,
-                "drift": {"is_drifted": True, "diff": []},
-                "error": {"kind": "api_unreachable", "message": str(err), "endpoint": None},
-            },
+            payload=_build_rollback_evidence_payload(
+                repo=repo,
+                branch=branch,
+                mechanism=mechanism,
+                drift={"is_drifted": True, "diff": []},
+                error={"kind": "api_unreachable", "message": str(err), "endpoint": None},
+                snapshot_path=snapshot_path,
+                snapshot=snapshot,
+            ),
             output_path=evidence_path,
         )
         return 1
@@ -79,29 +106,33 @@ def run_rollback(
     post_raw = post_restore.get("live_policy_raw")
     if post_raw != snapshot_raw:
         write_evidence_json(
-            payload={
-                "repo": repo,
-                "branch": branch,
-                "mechanism": mechanism,
-                "drift": {"is_drifted": True, "diff": [{"field": "live_policy_raw"}]},
-                "error": {
+            payload=_build_rollback_evidence_payload(
+                repo=repo,
+                branch=branch,
+                mechanism=mechanism,
+                drift={"is_drifted": True, "diff": [{"field": "live_policy_raw"}]},
+                error={
                     "kind": "restore_mismatch",
                     "message": "Rollback restore verification failed",
                     "endpoint": None,
                 },
-            },
+                snapshot_path=snapshot_path,
+                snapshot=snapshot,
+            ),
             output_path=evidence_path,
         )
         return 1
 
     write_evidence_json(
-        payload={
-            "repo": repo,
-            "branch": branch,
-            "mechanism": mechanism,
-            "drift": {"is_drifted": False, "diff": []},
-            "error": None,
-        },
+        payload=_build_rollback_evidence_payload(
+            repo=repo,
+            branch=branch,
+            mechanism=mechanism,
+            drift={"is_drifted": False, "diff": []},
+            error=None,
+            snapshot_path=snapshot_path,
+            snapshot=snapshot,
+        ),
         output_path=evidence_path,
     )
     return 0

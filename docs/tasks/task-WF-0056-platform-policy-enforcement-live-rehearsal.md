@@ -144,7 +144,7 @@ Verification Steps:
 - `cd backend && uv run python -m tools.gh_policy.cli apply --help`
 Risks (if any): Insufficient token scopes in Actions may block live mutation even when logic is correct.
 
-### [ ] Task 6 — Rollback rehearsal job with snapshot restore verification
+### [x] Task 6 — Rollback rehearsal job with snapshot restore verification
 
 Goal:
 Add rollback workflow execution that consumes a selected snapshot artifact, restores policy state, and publishes rollback evidence.
