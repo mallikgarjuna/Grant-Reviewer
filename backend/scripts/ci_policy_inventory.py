@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any, Final, TypedDict
 
 EVENT_SCOPE_PULL_REQUEST_ONLY: Final[str] = "pull_request_only"
@@ -44,7 +45,12 @@ def _normalized_expression(expression: Any) -> str:
 
 def _is_pull_request_only_guard(expression: Any) -> bool:
     normalized_expression = _normalized_expression(expression)
-    return "github.event_name == 'pull_request'" in normalized_expression
+    return bool(
+        re.search(
+            r"github\.event_name\s*==\s*['\"]pull_request['\"]",
+            normalized_expression,
+        )
+    )
 
 
 def evaluate_workflow_event_scope(

@@ -108,6 +108,38 @@ def test_wf0054_ci_policy_negative_removed_pr_guard_fails() -> None:
     )
 
 
+def test_wf0054_ci_policy_accepts_double_quoted_pr_guard() -> None:
+    workflow = _load_ci_workflow()
+    backend_steps = _backend_steps(workflow)
+    step_name = "Contract Boundary Governance Check"
+
+    for step in backend_steps:
+        if step.get("name") == step_name:
+            step["if"] = 'github.event_name == "pull_request"'
+            break
+    else:
+        pytest.fail(f"Unable to locate step '{step_name}' to update guard expression")
+
+    violations = evaluate_workflow_event_scope(workflow=workflow, event_name="push")
+
+    assert not any(
+        "missing PR-only guard" in violation and step_name in violation
+        for violation in violations
+    )
+
+
+def test_wf0054_ci_policy_missing_governed_step_fails() -> None:
+    workflow = _load_ci_workflow()
+    backend_steps = _backend_steps(workflow)
+    step_name = "Contract Boundary Governance Check"
+
+    filtered_steps = [step for step in backend_steps if step.get("name") != step_name]
+    workflow["jobs"]["backend"]["steps"] = filtered_steps
+    violations = evaluate_workflow_event_scope(workflow=workflow, event_name="push")
+
+    assert f"missing governed step: {step_name}" in violations
+
+
 def test_wf0054_ci_policy_wf0047_status_alignment() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     task_status = _read_header_status(
