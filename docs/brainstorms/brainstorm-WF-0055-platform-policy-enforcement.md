@@ -1,7 +1,7 @@
 # WF-0055 — Platform Policy Enforcement
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-05
 
@@ -30,6 +30,14 @@ Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0055-platform
 
 - GitHub branch protection / rulesets must be enabled for this repo (currently API read returns HTTP 403 on private repo). Without enabling this feature, WF-0055 cannot satisfy “main branch protection is enforced” done criteria.
 - Applying policy requires an actor/token with admin permission to modify branch protection/rulesets. CI is assumed to be verify-only by default.
+
+## Policy Mechanism (Rulesets vs Branch Protection) (Contract)
+
+- Preferred mechanism: **Repository rulesets** (GitHub “rulesets”) targeting branch `main`.
+- Fallback mechanism: **Classic branch protection** on branch `main`.
+- Implementation contract:
+  - Tooling must attempt to read/apply via rulesets first; if unavailable (plan-gated, endpoint forbidden/unavailable), fall back to classic branch protection.
+  - Evidence artifact must record which mechanism was used (ruleset vs branch protection) and include the raw live payload from that mechanism.
 
 ## 1. Problem Statement
 
@@ -99,8 +107,7 @@ Contract Notes / Non-obvious constraints (Section 3):
 ## Open Questions / Deferred
 
 - CI shape decision: we will refactor CI so the intended six checks exist as separate jobs/check contexts, so GitHub branch protection can require them deterministically.
-- Do we need rulesets (org-level) vs classic branch protection, or either is acceptable?
-- Which toggles beyond required checks are mandatory: PR review count, stale dismissal, admin bypass, force-push/delete, linear history?
+- Toggle surface: enforce exact toggle values below; anything not listed is explicitly “do not manage” (leave as-is).
 
 ## Required Checks (Contract)
 
@@ -118,6 +125,28 @@ Required status check contexts (must exist as distinct GitHub check-run contexts
 Contract Notes:
 
 - Today, these are step names inside two jobs (`backend`, `frontend`). WF-0055 will reshape the CI workflow so each item above becomes its own job check context (job `name:`), allowing branch protection required checks to enforce them.
+
+## Enforcement Toggles (Contract)
+
+These are the exact toggle values WF-0055 will enforce for `main` (whether via rulesets or classic branch protection).
+
+- `enforce_admins`: true (aka “Include administrators”)
+- `allow_force_pushes`: false
+- `allow_deletions`: false
+- `required_pull_request_reviews`: false (not enforced by WF-0055; if the platform object requires presence, set to “disabled” / null-equivalent)
+  - `dismiss_stale_reviews`: false
+  - `require_code_owner_reviews`: false
+  - `required_approving_review_count`: 0
+- `bypass_allowances`: none (no explicit bypass list; admins are still subject due to `enforce_admins=true`)
+- `strict_required_status_checks` (aka “Require branches to be up to date before merging”): true
+- `require_conversation_resolution`: false
+- `require_linear_history`: false
+- `require_signed_commits`: false
+
+Contract Notes:
+
+- This toggle set is intentionally minimal (aligns to “required checks + include admins + block force-push/delete”). Anything not listed is out of scope for WF-0055.
+- Evidence must always include the full toggle surface above (even if the platform response omits fields when disabled, the evidence normalization must fill them deterministically).
 
 ## 7. MVP Definition
 
@@ -143,8 +172,18 @@ If we had to ship in 2–3 days:
   - `tooling` (gh version + command path + API endpoints used)
   - `required_checks` (full ordered list)
   - `toggles` (admin enforcement, force-push/delete, review requirements, stale dismissal, bypass allowances)
+  - `mechanism` (`rulesets` | `branch_protection`)
   - `live_policy_raw` (raw API response or raw rule payload)
   - `evidence_sha256` (hash of normalized evidence payload section)
+
+## Runbook Requirements (Contract)
+
+WF-0055 must produce a runbook that includes:
+
+- Rollback commands (restore previous snapshot policy to `main`)
+- Re-apply commands (apply expected policy to `main`)
+- Permission prerequisites (admin required; CI verify-only expectation)
+- Failure modes and expected errors (plan-gated 403, insufficient token permissions, missing check contexts, stale/different check names)
 
 ## 8. Explicit Non-Goals
 

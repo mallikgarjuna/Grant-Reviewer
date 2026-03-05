@@ -1,7 +1,7 @@
 # WF-0055 — Platform Policy Enforcement
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-05
 
@@ -16,6 +16,11 @@ Note: User instruction on 2026-03-05: “Go with your recommendations for rest o
 
 - The Phase 0.1 recommendation for required checks was “require current job contexts (`backend`, `frontend`)”.
 - The WF-0055 request explicitly requires six distinct required checks (backend/frontend sub-checks). Because GitHub required status checks operate on check-run contexts, WF-0055 will reshape CI so those six checks exist as separate job check contexts and can be required on `main`.
+
+### Addendum (Adversarial pass application, v0.3)
+
+- Policy mechanism contract: prefer repository rulesets targeting `main`, fall back to classic branch protection if rulesets are unavailable/forbidden.
+- Enforcement toggles are now explicitly contracted as a minimal toggle-value matrix to eliminate ambiguity (still aligned to the “minimal toggles” intent).
 
 ## Section 1 — Problem Statement
 
