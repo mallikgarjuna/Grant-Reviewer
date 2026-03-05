@@ -18,6 +18,22 @@
 - **Tradeoff**: Increases engineering scope beyond documentation-only operationalization; must be decomposed into safe, reviewable tasks.
 - **Status**: Approved.
 
+### AD 56.3: Durable evidence must carry immutable workflow/commit linkage
+- **WF ID**: WF-0056
+- **Context**: Evidence files without immutable workflow run/job and commit references are hard to audit later and can be disputed as non-live.
+- **Decision**: Require `workflow_run_id`, `workflow_job_name`, and `commit_sha` in verify/apply/rollback evidence schema; include `snapshot_id` when mutation/rollback is involved.
+- **Why**: Makes the proof chain durable, replayable, and attributable to an exact live run context.
+- **Tradeoff**: Slightly tighter schema contract and additional metadata plumbing in evidence generation.
+- **Status**: Approved.
+
+### AD 56.4: Apply preflight uses live PR check-run discovery and fails closed
+- **WF ID**: WF-0056
+- **Context**: Required-check enforcement can deadlock if expected check contexts are not actually emitted as check runs for the rehearsal surface.
+- **Decision**: Apply preflight must derive available required-check contexts from live GitHub check-run data and fail with deterministic `missing_required_checks` when any expected context is absent.
+- **Why**: Prevents false-success apply rehearsals and avoids introducing unreachable enforcement states.
+- **Tradeoff**: Adds dependency on check-run discovery behavior and requires deterministic selection logic.
+- **Status**: Approved.
+
 ## Date: 2026-03-05 (WF-0055: platform policy enforcement)
 
 ### AD 55.1: Enforcement mechanism prefers rulesets with classic branch-protection fallback
