@@ -1,7 +1,7 @@
 # WF-0056 — Platform Policy Enforcement Live Rehearsal
 
 Artifact: brainstorm-qna
-Version: v0.1
+Version: v0.2
 Status: Draft
 Last Updated: 2026-03-05
 
@@ -124,3 +124,42 @@ Last Updated: 2026-03-05
 - C) Multiple branches per repo.
   > Recommendation: A - Keep scope tight; expand after one proven rehearsal.
   > Selected: A
+
+---
+
+## Section 4 - Repo Reality Corrections (Apply/Rollback Are Static Today)
+
+**Q1: What counts as a valid "apply rehearsal" for WF-0056?**
+- A) Running the existing `apply` CLI and accepting evidence JSON as proof.
+- B) Implementing live GitHub mutation support for apply first, then rehearsing with snapshots and post-apply verify evidence.
+- C) Skipping apply entirely and only proving verify on `main`.
+  > Recommendation: B - Static evidence without mutation is not operational proof; verify-only is insufficient for the original request.
+  > Selected: B
+
+**Q2: What counts as a valid "rollback rehearsal" for WF-0056?**
+- A) Running the existing `rollback` CLI (static) and accepting the evidence JSON.
+- B) Implementing live restore support first, then restoring from the captured snapshot and verifying post-restore state.
+- C) Documenting manual GitHub UI rollback steps.
+  > Recommendation: B - Snapshot-based rollback is the core safety contract and must be proven with a real restore.
+  > Selected: B
+
+**Q3: How should apply preflight validate required check contexts?**
+- A) Assume expected checks exist (derive "available checks" from expected policy).
+- B) Discover check-run contexts from GitHub for the target branch/PR and fail closed if missing.
+- C) Disable the missing-check preflight.
+  > Recommendation: B - Otherwise apply can falsely succeed and lock merges with non-existent required checks.
+  > Selected: B
+
+**Q4: How should we make evidence durable for live runs?**
+- A) Rely on job logs only.
+- B) Upload evidence JSON/snapshots as workflow artifacts (and reference those artifact IDs/paths in the walkthrough).
+- C) Commit evidence into the repo on every run.
+  > Recommendation: B - Durable, reviewable, low-noise.
+  > Selected: B
+
+**Q5: How should we treat mechanism selection during rehearsal?**
+- A) Force branch protection only.
+- B) Keep rulesets-first fallback behavior, but record the mechanism used in evidence and accept plan-gated outcomes as explicit failures.
+- C) Avoid rulesets entirely until later.
+  > Recommendation: B - Matches WF-0055 contract and keeps the rehearsal honest.
+  > Selected: B

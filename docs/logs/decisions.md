@@ -10,6 +10,14 @@
 - **Tradeoff**: Rehearsal branch semantics may differ slightly from `main` (e.g., required checks event scope), so the walkthrough must explicitly justify parity and note residual risk.
 - **Status**: Approved.
 
+### AD 56.2: "Live rehearsal" requires real GitHub mutation, real check-context discovery, and durable evidence
+- **WF ID**: WF-0056
+- **Context**: Current `apply`/`rollback` flows are static stubs; they can produce evidence JSON without mutating GitHub. Apply preflight also cannot validate check contexts against GitHub today. CI verify does not yet persist evidence as a durable artifact.
+- **Decision**: WF-0056 scope explicitly includes implementing live mutation support for apply/rollback (rulesets and/or branch protection), implementing required-check-context discovery for apply preflight (fail-closed), and producing durable evidence artifacts (workflow artifacts preferred).
+- **Why**: Without these, "operationalize WF-0055 in the real repo" cannot be proven and governance remains theoretical.
+- **Tradeoff**: Increases engineering scope beyond documentation-only operationalization; must be decomposed into safe, reviewable tasks.
+- **Status**: Approved.
+
 ## Date: 2026-03-05 (WF-0055: platform policy enforcement)
 
 ### AD 55.1: Enforcement mechanism prefers rulesets with classic branch-protection fallback

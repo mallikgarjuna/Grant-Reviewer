@@ -1,7 +1,7 @@
 # WF-0056 — Platform Policy Enforcement Live Rehearsal
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-05
 
@@ -25,7 +25,7 @@ Date: 2026-03-05
 - Expected policy is in-repo: `config/platform_policy/main_policy.yaml` (includes required checks + toggle surface).
 - There is a GitHub Action that runs verify-only on PRs to `main`: `.github/workflows/verify-platform-policy.yml`.
 - Existing evidence in `docs/walkthroughs/evidence/WF-0055/` is currently tracer/offline style (placeholder `owner/repo`), not proof of live enforcement for this repo.
-- Apply/rollback paths exist but have not been rehearsed with controlled, auditable evidence artifacts in this repo.
+- Critical reality check: `apply` and `rollback` currently use static clients (no live GitHub mutation); they produce evidence but do not change repo policy.
 
 Open questions this snapshot suggests (to be resolved in this WF):
 - How to capture and retain evidence from live runs (local files, uploaded workflow artifacts, or committed evidence in a controlled PR).
@@ -44,6 +44,10 @@ Open questions this snapshot suggests (to be resolved in this WF):
 Evidence retention contract (MVP):
 - Primary: GitHub Actions workflow artifacts uploaded from live runs (verify/apply/rollback) and referenced in the walkthrough.
 - Fallback: local evidence files stored under `docs/walkthroughs/evidence/WF-0056/` and referenced in the walkthrough, including `evidence_sha256`/`snapshot_sha256` fields.
+
+Mutation capability contract (MVP):
+- Implement live apply + live rollback for the selected mechanism(s); static/offline stubs do not count as rehearsal.
+- Apply preflight must validate required check contexts against the real check-run surface (not a self-derived set).
 
 ---
 
@@ -112,6 +116,8 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0056-platform-polic
 - Mechanism differences: rulesets may be plan-gated; branch protection fallback must remain acceptable.
 - Required check contexts: required checks must correspond to real, emitted check-run contexts on PRs; mismatch can deadlock merges.
 - Evidence retention: deciding the canonical storage mechanism for live evidence (repo vs workflow artifacts vs local-only with checksum references).
+- Tooling gap: current `apply`/`rollback` implementations are static; live mutation must be implemented before any rehearsal claims are valid.
+- Tooling gap: apply preflight currently cannot detect missing check contexts in GitHub; this must be implemented to avoid false success.
 
 ---
 
@@ -127,11 +133,13 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0056-platform-polic
 
 Ship in 2-3 days:
 - A repeatable live verify run that produces a durable evidence artifact for `mallikgarjuna/Grant-Reviewer:main`.
-- A controlled apply rehearsal that:
+- Implement live mutation support (apply + rollback) for the selected mechanism(s), including snapshot creation and post-operation verification.
+- Implement real required-check-context discovery for apply preflight (fail with deterministic `missing_required_checks` when contexts do not exist).
+- A controlled apply rehearsal (against `policy-rehearsal`) that:
   - captures a snapshot artifact
   - attempts apply with explicit intent gates
   - records deterministic evidence
-- A controlled rollback rehearsal that restores the snapshot and records deterministic evidence.
+- A controlled rollback rehearsal that restores the snapshot and records deterministic evidence (and validates restore success).
 - Documentation: one runbook and one walkthrough capturing commands, safety checks, and evidence references.
 
 ---
