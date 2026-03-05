@@ -87,7 +87,7 @@ Verification Steps:
 - `rg -n "if: github.event_name == 'pull_request'|Contract Boundary Governance Check|WF-0053 Negative Smoke" .github/workflows/ci.yml`
 Risks (if any): Over-tightening guards could accidentally skip expected governance checks on pull requests.
 
-### [ ] Task 4 — Add deterministic WF-0047 status-alignment selector
+### [x] Task 4 — Add deterministic WF-0047 status-alignment selector
 
 Goal:
 Add deterministic test coverage that enforces semantic status alignment across WF-0047 task/walkthrough/index artifacts.
