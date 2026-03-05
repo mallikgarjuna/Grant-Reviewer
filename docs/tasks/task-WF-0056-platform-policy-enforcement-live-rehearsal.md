@@ -199,7 +199,7 @@ Verification Steps:
 - `rg -n "wf0056|policy-live-rehearsal|ci_policy_event_scope" .github/workflows/ci.yml`
 Risks (if any): Overlapping selectors from prior WFs can hide WF-0056-specific regressions if naming is ambiguous.
 
-### [ ] Task 8 — Runbook and walkthrough with full verify->apply->rollback evidence chain
+### [x] Task 8 — Runbook and walkthrough with full verify->apply->rollback evidence chain
 
 Goal:
 Document reproducible live rehearsal operations and record final evidence chain with checksum traceability.
