@@ -54,9 +54,13 @@ def test_verify_drift_returns_nonzero_and_no_mutation(tmp_path: Path) -> None:
     payload = json.loads(evidence_path.read_text(encoding="utf-8"))
     assert payload["drift"]["is_drifted"] is True
     assert payload["drift"]["diff"]
+    assert "error" in payload and "kind" in payload["error"]
+    assert "workflow_run_id" in payload
+    assert "commit_sha" in payload
+    assert "linked_artifacts" in payload
 
 
-def test_verify_live_mode_without_token_fails_closed(
+def test_verify_live_mode_without_token_fails_closed_error_kind_permission_denied(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -73,3 +77,25 @@ def test_verify_live_mode_without_token_fails_closed(
     assert exit_code == 1
     payload = json.loads(evidence_path.read_text(encoding="utf-8"))
     assert payload["error"]["kind"] == "permission_denied"
+    assert "workflow_run_id" in payload
+    assert "commit_sha" in payload
+    assert "linked_artifacts" in payload
+
+
+def test_verify_offline_success_includes_linked_artifacts_contract(tmp_path: Path) -> None:
+    evidence_path = tmp_path / "verify-offline-evidence.json"
+
+    exit_code = run_verify(
+        repo="octo-org/octo-repo",
+        branch="main",
+        expected_policy_path=_repo_root() / "config/platform_policy/main_policy.yaml",
+        evidence_path=evidence_path,
+        offline=True,
+    )
+
+    assert exit_code == 0
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert payload["error"]["kind"] is None
+    assert "workflow_run_id" in payload
+    assert "commit_sha" in payload
+    assert "linked_artifacts" in payload

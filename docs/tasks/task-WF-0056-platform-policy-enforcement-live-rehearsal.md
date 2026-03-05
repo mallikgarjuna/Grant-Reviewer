@@ -89,7 +89,7 @@ Verification Steps:
 - `rg -n "missing_required_checks|available_check_contexts|preflight" backend/tools/gh_policy/apply.py backend/tools/gh_policy/github_client.py`
 Risks (if any): Sparse check-run history can produce false negatives if discovery window is too narrow.
 
-### [ ] Task 4 — Deterministic error-kind and linkage fields for shared evidence contract
+### [x] Task 4 — Deterministic error-kind and linkage fields for shared evidence contract
 
 Goal:
 Ensure the shared evidence builder used by verify/apply/rollback emits stable error kinds and cross-artifact linkage fields.

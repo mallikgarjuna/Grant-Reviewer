@@ -72,9 +72,12 @@ def test_apply_post_apply_mismatch_returns_nonzero(tmp_path: Path) -> None:
     payload = json.loads(evidence_path.read_text(encoding="utf-8"))
     assert payload["error"]["kind"] == "post_apply_mismatch"
     assert payload["drift"]["is_drifted"] is True
+    assert "workflow_run_id" in payload
+    assert "commit_sha" in payload
+    assert "linked_artifacts" in payload
 
 
-def test_apply_failure_still_writes_evidence(tmp_path: Path) -> None:
+def test_apply_failure_still_writes_evidence_error_kind_api_failure(tmp_path: Path) -> None:
     evidence_path = tmp_path / "apply-evidence.json"
     exit_code = run_apply(
         repo="octo-org/octo-repo",
@@ -90,8 +93,32 @@ def test_apply_failure_still_writes_evidence(tmp_path: Path) -> None:
 
     assert exit_code == 1
     payload = json.loads(evidence_path.read_text(encoding="utf-8"))
-    assert payload["error"]["kind"] == "api_unreachable"
+    assert payload["error"]["kind"] == "api_failure"
     assert "simulated mutation failure" in payload["error"]["message"]
+    assert "workflow_run_id" in payload
+    assert "commit_sha" in payload
+    assert "linked_artifacts" in payload
+
+
+def test_apply_success_writes_linked_artifacts_contract_fields(tmp_path: Path) -> None:
+    evidence_path = tmp_path / "apply-evidence-success.json"
+    exit_code = run_apply(
+        repo="octo-org/octo-repo",
+        branch="policy-rehearsal",
+        expected_policy_path=_repo_root() / "config/platform_policy/main_policy.yaml",
+        evidence_path=evidence_path,
+        snapshot_dir=tmp_path / "snapshots",
+        apply_intent=True,
+        available_check_contexts=set(REQUIRED_CHECK_CONTEXTS),
+        can_mutate=True,
+    )
+
+    assert exit_code == 0
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert payload["error"]["kind"] is None
+    assert "workflow_run_id" in payload
+    assert "commit_sha" in payload
+    assert "linked_artifacts" in payload
 
 
 def test_apply_rejects_main_branch_for_live_rehearsal(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
