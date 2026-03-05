@@ -1,5 +1,31 @@
 # Architectural Decisions
 
+## Date: 2026-03-05 (WF-0055: platform policy enforcement)
+
+### AD 55.1: Enforcement mechanism prefers rulesets with classic branch-protection fallback
+- **WF ID**: WF-0055
+- **Context**: GitHub rulesets are the preferred modern control surface, but plan gating may forbid rulesets/branch-protection APIs on private repos.
+- **Decision**: Implement read/apply using rulesets first; if unavailable/forbidden, fall back to classic branch protection. Evidence must always record which mechanism was used.
+- **Why**: Maximizes compatibility while keeping enforcement deterministic and auditable.
+- **Tradeoff**: Two policy surfaces must be normalized into one expected representation.
+- **Status**: Approved.
+
+### AD 55.2: CI is verify-only; apply/rollback are controlled and non-CI by default
+- **WF ID**: WF-0055
+- **Context**: CI tokens typically lack admin permissions; auto-mutation is risky and can violate least-privilege.
+- **Decision**: Provide verify-only drift detection in CI; controlled apply/rollback are invoked explicitly by an admin (local command as primary surface; optional workflow_dispatch later).
+- **Why**: Preserves least-privilege and prevents accidental policy mutation.
+- **Tradeoff**: Enforcement requires an explicit admin action when desired state changes or drift occurs.
+- **Status**: Approved.
+
+### AD 55.3: Rollback is snapshot-based with in-repo evidence artifacts
+- **WF ID**: WF-0055
+- **Context**: Safe enforcement needs a deterministic restore path if required checks or toggles block shipping.
+- **Decision**: Controlled apply must capture a raw live-policy snapshot sufficient to restore; both verify/apply/rollback write machine-verifiable evidence JSON artifacts in-repo.
+- **Why**: Makes rollback operationally straightforward and auditable without UI click paths.
+- **Tradeoff**: Evidence artifacts may grow; raw payloads must avoid secrets and remain response-body only.
+- **Status**: Approved.
+
 ## Date: 2026-03-04 (WF-0053: contract boundary governance enforcement)
 
 ### AD 53.1: Boundary-governance trigger inventory is explicit and path-mapped
