@@ -7,7 +7,7 @@ Last Updated: 2026-03-05
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: governed-step inventory + PR-only scope assertion
+### [x] Task 1 — Tracer bullet: governed-step inventory + PR-only scope assertion
 
 Goal:
 Establish a single governed-step inventory and prove one end-to-end PR-only governance invariant with deterministic CI-policy tests.

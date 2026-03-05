@@ -76,6 +76,9 @@ jobs:
           echo "$output" | grep -q "reason_code=MISSING_REQUIRED_EVIDENCE_BUNDLES"
           echo "$output" | grep -q "negative_smoke_evidence"
 
+      - name: WF-0054 CI Policy Tracer
+        run: uv run pytest tests/scripts/test_ci_policy_event_scope.py -k "wf0054_ci_policy_inventory_pr_only_tracer"
+
       - name: Contract Gate (Marker)
         run: uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate --strict-markers -q
         env:
