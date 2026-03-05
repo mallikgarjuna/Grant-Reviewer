@@ -34,7 +34,7 @@ Verification Steps:
 - `uv run python -m tools.gh_policy.cli verify --help`
 Risks (if any): CLI entrypoint wiring may differ from repo conventions and require import-path adjustments.
 
-### [ ] Task 2 — Expected policy contract loader and schema validation
+### [x] Task 2 — Expected policy contract loader and schema validation
 
 Goal:
 Define and validate the in-repo expected policy contract for `main` including exact required checks and toggle surface.
