@@ -1390,3 +1390,29 @@
 - **Why**: Keeps verification repeatable and fast for pre-merge checks.
 - **Tradeoff**: Requires disciplined naming upkeep in tests.
 - **Status**: Approved.
+
+## Date: 2026-03-05 (WF-0054: repo-side CI policy hardening)
+
+### AD 54.1: PR-dependent governance remains pull_request-scoped only
+- **WF ID**: WF-0054
+- **Context**: Governance checks that rely on PR context/evidence can fail incorrectly on `push` to `main` and deadlock post-merge health runs.
+- **Decision**: Keep PR-dependent governance checks explicitly gated to `pull_request`; `push` runs remain limited to push-safe checks.
+- **Why**: Preserves deterministic merge-gate enforcement while preventing false failures outside PR context.
+- **Tradeoff**: Governance coupling is not re-evaluated on post-merge push runs and depends on PR gate correctness.
+- **Status**: Approved.
+
+### AD 54.2: CI policy verification is AST-first with stable governed-step IDs
+- **WF ID**: WF-0054
+- **Context**: String-level policy assertions are brittle when workflow formatting changes, and renamed steps can silently weaken policy checks.
+- **Decision**: Enforce event-scope policy with structural YAML assertions and an explicit governed-step identity inventory; missing/renamed IDs fail deterministically.
+- **Why**: Keeps CI-policy tests robust against formatting drift while preserving strict governance traceability.
+- **Tradeoff**: Inventory updates require explicit maintenance when governed checks are intentionally renamed or split.
+- **Status**: Approved.
+
+### AD 54.3: Branch-protection enforcement stays out of scope with explicit handoff mapping
+- **WF ID**: WF-0054
+- **Context**: Repo-side CI hardening and GitHub branch protection admin enforcement are related but operationally distinct concerns.
+- **Decision**: Keep this WF repo-only and require an explicit check-to-required-check mapping artifact for a follow-on branch-protection WF, without changing admin settings here.
+- **Why**: Ships deterministic policy hardening now while preserving a clean boundary for platform-admin enforcement work.
+- **Tradeoff**: Full required-check enforcement is deferred until the follow-on WF is completed.
+- **Status**: Approved.
