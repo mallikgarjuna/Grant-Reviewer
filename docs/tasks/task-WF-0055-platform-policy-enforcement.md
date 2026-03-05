@@ -226,7 +226,7 @@ Verification Steps:
 - `uv run python -m tools.gh_policy.cli rollback --help`
 Risks (if any): Snapshot schema drift can break deterministic restore if versioning is not validated.
 
-### [ ] Task 9 — CI wiring for verify-only enforcement context
+### [x] Task 9 — CI wiring for verify-only enforcement context
 
 Goal:
 Wire verify-only policy drift detection into GitHub Actions and ensure required check context naming is enforceable for branch policy.
