@@ -10,7 +10,7 @@ from tools.gh_policy.cli import main
 pytestmark = [pytest.mark.no_db]
 
 
-def test_verify_tracer_writes_evidence_json(tmp_path: Path) -> None:
+def test_verify_tracer_writes_evidence_json_has_drift_surface(tmp_path: Path) -> None:
     evidence_path = tmp_path / "evidence.json"
 
     exit_code = main(

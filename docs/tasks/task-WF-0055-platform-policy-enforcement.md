@@ -88,7 +88,7 @@ Verification Steps:
 - `rg -n "plan_gated|permission_denied|branch_protection" tools/gh_policy/github_client.py`
 Risks (if any): GitHub API variant payloads may require robust response normalization.
 
-### [ ] Task 4 — Policy normalization and drift diff engine
+### [x] Task 4 — Policy normalization and drift diff engine
 
 Goal:
 Normalize rulesets/branch-protection payloads into one stable contract and produce minimal field-level drift diffs.
