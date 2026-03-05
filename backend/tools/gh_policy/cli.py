@@ -109,6 +109,12 @@ def _run_apply(args: argparse.Namespace) -> int:
     if args.branch == MAIN_BRANCH:
         print("apply forbids --branch main during WF-0056 live rehearsal", file=sys.stderr)
         return 1
+    if args.branch != POLICY_REHEARSAL_BRANCH:
+        print(
+            f"apply requires --branch {POLICY_REHEARSAL_BRANCH} during WF-0056 live rehearsal",
+            file=sys.stderr,
+        )
+        return 1
 
     expected_policy_path = Path(args.expected_policy_path)
     expected_policy = load_expected_policy(expected_policy_path)

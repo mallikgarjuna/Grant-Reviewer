@@ -293,3 +293,52 @@ def test_wf0056_live_rehearsal_verify_tracer_contract() -> None:
     violations = _wf0056_live_rehearsal_verify_tracer_violations(workflow)
 
     assert violations == []
+
+
+def _wf0056_live_rehearsal_apply_violations(workflow: dict[str, Any]) -> list[str]:
+    violations: list[str] = []
+    jobs = workflow.get("jobs", {})
+    apply_job = jobs.get("apply-rehearsal")
+    if not isinstance(apply_job, dict):
+        violations.append("workflow must define apply-rehearsal job")
+        return violations
+
+    steps = apply_job.get("steps", [])
+    apply_command_found = False
+    apply_evidence_upload_found = False
+    snapshot_upload_found = False
+    for step in steps:
+        if not isinstance(step, dict):
+            continue
+        run_command = step.get("run")
+        if isinstance(run_command, str) and "python -m tools.gh_policy.cli apply" in run_command:
+            if "--branch policy-rehearsal" in run_command and "--apply-intent" in run_command:
+                apply_command_found = True
+        uses = step.get("uses")
+        with_config = step.get("with")
+        if isinstance(uses, str) and uses.startswith("actions/upload-artifact@"):
+            if not isinstance(with_config, dict):
+                continue
+            path = with_config.get("path")
+            if path == "docs/walkthroughs/evidence/WF-0056/apply_evidence.json":
+                apply_evidence_upload_found = True
+            if path == "docs/walkthroughs/evidence/WF-0056/snapshots":
+                snapshot_upload_found = True
+
+    if not apply_command_found:
+        violations.append(
+            "apply-rehearsal job must run apply CLI for --branch policy-rehearsal with --apply-intent"
+        )
+    if not apply_evidence_upload_found:
+        violations.append("apply-rehearsal job must upload apply evidence artifact")
+    if not snapshot_upload_found:
+        violations.append("apply-rehearsal job must upload snapshot artifact")
+
+    return violations
+
+
+def test_wf0056_live_rehearsal_apply_contract() -> None:
+    workflow = _load_live_rehearsal_workflow()
+    violations = _wf0056_live_rehearsal_apply_violations(workflow)
+
+    assert violations == []

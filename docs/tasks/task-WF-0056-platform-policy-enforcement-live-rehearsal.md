@@ -116,7 +116,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/tools/gh_policy/test_apply_command.py -k "error_kind or linked_artifacts"`
 Risks (if any): Over-strict schema enforcement may require coordinated fixture updates.
 
-### [ ] Task 5 — Apply rehearsal job with permissions preflight, snapshot, and artifact upload
+### [x] Task 5 — Apply rehearsal job with permissions preflight, snapshot, and artifact upload
 
 Goal:
 Implement the live apply rehearsal workflow job for `policy-rehearsal` with deterministic preflight gating and snapshot/evidence publication.
