@@ -6,7 +6,11 @@ from typing import Any
 import pytest
 import yaml
 
-from scripts.ci_policy_inventory import EVENT_SCOPE_PULL_REQUEST_ONLY, GOVERNED_STEPS
+from scripts.ci_policy_inventory import (
+    EVENT_SCOPE_PULL_REQUEST_ONLY,
+    GOVERNED_STEPS,
+    evaluate_workflow_event_scope,
+)
 
 pytestmark = [pytest.mark.no_db]
 
@@ -47,3 +51,39 @@ def test_wf0054_ci_policy_inventory_pr_only_tracer() -> None:
     if_expression = _find_step_if_expression(steps, tracer_step["check_name"])
 
     assert if_expression == "github.event_name == 'pull_request'"
+
+
+def test_wf0054_ci_policy_event_scope_pr_positive() -> None:
+    workflow = _load_ci_workflow()
+
+    violations = evaluate_workflow_event_scope(workflow=workflow, event_name="pull_request")
+
+    assert violations == []
+
+
+def test_wf0054_ci_policy_event_scope_push_negative() -> None:
+    workflow = _load_ci_workflow()
+
+    violations = evaluate_workflow_event_scope(workflow=workflow, event_name="push")
+
+    assert violations == []
+
+
+def test_wf0054_ci_policy_negative_removed_pr_guard_fails() -> None:
+    workflow = _load_ci_workflow()
+    backend_steps = _backend_steps(workflow)
+    step_name = "Contract Boundary Governance Check"
+
+    for step in backend_steps:
+        if step.get("name") == step_name:
+            step.pop("if", None)
+            break
+    else:
+        pytest.fail(f"Unable to locate step '{step_name}' to remove PR guard")
+
+    violations = evaluate_workflow_event_scope(workflow=workflow, event_name="push")
+
+    assert any(
+        "missing PR-only guard" in violation and step_name in violation
+        for violation in violations
+    )

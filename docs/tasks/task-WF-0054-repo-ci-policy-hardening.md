@@ -34,7 +34,7 @@ Verification Steps:
 - `rg -n "wf0054_ci_policy_inventory_pr_only_tracer|ci_policy_event_scope" .github/workflows/ci.yml`
 Risks (if any): Existing CI naming drift may require precise governed-step ID normalization to avoid false negatives.
 
-### [ ] Task 2 — Deterministic policy matrix tests for pull_request vs push behavior
+### [x] Task 2 — Deterministic policy matrix tests for pull_request vs push behavior
 
 Goal:
 Add deterministic positive and negative CI-policy assertions for PR-vs-push governance execution rules.
