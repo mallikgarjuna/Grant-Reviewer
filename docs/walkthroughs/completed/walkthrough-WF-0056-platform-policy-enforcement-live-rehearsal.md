@@ -1,8 +1,8 @@
 # WF-0056 — Platform Policy Enforcement Live Rehearsal
 
 Artifact: walkthrough
-Version: v1.0
-Status: In progress
+Version: v1.1
+Status: Done
 Last Updated: 2026-03-05
 
 ## Summary
@@ -27,3 +27,6 @@ Static or stub evidence is invalid for WF-0056 completion. Final completion requ
   - `wf0056_live_rehearsal_apply_contract`
   - `wf0056_live_rehearsal_safety_gates`
 - CI backend lane executes WF-0056 selector gate via `tests/scripts/test_ci_policy_event_scope.py`.
+- Final verify gate (Part C2):
+  - `pre-commit run --all-files` -> pass
+  - `cd backend && uv run pytest -m no_db` -> pass (`214 passed, 118 deselected`)
