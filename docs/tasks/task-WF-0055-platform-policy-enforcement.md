@@ -199,7 +199,7 @@ Verification Steps:
 - `uv run python -m tools.gh_policy.cli apply --help`
 Risks (if any): Divergent rulesets vs branch-protection mutation semantics can cause false success if parity checks are incomplete.
 
-### [ ] Task 8 — Rollback command restores snapshot deterministically
+### [x] Task 8 — Rollback command restores snapshot deterministically
 
 Goal:
 Add rollback flow that restores a selected snapshot and emits rollback evidence after verification.

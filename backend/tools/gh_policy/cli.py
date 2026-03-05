@@ -6,6 +6,7 @@ from typing import Sequence
 
 from tools.gh_policy.apply import run_apply
 from tools.gh_policy.policy_schema import load_expected_policy
+from tools.gh_policy.rollback import run_rollback
 from tools.gh_policy.verify import run_verify
 
 
@@ -61,6 +62,20 @@ def _build_parser() -> argparse.ArgumentParser:
         default="../config/platform_policy/main_policy.yaml",
         help="Expected policy definition path.",
     )
+
+    rollback = subparsers.add_parser("rollback", help="Rollback policy from snapshot")
+    rollback.add_argument("--repo", required=True, help="Repository in owner/repo form.")
+    rollback.add_argument("--branch", default="main", help="Target branch name.")
+    rollback.add_argument(
+        "--snapshot-path",
+        required=True,
+        help="Snapshot artifact path generated during apply preflight.",
+    )
+    rollback.add_argument(
+        "--evidence-path",
+        default="../docs/walkthroughs/evidence/WF-0055/rollback_evidence.json",
+        help="Filesystem path for rollback evidence JSON.",
+    )
     return parser
 
 
@@ -94,6 +109,17 @@ def _run_apply(args: argparse.Namespace) -> int:
     return exit_code
 
 
+def _run_rollback(args: argparse.Namespace) -> int:
+    exit_code = run_rollback(
+        repo=args.repo,
+        branch=args.branch,
+        snapshot_path=Path(args.snapshot_path),
+        evidence_path=Path(args.evidence_path),
+    )
+    print(str(args.evidence_path))
+    return exit_code
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -102,6 +128,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _run_verify(args)
     if args.command == "apply":
         return _run_apply(args)
+    if args.command == "rollback":
+        return _run_rollback(args)
 
     raise ValueError(f"Unhandled command: {args.command}")
 
