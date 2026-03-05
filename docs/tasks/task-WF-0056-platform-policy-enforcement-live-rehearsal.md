@@ -171,7 +171,7 @@ Verification Steps:
 - `rg -n "rollback-rehearsal|snapshot-path|rollback_evidence|upload-artifact" .github/workflows/platform-policy-live-rehearsal.yml`
 Risks (if any): Snapshot handoff across workflow steps can fail if artifact naming conventions are unstable.
 
-### [ ] Task 7 — Rehearsal safety and non-main-mutation regression gates
+### [x] Task 7 — Rehearsal safety and non-main-mutation regression gates
 
 Goal:
 Lock in execution safety guarantees that live rehearsal never mutates `main` and always fails closed on invalid target/mechanism conditions.

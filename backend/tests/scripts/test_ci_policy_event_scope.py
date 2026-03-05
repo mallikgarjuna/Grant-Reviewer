@@ -342,3 +342,31 @@ def test_wf0056_live_rehearsal_apply_contract() -> None:
     violations = _wf0056_live_rehearsal_apply_violations(workflow)
 
     assert violations == []
+
+
+def _wf0056_safety_gate_violations(workflow: dict[str, Any]) -> list[str]:
+    violations: list[str] = []
+    backend_job = workflow.get("jobs", {}).get("backend")
+    if not isinstance(backend_job, dict):
+        return ["ci.yml must define backend job"]
+    steps = backend_job.get("steps", [])
+    for step in steps:
+        if not isinstance(step, dict):
+            continue
+        step_name = step.get("name")
+        run_command = step.get("run")
+        if step_name == "WF-0056 Live Rehearsal Safety Gates":
+            if not isinstance(run_command, str) or "wf0056_live_rehearsal_safety_gates" not in run_command:
+                violations.append(
+                    "WF-0056 Live Rehearsal Safety Gates step must run wf0056_live_rehearsal_safety_gates selector"
+                )
+            return violations
+    violations.append("ci.yml missing WF-0056 Live Rehearsal Safety Gates step")
+    return violations
+
+
+def test_wf0056_live_rehearsal_safety_gates() -> None:
+    workflow = _load_ci_workflow()
+    violations = _wf0056_safety_gate_violations(workflow)
+
+    assert violations == []

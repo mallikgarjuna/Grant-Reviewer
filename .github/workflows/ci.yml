@@ -79,6 +79,9 @@ jobs:
       - name: WF-0054 CI Policy Regression Sweep
         run: uv run pytest tests/scripts/test_ci_policy_event_scope.py -k "wf0054_ci_policy_ or wf0055_platform_policy_"
 
+      - name: WF-0056 Live Rehearsal Safety Gates
+        run: uv run pytest tests/scripts/test_ci_policy_event_scope.py -k "wf0056_live_rehearsal_safety_gates or wf0056_live_rehearsal_apply_contract or wf0056_live_rehearsal_verify_tracer_contract"
+
       - name: Contract Gate (Marker)
         run: uv run pytest tests/engine/test_review_request_contracts.py -m contract_gate --strict-markers -q
         env:

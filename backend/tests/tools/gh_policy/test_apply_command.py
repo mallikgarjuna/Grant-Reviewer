@@ -8,6 +8,7 @@ import pytest
 
 from tools.gh_policy.apply import run_apply
 from tools.gh_policy.cli import main
+from tools.gh_policy.evidence import build_evidence_payload
 from tools.gh_policy.policy_schema import REQUIRED_CHECK_CONTEXTS
 
 pytestmark = [pytest.mark.no_db]
@@ -143,3 +144,35 @@ def test_apply_rejects_main_branch_for_live_rehearsal(tmp_path: Path, capsys: py
     captured = capsys.readouterr()
     assert exit_code == 1
     assert "apply forbids --branch main during WF-0056 live rehearsal" in captured.err
+
+
+def test_apply_permission_denied_error_kind_for_operator_classification(tmp_path: Path) -> None:
+    evidence_path = tmp_path / "apply-evidence-permission-denied.json"
+    exit_code = run_apply(
+        repo="octo-org/octo-repo",
+        branch="policy-rehearsal",
+        expected_policy_path=_repo_root() / "config/platform_policy/main_policy.yaml",
+        evidence_path=evidence_path,
+        snapshot_dir=tmp_path / "snapshots",
+        apply_intent=True,
+        available_check_contexts=set(REQUIRED_CHECK_CONTEXTS),
+        can_mutate=False,
+    )
+
+    assert exit_code == 1
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert payload["error"]["kind"] == "permission_denied"
+
+
+def test_apply_plan_gated_error_kind_passthrough_for_operator_classification() -> None:
+    payload = build_evidence_payload(
+        {
+            "repo": "octo-org/octo-repo",
+            "branch": "policy-rehearsal",
+            "mechanism": "branch_protection",
+            "drift": {"is_drifted": False, "diff": []},
+            "error": {"kind": "plan_gated", "message": "rulesets unavailable", "endpoint": "/rulesets"},
+        }
+    )
+
+    assert payload["error"]["kind"] == "plan_gated"
