@@ -1,7 +1,7 @@
 # WF-0054 — Repo-side CI Policy Hardening
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-05
 
@@ -84,6 +84,22 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0054-repo-ci-policy
 Contract Notes / Non-obvious constraints:
 - Prefer policy validation that is **deterministic and repo-native** (no external GitHub admin dependencies). (Q&A Section 4)
 
+### CI Policy Contract (Event Scoping Invariants) (Draft)
+
+Definitions:
+- **PR-dependent governance**: any CI step that depends on PR context or PR-scoped evidence/artifacts to make a correct decision.
+- **Push-safe checks**: CI steps that can run deterministically on `push` to `main` without PR context or PR-only evidence.
+
+Invariants (must be enforced by deterministic tests):
+- PR-dependent governance must run on `pull_request` only, and must be explicitly excluded from `push` to `main` execution paths.
+  - Example (today): the governance checker invocation and “negative smoke” are PR-dependent.
+- `push` to `main` must remain push-safe: it must not require PR-only evidence bundles and must not deadlock `main`.
+  - Push CI can still run push-safe checks (lint, typecheck, unit tests, contract gates) that do not require PR context.
+
+Deterministic CI-policy tests (contract):
+- Add deterministic tests that assert these invariants for `.github/workflows/ci.yml`, specifically covering `pull_request` vs `push` behavior.
+- Include at least one negative/regression case that fails if a PR-dependent governance step would execute on `push`.
+
 ---
 
 ## 5. Constraints
@@ -121,6 +137,25 @@ If we had to ship in ~3 days:
 - A handoff note that prepares a separate WF for GitHub branch protection enforcement (mapping desired settings/checks), without implementing those settings here.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0054-repo-ci-policy-hardening.md` (Section 7)
+
+### WF-0047 Artifact Status Consistency (Explicit Cleanup Contract)
+
+Target: WF-0047 only (do not generalize to historical WFs in this initiative).
+
+Contract:
+- Make WF-0047 “done-ness” consistent across:
+  - `docs/index.md` WF row status
+  - task artifact header status
+  - walkthrough artifact header status
+- The outcome should eliminate the specific inconsistency where WF-0047 is “Done/Completed” in index/walkthrough but “Ready for Implementation” in the task artifact header.
+
+### Branch Protection Enforcement Handoff (Explicit Contract)
+
+This WF must prepare a clean handoff to a follow-on WF that enforces GitHub branch protection settings (out of scope here).
+
+Contract:
+- Produce an explicit mapping of “checks we rely on for governance” to “checks that should become required in branch protection”, including event-scope notes.
+- Do not implement or change GitHub branch protection settings in this WF.
 
 ---
 
