@@ -1,7 +1,7 @@
 # WF-0054 — Repo-side CI Policy Hardening
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-05
 

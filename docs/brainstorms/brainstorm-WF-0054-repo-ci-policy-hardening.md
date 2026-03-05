@@ -1,7 +1,7 @@
 # WF-0054 — Repo-side CI Policy Hardening
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-05
 
@@ -92,13 +92,17 @@ Definitions:
 
 Invariants (must be enforced by deterministic tests):
 - PR-dependent governance must run on `pull_request` only, and must be explicitly excluded from `push` to `main` execution paths.
-  - Example (today): the governance checker invocation and “negative smoke” are PR-dependent.
+  - Example (today in `.github/workflows/ci.yml`): `Contract Boundary Governance Check` and `WF-0053 Negative Smoke (Expected Fail-Closed)` are PR-dependent.
 - `push` to `main` must remain push-safe: it must not require PR-only evidence bundles and must not deadlock `main`.
   - Push CI can still run push-safe checks (lint, typecheck, unit tests, contract gates) that do not require PR context.
 
 Deterministic CI-policy tests (contract):
 - Add deterministic tests that assert these invariants for `.github/workflows/ci.yml`, specifically covering `pull_request` vs `push` behavior.
 - Include at least one negative/regression case that fails if a PR-dependent governance step would execute on `push`.
+  - Example negative assertion: a test that fails if either of the PR-dependent step names above is missing an explicit `if: github.event_name == 'pull_request'` (or equivalent PR-only gating).
+
+Non-obvious constraint (repo-only enforcement limitation):
+- Because this WF is repo-only, it does not (and cannot) guarantee that `pull_request` checks are required for merges in GitHub settings. This WF hardens deterministic behavior when CI runs; the follow-on branch-protection WF is responsible for “required checks” enforcement.
 
 ---
 
@@ -148,6 +152,7 @@ Contract:
   - task artifact header status
   - walkthrough artifact header status
 - The outcome should eliminate the specific inconsistency where WF-0047 is “Done/Completed” in index/walkthrough but “Ready for Implementation” in the task artifact header.
+  - Expected end state (WF-0047 only): index row remains `Done`, walkthrough remains `Completed`, and task header status becomes `Completed` (or equivalent “done” status used by the repo for completed tasks).
 
 ### Branch Protection Enforcement Handoff (Explicit Contract)
 
