@@ -77,6 +77,7 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF-0051 | contract-gate-marker-hardening | - | - | [Maintenance](maintenance.md) | - | Done |
 | WF-0052 | producer-compatibility-stress-real-snapshots | [Brainstorm](brainstorms/completed/brainstorm-WF-0052-producer-compatibility-stress-real-snapshots.md) | - | [Tasks](tasks/completed/task-WF-0052-producer-compatibility-stress-real-snapshots.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0052-producer-compatibility-stress-real-snapshots.md) | Done |
 | WF-0053 | contract-boundary-governance-enforcement | [Brainstorm](brainstorms/completed/brainstorm-WF-0053-contract-boundary-governance-enforcement.md) | [PRD](prds/completed/prd-WF-0053-contract-boundary-governance-enforcement.md) | [Tasks](tasks/completed/task-WF-0053-contract-boundary-governance-enforcement.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0053-contract-boundary-governance-enforcement.md) | Done |
+| WF-0054 | repo-ci-policy-hardening | [Brainstorm](brainstorms/brainstorm-WF-0054-repo-ci-policy-hardening.md) | [PRD](prds/prd-WF-0054-repo-ci-policy-hardening.md) | [Tasks](tasks/task-WF-0054-repo-ci-policy-hardening.md) | [Walkthrough](walkthroughs/walkthrough-WF-0054-repo-ci-policy-hardening.md) | Phase 0 |
 
 ---
 

@@ -1,0 +1,6 @@
+# WF-0054 — Repo-side CI Policy Hardening
+
+Artifact: walkthrough
+Version: v0.0
+Status: Not started
+Last Updated: 2026-03-05
