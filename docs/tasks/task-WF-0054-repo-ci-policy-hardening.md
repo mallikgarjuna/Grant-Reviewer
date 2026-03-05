@@ -60,7 +60,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/scripts/test_ci_policy_event_scope.py -k "wf0054_ci_policy_"`
 Risks (if any): Workflow expression variants may require normalization logic to keep AST-first checks robust.
 
-### [ ] Task 3 — Harden `.github/workflows/ci.yml` governance gating to satisfy policy contract
+### [x] Task 3 — Harden `.github/workflows/ci.yml` governance gating to satisfy policy contract
 
 Goal:
 Align CI workflow with explicit governance classes so push runs remain push-safe and PR-dependent checks are gated.
