@@ -1,0 +1,48 @@
+name: platform-policy-live-rehearsal
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify-main:
+    name: backend / Verify Platform Policy on main (rehearsal)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "backend/uv.lock"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --frozen --no-install-project
+
+      - name: Install project
+        run: uv sync --frozen
+
+      - name: Verify platform policy on main (live rehearsal)
+        run: >
+          uv run python -m tools.gh_policy.cli verify
+          --repo "${{ github.repository }}"
+          --branch main
+          --verify-only
+          --evidence-path ../docs/walkthroughs/evidence/WF-0056/tracer_verify_evidence.json
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Upload WF-0056 verify evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wf-0056-verify-evidence
+          path: docs/walkthroughs/evidence/WF-0056/

@@ -7,7 +7,7 @@ Last Updated: 2026-03-05
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: manual verify workflow emits durable evidence
+### [x] Task 1 — Tracer bullet: manual verify workflow emits durable evidence
 
 Goal:
 Create a minimal manual rehearsal workflow path that runs live `verify` on `main` and publishes one evidence artifact for audit traceability.

@@ -17,16 +17,21 @@ pytestmark = [pytest.mark.no_db]
 WF0047_COMPLETED_STATUS_VALUES = {"completed", "done"}
 
 
-def _load_ci_workflow() -> dict[str, Any]:
-    workflow_path = Path(__file__).resolve().parents[3] / ".github/workflows/ci.yml"
+def _load_workflow(filename: str) -> dict[str, Any]:
+    workflow_path = Path(__file__).resolve().parents[3] / ".github/workflows" / filename
     return yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+
+
+def _load_ci_workflow() -> dict[str, Any]:
+    return _load_workflow("ci.yml")
 
 
 def _load_verify_platform_policy_workflow() -> dict[str, Any]:
-    workflow_path = (
-        Path(__file__).resolve().parents[3] / ".github/workflows/verify-platform-policy.yml"
-    )
-    return yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+    return _load_workflow("verify-platform-policy.yml")
+
+
+def _load_live_rehearsal_workflow() -> dict[str, Any]:
+    return _load_workflow("platform-policy-live-rehearsal.yml")
 
 
 def _read_header_status(path: Path) -> str:
@@ -241,3 +246,50 @@ def test_wf0055_platform_policy_verify_workflow_missing_pr_trigger_fails() -> No
     violations = _wf0055_verify_workflow_violations(workflow)
 
     assert "workflow must define pull_request trigger mapping" in violations
+
+
+def _wf0056_live_rehearsal_verify_tracer_violations(workflow: dict[str, Any]) -> list[str]:
+    violations: list[str] = []
+    trigger_config = workflow.get("on")
+    if trigger_config is None:
+        trigger_config = workflow.get(True, {})
+    if not isinstance(trigger_config, dict) or "workflow_dispatch" not in trigger_config:
+        violations.append("workflow must define workflow_dispatch trigger")
+
+    jobs = workflow.get("jobs", {})
+    verify_job = jobs.get("verify-main")
+    if not isinstance(verify_job, dict):
+        violations.append("workflow must define verify-main job")
+        return violations
+
+    steps = verify_job.get("steps", [])
+    verify_command_found = False
+    evidence_upload_found = False
+    for step in steps:
+        if not isinstance(step, dict):
+            continue
+        run_command = step.get("run")
+        if isinstance(run_command, str) and "python -m tools.gh_policy.cli verify" in run_command:
+            if "--branch main" in run_command:
+                verify_command_found = True
+        uses = step.get("uses")
+        with_config = step.get("with")
+        if isinstance(uses, str) and uses.startswith("actions/upload-artifact@"):
+            if isinstance(with_config, dict) and with_config.get(
+                "path"
+            ) == "docs/walkthroughs/evidence/WF-0056/":
+                evidence_upload_found = True
+
+    if not verify_command_found:
+        violations.append("verify-main job must run verify CLI against --branch main")
+    if not evidence_upload_found:
+        violations.append("verify-main job must upload WF-0056 evidence artifact path")
+
+    return violations
+
+
+def test_wf0056_live_rehearsal_verify_tracer_contract() -> None:
+    workflow = _load_live_rehearsal_workflow()
+    violations = _wf0056_live_rehearsal_verify_tracer_violations(workflow)
+
+    assert violations == []
