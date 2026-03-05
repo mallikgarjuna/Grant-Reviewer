@@ -50,6 +50,12 @@ class _FakeApplyClient:
         return set(self._discovered_contexts)
 
 
+class _DiscoveryFailingClient(_FakeApplyClient):
+    def discover_check_contexts(self, *, repo: str, branch: str) -> set[str]:
+        _ = (repo, branch)
+        raise RuntimeError("simulated discovery outage")
+
+
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[4]
 
@@ -150,3 +156,26 @@ def test_apply_preflight_uses_live_context_discovery_and_fails_closed(tmp_path: 
     assert payload["preflight"]["decision"] == "fail_closed_missing_required_checks"
     assert payload["preflight"]["available_check_contexts"] == sorted(client._discovered_contexts)
     assert payload["preflight"]["missing_required_checks"] == [REQUIRED_CHECK_CONTEXTS[-1]]
+
+
+def test_apply_preflight_discovery_error_fails_closed_with_evidence(tmp_path: Path) -> None:
+    client = _DiscoveryFailingClient()
+    evidence_path = tmp_path / "apply-evidence.json"
+
+    exit_code = run_apply(
+        repo="octo-org/octo-repo",
+        branch="policy-rehearsal",
+        expected_policy_path=_repo_root() / "config/platform_policy/main_policy.yaml",
+        evidence_path=evidence_path,
+        snapshot_dir=tmp_path / "snapshots",
+        apply_intent=True,
+        available_check_contexts=set(REQUIRED_CHECK_CONTEXTS),
+        can_mutate=True,
+        client=client,
+    )
+
+    assert exit_code == 1
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert payload["error"]["kind"] == "api_failure"
+    assert "simulated discovery outage" in payload["error"]["message"]
+    assert payload["preflight"]["decision"] == "fail_closed_discovery_error"

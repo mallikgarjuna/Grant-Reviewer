@@ -3,6 +3,10 @@ name: platform-policy-live-rehearsal
 on:
   workflow_dispatch:
     inputs:
+      rollback_snapshot_artifact_name:
+        description: Snapshot artifact name to download for rollback rehearsal
+        required: false
+        type: string
       rollback_snapshot_path:
         description: Snapshot path for rollback rehearsal (required for rollback path)
         required: false
@@ -105,7 +109,7 @@ jobs:
 
   rollback-rehearsal:
     name: backend / Rollback Platform Policy on policy-rehearsal (live rehearsal)
-    if: ${{ github.event.inputs.rollback_snapshot_path != '' }}
+    if: ${{ github.event.inputs.rollback_snapshot_artifact_name != '' && github.event.inputs.rollback_snapshot_path != '' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -129,6 +133,12 @@ jobs:
 
       - name: Install project
         run: uv sync --frozen
+
+      - name: Download rollback snapshot artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.event.inputs.rollback_snapshot_artifact_name }}
+          path: docs/walkthroughs/evidence/WF-0056/snapshots
 
       - name: Rollback platform policy on policy-rehearsal (live rehearsal)
         run: >

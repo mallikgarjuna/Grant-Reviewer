@@ -149,7 +149,25 @@ def run_apply(
 
     discovered_contexts: set[str]
     if hasattr(apply_client, "discover_check_contexts"):
-        discovered_contexts = set(apply_client.discover_check_contexts(repo=repo, branch=branch))
+        try:
+            discovered_contexts = set(apply_client.discover_check_contexts(repo=repo, branch=branch))
+        except Exception as err:
+            error_kind = str(getattr(err, "kind", "api_failure"))
+            _write_evidence(
+                evidence_path=evidence_path,
+                repo=repo,
+                branch=branch,
+                mechanism=None,
+                drift={"is_drifted": False, "diff": []},
+                error={"kind": error_kind, "message": str(err), "endpoint": None},
+                preflight={
+                    "required_check_contexts": list(expected_policy["required_checks"]),
+                    "available_check_contexts": [],
+                    "missing_required_checks": list(expected_policy["required_checks"]),
+                    "decision": "fail_closed_discovery_error",
+                },
+            )
+            return 1
     else:
         discovered_contexts = set(available_check_contexts)
 
