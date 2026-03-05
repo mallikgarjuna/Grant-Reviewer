@@ -137,7 +137,7 @@ Verification Steps:
 - `rg -n "WF-0047|Status: Completed|Status: Done" docs/tasks/completed/task-WF-0047-git-hooks-rule-enforcement.md docs/walkthroughs/completed/walkthrough-WF-0047-git-hooks-rule-enforcement.md docs/index.md`
 Risks (if any): Historical status wording conventions may conflict with strict equality checks if not explicitly normalized.
 
-### [ ] Task 6 — Branch-protection enforcement handoff mapping artifact
+### [x] Task 6 — Branch-protection enforcement handoff mapping artifact
 
 Goal:
 Produce the explicit check mapping needed for a follow-on WF that handles GitHub branch protection enforcement.
