@@ -158,7 +158,7 @@ Verification Steps:
 - `rg -n "Branch Protection Handoff Mapping|check_name|event_scope|enforcement_recommendation|repo-only" docs/walkthroughs/walkthrough-WF-0054-repo-ci-policy-hardening.md`
 Risks (if any): Missing event-scope caveats in mapping can cause incorrect required-check setup in the follow-on WF.
 
-### [ ] Task 7 — Final governance regression sweep and walkthrough evidence
+### [x] Task 7 — Final governance regression sweep and walkthrough evidence
 
 Goal:
 Freeze deterministic verification evidence for repo-side policy hardening without expanding to admin settings.
