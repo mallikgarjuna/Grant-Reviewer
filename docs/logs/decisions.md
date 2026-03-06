@@ -70,6 +70,14 @@
 - **Tradeoff**: May temporarily downgrade previously "Done" items, which can be uncomfortable but reflects reality and reduces risk.
 - **Status**: Approved.
 
+### AD 57.2: WF-0040 evidence debt closes via strict dual-path contract
+- **WF ID**: WF-0057
+- **Context**: WF-0040 has unresolved runtime-evidence gates (staging/prod observation windows and per-call counts) that may remain unavailable in a given execution environment.
+- **Decision**: Close each unresolved WF-0040 gate using one of two explicit paths only: (1) real evidence backfill with reproducible source links/query steps, or (2) refreshed waiver record containing date, waived gates, exact constraint, residual risk, and owner sign-off reference.
+- **Why**: Eliminates ambiguous closure claims and keeps evidence-vs-waiver state auditable in docs-only review.
+- **Tradeoff**: Adds documentation rigor and can delay closure if owner sign-off metadata is incomplete.
+- **Status**: Approved.
+
 ## Date: 2026-03-04 (WF-0053: contract boundary governance enforcement)
 
 ### AD 53.1: Boundary-governance trigger inventory is explicit and path-mapped
