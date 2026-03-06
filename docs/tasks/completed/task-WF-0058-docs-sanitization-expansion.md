@@ -1,7 +1,7 @@
 # WF-0058 — Docs Sanitization Expansion Tasks
 
 Artifact: task
-Version: v1.2
+Version: v1.3
 Status: Complete
 Last Updated: 2026-03-06
 
@@ -63,7 +63,21 @@ Files:
 Verification:
 - manual review confirms utility delegation, `main...HEAD` default, and fail-closed behavior for phase/lifecycle/sub-phase review gates.
 
+### [x] Task 6 — Close SSOT integration gaps
+Goal: remove parent/sub-phase review instruction duplication and align prompt templates with canonical Part B contract.
+Files:
+- docs/workflow/how-to-use-workflow-actions.md
+- docs/workflow/phase-0-run-ideation.md
+- docs/workflow/phase-1-or-2-run-planning.md
+- docs/workflow/README.md
+Verification:
+- manual review confirms:
+  - cheat-sheet Phase 3.2 prompt matches fail-closed utility contract;
+  - parent runners defer Part B details to sub-phase files without duplicate execution instructions;
+  - workflow README lists the shared adversarial review utility as canonical.
+
 ## Changelog
 - v1.0 (2026-03-06): Finalized task artifact with implemented checklist.
 - v1.1 (2026-03-06): Added adversarial-diff-audit runner integration task and marked artifact complete.
 - v1.2 (2026-03-06): Expanded Task 5 coverage to include direct sub-phase gates and fail-closed/default-range hardening.
+- v1.3 (2026-03-06): Added SSOT integration gap-closure task for prompt/routing/discoverability alignment.
