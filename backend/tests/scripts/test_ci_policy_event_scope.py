@@ -69,6 +69,16 @@ def _find_step_if_expression(
     pytest.fail(f"Unable to locate governed step '{step_name}' in backend CI workflow")
 
 
+def _find_step_by_name(
+    steps: list[dict[str, Any]],
+    step_name: str,
+) -> dict[str, Any]:
+    for step in steps:
+        if step.get("name") == step_name:
+            return step
+    pytest.fail(f"Unable to locate step '{step_name}' in backend CI workflow")
+
+
 def test_wf0054_ci_policy_inventory_pr_only_tracer() -> None:
     workflow = _load_ci_workflow()
     steps = _backend_steps(workflow)
@@ -82,6 +92,16 @@ def test_wf0054_ci_policy_inventory_pr_only_tracer() -> None:
     if_expression = _find_step_if_expression(steps, tracer_step["check_name"])
 
     assert if_expression == "github.event_name == 'pull_request'"
+
+
+def test_wf0058_docs_sanitization_guard_step_contract() -> None:
+    workflow = _load_ci_workflow()
+    steps = _backend_steps(workflow)
+    step = _find_step_by_name(steps, "Docs Sanitization Guard")
+
+    run_command = step.get("run")
+    assert isinstance(run_command, str)
+    assert run_command.strip() == "bash ../scripts/check_docs_sanitization.sh"
 
 
 def test_wf0054_ci_policy_event_scope_pr_positive() -> None:
