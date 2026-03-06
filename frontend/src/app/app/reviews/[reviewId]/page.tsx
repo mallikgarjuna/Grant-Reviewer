@@ -217,6 +217,24 @@ function buildOrderedCardGroups(
   });
 }
 
+function getSubmittedNodeLogicalIds(
+  reviewDetail: ReviewDetailResponse,
+  submittedNodesParam: string,
+): string[] {
+  const persistedNodeIds = Array.isArray(reviewDetail.submitted_node_logical_ids)
+    ? reviewDetail.submitted_node_logical_ids.filter(
+        (nodeId) => typeof nodeId === "string" && nodeId.trim().length > 0,
+      )
+    : [];
+  if (persistedNodeIds.length > 0) {
+    return persistedNodeIds;
+  }
+  return submittedNodesParam
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
 export default function ReviewDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -582,10 +600,10 @@ export default function ReviewDetailPage() {
     reviewDetail.review.overall_summary?.trim(),
   );
   const submittedNodesParam = searchParams.get("submitted_nodes") ?? "";
-  const submittedNodes = submittedNodesParam
-    .split(",")
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
+  const submittedNodes = getSubmittedNodeLogicalIds(
+    reviewDetail,
+    submittedNodesParam,
+  );
   const sortedCallNodes = callNodes ?? [];
   const nodeTitleByLogicalId = new Map(
     sortedCallNodes

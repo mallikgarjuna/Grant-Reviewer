@@ -169,7 +169,7 @@ Risks (if any): Card-derived coverage shortcuts would silently violate the persi
 
 - v0.4 (2026-03-06): Corrected Task 4 execution boundary to allow `backend/main.py` for review-detail response assembly; persisted coverage cannot reach the API contract otherwise.
 
-### [ ] Task 5 — Review detail flips to call-linked ordering for the proof path
+### [x] Task 5 — Review detail flips to call-linked ordering for the proof path
 
 Goal:
 Render proof-call review detail from stored review linkage plus fetched call metadata, never from `submitted_nodes` query-param ordering.
