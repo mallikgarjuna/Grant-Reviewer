@@ -32,8 +32,9 @@ No file edits are allowed in this phase.
 1. Stop feature work and perform a detailed technical audit (code review) of Phase 3 Part A implementation only.
 2. Use `main...HEAD` as the default review range for branch-level pre-ship hardening (unless the user explicitly requests a narrower range).
 3. Execute `@docs/workflow/util-adversarial-diff-audit.md` using profile `execution` and the selected diff range.
-4. Keep review scope exclusive to technical audit concerns; avoid product-scope brainstorming or non-technical critique.
-5. Do not modify files in this phase.
+4. Fail-closed rule: do not consider this gate complete unless output includes all five required sections and explicit coverage of the six mandatory focus areas.
+5. Keep review scope exclusive to technical audit concerns; avoid product-scope brainstorming or non-technical critique.
+6. Do not modify files in this phase.
 
 ---
 
