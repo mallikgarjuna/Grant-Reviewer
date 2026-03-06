@@ -85,6 +85,7 @@ Task planning rules:
 - Dependency metadata is planning-only and MUST NOT be interpreted as permission to parallelize Phase 3 execution.
 - Treat `task` as the canonical planning and commit unit. Do NOT invent a second execution-unit format.
 - Add only deterministic execution hints. Do NOT add free-form "agent decides" language.
+- `Session boundary after` is planning guidance for Phase 3 chat hygiene, not an automatic stop signal by itself.
 
 For each task include:
 
@@ -126,7 +127,7 @@ Tasks must:
   - `Must touch files` should name the minimum expected surface; `May touch files` captures tightly bounded spillover only.
   - `Out of scope` must explicitly name tempting adjacent edits that are forbidden for this task.
   - `Stop if` must encode hard execution boundaries such as task-plan mismatch, cross-stack spillover, repeated verification failure, or missing prerequisite evidence.
-  - Set `Session boundary after: yes` when the next task should start in a fresh Phase 3 session/chat for safety.
+  - Set `Session boundary after: yes` when the next task would be safer in a fresh Phase 3 session/chat, but remember this remains advisory and does not force an automatic stop.
   - If the task changes behavior or fixes a bug, `TDD Plan` MUST:
     - name the intended failing test (or test location) for **RED**
     - name the minimal implementation change for **GREEN**

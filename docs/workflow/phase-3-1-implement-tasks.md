@@ -9,7 +9,7 @@ Do NOT modify this file during execution.
 
 ## Purpose
 
-Execute tasks sequentially from the tasks file until an explicit stop boundary is hit.
+Execute tasks sequentially from the tasks file until all tasks are complete or context-bloat/context-drift risk makes continued execution unsafe.
 After each completed task:
 
 - verify
@@ -47,12 +47,12 @@ Before implementing **Task 1**, run the smallest relevant automated test command
 - If you do **not** have DB configured, run the no-DB subset:
   - `cd backend && uv run pytest -m no_db`
 
-If the baseline test run fails for reasons unrelated to this WF, **STOP** and ask the user how to proceed (don’t build on a red baseline).
+If the baseline test run fails for reasons unrelated to this WF, pause Part A in the same chat, report the red baseline, and ask the user how to proceed (don’t build on a red baseline without an explicit decision).
 
 ---
 
 ## Phase Return — Stop Processing Here
-When you hit a stop boundary or all tasks are implemented, STOP execution.
+When all tasks are implemented, or when context-bloat/context-drift risk makes continued execution unsafe, STOP execution.
 Do NOT create the walkthrough here.
 Return control to the `phase-3-run-execution.md` Part B Verification gate.
 
@@ -77,13 +77,12 @@ If branch does not exist:
 - Implement tasks in defined order.
 - Only work on ONE task at a time.
 - Do NOT expand scope beyond tasks file.
-- Treat the task file as an ordered queue with hard boundaries, not as a mandate to finish the entire queue in one chat.
+- Treat the task file as an ordered queue with hard scope boundaries, but continue across completed tasks in the same chat unless context-bloat/context-drift makes that unsafe.
 - If missing requirements are discovered:
-  - STOP execution
-  - Step back ONE phase (usually Phase 2 or 3)
-  - Update artifact
-  - Bump version
-  - Resume Phase 3
+  - finish the current verified/committed task if safely possible
+  - report the mismatch and the recommended artifact correction
+  - continue only if the mismatch is minor and does not create material context drift
+  - otherwise pause Part A in the same chat for user direction unless continued work has already created context-bloat/context-drift risk
 
 ---
 
@@ -95,7 +94,7 @@ For each task:
    - If a relevant skill exists, **read it**.
    - If NO skill exists for a **complex** task (e.g., new DB, new API, complex refactor), **ask the user** if they want to create a skill first or proceed.
    - If task changes behavior or is a bug fix: TDD is mandatory. Follow `docs/guides/tdd/README.md` (red/green/refactor; mock boundaries only).
-   - If TDD is not feasible for a task, STOP and ask the user for an explicit exception + alternative verification evidence.
+   - If TDD is not feasible for a task, pause Part A in the same chat and ask the user for an explicit exception + alternative verification evidence.
 2. Implement the task.
 3. Run verification steps listed under the task.
 4. Fix until verification passes.
@@ -116,29 +115,35 @@ For each task:
 
 9. Mark task complete inside tasks file (`[x]`) before moving to the next task.
    Do NOT bump version unless the task plan itself changed.
-10. Evaluate whether to continue or stop. STOP immediately if any of the following is true:
-   - the task's `Stop if` condition was triggered
-   - the task required edits outside `Must touch files` plus bounded `May touch files`
-   - verification failed twice without a clear minimal fix
-   - the implementation exposed missing or incorrect task scope
-   - the task is marked `Session boundary after: yes`
-   - context has become heavy enough that reasoning quality is dropping
-
-Only continue automatically to the next task if none of the stop conditions fired.
+10. Evaluate whether to continue. Continue automatically to the next task unless context-bloat/context-drift risk is now material.
+   - If the task's `Stop if` condition was triggered, or the task required edits outside `Must touch files` plus bounded `May touch files`, or verification failed twice without a clear minimal fix, or the implementation exposed missing or incorrect task scope:
+     - do NOT auto-stop solely for that reason
+     - report the issue, the risk if work continues, and the recommended corrective action
+     - continue in the same chat if reasoning quality remains stable
+   - If the task is marked `Session boundary after: yes`:
+     - treat it as planning guidance only
+     - report that a fresh chat would be safer after this task, but continue unless context-bloat/context-drift risk is present
+   - STOP only when context has become heavy enough that reasoning quality is dropping or drift risk is material.
 
 ## Completion Return
 
 When you stop, report whether the reason was:
 
 - all tasks complete
-- planned session boundary
-- unexpected scope/task-plan mismatch
-- verification instability
 - context-bloat safety stop
+- context-drift safety stop
+- user-directed pause
+
+If continuation risks were encountered but you kept going, report them as warnings/recommendations rather than stop reasons:
+
+- task-plan mismatch warning
+- verification instability warning
+- file-surface spillover warning
+- planned session-boundary warning
 
 If tasks remain open, state the next unfinished task and the exact blocker/boundary before handing control back.
 
-If the reason is `context-bloat safety stop`, you MUST also:
+If the reason is `context-bloat safety stop` or `context-drift safety stop`, you MUST also:
 
 - warn explicitly that context load is now risking reasoning quality
 - state whether Part B/C is blocked (`yes` unless all tasks are complete)

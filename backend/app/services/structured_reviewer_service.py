@@ -1,4 +1,6 @@
-"""Structured review service for multi-node proposal assessments."""
+"""backend/app/services/structured_reviewer_service.py
+Structured review service for multi-node proposal assessments.
+"""
 
 from __future__ import annotations
 
@@ -44,17 +46,7 @@ ALIGNMENT_REQUIRED_NODES = ("academic_profile", "key_outputs")
 STRUCTURED_SUMMARY_COMPLETED_PREFIX = "Structured review completed with"
 STRUCTURED_POLICY_BLOCKING_PREFIX = "POLICY_BLOCKING:"
 STRUCTURED_POLICY_WARNING_PREFIX = "Reviewer-policy warnings:"
-
-
-def _normalize_submitted_nodes(
-    nodes: list[tuple[str, str]],
-) -> tuple[list[str], dict[str, str]]:
-    submitted_node_logical_ids: list[str] = []
-    submitted_text_by_node: dict[str, str] = {}
-    for node_logical_id, text in nodes:
-        submitted_node_logical_ids.append(node_logical_id)
-        submitted_text_by_node[node_logical_id] = text
-    return submitted_node_logical_ids, submitted_text_by_node
+WF0060_ERC_CONTAINER_NODE_IDS = {"part_a", "budget", "part_b", "b1", "b2"}
 
 
 class StructuredReviewerService:
@@ -149,15 +141,16 @@ class StructuredReviewerService:
             for node, _ in call_nodes
             if isinstance(node.logical_id, str) and node.logical_id
         }
-        submitted_node_logical_ids, submitted_text_by_node = _normalize_submitted_nodes(
-            nodes
-        )
+        submitted_text_by_node = {node_logical_id: text for node_logical_id, text in nodes}
+        submitted_leaf_ids = [node_logical_id for node_logical_id, _ in nodes]
         structured_payload = {
             "call_id": str(call_id),
             "call_name": call.name,
             "review_stage": review_stage,
             "nodes": submitted_text_by_node,
-            "submitted_node_logical_ids": submitted_node_logical_ids,
+            "submitted_leaf_ids": submitted_leaf_ids,
+            "legacy_ambiguous_container_ids": [],
+            "moved_legacy_node_references": [],
             "engine_path": "pipeline_v1",
         }
 
@@ -179,7 +172,6 @@ class StructuredReviewerService:
             tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
         ] = []
         request_expectations: list[dict[str, object]] = []
-        prompt_policy_by_node: dict[str, list[dict[str, str]]] = {}
         applicable_policy_by_node: dict[str, list[ReviewerPolicyRule]] = {}
         for node_logical_id, _ in nodes:
             node = node_by_logical_id.get(node_logical_id)
@@ -189,15 +181,21 @@ class StructuredReviewerService:
                     code=EngineErrorCode.MALFORMED_REVIEW_REQUEST.value,
                     message=f"Unknown node_logical_id: '{node_logical_id}'",
                 )
+            if (
+                call.code == "erc_stg_2026_full"
+                and node_logical_id in WF0060_ERC_CONTAINER_NODE_IDS
+            ):
+                return self._fail_contract_error(
+                    review,
+                    code=EngineErrorCode.MALFORMED_REVIEW_REQUEST.value,
+                    message=f"ERC container node_logical_id is not submittable: '{node_logical_id}'",
+                )
             applicable_rules = self._resolve_reviewer_policy_rules(
                 call_definition=call_definition,
                 node_logical_id=node_logical_id,
                 review_stage=review_stage,
             )
             applicable_policy_by_node[node_logical_id] = applicable_rules
-            prompt_policy = self._build_prompt_policy_payload(applicable_rules)
-            if prompt_policy:
-                prompt_policy_by_node[node_logical_id] = prompt_policy
 
             expectations = self.repository.get_expectations_for_node(node.id)
             assessable, not_assessable = self._partition_expectations(
@@ -219,20 +217,20 @@ class StructuredReviewerService:
 
             for expectation in assessable:
                 expectation_id = str(expectation.id)
+                expectation_payload: dict[str, object] = {
+                    "expectation_id": expectation_id,
+                    "node_logical_id": node_logical_id,
+                }
+                if expectation.expectation_strength.value == "MANDATORY":
+                    expectation_payload["required"] = True
                 request_expectations.append(
-                    {
-                        "expectation_id": expectation_id,
-                        "node_logical_id": node_logical_id,
-                        "check_id": "check.presence",
-                        "required": expectation.expectation_strength.value == "MANDATORY",
-                        "reviewer_policy_prompt_rules": prompt_policy,
-                    }
+                    expectation_payload
                 )
                 expectation_map[expectation_id] = expectation
 
         call_config_snapshot = {
+            "schema_version": "v1",
             "expectations": request_expectations,
-            "reviewer_policy_prompt_by_node": prompt_policy_by_node,
         }
         canonical_snapshot = canonicalize_for_digest(call_config_snapshot)
         computed_digest = "sha256:" + hashlib.sha256(
@@ -403,18 +401,3 @@ class StructuredReviewerService:
             node_logical_id=node_logical_id,
             review_stage=review_stage,
         )
-
-    def _build_prompt_policy_payload(
-        self,
-        rules: list[ReviewerPolicyRule],
-    ) -> list[dict[str, str]]:
-        return [
-            {
-                "id": rule.id,
-                "rule_type": rule.rule_type,
-                "instruction": rule.instruction,
-                "severity": rule.severity,
-            }
-            for rule in rules
-            if rule.enforcement_mode == "PROMPT_ONLY"
-        ]

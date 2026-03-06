@@ -1,4 +1,4 @@
-"""
+"""backend/app/repositories/review_repository.py
 Review repository - database access layer.
 
 Rule: Only repositories talk to the database directly.
@@ -409,6 +409,75 @@ class ReviewRepository:
         self.session.commit()
         self.session.refresh(review)
         return review
+
+    def resolve_structured_review_coverage(
+        self,
+        review: Review,
+    ) -> tuple[list[str], list[str], list[str]]:
+        """Resolve persisted submitted-leaf coverage and legacy compatibility metadata."""
+        payload = review.structured_payload
+        if not isinstance(payload, dict):
+            return [], [], []
+
+        def _parse_string_list(value: Any) -> list[str]:
+            if not isinstance(value, list):
+                return []
+            parsed: list[str] = []
+            for item in value:
+                if isinstance(item, str) and item.strip():
+                    parsed.append(item.strip())
+            return parsed
+
+        submitted_leaf_ids = _parse_string_list(payload.get("submitted_leaf_ids"))
+        legacy_ambiguous_container_ids = _parse_string_list(
+            payload.get("legacy_ambiguous_container_ids")
+        )
+        moved_legacy_node_references = _parse_string_list(
+            payload.get("moved_legacy_node_references")
+        )
+
+        nodes = payload.get("nodes")
+        submitted_node_ids = (
+            [key for key in nodes.keys() if isinstance(key, str) and key.strip()]
+            if isinstance(nodes, dict)
+            else []
+        )
+        erc_container_ids = {"part_a", "budget", "part_b", "b1", "b2"}
+
+        if not submitted_leaf_ids:
+            submitted_leaf_ids = sorted(
+                [
+                    node_id
+                    for node_id in submitted_node_ids
+                    if node_id not in erc_container_ids
+                ]
+            )
+        if not legacy_ambiguous_container_ids:
+            legacy_ambiguous_container_ids = sorted(
+                [node_id for node_id in submitted_node_ids if node_id in {"b1", "b2"}]
+            )
+
+        call_code: str | None = None
+        payload_call_id = payload.get("call_id")
+        if isinstance(payload_call_id, str):
+            try:
+                resolved_call = self.session.get(FundingCall, UUID(payload_call_id))
+                call_code = resolved_call.code if resolved_call is not None else None
+            except ValueError:
+                call_code = None
+        if (
+            not moved_legacy_node_references
+            and "resources_time_commitment" in submitted_node_ids
+            and "submitted_leaf_ids" not in payload
+            and call_code == "erc_stg_2026_full"
+        ):
+            moved_legacy_node_references = ["resources_time_commitment"]
+
+        return (
+            submitted_leaf_ids,
+            legacy_ambiguous_container_ids,
+            moved_legacy_node_references,
+        )
 
     def rollback(self) -> None:
         """Rollback active transaction after commit failure."""

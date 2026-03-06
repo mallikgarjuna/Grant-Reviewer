@@ -1,3 +1,4 @@
+// frontend/src/lib/submit/renderModel.test.ts
 import { describe, expect, it } from "vitest";
 
 import { buildRenderModel } from "@/lib/submit/renderModel";
@@ -220,6 +221,81 @@ describe("buildRenderModel", () => {
     expect(result.nodes.map((item) => item.label)).toEqual([
       "Scientific summary (1.b)",
       "Description of proposed research (2.a)",
+    ]);
+  });
+
+  it("wf0060_render_model_excludes_structural_containers_from_submittable_nodes", () => {
+    const result = buildRenderModel({
+      nodes: [
+        {
+          id: "node-part-a",
+          logical_id: "part_a",
+          title: "Part A",
+          parent_node_id: null,
+          node_type: "SECTION",
+          order_index: 1,
+          has_expectations: false,
+        },
+        {
+          id: "node-budget",
+          logical_id: "budget",
+          title: "Budget",
+          parent_node_id: "node-part-a",
+          node_type: "SECTION",
+          order_index: 2,
+          has_expectations: false,
+        },
+        {
+          id: "node-resources",
+          logical_id: "resources_time_commitment",
+          title: "Resources and Time Commitment",
+          parent_node_id: "node-budget",
+          node_type: "SECTION",
+          order_index: 3,
+          has_expectations: true,
+        },
+        {
+          id: "node-part-b",
+          logical_id: "part_b",
+          title: "Part B",
+          parent_node_id: null,
+          node_type: "SECTION",
+          order_index: 4,
+          has_expectations: false,
+        },
+        {
+          id: "node-b1",
+          logical_id: "b1",
+          title: "Part B1",
+          parent_node_id: "node-part-b",
+          node_type: "SECTION",
+          order_index: 5,
+          has_expectations: false,
+        },
+        {
+          id: "node-summary",
+          logical_id: "proposal_summary",
+          title: "Proposal Summary",
+          parent_node_id: "node-b1",
+          node_type: "SUBSECTION",
+          order_index: 6,
+          has_expectations: true,
+        },
+      ],
+      metadataByLogicalId: {},
+    });
+
+    expect(result.state).toBe("ready");
+    if (result.state !== "ready") {
+      return;
+    }
+    expect(result.nodes.map((node) => node.nodeLogicalId)).toEqual([
+      "resources_time_commitment",
+      "proposal_summary",
+    ]);
+    expect(result.groups.map((group) => group.groupLabel)).toEqual([
+      "Part A / Budget",
+      "Part B / Part B1",
     ]);
   });
 });

@@ -1,4 +1,6 @@
-"""FastAPI endpoint tests for Task 7.0."""
+"""backend/tests/test_api.py
+FastAPI endpoint tests for Task 7.0.
+"""
 
 import hashlib
 import hmac
@@ -1422,6 +1424,9 @@ def test_create_structured_review_success_persists_structured_fields(monkeypatch
             "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
             "review_stage": "STEP_1",
             "nodes": {"academic_profile": "profile text"},
+            "submitted_leaf_ids": ["academic_profile"],
+            "legacy_ambiguous_container_ids": [],
+            "moved_legacy_node_references": [],
             "engine_path": "pipeline_v1",
         }
         assert review.structured_payload == expected_payload
@@ -1462,6 +1467,131 @@ def test_structured_review_e2e_happy_path_three_nodes(monkeypatch) -> None:
     assert ordered_nodes[2:] == ["research_idea", "research_idea", "research_idea"]
     assert all(card["assessment_status"] == "ASSESSED" for card in cards)
     assert all(card["not_assessable_reason"] is None for card in cards)
+
+
+def test_wf0060_review_detail_persists_leaf_coverage_and_legacy_compatibility_state(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+        repository = ReviewRepository(session)
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0060-compat-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+                "review_stage": "STEP_1",
+                "nodes": {
+                    "b1": "legacy container evidence",
+                    "b2": "legacy container evidence",
+                    "resources_time_commitment": "legacy resources evidence",
+                    "b1_part1_scientific_proposal": "leaf evidence",
+                },
+                "moved_legacy_node_references": ["resources_time_commitment"],
+                "engine_path": "pipeline_v1",
+            },
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+
+        detail = get_review_detail(client=client, review_id=str(review.id))
+        assert detail.status_code == 200
+        payload = detail.json()
+        assert payload["submitted_leaf_ids"] == [
+            "b1_part1_scientific_proposal",
+            "resources_time_commitment",
+        ]
+        assert payload["legacy_ambiguous_container_ids"] == ["b1", "b2"]
+        assert payload["moved_legacy_node_references"] == ["resources_time_commitment"]
+    finally:
+        session.close()
+
+
+def test_wf0060_zero_card_leaf_stays_visible_in_review_detail(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+        repository = ReviewRepository(session)
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0060-zero-card-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+                "review_stage": "STEP_1",
+                "nodes": {
+                    "academic_profile": "profile text",
+                    "scientific_proposal": "proposal text",
+                },
+                "submitted_leaf_ids": ["academic_profile", "scientific_proposal"],
+                "legacy_ambiguous_container_ids": [],
+                "moved_legacy_node_references": [],
+                "engine_path": "pipeline_v1",
+            },
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+
+        detail = get_review_detail(client=client, review_id=str(review.id))
+        assert detail.status_code == 200
+        payload = detail.json()
+        assert payload["cards"] == []
+        assert payload["submitted_leaf_ids"] == [
+            "academic_profile",
+            "scientific_proposal",
+        ]
+    finally:
+        session.close()
+
+
+def test_wf0060_legacy_erc_container_nodes_do_not_inflate_submitted_leaf_coverage(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+        repository = ReviewRepository(session)
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0060-container-only-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+                "review_stage": "STEP_1",
+                "nodes": {
+                    "part_a": "legacy container",
+                    "budget": "legacy container",
+                    "part_b": "legacy container",
+                },
+                "engine_path": "pipeline_v1",
+            },
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+
+        detail = get_review_detail(client=client, review_id=str(review.id))
+        assert detail.status_code == 200
+        payload = detail.json()
+        assert payload["submitted_leaf_ids"] == []
+    finally:
+        session.close()
 
 
 def test_structured_review_erc_cog_2026_full_happy_path(monkeypatch) -> None:
@@ -2348,6 +2478,25 @@ def test_quota_exceeded_returns_429_with_details(monkeypatch) -> None:
     assert "reset_at" in quota_payload["error"]["details"]
 
 
+def test_quota_relaxed_in_dev_mode_when_limit_unset(monkeypatch) -> None:
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.delenv("FREE_DAILY_REVIEW_LIMIT", raising=False)
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    payload = {
+        "call_id": str(seeded_ids.call_id),
+        "node_id": str(seeded_ids.section_with_expectations_id),
+        "snippet_text": "Quota relaxed in development mode",
+    }
+
+    for index in range(6):
+        response = post_review(
+            client=client,
+            payload=payload,
+            idempotency_key=f"idem-dev-quota-{index}",
+        )
+        assert response.status_code == 200
+
+
 def test_kill_switch_blocks_new_submissions_not_existing_reviews(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     create_response = post_review(
@@ -3197,37 +3346,31 @@ def test_wf0059_contract_hierarchical_submit_validation_and_idempotency(
     client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
     assert call_code == "erc_stg_2026_full"
     idempotency_key = "idem-wf0059-erc-stg-hierarchical"
-    hierarchical_payload = {
+    proof_payload = {
         "call_id": str(call_id),
         "review_stage": "STEP_1",
         "nodes": [
             {
-                "node_logical_id": "b1",
-                "text": "Part B1 summary",
-                "children": [
-                    {
-                        "node_logical_id": "b1_part1_scientific_proposal",
-                        "text": "Part I scientific proposal",
-                    },
-                    {
-                        "node_logical_id": "b1_cv_track_record",
-                        "text": "Track record narrative",
-                    },
-                ],
-            }
+                "node_logical_id": "proposal_summary",
+                "text": "Proposal summary",
+            },
+            {
+                "node_logical_id": "b1_cv_track_record",
+                "text": "Track record narrative",
+            },
         ],
     }
 
     first = post_structured_review(
         client=client,
-        payload=hierarchical_payload,
+        payload=proof_payload,
         idempotency_key=idempotency_key,
     )
     assert first.status_code == 200
 
     replay = post_structured_review(
         client=client,
-        payload=hierarchical_payload,
+        payload=proof_payload,
         idempotency_key=idempotency_key,
     )
     assert replay.status_code == 200
@@ -3240,15 +3383,9 @@ def test_wf0059_contract_hierarchical_submit_validation_and_idempotency(
             "review_stage": "STEP_1",
             "nodes": [
                 {
-                    "node_logical_id": "b1",
-                    "text": "Updated Part B1 summary",
-                    "children": [
-                        {
-                            "node_logical_id": "b1_part1_scientific_proposal",
-                            "text": "Part I scientific proposal",
-                        }
-                    ],
-                }
+                    "node_logical_id": "proposal_summary",
+                    "text": "Updated proposal summary",
+                },
             ],
         },
         idempotency_key=idempotency_key,
@@ -3261,8 +3398,8 @@ def test_wf0059_contract_hierarchical_submit_validation_and_idempotency(
         "review_stage": "STEP_1",
         "nodes": [
             {
-                "node_logical_id": "b1",
-                "text": "Part B1 summary",
+                "node_logical_id": "proposal_summary",
+                "text": "Proposal summary",
                 "children": "not-a-list",
             }
         ],
@@ -3304,7 +3441,10 @@ def test_wf0059_contract_persisted_submitted_node_coverage(monkeypatch) -> None:
             "call_id": str(call_id),
             "review_stage": "STEP_2",
             "nodes": [
-                {"node_logical_id": "b2", "text": "Part B2 summary"},
+                {
+                    "node_logical_id": "b2_part2_scientific_proposal",
+                    "text": "Part II scientific proposal",
+                },
                 {
                     "node_logical_id": "resources_time_commitment",
                     "text": "Resource justification",
@@ -3318,8 +3458,8 @@ def test_wf0059_contract_persisted_submitted_node_coverage(monkeypatch) -> None:
     assert detail.status_code == 200
     payload = detail.json()
     assert payload["cards"] == []
-    assert payload["submitted_node_logical_ids"] == [
-        "b2",
+    assert payload["submitted_leaf_ids"] == [
+        "b2_part2_scientific_proposal",
         "resources_time_commitment",
     ]
 

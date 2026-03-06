@@ -125,7 +125,7 @@ After completing Part C, output:
 
      Run Phase 1 ...
      ```
-- **Optional Adversarial Pass (Same Session, No Edits):** Re-run Part B’s risk audit and summarize deltas since Part C.
+- **Optional Review-And-Harden Pass (Same Session):** Provide an explicit, copy-pasteable prompt block using `@docs/workflow/review-and-harden-prompt.md` against the finalized brainstorm artifact so the user can run a generic adversarial review-and-harden pass without manually selecting the phase-specific review/revise docs.
 
 If `Type: page` and UX/state/positioning is non-trivial, you MAY recommend this optional add-on before Phase 1:
 

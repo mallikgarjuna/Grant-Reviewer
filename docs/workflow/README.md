@@ -58,7 +58,7 @@ Trigger: read before starting a phase; ensures artifacts are implementable.
 - PRD: functional requirements use stable IDs (`FR1`, `FR2`, ...) and are referenced by contracts/tasks.
 - PRD: deep modules called out (small interface, lots hidden; stable seams).
 - Tasks: each task includes `Slice:` + `User Stories:` + `PRD Requirements:` mapping (or `N/A`), and there is an early tracer-bullet task.
-- Tasks: include deterministic execution boundaries when needed (`Out of scope`, `Stop if`, `Session boundary after`) so Phase 3 can pause safely without re-planning mid-chat.
+- Tasks: include deterministic execution boundaries when needed (`Out of scope`, `Stop if`, `Session boundary after`) so Phase 3 can surface continuation risks without re-planning mid-chat. `Session boundary after` is advisory; Phase 3 only auto-stops for context-bloat/context-drift risk.
 - Implementation: TDD is mandatory for behavior changes/bug fixes (red/green/refactor; mock boundaries only): `docs/guides/tdd/README.md`.
 
 ## Phase Gate (Always)

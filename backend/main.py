@@ -1,4 +1,6 @@
-"""FastAPI entrypoint for Grant Reviewer backend."""
+"""backend/main.py
+FastAPI entrypoint for Grant Reviewer backend.
+"""
 
 import hashlib
 import hmac
@@ -38,6 +40,7 @@ from app.schemas.api import (
     NodeSummary,
     NodeTreeNode,
     ReviewCardSummary,
+    ReviewCompatibilityNote,
     ReviewDetailResponse,
     ReviewListItem,
     ReviewsListResponse,
@@ -74,6 +77,7 @@ MAX_SNIPPET_CHARS = 10_000
 BFF_SIGNATURE_MAX_AGE_SECONDS = 300
 IDEMPOTENCY_TTL_HOURS = 24
 FREE_DAILY_REVIEW_LIMIT = 5
+FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT = 10_000
 
 
 def is_idempotency_conflict_error(err: IntegrityError) -> bool:
@@ -226,13 +230,23 @@ def _is_reviews_enabled() -> bool:
 
 def _get_free_daily_review_limit() -> int:
     """Read per-user daily review limit from env."""
-    raw = os.getenv("FREE_DAILY_REVIEW_LIMIT", str(FREE_DAILY_REVIEW_LIMIT)).strip()
+    raw_limit = os.getenv("FREE_DAILY_REVIEW_LIMIT")
+    if raw_limit is None:
+        app_env = os.getenv("APP_ENV", "").strip().lower()
+        if app_env in {"dev", "development", "local"}:
+            return FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT
+        return FREE_DAILY_REVIEW_LIMIT
+
+    raw = raw_limit.strip()
     try:
         return max(0, int(raw))
     except ValueError:
         logger.warning(
             "Invalid FREE_DAILY_REVIEW_LIMIT=%s; falling back to default", raw
         )
+        app_env = os.getenv("APP_ENV", "").strip().lower()
+        if app_env in {"dev", "development", "local"}:
+            return FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT
         return FREE_DAILY_REVIEW_LIMIT
 
 
@@ -700,6 +714,7 @@ def check_compliance(
     call = repository.get_call_by_id(payload.call_id)
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+    call_definition = repository.get_call_definition_by_call_id(payload.call_id)
 
     hydrated_nodes = CallDefinitionService(repository.session).get_hydrated_nodes(
         payload.call_id
@@ -840,6 +855,7 @@ def create_structured_review(
     call = repository.get_call_by_id(payload.call_id)
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+    call_definition = repository.get_call_definition_by_call_id(payload.call_id)
 
     if not payload.nodes:
         raise APIException(
@@ -900,6 +916,7 @@ def create_structured_review(
         if not matches_review_stage(
             node_logical_id=node.node_logical_id,
             review_stage=payload.review_stage,
+            call_definition=call_definition,
         )
     )
     if stage_mismatch_ids:
@@ -1045,6 +1062,7 @@ def create_review(
     call = repository.get_call_by_id(payload.call_id)
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+    call_definition = repository.get_call_definition_by_call_id(payload.call_id)
 
     node = repository.get_node_by_id(payload.node_id)
     if node is None:
@@ -1057,6 +1075,7 @@ def create_review(
     if not matches_review_stage(
         node_logical_id=node.logical_id,
         review_stage=payload.review_stage,
+        call_definition=call_definition,
     ):
         raise APIException(
             code="REVIEW_STAGE_NODE_MISMATCH",
@@ -1223,6 +1242,36 @@ def get_review(
         ordering_source=ordering_source,
         unmapped_node_logical_ids=unmapped_node_logical_ids,
     )
+    submitted_leaf_ids, legacy_ambiguous_container_ids, moved_legacy_node_references = (
+        repository.resolve_structured_review_coverage(review)
+    )
+    compatibility_notes: list[ReviewCompatibilityNote] = []
+    if legacy_ambiguous_container_ids:
+        compatibility_notes.append(
+            ReviewCompatibilityNote(
+                note_type="deprecated_container_submission",
+                node_logical_ids=legacy_ambiguous_container_ids,
+                message="Deprecated container submissions are preserved as ambiguous legacy evidence.",
+            )
+        )
+    if moved_legacy_node_references:
+        compatibility_notes.append(
+            ReviewCompatibilityNote(
+                note_type="moved_legacy_node_reference",
+                node_logical_ids=moved_legacy_node_references,
+                message="Legacy moved-node references were mapped to corrected leaf identities.",
+            )
+        )
+    if submitted_leaf_ids and legacy_ambiguous_container_ids:
+        compatibility_notes.append(
+            ReviewCompatibilityNote(
+                note_type="mixed_version_review",
+                node_logical_ids=sorted(
+                    [*submitted_leaf_ids, *legacy_ambiguous_container_ids]
+                ),
+                message="Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage.",
+            )
+        )
 
     return ReviewDetailResponse(
         call_id=call_id,
@@ -1231,6 +1280,10 @@ def get_review(
         detail_state=detail_state,
         ordering_source=ordering_source,
         unmapped_node_logical_ids=unmapped_node_logical_ids,
+        submitted_leaf_ids=submitted_leaf_ids,
+        legacy_ambiguous_container_ids=legacy_ambiguous_container_ids,
+        moved_legacy_node_references=moved_legacy_node_references,
+        compatibility_notes=compatibility_notes,
         review=ReviewSummary(
             id=review.id,
             status=review.status,

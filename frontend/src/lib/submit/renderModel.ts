@@ -1,19 +1,29 @@
+// frontend/src/lib/submit/renderModel.ts
 import type { NodeSummary } from "@/lib/bff/types";
 
 export type NodeMetadata = {
   title?: string | null;
   sourceSection?: string | null;
+  parentLogicalId?: string | null;
+  reviewStage?: "STEP_1" | "STEP_2" | "BOTH" | null;
 };
 
 export type RenderNode = {
   nodeLogicalId: string;
   label: string;
-  depth: number;
+  reviewStage: "STEP_1" | "STEP_2" | "BOTH";
+};
+
+export type RenderGroup = {
+  groupKey: string;
+  groupLabel: string | null;
+  nodes: RenderNode[];
 };
 
 export type RenderModelReady = {
   state: "ready";
   nodes: RenderNode[];
+  groups: RenderGroup[];
   metadataFallbackCount: number;
 };
 
@@ -35,13 +45,12 @@ export type RenderModelResult =
   | RenderModelUnsupported
   | RenderModelContractError;
 
+export type ReviewStage = "STEP_1" | "STEP_2";
+
 type BuildRenderModelInput = {
   nodes: NodeSummary[];
   metadataByLogicalId: Record<string, NodeMetadata>;
-  callCode?: string;
 };
-
-const WF0059_PROOF_TARGET_CALL_CODE = "erc_stg_2026_full";
 
 function toFallbackLabel(logicalId: string): string {
   return logicalId
@@ -88,51 +97,10 @@ function normalizeSectionNumber(raw: string): string | null {
   return null;
 }
 
-function buildProofTargetTraversal(nodes: NodeSummary[]): Array<{ node: NodeSummary; depth: number }> {
-  const childrenByParentId = new Map<string | null, NodeSummary[]>();
-  for (const node of nodes) {
-    const siblings = childrenByParentId.get(node.parent_node_id) ?? [];
-    siblings.push(node);
-    childrenByParentId.set(node.parent_node_id, siblings);
-  }
-
-  for (const siblings of childrenByParentId.values()) {
-    siblings.sort((left, right) => left.order_index - right.order_index);
-  }
-
-  const visitedNodeIds = new Set<string>();
-  const ordered: Array<{ node: NodeSummary; depth: number }> = [];
-
-  function visit(parentNodeId: string | null, depth: number) {
-    const siblings = childrenByParentId.get(parentNodeId) ?? [];
-    for (const sibling of siblings) {
-      if (visitedNodeIds.has(sibling.id)) {
-        continue;
-      }
-      visitedNodeIds.add(sibling.id);
-      ordered.push({ node: sibling, depth });
-      visit(sibling.id, depth + 1);
-    }
-  }
-
-  visit(null, 0);
-
-  for (const node of nodes) {
-    if (!visitedNodeIds.has(node.id)) {
-      ordered.push({ node, depth: node.parent_node_id === null ? 0 : 1 });
-    }
-  }
-
-  return ordered;
-}
-
 export function buildRenderModel(input: BuildRenderModelInput): RenderModelResult {
   const nestedNodes = input.nodes.filter((node) => node.parent_node_id !== null);
-  const proofTargetTraversal =
-    nestedNodes.length > 0 && input.callCode === WF0059_PROOF_TARGET_CALL_CODE
-      ? buildProofTargetTraversal(input.nodes)
-      : null;
-  if (nestedNodes.length > 0 && proofTargetTraversal === null) {
+  const hasStructuralContainers = input.nodes.some((node) => !node.has_expectations);
+  if (nestedNodes.length > 0 && !hasStructuralContainers) {
     return {
       state: "unsupported",
       reason: "nested_nodes",
@@ -152,35 +120,95 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
     };
   }
 
-  const orderedNodes =
-    proofTargetTraversal ?? input.nodes.map((node) => ({ node, depth: 0 }));
+  const nodeById = new Map(input.nodes.map((node) => [node.id, node]));
+  const renderNodeByLogicalId = new Map<string, RenderNode>();
+  for (const node of input.nodes) {
+    const nodeLogicalId = node.logical_id as string;
+    const metadata = input.metadataByLogicalId[nodeLogicalId];
+    const metadataTitle =
+      typeof metadata?.title === "string" && metadata.title.trim() ? metadata.title : null;
+    const nodeTitle = typeof node.title === "string" && node.title.trim() ? node.title : null;
+    const sectionNumber =
+      typeof metadata?.sourceSection === "string"
+        ? normalizeSectionNumber(metadata.sourceSection)
+        : null;
+    const baseLabel = metadataTitle ?? nodeTitle ?? toFallbackLabel(nodeLogicalId);
+    const reviewStage = metadata?.reviewStage ?? "BOTH";
+    renderNodeByLogicalId.set(nodeLogicalId, {
+      nodeLogicalId,
+      label: sectionNumber ? `${baseLabel} (${sectionNumber})` : baseLabel,
+      reviewStage,
+    });
+  }
+
+  const leafNodes = input.nodes.filter((node) => node.has_expectations);
+  const groupsByKey = new Map<string, RenderGroup>();
+  for (const leafNode of leafNodes) {
+    const leafLogicalId = leafNode.logical_id as string;
+    const renderLeaf = renderNodeByLogicalId.get(leafLogicalId);
+    if (!renderLeaf) {
+      continue;
+    }
+    const ancestorLabels: string[] = [];
+    let currentParentNodeId = leafNode.parent_node_id;
+    while (currentParentNodeId) {
+      const parentNode = nodeById.get(currentParentNodeId);
+      if (!parentNode) {
+        break;
+      }
+      if (parentNode.logical_id) {
+        const metadata = input.metadataByLogicalId[parentNode.logical_id];
+        const metadataTitle =
+          typeof metadata?.title === "string" && metadata.title.trim()
+            ? metadata.title
+            : null;
+        ancestorLabels.unshift(
+          metadataTitle ??
+            (parentNode.title.trim() ? parentNode.title : toFallbackLabel(parentNode.logical_id)),
+        );
+      }
+      currentParentNodeId = parentNode.parent_node_id;
+    }
+
+    const parentLogicalId = input.metadataByLogicalId[leafLogicalId]?.parentLogicalId ?? null;
+    const groupKey = ancestorLabels.join(" / ") || parentLogicalId || "__ungrouped__";
+    const existingGroup = groupsByKey.get(groupKey);
+    if (existingGroup) {
+      existingGroup.nodes.push(renderLeaf);
+      continue;
+    }
+    groupsByKey.set(groupKey, {
+      groupKey,
+      groupLabel: ancestorLabels.length > 0 ? ancestorLabels.join(" / ") : null,
+      nodes: [renderLeaf],
+    });
+  }
+
+  const readyNodes = leafNodes
+    .map((node) => {
+      const nodeLogicalId = node.logical_id as string;
+      return renderNodeByLogicalId.get(nodeLogicalId) ?? null;
+    })
+    .filter((node): node is RenderNode => node !== null);
 
   return {
     state: "ready",
-    nodes: orderedNodes.map(({ node, depth }) => {
-      const nodeLogicalId = node.logical_id as string;
-      const metadata = input.metadataByLogicalId[nodeLogicalId];
-      const metadataTitle =
-        typeof metadata?.title === "string" && metadata.title.trim()
-          ? metadata.title
-          : null;
-      const nodeTitle =
-        typeof node.title === "string" && node.title.trim() ? node.title : null;
-      const sectionNumber =
-        typeof metadata?.sourceSection === "string"
-          ? normalizeSectionNumber(metadata.sourceSection)
-          : null;
-      const baseLabel = metadataTitle ?? nodeTitle ?? toFallbackLabel(nodeLogicalId);
-      return {
-        nodeLogicalId,
-        label: sectionNumber ? `${baseLabel} (${sectionNumber})` : baseLabel,
-        depth,
-      };
-    }),
-    metadataFallbackCount: orderedNodes.filter(({ node }) => {
+    nodes: readyNodes,
+    groups: Array.from(groupsByKey.values()),
+    metadataFallbackCount: input.nodes.filter((node) => {
       const nodeLogicalId = node.logical_id as string;
       const metadata = input.metadataByLogicalId[nodeLogicalId];
       return !(typeof metadata?.title === "string" && metadata.title.trim());
     }).length,
   };
+}
+
+export function isNodeEligibleForStage(
+  node: RenderNode,
+  reviewStage: ReviewStage,
+): boolean {
+  if (node.reviewStage === "BOTH") {
+    return true;
+  }
+  return node.reviewStage === reviewStage;
 }

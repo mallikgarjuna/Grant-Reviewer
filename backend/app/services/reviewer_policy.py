@@ -1,4 +1,6 @@
-"""Reviewer-policy extraction and deterministic post-check enforcement."""
+"""backend/app/services/reviewer_policy.py
+Reviewer-policy extraction and deterministic post-check enforcement.
+"""
 
 from __future__ import annotations
 
@@ -10,7 +12,7 @@ from app.models.domain import CallDefinition
 ReviewStage = Literal["STEP_1", "STEP_2"]
 EnforcementMode = Literal["PROMPT_ONLY", "POST_CHECK", "BLOCKING"]
 
-_STEP_2_NODE_IDS = {"b2", "b2_part2_scientific_proposal", "resources_time_commitment"}
+_STEP_2_NODE_IDS = {"b2_part2_scientific_proposal", "resources_time_commitment"}
 
 
 @dataclass(frozen=True)
@@ -28,8 +30,18 @@ class ReviewerPolicyRule:
     source_hint: str | None = None
 
 
-def infer_review_stage(node_logical_id: str | None) -> ReviewStage:
-    """Infer review stage from node logical id when explicit stage is unavailable."""
+def infer_review_stage(
+    node_logical_id: str | None,
+    *,
+    call_definition: CallDefinition | None = None,
+) -> Literal["STEP_1", "STEP_2", "BOTH"]:
+    """Infer review stage from canonical call-definition metadata when available."""
+    if call_definition is not None:
+        stage_map = _build_node_stage_map(call_definition)
+        inferred = stage_map.get(node_logical_id)
+        if inferred in {"STEP_1", "STEP_2", "BOTH"}:
+            return inferred
+
     if node_logical_id in _STEP_2_NODE_IDS:
         return "STEP_2"
     return "STEP_1"
@@ -39,9 +51,85 @@ def matches_review_stage(
     *,
     node_logical_id: str | None,
     review_stage: ReviewStage,
+    call_definition: CallDefinition | None = None,
 ) -> bool:
     """Return True when a node belongs to the requested review stage."""
-    return infer_review_stage(node_logical_id) == review_stage
+    inferred = infer_review_stage(
+        node_logical_id,
+        call_definition=call_definition,
+    )
+    return inferred in {"BOTH", review_stage}
+
+
+def _build_node_stage_map(
+    call_definition: CallDefinition,
+) -> dict[str, Literal["STEP_1", "STEP_2", "BOTH"]]:
+    """Resolve per-node stage from canonical evaluation-element mappings."""
+    canonical_json = call_definition.canonical_json
+    if not isinstance(canonical_json, dict):
+        return {}
+
+    element_stage_by_id = _build_element_stage_map(canonical_json)
+    proposal_nodes = canonical_json.get("proposal_nodes")
+    if not isinstance(proposal_nodes, list):
+        return {}
+
+    node_stage_by_id: dict[str, Literal["STEP_1", "STEP_2", "BOTH"]] = {}
+    for node in proposal_nodes:
+        if not isinstance(node, dict):
+            continue
+        node_id = node.get("id")
+        if not isinstance(node_id, str) or not node_id.strip():
+            continue
+        expectations = node.get("node_expectations")
+        if not isinstance(expectations, list) or len(expectations) == 0:
+            continue
+
+        stages: set[Literal["STEP_1", "STEP_2", "BOTH"]] = set()
+        for expectation in expectations:
+            if not isinstance(expectation, dict):
+                continue
+            element_id = expectation.get("evaluation_element_id")
+            if not isinstance(element_id, str) or not element_id.strip():
+                continue
+            stages.add(element_stage_by_id.get(element_id, "BOTH"))
+
+        if stages == {"STEP_1"}:
+            node_stage_by_id[node_id] = "STEP_1"
+        elif stages == {"STEP_2"}:
+            node_stage_by_id[node_id] = "STEP_2"
+        elif stages:
+            node_stage_by_id[node_id] = "BOTH"
+    return node_stage_by_id
+
+
+def _build_element_stage_map(
+    canonical_json: dict[str, Any],
+) -> dict[str, Literal["STEP_1", "STEP_2", "BOTH"]]:
+    """Index evaluation-element stage by logical id from canonical_json."""
+    criteria = canonical_json.get("evaluation_criteria")
+    if not isinstance(criteria, list):
+        return {}
+
+    element_stage_by_id: dict[str, Literal["STEP_1", "STEP_2", "BOTH"]] = {}
+    for criterion in criteria:
+        if not isinstance(criterion, dict):
+            continue
+        elements = criterion.get("evaluation_elements")
+        if not isinstance(elements, list):
+            continue
+        for element in elements:
+            if not isinstance(element, dict):
+                continue
+            element_id = element.get("id")
+            if not isinstance(element_id, str) or not element_id.strip():
+                continue
+            stage = element.get("stage")
+            if stage in {"STEP_1", "STEP_2", "BOTH"}:
+                element_stage_by_id[element_id] = stage
+            else:
+                element_stage_by_id[element_id] = "BOTH"
+    return element_stage_by_id
 
 
 def get_applicable_reviewer_policy_rules(
