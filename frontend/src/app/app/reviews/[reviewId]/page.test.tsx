@@ -53,7 +53,43 @@ function reviewPayload(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function wf0059ProofFallbackPayload() {
+  return reviewPayload({
+    call_id: null,
+    call_code: "erc_stg_2026_full",
+    ordering_source: "review_payload_fallback",
+  });
+}
+
 describe("ReviewDetailPage", () => {
+  it("wf0059_review_detail_fallback_guard", async () => {
+    submittedNodesParam = "b1_part1_scientific_proposal,b1_cv_track_record";
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/bff/reviews/review-1")) {
+        return new Response(JSON.stringify(wf0059ProofFallbackPayload()), {
+          status: 200,
+        });
+      }
+      return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }), {
+        status: 404,
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReviewDetailPage />);
+
+    expect(
+      await screen.findByText("Call metadata unavailable; using review payload order."),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Reviewed sections:/)).toHaveTextContent(
+      "Reviewed sections: b1_part1_scientific_proposal, b1_cv_track_record",
+    );
+    expect(
+      fetchMock.mock.calls.some((call) => String(call[0]).includes("/api/bff/calls/")),
+    ).toBe(false);
+  });
+
   it("uses call-driven ordering and labels when call metadata is available", async () => {
     submittedNodesParam = "academic_profile,key_outputs";
     vi.stubGlobal(

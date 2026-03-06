@@ -2,7 +2,80 @@ import { describe, expect, it } from "vitest";
 
 import { buildRenderModel } from "@/lib/submit/renderModel";
 
+function wf0059ProofTargetNestedNodes() {
+  return [
+    {
+      id: "erc-stg-b1",
+      logical_id: "b1",
+      title: "Part B1",
+      parent_node_id: null,
+      node_type: "SECTION",
+      order_index: 1,
+      has_expectations: true,
+    },
+    {
+      id: "erc-stg-b1-part1",
+      logical_id: "b1_part1_scientific_proposal",
+      title: "Part I of the Scientific Proposal",
+      parent_node_id: "erc-stg-b1",
+      node_type: "SUBSECTION",
+      order_index: 2,
+      has_expectations: true,
+    },
+  ];
+}
+
+function wf0059VeniControlNodes() {
+  return [
+    {
+      id: "veni-academic-profile",
+      logical_id: "academic_profile",
+      title: "Academic profile",
+      parent_node_id: null,
+      node_type: "SECTION",
+      order_index: 1,
+      has_expectations: true,
+    },
+    {
+      id: "veni-key-outputs",
+      logical_id: "key_outputs",
+      title: "Key outputs",
+      parent_node_id: null,
+      node_type: "SECTION",
+      order_index: 2,
+      has_expectations: true,
+    },
+  ];
+}
+
 describe("buildRenderModel", () => {
+  it("wf0059_render_model_proof_target_guard", () => {
+    const proofTargetResult = buildRenderModel({
+      nodes: wf0059ProofTargetNestedNodes(),
+      metadataByLogicalId: {},
+    });
+
+    expect(proofTargetResult.state).toBe("unsupported");
+    if (proofTargetResult.state !== "unsupported") {
+      return;
+    }
+    expect(proofTargetResult.reason).toBe("nested_nodes");
+
+    const veniControlResult = buildRenderModel({
+      nodes: wf0059VeniControlNodes(),
+      metadataByLogicalId: {},
+    });
+
+    expect(veniControlResult.state).toBe("ready");
+    if (veniControlResult.state !== "ready") {
+      return;
+    }
+    expect(veniControlResult.nodes.map((node) => node.nodeLogicalId)).toEqual([
+      "academic_profile",
+      "key_outputs",
+    ]);
+  });
+
   it("returns unsupported for nested node structures", () => {
     const result = buildRenderModel({
       nodes: [

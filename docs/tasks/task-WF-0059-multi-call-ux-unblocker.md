@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Proof-call parity plumbing and guard selectors
+### [x] Task 1 — Proof-call parity plumbing and guard selectors
 
 Goal:
 Lock the ERC proof target into deterministic frontend/backend guard coverage before behavior changes land, so later slices can prove parity and scope control without broad exploratory edits.

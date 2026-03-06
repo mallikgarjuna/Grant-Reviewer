@@ -565,6 +565,32 @@ def create_client_with_erc_cog_seed(monkeypatch) -> tuple[TestClient, UUID, str]
         session.close()
 
 
+def create_client_with_erc_stg_seed(monkeypatch) -> tuple[TestClient, UUID, str]:
+    """Create test client with ERC StG proof call ingested from canonical YAML."""
+    monkeypatch.setenv("LLM_MODE", "stub")
+    monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    reset_database()
+    ingest_call(Path("data/calls/canonical/erc/erc_stg_2026_full.yaml"), dry_run=False)
+
+    session = get_session()
+    try:
+        template = PromptTemplate(
+            name="ERC StG structured template",
+            template_text="Template",
+            is_active=True,
+        )
+        session.add(template)
+        session.commit()
+
+        call = session.exec(
+            select(FundingCall).where(FundingCall.code == "erc_stg_2026_full")
+        ).first()
+        assert call is not None
+        return TestClient(app), call.id, call.code
+    finally:
+        session.close()
+
+
 def _set_call_definition_reviewer_policy_rules(
     *,
     call_id: UUID,
@@ -3108,6 +3134,20 @@ def test_structured_review_validation_error_precedes_idempotency_mismatch(
     headers = build_signature_headers(body=body)
     headers["Content-Type"] = "application/json"
     headers["Idempotency-Key"] = idempotency_key
+
+    invalid = client.post("/api/structured-review", content=body, headers=headers)
+    assert invalid.status_code == 400
+    assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_wf0059_structured_review_proof_target_contract_guard(monkeypatch) -> None:
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+
+    malformed_payload = {"call_id": str(call_id), "nodes": "not-a-list"}
+    body = json.dumps(malformed_payload).encode("utf-8")
+    headers = build_signature_headers(body=body)
+    headers["Content-Type"] = "application/json"
 
     invalid = client.post("/api/structured-review", content=body, headers=headers)
     assert invalid.status_code == 400
