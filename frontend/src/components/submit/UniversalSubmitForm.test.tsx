@@ -2255,6 +2255,147 @@ describe("UniversalSubmitForm", () => {
     );
   });
 
+  it("wf0060_container_ids_blocked_from_corrected_erc_submission", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "erc_stg_2026_full",
+                name: "ERC Starting Grant 2026",
+                year: 2026,
+                agency_short_name: "ERC",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_stg_2026_full/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_stg_2026_full",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "n1",
+                logical_id: "part_b",
+                title: "Part B",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: false,
+              },
+              {
+                id: "n2",
+                logical_id: "b1",
+                title: "Part B1",
+                parent_node_id: "n1",
+                node_type: "SECTION",
+                order_index: 2,
+                has_expectations: false,
+              },
+              {
+                id: "n3",
+                logical_id: "proposal_summary",
+                title: "Proposal Summary",
+                parent_node_id: "n2",
+                node_type: "SUBSECTION",
+                order_index: 3,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_stg_2026_full/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_stg_2026_full",
+            nodes: [
+              {
+                logical_id: "part_b",
+                title: "Part B",
+                parent_logical_id: null,
+                source_section: "Part B",
+                word_limit_min: null,
+                word_limit_max: null,
+              },
+              {
+                logical_id: "b1",
+                title: "Part B1",
+                parent_logical_id: "part_b",
+                source_section: "Part B1",
+                word_limit_min: null,
+                word_limit_max: null,
+              },
+              {
+                logical_id: "proposal_summary",
+                title: "Proposal Summary",
+                parent_logical_id: "b1",
+                source_section: "Part B1",
+                word_limit_min: null,
+                word_limit_max: null,
+              },
+            ],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+          status: 200,
+        });
+      }
+      if (url === "/api/bff/structured-review") {
+        const parsedBody =
+          typeof init?.body === "string"
+            ? (JSON.parse(init.body) as {
+                nodes: Array<{ node_logical_id: string; text: string }>;
+              })
+            : { nodes: [] };
+        const submittedIds = parsedBody.nodes.map((node) => node.node_logical_id);
+        expect(submittedIds).toEqual(["proposal_summary"]);
+        expect(submittedIds).not.toContain("part_b");
+        expect(submittedIds).not.toContain("b1");
+        return new Response(JSON.stringify({ review_id: "review-wf0060-guard" }), {
+          status: 200,
+        });
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText(/Proposal Summary/), {
+      target: { value: "summary text" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/bff/structured-review",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+  });
+
   it("guardrail: submit path contains no legacy domain map constant", () => {
     const source = fs.readFileSync("src/lib/submit/domainOptions.ts", "utf-8");
     const legacyConstant = ["DOMAIN", "OPTIONS", "BY", "CALL"].join("_");

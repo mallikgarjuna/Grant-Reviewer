@@ -430,6 +430,102 @@ describe("ReviewDetailPage", () => {
     );
   });
 
+  it("wf0060_erc_review_detail_blocks_legacy_fallback_leakage", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-erc",
+                call_code: "erc_stg_2026_full",
+                ordering_source: "call_nodes",
+                cards: [],
+                submitted_leaf_ids: ["proposal_summary"],
+                legacy_ambiguous_container_ids: [],
+                moved_legacy_node_references: [],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "n4",
+                  logical_id: "part_b",
+                  title: "Part B",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: false,
+                },
+                {
+                  id: "n5",
+                  logical_id: "b1",
+                  title: "Part B1",
+                  parent_node_id: "n4",
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: false,
+                },
+                {
+                  id: "n6",
+                  logical_id: "proposal_summary",
+                  title: "Proposal Summary",
+                  parent_node_id: "n5",
+                  node_type: "SUBSECTION",
+                  order_index: 3,
+                  has_expectations: true,
+                },
+                {
+                  id: "n7",
+                  logical_id: "b2",
+                  title: "Part B2",
+                  parent_node_id: "n4",
+                  node_type: "SECTION",
+                  order_index: 4,
+                  has_expectations: false,
+                },
+                {
+                  id: "n8",
+                  logical_id: "b2_part2_scientific_proposal",
+                  title: "Part II of the Scientific Proposal",
+                  parent_node_id: "n7",
+                  node_type: "SUBSECTION",
+                  order_index: 5,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          {
+            status: 404,
+          },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(screen.getByText(/Reviewed sections:/)).toHaveTextContent(
+      "Reviewed sections: Part B / Part B1 / Proposal Summary",
+    );
+    expect(screen.getByText(/Not reviewed sections:/)).toHaveTextContent(
+      "Not reviewed sections: Part B / Part B2 / Part II of the Scientific Proposal",
+    );
+    expect(screen.queryByText("Call metadata unavailable; using review payload order.")).toBeNull();
+  });
+
   it("guardrail: review detail path contains no hardcoded VENI constants", () => {
     const source = fs.readFileSync("src/app/app/reviews/[reviewId]/page.tsx", "utf-8");
     const legacyLabels = ["VENI", "NODE", "LABELS"].join("_");

@@ -212,7 +212,7 @@ Verification Steps:
 - `cd backend && rg -n "deprecated_container_submission|moved_legacy_node_reference|mixed_version_review" app/schemas/api.py`
 Risks (if any): Mixed-version handling is easy to under-specify; if precedence rules are not asserted, UI copy may imply stronger evidence than the record supports.
 
-### [ ] Task 7 — Closure regressions for leaf-only ERC submit and review detail
+### [x] Task 7 — Closure regressions for leaf-only ERC submit and review detail
 
 Goal:
 Close the workflow with deterministic regressions that prove corrected ERC leaf-only submission, zero-card coverage retention, and no fallback leakage from legacy container assumptions.

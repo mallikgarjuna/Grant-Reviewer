@@ -1450,6 +1450,48 @@ def test_wf0060_review_detail_persists_leaf_coverage_and_legacy_compatibility_st
         session.close()
 
 
+def test_wf0060_zero_card_leaf_stays_visible_in_review_detail(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+        repository = ReviewRepository(session)
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0060-zero-card-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+                "review_stage": "STEP_1",
+                "nodes": {
+                    "academic_profile": "profile text",
+                    "scientific_proposal": "proposal text",
+                },
+                "submitted_leaf_ids": ["academic_profile", "scientific_proposal"],
+                "legacy_ambiguous_container_ids": [],
+                "moved_legacy_node_references": [],
+                "engine_path": "pipeline_v1",
+            },
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+
+        detail = get_review_detail(client=client, review_id=str(review.id))
+        assert detail.status_code == 200
+        payload = detail.json()
+        assert payload["cards"] == []
+        assert payload["submitted_leaf_ids"] == [
+            "academic_profile",
+            "scientific_proposal",
+        ]
+    finally:
+        session.close()
+
+
 def test_structured_review_erc_cog_2026_full_happy_path(monkeypatch) -> None:
     client, call_id, call_code = create_client_with_erc_cog_seed(monkeypatch)
     assert call_code == "erc_cog_2026_full"
