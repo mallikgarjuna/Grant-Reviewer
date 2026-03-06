@@ -49,7 +49,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0059_structured_review_proof_target_contract_guard"`
 Risks (if any): Overly broad selectors would weaken later proof obligations, so case names must stay WF-specific.
 
-### [ ] Task 2 — Tracer bullet: hierarchical proof-call submit reaches structured-review
+### [x] Task 2 — Tracer bullet: hierarchical proof-call submit reaches structured-review
 
 Goal:
 Replace the proof-call nested-node blocker with the thinnest functional hierarchical submit path that reaches `/api/bff/structured-review` in executable order.

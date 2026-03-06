@@ -199,6 +199,7 @@ export function UniversalSubmitForm() {
           const nextRenderModel = buildRenderModel({
             nodes: nextNodes,
             metadataByLogicalId,
+            callCode: metadataCallCode,
           });
           if (nextRenderModel.state !== "ready") {
             trackClientEvent("universal_submit.unsupported_call_selection", {
@@ -458,6 +459,9 @@ export function UniversalSubmitForm() {
                     <label
                       className="text-sm font-medium text-[var(--color-foreground)]"
                       htmlFor={inputId}
+                      style={{
+                        paddingLeft: `${node.depth * 1.25}rem`,
+                      }}
                     >
                       {node.label}
                     </label>
@@ -465,6 +469,10 @@ export function UniversalSubmitForm() {
                       id={inputId}
                       className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
                       onChange={(event) => updateNodeDraft(logicalId, event.target.value)}
+                      style={{
+                        marginLeft: `${node.depth * 1.25}rem`,
+                        width: node.depth > 0 ? `calc(100% - ${node.depth * 1.25}rem)` : "100%",
+                      }}
                       value={draft[logicalId] ?? ""}
                     />
                   </div>

@@ -503,6 +503,209 @@ describe("UniversalSubmitForm", () => {
     expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
   });
 
+  it("wf0059_submit_tracer_erc_proof_call_reaches_structured_review", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-erc-stg",
+                code: "erc_stg_2026_full",
+                name: "ERC Starting Grant 2026",
+                year: 2026,
+                agency_short_name: "ERC",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-erc-stg/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-b1",
+                logical_id: "b1",
+                title: "Part B1",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+              {
+                id: "node-b1-part1",
+                logical_id: "b1_part1_scientific_proposal",
+                title: "Part I of the Scientific Proposal",
+                parent_node_id: "node-b1",
+                node_type: "SUBSECTION",
+                order_index: 2,
+                has_expectations: true,
+              },
+              {
+                id: "node-b1-cv",
+                logical_id: "b1_cv_track_record",
+                title: "Curriculum Vitae and Track Record",
+                parent_node_id: "node-b1",
+                node_type: "SUBSECTION",
+                order_index: 3,
+                has_expectations: true,
+              },
+              {
+                id: "node-b2",
+                logical_id: "b2",
+                title: "Part B2",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 4,
+                has_expectations: true,
+              },
+              {
+                id: "node-b2-part2",
+                logical_id: "b2_part2_scientific_proposal",
+                title: "Part II of the Scientific Proposal",
+                parent_node_id: "node-b2",
+                node_type: "SUBSECTION",
+                order_index: 5,
+                has_expectations: true,
+              },
+              {
+                id: "node-resources",
+                logical_id: "resources_time_commitment",
+                title: "Resources and Time Commitment",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 6,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_stg_2026_full/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_stg_2026_full",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_stg_2026_full/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_stg_2026_full",
+            nodes: [
+              {
+                logical_id: "b1",
+                title: "Part B1",
+                parent_logical_id: null,
+                source_section: "AF 2026 - Part B1",
+              },
+              {
+                logical_id: "b1_part1_scientific_proposal",
+                title: "Part I of the Scientific Proposal",
+                parent_logical_id: "b1",
+                source_section: "AF 2026 - Part B1, Part I",
+              },
+              {
+                logical_id: "b1_cv_track_record",
+                title: "Curriculum Vitae and Track Record",
+                parent_logical_id: "b1",
+                source_section: "AF 2026 - Part B1, CV and Track Record",
+              },
+              {
+                logical_id: "b2",
+                title: "Part B2",
+                parent_logical_id: null,
+                source_section: "AF 2026 - Part B2",
+              },
+              {
+                logical_id: "b2_part2_scientific_proposal",
+                title: "Part II of the Scientific Proposal",
+                parent_logical_id: "b2",
+                source_section: "AF 2026 - Part B2, Part II",
+              },
+              {
+                logical_id: "resources_time_commitment",
+                title: "Resources and Time Commitment",
+                parent_logical_id: null,
+                source_section: "Part A Section C + Work Programme 2026",
+              },
+            ],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+          status: 200,
+        });
+      }
+      if (url === "/api/bff/structured-review") {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          call_id?: string;
+          nodes?: Array<{ node_logical_id: string; text: string }>;
+        };
+        expect(body.call_id).toBe("call-erc-stg");
+        expect(body.nodes).toEqual([
+          { node_logical_id: "b1", text: "Part B1 content" },
+          {
+            node_logical_id: "b1_part1_scientific_proposal",
+            text: "Part I content",
+          },
+          {
+            node_logical_id: "resources_time_commitment",
+            text: "Resources content",
+          },
+        ]);
+        return new Response(JSON.stringify({ review_id: "review-erc-stg-1" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<UniversalSubmitForm />);
+
+    expect(
+      await screen.findByLabelText("Part B1 (B1)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Part I of the Scientific Proposal (B1.I)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Part II of the Scientific Proposal (B2.II)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("This call uses nested sections and is not yet supported in this form."),
+    ).toBeNull();
+
+    fireEvent.change(screen.getByLabelText("Part B1 (B1)"), {
+      target: { value: "Part B1 content" },
+    });
+    fireEvent.change(screen.getByLabelText("Part I of the Scientific Proposal (B1.I)"), {
+      target: { value: "Part I content" },
+    });
+    fireEvent.change(screen.getByLabelText("Resources and Time Commitment"), {
+      target: { value: "Resources content" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/bff/structured-review",
+        expect.objectContaining({ method: "POST" }),
+      );
+    });
+  });
+
   it("shows contract error for missing logical_id", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);

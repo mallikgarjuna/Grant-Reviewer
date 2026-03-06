@@ -8,6 +8,7 @@ export type NodeMetadata = {
 export type RenderNode = {
   nodeLogicalId: string;
   label: string;
+  depth: number;
 };
 
 export type RenderModelReady = {
@@ -37,7 +38,10 @@ export type RenderModelResult =
 type BuildRenderModelInput = {
   nodes: NodeSummary[];
   metadataByLogicalId: Record<string, NodeMetadata>;
+  callCode?: string;
 };
+
+const WF0059_PROOF_TARGET_CALL_CODE = "erc_stg_2026_full";
 
 function toFallbackLabel(logicalId: string): string {
   return logicalId
@@ -84,9 +88,51 @@ function normalizeSectionNumber(raw: string): string | null {
   return null;
 }
 
+function buildProofTargetTraversal(nodes: NodeSummary[]): Array<{ node: NodeSummary; depth: number }> {
+  const childrenByParentId = new Map<string | null, NodeSummary[]>();
+  for (const node of nodes) {
+    const siblings = childrenByParentId.get(node.parent_node_id) ?? [];
+    siblings.push(node);
+    childrenByParentId.set(node.parent_node_id, siblings);
+  }
+
+  for (const siblings of childrenByParentId.values()) {
+    siblings.sort((left, right) => left.order_index - right.order_index);
+  }
+
+  const visitedNodeIds = new Set<string>();
+  const ordered: Array<{ node: NodeSummary; depth: number }> = [];
+
+  function visit(parentNodeId: string | null, depth: number) {
+    const siblings = childrenByParentId.get(parentNodeId) ?? [];
+    for (const sibling of siblings) {
+      if (visitedNodeIds.has(sibling.id)) {
+        continue;
+      }
+      visitedNodeIds.add(sibling.id);
+      ordered.push({ node: sibling, depth });
+      visit(sibling.id, depth + 1);
+    }
+  }
+
+  visit(null, 0);
+
+  for (const node of nodes) {
+    if (!visitedNodeIds.has(node.id)) {
+      ordered.push({ node, depth: node.parent_node_id === null ? 0 : 1 });
+    }
+  }
+
+  return ordered;
+}
+
 export function buildRenderModel(input: BuildRenderModelInput): RenderModelResult {
   const nestedNodes = input.nodes.filter((node) => node.parent_node_id !== null);
-  if (nestedNodes.length > 0) {
+  const proofTargetTraversal =
+    nestedNodes.length > 0 && input.callCode === WF0059_PROOF_TARGET_CALL_CODE
+      ? buildProofTargetTraversal(input.nodes)
+      : null;
+  if (nestedNodes.length > 0 && proofTargetTraversal === null) {
     return {
       state: "unsupported",
       reason: "nested_nodes",
@@ -106,9 +152,12 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
     };
   }
 
+  const orderedNodes =
+    proofTargetTraversal ?? input.nodes.map((node) => ({ node, depth: 0 }));
+
   return {
     state: "ready",
-    nodes: input.nodes.map((node) => {
+    nodes: orderedNodes.map(({ node, depth }) => {
       const nodeLogicalId = node.logical_id as string;
       const metadata = input.metadataByLogicalId[nodeLogicalId];
       const metadataTitle =
@@ -125,9 +174,10 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
       return {
         nodeLogicalId,
         label: sectionNumber ? `${baseLabel} (${sectionNumber})` : baseLabel,
+        depth,
       };
     }),
-    metadataFallbackCount: input.nodes.filter((node) => {
+    metadataFallbackCount: orderedNodes.filter(({ node }) => {
       const nodeLogicalId = node.logical_id as string;
       const metadata = input.metadataByLogicalId[nodeLogicalId];
       return !(typeof metadata?.title === "string" && metadata.title.trim());
