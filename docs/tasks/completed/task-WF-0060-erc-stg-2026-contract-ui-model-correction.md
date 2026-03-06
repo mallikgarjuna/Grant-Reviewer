@@ -2,8 +2,8 @@
 # WF-0060 — ERC StG 2026 Contract/UI Model Correction Tasks
 
 Artifact: task
-Version: v0.3
-Status: Ready for Implementation
+Version: v0.4
+Status: Complete
 Last Updated: 2026-03-06
 
 Type: feature
@@ -251,3 +251,4 @@ Risks (if any): Without WF-specific closure selectors, Phase 3 can claim success
 - v0.1 (2026-03-06): Initial task breakdown from PRD.
 - v0.2 (2026-03-06): Tightened deterministic verification selectors, added explicit reviewer-policy test coverage, and marked Ready for Implementation.
 - v0.3 (2026-03-06): Hardened Task 1 upload-gate wording and exact test selectors; fixed Task 7 dependency on the frontend tracer slice.
+- v0.4 (2026-03-06): Phase 3 review-and-harden closure applied; task artifact marked complete for archiving.

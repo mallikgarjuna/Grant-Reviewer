@@ -2583,6 +2583,141 @@ describe("UniversalSubmitForm", () => {
     );
   });
 
+  it("resets_to_step1_only_when_switching_to_call_with_metadata_failure", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-erc",
+                code: "erc_stg_2026_full",
+                name: "ERC Starting Grant 2026",
+                year: 2026,
+                agency_short_name: "ERC",
+              },
+              {
+                id: "call-veni",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Talent Programme - Veni 2025 - Pre-proposal",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_stg_2026_full/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_stg_2026_full",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-erc/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "erc-node-step2",
+                logical_id: "resources_time_commitment",
+                title: "Resources and Time Commitment",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_stg_2026_full/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_stg_2026_full",
+            nodes: [
+              {
+                logical_id: "resources_time_commitment",
+                title: "Resources and Time Commitment",
+                parent_logical_id: null,
+                review_stage: "STEP_2",
+                source_section: "Section C",
+                word_limit_min: null,
+                word_limit_max: null,
+              },
+            ],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-veni/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "veni-node",
+                logical_id: "academic_profile",
+                title: "Academic profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/metadata") {
+        return new Response(JSON.stringify({ error: "metadata unavailable" }), { status: 500 });
+      }
+      return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+        status: 200,
+      });
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    await screen.findByRole("option", { name: "Step 2" });
+    fireEvent.change(screen.getByLabelText("Review Stage"), {
+      target: { value: "STEP_2" },
+    });
+    await waitFor(() =>
+      expect(screen.getByLabelText("Review Stage")).toHaveValue("STEP_2"),
+    );
+
+    fireEvent.change(screen.getByLabelText("Funding Call"), {
+      target: { value: "call-veni" },
+    });
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Review Stage")).toHaveValue("STEP_1"),
+    );
+    expect(screen.getByLabelText("Review Stage")).not.toHaveTextContent("Step 2");
+  });
+
   it("guardrail: submit path contains no legacy domain map constant", () => {
     const source = fs.readFileSync("src/lib/submit/domainOptions.ts", "utf-8");
     const legacyConstant = ["DOMAIN", "OPTIONS", "BY", "CALL"].join("_");

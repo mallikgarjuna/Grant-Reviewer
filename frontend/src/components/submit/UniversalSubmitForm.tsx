@@ -171,6 +171,8 @@ export function UniversalSubmitForm() {
     async function loadNodes() {
       if (!cancelled) {
         setCallError(null);
+        setAvailableReviewStages(["STEP_1"]);
+        setSelectedReviewStage("STEP_1");
       }
       try {
         const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
