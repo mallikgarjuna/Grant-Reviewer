@@ -1,4 +1,6 @@
-"""Reviewer-policy extraction and deterministic post-check enforcement."""
+"""backend/app/services/reviewer_policy.py
+Reviewer-policy extraction and deterministic post-check enforcement.
+"""
 
 from __future__ import annotations
 
@@ -10,7 +12,7 @@ from app.models.domain import CallDefinition
 ReviewStage = Literal["STEP_1", "STEP_2"]
 EnforcementMode = Literal["PROMPT_ONLY", "POST_CHECK", "BLOCKING"]
 
-_STEP_2_NODE_IDS = {"b2", "b2_part2_scientific_proposal", "resources_time_commitment"}
+_STEP_2_NODE_IDS = {"b2_part2_scientific_proposal", "resources_time_commitment"}
 
 
 @dataclass(frozen=True)

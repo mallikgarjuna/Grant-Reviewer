@@ -1,4 +1,6 @@
-"""Tests for reviewer-policy extraction and enforcement."""
+"""backend/tests/test_reviewer_policy.py
+Tests for reviewer-policy extraction and enforcement.
+"""
 
 from uuid import uuid4
 
@@ -96,3 +98,12 @@ def test_policy_blocking_violation_classification() -> None:
         "pol_step1_budget: forbidden term 'insufficient budget' detected in feedback #1"
     ]
     assert warning == []
+
+
+def test_wf0060_reviewer_policy_uses_corrected_erc_leaf_stage_scope() -> None:
+    assert infer_review_stage("proposal_summary") == "STEP_1"
+    assert infer_review_stage("b1_part1_scientific_proposal") == "STEP_1"
+    assert infer_review_stage("b1_cv_track_record") == "STEP_1"
+    assert infer_review_stage("b2") == "STEP_1"
+    assert infer_review_stage("b2_part2_scientific_proposal") == "STEP_2"
+    assert infer_review_stage("resources_time_commitment") == "STEP_2"

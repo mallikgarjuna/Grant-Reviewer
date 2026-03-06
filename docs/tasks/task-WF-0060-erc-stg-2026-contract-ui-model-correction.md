@@ -79,7 +79,7 @@ Verification Steps:
 - `cd frontend && rg -n "submitted_nodes|node_logical_id" src/components/submit/UniversalSubmitForm.tsx src/lib/submit/renderModel.ts`
 Risks (if any): It is easy to preserve old container-as-field behavior in hidden form-state transforms even if the visible UI looks correct.
 
-### [ ] Task 3 — Backend stage and submit-boundary leaf enforcement
+### [x] Task 3 — Backend stage and submit-boundary leaf enforcement
 
 Goal:
 Replace legacy ERC container-stage assumptions with corrected leaf-stage and submit-boundary enforcement in backend review-entry seams.

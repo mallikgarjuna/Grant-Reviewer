@@ -1,4 +1,6 @@
-"""Structured review service for multi-node proposal assessments."""
+"""backend/app/services/structured_reviewer_service.py
+Structured review service for multi-node proposal assessments.
+"""
 
 from __future__ import annotations
 
@@ -44,6 +46,7 @@ ALIGNMENT_REQUIRED_NODES = ("academic_profile", "key_outputs")
 STRUCTURED_SUMMARY_COMPLETED_PREFIX = "Structured review completed with"
 STRUCTURED_POLICY_BLOCKING_PREFIX = "POLICY_BLOCKING:"
 STRUCTURED_POLICY_WARNING_PREFIX = "Reviewer-policy warnings:"
+WF0060_ERC_CONTAINER_NODE_IDS = {"part_a", "budget", "part_b", "b1", "b2"}
 
 
 class StructuredReviewerService:
@@ -174,6 +177,15 @@ class StructuredReviewerService:
                     review,
                     code=EngineErrorCode.MALFORMED_REVIEW_REQUEST.value,
                     message=f"Unknown node_logical_id: '{node_logical_id}'",
+                )
+            if (
+                call.code == "erc_stg_2026_full"
+                and node_logical_id in WF0060_ERC_CONTAINER_NODE_IDS
+            ):
+                return self._fail_contract_error(
+                    review,
+                    code=EngineErrorCode.MALFORMED_REVIEW_REQUEST.value,
+                    message=f"ERC container node_logical_id is not submittable: '{node_logical_id}'",
                 )
             applicable_rules = self._resolve_reviewer_policy_rules(
                 call_definition=call_definition,
