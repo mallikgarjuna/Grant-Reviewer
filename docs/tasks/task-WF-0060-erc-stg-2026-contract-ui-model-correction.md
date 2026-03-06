@@ -2,7 +2,7 @@
 # WF-0060 — ERC StG 2026 Contract/UI Model Correction Tasks
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-06
 
@@ -28,19 +28,20 @@ Must touch files:
 May touch files:
 - `backend/data/calls/sources/erc_stg_2026_full.sources.md`
 Out of scope: frontend render changes, structured-review persistence changes, compatibility-note UI
-Stop if: the implementation needs source-backed YAML re-authoring and the official ERC StG 2026 application-form and assessment-criteria PDFs are not available or the user wants to refresh them first; stop and ask whether the user needs to upload source files before editing the canonical YAML
+Stop if: Task 1 would require any substantive ERC YAML re-authoring or RED test authoring tied to refreshed source interpretation and the official ERC StG 2026 application-form and assessment-criteria PDFs are not confirmed as the accepted source set for this run; stop before editing files and ask whether the user needs to upload or refresh source files first
 Session boundary after: no
 Acceptance Criteria:
+- Phase 3 must explicitly confirm either the existing traced ERC source set or new uploaded ERC source PDFs before any substantive canonical-YAML correction begins.
 - Canonical ERC StG 2026 metadata models `part_a`, `budget`, `part_b`, `b1`, and `b2` as structural containers only.
 - `resources_time_commitment` is located under `part_a -> budget` while preserving its logical leaf identity.
 - Contract-facing metadata tests prove only the five approved leaf nodes remain input-bearing/reviewable in MVP.
 TDD Plan:
-- RED: add failing coverage in `backend/tests/test_call_nodes_tree_api.py` and `backend/tests/test_call_nodes_metadata_api.py` for corrected ERC hierarchy shape, structural-container semantics, and moved `resources_time_commitment`.
+- RED: add `wf0060_erc_tree_models_structural_containers_without_review_surfaces` in `backend/tests/test_call_nodes_tree_api.py` and `wf0060_erc_metadata_moves_resources_under_budget_without_changing_leaf_identity` in `backend/tests/test_call_nodes_metadata_api.py`.
 - GREEN: apply the minimal canonical YAML correction needed to satisfy the approved PRD and existing traced source set.
 - REFACTOR: update source-manifest wording only if the canonical correction changes traceability notes.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_call_nodes_tree_api.py -k "erc_stg_2026"`
-- `cd backend && uv run pytest tests/test_call_nodes_metadata_api.py -k "erc_stg_2026"`
+- `cd backend && uv run pytest tests/test_call_nodes_tree_api.py -k "wf0060_erc_tree_models_structural_containers_without_review_surfaces"`
+- `cd backend && uv run pytest tests/test_call_nodes_metadata_api.py -k "wf0060_erc_metadata_moves_resources_under_budget_without_changing_leaf_identity"`
 - `cd backend && rg -n "id: (part_a|budget|part_b|b1|b2|resources_time_commitment)" data/calls/canonical/erc/erc_stg_2026_full.yaml`
 Risks (if any): A partial YAML correction can leave hidden container expectations behind, so the tests must assert both hierarchy and reviewability semantics.
 
@@ -218,7 +219,7 @@ Close the workflow with deterministic regressions that prove corrected ERC leaf-
 Slice: closure-guard
 User Stories: US1, US2, US3, US4
 PRD Requirements: FR6, FR7, FR8, FR9, FR11, FR12, FR13
-Depends on: 3, 4, 5, 6
+Depends on: 2, 3, 4, 5, 6
 Enables: none
 Parallelizable: no
 Files to modify:
@@ -249,3 +250,4 @@ Risks (if any): Without WF-specific closure selectors, Phase 3 can claim success
 
 - v0.1 (2026-03-06): Initial task breakdown from PRD.
 - v0.2 (2026-03-06): Tightened deterministic verification selectors, added explicit reviewer-policy test coverage, and marked Ready for Implementation.
+- v0.3 (2026-03-06): Hardened Task 1 upload-gate wording and exact test selectors; fixed Task 7 dependency on the frontend tracer slice.
