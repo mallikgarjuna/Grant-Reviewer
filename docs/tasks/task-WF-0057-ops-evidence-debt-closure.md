@@ -77,7 +77,7 @@ Verification Steps:
 - `rg -n "WF-0040|backfill|waiver|owner|sign-off|date" docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md docs/logs/decisions.md`
 Risks (if any): Missing owner sign-off metadata blocks closure regardless of technical evidence completeness.
 
-### [ ] Task 4 — Close WF-0040 runtime evidence debt using selected path
+### [x] Task 4 — Close WF-0040 runtime evidence debt using selected path
 
 Goal:
 Execute the selected WF-0040 closure path and remove unresolved runtime-evidence ambiguity.

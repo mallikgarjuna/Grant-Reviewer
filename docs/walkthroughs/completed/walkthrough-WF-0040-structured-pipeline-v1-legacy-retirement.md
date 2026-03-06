@@ -21,7 +21,7 @@ Use this checklist as the gate before deleting legacy execution-path code.
 - [ ] Production observation window passed:
   - [ ] `pipeline_v1` only routing active.
   - [ ] 7 consecutive green days.
-  - [ ] Minimum 50 completed requests per currently-supported call code.
+  - [ ] Minimum 50 completed requests per currently supported call code.
 - [x] No contract-semantic regression in invariant errors (`CALL_CONFIG_DIGEST_MISMATCH`, `EXPECTATION_REF_UNRESOLVABLE`, timeout classification, validation ordering behavior).
 - [x] Rollback runbook validated in pre-delete posture (config-first while legacy code exists).
 - [ ] Explicit owner approval recorded (tech lead/repo owner sign-off).
@@ -69,7 +69,7 @@ Use this checklist as the gate before deleting legacy execution-path code.
 
 ## Gate Closure Mode
 
-- WF-0040 is closed via documented waiver because required staging/production observation evidence and per-call production counts are unavailable in the current environment.
+- WF-0040 is closed via documented waiver because required staging/production observation evidence and per call production counts are unavailable in the current environment.
 - This closure confirms implementation completion and verification evidence only; it does **not** claim production observation-window validation.
 - A follow-up backlog item is required before public-launch hardening/scale commitments.
 
@@ -80,11 +80,20 @@ Use this checklist as the gate before deleting legacy execution-path code.
 - Owner sign-off location: `docs/logs/decisions.md` (Date: `2026-03-06`, WF-0057 entry `AD 57.3`).
 - Why runtime backfill was not used in this run:
   - no deterministic access to staging/production telemetry windows in this execution environment,
-  - no reproducible per-call production count extracts available from repo-local artifacts alone.
+  - no reproducible per call production count extracts available from repo-local artifacts alone.
+
+## Waiver Refresh Record (2026-03-06)
+
+- waived gate 1: staging runtime window (`24` consecutive green hours on `pipeline_v1`).
+- waived gate 2: production runtime window (`7` consecutive green days on `pipeline_v1`).
+- waived gate 3: minimum production volume (`50` completed requests per currently supported call code).
+- constraint: this repo-only run cannot access deterministic staging/production telemetry or queryable production event counts.
+- residual risk: runtime routing incidents could remain undetected until external telemetry backfill is completed.
+- owner sign-off: repo owner (chat approval), dated `2026-03-06`.
 
 ## Remaining Risks
 
-- Staging/prod observation windows and per-call production sample thresholds remain unproven and must be backfilled in a follow-up WF.
+- Staging/prod observation windows and per call production sample thresholds remain unproven and must be backfilled in a follow-up WF.
 - Current replay/health artifacts are local simulated evidence; they are not substitutes for real environment evidence.
 - If runtime incidents occur, fallback is operational rollback posture documented in backend runbook updates from this WF.
 
@@ -98,4 +107,4 @@ Use this checklist as the gate before deleting legacy execution-path code.
 - Owner (tech lead/repo owner): Repo owner (chat approval)
 - Decision: `waive-gate-close` (accept residual risk, close WF artifacts, track evidence backfill as follow-up)
 - Date: 2026-03-01
-- Notes: Missing staging/prod observation-window evidence + per-call production counts acknowledged; closure allowed for MVP momentum with explicit follow-up backlog item.
+- Notes: Missing staging/prod observation-window evidence + per call production counts acknowledged; closure allowed for MVP momentum with explicit follow-up backlog item.

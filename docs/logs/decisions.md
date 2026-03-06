@@ -89,6 +89,16 @@
 - **Alternative not selected**: Runtime evidence backfill was not chosen because telemetry/query access needed to produce reproducible observation-window counts is unavailable in this run context.
 - **Status**: Approved.
 
+### AD 57.4: WF-0040 waiver refresh is finalized with explicit waived-gate inventory
+- **WF ID**: WF-0057
+- **Context**: Task execution now requires WF-0040 runtime gate ambiguity to be fully removed using the selected closure path.
+- **Decision**: Finalize WF-0040 as `waiver refresh` with exactly three waived gates recorded: staging runtime window, production runtime window, and per-call minimum production counts.
+- **Constraint**: No deterministic telemetry access in this run context for observation-window or production-count extraction.
+- **Residual risk**: Runtime gating defects may persist undetected until a dedicated telemetry backfill workflow is completed.
+- **Owner sign-off**: Repo owner (chat approval), linked from WF-0040 walkthrough waiver record section.
+- **Sign-off date**: 2026-03-06.
+- **Status**: Approved.
+
 ## Date: 2026-03-04 (WF-0053: contract boundary governance enforcement)
 
 ### AD 53.1: Boundary-governance trigger inventory is explicit and path-mapped
