@@ -20,12 +20,20 @@ If workflow artifacts are unavailable, store local captures in the same structur
 - Generate canonical live-run checksum payload for verify-main:
   - `python3 - <<'PY'`
   - `import hashlib, json, subprocess`
-  - `raw = subprocess.check_output(['gh','run','view','22735688979','--json','databaseId,url,headSha,workflowName,jobs'], text=True)`
+  - `raw = subprocess.check_output(['gh','run','view','22751018925','--json','databaseId,url,headSha,workflowName,jobs'], text=True)`
   - `data = json.loads(raw)`
-  - `payload = {'workflow_run_id': data['databaseId'], 'run_url': data['url'], 'commit_sha': data['headSha'], 'workflow': data['workflowName'], 'linked_artifacts': [job['url'] for job in data.get('jobs', [])]}`
+  - `payload = {'workflow_run_id': data['databaseId'], 'run_url': data['url'], 'commit_sha': data['headSha'], 'workflow': data['workflowName'], 'operation': 'apply-rehearsal', 'linked_artifacts': ['https://github.com/mallikgarjuna/Grant-Reviewer/actions/runs/22751018925/job/65985404369', 'artifact:wf-0056-apply-evidence#5792531122', 'artifact:wf-0056-apply-snapshot#5792531279']}`
   - `canon = json.dumps(payload, separators=(',', ':'), sort_keys=True)`
   - `print(hashlib.sha256(canon.encode()).hexdigest())`
   - `PY`
+
+## Current Live Rehearsal Source
+- Canonical run for verify/apply/rollback evidence chain:
+  - `workflow_run_id=22751018925`
+  - `run_url=https://github.com/mallikgarjuna/Grant-Reviewer/actions/runs/22751018925`
+- Rollback gate note:
+  - rollback job metadata is real and linked, but the rollback artifact upload path was missing because snapshot download failed (`Artifact not found for name: wf-0056-apply-snapshot`).
+  - this failure evidence is preserved in `live-run-index.md#rollback-rehearsal`.
 
 ## Required Proof Fields
 Every final evidence payload recorded in walkthrough must expose:

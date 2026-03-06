@@ -31,7 +31,7 @@ Verification Steps:
 - `test -f docs/walkthroughs/evidence/WF-0056/live-run-index.md`
 Risks (if any): Live run metadata may be unavailable in the current environment, forcing a documented blocker state.
 
-### [ ] Task 2 — Complete WF-0056 evidence-chain replacement for verify/apply/rollback
+### [x] Task 2 — Complete WF-0056 evidence-chain replacement for verify/apply/rollback
 
 Goal:
 Replace all remaining required WF-0056 placeholders with real live evidence metadata for verify/apply/rollback flows.
