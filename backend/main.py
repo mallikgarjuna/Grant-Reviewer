@@ -689,6 +689,7 @@ def check_compliance(
     call = repository.get_call_by_id(payload.call_id)
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+    call_definition = repository.get_call_definition_by_call_id(payload.call_id)
 
     hydrated_nodes = CallDefinitionService(repository.session).get_hydrated_nodes(
         payload.call_id
@@ -829,6 +830,7 @@ def create_structured_review(
     call = repository.get_call_by_id(payload.call_id)
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+    call_definition = repository.get_call_definition_by_call_id(payload.call_id)
 
     if not payload.nodes:
         raise APIException(
@@ -889,6 +891,7 @@ def create_structured_review(
         if not matches_review_stage(
             node_logical_id=node.node_logical_id,
             review_stage=payload.review_stage,
+            call_definition=call_definition,
         )
     )
     if stage_mismatch_ids:
@@ -1034,6 +1037,7 @@ def create_review(
     call = repository.get_call_by_id(payload.call_id)
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+    call_definition = repository.get_call_definition_by_call_id(payload.call_id)
 
     node = repository.get_node_by_id(payload.node_id)
     if node is None:
@@ -1046,6 +1050,7 @@ def create_review(
     if not matches_review_stage(
         node_logical_id=node.logical_id,
         review_stage=payload.review_stage,
+        call_definition=call_definition,
     ):
         raise APIException(
             code="REVIEW_STAGE_NODE_MISMATCH",
