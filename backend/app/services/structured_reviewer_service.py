@@ -46,6 +46,17 @@ STRUCTURED_POLICY_BLOCKING_PREFIX = "POLICY_BLOCKING:"
 STRUCTURED_POLICY_WARNING_PREFIX = "Reviewer-policy warnings:"
 
 
+def _normalize_submitted_nodes(
+    nodes: list[tuple[str, str]],
+) -> tuple[list[str], dict[str, str]]:
+    submitted_node_logical_ids: list[str] = []
+    submitted_text_by_node: dict[str, str] = {}
+    for node_logical_id, text in nodes:
+        submitted_node_logical_ids.append(node_logical_id)
+        submitted_text_by_node[node_logical_id] = text
+    return submitted_node_logical_ids, submitted_text_by_node
+
+
 class StructuredReviewerService:
     """Service for generating structured multi-node reviews."""
 
@@ -138,12 +149,15 @@ class StructuredReviewerService:
             for node, _ in call_nodes
             if isinstance(node.logical_id, str) and node.logical_id
         }
-        submitted_text_by_node = {node_logical_id: text for node_logical_id, text in nodes}
+        submitted_node_logical_ids, submitted_text_by_node = _normalize_submitted_nodes(
+            nodes
+        )
         structured_payload = {
             "call_id": str(call_id),
             "call_name": call.name,
             "review_stage": review_stage,
             "nodes": submitted_text_by_node,
+            "submitted_node_logical_ids": submitted_node_logical_ids,
             "engine_path": "pipeline_v1",
         }
 

@@ -88,7 +88,7 @@ Verification Steps:
 - `cd frontend && npm run test:ui`
 Risks (if any): It is easy to accidentally generalize all nested calls instead of the single proof target.
 
-### [ ] Task 3 — Structured-review hierarchical payload parity
+### [x] Task 3 — Structured-review hierarchical payload parity
 
 Goal:
 Allow the proof-call hierarchical payload through the existing structured-review contract while preserving validation ordering, idempotency replay, and mismatch semantics.

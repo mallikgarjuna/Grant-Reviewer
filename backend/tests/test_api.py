@@ -3154,6 +3154,92 @@ def test_wf0059_structured_review_proof_target_contract_guard(monkeypatch) -> No
     assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
 
 
+def test_wf0059_contract_hierarchical_submit_validation_and_idempotency(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+    idempotency_key = "idem-wf0059-erc-stg-hierarchical"
+    hierarchical_payload = {
+        "call_id": str(call_id),
+        "review_stage": "STEP_1",
+        "nodes": [
+            {
+                "node_logical_id": "b1",
+                "text": "Part B1 summary",
+                "children": [
+                    {
+                        "node_logical_id": "b1_part1_scientific_proposal",
+                        "text": "Part I scientific proposal",
+                    },
+                    {
+                        "node_logical_id": "b1_cv_track_record",
+                        "text": "Track record narrative",
+                    },
+                ],
+            }
+        ],
+    }
+
+    first = post_structured_review(
+        client=client,
+        payload=hierarchical_payload,
+        idempotency_key=idempotency_key,
+    )
+    assert first.status_code == 200
+
+    replay = post_structured_review(
+        client=client,
+        payload=hierarchical_payload,
+        idempotency_key=idempotency_key,
+    )
+    assert replay.status_code == 200
+    assert replay.json() == first.json()
+
+    mismatched = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "b1",
+                    "text": "Updated Part B1 summary",
+                    "children": [
+                        {
+                            "node_logical_id": "b1_part1_scientific_proposal",
+                            "text": "Part I scientific proposal",
+                        }
+                    ],
+                }
+            ],
+        },
+        idempotency_key=idempotency_key,
+    )
+    assert mismatched.status_code == 409
+    assert mismatched.json()["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+
+    malformed_payload = {
+        "call_id": str(call_id),
+        "review_stage": "STEP_1",
+        "nodes": [
+            {
+                "node_logical_id": "b1",
+                "text": "Part B1 summary",
+                "children": "not-a-list",
+            }
+        ],
+    }
+    body = json.dumps(malformed_payload).encode("utf-8")
+    headers = build_signature_headers(body=body)
+    headers["Content-Type"] = "application/json"
+    headers["Idempotency-Key"] = idempotency_key
+
+    invalid = client.post("/api/structured-review", content=body, headers=headers)
+    assert invalid.status_code == 400
+    assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
 def test_create_structured_review_non_idempotency_integrity_error_returns_500(
     monkeypatch,
 ) -> None:

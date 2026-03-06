@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 from uuid import UUID
 
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, select
 
 from app.db import engine, get_session
 from app.models.domain import (
@@ -26,6 +27,7 @@ from app.models.domain import (
 )
 from app.repositories.review_repository import ReviewRepository
 from app.services.structured_reviewer_service import StructuredReviewerService
+from scripts.ingest_call import ingest_call
 
 
 def _reset_database() -> None:
@@ -189,6 +191,31 @@ def _build_service(monkeypatch):
     return service, call_id
 
 
+def _build_erc_stg_service(monkeypatch):
+    monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
+    _reset_database()
+    ingest_call(Path("data/calls/canonical/erc/erc_stg_2026_full.yaml"), dry_run=False)
+    session = get_session()
+    template = PromptTemplate(
+        name="ERC StG structured template",
+        template_text="Template",
+        is_active=True,
+    )
+    session.add(template)
+    session.commit()
+
+    call = session.exec(
+        select(FundingCall).where(FundingCall.code == "erc_stg_2026_full")
+    ).first()
+    assert call is not None
+    repository = ReviewRepository(session)
+    service = StructuredReviewerService(
+        repository=repository,
+        llm_client=EchoExpectationLLMClient(),
+    )
+    return service, call.id
+
+
 def _set_call_definition_reviewer_policy(
     service: StructuredReviewerService,
     *,
@@ -219,6 +246,35 @@ def test_structured_pipeline_v1_happy_path(monkeypatch) -> None:
         assert review.status == ReviewStatus.COMPLETED
         assert len(cards) == 1
         assert cards[0].assessment_status == AssessmentStatus.ASSESSED
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0059_structured_payload_normalization_contract(monkeypatch) -> None:
+    service, call_id = _build_erc_stg_service(monkeypatch)
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                ("b1", "Part B1 summary"),
+                ("b1_part1_scientific_proposal", "Part I scientific proposal"),
+                ("b1_cv_track_record", "Track record narrative"),
+            ],
+            external_user_id="wf0059-structured-service",
+            idempotency_key="wf0059-structured-service",
+        )
+        assert review.structured_payload is not None
+        assert review.structured_payload["submitted_node_logical_ids"] == [
+            "b1",
+            "b1_part1_scientific_proposal",
+            "b1_cv_track_record",
+        ]
+        assert list(review.structured_payload["nodes"].keys()) == [
+            "b1",
+            "b1_part1_scientific_proposal",
+            "b1_cv_track_record",
+        ]
     finally:
         service.repository.session.close()
 
