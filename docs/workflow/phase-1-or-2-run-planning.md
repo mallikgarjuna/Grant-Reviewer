@@ -75,11 +75,9 @@ After completing Part C revisions, ensure the **Target Output Artifact** (and an
 
 1. Identify the Phase ID.
 2. Follow the corresponding **Part B (Review)** sub-phase instructions from the matrix exactly.
-3. Use review range `main...HEAD` by default and execute `@docs/workflow/util-adversarial-diff-audit.md` with profile `planning` (scope remains limited to the active phase artifact).
-4. Fail-closed rule: do not proceed to Part C unless Part B output includes all five required sections and explicit coverage of the six mandatory focus areas.
-5. Print the review output.
-6. Print: `Reviewed artifact: <path> @ <version>`.
-7. Classify issues found into Blocking or Non-blocking.
+3. Print the review output.
+4. Print: `Reviewed artifact: <path> @ <version>`.
+5. Classify issues found into Blocking or Non-blocking.
 
 ---
 

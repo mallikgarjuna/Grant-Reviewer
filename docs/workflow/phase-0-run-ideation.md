@@ -82,8 +82,6 @@ After completion, print:
 ## PART B — Review Gate (No Edits)
 
 Follow @docs/workflow/phase-0-2-brainstorm-risk-audit.md exactly.
-Use `main...HEAD` by default and execute `@docs/workflow/util-adversarial-diff-audit.md` with profile `ideation`.
-Fail-closed rule: do not proceed to Part C unless Part B output includes all five required sections and explicit coverage of the six mandatory focus areas.
 
 After completion, print:
 

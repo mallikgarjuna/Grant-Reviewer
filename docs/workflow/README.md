@@ -21,6 +21,7 @@ Runner shortcuts:
 - Phase 3: `docs/workflow/phase-3-run-execution.md`
 - Lifecycle (auto): `docs/workflow/lifecycle-run-auto.md`
 - Lifecycle (interactive): `docs/workflow/lifecycle-run-interactive.md`
+- Shared review utility (Part B gates): `docs/workflow/util-adversarial-diff-audit.md`
 
 ## Runner Index (Canonical)
 
