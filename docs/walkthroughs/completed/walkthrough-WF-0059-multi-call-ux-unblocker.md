@@ -2,8 +2,8 @@
 # WF-0059 — Multi-call UX Unblocker
 
 Artifact: walkthrough
-Version: v0.1
-Status: Drafted
+Version: v0.2
+Status: Completed
 Last Updated: 2026-03-06
 
 Type: feature
@@ -31,6 +31,8 @@ Type: feature
 
 - Backend baseline:
   - `cd backend && uv run pytest -m no_db`
+- Final backend/API verification:
+  - `cd backend && DATABASE_URL='sqlite:////tmp/grant_reviewer_wf0059_verify_test.db' uv run pytest tests/test_api.py -k 'wf0059_ or review_detail_ordering_source_fallback_when_call_linkage_missing'`
 - Task-targeted backend checks:
   - `DATABASE_URL='sqlite:////tmp/grant_reviewer_wf0059_test.db' uv run pytest tests/test_api.py -k "wf0059_contract_hierarchical_submit_validation_and_idempotency"`
   - `DATABASE_URL='sqlite:////tmp/grant_reviewer_wf0059_test.db' uv run pytest tests/test_structured_reviewer_service.py -k "wf0059_structured_payload_normalization_contract"`
@@ -43,6 +45,20 @@ Type: feature
   - `cd frontend && npx vitest run 'src/app/app/reviews/[reviewId]/page.test.tsx' -t "wf0059_review_detail_explicit_legacy_fallback_and_unmapped_state"`
   - `cd frontend && npx vitest run 'src/app/app/reviews/[reviewId]/page.test.tsx' -t "wf0059_review_detail_proof_path_blocks_query_param_fallback"`
   - `cd frontend && npm run test:ui`
+- Repo-wide gate:
+  - `pre-commit run --all-files`
+- Agentic browser validation:
+  - Loaded `http://127.0.0.1:3000/` and confirmed landing page renders with the expected PeerLens hero and navigation.
+  - Loaded `http://127.0.0.1:3000/app` and confirmed redirect to `http://127.0.0.1:3000/sign-in?redirect_url=%2Fapp`.
+  - Confirmed the Clerk sign-in shell renders without browser console errors on the protected route boundary.
+
+## Part B Audit
+
+- Re-ran the adversarial `main...HEAD` technical audit after the Part C1 fix.
+- Cleared the only prior blocker: backend `/reviews/{id}` now emits `detail_state` directly, and the direct API contract regression covers both `legacy_fallback` and proof-path unmapped state.
+- Remaining risks are non-blocking:
+  - route-level BFF normalization still lacks a direct unit test
+  - frontend retains defensive `detail_state` inference in addition to the backend contract
 
 ## Proof Artifact
 
@@ -59,4 +75,4 @@ Type: feature
 ## Risks
 
 - ERC proof-path evidence currently depends on a deterministic harness for the validator/pipeline seam, not a fully native proof-call pipeline success path.
-- Review-detail explicit-state inference exists in both the BFF route and the page fallback path; future state additions should keep those branches aligned or consolidate them.
+- Review-detail explicit-state inference exists in both the BFF route and the page fallback path; future state additions should keep those branches aligned or consolidate them behind the backend contract.
