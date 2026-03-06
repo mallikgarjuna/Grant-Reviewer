@@ -32,5 +32,5 @@ The CI `Docs Sanitization Guard` enforces that core docs do not include these ag
 - `copilot`
 
 ## Rollout Plan
-- Phase A (now): enforce only core docs above.
-- Phase B (later WF): sanitize legacy workflow runner references and expand guard coverage.
+- Phase A (completed): enforce core docs (`AGENTS.md`, `docs/workflow/README.md`).
+- Phase B (completed): sanitize workflow docs and enforce all `docs/workflow/*.md` files.

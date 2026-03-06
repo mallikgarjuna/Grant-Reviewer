@@ -2,20 +2,8 @@
 set -euo pipefail
 
 # Keep core workflow/process docs tool/model agnostic.
-readonly TARGETS=(
-  "AGENTS.md"
-  "docs/workflow/README.md"
-  "docs/workflow/phase-0-0-start-workflow.md"
-  "docs/workflow/phase-0-1-brainstorm.md"
-  "docs/workflow/phase-0-2-brainstorm-risk-audit.md"
-  "docs/workflow/phase-0-3-brainstorm-revise.md"
-  "docs/workflow/phase-1-1-prd-generate.md"
-  "docs/workflow/phase-1-2-prd-risk-audit.md"
-  "docs/workflow/phase-1-3-prd-revise.md"
-  "docs/workflow/phase-2-1-task-generate.md"
-  "docs/workflow/phase-2-2-task-review.md"
-  "docs/workflow/phase-2-3-task-revise.md"
-)
+mapfile -t WORKFLOW_DOCS < <(find docs/workflow -maxdepth 1 -type f -name "*.md" | sort)
+TARGETS=("AGENTS.md" "${WORKFLOW_DOCS[@]}")
 
 # Lowercase patterns; search is case-insensitive.
 readonly FORBIDDEN_PATTERN='antigravity|gemini|codex|gpt|claude|cursor|copilot'
