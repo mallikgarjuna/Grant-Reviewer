@@ -1,8 +1,8 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: walkthrough
-Version: v1.4
-Status: Complete (Waived Gate Closure)
+Version: v1.5
+Status: Done (Waiver-backed)
 Last Updated: 2026-03-06
 
 ---
@@ -100,7 +100,7 @@ Use this checklist as the gate before deleting legacy execution-path code.
 ## Workflow Status Clarification
 
 - WF-0040 implementation tasks are complete and workflow closure is recorded as waiver-based.
-- `docs/index.md` now tracks this WF as `Done` with artifacts archived under `completed/`.
+- `docs/index.md` now tracks this WF as `Done (Waiver-backed)` with artifacts archived under `completed/`.
 
 ## Approval Record
 

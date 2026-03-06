@@ -1,9 +1,9 @@
 # WF-0056 — Platform Policy Enforcement Live Rehearsal
 
 Artifact: walkthrough
-Version: v1.1
-Status: Done
-Last Updated: 2026-03-05
+Version: v1.2
+Status: Done (Evidence-backed)
+Last Updated: 2026-03-06
 
 ## Summary
 Implemented live rehearsal workflow coverage and safety contracts for verify/apply/rollback flows, with deterministic evidence schema/linkage and CI regression selectors.

@@ -102,7 +102,7 @@ Verification Steps:
 - `python - <<'PY'\nfrom pathlib import Path\ntext = Path(\"docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md\").read_text()\nhas_backfill = \"observation window\" in text and \"per-call\" in text\nhas_waiver = \"waived gate\" in text and \"residual risk\" in text and \"owner sign-off\" in text\nraise SystemExit(0 if has_backfill ^ has_waiver else 1)\nPY`
 Risks (if any): Telemetry access limits can force waiver path; waiver quality must still satisfy FR5.
 
-### [ ] Task 5 — Align WF-0056/WF-0040 status semantics in docs index
+### [x] Task 5 — Align WF-0056/WF-0040 status semantics in docs index
 
 Goal:
 Update status semantics in `docs/index.md` so WF-0056 and WF-0040 states truthfully reflect evidence-backed or waiver-backed closure.
