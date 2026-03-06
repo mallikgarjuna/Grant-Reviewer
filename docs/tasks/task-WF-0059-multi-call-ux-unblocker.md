@@ -207,7 +207,7 @@ Verification Steps:
 - `cd frontend && npm run test:ui`
 Risks (if any): Silent fallback to review-payload ordering would look correct in happy-path snapshots while still violating the proof-path source-of-truth contract.
 
-### [ ] Task 6 — Explicit fallback and unmapped proof-call state
+### [x] Task 6 — Explicit fallback and unmapped proof-call state
 
 Goal:
 Keep legacy fallback scoped to older or mixed-version reviews and surface explicit unmapped state when proof-call linkage is incomplete.

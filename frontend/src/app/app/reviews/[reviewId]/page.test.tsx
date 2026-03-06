@@ -341,6 +341,99 @@ describe("ReviewDetailPage", () => {
     expect(screen.getByText("Coverage summary")).toBeInTheDocument();
   });
 
+  it("wf0059_review_detail_explicit_legacy_fallback_and_unmapped_state", async () => {
+    submittedNodesParam = "wrong_query_node";
+    let scenario: "legacy" | "proof_unmapped" = "legacy";
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (scenario === "legacy" && url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: null,
+                call_code: null,
+                ordering_source: "review_payload_fallback",
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (scenario === "proof_unmapped" && url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-erc-stg",
+                call_code: "erc_stg_2026_full",
+                submitted_node_logical_ids: [
+                  "b1_part1_scientific_proposal",
+                  "unmapped_bonus_node",
+                ],
+                ordering_source: "call_nodes",
+                unmapped_node_logical_ids: ["unmapped_bonus_node"],
+                cards: [
+                  {
+                    id: "card-b1-part1",
+                    node_expectation_id: "exp-b1-part1",
+                    node_logical_id: "b1_part1_scientific_proposal",
+                    node_title: "Part I of the Scientific Proposal",
+                    criterion: "Excellence",
+                    criterion_description: "ERC excellence criterion",
+                    evaluation_element_name: "Objectives are ambitious and advance frontier of knowledge",
+                    expectation_guidance_note: "Show frontier ambition.",
+                    rating: "SUCCESS",
+                    feedback_text: "Ambition is clear.",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc-stg/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-b1",
+                  logical_id: "b1_part1_scientific_proposal",
+                  title: "Part I of the Scientific Proposal",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }), {
+          status: 404,
+        });
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { unmount } = render(<ReviewDetailPage />);
+
+    expect(
+      await screen.findByText("Call metadata unavailable; using review payload order."),
+    ).toBeInTheDocument();
+
+    scenario = "proof_unmapped";
+    unmount();
+    render(<ReviewDetailPage />);
+
+    expect(
+      await screen.findByText("Some submitted proof-call sections could not be mapped to call metadata and are shown as unmapped."),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Call metadata unavailable; using review payload order."),
+    ).toBeNull();
+    expect(screen.getByText(/Reviewed sections:/)).toHaveTextContent(
+      "Reviewed sections: Part I of the Scientific Proposal, unmapped_bonus_node",
+    );
+  });
+
   it("guardrail: review detail path contains no hardcoded VENI constants", () => {
     const source = fs.readFileSync("src/app/app/reviews/[reviewId]/page.tsx", "utf-8");
     const legacyLabels = ["VENI", "NODE", "LABELS"].join("_");
