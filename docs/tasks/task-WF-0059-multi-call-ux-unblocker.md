@@ -2,8 +2,8 @@
 # WF-0059 — Multi-call UX Unblocker
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-06
 
 Type: feature
@@ -33,9 +33,9 @@ TDD Plan:
 - GREEN: add the minimal fixture/helper plumbing in the touched tests so later slices can target the proof call deterministically without widening scope.
 - REFACTOR: skip unless shared proof-call fixture setup becomes repetitive across the three tests.
 Verification Steps:
-- `cd frontend && npx vitest run src/lib/submit/renderModel.test.ts -t "wf0059"`
-- `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0059"`
-- `cd backend && uv run pytest tests/test_api.py -k "wf0059"`
+- `cd frontend && npx vitest run src/lib/submit/renderModel.test.ts -t "wf0059_render_model_proof_target_guard"`
+- `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0059_review_detail_fallback_guard"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0059_structured_review_proof_target_contract_guard"`
 Risks (if any): Overly broad selectors would weaken later proof obligations, so case names must stay WF-specific.
 
 ### [ ] Task 2 — Tracer bullet: hierarchical proof-call submit reaches structured-review
@@ -61,7 +61,7 @@ TDD Plan:
 - GREEN: implement the minimum `renderModel` and submit-form changes to support the proof-call hierarchy without widening support claims beyond the locked proof target.
 - REFACTOR: extract a small helper for proof-call node flattening only if `UniversalSubmitForm.tsx` becomes harder to read.
 Verification Steps:
-- `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0059"`
+- `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0059_submit_tracer_erc_proof_call_reaches_structured_review"`
 - `cd frontend && npm run test:ui`
 Risks (if any): It is easy to accidentally generalize all nested calls instead of the single proof target.
 
@@ -84,12 +84,12 @@ Acceptance Criteria:
 - Validation failures still precede idempotency mismatch handling for malformed hierarchical payloads.
 - Replay with the same idempotency key and payload remains stable; same key plus different payload still returns the existing mismatch/error behavior.
 TDD Plan:
-- RED: add `wf0059_contract_hierarchical_submit_validation_and_idempotency` coverage in `backend/tests/test_api.py`.
+- RED: add `wf0059_contract_hierarchical_submit_validation_and_idempotency` in `backend/tests/test_api.py` and `wf0059_structured_payload_normalization_contract` in `backend/tests/test_structured_reviewer_service.py`.
 - GREEN: implement the smallest schema/service changes needed to translate the proof-path payload without changing existing persistence side effects.
 - REFACTOR: extract nested-node normalization logic only if both schema and service need the same transform.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_api.py -k "wf0059"`
-- `cd backend && uv run pytest tests/test_structured_reviewer_service.py`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0059_contract_hierarchical_submit_validation_and_idempotency"`
+- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0059_structured_payload_normalization_contract"`
 Risks (if any): Validation-order regressions can hide behind a passing happy-path test if mismatch coverage is not kept in the same slice.
 
 ### [ ] Task 4 — Persist submitted-node coverage for proof-path reviews
@@ -115,7 +115,7 @@ TDD Plan:
 - GREEN: implement the minimal repository/detail-contract changes needed to expose persisted coverage for proof-call reviews.
 - REFACTOR: extract review-detail coverage serialization if repository and API assembly start duplicating mapping logic.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_api.py -k "wf0059"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0059_contract_persisted_submitted_node_coverage"`
 - `cd backend && rg -n "submitted_node|coverage" app/repositories/review_repository.py app/schemas/api.py`
 Risks (if any): Card-derived coverage shortcuts would silently violate the persisted-node invariant for zero-card nodes.
 
@@ -142,7 +142,7 @@ TDD Plan:
 - GREEN: implement the minimal BFF/page changes needed to consume the persisted coverage source and call-node metadata for the proof path.
 - REFACTOR: extract ordering/coverage derivation into a small local helper if page composition becomes difficult to follow.
 Verification Steps:
-- `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0059"`
+- `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0059_review_detail_proof_path_uses_call_linked_ordering"`
 - `cd frontend && npm run test:ui`
 Risks (if any): Silent fallback to review-payload ordering would look correct in happy-path snapshots while still violating the proof-path source-of-truth contract.
 
@@ -169,38 +169,65 @@ TDD Plan:
 - GREEN: implement the smallest schema/page updates needed to distinguish legacy fallback from proof-path unmapped state.
 - REFACTOR: deduplicate any fallback-note rendering branches once the explicit states are proven.
 Verification Steps:
-- `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0059"`
-- `cd backend && uv run pytest tests/test_api.py -k "wf0059"`
+- `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0059_review_detail_explicit_legacy_fallback_and_unmapped_state"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0059_contract_persisted_submitted_node_coverage"`
 Risks (if any): Mixing legacy and proof-path states in one flag can cause false-positive parity on older reviews while masking proof-call defects.
 
-### [ ] Task 7 — Proof closure: parity regression sweep and concrete ERC evidence
+### [ ] Task 7 — Scope guard: proof-path closure regressions and Veni parity
 
 Goal:
-Close the WF by proving Veni parity, proof-call success, and review-detail traceability with automated selectors plus one concrete ERC end-to-end artifact.
-Slice: closure-proof
+Close the implementation plan with deterministic automated regressions that prove Veni parity, no fallback leakage, and persisted submitted-node coverage for the proof path.
+Slice: scope-guard
 User Stories: US1, US2, US3
 PRD Requirements: FR7, FR8, FR12, FR13, FR14
 Depends on: 2, 3, 4, 5, 6
-Enables: none
+Enables: 8
 Parallelizable: no
 Files to modify:
 - `backend/tests/test_api.py`
 - `frontend/src/components/submit/UniversalSubmitForm.test.tsx`
-- `docs/walkthroughs/walkthrough-WF-0059-multi-call-ux-unblocker.md`
+- `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
 Acceptance Criteria:
 - Deterministic automated coverage proves proof-call hierarchical submit, proof-call review-detail ordering/coverage, and Veni/flat-call regression parity.
-- A concrete end-to-end proof artifact tied to `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml` is captured in the walkthrough evidence.
-- Closure evidence shows selected proof-call identity, successful submit/review-create result, and review-detail output for the same review.
+- Deterministic automated coverage proves legacy fallback does not leak into proof-call reviews and zero-card submitted nodes still surface as reviewed from persisted coverage.
+- The closure regressions remain WF-specific and do not rely on broad namespace filters.
 TDD Plan:
-- RED: add WF-0059 closure regressions that fail if proof-path submit/detail pass but Veni parity or persisted-node coverage regresses.
-- GREEN: add the minimal final regression assertions and walkthrough evidence references after the product behavior is already working.
+- RED: add `wf0059_submit_tracer_preserves_veni_flat_path`, `wf0059_review_detail_proof_path_blocks_query_param_fallback`, and `wf0059_zero_card_node_remains_reviewed_from_persisted_coverage`.
+- GREEN: add the smallest final regression assertions after Tasks 2 through 6 are green.
 - REFACTOR: trim duplicated setup between frontend/backend closure assertions if the selectors become noisy.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_api.py -k "wf0059"`
-- `cd frontend && npm run test:ui`
-- `rg -n "erc_stg_2026_full|submitted-node|legacy fallback|traceability" docs/walkthroughs/walkthrough-WF-0059-multi-call-ux-unblocker.md`
-Risks (if any): Combining proof artifact capture and parity regression in one late slice may hide whether a failure is documentation-only or a real contract regression.
+- `cd backend && uv run pytest tests/test_api.py -k "wf0059_zero_card_node_remains_reviewed_from_persisted_coverage"`
+- `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0059_submit_tracer_preserves_veni_flat_path"`
+- `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0059_review_detail_proof_path_blocks_query_param_fallback"`
+Risks (if any): If the regression selectors stay broad, Phase 3 can claim closure while still missing the persisted-coverage invariant.
+
+### [ ] Task 8 — Concrete ERC proof artifact and walkthrough handoff
+
+Goal:
+Capture the required end-to-end proof artifact for `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml` after the automated scope guards are green.
+Slice: proof-evidence
+User Stories: US1, US2, US3
+PRD Requirements: FR1, FR10, FR12, FR14
+Depends on: 7
+Enables: none
+Parallelizable: no
+Files to modify:
+- `docs/walkthroughs/walkthrough-WF-0059-multi-call-ux-unblocker.md`
+- `docs/walkthroughs/evidence/WF-0059/erc_stg_2026_full_submit.json`
+- `docs/walkthroughs/evidence/WF-0059/erc_stg_2026_full_review_detail.json`
+Acceptance Criteria:
+- One concrete proof artifact is captured for the locked ERC proof target and tied to the same created review across submit and review-detail evidence.
+- Evidence shows selected proof-call identity, successful submit/review-create result, and review-detail grouping/ordering/coverage traceability.
+- Walkthrough text makes explicit that proof-call review detail used persisted submitted-node coverage plus call-linked metadata rather than `submitted_nodes` query params.
+TDD Plan:
+- N/A: evidence capture task after automated gates are already green.
+Verification Steps:
+- `rg -n "erc_stg_2026_full|persisted submitted-node coverage|call-linked metadata|submitted_nodes" docs/walkthroughs/walkthrough-WF-0059-multi-call-ux-unblocker.md`
+- `test -f docs/walkthroughs/evidence/WF-0059/erc_stg_2026_full_submit.json`
+- `test -f docs/walkthroughs/evidence/WF-0059/erc_stg_2026_full_review_detail.json`
+Risks (if any): Evidence gathered before Task 7 passes could memorialize a path that still violates parity or fallback invariants.
 
 ## Changelog
 
 - v0.1 (2026-03-06): Initial task breakdown from PRD.
+- v0.2 (2026-03-06): Applied review edits by splitting closure proof from evidence capture and tightening task-level verification selectors.
