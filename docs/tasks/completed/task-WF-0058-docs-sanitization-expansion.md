@@ -1,7 +1,7 @@
 # WF-0058 — Docs Sanitization Expansion Tasks
 
 Artifact: task
-Version: v1.1
+Version: v1.2
 Status: Complete
 Last Updated: 2026-03-06
 
@@ -55,11 +55,15 @@ Files:
 - docs/workflow/phase-3-run-execution.md
 - docs/workflow/phase-1-or-2-run-planning.md
 - docs/workflow/phase-0-run-ideation.md
+- docs/workflow/phase-0-2-brainstorm-risk-audit.md
+- docs/workflow/phase-1-2-prd-risk-audit.md
+- docs/workflow/phase-2-2-task-review.md
 - docs/workflow/lifecycle-run-auto.md
 - docs/workflow/lifecycle-run-interactive.md
 Verification:
-- manual review confirms all listed runners delegate Part B adversarial checks to the utility.
+- manual review confirms utility delegation, `main...HEAD` default, and fail-closed behavior for phase/lifecycle/sub-phase review gates.
 
 ## Changelog
 - v1.0 (2026-03-06): Finalized task artifact with implemented checklist.
 - v1.1 (2026-03-06): Added adversarial-diff-audit runner integration task and marked artifact complete.
+- v1.2 (2026-03-06): Expanded Task 5 coverage to include direct sub-phase gates and fail-closed/default-range hardening.

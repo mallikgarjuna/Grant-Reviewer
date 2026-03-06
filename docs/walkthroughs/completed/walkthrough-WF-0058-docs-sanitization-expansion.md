@@ -1,7 +1,7 @@
 # WF-0058 — Docs Sanitization Expansion Walkthrough
 
 Artifact: walkthrough
-Version: v1.1
+Version: v1.2
 Status: Complete
 Last Updated: 2026-03-06
 
@@ -15,6 +15,7 @@ Implemented policy + enforcement for tool/model-neutral process docs, sanitized 
 - Fixed guard CWD coupling using repo-root discovery.
 - Added regression tests for root/backend CWD and CI step presence.
 - Added reusable `util-adversarial-diff-audit.md` and delegated Phase 0/1/2/3 Part B gates to it via runner wiring.
+- Hardened review gates with fail-closed behavior and `main...HEAD` default across lifecycle and direct sub-phase invocation paths.
 
 ## Verification
 - bash scripts/check_docs_sanitization.sh -> PASS
@@ -27,3 +28,4 @@ Implemented policy + enforcement for tool/model-neutral process docs, sanitized 
 ## Changelog
 - v1.0 (2026-03-06): Final walkthrough for WF-0058 implementation and verification.
 - v1.1 (2026-03-06): Extended workflow runners to use canonical adversarial diff-audit utility.
+- v1.2 (2026-03-06): Enforced fail-closed/default-range behavior and canonicalized direct sub-phase review gates.
