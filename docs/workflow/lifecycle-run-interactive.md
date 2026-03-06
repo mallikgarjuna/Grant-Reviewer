@@ -27,6 +27,7 @@ Do NOT modify this file during execution.
 
 ## Safety Guardrails
 - Respect all no-edit review gates defined by phase runners.
+- Do not bypass adversarial Part B gates delegated via `@docs/workflow/util-adversarial-diff-audit.md`.
 - Do not skip required user-approval checkpoints in downstream runners.
 - If a phase runner reports blocking ambiguity, stop and ask the user before continuing.
 - Do not advance to the next phase unless the current phase's commit gate is satisfied (including per-part commit handoffs required by downstream runners).
