@@ -2,7 +2,7 @@
 # WF-0059 — Multi-call UX Unblocker
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-06
 
@@ -21,9 +21,20 @@ Depends on: none
 Enables: 2, 3, 5, 7
 Parallelizable: no
 Files to modify:
+Must touch files:
 - `frontend/src/lib/submit/renderModel.test.ts`
 - `backend/tests/test_api.py`
 - `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
+May touch files:
+- `none`
+Out of scope:
+- `frontend/src/lib/submit/renderModel.ts`
+- `frontend/src/components/submit/UniversalSubmitForm.tsx`
+- `frontend/src/app/app/reviews/[reviewId]/page.tsx`
+Stop if:
+- proof-target guard coverage requires runtime-code changes outside test/helper plumbing
+- a deterministic WF-0059 selector cannot be isolated in the named test files
+Session boundary after: no
 Acceptance Criteria:
 - Deterministic WF-0059 test coverage exists for the locked proof target `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`.
 - Guard coverage proves current Veni/flat-call behavior remains the control path while the proof-call path is extended.
@@ -49,9 +60,21 @@ Depends on: 1
 Enables: 3, 7
 Parallelizable: no
 Files to modify:
+Must touch files:
 - `frontend/src/lib/submit/renderModel.ts`
 - `frontend/src/components/submit/UniversalSubmitForm.tsx`
 - `frontend/src/components/submit/UniversalSubmitForm.test.tsx`
+May touch files:
+- `frontend/src/app/api/bff/structured-review/route.ts`
+Out of scope:
+- `backend/app/schemas/structured_review.py`
+- `backend/app/services/structured_reviewer_service.py`
+- `frontend/src/app/app/reviews/[reviewId]/page.tsx`
+Stop if:
+- the tracer path needs backend structured-review contract changes before a valid frontend request can be formed
+- the proof target cannot be unblocked without broadening support beyond `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`
+- edits are required outside the submit/frontend transport surface listed above
+Session boundary after: yes
 Acceptance Criteria:
 - The ERC proof call no longer resolves to the `nested_nodes` unsupported state in the submit renderer.
 - Submit UI renders the proof-call hierarchy in the intended execution order and collects text for required nodes.
@@ -76,9 +99,21 @@ Depends on: 1, 2
 Enables: 4, 7
 Parallelizable: no
 Files to modify:
+Must touch files:
 - `backend/app/schemas/structured_review.py`
 - `backend/app/services/structured_reviewer_service.py`
 - `backend/tests/test_api.py`
+May touch files:
+- `backend/tests/test_structured_reviewer_service.py`
+Out of scope:
+- `backend/app/repositories/review_repository.py`
+- `frontend/src/components/submit/UniversalSubmitForm.tsx`
+- `frontend/src/app/app/reviews/[reviewId]/page.tsx`
+Stop if:
+- persisted submitted-node coverage requires repository or schema work that belongs to Task 4
+- validation parity cannot be preserved without changing idempotency semantics
+- contract changes spill outside the named backend structured-review surfaces
+Session boundary after: no
 Acceptance Criteria:
 - Structured-review accepts the proof-call hierarchical payload through the existing request boundary.
 - Validation failures still precede idempotency mismatch handling for malformed hierarchical payloads.
@@ -103,9 +138,20 @@ Depends on: 3
 Enables: 5, 6, 7
 Parallelizable: no
 Files to modify:
+Must touch files:
 - `backend/app/repositories/review_repository.py`
 - `backend/app/schemas/api.py`
 - `backend/tests/test_api.py`
+May touch files:
+- `none`
+Out of scope:
+- `frontend/src/app/api/bff/reviews/[reviewId]/route.ts`
+- `frontend/src/app/app/reviews/[reviewId]/page.tsx`
+- database migrations or new persistence tables
+Stop if:
+- satisfying the persisted coverage invariant requires a migration, new table, or edits outside the existing review repository/detail contract
+- zero-card reviewed-node coverage cannot be exposed without re-planning the review detail payload contract
+Session boundary after: yes
 Acceptance Criteria:
 - Successful proof-path review creation persists submitted node logical IDs, or an equivalent persisted review-linked coverage source, on the review detail contract.
 - Coverage accounting includes proof-call nodes that were submitted but emitted zero review cards.
@@ -130,9 +176,20 @@ Depends on: 1, 4
 Enables: 6, 7
 Parallelizable: no
 Files to modify:
+Must touch files:
 - `frontend/src/app/api/bff/reviews/[reviewId]/route.ts`
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx`
 - `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
+May touch files:
+- `none`
+Out of scope:
+- `backend/app/repositories/review_repository.py`
+- `backend/app/services/structured_reviewer_service.py`
+- submit flow files outside review detail consumption
+Stop if:
+- the proof-path review detail still requires backend contract changes not already delivered by Task 4
+- the page can only be made correct by reintroducing `submitted_nodes` query-param ordering as source of truth
+Session boundary after: no
 Acceptance Criteria:
 - Proof-call review detail derives grouping, ordering, labels, and coverage from persisted review-linked data plus call metadata.
 - Proof-call rendering does not use `submitted_nodes` query params as its source of truth.
@@ -157,9 +214,20 @@ Depends on: 4, 5
 Enables: 7
 Parallelizable: no
 Files to modify:
+Must touch files:
 - `backend/app/schemas/api.py`
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx`
 - `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
+May touch files:
+- `frontend/src/app/api/bff/reviews/[reviewId]/route.ts`
+Out of scope:
+- `backend/app/repositories/review_repository.py`
+- `frontend/src/components/submit/UniversalSubmitForm.tsx`
+- walkthrough/evidence files
+Stop if:
+- unmapped proof-path state requires new persistence or repository work beyond Task 4
+- explicit legacy fallback cannot be isolated from proof-path unmapped handling within the named review-detail surfaces
+Session boundary after: yes
 Acceptance Criteria:
 - Older or mixed-version reviews without required call-linked metadata take an explicit legacy fallback path.
 - Partially mapped proof-call reviews render visible unmapped state instead of silently degrading to Veni-shaped ordering.
@@ -184,9 +252,22 @@ Depends on: 2, 3, 4, 5, 6
 Enables: 8
 Parallelizable: no
 Files to modify:
+Must touch files:
 - `backend/tests/test_api.py`
 - `frontend/src/components/submit/UniversalSubmitForm.test.tsx`
 - `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
+May touch files:
+- `none`
+Out of scope:
+- product runtime files
+- `docs/walkthroughs/walkthrough-WF-0059-multi-call-ux-unblocker.md`
+- `docs/walkthroughs/evidence/WF-0059/erc_stg_2026_full_submit.json`
+- `docs/walkthroughs/evidence/WF-0059/erc_stg_2026_full_review_detail.json`
+Stop if:
+- any closure regression can only be made green by reopening earlier product-code tasks
+- selectors stop being task-specific and require a broad WF namespace filter again
+- verification fails twice without a clear minimal fix
+Session boundary after: yes
 Acceptance Criteria:
 - Deterministic automated coverage proves proof-call hierarchical submit, proof-call review-detail ordering/coverage, and Veni/flat-call regression parity.
 - Deterministic automated coverage proves legacy fallback does not leak into proof-call reviews and zero-card submitted nodes still surface as reviewed from persisted coverage.
@@ -212,9 +293,21 @@ Depends on: 7
 Enables: none
 Parallelizable: no
 Files to modify:
+Must touch files:
 - `docs/walkthroughs/walkthrough-WF-0059-multi-call-ux-unblocker.md`
 - `docs/walkthroughs/evidence/WF-0059/erc_stg_2026_full_submit.json`
 - `docs/walkthroughs/evidence/WF-0059/erc_stg_2026_full_review_detail.json`
+May touch files:
+- `none`
+Out of scope:
+- product runtime files
+- automated regression tests
+- `docs/index.md`
+Stop if:
+- Task 7 automated gates are not green
+- submit and review-detail evidence cannot be tied to the same created review
+- evidence capture reveals proof-path fallback or coverage behavior that contradicts Tasks 4 through 7
+Session boundary after: no
 Acceptance Criteria:
 - One concrete proof artifact is captured for the locked ERC proof target and tied to the same created review across submit and review-detail evidence.
 - Evidence shows selected proof-call identity, successful submit/review-create result, and review-detail grouping/ordering/coverage traceability.
@@ -231,3 +324,4 @@ Risks (if any): Evidence gathered before Task 7 passes could memorialize a path 
 
 - v0.1 (2026-03-06): Initial task breakdown from PRD.
 - v0.2 (2026-03-06): Applied review edits by splitting closure proof from evidence capture and tightening task-level verification selectors.
+- v0.3 (2026-03-06): Added bounded execution fields (`Must touch files`, `May touch files`, `Out of scope`, `Stop if`, `Session boundary after`) for Phase 3 safety.
