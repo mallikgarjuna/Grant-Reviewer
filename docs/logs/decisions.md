@@ -60,6 +60,16 @@
 - **Tradeoff**: Evidence artifacts may grow; raw payloads must avoid secrets and remain response-body only.
 - **Status**: Approved.
 
+## Date: 2026-03-06 (WF-0057: ops evidence debt closure)
+
+### AD 57.1: "Done" status must be evidence-backed; placeholders are a closure defect
+- **WF ID**: WF-0057
+- **Context**: The repo can claim workflows are Done in `docs/index.md` while walkthrough evidence remains waived or contains `<pending live run>` placeholders. WF-0056 is marked Done but its walkthrough still has placeholders even though it states stub/static evidence is invalid.
+- **Decision**: Treat placeholder or waived runtime evidence as a closure defect. During WF-0057, re-align WF statuses so any workflow with required evidence placeholders is not marked Done until real live-run evidence is recorded, or an explicit waiver is documented with updated constraints and owner sign-off.
+- **Why**: Preserves governance traceability; prevents "fake-done" sequencing; makes auditability and operational readiness claims defensible.
+- **Tradeoff**: May temporarily downgrade previously "Done" items, which can be uncomfortable but reflects reality and reduces risk.
+- **Status**: Approved.
+
 ## Date: 2026-03-04 (WF-0053: contract boundary governance enforcement)
 
 ### AD 53.1: Boundary-governance trigger inventory is explicit and path-mapped
