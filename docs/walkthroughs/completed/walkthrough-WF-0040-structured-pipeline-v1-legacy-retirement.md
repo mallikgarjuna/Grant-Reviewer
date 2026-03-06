@@ -1,9 +1,9 @@
 # WF-0040 — Structured Pipeline v1 Legacy Retirement
 
 Artifact: walkthrough
-Version: v1.3
+Version: v1.4
 Status: Complete (Waived Gate Closure)
-Last Updated: 2026-03-01
+Last Updated: 2026-03-06
 
 ---
 
@@ -72,6 +72,15 @@ Use this checklist as the gate before deleting legacy execution-path code.
 - WF-0040 is closed via documented waiver because required staging/production observation evidence and per-call production counts are unavailable in the current environment.
 - This closure confirms implementation completion and verification evidence only; it does **not** claim production observation-window validation.
 - A follow-up backlog item is required before public-launch hardening/scale commitments.
+
+## WF-0057 Closure Path Decision (Owner-Gated)
+
+- Chosen path: `waiver refresh` (not runtime evidence backfill).
+- Decision date: `2026-03-06`.
+- Owner sign-off location: `docs/logs/decisions.md` (Date: `2026-03-06`, WF-0057 entry `AD 57.3`).
+- Why runtime backfill was not used in this run:
+  - no deterministic access to staging/production telemetry windows in this execution environment,
+  - no reproducible per-call production count extracts available from repo-local artifacts alone.
 
 ## Remaining Risks
 

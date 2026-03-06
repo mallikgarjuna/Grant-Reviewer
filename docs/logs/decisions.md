@@ -78,6 +78,17 @@
 - **Tradeoff**: Adds documentation rigor and can delay closure if owner sign-off metadata is incomplete.
 - **Status**: Approved.
 
+### AD 57.3: WF-0040 path selection for this run is waiver refresh with explicit sign-off trace
+- **WF ID**: WF-0057
+- **Context**: WF-0057 execution requires a single explicit closure mode for WF-0040 before index status semantics can be finalized.
+- **Decision**: Select `waiver refresh` for WF-0040 in this run (instead of runtime evidence backfill) and record owner sign-off trace directly in WF-0040 walkthrough + this decision log.
+- **Why**: Current execution environment does not provide deterministic staging/prod telemetry windows or reproducible per-call production counts that can be linked from repo docs alone.
+- **Tradeoff**: Runtime gates remain waived and must stay visible as residual risk until a dedicated backfill workflow provides reproducible live evidence.
+- **Owner sign-off**: Repo owner (chat approval), reference captured in `docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`.
+- **Sign-off date**: 2026-03-06.
+- **Alternative not selected**: Runtime evidence backfill was not chosen because telemetry/query access needed to produce reproducible observation-window counts is unavailable in this run context.
+- **Status**: Approved.
+
 ## Date: 2026-03-04 (WF-0053: contract boundary governance enforcement)
 
 ### AD 53.1: Boundary-governance trigger inventory is explicit and path-mapped

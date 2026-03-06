@@ -55,7 +55,7 @@ Verification Steps:
 - `rg -n "verify|apply|rollback|workflow_run_id|commit_sha|linked_artifacts|evidence_sha256" docs/walkthroughs/completed/walkthrough-WF-0056-platform-policy-enforcement-live-rehearsal.md docs/walkthroughs/evidence/WF-0056/live-run-index.md`
 Risks (if any): If any run artifact cannot be recovered, completion must be replaced by explicit debt/waiver state rather than synthetic placeholders.
 
-### [ ] Task 3 — Decide WF-0040 closure path (backfill vs waiver refresh) with owner traceability
+### [x] Task 3 — Decide WF-0040 closure path (backfill vs waiver refresh) with owner traceability
 
 Goal:
 Record a single explicit WF-0040 closure strategy decision and owner/sign-off trail before updating runtime evidence claims.
