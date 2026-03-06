@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { shouldUseClerkProxy } from "./proxy-routes.ts";
+import { shouldUseClerkProxy } from "./proxy-routes";
 
 test("protects /app routes", () => {
   assert.equal(shouldUseClerkProxy("/app"), true);

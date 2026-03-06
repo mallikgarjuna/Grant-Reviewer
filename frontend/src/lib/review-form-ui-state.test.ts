@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { deriveReviewFormUiState } from "./review-form-ui-state.ts";
+import { deriveReviewFormUiState } from "./review-form-ui-state";
 
 test("legacy state enables normal submission path", () => {
   const state = deriveReviewFormUiState({

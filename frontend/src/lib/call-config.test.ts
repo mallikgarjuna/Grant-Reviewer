@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { resolveCallConfigUiState } from "./call-config.ts";
+import { resolveCallConfigUiState } from "./call-config";
 
 test("returns structured mode for valid structured payload", () => {
   const state = resolveCallConfigUiState({
