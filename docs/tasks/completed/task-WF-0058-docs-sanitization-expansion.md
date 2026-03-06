@@ -1,8 +1,8 @@
 # WF-0058 — Docs Sanitization Expansion Tasks
 
 Artifact: task
-Version: v1.0
-Status: Ready for Implementation
+Version: v1.1
+Status: Complete
 Last Updated: 2026-03-06
 
 ## Task Breakdown
@@ -47,5 +47,19 @@ Verification:
 - cd backend && uv run pytest tests/scripts/test_docs_sanitization_guard.py -q
 - cd backend && uv run pytest tests/scripts/test_ci_policy_event_scope.py -k "wf0058_docs_sanitization_guard_step_contract or wf0054_ci_policy_ or wf0055_platform_policy_ or wf0056_live_rehearsal_safety_gates or wf0056_live_rehearsal_apply_contract or wf0056_live_rehearsal_verify_tracer_contract"
 
+### [x] Task 5 — Encode adversarial diff audit contract in runners
+Goal: enforce a reusable adversarial review pattern across phase runners.
+Files:
+- docs/workflow/util-adversarial-diff-audit.md
+- docs/workflow/phase-3-2-technical-audit-review.md
+- docs/workflow/phase-3-run-execution.md
+- docs/workflow/phase-1-or-2-run-planning.md
+- docs/workflow/phase-0-run-ideation.md
+- docs/workflow/lifecycle-run-auto.md
+- docs/workflow/lifecycle-run-interactive.md
+Verification:
+- manual review confirms all listed runners delegate Part B adversarial checks to the utility.
+
 ## Changelog
 - v1.0 (2026-03-06): Finalized task artifact with implemented checklist.
+- v1.1 (2026-03-06): Added adversarial-diff-audit runner integration task and marked artifact complete.
