@@ -154,12 +154,15 @@ Use @docs/workflow/phase-3-2-technical-audit-review.md
 Assume implementation tasks are DONE.
 Run Phase 3.2 (Technical Audit Review Gate) for <WF-ID>/<slug>.
 Do NOT edit files.
-Print findings in:
+Use `main...HEAD` by default.
+Run `@docs/workflow/util-adversarial-diff-audit.md` with profile `execution`.
+Fail-closed: do not mark the gate complete unless output includes:
 1) potential bugs
 2) missing tests
 3) design issues
 4) suggested fixes
 5) refactored version with comments
+and explicitly covers architecture violations vs AGENTS.md, broken invariants, security issues, edge cases, missing tests, and hidden coupling.
 End with two suggested next actions.
 ```
 

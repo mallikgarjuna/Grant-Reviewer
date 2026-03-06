@@ -1,7 +1,7 @@
 # Phase 2.2 — Tasks Review (No Edits)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-2-2-task-review.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-2-2-task-review.md.
 Do NOT modify this file during execution.
 
 ---
@@ -34,24 +34,9 @@ Phase 2.2 produces review output in chat only (no file edits). If you made no fi
 
 ## Output (in chat only)
 
-Return:
-
-1. Task sequencing issues (including dependency graph issues: cycles, missing prerequisites, invalid references)
-2. Atomicity violations (tasks too large; >3 files changed; unclear boundaries)
-3. Missing integration/glue tasks
-4. Over-engineering warnings
-5. Redundant or mergeable tasks
-6. Exact edits required (task number + change)
-7. Missing traceability (tasks missing Slice/User Stories; tracer bullet missing/late; missing dependency metadata `Depends on`/`Enables`/`Parallelizable`)
-8. Testing gaps (tasks missing explicit `RED/GREEN/REFACTOR` TDD Plan where required; verification steps missing concrete automated commands; verification steps not proving acceptance criteria)
-9. PRD alignment gaps (tasks reference non-existent US#; tasks missing US# where PRD says MVP)
-10. PRD requirement alignment gaps (tasks reference non-existent FR#; tasks missing FR# where PRD defines requirements)
-11. Next 2 actions I should take (choose one)
-
-Max 100 lines.
-Be strict about MVP.
-Be strict about atomic tasks: prefer tasks that are independently testable/verifiable and touch <=3 files when feasible.
-Be strict about dependency ordering: task list should be topologically valid and easy to execute sequentially in Phase 3.
-`Parallelizable` is planning metadata only; do NOT recommend parallel task execution for Phase 3.
-
-Do NOT edit files.
+1. Use review range `main...HEAD` by default (unless the user explicitly requests a narrower range).
+2. Execute `@docs/workflow/util-adversarial-diff-audit.md` with profile `planning`.
+3. Fail-closed rule: do not consider this gate complete unless output includes all five required sections and explicit coverage of the six mandatory focus areas.
+4. Keep task-specific rigor: include exact task-file edit guidance where findings exist, and enforce sequential, atomic execution constraints.
+5. `Parallelizable` remains planning metadata only; do NOT recommend parallel task execution for Phase 3.
+6. Do NOT edit files.

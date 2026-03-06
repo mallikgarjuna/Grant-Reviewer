@@ -1,7 +1,7 @@
 # Phase 1.1 — Generate PRD (v0.1)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-1-1-prd-generate.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-1-1-prd-generate.md.
 Do NOT modify this file during execution.
 
 ---
@@ -168,7 +168,7 @@ Do NOT mark Done.
 
 ---
 
-## How to Invoke in Codex Chat
+## How to Invoke in Chat
 
 Use:
 

@@ -30,15 +30,11 @@ No file edits are allowed in this phase.
 
 ### PART B: Technical Audit (Code Review) [GATE]
 1. Stop feature work and perform a detailed technical audit (code review) of Phase 3 Part A implementation only.
-2. Output the audit in this exact structure:
-   1. potential bugs
-   2. missing tests
-   3. design issues
-   4. suggested fixes
-   5. refactored version with comments (only for high-impact snippets; keep minimal and actionable)
-3. Keep review scope exclusive to technical audit concerns; avoid product-scope brainstorming or non-technical critique.
-4. For each finding, include severity (`blocking` or `non-blocking`) and a concrete target (file/test area).
-5. Do not modify files in this phase.
+2. Use `main...HEAD` as the default review range for branch-level pre-ship hardening (unless the user explicitly requests a narrower range).
+3. Execute `@docs/workflow/util-adversarial-diff-audit.md` using profile `execution` and the selected diff range.
+4. Fail-closed rule: do not consider this gate complete unless output includes all five required sections and explicit coverage of the six mandatory focus areas.
+5. Keep review scope exclusive to technical audit concerns; avoid product-scope brainstorming or non-technical critique.
+6. Do not modify files in this phase.
 
 ---
 
@@ -62,6 +58,7 @@ Use @docs/workflow/phase-3-2-technical-audit-review.md
 Assume implementation tasks are DONE.
 Run Phase 3.2 (Technical Audit Review Gate) for <WF-ID>/<slug>.
 Do NOT edit files.
-Print Part B review findings in the required 1-5 structure with severity.
+Use `main...HEAD` and run `@docs/workflow/util-adversarial-diff-audit.md` with profile `execution`.
+Print Part B review findings in the required 1-5 structure with severity and concrete targets.
 End with two suggested next actions.
 ```

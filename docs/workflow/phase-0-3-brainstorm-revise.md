@@ -1,7 +1,7 @@
 # Phase 0.3 — Brainstorm Revise & Bump (Apply Risk Audit)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-0-3-brainstorm-revise.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-0-3-brainstorm-revise.md.
 Do NOT modify this file during execution.
 
 ---

@@ -1,7 +1,7 @@
 # Phase 2.1 — Generate Tasks (v0.1)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-2-1-task-generate.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-2-1-task-generate.md.
 Do NOT modify this file during execution.
 
 ---
@@ -142,7 +142,7 @@ Phase 2
 
 ---
 
-## How to Invoke in Codex Chat
+## How to Invoke in Chat
 
 Use:
 

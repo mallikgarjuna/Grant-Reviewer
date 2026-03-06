@@ -1,7 +1,7 @@
 # Phase 2.3 — Revise Tasks + Bump Version
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-2-3-task-revise.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-2-3-task-revise.md.
 Do NOT modify this file during execution.
 
 ---
@@ -72,7 +72,7 @@ Do NOT mark Done yet.
 
 ---
 
-## How to Invoke in Codex Chat
+## How to Invoke in Chat
 
 Use:
 

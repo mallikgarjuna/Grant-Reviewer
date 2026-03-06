@@ -1,7 +1,7 @@
 # Phase 0.1 — Interactive Brainstorm (Iterative + Context-Aware)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-0-1-brainstorm.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-0-1-brainstorm.md.
 Do NOT modify this file during execution.
 
 ---
@@ -322,7 +322,7 @@ Wait for user signal before Phase 1.
 
 ---
 
-## How to Invoke in Codex Chat
+## How to Invoke in Chat
 
 Use:
 
