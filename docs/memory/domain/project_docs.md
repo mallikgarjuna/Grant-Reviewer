@@ -9,3 +9,4 @@
 - **Next Actions Formatting**: Before Phase 4 completion, provide end-to-end runner options (e.g. `phase-1-run-spec`). After Phase 4 completion, replace that section with "Next 2 WF ideas/features" from the parking lot.
 - **Commit Granularity**: Commits must happen per runner part (Part A output, Part C revision, and Part B only if it has edits) and per phase gate. During Phase 3/4 execution, commit after *each* completed subtask with a short message including the subtask ID.
 - **Ignore files rule**: Before any commit, check `.gitignore` behavior via `git status --ignored --short` and prefer narrow unignore rules (`!pattern`) over force-adding files.
+- **2026-03-06**: Docs sanitization should roll out in phases: first enforce tool/model neutrality on SSOT + a small set of sanitized workflow files, then expand guard coverage only after targeted file cleanup. Why: avoids CI churn from legacy wording while tightening policy incrementally.
