@@ -34,6 +34,9 @@ Closed documentation evidence debt for WF-0056 and WF-0040 so status claims in `
 - Runtime gate single-path check:
   - XOR script for `backfill` vs `waiver` mode in WF-0040 walkthrough.
   - Result: `PASS` (`waiver` mode only).
+- Owner sign-off checklist alignment check:
+  - `rg -n "Explicit owner approval recorded|owner sign-off" docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
+  - Result: `PASS`
 - Index status alignment check:
   - `rg -n "WF-0040|WF-0056|Done|waiver|evidence" docs/index.md docs/walkthroughs/completed/walkthrough-WF-0056-platform-policy-enforcement-live-rehearsal.md docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
   - Result: `PASS`

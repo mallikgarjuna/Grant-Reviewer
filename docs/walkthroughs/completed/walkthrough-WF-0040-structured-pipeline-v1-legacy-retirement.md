@@ -24,7 +24,7 @@ Use this checklist as the gate before deleting legacy execution-path code.
   - [ ] Minimum 50 completed requests per currently supported call code.
 - [x] No contract-semantic regression in invariant errors (`CALL_CONFIG_DIGEST_MISMATCH`, `EXPECTATION_REF_UNRESOLVABLE`, timeout classification, validation ordering behavior).
 - [x] Rollback runbook validated in pre-delete posture (config-first while legacy code exists).
-- [ ] Explicit owner approval recorded (tech lead/repo owner sign-off).
+- [x] Explicit owner approval recorded (tech lead/repo owner sign-off).
 - [x] Waiver-based closure recorded with explicit residual risks and follow-up backlog item.
 
 ## Evidence Links
