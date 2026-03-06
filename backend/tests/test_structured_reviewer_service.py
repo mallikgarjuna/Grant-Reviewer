@@ -483,7 +483,7 @@ def test_structured_pipeline_v1_contract_error_unknown_node_logical_id(
         service.repository.session.close()
 
 
-def test_structured_pipeline_v1_reviewer_policy_scope_filters_prompt_rules(
+def test_structured_pipeline_v1_review_request_snapshot_stays_contract_compliant(
     monkeypatch,
 ) -> None:
     service, call_id = _build_service(monkeypatch)
@@ -536,7 +536,7 @@ def test_structured_pipeline_v1_reviewer_policy_scope_filters_prompt_rules(
     captured_snapshot: dict[str, object] = {}
 
     def capture_run_review_pipeline(review_request):
-        captured_snapshot.update(review_request.call_config_snapshot)
+        captured_snapshot.update(review_request.call_config_snapshot.to_canonical_payload())
         from app.engine.pipeline_v1 import run_review_pipeline as original_pipeline
 
         return original_pipeline(review_request)
@@ -557,14 +557,20 @@ def test_structured_pipeline_v1_reviewer_policy_scope_filters_prompt_rules(
         assert review.status == ReviewStatus.COMPLETED
         assert cards
 
-        by_node = captured_snapshot.get("reviewer_policy_prompt_by_node")
-        assert isinstance(by_node, dict)
-        node_rules = by_node.get("academic_profile")
-        assert isinstance(node_rules, list)
-        assert {rule["id"] for rule in node_rules} == {
-            "pol_global_prompt",
-            "pol_step1_academic_prompt",
+        assert captured_snapshot.get("schema_version") == "v1"
+        expectations_obj = captured_snapshot.get("expectations")
+        assert isinstance(expectations_obj, list)
+        assert len(expectations_obj) == 1
+        expectation = expectations_obj[0]
+        assert isinstance(expectation, dict)
+        assert set(expectation.keys()) == {
+            "expectation_id",
+            "node_logical_id",
+            "required",
         }
+        assert (
+            captured_snapshot.get("reviewer_policy_prompt_by_node") is None
+        )
     finally:
         service.repository.session.close()
 

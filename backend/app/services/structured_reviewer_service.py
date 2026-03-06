@@ -172,7 +172,6 @@ class StructuredReviewerService:
             tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
         ] = []
         request_expectations: list[dict[str, object]] = []
-        prompt_policy_by_node: dict[str, list[dict[str, str]]] = {}
         applicable_policy_by_node: dict[str, list[ReviewerPolicyRule]] = {}
         for node_logical_id, _ in nodes:
             node = node_by_logical_id.get(node_logical_id)
@@ -197,9 +196,6 @@ class StructuredReviewerService:
                 review_stage=review_stage,
             )
             applicable_policy_by_node[node_logical_id] = applicable_rules
-            prompt_policy = self._build_prompt_policy_payload(applicable_rules)
-            if prompt_policy:
-                prompt_policy_by_node[node_logical_id] = prompt_policy
 
             expectations = self.repository.get_expectations_for_node(node.id)
             assessable, not_assessable = self._partition_expectations(
@@ -221,20 +217,20 @@ class StructuredReviewerService:
 
             for expectation in assessable:
                 expectation_id = str(expectation.id)
+                expectation_payload: dict[str, object] = {
+                    "expectation_id": expectation_id,
+                    "node_logical_id": node_logical_id,
+                }
+                if expectation.expectation_strength.value == "MANDATORY":
+                    expectation_payload["required"] = True
                 request_expectations.append(
-                    {
-                        "expectation_id": expectation_id,
-                        "node_logical_id": node_logical_id,
-                        "check_id": "check.presence",
-                        "required": expectation.expectation_strength.value == "MANDATORY",
-                        "reviewer_policy_prompt_rules": prompt_policy,
-                    }
+                    expectation_payload
                 )
                 expectation_map[expectation_id] = expectation
 
         call_config_snapshot = {
+            "schema_version": "v1",
             "expectations": request_expectations,
-            "reviewer_policy_prompt_by_node": prompt_policy_by_node,
         }
         canonical_snapshot = canonicalize_for_digest(call_config_snapshot)
         computed_digest = "sha256:" + hashlib.sha256(
@@ -405,18 +401,3 @@ class StructuredReviewerService:
             node_logical_id=node_logical_id,
             review_stage=review_stage,
         )
-
-    def _build_prompt_policy_payload(
-        self,
-        rules: list[ReviewerPolicyRule],
-    ) -> list[dict[str, str]]:
-        return [
-            {
-                "id": rule.id,
-                "rule_type": rule.rule_type,
-                "instruction": rule.instruction,
-                "severity": rule.severity,
-            }
-            for rule in rules
-            if rule.enforcement_mode == "PROMPT_ONLY"
-        ]
