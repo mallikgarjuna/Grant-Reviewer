@@ -1,8 +1,8 @@
 # WF-0057 — Ops Evidence Debt Closure
 
 Artifact: brainstorm
-Version: v0.2
-Status: Draft
+Version: v0.3
+Status: Draft Complete
 Last Updated: 2026-03-06
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0057-ops-evidence-debt-closure.md`
@@ -79,6 +79,40 @@ WF-0056:
 
 WF-0040:
 - Checklist items for staging/prod observation windows and per-call counts are addressed with real evidence, or an updated explicit waiver is recorded (constraints + rationale + owner sign-off + date).
+
+### Evidence Field Requirements (Minimum)
+
+WF-0056 evidence chain table (walkthrough) must include real values for:
+- `workflow_run_id`
+- `run URL`
+- `commit_sha`
+- `linked_artifacts` (enough to retrieve artifacts deterministically later)
+- Checksums (`evidence_sha256` and snapshot checksums where applicable)
+
+WF-0040 evidence backfill must record, at minimum:
+- Environment (`staging` / `prod`)
+- Observation window start/end timestamps (and whether v1-only routing was active)
+- Result (`pass` / `fail` / `unavailable`)
+- Per-call completed request counts for the relevant window
+- Source links (dashboard links, log queries, exported reports) or a short "how to reproduce the query"
+- Explicit waiver record if evidence is unavailable (see template below)
+
+### Files This WF Intends To Update (Explicit)
+
+- `docs/index.md` (WF-0056 status semantics; WF-0040 status semantics if they change)
+- `docs/walkthroughs/completed/walkthrough-WF-0056-platform-policy-enforcement-live-rehearsal.md` (replace placeholders)
+- `docs/walkthroughs/evidence/WF-0056/` (ensure referenced evidence exists + checksums)
+- `docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md` (backfill evidence or record updated explicit waiver + sign-off)
+
+### WF-0040 Waiver Record Template (If Evidence Unavailable)
+
+If staging/prod observation or counts cannot be produced in this environment, record:
+- Date
+- Gate(s) waived (staging window, prod window, counts threshold)
+- Why unavailable (exact constraint)
+- Residual risk statement
+- Owner sign-off (who/where)
+and keep WF status semantics non-misleading (no silent "Done" that reads like evidence-backed closure).
 
 ---
 

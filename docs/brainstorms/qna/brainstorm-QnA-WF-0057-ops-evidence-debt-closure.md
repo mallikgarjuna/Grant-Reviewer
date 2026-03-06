@@ -1,8 +1,8 @@
 # WF-0057 — Ops Evidence Debt Closure
 
 Artifact: brainstorm-qna
-Version: v0.2
-Status: Draft
+Version: v0.3
+Status: Draft Complete
 Last Updated: 2026-03-06
 
 ---
