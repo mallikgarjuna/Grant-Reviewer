@@ -111,7 +111,7 @@ After completing Part C, output:
 
        Run Phase X ...
        ```
-   - **Optional Adversarial Pass (Same Session, No Edits):** If the user asks for an extra check, re-run the relevant Part B review gate (PRD risk audit or tasks review) and summarize deltas; do not involve additional agents.
+   - **Optional Review-And-Harden Pass (Same Session):** Provide an explicit, copy-pasteable prompt block using `@docs/workflow/review-and-harden-prompt.md` against the finalized output artifact from this runner (`brainstorm`, `prd`, or `task`) so the user can run a generic adversarial review-and-harden pass without manually selecting the phase-specific review/revise docs.
 3. **Traceability Statement (Required)**:
    - Part A output reviewed in Part B: `<yes/no>` + `<path/version>`
    - Part B feedback applied in Part C: `<yes/no>` + `<key edits>`

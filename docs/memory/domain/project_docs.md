@@ -15,3 +15,4 @@
 - **2026-03-06**: Sanitization guard now enforces all `docs/workflow/*.md` plus `AGENTS.md`; workflow docs are clean of tool/model names. Why: full-folder enforcement prevents regressions while keeping adapters/history as the only place tool names appear.
 - **2026-03-06**: New traceability rule: every file should encode its project-relative path at top (comment/docstring/header) so copied sources preserve provenance in external chat tools.
 - **2026-03-06**: Commit-msg hook must allow non-WF maintenance commits using `fix: <short title>` or `chore: <short title>` because workflow docs already permit `fix/<slug>` and `chore/<slug>` branches. Why: forcing WF-prefixed commits on maintenance branches creates false traceability.
+- **2026-03-06**: Reusable post-phase "stress test and fix" chat prompt now lives at `docs/workflow/review-and-harden-prompt.md`. Use it with a single artifact path instead of rewriting phase-specific review/revise prompts each time.
