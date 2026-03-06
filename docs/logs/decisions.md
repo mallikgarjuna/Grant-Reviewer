@@ -1,6 +1,24 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-06 (WF-0060: ERC StG 2026 contract/UI model correction)
+
+### AD 60.1: ERC StG 2026 canonical contract is leaf-reviewable and container-structural
+- **WF ID**: WF-0060
+- **Context**: The existing ERC proof-call shape treated `b1` and `b2` as expectation-bearing/editable surfaces even though the official application form presents them as document containers and places `resources_time_commitment` under Part A / Budget.
+- **Decision**: Treat `part_a`, `budget`, `part_b`, `b1`, and `b2` as structural-only containers in the canonical ERC StG 2026 contract; only the approved leaf nodes remain input-bearing/reviewable.
+- **Why**: Restores source-first correctness and prevents submit, persistence, and review-detail behavior from inheriting container-as-surface distortions.
+- **Tradeoff**: Downstream ingestion/runtime, submit, review-detail, and tests must now carry explicit container semantics instead of relying on the simpler WF-0059 proof-call assumptions.
+- **Status**: Approved.
+
+### AD 60.2: Legacy WF-0059 container submissions remain ambiguous evidence, not proven leaf coverage
+- **WF ID**: WF-0060
+- **Context**: Existing reviews may persist deprecated container submitted-node IDs such as `b1` or `b2`, but those IDs do not prove which corrected leaf nodes were actually submitted or reviewed.
+- **Decision**: Preserve compatibility for legacy records by rendering explicit compatibility-state semantics, but never auto-expand deprecated container IDs into reviewed leaf coverage without companion proof. In mixed-version records, corrected leaf IDs take precedence for proven coverage.
+- **Why**: Avoids false-positive reviewed coverage while keeping legacy review detail readable and traceable during the correction rollout.
+- **Tradeoff**: Some historical reviews will show compatibility ambiguity instead of optimistic reviewed coverage, which is stricter but more defensible.
+- **Status**: Approved.
+
 ## Date: 2026-03-06 (workflow execution contract)
 
 ### AD W.1: Phase 2 tasks remain the canonical planning and commit unit; no separate execution-slice artifact

@@ -2,8 +2,8 @@
 # WF-0060 — ERC StG 2026 Contract/UI Model Correction PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-06
 
 Type: feature
@@ -100,22 +100,32 @@ Type: feature
 ### 5.2 Ingestion/runtime and submit contract
 
 - Runtime normalization must preserve structural grouping nodes for rendering/order while producing a submittable leaf-node set that excludes containers. (US1, FR5, FR6)
+- The normalized ERC submit model must expose, at minimum, ordered grouping metadata for render (`part_a`, `budget`, `part_b`, `b1`, `b2`) plus a leaf submission collection keyed only by valid leaf logical IDs. (US1, FR5, FR6)
 - Submit payloads for ERC StG 2026 must be keyed by corrected leaf logical IDs only; container logical IDs are invalid at the contract boundary. (US1, US4, FR5, FR6, FR13)
 - Validation must fail closed if a structural container is passed as submitted content or as a direct reviewable node. (US1, US4, FR5, FR13)
 - Persisted submitted-node coverage must record corrected leaf-node IDs independently of whether downstream review cards were emitted. (US2, US3, FR7, FR8)
+- Persisted review-linked coverage for corrected reviews must be able to distinguish `submitted_leaf_ids`, `legacy_ambiguous_container_ids`, and moved-node aliases such as `resources_time_commitment` so review detail does not infer meaning from one flat list alone. (US2, US3, FR7, FR8, FR9, FR10, FR11)
 
 ### 5.3 Legacy compatibility contract
 
 - Legacy persisted submitted-node IDs `b1` and `b2` must be interpreted as deprecated ambiguous container-era evidence. (US2, US3, FR9, FR11)
 - Ambiguous legacy container evidence may drive compatibility messaging or scoped legacy grouping behavior, but must not count as proven reviewed coverage for individual leaf nodes without companion evidence. (US2, US3, FR9, FR11)
 - Legacy persisted `resources_time_commitment` references must map to the corrected leaf under `part_a -> budget` for display and coverage continuity. (US2, US3, FR10)
+- Mixed-version records that contain both corrected leaf IDs and deprecated container IDs must use the corrected leaf IDs as the only source of proven reviewed coverage, with deprecated container IDs rendered only as compatibility annotations. (US2, US3, FR8, FR9, FR11)
 
 ### 5.4 Review-detail state transitions
 
 - `Corrected leaf submission` -> `persisted leaf submitted-node coverage` -> `review detail grouped by corrected hierarchy` is the standard ERC StG 2026 path. (US1, US2, FR6, FR7, FR8)
 - `Legacy container submission evidence` -> `compatibility-note render` -> `non-optimistic coverage accounting` is the required compatibility path. (US2, US3, FR9, FR11)
+- `Mixed leaf + legacy container evidence` -> `leaf coverage from corrected leaf IDs` + `compatibility note for deprecated container IDs` is the required precedence rule for mixed-version reviews. (US2, US3, FR8, FR9, FR11)
 - `submitted leaf with zero emitted cards` -> `review detail still shows submitted reviewed leaf` is required coverage behavior. (US2, US3, FR7, FR8)
 - `container logical ID submitted at runtime after correction` -> `deterministic validation/runtime failure` is the fail-closed behavior. (US1, US4, FR5, FR13)
+
+### 5.5 Review-detail response semantics
+
+- Review detail for corrected ERC reviews must expose enough information to render: ordered structural groups, reviewed leaf IDs, not-reviewed leaf IDs, and any compatibility-note payload for deprecated legacy evidence. (US2, US3, FR8, FR11)
+- Compatibility-note payload must distinguish at least `deprecated_container_submission`, `moved_legacy_node_reference`, and `mixed_version_review` so UI copy and coverage behavior remain deterministic. (US2, US3, FR10, FR11)
+- Review detail must not require URL query-param fallbacks or cards-only inference to determine ERC reviewed/not-reviewed coverage. (US2, FR8)
 
 ## 6. Components / Modules
 
@@ -173,6 +183,7 @@ Suggested file-path clusters (coarse only):
   - submit/runtime tests proving only corrected leaves can be entered/submitted and container IDs fail closed. (US1, US4, FR5, FR6, FR13)
   - persistence/review-detail tests proving zero-card submitted leaves still appear in reviewed coverage. (US2, US3, FR7, FR8)
   - legacy compatibility tests proving `b1`/`b2` remain ambiguous evidence and `resources_time_commitment` resolves across the moved location. (US2, US3, FR9, FR10, FR11)
+  - mixed-version review tests proving corrected leaf IDs take precedence over deprecated container IDs without double-counting or downgrading proven coverage. (US2, US3, FR8, FR9, FR11)
   - regression tests replacing WF-0059 container-node assumptions with corrected leaf-node expectations and ordering assertions. (US3, US4, FR12)
 - Verification should include at least one deterministic end-to-end ERC StG 2026 path showing corrected grouping, leaf-only submission, persisted submitted-node coverage, and review detail output. (US1, US2, US4, FR6, FR7, FR8, FR12)
 
@@ -196,3 +207,4 @@ Suggested file-path clusters (coarse only):
 ## 12. Changelog
 
 - v0.1 (2026-03-06): Initial PRD from brainstorm.
+- v0.2 (2026-03-06): Applied risk-audit edits for mixed-evidence precedence and explicit submit/review-detail contract semantics; marked Ready for Tasks.
