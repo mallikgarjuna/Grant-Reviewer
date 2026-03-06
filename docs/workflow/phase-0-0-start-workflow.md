@@ -1,7 +1,7 @@
 # Phase 0.0 — Start Workflow (Mint WF ID + Branch + Register)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-0-0-start-workflow.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-0-0-start-workflow.md.
 Do NOT modify this file during execution.
 
 ---
@@ -161,7 +161,7 @@ Rules:
 
 ---
 
-## How to Invoke in Codex Chat
+## How to Invoke in Chat
 
 Use @docs/workflow/phase-0-0-start-workflow.md.
 
