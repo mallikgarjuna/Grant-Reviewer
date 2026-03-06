@@ -2,7 +2,7 @@
 # WF-0059 — Multi-call UX Unblocker
 
 Artifact: brainstorm-qna
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-06
 
@@ -326,4 +326,41 @@ Type: feature
 - B) Minimal generic changes forced by the proof path.
 - C) Preserving current Veni behavior.
   > Recommendation: A — This prevents the workflow from turning into an abstract cleanup effort.
+  > **Selected: A**
+
+### Part B Clarifications Applied in Part C
+
+**Q1: Which exact call is the proof target?**
+- A) `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`
+- B) `backend/data/calls/canonical/erc/erc_cog_2026_full.yaml`
+- C) Leave the proof target open until planning.
+  > Recommendation: A — The workflow calls for a real ERC-like hierarchical happy path, and STG is the cleaner fit for that bar. Leaving it open would weaken later scope control.
+  > **Selected: A**
+
+**Q2: What submit-path invariants must remain explicit in the brainstorm?**
+- A) Preserve `POST /reviews` idempotency semantics, payload-mismatch behavior, persistence side effects, and `/app/reviews` listing behavior.
+- B) Preserve only visible UI behavior; backend semantics can be refined later.
+- C) Defer invariants to Phase 1.
+  > Recommendation: A — These are contract-safety requirements, not planning extras.
+  > **Selected: A**
+
+**Q3: What must be true about review-detail coverage for the proof path?**
+- A) Proof-path coverage must come from stored review/call-linked data; `submitted_nodes` query-param fallback is legacy-only and must be explicit.
+- B) Query-param coverage is acceptable as long as the UI looks correct.
+- C) Coverage can stay undefined in the brainstorm.
+  > Recommendation: A — Silent fallback would let a flat-shaped assumption survive into the proof path.
+  > **Selected: A**
+
+**Q4: What migration/flip order should the brainstorm lock in?**
+- A) No-behavior-change plumbing/parity first, then hierarchical submit unblock, then proof-call review-detail flip, then parity verification for Veni plus the proof call.
+- B) Implement everything in parallel and stabilize later.
+- C) Hierarchical submit first, ignore parity until the end.
+  > Recommendation: A — This is the safest reversible path and best matches the Veni-preservation constraint.
+  > **Selected: A**
+
+**Q5: What proof/testing seam is mandatory for closure?**
+- A) Shared-path automated tests for proof-call submit plus review detail, Veni parity coverage, and one concrete end-to-end evidence artifact.
+- B) Manual local proof only.
+- C) Unit tests only.
+  > Recommendation: A — The workflow explicitly fails if it closes without a real happy path and regression protection.
   > **Selected: A**

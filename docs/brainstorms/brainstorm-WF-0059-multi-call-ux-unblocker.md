@@ -2,7 +2,7 @@
 # WF-0059 — Multi-call UX Unblocker
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-06
 
@@ -45,6 +45,12 @@ Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0059-multi-ca
 - Should the review detail scope focus on closing remaining fallback paths for mixed-version payloads, or is "call-aware when metadata exists" already good enough for MVP?
 - Which concrete hierarchical call should be the proof target: existing ERC data already in repo, or another non-Veni call with nested structure that is easier to exercise?
 
+## Proof Target
+
+- WF-0059 proof call: `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`.
+- This workflow is only complete if that call, or an explicitly re-approved equivalent ERC-like hierarchical call, works end-to-end.
+- Closure evidence must tie directly to this proof target in tests and walkthrough/runtime proof artifacts.
+
 ## 1. Problem Statement
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0059-multi-call-ux-unblocker.md` (Section 1)
@@ -74,6 +80,7 @@ Contract notes / non-obvious constraints:
 - Removing the frontend unsupported state alone does not satisfy the workflow; review creation and review-detail rendering must also succeed.
 - The proof artifact must be tied to one concrete hierarchical call rather than a generic capability claim.
 - Legacy fallback behavior is allowed only if it is explicit and scoped to old payloads, not silently used for the proof path.
+- Proof-path review-detail coverage must not depend on `submitted_nodes` query-param behavior as its source of truth.
 
 ## 3. Target User / Actor
 
@@ -120,6 +127,14 @@ Contract notes / non-obvious constraints:
 - Scope exclusions are binding because adjacent product debts could easily swallow the unblocker outcome.
 - Preserving Veni behavior is a release constraint, not a nice-to-have.
 
+## Acceptance Invariants
+
+- Preserve existing `POST /reviews` idempotency behavior for the hierarchical proof path, including payload-mismatch/error semantics.
+- Preserve review persistence side effects and `/app/reviews` listing/history behavior.
+- Proof-path review detail must derive grouping, ordering, labels, and coverage from stored review/call-linked data rather than `submitted_nodes` query-param fallback.
+- Legacy fallback is allowed only for older or mixed-version reviews and must be explicit in UI behavior and tests.
+- Shared concerns in scope are limited to the existing submit/runtime/review-detail seams required by the proof call; this WF does not authorize a broader platform-core redesign.
+
 ## 6. Risks / Unknowns
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0059-multi-call-ux-unblocker.md` (Section 6)
@@ -138,10 +153,9 @@ Contract notes / non-obvious constraints:
 ## Open Questions / Deferred
 
 - Open questions to resolve in planning:
-- Which exact hierarchical call in repo will be the proof target, and what evidence path will validate it end-to-end?
 - What minimum submit/runtime contract changes are required once nested nodes are allowed through the current unsupported guardrail?
-- Does review-detail coverage need to move fully off `submitted_nodes` query-param assumptions for the proof path?
 - What automated test seam best proves the end-to-end unblocker without overfitting to one implementation detail?
+- What exact walkthrough/runtime evidence artifact format will close the proof obligation alongside automated tests?
 
 - Deferred / parked:
 - "Universal support for every future call shape" is explicitly deferred beyond WF-0059.
@@ -157,11 +171,19 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0059-multi-call-ux-
 - Review detail for the proof path must use call-linked grouping, labels, ordering, and explicit coverage/traceability behavior.
 - Existing Veni flow must remain working.
 - Automated coverage plus one concrete proof artifact are required to close the WF.
+- Execution order: first no-behavior-change plumbing/parity, then hierarchical submit unblock, then proof-call review-detail flip, then parity verification for both Veni and the proof call.
 
 Contract notes / non-obvious constraints:
 - MVP is defined by end-to-end usability of one hierarchical call, not by the number of generalized utilities introduced.
 - Preserving the flat-call path is part of MVP acceptance.
 - The proof artifact is part of the deliverable, not post-hoc documentation.
+
+## Testing / Proof Seams
+
+- Automated shared-path test: the proof call moves from hierarchical submit input to successful review creation.
+- Automated review-detail test: the proof call uses call-linked grouping, ordering, labels, and coverage rather than `submitted_nodes` fallback behavior.
+- Automated regression test: current Veni/flat-call submit and review-detail behavior remains unchanged.
+- Concrete proof artifact: one end-to-end evidence record tied to `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`.
 
 ## 8. Explicit Non-Goals
 
