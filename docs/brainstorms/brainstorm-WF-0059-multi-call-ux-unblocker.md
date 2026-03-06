@@ -2,7 +2,7 @@
 # WF-0059 — Multi-call UX Unblocker
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-06
 
@@ -133,7 +133,8 @@ Contract notes / non-obvious constraints:
 - Preserve review persistence side effects and `/app/reviews` listing/history behavior.
 - Proof-path review detail must derive grouping, ordering, labels, and coverage from stored review/call-linked data rather than `submitted_nodes` query-param fallback.
 - Legacy fallback is allowed only for older or mixed-version reviews and must be explicit in UI behavior and tests.
-- Shared concerns in scope are limited to the existing submit/runtime/review-detail seams required by the proof call; this WF does not authorize a broader platform-core redesign.
+- Shared concerns in scope are limited to the existing seams required by the proof call: submit validation/plumbing, review-create contract handling, call-linked review-detail ordering/coverage, and the minimal retry/idempotency path already used by review creation.
+- Shared concerns explicitly out of scope for this WF unless forced by parity defects: broader policy redesign, telemetry redesign, LLM execution-core redesign, and generalized multi-call platform abstractions.
 
 ## 6. Risks / Unknowns
 
@@ -149,6 +150,7 @@ Contract notes / non-obvious constraints:
 - A "works in tests, fails in the integrated flow" outcome is the main failure mode this WF must defend against.
 - Hidden flat-shape assumptions in coverage summaries or payload storage count as blocker-class risk for the proof path.
 - The proof target itself must be concrete enough in planning to prevent ambiguous success claims.
+- Failure modes that must be explicitly checked in planning/tests: idempotency replay/mismatch, validation ordering, unsupported nested payload translation, and legacy review-detail fallback leakage into the proof path.
 
 ## Open Questions / Deferred
 
@@ -172,17 +174,20 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0059-multi-call-ux-
 - Existing Veni flow must remain working.
 - Automated coverage plus one concrete proof artifact are required to close the WF.
 - Execution order: first no-behavior-change plumbing/parity, then hierarchical submit unblock, then proof-call review-detail flip, then parity verification for both Veni and the proof call.
+- Reversibility requirement: each step must be independently verifiable, and the workflow must be able to stop after any step without leaving Veni behavior degraded.
 
 Contract notes / non-obvious constraints:
 - MVP is defined by end-to-end usability of one hierarchical call, not by the number of generalized utilities introduced.
 - Preserving the flat-call path is part of MVP acceptance.
 - The proof artifact is part of the deliverable, not post-hoc documentation.
+- A happy-path-only pass is invalid if parity on key failure modes is not demonstrated alongside the proof call.
 
 ## Testing / Proof Seams
 
 - Automated shared-path test: the proof call moves from hierarchical submit input to successful review creation.
 - Automated review-detail test: the proof call uses call-linked grouping, ordering, labels, and coverage rather than `submitted_nodes` fallback behavior.
 - Automated regression test: current Veni/flat-call submit and review-detail behavior remains unchanged.
+- Automated failure-mode parity tests: idempotency replay/mismatch behavior, validation ordering, and explicit legacy fallback behavior remain stable for the touched paths.
 - Concrete proof artifact: one end-to-end evidence record tied to `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`.
 
 ## 8. Explicit Non-Goals

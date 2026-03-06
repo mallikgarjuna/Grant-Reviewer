@@ -2,7 +2,7 @@
 # WF-0059 — Multi-call UX Unblocker
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-06
 
@@ -363,4 +363,41 @@ Type: feature
 - B) Manual local proof only.
 - C) Unit tests only.
   > Recommendation: A — The workflow explicitly fails if it closes without a real happy path and regression protection.
+  > **Selected: A**
+
+### Part B Re-Run Clarifications Applied in Part C
+
+**Q1: What shared-core boundary is explicitly in scope for WF-0059?**
+- A) Only the seams the proof call forces: submit validation/plumbing, review-create contract handling, call-linked review-detail ordering/coverage, and the existing retry/idempotency path.
+- B) Any shared concern that could be cleaned up while we're nearby.
+- C) A broader platform-core redesign to make future workflows easier.
+  > Recommendation: A — This names the allowed shared concerns clearly enough to prevent drift while still covering the proof path.
+  > **Selected: A**
+
+**Q2: What must be explicit about out-of-scope shared concerns?**
+- A) Policy redesign, telemetry redesign, LLM execution-core redesign, and generalized multi-call abstractions stay out unless a parity defect forces them in.
+- B) Leave these implicit; engineers can decide during implementation.
+- C) Fold them into WF-0059 if convenient.
+  > Recommendation: A — The whole point of the workflow is to prevent adjacent architecture work from replacing the proof obligation.
+  > **Selected: A**
+
+**Q3: What rollback/reversibility rule must the brainstorm lock?**
+- A) Each execution step must be independently verifiable and stoppable without leaving Veni behavior degraded.
+- B) Only the final merged state matters.
+- C) Reversibility can be handled ad hoc in implementation.
+  > Recommendation: A — Incremental and reversible is a stated quality bar; this makes it operational.
+  > **Selected: A**
+
+**Q4: Which failure modes must be parity-checked explicitly?**
+- A) Idempotency replay/mismatch, validation ordering, unsupported nested payload translation, and legacy review-detail fallback leakage.
+- B) Only the happy path.
+- C) Any failures that happen to show up during coding.
+  > Recommendation: A — These are the defects most likely to let a fragile implementation "pass" while violating existing contracts.
+  > **Selected: A**
+
+**Q5: What invalidates a closure claim even if the proof call works once?**
+- A) Missing parity evidence on the key failure modes above.
+- B) Lack of extra abstractions for future calls.
+- C) Absence of a second hierarchical proof call.
+  > Recommendation: A — The workflow is about one real happy path, but not at the cost of silent contract regressions.
   > **Selected: A**
