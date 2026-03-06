@@ -1,3 +1,4 @@
+<!-- docs/workflow/phase-3-run-execution.md -->
 # Workflow Runner — Phase 3 (Execution)
 
 This file is a workflow instruction.
@@ -41,7 +42,8 @@ To execute Phase 3 end-to-end: implement tasks, run the technical audit gate, ap
 3. Implement each task and commit sequentially as instructed in that file.
 4. Check off (`[x]`) tasks in the task artifact as you go.
 5. If Part A stopped early, do not proceed to Part B/C as though implementation were complete. Report the stop reason and hand back the next unfinished task.
-6. Only proceed to Part B when implementation scope is complete for the current approved task plan.
+6. If the stop reason is context bloat, explicitly warn that reasoning quality is at risk, say whether Part B/C is blocked, recommend a fresh chat/session, and print a copy-pasteable resume prompt.
+7. Only proceed to Part B when implementation scope is complete for the current approved task plan.
 
 ### PART B: Review [GATE]
 1. Stop implementing features.

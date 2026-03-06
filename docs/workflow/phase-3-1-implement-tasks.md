@@ -1,3 +1,4 @@
+<!-- docs/workflow/phase-3-1-implement-tasks.md -->
 # Phase 3.1 — Implement Tasks (Sequential + Commit Per Task)
 
 This file is a workflow instruction.
@@ -136,6 +137,13 @@ When you stop, report whether the reason was:
 - context-bloat safety stop
 
 If tasks remain open, state the next unfinished task and the exact blocker/boundary before handing control back.
+
+If the reason is `context-bloat safety stop`, you MUST also:
+
+- warn explicitly that context load is now risking reasoning quality
+- state whether Part B/C is blocked (`yes` unless all tasks are complete)
+- recommend starting a fresh chat/session before resuming
+- print a copy-pasteable resume prompt for the next chat/session that names the WF/task file and the next unfinished task
 
 When all tasks are complete, **STOP**.
 

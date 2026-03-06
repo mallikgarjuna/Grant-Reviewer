@@ -1,3 +1,4 @@
+<!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
 ## Date: 2026-03-06 (workflow execution contract)
@@ -14,6 +15,13 @@
 - **Decision**: Phase 3 may stop after any completed task when explicit stop rules are hit, including task-plan mismatch, file-surface spillover, verification instability, planned session boundary, or context-bloat risk. Early stop is a safe handoff, not a failure.
 - **Why**: Converts implicit chat-hygiene advice into an operational contract the runner can actually follow.
 - **Tradeoff**: Some workflows will require more than one Phase 3 session before Part B/C can run.
+- **Status**: Approved.
+
+### AD W.3: Context-bloat stops must warn and hand off with a resume prompt
+- **Context**: A bounded Phase 3 stop is only useful if the agent tells the user that reasoning quality is at risk and makes the next step unambiguous.
+- **Decision**: When stopping for context-bloat risk, the agent must warn explicitly in chat, state whether downstream review/ship steps are blocked, identify the next unfinished task, and print a copy-pasteable resume prompt for a fresh chat/session. This applies in workflow runners and is referenced from `AGENTS.md` for non-runner chats.
+- **Why**: Prevents silent degradation, reduces ambiguous handoffs, and makes recovery operational instead of conversational.
+- **Tradeoff**: Slightly more verbose stop messages, but only when the session is already at risk.
 - **Status**: Approved.
 
 ## Date: 2026-03-05 (WF-0056: platform policy live rehearsal)

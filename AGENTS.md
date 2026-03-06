@@ -1,3 +1,4 @@
+<!-- AGENTS.md -->
 # Agent Instructions (AGENTS.md)
 
 **Grant Reviewer**: evaluation-criteria-grounded feedback on proposal snippets; outputs review cards traceable to evaluation criteria expectations.
@@ -16,6 +17,7 @@
 - **Runtime:** Python `3.12` (see `backend/.python-version`, `uv`), Node `22.17.0` (see `.nvmrc`, `npm`). (Trigger: env/tooling issues.)
 - **File traceability:** every file must include its project-relative path at top (comment/docstring/header) for copy/paste provenance. (Trigger: create/edit any file.)
 - **Code phrases:** `verify workflow` = run verification pass; `workflow preflight` = check WF closure readiness; `next move` = run `repo reality check` first, then `workflow preflight` if WF active, then `verify workflow` only when implementation/code changed; return top 2 next actions with one recommendation + rationale. (Trigger: user says phrase.)
+- **Context-bloat warning:** if reasoning quality may drop from context load, warn in chat, stop at next safe boundary, suggest next action/resume prompt; workflow docs are SSOT. (Trigger: long chat, with or without WF runner.)
 
 **Read these only if needed:**
 - WF phases/branches/artifacts -> `docs/guides/workflow-system.md`

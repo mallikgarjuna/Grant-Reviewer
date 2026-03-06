@@ -1,3 +1,4 @@
+<!-- docs/workflow/README.md -->
 # Project Workflow System
 
 This folder defines the structured workflow used to move from idea → shipped code.
@@ -43,6 +44,7 @@ Deferred work convention:
 
 End-of-phase convention:
 - At the end of each phase run, provide next steps/options with explicit copy-pasteable prompt blocks, and recommend starting a new chat/session if context is getting long or the next phase is a separate workflow run.
+- If context bloat risks reasoning quality, say so explicitly in chat, stop at the next safe boundary, and provide a copy-pasteable resume prompt plus the recommended next action.
 
 Each initiative progresses sequentially.
 Backtracking is allowed (see below).
