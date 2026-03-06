@@ -1,7 +1,7 @@
 # Phase 1.3 — Revise PRD + Bump Version + Log Decisions
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-1-3-prd-revise.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-1-3-prd-revise.md.
 Do NOT modify this file during execution.
 
 ---
@@ -97,7 +97,7 @@ Do NOT advance to Phase 3 until you explicitly generate Tasks.
 
 ---
 
-## How to Invoke in Codex Chat
+## How to Invoke in Chat
 
 Use:
 
