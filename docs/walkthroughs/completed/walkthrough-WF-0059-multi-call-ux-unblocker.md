@@ -2,7 +2,7 @@
 # WF-0059 — Multi-call UX Unblocker
 
 Artifact: walkthrough
-Version: v0.2
+Version: v0.3
 Status: Completed
 Last Updated: 2026-03-06
 
@@ -11,33 +11,30 @@ Type: feature
 ## Summary
 
 - Unblocked the locked ERC proof call `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml` through the existing structured-review submit path without widening generic nested-call support.
-- Preserved structured-review validation ordering and idempotency mismatch behavior while accepting hierarchical proof-call payloads.
-- Moved proof-path review detail coverage and ordering onto persisted submitted-node coverage plus call-linked metadata, with explicit state handling for legacy fallback and proof-path unmapped linkage.
+- Preserved structured-review validation ordering and idempotency mismatch behavior across the proof path after the later WF-0060 ERC contract correction.
+- Moved proof-path review detail coverage and ordering onto persisted leaf coverage plus call-linked metadata, with explicit state handling for legacy fallback and proof-path unmapped linkage.
 
 ## What Changed
 
 - Frontend submit:
-  - Allowed only `erc_stg_2026_full` to traverse hierarchical nodes in execution order.
+  - Allowed only `erc_stg_2026_full` to traverse grouped nested structure without hitting the `nested_nodes` unsupported state.
+  - After WF-0060 reconciliation, submit remains leaf-only for ERC StG 2026 while preserving grouped rendering.
   - Kept flat-call/Veni submit behavior unchanged.
 - Backend structured review:
   - Accepted recursive hierarchical request payloads and flattened them deterministically at the contract boundary.
-  - Persisted `submitted_node_logical_ids` on structured reviews for downstream review-detail coverage.
+  - Persisted downstream coverage in the merged branch via `submitted_leaf_ids`, while preserving `submitted_node_logical_ids` compatibility for older review payloads.
 - Review detail:
-  - Exposed `submitted_node_logical_ids` on the review-detail contract.
-  - Derived proof-path reviewed/not-reviewed sections from persisted submitted-node coverage plus call metadata instead of `submitted_nodes` query params.
+  - Exposed explicit `detail_state`, `submitted_leaf_ids`, compatibility metadata, and retained `submitted_node_logical_ids` compatibility on the review-detail contract.
+  - Derived proof-path reviewed/not-reviewed sections from persisted review-linked coverage plus call metadata instead of `submitted_nodes` query params.
   - Added explicit UI states for legacy fallback vs proof-path unmapped linkage.
 
 ## Verification
 
 - Backend baseline:
   - `cd backend && uv run pytest -m no_db`
-- Final backend/API verification:
-  - `cd backend && DATABASE_URL='sqlite:////tmp/grant_reviewer_wf0059_verify_test.db' uv run pytest tests/test_api.py -k 'wf0059_ or review_detail_ordering_source_fallback_when_call_linkage_missing'`
-- Task-targeted backend checks:
-  - `DATABASE_URL='sqlite:////tmp/grant_reviewer_wf0059_test.db' uv run pytest tests/test_api.py -k "wf0059_contract_hierarchical_submit_validation_and_idempotency"`
-  - `DATABASE_URL='sqlite:////tmp/grant_reviewer_wf0059_test.db' uv run pytest tests/test_structured_reviewer_service.py -k "wf0059_structured_payload_normalization_contract"`
-  - `DATABASE_URL='sqlite:////tmp/grant_reviewer_wf0059_task4_test.db' uv run pytest tests/test_api.py -k "wf0059_contract_persisted_submitted_node_coverage"`
-  - `DATABASE_URL='sqlite:////tmp/grant_reviewer_wf0059_task7_test.db' uv run pytest tests/test_api.py -k "wf0059_zero_card_node_remains_reviewed_from_persisted_coverage"`
+- Post-WF-0060 isolated Postgres verification:
+  - `cd backend && ./scripts/verify_tests_postgres.sh tests/test_api.py -k 'wf0059_ or wf0060_ or structured_review_validation_error_precedes_idempotency_mismatch'`
+  - `cd backend && RESET_DB=0 ./scripts/verify_tests_postgres.sh tests/test_structured_reviewer_service.py -k 'wf0059_structured_payload_normalization_contract or wf0060_structured_review_rejects_erc_container_submission_ids'`
 - Frontend targeted checks:
   - `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0059_submit_tracer_erc_proof_call_reaches_structured_review"`
   - `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0059_submit_tracer_preserves_veni_flat_path"`
@@ -56,6 +53,7 @@ Type: feature
 
 - Re-ran the adversarial `main...HEAD` technical audit after the Part C1 fix.
 - Cleared the only prior blocker: backend `/reviews/{id}` now emits `detail_state` directly, and the direct API contract regression covers both `legacy_fallback` and proof-path unmapped state.
+- During the later post-WF-0060 merge reconciliation, stale WF-0059 container-era tests were re-based onto the corrected leaf-only ERC contract before verification.
 - Remaining risks are non-blocking:
   - route-level BFF normalization still lacks a direct unit test
   - frontend retains defensive `detail_state` inference in addition to the backend contract
@@ -67,7 +65,7 @@ Type: feature
 - Both artifacts are tied to review `bb5b6f57-6f16-4a20-a5b0-eab71cf91d69`.
 - The review-detail artifact shows:
   - `call_code = erc_stg_2026_full`
-  - `submitted_node_logical_ids = ["b1_part1_scientific_proposal", "b1_cv_track_record"]`
+  - `submitted_leaf_ids = ["b1_part1_scientific_proposal", "b1_cv_track_record"]`
   - `ordering_source = call_nodes`
   - review cards ordered and labeled from call-linked metadata
 - The evidence harness used deterministic API-level stubs for request validation/pipeline output so the artifact could prove submit + persisted coverage + call-aware detail ordering against the locked ERC proof call in one repeatable run.

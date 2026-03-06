@@ -2,8 +2,8 @@
 # WF-0059 — Multi-call UX Unblocker
 
 Artifact: task
-Version: v0.4
-Status: Ready for Implementation
+Version: v0.5
+Status: Completed
 Last Updated: 2026-03-06
 
 Type: feature
@@ -168,6 +168,7 @@ Risks (if any): Card-derived coverage shortcuts would silently violate the persi
 ## Changelog
 
 - v0.4 (2026-03-06): Corrected Task 4 execution boundary to allow `backend/main.py` for review-detail response assembly; persisted coverage cannot reach the API contract otherwise.
+- v0.5 (2026-03-06): Post-WF-0060 merge reconciliation completed; branch verified on isolated Postgres test DB and task status aligned to completed reality.
 
 ### [x] Task 5 — Review detail flips to call-linked ordering for the proof path
 

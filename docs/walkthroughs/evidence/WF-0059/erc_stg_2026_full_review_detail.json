@@ -9,9 +9,16 @@
       "b1_part1_scientific_proposal",
       "b1_cv_track_record"
     ],
+    "submitted_leaf_ids": [
+      "b1_part1_scientific_proposal",
+      "b1_cv_track_record"
+    ],
     "detail_state": "call_linked",
     "ordering_source": "call_nodes",
     "unmapped_node_logical_ids": [],
+    "legacy_ambiguous_container_ids": [],
+    "moved_legacy_node_references": [],
+    "compatibility_notes": [],
     "review": {
       "id": "bb5b6f57-6f16-4a20-a5b0-eab71cf91d69",
       "status": "COMPLETED",
