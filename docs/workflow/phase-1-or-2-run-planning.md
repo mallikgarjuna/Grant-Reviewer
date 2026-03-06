@@ -75,9 +75,10 @@ After completing Part C revisions, ensure the **Target Output Artifact** (and an
 
 1. Identify the Phase ID.
 2. Follow the corresponding **Part B (Review)** sub-phase instructions from the matrix exactly.
-3. Print the review output.
-4. Print: `Reviewed artifact: <path> @ <version>`.
-5. Classify issues found into Blocking or Non-blocking.
+3. Execute `@docs/workflow/util-adversarial-diff-audit.md` with profile `planning` against the planning-phase working diff (`main...HEAD` preferred) and keep scope limited to the active phase artifact.
+4. Print the review output.
+5. Print: `Reviewed artifact: <path> @ <version>`.
+6. Classify issues found into Blocking or Non-blocking.
 
 ---
 

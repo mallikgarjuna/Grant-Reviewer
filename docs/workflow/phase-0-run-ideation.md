@@ -82,6 +82,7 @@ After completion, print:
 ## PART B — Review Gate (No Edits)
 
 Follow @docs/workflow/phase-0-2-brainstorm-risk-audit.md exactly.
+Also execute `@docs/workflow/util-adversarial-diff-audit.md` with profile `ideation` to ensure explicit coverage of architecture/process invariants, security assumptions, edge cases, missing testability, and hidden coupling in the proposed workflow direction.
 
 After completion, print:
 
