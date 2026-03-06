@@ -7,7 +7,7 @@ Last Updated: 2026-03-06
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: close one WF-0056 live-evidence row end-to-end
+### [x] Task 1 — Tracer bullet: close one WF-0056 live-evidence row end-to-end
 
 Goal:
 Replace one required WF-0056 Evidence Chain placeholder row with real live-run metadata and linked artifact checksum to prove the closure path works end-to-end.

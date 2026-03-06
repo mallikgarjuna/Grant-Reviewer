@@ -11,7 +11,7 @@ Implemented live rehearsal workflow coverage and safety contracts for verify/app
 ## Evidence Chain (verify -> apply -> rollback)
 | Operation | Evidence Link | Evidence Checksums | Snapshot Checksums | workflow_run_id | run URL | commit_sha | linked_artifacts |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| verify-main | `docs/walkthroughs/evidence/WF-0056/tracer_verify_evidence.json` | `evidence_sha256=<pending live run>` | N/A | `<pending live run>` | `<pending live run>` | `<pending live run>` | `<pending live run>` |
+| verify-main | `docs/walkthroughs/evidence/WF-0056/live-run-index.md#verify-main` | `evidence_sha256=0a5a5ee0c9cfd7b555f1932ff1c244c6dfc146435faab30a1d56298a0b412a2d` | N/A | `22735688979` | `https://github.com/mallikgarjuna/Grant-Reviewer/actions/runs/22735688979` | `771ebe9b8362fda24febdab4b943749d131c8011` | `docs/walkthroughs/evidence/WF-0056/live-run-index.md#verify-main` |
 | apply-rehearsal | `docs/walkthroughs/evidence/WF-0056/apply_evidence.json` | `evidence_sha256=<pending live run>` | `snapshot_sha256=<pending live run>` | `<pending live run>` | `<pending live run>` | `<pending live run>` | `<pending live run>` |
 | rollback-rehearsal | `docs/walkthroughs/evidence/WF-0056/rollback_evidence.json` | `evidence_sha256=<pending live run>` | `source snapshot checksum=<pending live run>` | `<pending live run>` | `<pending live run>` | `<pending live run>` | `<pending live run>` |
 
