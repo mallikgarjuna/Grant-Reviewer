@@ -34,20 +34,8 @@ Phase 1.2 produces audit output in chat only (no file edits). If you made no fil
 
 ## Output (in chat only)
 
-Return:
-
-1. Top 5 MVP risks (ranked)
-2. Missing decisions (recommend defaults)
-3. Scope creep warnings
-4. Implementation landmines
-5. Exact edits required (section + change)
-6. User story coverage gaps (missing/unclear stories; stories not covered by flow/reqs)
-7. Testing gaps (missing TDD seams, boundary mocking, missing “prove it” tests)
-8. Traceability gaps (missing US# references in flows/reqs/contracts; orphan requirements)
-9. Requirement ID gaps (missing FR# IDs; duplicates; FRs not linked to US#; contracts not linked to FR#)
-10. Next 2 actions I should take (choose one)
-
-Max 120 lines.
-Be strict about MVP and fast shipping.
-
-Do NOT edit files.
+1. Use review range `main...HEAD` by default (unless the user explicitly requests a narrower range).
+2. Execute `@docs/workflow/util-adversarial-diff-audit.md` with profile `planning`.
+3. Fail-closed rule: do not consider this gate complete unless output includes all five required sections and explicit coverage of the six mandatory focus areas.
+4. Keep PRD-specific rigor: include exact PRD edit guidance where findings exist.
+5. Do NOT edit files.

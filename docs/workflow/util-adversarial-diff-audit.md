@@ -14,7 +14,7 @@ Provide one canonical, adversarial review contract for branch diffs so all relev
 
 ## Input
 
-- A diff range (required). Preferred: `main...HEAD`.
+- A diff range (required). Default: `main...HEAD` for all profiles unless the user explicitly requests a narrower range.
 - Optional scope profile:
   - `execution` (full technical audit; default)
   - `planning` (artifact/planning-focused)
@@ -58,8 +58,10 @@ Rules:
   - Use `main...HEAD` by default.
   - Apply all six focus areas strictly.
 - `planning`:
+  - Use `main...HEAD` by default.
   - Prioritize architecture violations, invariants, missing tests, hidden coupling.
   - Security/edge-case analysis is required but scoped to planning artifacts/contracts.
 - `ideation`:
+  - Use `main...HEAD` by default.
   - Prioritize architecture/process invariants and hidden coupling in the proposed workflow.
   - Security/edge-case analysis is required but scoped to strategy/risk assumptions.
