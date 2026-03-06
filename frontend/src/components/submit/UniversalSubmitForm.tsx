@@ -197,9 +197,8 @@ export function UniversalSubmitForm() {
             ? ((await metadataResult.value.json()) as CallNodesMetadataResponse)
             : null;
         const hasStep2Stage =
-          metadataPayload?.nodes?.some(
-            (node) => node.review_stage === "STEP_2" || node.review_stage === "BOTH",
-          ) ?? false;
+          metadataPayload?.nodes?.some((node) => node.review_stage === "STEP_2") ??
+          false;
         const nextAvailableReviewStages: ReviewStage[] = hasStep2Stage
           ? ["STEP_1", "STEP_2"]
           : ["STEP_1"];
