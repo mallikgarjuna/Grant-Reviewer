@@ -1938,8 +1938,13 @@ def test_structured_review_wf0044_policy_structured_api_modes(
     )
 
     def run_pipeline_with_case_feedback(request):
-        expectation = request.call_config_snapshot["expectations"][0]
+        expectation = request.call_config_snapshot.to_canonical_payload()["expectations"][0]
         return PipelineResult(
+            request_id=request.request_id,
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
             findings=[],
             review_cards=[
                 EngineReviewCard(
@@ -2008,6 +2013,11 @@ def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:
 
     def run_pipeline_with_unknown_expectation(_request):
         return PipelineResult(
+            request_id="wf0043-unresolvable",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
             findings=[],
             review_cards=[
                 EngineReviewCard(
@@ -3235,6 +3245,11 @@ def test_structured_review_unresolvable_expectation_marks_failed_review(
 
     def run_pipeline_with_unknown_expectation(_request):
         return PipelineResult(
+            request_id="structured-unresolvable",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
             findings=[],
             review_cards=[
                 EngineReviewCard(

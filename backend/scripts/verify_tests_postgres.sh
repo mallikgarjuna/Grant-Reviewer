@@ -6,6 +6,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+LOCK_FILE="${TMPDIR:-/tmp}/grant-reviewer-postgres-test.lock"
+exec 9>"${LOCK_FILE}"
+flock 9
+export GRANT_REVIEWER_TEST_DB_LOCKED=1
+
 export DATABASE_URL="${DATABASE_URL:-postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable}"
 
 if [[ "${DATABASE_URL}" != *"test"* ]]; then

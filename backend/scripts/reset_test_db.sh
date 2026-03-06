@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${GRANT_REVIEWER_TEST_DB_LOCKED:-0}" != "1" ]]; then
+  LOCK_FILE="${TMPDIR:-/tmp}/grant-reviewer-postgres-test.lock"
+  exec 9>"${LOCK_FILE}"
+  flock 9
+fi
+
 export DATABASE_URL="${DATABASE_URL:-postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable}"
 
 if [[ "${DATABASE_URL}" != *"test"* ]]; then

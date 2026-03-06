@@ -451,6 +451,11 @@ def test_structured_pipeline_v1_contract_error_expectation_unresolvable(
             )
 
             self.value = PipelineResult(
+                request_id="tampered-request",
+                pipeline_status="SUCCESS",
+                failure_code=None,
+                diagnostics=[],
+                compatibility_output={},
                 findings=[
                     DiagnosticFindingV1(
                         finding_id="tampered",
@@ -471,6 +476,7 @@ def test_structured_pipeline_v1_contract_error_expectation_unresolvable(
                         feedback="tampered",
                     )
                 ],
+                telemetry={},
             )
 
     tampered = TamperedResult()
