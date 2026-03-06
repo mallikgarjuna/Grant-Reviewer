@@ -1,4 +1,28 @@
+<!-- docs/logs/decisions.md -->
 # Architectural Decisions
+
+## Date: 2026-03-06 (workflow execution contract)
+
+### AD W.1: Phase 2 tasks remain the canonical planning and commit unit; no separate execution-slice artifact
+- **Context**: The workflow already enforced atomic Phase 2 tasks, dependency metadata, TDD, and commit-per-task discipline, but Phase 3 still implicitly encouraged one long session to consume the entire task queue.
+- **Decision**: Keep the existing phase model and treat the task file as the single authoritative planning artifact. Do not add a new Phase 2.5 or a second "execution slice" artifact type.
+- **Why**: Preserves traceability and keeps planning vocabulary stable while addressing the real reliability issue in execution semantics.
+- **Tradeoff**: Phase 2 tasks must carry a bit more execution-boundary metadata when long-running implementation risk is material.
+- **Status**: Approved.
+
+### AD W.2: Phase 3 is a bounded sequential runner, not a mandate to finish the whole task queue in one chat
+- **Context**: Long Phase 3 chats accumulate context drift even when they nominally follow implement -> verify -> commit per task.
+- **Decision**: Phase 3 may stop after any completed task when explicit stop rules are hit, including task-plan mismatch, file-surface spillover, verification instability, planned session boundary, or context-bloat risk. Early stop is a safe handoff, not a failure.
+- **Why**: Converts implicit chat-hygiene advice into an operational contract the runner can actually follow.
+- **Tradeoff**: Some workflows will require more than one Phase 3 session before Part B/C can run.
+- **Status**: Approved.
+
+### AD W.3: Context-bloat stops must warn and hand off with a resume prompt
+- **Context**: A bounded Phase 3 stop is only useful if the agent tells the user that reasoning quality is at risk and makes the next step unambiguous.
+- **Decision**: When stopping for context-bloat risk, the agent must warn explicitly in chat, state whether downstream review/ship steps are blocked, identify the next unfinished task, and print a copy-pasteable resume prompt for a fresh chat/session. This applies in workflow runners and is referenced from `AGENTS.md` for non-runner chats.
+- **Why**: Prevents silent degradation, reduces ambiguous handoffs, and makes recovery operational instead of conversational.
+- **Tradeoff**: Slightly more verbose stop messages, but only when the session is already at risk.
+- **Status**: Approved.
 
 ## Date: 2026-03-05 (WF-0056: platform policy live rehearsal)
 
@@ -1531,4 +1555,38 @@
 - **Decision**: Keep this WF repo-only and require an explicit check-to-required-check mapping artifact for a follow-on branch-protection WF, without changing admin settings here.
 - **Why**: Ships deterministic policy hardening now while preserving a clean boundary for platform-admin enforcement work.
 - **Tradeoff**: Full required-check enforcement is deferred until the follow-on WF is completed.
+- **Status**: Approved.
+
+## Date: 2026-03-06 (WF-0059: multi-call UX unblocker)
+
+### AD 59.1: WF-0059 scope is locked to one ERC hierarchical proof call
+- **WF ID**: WF-0059
+- **Context**: The workflow can easily sprawl into universal multi-call redesign if the proof target and acceptance boundary are not fixed early.
+- **Decision**: Lock implementation and proof scope to `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`, preserving Veni parity while limiting in-scope changes to the submit unblocker, review-create invariants, and call-aware review-detail seams required by that path.
+- **Why**: Keeps the workflow falsifiable and aligned to the finalized brainstorm's proof obligation.
+- **Tradeoff**: Broader multi-call hardening remains deferred after this workflow.
+- **Status**: Approved.
+
+### AD 59.2: Proof-path review detail uses explicit call-linked source precedence with no silent fallback
+- **WF ID**: WF-0059
+- **Context**: Review detail already has partial call-aware seams, but the proof path fails credibility if partially missing linkage silently falls back to Veni-shaped ordering or `submitted_nodes` query-param behavior.
+- **Decision**: For proof-call reviews, use stored review node linkage as the source of truth, enrich with fetched call-node metadata for ordering/grouping/labels, and allow legacy fallback only for older or mixed-version reviews with absent call-linked metadata.
+- **Why**: Protects traceability and prevents a false-positive "multi-call works" result caused by silent fallback behavior.
+- **Tradeoff**: Requires explicit unmapped-state handling and tests instead of relying on permissive fallback behavior.
+- **Status**: Approved.
+
+### AD 59.3: WF-0059 submit boundary is the structured-review path, not flat `POST /reviews`
+- **WF ID**: WF-0059
+- **Context**: The repo's hierarchical submit flow already goes through `/api/bff/structured-review` to `/api/structured-review`, while flat `POST /reviews` remains the legacy single-snippet path.
+- **Decision**: Define WF-0059 review-create invariants against the structured-review boundary and preserve that path's idempotency, validation ordering, persistence, and history behavior.
+- **Why**: Prevents task planning from targeting the wrong transport and hiding the real integration seam.
+- **Tradeoff**: The PRD must distinguish structured-review invariants from legacy flat-review invariants instead of collapsing them into one generic boundary.
+- **Status**: Approved.
+
+### AD 59.4: Proof-path coverage summary requires persisted submitted-node coverage data
+- **WF ID**: WF-0059
+- **Context**: Current review detail coverage summary still depends on the `submitted_nodes` URL query param, and cards-only inference is insufficient because some submitted nodes can legitimately yield zero review cards.
+- **Decision**: Require the structured-review flow to persist submitted node logical IDs, or an equivalent persisted review-linked coverage source, and require review detail to compute reviewed/not-reviewed coverage from that persisted source plus call metadata.
+- **Why**: Makes proof-path coverage trustworthy and removes closure dependence on URL parameters or card-count assumptions.
+- **Tradeoff**: Adds a small persistence/detail-contract expansion that legacy reviews will not have, so explicit fallback handling remains necessary.
 - **Status**: Approved.

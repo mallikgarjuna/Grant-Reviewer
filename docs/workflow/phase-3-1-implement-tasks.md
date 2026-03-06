@@ -1,3 +1,4 @@
+<!-- docs/workflow/phase-3-1-implement-tasks.md -->
 # Phase 3.1 — Implement Tasks (Sequential + Commit Per Task)
 
 This file is a workflow instruction.
@@ -8,14 +9,14 @@ Do NOT modify this file during execution.
 
 ## Purpose
 
-Execute all tasks in the tasks file sequentially.
-After each task:
+Execute tasks sequentially from the tasks file until an explicit stop boundary is hit.
+After each completed task:
 
 - verify
 - commit
-- continue to the next task
+- decide whether it is safe to continue
 
-This produces clean, traceable progress and stable checkpoints.
+This produces clean, traceable progress and stable checkpoints without forcing one long session to consume the entire queue.
 
 ---
 
@@ -51,7 +52,7 @@ If the baseline test run fails for reasons unrelated to this WF, **STOP** and as
 ---
 
 ## Phase Return — Stop Processing Here
-When all tasks are implemented, STOP execution.
+When you hit a stop boundary or all tasks are implemented, STOP execution.
 Do NOT create the walkthrough here.
 Return control to the `phase-3-run-execution.md` Part B Verification gate.
 
@@ -76,6 +77,7 @@ If branch does not exist:
 - Implement tasks in defined order.
 - Only work on ONE task at a time.
 - Do NOT expand scope beyond tasks file.
+- Treat the task file as an ordered queue with hard boundaries, not as a mandate to finish the entire queue in one chat.
 - If missing requirements are discovered:
   - STOP execution
   - Step back ONE phase (usually Phase 2 or 3)
@@ -114,10 +116,34 @@ For each task:
 
 9. Mark task complete inside tasks file (`[x]`) before moving to the next task.
    Do NOT bump version unless the task plan itself changed.
+10. Evaluate whether to continue or stop. STOP immediately if any of the following is true:
+   - the task's `Stop if` condition was triggered
+   - the task required edits outside `Must touch files` plus bounded `May touch files`
+   - verification failed twice without a clear minimal fix
+   - the implementation exposed missing or incorrect task scope
+   - the task is marked `Session boundary after: yes`
+   - context has become heavy enough that reasoning quality is dropping
 
-Then continue automatically to the next task.
+Only continue automatically to the next task if none of the stop conditions fired.
 
 ## Completion Return
+
+When you stop, report whether the reason was:
+
+- all tasks complete
+- planned session boundary
+- unexpected scope/task-plan mismatch
+- verification instability
+- context-bloat safety stop
+
+If tasks remain open, state the next unfinished task and the exact blocker/boundary before handing control back.
+
+If the reason is `context-bloat safety stop`, you MUST also:
+
+- warn explicitly that context load is now risking reasoning quality
+- state whether Part B/C is blocked (`yes` unless all tasks are complete)
+- recommend starting a fresh chat/session before resuming
+- print a copy-pasteable resume prompt for the next chat/session that names the WF/task file and the next unfinished task
 
 When all tasks are complete, **STOP**.
 

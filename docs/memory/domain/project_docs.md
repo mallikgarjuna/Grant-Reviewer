@@ -1,3 +1,4 @@
+<!-- docs/memory/domain/project_docs.md -->
 # Project Documentation
 
 - **2026-03-01**: All new code phrases and agent chat triggers must be added to `docs/reference/code_phrases.md` (the SSOT), not directly to `AGENTS.md`. `AGENTS.md` should remain as tiny as possible.
@@ -13,3 +14,4 @@
 - **2026-03-06**: Sanitization guard now covers workflow phase docs 0.x/1.x/2.x used for planning (`phase-0-0`..`phase-2-3`). Keep expansion to remaining workflow docs as dedicated small batches. Why: preserves 3-file discipline and keeps CI transitions low-risk.
 - **2026-03-06**: Sanitization guard now enforces all `docs/workflow/*.md` plus `AGENTS.md`; workflow docs are clean of tool/model names. Why: full-folder enforcement prevents regressions while keeping adapters/history as the only place tool names appear.
 - **2026-03-06**: New traceability rule: every file should encode its project-relative path at top (comment/docstring/header) so copied sources preserve provenance in external chat tools.
+- **2026-03-06**: Commit-msg hook must allow non-WF maintenance commits using `fix: <short title>` or `chore: <short title>` because workflow docs already permit `fix/<slug>` and `chore/<slug>` branches. Why: forcing WF-prefixed commits on maintenance branches creates false traceability.
