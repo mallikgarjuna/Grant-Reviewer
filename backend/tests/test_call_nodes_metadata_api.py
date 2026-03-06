@@ -148,3 +148,9 @@ def test_wf0060_erc_metadata_moves_resources_under_budget_without_changing_leaf_
         "resources_time_commitment",
     }
     assert leaf_ids.issubset(nodes_by_logical_id.keys())
+    assert nodes_by_logical_id["proposal_summary"]["review_stage"] == "BOTH"
+    assert nodes_by_logical_id["b1_part1_scientific_proposal"]["review_stage"] == "BOTH"
+    assert nodes_by_logical_id["b1_cv_track_record"]["review_stage"] == "BOTH"
+    assert nodes_by_logical_id["b2_part2_scientific_proposal"]["review_stage"] == "BOTH"
+    assert nodes_by_logical_id["resources_time_commitment"]["review_stage"] == "STEP_2"
+    assert nodes_by_logical_id["part_a"]["review_stage"] is None

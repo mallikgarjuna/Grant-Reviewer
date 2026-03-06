@@ -18,7 +18,12 @@ import {
   loadStructuredCalls,
   type StructuredCallSummary,
 } from "@/lib/submit/loadStructuredCalls";
-import { buildRenderModel, type RenderModelResult } from "@/lib/submit/renderModel";
+import {
+  buildRenderModel,
+  isNodeEligibleForStage,
+  type RenderModelResult,
+  type ReviewStage,
+} from "@/lib/submit/renderModel";
 import { trackClientEvent } from "@/lib/telemetry/clientTelemetry";
 
 type ApiErrorEnvelope = {
@@ -92,6 +97,7 @@ export function UniversalSubmitForm() {
   });
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [selectedReviewStage, setSelectedReviewStage] = useState<ReviewStage>("STEP_1");
   const [hardBlockErrors, setHardBlockErrors] = useState<string[]>([]);
   const [complianceWarnings, setComplianceWarnings] = useState<
     ComplianceCheckResponse["warnings"]
@@ -189,6 +195,7 @@ export function UniversalSubmitForm() {
                 title?: string | null;
                 sourceSection?: string | null;
                 parentLogicalId?: string | null;
+                reviewStage?: "STEP_1" | "STEP_2" | "BOTH" | null;
               }
             >
           >(
@@ -197,6 +204,7 @@ export function UniversalSubmitForm() {
                 title: node.title,
                 sourceSection: node.source_section,
                 parentLogicalId: node.parent_logical_id,
+                reviewStage: node.review_stage ?? "BOTH",
               };
               return acc;
             },
@@ -291,6 +299,7 @@ export function UniversalSubmitForm() {
       return [];
     }
     return renderModel.nodes
+      .filter((node) => isNodeEligibleForStage(node, selectedReviewStage))
       .map((node) => {
         return {
           node_logical_id: node.nodeLogicalId,
@@ -321,7 +330,7 @@ export function UniversalSubmitForm() {
         "Idempotency-Key": crypto.randomUUID(),
       },
       body: JSON.stringify({
-        review_stage: "STEP_1",
+        review_stage: selectedReviewStage,
         call_id: selectedCallId,
         nodes: nonEmptyNodes,
       }),
@@ -365,16 +374,19 @@ export function UniversalSubmitForm() {
 
     setIsSubmitting(true);
     try {
+      const draftNodesForStage = renderModel.nodes
+        .filter((node) => isNodeEligibleForStage(node, selectedReviewStage))
+        .map((node) => ({
+          node_logical_id: node.nodeLogicalId,
+          text: draft[node.nodeLogicalId] ?? "",
+        }));
       const complianceResponse = await fetch("/api/bff/check-compliance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           call_id: selectedCallId,
           domain: effectiveDomain,
-          draft_nodes: renderModel.nodes.map((node) => ({
-            node_logical_id: node.nodeLogicalId,
-            text: draft[node.nodeLogicalId] ?? "",
-          })),
+          draft_nodes: draftNodesForStage,
         }),
       });
       if (!complianceResponse.ok) {
@@ -459,8 +471,36 @@ export function UniversalSubmitForm() {
             {callError ? <p className="text-sm text-red-600">{callError}</p> : null}
           </div>
 
+          <div className="space-y-2">
+            <label
+              className="text-sm font-medium text-[var(--color-foreground)]"
+              htmlFor="review-stage"
+            >
+              Review Stage
+            </label>
+            <select
+              id="review-stage"
+              className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm"
+              onChange={(event) =>
+                setSelectedReviewStage(event.target.value as ReviewStage)
+              }
+              value={selectedReviewStage}
+            >
+              <option value="STEP_1">Step 1</option>
+              <option value="STEP_2">Step 2</option>
+            </select>
+          </div>
+
           {renderModel.state === "ready"
-            ? renderModel.groups.map((group) => (
+            ? renderModel.groups
+                .map((group) => ({
+                  ...group,
+                  nodes: group.nodes.filter((node) =>
+                    isNodeEligibleForStage(node, selectedReviewStage),
+                  ),
+                }))
+                .filter((group) => group.nodes.length > 0)
+                .map((group) => (
                 <section
                   className="space-y-4 rounded-[var(--radius-md)] border border-[var(--color-border)]/60 p-4"
                   key={group.groupKey}
@@ -491,7 +531,7 @@ export function UniversalSubmitForm() {
                     );
                   })}
                 </section>
-              ))
+                ))
             : null}
 
           {domainOptions.length > 0 ? (

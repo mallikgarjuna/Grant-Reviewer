@@ -89,6 +89,7 @@ class NodeMetadataDTO(BaseModel):
     node_type: str | None = None
     parent_logical_id: str | None = None
     guidance_text: str | None = None
+    review_stage: Literal["STEP_1", "STEP_2", "BOTH"] | None = None
     content_constraints: dict[str, Any] = Field(default_factory=dict)
     compliance_rules: list[dict[str, Any]] = Field(default_factory=list)
     source_section: str | None = None

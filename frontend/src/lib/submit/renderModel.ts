@@ -5,11 +5,13 @@ export type NodeMetadata = {
   title?: string | null;
   sourceSection?: string | null;
   parentLogicalId?: string | null;
+  reviewStage?: "STEP_1" | "STEP_2" | "BOTH" | null;
 };
 
 export type RenderNode = {
   nodeLogicalId: string;
   label: string;
+  reviewStage: "STEP_1" | "STEP_2" | "BOTH";
 };
 
 export type RenderGroup = {
@@ -42,6 +44,8 @@ export type RenderModelResult =
   | RenderModelReady
   | RenderModelUnsupported
   | RenderModelContractError;
+
+export type ReviewStage = "STEP_1" | "STEP_2";
 
 type BuildRenderModelInput = {
   nodes: NodeSummary[];
@@ -129,9 +133,11 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
         ? normalizeSectionNumber(metadata.sourceSection)
         : null;
     const baseLabel = metadataTitle ?? nodeTitle ?? toFallbackLabel(nodeLogicalId);
+    const reviewStage = metadata?.reviewStage ?? "BOTH";
     renderNodeByLogicalId.set(nodeLogicalId, {
       nodeLogicalId,
       label: sectionNumber ? `${baseLabel} (${sectionNumber})` : baseLabel,
+      reviewStage,
     });
   }
 
@@ -195,4 +201,14 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
       return !(typeof metadata?.title === "string" && metadata.title.trim());
     }).length,
   };
+}
+
+export function isNodeEligibleForStage(
+  node: RenderNode,
+  reviewStage: ReviewStage,
+): boolean {
+  if (node.reviewStage === "BOTH") {
+    return true;
+  }
+  return node.reviewStage === reviewStage;
 }
