@@ -1,3 +1,4 @@
+// frontend/src/app/app/reviews/[reviewId]/page.test.tsx
 import "@testing-library/jest-dom/vitest";
 import fs from "node:fs";
 import { render, screen } from "@testing-library/react";
@@ -5,14 +6,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import ReviewDetailPage from "./page";
 
-let submittedNodesParam = "academic_profile,key_outputs";
-
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
   useParams: () => ({ reviewId: "review-1" }),
-  useSearchParams: () => ({
-    get: (key: string) => (key === "submitted_nodes" ? submittedNodesParam : null),
-  }),
 }));
 
 function reviewPayload(overrides: Record<string, unknown> = {}) {
@@ -49,13 +45,15 @@ function reviewPayload(overrides: Record<string, unknown> = {}) {
         feedback_text: "Feedback text",
       },
     ],
+    submitted_leaf_ids: ["academic_profile", "key_outputs"],
+    legacy_ambiguous_container_ids: [],
+    moved_legacy_node_references: [],
     ...overrides,
   };
 }
 
 describe("ReviewDetailPage", () => {
   it("uses call-driven ordering and labels when call metadata is available", async () => {
-    submittedNodesParam = "academic_profile,key_outputs";
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL) => {
@@ -132,7 +130,6 @@ describe("ReviewDetailPage", () => {
   });
 
   it("uses review payload fallback ordering for legacy review detail", async () => {
-    submittedNodesParam = "academic_profile,key_outputs";
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL) => {
@@ -167,7 +164,6 @@ describe("ReviewDetailPage", () => {
   });
 
   it("shows legacy fallback note for mixed-version payload without new fields", async () => {
-    submittedNodesParam = "academic_profile";
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL) => {
@@ -187,6 +183,347 @@ describe("ReviewDetailPage", () => {
       await screen.findByText("Call metadata unavailable; using review payload order."),
     ).toBeInTheDocument();
     expect(screen.getByText("Coverage summary")).toBeInTheDocument();
+  });
+
+  it("wf0060_review_detail_uses_corrected_leaf_grouping_and_ordering", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-erc",
+                call_code: "erc_stg_2026_full",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-summary",
+                    node_expectation_id: "exp-summary",
+                    node_logical_id: "proposal_summary",
+                    node_title: "Proposal Summary",
+                    criterion: "Excellence",
+                    criterion_description: "Excellence criterion",
+                    evaluation_element_name: "Project quality",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Strong summary.",
+                  },
+                ],
+                submitted_leaf_ids: [
+                  "resources_time_commitment",
+                  "proposal_summary",
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "n1",
+                  logical_id: "part_a",
+                  title: "Part A",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: false,
+                },
+                {
+                  id: "n2",
+                  logical_id: "budget",
+                  title: "Budget",
+                  parent_node_id: "n1",
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: false,
+                },
+                {
+                  id: "n3",
+                  logical_id: "resources_time_commitment",
+                  title: "Resources and Time Commitment",
+                  parent_node_id: "n2",
+                  node_type: "SECTION",
+                  order_index: 3,
+                  has_expectations: true,
+                },
+                {
+                  id: "n4",
+                  logical_id: "part_b",
+                  title: "Part B",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 4,
+                  has_expectations: false,
+                },
+                {
+                  id: "n5",
+                  logical_id: "b1",
+                  title: "Part B1",
+                  parent_node_id: "n4",
+                  node_type: "SECTION",
+                  order_index: 5,
+                  has_expectations: false,
+                },
+                {
+                  id: "n6",
+                  logical_id: "proposal_summary",
+                  title: "Proposal Summary",
+                  parent_node_id: "n5",
+                  node_type: "SUBSECTION",
+                  order_index: 6,
+                  has_expectations: true,
+                },
+                {
+                  id: "n7",
+                  logical_id: "b2",
+                  title: "Part B2",
+                  parent_node_id: "n4",
+                  node_type: "SECTION",
+                  order_index: 7,
+                  has_expectations: false,
+                },
+                {
+                  id: "n8",
+                  logical_id: "b2_part2_scientific_proposal",
+                  title: "Part II of the Scientific Proposal",
+                  parent_node_id: "n7",
+                  node_type: "SUBSECTION",
+                  order_index: 8,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          {
+            status: 404,
+          },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(screen.getByText(/Reviewed sections:/)).toHaveTextContent(
+      "Reviewed sections: Part A / Budget / Resources and Time Commitment, Part B / Part B1 / Proposal Summary",
+    );
+    expect(screen.getByText(/Not reviewed sections:/)).toHaveTextContent(
+      "Not reviewed sections: Part B / Part B2 / Part II of the Scientific Proposal",
+    );
+    expect(screen.getByText("Reviewed section: Part B / Part B1 / Proposal Summary")).toBeInTheDocument();
+  });
+
+  it("wf0060_review_detail_renders_explicit_compatibility_notes_for_legacy_erc_evidence", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-erc",
+                call_code: "erc_stg_2026_full",
+                ordering_source: "call_nodes",
+                submitted_leaf_ids: ["proposal_summary"],
+                legacy_ambiguous_container_ids: ["b1", "b2"],
+                moved_legacy_node_references: ["resources_time_commitment"],
+                compatibility_notes: [
+                  {
+                    note_type: "deprecated_container_submission",
+                    node_logical_ids: ["b1", "b2"],
+                    message:
+                      "Deprecated container submissions are preserved as ambiguous legacy evidence.",
+                  },
+                  {
+                    note_type: "moved_legacy_node_reference",
+                    node_logical_ids: ["resources_time_commitment"],
+                    message:
+                      "Legacy moved-node references were mapped to corrected leaf identities.",
+                  },
+                  {
+                    note_type: "mixed_version_review",
+                    node_logical_ids: ["proposal_summary", "b1", "b2"],
+                    message:
+                      "Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage.",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "n4",
+                  logical_id: "part_b",
+                  title: "Part B",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: false,
+                },
+                {
+                  id: "n5",
+                  logical_id: "b1",
+                  title: "Part B1",
+                  parent_node_id: "n4",
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: false,
+                },
+                {
+                  id: "n6",
+                  logical_id: "proposal_summary",
+                  title: "Proposal Summary",
+                  parent_node_id: "n5",
+                  node_type: "SUBSECTION",
+                  order_index: 3,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          {
+            status: 404,
+          },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Compatibility notes")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /deprecated_container_submission: Deprecated container submissions are preserved as ambiguous legacy evidence\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /moved_legacy_node_reference: Legacy moved-node references were mapped to corrected leaf identities\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /mixed_version_review: Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage\./,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Reviewed sections:/)).toHaveTextContent(
+      "Reviewed sections: Part B / Part B1 / Proposal Summary",
+    );
+  });
+
+  it("wf0060_erc_review_detail_blocks_legacy_fallback_leakage", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-erc",
+                call_code: "erc_stg_2026_full",
+                ordering_source: "call_nodes",
+                cards: [],
+                submitted_leaf_ids: ["proposal_summary"],
+                legacy_ambiguous_container_ids: [],
+                moved_legacy_node_references: [],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "n4",
+                  logical_id: "part_b",
+                  title: "Part B",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: false,
+                },
+                {
+                  id: "n5",
+                  logical_id: "b1",
+                  title: "Part B1",
+                  parent_node_id: "n4",
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: false,
+                },
+                {
+                  id: "n6",
+                  logical_id: "proposal_summary",
+                  title: "Proposal Summary",
+                  parent_node_id: "n5",
+                  node_type: "SUBSECTION",
+                  order_index: 3,
+                  has_expectations: true,
+                },
+                {
+                  id: "n7",
+                  logical_id: "b2",
+                  title: "Part B2",
+                  parent_node_id: "n4",
+                  node_type: "SECTION",
+                  order_index: 4,
+                  has_expectations: false,
+                },
+                {
+                  id: "n8",
+                  logical_id: "b2_part2_scientific_proposal",
+                  title: "Part II of the Scientific Proposal",
+                  parent_node_id: "n7",
+                  node_type: "SUBSECTION",
+                  order_index: 5,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          {
+            status: 404,
+          },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(screen.getByText(/Reviewed sections:/)).toHaveTextContent(
+      "Reviewed sections: Part B / Part B1 / Proposal Summary",
+    );
+    expect(screen.getByText(/Not reviewed sections:/)).toHaveTextContent(
+      "Not reviewed sections: Part B / Part B2 / Part II of the Scientific Proposal",
+    );
+    expect(screen.queryByText("Call metadata unavailable; using review payload order.")).toBeNull();
   });
 
   it("guardrail: review detail path contains no hardcoded VENI constants", () => {

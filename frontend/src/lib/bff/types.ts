@@ -1,3 +1,4 @@
+// frontend/src/lib/bff/types.ts
 export type ReviewStatus = "PENDING" | "COMPLETED" | "FAILED";
 export type ReviewRating = "CRITICAL" | "WARNING" | "SUCCESS" | "NOTE";
 export type ReviewStage = "STEP_1" | "STEP_2";
@@ -65,6 +66,7 @@ export type CallNodeMetadataDto = {
   logical_id: string;
   title: string | null;
   parent_logical_id: string | null;
+  review_stage?: "STEP_1" | "STEP_2" | "BOTH" | null;
   source_section?: string | null;
   word_limit_min: number | null;
   word_limit_max: number | null;
@@ -150,6 +152,17 @@ export type ReviewDetailResponse = {
   call_code?: string | null;
   ordering_source?: "call_nodes" | "review_payload_fallback";
   unmapped_node_logical_ids?: string[];
+  submitted_leaf_ids?: string[];
+  legacy_ambiguous_container_ids?: string[];
+  moved_legacy_node_references?: string[];
+  compatibility_notes?: Array<{
+    note_type:
+      | "deprecated_container_submission"
+      | "moved_legacy_node_reference"
+      | "mixed_version_review";
+    node_logical_ids: string[];
+    message: string;
+  }>;
   review: ReviewSummary;
   cards: ReviewCardSummary[];
 };

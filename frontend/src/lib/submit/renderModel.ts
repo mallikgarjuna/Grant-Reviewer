@@ -1,18 +1,29 @@
+// frontend/src/lib/submit/renderModel.ts
 import type { NodeSummary } from "@/lib/bff/types";
 
 export type NodeMetadata = {
   title?: string | null;
   sourceSection?: string | null;
+  parentLogicalId?: string | null;
+  reviewStage?: "STEP_1" | "STEP_2" | "BOTH" | null;
 };
 
 export type RenderNode = {
   nodeLogicalId: string;
   label: string;
+  reviewStage: "STEP_1" | "STEP_2" | "BOTH";
+};
+
+export type RenderGroup = {
+  groupKey: string;
+  groupLabel: string | null;
+  nodes: RenderNode[];
 };
 
 export type RenderModelReady = {
   state: "ready";
   nodes: RenderNode[];
+  groups: RenderGroup[];
   metadataFallbackCount: number;
 };
 
@@ -33,6 +44,8 @@ export type RenderModelResult =
   | RenderModelReady
   | RenderModelUnsupported
   | RenderModelContractError;
+
+export type ReviewStage = "STEP_1" | "STEP_2";
 
 type BuildRenderModelInput = {
   nodes: NodeSummary[];
@@ -86,7 +99,8 @@ function normalizeSectionNumber(raw: string): string | null {
 
 export function buildRenderModel(input: BuildRenderModelInput): RenderModelResult {
   const nestedNodes = input.nodes.filter((node) => node.parent_node_id !== null);
-  if (nestedNodes.length > 0) {
+  const hasStructuralContainers = input.nodes.some((node) => !node.has_expectations);
+  if (nestedNodes.length > 0 && !hasStructuralContainers) {
     return {
       state: "unsupported",
       reason: "nested_nodes",
@@ -106,31 +120,95 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
     };
   }
 
+  const nodeById = new Map(input.nodes.map((node) => [node.id, node]));
+  const renderNodeByLogicalId = new Map<string, RenderNode>();
+  for (const node of input.nodes) {
+    const nodeLogicalId = node.logical_id as string;
+    const metadata = input.metadataByLogicalId[nodeLogicalId];
+    const metadataTitle =
+      typeof metadata?.title === "string" && metadata.title.trim() ? metadata.title : null;
+    const nodeTitle = typeof node.title === "string" && node.title.trim() ? node.title : null;
+    const sectionNumber =
+      typeof metadata?.sourceSection === "string"
+        ? normalizeSectionNumber(metadata.sourceSection)
+        : null;
+    const baseLabel = metadataTitle ?? nodeTitle ?? toFallbackLabel(nodeLogicalId);
+    const reviewStage = metadata?.reviewStage ?? "BOTH";
+    renderNodeByLogicalId.set(nodeLogicalId, {
+      nodeLogicalId,
+      label: sectionNumber ? `${baseLabel} (${sectionNumber})` : baseLabel,
+      reviewStage,
+    });
+  }
+
+  const leafNodes = input.nodes.filter((node) => node.has_expectations);
+  const groupsByKey = new Map<string, RenderGroup>();
+  for (const leafNode of leafNodes) {
+    const leafLogicalId = leafNode.logical_id as string;
+    const renderLeaf = renderNodeByLogicalId.get(leafLogicalId);
+    if (!renderLeaf) {
+      continue;
+    }
+    const ancestorLabels: string[] = [];
+    let currentParentNodeId = leafNode.parent_node_id;
+    while (currentParentNodeId) {
+      const parentNode = nodeById.get(currentParentNodeId);
+      if (!parentNode) {
+        break;
+      }
+      if (parentNode.logical_id) {
+        const metadata = input.metadataByLogicalId[parentNode.logical_id];
+        const metadataTitle =
+          typeof metadata?.title === "string" && metadata.title.trim()
+            ? metadata.title
+            : null;
+        ancestorLabels.unshift(
+          metadataTitle ??
+            (parentNode.title.trim() ? parentNode.title : toFallbackLabel(parentNode.logical_id)),
+        );
+      }
+      currentParentNodeId = parentNode.parent_node_id;
+    }
+
+    const parentLogicalId = input.metadataByLogicalId[leafLogicalId]?.parentLogicalId ?? null;
+    const groupKey = ancestorLabels.join(" / ") || parentLogicalId || "__ungrouped__";
+    const existingGroup = groupsByKey.get(groupKey);
+    if (existingGroup) {
+      existingGroup.nodes.push(renderLeaf);
+      continue;
+    }
+    groupsByKey.set(groupKey, {
+      groupKey,
+      groupLabel: ancestorLabels.length > 0 ? ancestorLabels.join(" / ") : null,
+      nodes: [renderLeaf],
+    });
+  }
+
+  const readyNodes = leafNodes
+    .map((node) => {
+      const nodeLogicalId = node.logical_id as string;
+      return renderNodeByLogicalId.get(nodeLogicalId) ?? null;
+    })
+    .filter((node): node is RenderNode => node !== null);
+
   return {
     state: "ready",
-    nodes: input.nodes.map((node) => {
-      const nodeLogicalId = node.logical_id as string;
-      const metadata = input.metadataByLogicalId[nodeLogicalId];
-      const metadataTitle =
-        typeof metadata?.title === "string" && metadata.title.trim()
-          ? metadata.title
-          : null;
-      const nodeTitle =
-        typeof node.title === "string" && node.title.trim() ? node.title : null;
-      const sectionNumber =
-        typeof metadata?.sourceSection === "string"
-          ? normalizeSectionNumber(metadata.sourceSection)
-          : null;
-      const baseLabel = metadataTitle ?? nodeTitle ?? toFallbackLabel(nodeLogicalId);
-      return {
-        nodeLogicalId,
-        label: sectionNumber ? `${baseLabel} (${sectionNumber})` : baseLabel,
-      };
-    }),
+    nodes: readyNodes,
+    groups: Array.from(groupsByKey.values()),
     metadataFallbackCount: input.nodes.filter((node) => {
       const nodeLogicalId = node.logical_id as string;
       const metadata = input.metadataByLogicalId[nodeLogicalId];
       return !(typeof metadata?.title === "string" && metadata.title.trim());
     }).length,
   };
+}
+
+export function isNodeEligibleForStage(
+  node: RenderNode,
+  reviewStage: ReviewStage,
+): boolean {
+  if (node.reviewStage === "BOTH") {
+    return true;
+  }
+  return node.reviewStage === reviewStage;
 }

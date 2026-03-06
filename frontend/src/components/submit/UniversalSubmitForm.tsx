@@ -1,3 +1,4 @@
+// frontend/src/components/submit/UniversalSubmitForm.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -17,7 +18,12 @@ import {
   loadStructuredCalls,
   type StructuredCallSummary,
 } from "@/lib/submit/loadStructuredCalls";
-import { buildRenderModel, type RenderModelResult } from "@/lib/submit/renderModel";
+import {
+  buildRenderModel,
+  isNodeEligibleForStage,
+  type RenderModelResult,
+  type ReviewStage,
+} from "@/lib/submit/renderModel";
 import { trackClientEvent } from "@/lib/telemetry/clientTelemetry";
 
 type ApiErrorEnvelope = {
@@ -86,16 +92,27 @@ export function UniversalSubmitForm() {
   const [renderModel, setRenderModel] = useState<RenderModelResult>({
     state: "ready",
     nodes: [],
+    groups: [],
     metadataFallbackCount: 0,
   });
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [selectedReviewStage, setSelectedReviewStage] = useState<ReviewStage>("STEP_1");
+  const [availableReviewStages, setAvailableReviewStages] = useState<ReviewStage[]>([
+    "STEP_1",
+  ]);
   const [hardBlockErrors, setHardBlockErrors] = useState<string[]>([]);
   const [complianceWarnings, setComplianceWarnings] = useState<
     ComplianceCheckResponse["warnings"]
   >([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!availableReviewStages.includes(selectedReviewStage)) {
+      setSelectedReviewStage("STEP_1");
+    }
+  }, [availableReviewStages, selectedReviewStage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -154,6 +171,8 @@ export function UniversalSubmitForm() {
     async function loadNodes() {
       if (!cancelled) {
         setCallError(null);
+        setAvailableReviewStages(["STEP_1"]);
+        setSelectedReviewStage("STEP_1");
       }
       try {
         const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
@@ -179,14 +198,30 @@ export function UniversalSubmitForm() {
           metadataResult.status === "fulfilled" && metadataResult.value.ok
             ? ((await metadataResult.value.json()) as CallNodesMetadataResponse)
             : null;
+        const hasStep2Stage =
+          metadataPayload?.nodes?.some((node) => node.review_stage === "STEP_2") ??
+          false;
+        const nextAvailableReviewStages: ReviewStage[] = hasStep2Stage
+          ? ["STEP_1", "STEP_2"]
+          : ["STEP_1"];
         const metadataByLogicalId =
           metadataPayload?.nodes?.reduce<
-            Record<string, { title?: string | null; sourceSection?: string | null }>
+            Record<
+              string,
+              {
+                title?: string | null;
+                sourceSection?: string | null;
+                parentLogicalId?: string | null;
+                reviewStage?: "STEP_1" | "STEP_2" | "BOTH" | null;
+              }
+            >
           >(
             (acc, node) => {
               acc[node.logical_id] = {
                 title: node.title,
                 sourceSection: node.source_section,
+                parentLogicalId: node.parent_logical_id,
+                reviewStage: node.review_stage ?? "BOTH",
               };
               return acc;
             },
@@ -208,6 +243,9 @@ export function UniversalSubmitForm() {
             trackClientEvent("universal_submit.metadata_fallback_usage", {
               fallback_count: nextRenderModel.metadataFallbackCount,
             });
+          }
+          if (metadataPayload !== null) {
+            setAvailableReviewStages(nextAvailableReviewStages);
           }
           setNodes(nextNodes);
           setRenderModel(nextRenderModel);
@@ -281,6 +319,7 @@ export function UniversalSubmitForm() {
       return [];
     }
     return renderModel.nodes
+      .filter((node) => isNodeEligibleForStage(node, selectedReviewStage))
       .map((node) => {
         return {
           node_logical_id: node.nodeLogicalId,
@@ -311,7 +350,7 @@ export function UniversalSubmitForm() {
         "Idempotency-Key": crypto.randomUUID(),
       },
       body: JSON.stringify({
-        review_stage: "STEP_1",
+        review_stage: selectedReviewStage,
         call_id: selectedCallId,
         nodes: nonEmptyNodes,
       }),
@@ -355,16 +394,19 @@ export function UniversalSubmitForm() {
 
     setIsSubmitting(true);
     try {
+      const draftNodesForStage = renderModel.nodes
+        .filter((node) => isNodeEligibleForStage(node, selectedReviewStage))
+        .map((node) => ({
+          node_logical_id: node.nodeLogicalId,
+          text: draft[node.nodeLogicalId] ?? "",
+        }));
       const complianceResponse = await fetch("/api/bff/check-compliance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           call_id: selectedCallId,
           domain: effectiveDomain,
-          draft_nodes: renderModel.nodes.map((node) => ({
-            node_logical_id: node.nodeLogicalId,
-            text: draft[node.nodeLogicalId] ?? "",
-          })),
+          draft_nodes: draftNodesForStage,
         }),
       });
       if (!complianceResponse.ok) {
@@ -449,27 +491,70 @@ export function UniversalSubmitForm() {
             {callError ? <p className="text-sm text-red-600">{callError}</p> : null}
           </div>
 
+          <div className="space-y-2">
+            <label
+              className="text-sm font-medium text-[var(--color-foreground)]"
+              htmlFor="review-stage"
+            >
+              Review Stage
+            </label>
+            <select
+              id="review-stage"
+              className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-3 text-sm"
+              onChange={(event) =>
+                setSelectedReviewStage(event.target.value as ReviewStage)
+              }
+              value={selectedReviewStage}
+            >
+              {availableReviewStages.map((stage) => (
+                <option key={stage} value={stage}>
+                  {stage === "STEP_1" ? "Step 1" : "Step 2"}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {renderModel.state === "ready"
-            ? renderModel.nodes.map((node) => {
-                const logicalId = node.nodeLogicalId;
-                const inputId = `node-${logicalId.replace(/_/g, "-")}`;
-                return (
-                  <div className="space-y-2" key={logicalId}>
-                    <label
-                      className="text-sm font-medium text-[var(--color-foreground)]"
-                      htmlFor={inputId}
-                    >
-                      {node.label}
-                    </label>
-                    <textarea
-                      id={inputId}
-                      className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
-                      onChange={(event) => updateNodeDraft(logicalId, event.target.value)}
-                      value={draft[logicalId] ?? ""}
-                    />
-                  </div>
-                );
-              })
+            ? renderModel.groups
+                .map((group) => ({
+                  ...group,
+                  nodes: group.nodes.filter((node) =>
+                    isNodeEligibleForStage(node, selectedReviewStage),
+                  ),
+                }))
+                .filter((group) => group.nodes.length > 0)
+                .map((group) => (
+                <section
+                  className="space-y-4 rounded-[var(--radius-md)] border border-[var(--color-border)]/60 p-4"
+                  key={group.groupKey}
+                >
+                  {group.groupLabel ? (
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
+                      {group.groupLabel}
+                    </h2>
+                  ) : null}
+                  {group.nodes.map((node) => {
+                    const logicalId = node.nodeLogicalId;
+                    const inputId = `node-${logicalId.replace(/_/g, "-")}`;
+                    return (
+                      <div className="space-y-2" key={logicalId}>
+                        <label
+                          className="text-sm font-medium text-[var(--color-foreground)]"
+                          htmlFor={inputId}
+                        >
+                          {node.label}
+                        </label>
+                        <textarea
+                          id={inputId}
+                          className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
+                          onChange={(event) => updateNodeDraft(logicalId, event.target.value)}
+                          value={draft[logicalId] ?? ""}
+                        />
+                      </div>
+                    );
+                  })}
+                </section>
+                ))
             : null}
 
           {domainOptions.length > 0 ? (

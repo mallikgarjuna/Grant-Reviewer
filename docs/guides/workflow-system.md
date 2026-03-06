@@ -33,14 +33,15 @@ During migration, legacy task-based artifacts remain in place unless explicitly 
 - Decisions: `docs/logs/decisions.md`.
 - During Phase 2 task planning, enforce atomic tasks (prefer `<=3` files touched per task) and split aggressively for independent testability.
 - Keep `task` as the canonical planning and commit unit; do not add a second execution-unit artifact.
-- When Phase 2 tasks need execution guardrails, encode them directly in the task file with deterministic hints such as `Out of scope`, `Stop if`, and `Session boundary after`.
+- When Phase 2 tasks need execution guardrails, encode them directly in the task file with deterministic hints such as `Out of scope`, `Stop if`, and `Session boundary after`. In Phase 3, `Session boundary after` is advisory only; it is not an automatic stop.
 
 ## Phase 3 Execution Boundaries
 
 - Phase 3 is sequential, but it is not obligated to consume the full task queue in one chat/session.
-- The Phase 3 runner may stop early when an explicit task boundary is hit, verification becomes unstable, or context bloat threatens reasoning quality.
+- The Phase 3 runner may stop early only when context bloat or context drift threatens reasoning quality.
+- Task-plan mismatch, verification instability, file-surface spillover, and `Session boundary after` are continuation-risk signals that must be reported with a recommendation, but they do not automatically stop the run.
 - Treat an early stop as a safe handoff, not a failed run, as long as the completed task is verified, committed, and the next unfinished task plus boundary reason are reported clearly.
-- When stopping for context-bloat risk, warn explicitly in chat and recommend the next action.
+- When stopping for context-bloat/context-drift risk, warn explicitly in chat and recommend the next action.
 - The stop/handoff message must include: stop reason, next unfinished task, whether Part B/C is blocked, and a copy-pasteable resume prompt for a fresh chat/session.
 
 ## Git Workflow

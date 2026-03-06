@@ -1,4 +1,6 @@
-"""Structured reviewer service tests for pipeline_v1-only runtime."""
+"""backend/tests/test_structured_reviewer_service.py
+Structured reviewer service tests for pipeline_v1-only runtime.
+"""
 
 from __future__ import annotations
 
@@ -158,6 +160,104 @@ def _seed_structured_service_graph() -> UUID:
         session.close()
 
 
+def _seed_wf0060_erc_graph() -> UUID:
+    session = get_session()
+    try:
+        agency = FundingAgency(name="ERC", short_name="ERC")
+        session.add(agency)
+        session.commit()
+        session.refresh(agency)
+
+        call = FundingCall(
+            funding_agency_id=agency.id,
+            name="ERC Starting Grant 2026",
+            code="erc_stg_2026_full",
+            call_year=2026,
+            is_active=True,
+        )
+        session.add(call)
+        session.commit()
+        session.refresh(call)
+
+        node_b1 = ProposalNode(
+            funding_call_id=call.id,
+            parent_node_id=None,
+            logical_id="b1",
+            node_type=NodeType.SECTION,
+            title="Part B1",
+            order_index=1,
+        )
+        session.add(node_b1)
+        session.commit()
+        session.refresh(node_b1)
+
+        node_b1_part1 = ProposalNode(
+            funding_call_id=call.id,
+            parent_node_id=node_b1.id,
+            logical_id="b1_part1_scientific_proposal",
+            node_type=NodeType.SUBSECTION,
+            title="Part I Scientific Proposal",
+            order_index=2,
+        )
+        session.add(node_b1_part1)
+        session.commit()
+        session.refresh(node_b1_part1)
+
+        criterion = EvaluationCriterion(
+            funding_call_id=call.id,
+            logical_id="crit_excellence",
+            name="Excellence",
+            description="Excellence criterion",
+            order_index=1,
+        )
+        session.add(criterion)
+        session.commit()
+        session.refresh(criterion)
+
+        element = EvaluationElement(
+            evaluation_criterion_id=criterion.id,
+            logical_id="elem_project_importance_questions",
+            name="Research questions",
+            description="Research questions quality",
+        )
+        session.add(element)
+        session.commit()
+        session.refresh(element)
+
+        expectation = NodeExpectation(
+            proposal_node_id=node_b1_part1.id,
+            evaluation_element_id=element.id,
+            expectation_strength=ExpectationStrength.MANDATORY,
+            evaluation_intent=EvaluationIntent.QUALITY,
+            guidance_note="Assess scientific quality",
+            order_index=1,
+        )
+        session.add(expectation)
+        session.commit()
+
+        definition = CallDefinition(
+            funding_call_id=call.id,
+            schema_version="v2",
+            checksum="wf0060-erc-checksum",
+            canonical_json={"reviewer_policy": []},
+            source_path="tests/fixtures/wf0060-erc.yaml",
+        )
+        session.add(definition)
+        session.commit()
+
+        template = PromptTemplate(
+            name="WF0060 ERC template",
+            template_text="Template",
+            is_active=True,
+        )
+        session.add(template)
+        session.commit()
+
+        return call.id
+    finally:
+        session.close()
+
+
 class EchoExpectationLLMClient:
     def generate(self, prompt: str) -> str:
         expectation_ids = re.findall(r"ID:\s*([0-9a-fA-F-]{36})", prompt)
@@ -180,6 +280,19 @@ def _build_service(monkeypatch):
     monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
     _reset_database()
     call_id = _seed_structured_service_graph()
+    session = get_session()
+    repository = ReviewRepository(session)
+    service = StructuredReviewerService(
+        repository=repository,
+        llm_client=EchoExpectationLLMClient(),
+    )
+    return service, call_id
+
+
+def _build_erc_service(monkeypatch):
+    monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
+    _reset_database()
+    call_id = _seed_wf0060_erc_graph()
     session = get_session()
     repository = ReviewRepository(session)
     service = StructuredReviewerService(
@@ -370,7 +483,7 @@ def test_structured_pipeline_v1_contract_error_unknown_node_logical_id(
         service.repository.session.close()
 
 
-def test_structured_pipeline_v1_reviewer_policy_scope_filters_prompt_rules(
+def test_structured_pipeline_v1_review_request_snapshot_stays_contract_compliant(
     monkeypatch,
 ) -> None:
     service, call_id = _build_service(monkeypatch)
@@ -423,7 +536,7 @@ def test_structured_pipeline_v1_reviewer_policy_scope_filters_prompt_rules(
     captured_snapshot: dict[str, object] = {}
 
     def capture_run_review_pipeline(review_request):
-        captured_snapshot.update(review_request.call_config_snapshot)
+        captured_snapshot.update(review_request.call_config_snapshot.to_canonical_payload())
         from app.engine.pipeline_v1 import run_review_pipeline as original_pipeline
 
         return original_pipeline(review_request)
@@ -444,14 +557,41 @@ def test_structured_pipeline_v1_reviewer_policy_scope_filters_prompt_rules(
         assert review.status == ReviewStatus.COMPLETED
         assert cards
 
-        by_node = captured_snapshot.get("reviewer_policy_prompt_by_node")
-        assert isinstance(by_node, dict)
-        node_rules = by_node.get("academic_profile")
-        assert isinstance(node_rules, list)
-        assert {rule["id"] for rule in node_rules} == {
-            "pol_global_prompt",
-            "pol_step1_academic_prompt",
+        assert captured_snapshot.get("schema_version") == "v1"
+        expectations_obj = captured_snapshot.get("expectations")
+        assert isinstance(expectations_obj, list)
+        assert len(expectations_obj) == 1
+        expectation = expectations_obj[0]
+        assert isinstance(expectation, dict)
+        assert set(expectation.keys()) == {
+            "expectation_id",
+            "node_logical_id",
+            "required",
         }
+        assert (
+            captured_snapshot.get("reviewer_policy_prompt_by_node") is None
+        )
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0060_structured_review_rejects_erc_container_submission_ids(
+    monkeypatch,
+) -> None:
+    service, call_id = _build_erc_service(monkeypatch)
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("b1", "container text should be rejected")],
+            external_user_id="user-wf0060-container-reject",
+            idempotency_key="wf0060-container-reject",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert review.overall_summary is not None
+        assert "MALFORMED_REVIEW_REQUEST" in review.overall_summary
+        assert "not submittable" in review.overall_summary
     finally:
         service.repository.session.close()
 

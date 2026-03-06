@@ -1,4 +1,6 @@
-"""Pydantic models for FastAPI request/response contracts."""
+"""backend/app/schemas/api.py
+Pydantic models for FastAPI request/response contracts.
+"""
 
 from typing import Any, Literal
 from uuid import UUID
@@ -87,6 +89,7 @@ class NodeMetadataDTO(BaseModel):
     node_type: str | None = None
     parent_logical_id: str | None = None
     guidance_text: str | None = None
+    review_stage: Literal["STEP_1", "STEP_2", "BOTH"] | None = None
     content_constraints: dict[str, Any] = Field(default_factory=dict)
     compliance_rules: list[dict[str, Any]] = Field(default_factory=list)
     source_section: str | None = None
@@ -161,6 +164,18 @@ class ReviewCardSummary(BaseModel):
     not_assessable_reason: str | None = None
 
 
+class ReviewCompatibilityNote(BaseModel):
+    """Compatibility annotation for mixed-version review records."""
+
+    note_type: Literal[
+        "deprecated_container_submission",
+        "moved_legacy_node_reference",
+        "mixed_version_review",
+    ]
+    node_logical_ids: list[str] = Field(default_factory=list)
+    message: str
+
+
 class ReviewDetailResponse(BaseModel):
     """Response for GET /reviews/{review_id}."""
 
@@ -168,6 +183,10 @@ class ReviewDetailResponse(BaseModel):
     call_code: str | None = None
     ordering_source: Literal["call_nodes", "review_payload_fallback"] = "call_nodes"
     unmapped_node_logical_ids: list[str] = Field(default_factory=list)
+    submitted_leaf_ids: list[str] = Field(default_factory=list)
+    legacy_ambiguous_container_ids: list[str] = Field(default_factory=list)
+    moved_legacy_node_references: list[str] = Field(default_factory=list)
+    compatibility_notes: list[ReviewCompatibilityNote] = Field(default_factory=list)
     review: ReviewSummary
     cards: list[ReviewCardSummary]
 
