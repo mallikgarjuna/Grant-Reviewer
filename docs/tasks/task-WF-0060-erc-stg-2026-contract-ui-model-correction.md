@@ -2,8 +2,8 @@
 # WF-0060 — ERC StG 2026 Contract/UI Model Correction Tasks
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-06
 
 Type: feature
@@ -69,12 +69,12 @@ Acceptance Criteria:
 - Only the approved leaf logical IDs can be entered and included in the structured-review submit payload.
 - Container logical IDs are blocked from submit payload construction at the frontend boundary.
 TDD Plan:
-- RED: add `wf0060_submit_tracer_renders_grouping_but_posts_only_leaf_nodes` in `frontend/src/components/submit/UniversalSubmitForm.test.tsx`.
+- RED: add `wf0060_render_model_excludes_structural_containers_from_submittable_nodes` in `frontend/src/lib/submit/renderModel.test.ts` and `wf0060_submit_tracer_renders_grouping_but_posts_only_leaf_nodes` in `frontend/src/components/submit/UniversalSubmitForm.test.tsx`.
 - GREEN: implement the smallest `renderModel` and form changes needed to keep grouping metadata while filtering submittable fields down to corrected leaves.
 - REFACTOR: extract a small helper only if container/leaf filtering logic becomes duplicated between render-model and form code.
 Verification Steps:
 - `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0060_submit_tracer_renders_grouping_but_posts_only_leaf_nodes"`
-- `cd frontend && npx vitest run src/lib/submit/renderModel.test.ts -t "erc"`
+- `cd frontend && npx vitest run src/lib/submit/renderModel.test.ts -t "wf0060_render_model_excludes_structural_containers_from_submittable_nodes"`
 - `cd frontend && rg -n "submitted_nodes|node_logical_id" src/components/submit/UniversalSubmitForm.tsx src/lib/submit/renderModel.ts`
 Risks (if any): It is easy to preserve old container-as-field behavior in hidden form-state transforms even if the visible UI looks correct.
 
@@ -103,12 +103,12 @@ Acceptance Criteria:
 - Step-scope enforcement recognizes only corrected leaf nodes as reviewable surfaces for ERC StG 2026.
 - Legacy top-level `resources_time_commitment` handling remains compatible without reintroducing container submissions.
 TDD Plan:
-- RED: add failing service-level coverage for rejected container submissions and corrected ERC stage-node handling in `backend/tests/test_structured_reviewer_service.py`.
+- RED: add `wf0060_structured_review_rejects_erc_container_submission_ids` in `backend/tests/test_structured_reviewer_service.py` and `wf0060_reviewer_policy_uses_corrected_erc_leaf_stage_scope` in `backend/tests/test_reviewer_policy.py`.
 - GREEN: implement the minimum reviewer-policy and structured-review service changes needed to enforce corrected leaf-only submissions.
 - REFACTOR: split any ERC-specific helper from generic service code only if the leaf-resolution logic becomes difficult to audit inline.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0060 or erc_stg_2026"`
-- `cd backend && uv run pytest tests/test_reviewer_policy.py -k "erc or resources_time_commitment"`
+- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0060_structured_review_rejects_erc_container_submission_ids"`
+- `cd backend && uv run pytest tests/test_reviewer_policy.py -k "wf0060_reviewer_policy_uses_corrected_erc_leaf_stage_scope"`
 - `cd backend && rg -n "b2|resources_time_commitment|STEP_2" app/services/reviewer_policy.py app/services/structured_reviewer_service.py`
 Risks (if any): Stage rules can look green while still accepting deprecated container IDs unless rejection is asserted explicitly.
 
@@ -240,11 +240,12 @@ TDD Plan:
 - GREEN: add only the final assertions needed once Tasks 3 through 6 are green.
 - REFACTOR: trim duplicated ERC fixtures/setup if closure selectors become noisy across backend and frontend tests.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_api.py -k "wf0060_"`
-- `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0060_"`
-- `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0060_"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0060_zero_card_leaf_stays_visible_in_review_detail"`
+- `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0060_container_ids_blocked_from_corrected_erc_submission"`
+- `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0060_erc_review_detail_blocks_legacy_fallback_leakage"`
 Risks (if any): Without WF-specific closure selectors, Phase 3 can claim success while still missing the corrected leaf-coverage invariant.
 
 ## Changelog
 
 - v0.1 (2026-03-06): Initial task breakdown from PRD.
+- v0.2 (2026-03-06): Tightened deterministic verification selectors, added explicit reviewer-policy test coverage, and marked Ready for Implementation.
