@@ -16,6 +16,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Docs Sanitization Guard
+        run: bash ../scripts/check_docs_sanitization.sh
+
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -32,9 +35,6 @@ jobs:
 
       - name: Install project
         run: uv sync --frozen
-
-      - name: Docs Sanitization Guard
-        run: bash ../scripts/check_docs_sanitization.sh
 
       - name: Lint (Ruff)
         run: uv run ruff check .
