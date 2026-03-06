@@ -2415,6 +2415,25 @@ def test_quota_exceeded_returns_429_with_details(monkeypatch) -> None:
     assert "reset_at" in quota_payload["error"]["details"]
 
 
+def test_quota_relaxed_in_dev_mode_when_limit_unset(monkeypatch) -> None:
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.delenv("FREE_DAILY_REVIEW_LIMIT", raising=False)
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    payload = {
+        "call_id": str(seeded_ids.call_id),
+        "node_id": str(seeded_ids.section_with_expectations_id),
+        "snippet_text": "Quota relaxed in development mode",
+    }
+
+    for index in range(6):
+        response = post_review(
+            client=client,
+            payload=payload,
+            idempotency_key=f"idem-dev-quota-{index}",
+        )
+        assert response.status_code == 200
+
+
 def test_kill_switch_blocks_new_submissions_not_existing_reviews(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     create_response = post_review(

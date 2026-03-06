@@ -77,6 +77,7 @@ MAX_SNIPPET_CHARS = 10_000
 BFF_SIGNATURE_MAX_AGE_SECONDS = 300
 IDEMPOTENCY_TTL_HOURS = 24
 FREE_DAILY_REVIEW_LIMIT = 5
+FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT = 10_000
 
 
 def is_idempotency_conflict_error(err: IntegrityError) -> bool:
@@ -229,13 +230,23 @@ def _is_reviews_enabled() -> bool:
 
 def _get_free_daily_review_limit() -> int:
     """Read per-user daily review limit from env."""
-    raw = os.getenv("FREE_DAILY_REVIEW_LIMIT", str(FREE_DAILY_REVIEW_LIMIT)).strip()
+    raw_limit = os.getenv("FREE_DAILY_REVIEW_LIMIT")
+    if raw_limit is None:
+        app_env = os.getenv("APP_ENV", "").strip().lower()
+        if app_env in {"dev", "development", "local"}:
+            return FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT
+        return FREE_DAILY_REVIEW_LIMIT
+
+    raw = raw_limit.strip()
     try:
         return max(0, int(raw))
     except ValueError:
         logger.warning(
             "Invalid FREE_DAILY_REVIEW_LIMIT=%s; falling back to default", raw
         )
+        app_env = os.getenv("APP_ENV", "").strip().lower()
+        if app_env in {"dev", "development", "local"}:
+            return FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT
         return FREE_DAILY_REVIEW_LIMIT
 
 
