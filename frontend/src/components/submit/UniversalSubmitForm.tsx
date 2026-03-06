@@ -98,12 +98,21 @@ export function UniversalSubmitForm() {
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const [selectedReviewStage, setSelectedReviewStage] = useState<ReviewStage>("STEP_1");
+  const [availableReviewStages, setAvailableReviewStages] = useState<ReviewStage[]>([
+    "STEP_1",
+  ]);
   const [hardBlockErrors, setHardBlockErrors] = useState<string[]>([]);
   const [complianceWarnings, setComplianceWarnings] = useState<
     ComplianceCheckResponse["warnings"]
   >([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!availableReviewStages.includes(selectedReviewStage)) {
+      setSelectedReviewStage("STEP_1");
+    }
+  }, [availableReviewStages, selectedReviewStage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -187,6 +196,13 @@ export function UniversalSubmitForm() {
           metadataResult.status === "fulfilled" && metadataResult.value.ok
             ? ((await metadataResult.value.json()) as CallNodesMetadataResponse)
             : null;
+        const hasStep2Stage =
+          metadataPayload?.nodes?.some(
+            (node) => node.review_stage === "STEP_2" || node.review_stage === "BOTH",
+          ) ?? false;
+        const nextAvailableReviewStages: ReviewStage[] = hasStep2Stage
+          ? ["STEP_1", "STEP_2"]
+          : ["STEP_1"];
         const metadataByLogicalId =
           metadataPayload?.nodes?.reduce<
             Record<
@@ -226,6 +242,9 @@ export function UniversalSubmitForm() {
             trackClientEvent("universal_submit.metadata_fallback_usage", {
               fallback_count: nextRenderModel.metadataFallbackCount,
             });
+          }
+          if (metadataPayload !== null) {
+            setAvailableReviewStages(nextAvailableReviewStages);
           }
           setNodes(nextNodes);
           setRenderModel(nextRenderModel);
@@ -486,8 +505,11 @@ export function UniversalSubmitForm() {
               }
               value={selectedReviewStage}
             >
-              <option value="STEP_1">Step 1</option>
-              <option value="STEP_2">Step 2</option>
+              {availableReviewStages.map((stage) => (
+                <option key={stage} value={stage}>
+                  {stage === "STEP_1" ? "Step 1" : "Step 2"}
+                </option>
+              ))}
             </select>
           </div>
 

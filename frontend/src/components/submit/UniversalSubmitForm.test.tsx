@@ -434,6 +434,9 @@ describe("UniversalSubmitForm", () => {
     expect(await screen.findByText("Some calls were hidden due to config loading issues.")).toBeInTheDocument();
     expect(screen.getByLabelText("Funding Call")).toHaveTextContent("Call 1");
     expect(screen.getByLabelText("Funding Call")).not.toHaveTextContent("Call 2");
+    const reviewStageSelect = screen.getByLabelText("Review Stage");
+    expect(reviewStageSelect).toHaveTextContent("Step 1");
+    expect(reviewStageSelect).not.toHaveTextContent("Step 2");
   });
 
   it("shows unsupported state for nested node calls", async () => {
@@ -2556,9 +2559,14 @@ describe("UniversalSubmitForm", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<UniversalSubmitForm />);
 
-    fireEvent.change(await screen.findByLabelText("Review Stage"), {
+    await screen.findByRole("option", { name: "Step 2" });
+    const reviewStageSelect = screen.getByLabelText("Review Stage");
+    fireEvent.change(reviewStageSelect, {
       target: { value: "STEP_2" },
     });
+    await waitFor(() =>
+      expect(screen.getByLabelText("Review Stage")).toHaveValue("STEP_2"),
+    );
     fireEvent.change(await screen.findByLabelText("Resources and Time Commitment"), {
       target: { value: "resource text" },
     });
