@@ -1,3 +1,4 @@
+// frontend/src/components/submit/UniversalSubmitForm.test.tsx
 import "@testing-library/jest-dom/vitest";
 import fs from "node:fs";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -2045,6 +2046,213 @@ describe("UniversalSubmitForm", () => {
     expect(screen.getByLabelText("Node C")).toBeInTheDocument();
     expect(screen.getByLabelText("Node D")).toBeInTheDocument();
     expect(screen.queryByLabelText("Domain")).not.toBeInTheDocument();
+  });
+
+  it("wf0060_submit_tracer_renders_grouping_but_posts_only_leaf_nodes", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "erc_stg_2026_full",
+                name: "ERC Starting Grant 2026",
+                year: 2026,
+                agency_short_name: "ERC",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_stg_2026_full/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_stg_2026_full",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "n1",
+                logical_id: "part_a",
+                title: "Part A",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: false,
+              },
+              {
+                id: "n2",
+                logical_id: "budget",
+                title: "Budget",
+                parent_node_id: "n1",
+                node_type: "SECTION",
+                order_index: 2,
+                has_expectations: false,
+              },
+              {
+                id: "n3",
+                logical_id: "resources_time_commitment",
+                title: "Resources and Time Commitment",
+                parent_node_id: "n2",
+                node_type: "SECTION",
+                order_index: 3,
+                has_expectations: true,
+              },
+              {
+                id: "n4",
+                logical_id: "part_b",
+                title: "Part B",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 4,
+                has_expectations: false,
+              },
+              {
+                id: "n5",
+                logical_id: "b1",
+                title: "Part B1",
+                parent_node_id: "n4",
+                node_type: "SECTION",
+                order_index: 5,
+                has_expectations: false,
+              },
+              {
+                id: "n6",
+                logical_id: "proposal_summary",
+                title: "Proposal Summary",
+                parent_node_id: "n5",
+                node_type: "SUBSECTION",
+                order_index: 6,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/erc_stg_2026_full/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "erc_stg_2026_full",
+            nodes: [
+              {
+                logical_id: "part_a",
+                title: "Part A",
+                parent_logical_id: null,
+                source_section: "Part A",
+                word_limit_min: null,
+                word_limit_max: null,
+              },
+              {
+                logical_id: "budget",
+                title: "Budget",
+                parent_logical_id: "part_a",
+                source_section: "Part A.3",
+                word_limit_min: null,
+                word_limit_max: null,
+              },
+              {
+                logical_id: "resources_time_commitment",
+                title: "Resources and Time Commitment",
+                parent_logical_id: "budget",
+                source_section: "Section C",
+                word_limit_min: null,
+                word_limit_max: null,
+              },
+              {
+                logical_id: "part_b",
+                title: "Part B",
+                parent_logical_id: null,
+                source_section: "Part B",
+                word_limit_min: null,
+                word_limit_max: null,
+              },
+              {
+                logical_id: "b1",
+                title: "Part B1",
+                parent_logical_id: "part_b",
+                source_section: "Part B1",
+                word_limit_min: null,
+                word_limit_max: null,
+              },
+              {
+                logical_id: "proposal_summary",
+                title: "Proposal Summary",
+                parent_logical_id: "b1",
+                source_section: "Part B1",
+                word_limit_min: null,
+                word_limit_max: null,
+              },
+            ],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        const parsedBody =
+          typeof init?.body === "string"
+            ? (JSON.parse(init.body) as { draft_nodes?: Array<{ node_logical_id: string }> })
+            : {};
+        expect(parsedBody.draft_nodes?.map((node) => node.node_logical_id)).toEqual([
+          "resources_time_commitment",
+          "proposal_summary",
+        ]);
+        return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+          status: 200,
+        });
+      }
+      if (url === "/api/bff/structured-review") {
+        const parsedBody =
+          typeof init?.body === "string"
+            ? (JSON.parse(init.body) as {
+                nodes: Array<{ node_logical_id: string; text: string }>;
+              })
+            : { nodes: [] };
+        expect(parsedBody.nodes.map((node) => node.node_logical_id)).toEqual([
+          "resources_time_commitment",
+          "proposal_summary",
+        ]);
+        return new Response(JSON.stringify({ review_id: "review-wf0060" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    expect(await screen.findByText("Part A / Budget")).toBeInTheDocument();
+    expect(screen.getByText("Part B / Part B1")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Part A")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Budget")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Part B")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Part B1")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Resources and Time Commitment"), {
+      target: { value: "resources text" },
+    });
+    fireEvent.change(screen.getByLabelText(/Proposal Summary/), {
+      target: { value: "summary text" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/bff/structured-review",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
   });
 
   it("guardrail: submit path contains no legacy domain map constant", () => {

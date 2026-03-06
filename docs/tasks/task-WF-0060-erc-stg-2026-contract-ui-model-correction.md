@@ -45,7 +45,7 @@ Verification Steps:
 - `cd backend && rg -n "id: (part_a|budget|part_b|b1|b2|resources_time_commitment)" data/calls/canonical/erc/erc_stg_2026_full.yaml`
 Risks (if any): A partial YAML correction can leave hidden container expectations behind, so the tests must assert both hierarchy and reviewability semantics.
 
-### [ ] Task 2 — Tracer bullet: grouped submit UI with leaf-only editing
+### [x] Task 2 — Tracer bullet: grouped submit UI with leaf-only editing
 
 Goal:
 Prove one end-to-end submit tracer where ERC grouping renders correctly but only corrected leaf nodes can be edited and posted across the submit boundary.

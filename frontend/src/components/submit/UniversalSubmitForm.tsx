@@ -1,3 +1,4 @@
+// frontend/src/components/submit/UniversalSubmitForm.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -86,6 +87,7 @@ export function UniversalSubmitForm() {
   const [renderModel, setRenderModel] = useState<RenderModelResult>({
     state: "ready",
     nodes: [],
+    groups: [],
     metadataFallbackCount: 0,
   });
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -181,12 +183,20 @@ export function UniversalSubmitForm() {
             : null;
         const metadataByLogicalId =
           metadataPayload?.nodes?.reduce<
-            Record<string, { title?: string | null; sourceSection?: string | null }>
+            Record<
+              string,
+              {
+                title?: string | null;
+                sourceSection?: string | null;
+                parentLogicalId?: string | null;
+              }
+            >
           >(
             (acc, node) => {
               acc[node.logical_id] = {
                 title: node.title,
                 sourceSection: node.source_section,
+                parentLogicalId: node.parent_logical_id,
               };
               return acc;
             },
@@ -450,26 +460,38 @@ export function UniversalSubmitForm() {
           </div>
 
           {renderModel.state === "ready"
-            ? renderModel.nodes.map((node) => {
-                const logicalId = node.nodeLogicalId;
-                const inputId = `node-${logicalId.replace(/_/g, "-")}`;
-                return (
-                  <div className="space-y-2" key={logicalId}>
-                    <label
-                      className="text-sm font-medium text-[var(--color-foreground)]"
-                      htmlFor={inputId}
-                    >
-                      {node.label}
-                    </label>
-                    <textarea
-                      id={inputId}
-                      className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
-                      onChange={(event) => updateNodeDraft(logicalId, event.target.value)}
-                      value={draft[logicalId] ?? ""}
-                    />
-                  </div>
-                );
-              })
+            ? renderModel.groups.map((group) => (
+                <section
+                  className="space-y-4 rounded-[var(--radius-md)] border border-[var(--color-border)]/60 p-4"
+                  key={group.groupKey}
+                >
+                  {group.groupLabel ? (
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
+                      {group.groupLabel}
+                    </h2>
+                  ) : null}
+                  {group.nodes.map((node) => {
+                    const logicalId = node.nodeLogicalId;
+                    const inputId = `node-${logicalId.replace(/_/g, "-")}`;
+                    return (
+                      <div className="space-y-2" key={logicalId}>
+                        <label
+                          className="text-sm font-medium text-[var(--color-foreground)]"
+                          htmlFor={inputId}
+                        >
+                          {node.label}
+                        </label>
+                        <textarea
+                          id={inputId}
+                          className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
+                          onChange={(event) => updateNodeDraft(logicalId, event.target.value)}
+                          value={draft[logicalId] ?? ""}
+                        />
+                      </div>
+                    );
+                  })}
+                </section>
+              ))
             : null}
 
           {domainOptions.length > 0 ? (
