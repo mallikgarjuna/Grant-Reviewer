@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Source-gated canonical ERC contract correction
+### [x] Task 1 — Source-gated canonical ERC contract correction
 
 Goal:
 Correct the ERC StG 2026 canonical hierarchy to the approved source-first leaf/container model and lock it with deterministic contract tests before cross-stack behavior changes begin.
