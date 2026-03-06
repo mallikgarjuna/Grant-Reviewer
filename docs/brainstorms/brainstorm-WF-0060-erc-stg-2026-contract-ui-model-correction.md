@@ -2,7 +2,7 @@
 # WF-0060 — ERC StG 2026 Contract/UI Model Correction
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-06
 
@@ -39,7 +39,7 @@ Source-backed facts for correction:
 - The application form presents `Part B2` as a container for `Part II of the Scientific Proposal`.
 - The work programme states that `Part I and Part II of the Scientific Proposal, Curriculum Vitae and Track Record, Resources and Time Commitment` are collectively the `Research Proposal`.
 - The work programme states that Step 1 assesses `Part I of the Scientific Proposal` plus `CV and Track Record`, while Step 2 assesses the complete `Research Proposal`.
-- Prior investigation supplied by the user adds one important confirmed semantic: `Proposal summary` is an applicant-entered field and should remain modeled as a real review surface rather than dropped as metadata.
+- The application form states that the abstract / `Proposal summary` "will be used ... in the evaluation process", which supports modeling it as a real reviewable surface rather than dropping it as metadata.
 
 ## Corrected Hierarchy Proposal
 
@@ -76,7 +76,7 @@ Proposed semantic rules:
 | `resources_time_commitment` | input-bearing | yes | yes | STEP_2 | Part A Section C text field; belongs under budget |
 | `part_b` | structural only | no | no | n/a | top-level narrative container |
 | `b1` | structural only | no | no | n/a | Part B1 document container |
-| `proposal_summary` | input-bearing | yes | yes | BOTH | applicant-entered summary inside Part B1 |
+| `proposal_summary` | input-bearing | yes | yes | BOTH | applicant-entered summary inside Part B1; AF says it is used in the evaluation process |
 | `b1_part1_scientific_proposal` | input-bearing | yes | yes | BOTH | Part I narrative surface |
 | `b1_cv_track_record` | input-bearing | yes | yes | BOTH | CV + Track Record narrative surface |
 | `b2` | structural only | no | no | n/a | Part B2 document container |
@@ -88,7 +88,7 @@ Context-only nodes:
 
 ## Critical Semantics To Preserve
 
-- `proposal_summary` must not disappear just because the work programme's step text foregrounds Part I and CV/Track Record; the application form and prior source review support keeping it as a real proposal node.
+- `proposal_summary` must not disappear just because the work programme's step text foregrounds Part I and CV/Track Record; the application form explicitly says the summary is used in the evaluation process, which supports keeping it reviewable in Step 1 and Step 2.
 - `resources_time_commitment` must move under `Part A / Budget` in the contract, while still remaining reviewable only at Step 2.
 - `b1` and `b2` should stop carrying expectations. Expectations belong on the leaf nodes actually containing applicant text.
 - `Part I` and `Part II` should remain whole-node surfaces unless and until official ERC source text justifies a finer-grained applicant-facing contract.
@@ -108,8 +108,9 @@ Context-only nodes:
 
 Compatibility rule for existing WF-0059-era records:
 
-- Legacy `b1` coverage should expand to `proposal_summary`, `b1_part1_scientific_proposal`, and `b1_cv_track_record` for compatibility rendering only.
-- Legacy `b2` coverage should expand to `b2_part2_scientific_proposal` for compatibility rendering only.
+- Legacy container submissions should not be optimistically expanded into reviewed leaf coverage by default.
+- Legacy `b1` and `b2` references should be treated as ambiguous container-era evidence unless companion payload data proves which leaf nodes were actually submitted.
+- Legacy review detail may render a compatibility note that coverage originated from deprecated container semantics rather than leaf-node semantics.
 - Legacy top-level `resources_time_commitment` references should resolve to the moved node under `part_a -> budget` without changing the logical leaf ID.
 
 ## Risks To WF-0059 Assumptions And Tests
@@ -121,6 +122,7 @@ These WF-0059 assumptions should be treated as invalid once the contract is corr
 - Expectations that `resources_time_commitment` is a top-level sibling of `b1` and `b2`.
 - Review-detail ordering/coverage snapshots that encode the old proof-call shape instead of deriving from the corrected leaf-node hierarchy.
 - Any node-expectation mapping on `b1` or `b2` themselves.
+- Compatibility assumptions that expand legacy container submissions into optimistic leaf-node reviewed coverage without proof.
 
 Required replacement direction:
 
