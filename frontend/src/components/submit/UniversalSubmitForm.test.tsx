@@ -2520,7 +2520,7 @@ describe("UniversalSubmitForm", () => {
                 review_stage: string;
                 nodes: Array<{ node_logical_id: string; text: string }>;
               })
-            : { nodes: [] };
+            : { review_stage: "", nodes: [] };
         expect(parsedBody.review_stage).toBe("STEP_1");
         expect(parsedBody.nodes.map((node) => node.node_logical_id)).toEqual([
           "proposal_summary",

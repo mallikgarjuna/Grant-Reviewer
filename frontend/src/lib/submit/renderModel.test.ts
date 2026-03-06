@@ -1,9 +1,10 @@
 // frontend/src/lib/submit/renderModel.test.ts
 import { describe, expect, it } from "vitest";
 
+import type { NodeSummary } from "@/lib/bff/types";
 import { buildRenderModel } from "@/lib/submit/renderModel";
 
-function wf0059ProofTargetNestedNodes() {
+function wf0059ProofTargetNestedNodes(): NodeSummary[] {
   return [
     {
       id: "erc-stg-b1",
@@ -26,7 +27,7 @@ function wf0059ProofTargetNestedNodes() {
   ];
 }
 
-function wf0059VeniControlNodes() {
+function wf0059VeniControlNodes(): NodeSummary[] {
   return [
     {
       id: "veni-academic-profile",
