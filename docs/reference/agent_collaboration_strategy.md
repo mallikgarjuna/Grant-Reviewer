@@ -36,16 +36,16 @@ To maximize velocity without sacrificing architectural integrity, isolate the "T
 **Role**: Junior Developer
 
 - Once the Task Checklist is locked, the global "thinking" is done. Switch to your IDE.
-- Feed the Task file to your IDE agent. Use it as a high-speed typist to execute the `docs/workflow/phase-3-1-implement-tasks.md` loop (Write code -> Run local tests -> Commit).
+- Feed the Task file to your IDE agent. Use it as a high-speed typist to execute the `docs/workflow/phase-3-1-implement-tasks.md` loop (Write code -> Run local tests -> Commit), but only until the next explicit stop boundary is hit.
 - Benefit from zero-latency intellisense and inline file editing.
-- **Output**: Sequentially implemented and committed task features on the local branch.
+- **Output**: Sequentially implemented and committed task features on the local branch, with a clean handoff if the task plan says to stop or context gets heavy.
 - **Cheat Sheet**: See `docs/workflow/how-to-use-workflow-actions.md` — Phase 3.1 (Implement Only) template.
 
 ### 3. Phase 3.2 (Verify & Ship)
 **Agent**: Antigravity (Gemini)
 **Role**: Staff Architect / Reviewer
 
-- When the IDE agent finishes the task checklist, return control to Antigravity.
+- When the IDE agent finishes the approved implementation scope for the current session, return control to Antigravity.
 - Invoke `docs/workflow/phase-3-2-technical-audit-review.md`.
 - Antigravity will review the Git diffs, ensure the IDE agent didn't break global architecture or introduce lint debt, run the test suites, draft the final Walkthrough, and prepare the `Ship it` gate.
 - **Output**: A thoroughly verified PR, aligned with the original Phase 1 PRD.

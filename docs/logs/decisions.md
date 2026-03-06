@@ -1,5 +1,21 @@
 # Architectural Decisions
 
+## Date: 2026-03-06 (workflow execution contract)
+
+### AD W.1: Phase 2 tasks remain the canonical planning and commit unit; no separate execution-slice artifact
+- **Context**: The workflow already enforced atomic Phase 2 tasks, dependency metadata, TDD, and commit-per-task discipline, but Phase 3 still implicitly encouraged one long session to consume the entire task queue.
+- **Decision**: Keep the existing phase model and treat the task file as the single authoritative planning artifact. Do not add a new Phase 2.5 or a second "execution slice" artifact type.
+- **Why**: Preserves traceability and keeps planning vocabulary stable while addressing the real reliability issue in execution semantics.
+- **Tradeoff**: Phase 2 tasks must carry a bit more execution-boundary metadata when long-running implementation risk is material.
+- **Status**: Approved.
+
+### AD W.2: Phase 3 is a bounded sequential runner, not a mandate to finish the whole task queue in one chat
+- **Context**: Long Phase 3 chats accumulate context drift even when they nominally follow implement -> verify -> commit per task.
+- **Decision**: Phase 3 may stop after any completed task when explicit stop rules are hit, including task-plan mismatch, file-surface spillover, verification instability, planned session boundary, or context-bloat risk. Early stop is a safe handoff, not a failure.
+- **Why**: Converts implicit chat-hygiene advice into an operational contract the runner can actually follow.
+- **Tradeoff**: Some workflows will require more than one Phase 3 session before Part B/C can run.
+- **Status**: Approved.
+
 ## Date: 2026-03-05 (WF-0056: platform policy live rehearsal)
 
 ### AD 56.1: Rehearse apply/rollback on a dedicated branch; verify targets main

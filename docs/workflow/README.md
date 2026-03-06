@@ -12,7 +12,7 @@ Every meaningful initiative is tracked using a Workflow ID (WF-XXXX).
 - Phase 0 — Ideation (Brainstorm)
 - Phase 1 — Definition (Brainstorm → PRD)
 - Phase 2 — Planning (PRD → Tasks)
-- Phase 3 — Execution (Task Implementation)
+- Phase 3 — Execution (Bounded Task Implementation)
 - Done
 
 Runner shortcuts:
@@ -29,7 +29,7 @@ Runner shortcuts:
 | :--- | :--- | :--- | :--- | :--- |
 | `phase-0-run-ideation.md` | Phase 0 end-to-end | `A1/A2/B/C` | `phase-0-0-start-workflow.md`, `phase-0-1-brainstorm.md`, `phase-0-2-brainstorm-risk-audit.md`, `phase-0-3-brainstorm-revise.md` | Includes interactive brainstorm + review gate |
 | `phase-1-or-2-run-planning.md` | Phase 1 or 2 end-to-end | `A/B/C` | `phase-1-1/2/3` or `phase-2-1/2/3` (selected by Phase ID) | Strict A/B/C router, no logic duplication |
-| `phase-3-run-execution.md` | Phase 3 end-to-end | `A/B/C` (where `C -> C1/C2/C3`) | `phase-3-1-implement-tasks.md`, `phase-3-2-technical-audit-review.md`, `phase-3-3-revise-verify-and-ship.md` | Part B is technical audit only |
+| `phase-3-run-execution.md` | Phase 3 end-to-end | `A/B/C` (where `C -> C1/C2/C3`) | `phase-3-1-implement-tasks.md`, `phase-3-2-technical-audit-review.md`, `phase-3-3-revise-verify-and-ship.md` | Part A may stop at an explicit execution boundary; Part B is technical audit only once implementation scope is complete |
 | `phase-3-2-technical-audit-review.md` | Phase 3 review gate only | `B` | N/A | No edits allowed |
 | `phase-3-3-revise-verify-and-ship.md` | Phase 3 post-review execution | `C1/C2/C3` | N/A | Revise, verify, then walkthrough + ship gate |
 | `lifecycle-run-auto.md` | Phases 0→3 | Phase routers chained (`0 -> 1/2 -> 3`) | Phase runners above | Autonomous orchestration; still obeys downstream gates |
@@ -56,6 +56,7 @@ Trigger: read before starting a phase; ensures artifacts are implementable.
 - PRD: functional requirements use stable IDs (`FR1`, `FR2`, ...) and are referenced by contracts/tasks.
 - PRD: deep modules called out (small interface, lots hidden; stable seams).
 - Tasks: each task includes `Slice:` + `User Stories:` + `PRD Requirements:` mapping (or `N/A`), and there is an early tracer-bullet task.
+- Tasks: include deterministic execution boundaries when needed (`Out of scope`, `Stop if`, `Session boundary after`) so Phase 3 can pause safely without re-planning mid-chat.
 - Implementation: TDD is mandatory for behavior changes/bug fixes (red/green/refactor; mock boundaries only): `docs/guides/tdd/README.md`.
 
 ## Phase Gate (Always)

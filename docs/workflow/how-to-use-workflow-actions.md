@@ -122,6 +122,7 @@ Use @docs/workflow/phase-3-run-execution.md
 @docs/tasks/task-<WF-ID>-<slug>.md
 
 Run Phase 3 end-to-end for <WF-ID>/<slug> using this runner.
+Process tasks in order, but stop cleanly if a Phase 3.1 stop boundary is hit.
 Print what you did in Part A/B/C.
 Confirm verification evidence before writing the walkthrough.
 End with two suggested next actions.
@@ -136,10 +137,10 @@ Use @docs/workflow/phase-3-1-implement-tasks.md
 @docs/index.md
 @docs/tasks/task-<WF-ID>-<slug>.md
 
-Implement all tasks sequentially for <WF-ID>/<slug>.
+Implement tasks sequentially for <WF-ID>/<slug> until all tasks are complete or a stop boundary is hit.
 For each task: implement, run local tests, commit.
 Check off each task as [x] in the task file.
-When ALL tasks are done, STOP. Do NOT write the walkthrough or update docs/index.md.
+If you stop early, report the exact boundary and next unfinished task. Do NOT write the walkthrough or update docs/index.md.
 ```
 
 ---

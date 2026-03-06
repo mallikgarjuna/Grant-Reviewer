@@ -83,6 +83,8 @@ Task planning rules:
 - Tasks MUST be written so Phase 3 can execute and *log* a recognizable TDD loop per task (labels: `RED`, `GREEN`, `REFACTOR`).
 - Add explicit dependency metadata per task (`Depends on`, `Enables`, `Parallelizable`) to make ordering assumptions reviewable.
 - Dependency metadata is planning-only and MUST NOT be interpreted as permission to parallelize Phase 3 execution.
+- Treat `task` as the canonical planning and commit unit. Do NOT invent a second execution-unit format.
+- Add only deterministic execution hints. Do NOT add free-form "agent decides" language.
 
 For each task include:
 
@@ -96,6 +98,11 @@ Depends on: <Task #s or `none`>
 Enables: <Task #s or `none`>
 Parallelizable: <yes|no> (planning-only signal)
 Files to modify:
+Must touch files: <project-relative paths or `none`>
+May touch files: <project-relative paths or `none`>
+Out of scope: <explicit exclusions or `none`>
+Stop if: <hard boundary conditions that require pausing Phase 3 and reassessing, or `none`>
+Session boundary after: <yes|no>
 Acceptance Criteria:
 TDD Plan: <required: `N/A` or explicit `RED/GREEN/REFACTOR` plan>
 Verification Steps:
@@ -116,6 +123,10 @@ Tasks must:
   - If a task would exceed ~3 files, split it into smaller dependent tasks.
   - Use as many tasks as needed to keep each task testable, verifiable, and easy to implement.
   - Each task must have concrete acceptance criteria and explicit verification steps tied only to that task.
+  - `Must touch files` should name the minimum expected surface; `May touch files` captures tightly bounded spillover only.
+  - `Out of scope` must explicitly name tempting adjacent edits that are forbidden for this task.
+  - `Stop if` must encode hard execution boundaries such as task-plan mismatch, cross-stack spillover, repeated verification failure, or missing prerequisite evidence.
+  - Set `Session boundary after: yes` when the next task should start in a fresh Phase 3 session/chat for safety.
   - If the task changes behavior or fixes a bug, `TDD Plan` MUST:
     - name the intended failing test (or test location) for **RED**
     - name the minimal implementation change for **GREEN**
