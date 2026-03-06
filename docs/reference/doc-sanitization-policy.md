@@ -22,7 +22,7 @@ Keep workflow/process documentation stable over time by separating policy from t
 - `GEMINI.md`
 
 ## CI Enforcement
-The CI `Docs Sanitization Guard` enforces that core docs do not include these agent/model terms:
+The CI `Docs Sanitization Guard` enforces that `AGENTS.md` and all `docs/workflow/*.md` files do not include these agent/model terms:
 - `antigravity`
 - `gemini`
 - `codex`
