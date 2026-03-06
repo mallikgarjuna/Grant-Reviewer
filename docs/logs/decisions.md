@@ -107,6 +107,15 @@
 - **Audit date**: 2026-03-06.
 - **Status**: Approved.
 
+### AD 57.6: WF-0056 closure semantics are downgraded to waiver-backed
+- **WF ID**: WF-0057
+- **Context**: WF-0056 verify/apply evidence is live-linked, but rollback evidence remains failure-state metadata due artifact download/upload path failure.
+- **Decision**: Mark WF-0056 as `Done (Waiver-backed)` instead of evidence-backed, with explicit rollback waiver record and residual risk in the WF-0056 walkthrough.
+- **Why**: Prevents false-positive closure semantics while preserving traceable live metadata for successful verify/apply runs.
+- **Owner sign-off**: Repo owner (chat approval), referenced in WF-0056 rollback waiver record.
+- **Sign-off date**: 2026-03-06.
+- **Status**: Approved.
+
 ## Date: 2026-03-04 (WF-0053: contract boundary governance enforcement)
 
 ### AD 53.1: Boundary-governance trigger inventory is explicit and path-mapped
