@@ -82,7 +82,8 @@ After completion, print:
 ## PART B — Review Gate (No Edits)
 
 Follow @docs/workflow/phase-0-2-brainstorm-risk-audit.md exactly.
-Also execute `@docs/workflow/util-adversarial-diff-audit.md` with profile `ideation` to ensure explicit coverage of architecture/process invariants, security assumptions, edge cases, missing testability, and hidden coupling in the proposed workflow direction.
+Use `main...HEAD` by default and execute `@docs/workflow/util-adversarial-diff-audit.md` with profile `ideation`.
+Fail-closed rule: do not proceed to Part C unless Part B output includes all five required sections and explicit coverage of the six mandatory focus areas.
 
 After completion, print:
 

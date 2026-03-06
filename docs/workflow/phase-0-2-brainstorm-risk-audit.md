@@ -78,14 +78,8 @@ Mindset shift:
 
 ## Output Format (Required)
 
-Print:
-
-1. `Reviewed artifact: <path> @ <version>`
-2. `Reviewed Q&A: <path> @ <version>`
-3. **Blocking findings** (if any): list with:
-   - Finding
-   - Why it matters
-   - Exact brainstorm edit to apply (copy-pasteable)
-4. **Non-blocking findings** (if any): same format
-5. **Clarification Questions** (only if blocking findings exist):
-   - Up to 5, each with 2–3 options + recommended option
+1. Use review range `main...HEAD` by default (unless the user explicitly requests a narrower range).
+2. Execute `@docs/workflow/util-adversarial-diff-audit.md` with profile `ideation`.
+3. Fail-closed rule: do not consider this gate complete unless output includes all five required sections and explicit coverage of the six mandatory focus areas.
+4. Keep brainstorm-specific rigor: include exact brainstorm edits to apply for each finding.
+5. If blocking findings exist, ask up to 5 clarification questions (2–3 options + one recommendation each) and wait for user responses before Part C.
