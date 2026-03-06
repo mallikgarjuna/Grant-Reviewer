@@ -1,7 +1,7 @@
 # WF-0057 — Ops Evidence Debt Closure
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft
 Last Updated: 2026-03-06
 
@@ -57,3 +57,91 @@ Secondary evidence debt:
 
 - Do we have permissions and access to run (and retrieve artifacts from) the GitHub Actions runs needed for WF-0056 "live evidence"?
 - Do we have access to staging/prod telemetry needed to satisfy WF-0040 observation-window and per-call count evidence?
+
+---
+
+## 2. Desired Outcome
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0057-ops-evidence-debt-closure.md` (Section 2)
+
+### Definition of Success (Binary)
+
+- WF-0056: no `<pending live run>` placeholders remain; evidence chain is fully populated with real values and is auditable end-to-end.
+- WF-0040: missing observation/count gates are either (a) backed by real environment evidence, or (b) explicitly re-waived with updated constraints and owner sign-off (no silent carry-forward).
+- Repo status semantics: "Done" is evidence-backed; placeholders/waivers are visible and not mislabeled as Done.
+
+### Acceptance Checklist (Must-Haves)
+
+WF-0056:
+- Evidence files exist at `docs/walkthroughs/evidence/WF-0056/` as referenced by the walkthrough.
+- Checksums are recorded (e.g., `evidence_sha256`, and snapshot checksums if applicable).
+- Walkthrough Evidence Chain table has real values for `workflow_run_id`, run URL, `commit_sha`, and `linked_artifacts`.
+
+WF-0040:
+- Checklist items for staging/prod observation windows and per-call counts are addressed with real evidence, or an updated explicit waiver is recorded (constraints + rationale + owner sign-off + date).
+
+---
+
+## 3. Target User / Actor
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0057-ops-evidence-debt-closure.md` (Section 3)
+
+- Primary actor: repo owner/operator performing the live verify/apply/rollback rehearsals and capturing evidence.
+- Secondary actor: maintainer/auditor verifying governance claims from docs alone (no tribal knowledge).
+
+---
+
+## 4. Rough Idea (Non-Architectural)
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0057-ops-evidence-debt-closure.md` (Section 4)
+
+- WF-0056:
+  - Execute the intended live verify/apply/rollback rehearsals via GitHub Actions-backed runs (preferred), producing evidence artifacts.
+  - Update the WF-0056 walkthrough Evidence Chain table to replace placeholders with real run IDs/URLs/commit SHA and checksum values.
+  - Align `docs/index.md` WF-0056 status to non-Done until placeholders are removed.
+- WF-0040:
+  - Define the minimum acceptable "runtime observation + counts" evidence record.
+  - Backfill the missing checklist items with real environment evidence if available; otherwise re-waive explicitly with updated constraints and owner sign-off.
+
+---
+
+## 5. Constraints
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0057-ops-evidence-debt-closure.md` (Section 5)
+
+- Do not start new governance hardening scope until evidence debt is closed (this WF is about closure truth).
+- Prefer durable evidence in-repo (checksummed) because workflow artifacts can expire.
+- If access/permissions prevent producing live evidence, treat that as an explicit blocker and align statuses accordingly (no "fake-done").
+
+---
+
+## 6. Risks / Unknowns
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0057-ops-evidence-debt-closure.md` (Section 6)
+
+- Permissions/access risk:
+  - Can we run the required Actions workflows and retrieve artifact metadata/IDs/URLs?
+  - Can we access staging/prod telemetry for WF-0040 observation/count evidence?
+- Evidence retention risk: artifact retention policies may delete evidence if not also stored in-repo with checksums.
+- Status drift risk: future WFs could reintroduce "Done" without evidence unless the rule is written and followed.
+
+---
+
+## 7. MVP Definition
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0057-ops-evidence-debt-closure.md` (Section 7)
+
+If we had to ship in 2-3 days:
+- Fix WF-0056 first: remove all placeholders by producing real live-run evidence and recording it.
+- Then close WF-0040 evidence debt: real evidence if possible, otherwise explicit re-waive with updated constraints/sign-off.
+- Ensure `docs/index.md` statuses reflect evidence reality (no Done while placeholders/waived gates exist without explicit waiver).
+
+---
+
+## 8. Explicit Non-Goals
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0057-ops-evidence-debt-closure.md` (Section 8)
+
+- No new policy enforcement features or expansion of governance scope.
+- No refactors unrelated to evidence capture, evidence linkage, and status alignment.
+- No simulated/local-only artifacts presented as "live rehearsal" completion for WF-0056.
