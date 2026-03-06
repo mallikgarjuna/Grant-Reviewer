@@ -28,18 +28,18 @@
 - **Tradeoff**: Phase 2 tasks must carry a bit more execution-boundary metadata when long-running implementation risk is material.
 - **Status**: Approved.
 
-### AD W.2: Phase 3 is a bounded sequential runner, not a mandate to finish the whole task queue in one chat
-- **Context**: Long Phase 3 chats accumulate context drift even when they nominally follow implement -> verify -> commit per task.
-- **Decision**: Phase 3 may stop after any completed task when explicit stop rules are hit, including task-plan mismatch, file-surface spillover, verification instability, planned session boundary, or context-bloat risk. Early stop is a safe handoff, not a failure.
-- **Why**: Converts implicit chat-hygiene advice into an operational contract the runner can actually follow.
-- **Tradeoff**: Some workflows will require more than one Phase 3 session before Part B/C can run.
+### AD W.2: Phase 3 continues across tasks by default; only context-bloat/context-drift can auto-stop the run
+- **Context**: The previous Phase 3 contract treated several task-level risk signals as automatic stops, but users may reasonably prefer uninterrupted execution in the same chat while those risks remain manageable.
+- **Decision**: Phase 3 should continue sequentially across completed tasks by default. Task-plan mismatch, file-surface spillover, verification instability, and `Session boundary after` remain required continuation-risk signals to report, but they do not automatically stop the run. Automatic stop is reserved for material context-bloat or context-drift risk that threatens reasoning quality.
+- **Why**: Preserves long-run momentum while still keeping explicit warnings and traceable per-task checkpoints.
+- **Tradeoff**: The agent may continue further into a run before stepping back to planning, so warnings must be explicit and concrete to avoid silent drift.
 - **Status**: Approved.
 
-### AD W.3: Context-bloat stops must warn and hand off with a resume prompt
-- **Context**: A bounded Phase 3 stop is only useful if the agent tells the user that reasoning quality is at risk and makes the next step unambiguous.
-- **Decision**: When stopping for context-bloat risk, the agent must warn explicitly in chat, state whether downstream review/ship steps are blocked, identify the next unfinished task, and print a copy-pasteable resume prompt for a fresh chat/session. This applies in workflow runners and is referenced from `AGENTS.md` for non-runner chats.
-- **Why**: Prevents silent degradation, reduces ambiguous handoffs, and makes recovery operational instead of conversational.
-- **Tradeoff**: Slightly more verbose stop messages, but only when the session is already at risk.
+### AD W.3: Context-bloat/context-drift stops must warn and hand off with a resume prompt
+- **Context**: If context risk is the only automatic stop reason, the stop contract must cover both token-bloat and reasoning-drift cases explicitly.
+- **Decision**: When stopping for context-bloat or context-drift risk, the agent must warn explicitly in chat, state whether downstream review/ship steps are blocked, identify the next unfinished task, and print a copy-pasteable resume prompt for a fresh chat/session. Non-stop continuation risks must still be reported as warnings/recommendations in the same chat.
+- **Why**: Keeps the runner decisive about the one class of stop that directly threatens output quality while preserving transparency about lesser risks.
+- **Tradeoff**: Longer in-chat warning summaries during execution, but fewer unnecessary handoffs.
 - **Status**: Approved.
 
 ## Date: 2026-03-05 (WF-0056: platform policy live rehearsal)

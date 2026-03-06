@@ -26,7 +26,7 @@ To execute Phase 3 end-to-end: implement tasks, run the technical audit gate, ap
 4.1. Before Task 1 in Part A, run a baseline test command to confirm a green starting state (see `docs/workflow/phase-3-1-implement-tasks.md` “Preflight — First Run the Tests”).
 5. For any behavior change or bug fix implemented during Part A, ensure the chat log contains explicit TDD loop labels (`RED`, `GREEN`, `REFACTOR`) as required by `phase-3-1-implement-tasks.md`.
 6. TDD is mandatory for behavior changes/bug fixes. Enforce red/green/refactor and boundary-only mocking via `docs/guides/tdd/README.md`.
-6.1. Part A is allowed to stop before the full task file is complete if the Phase 3.1 stop rules are triggered. This is a safety success, not a runner failure.
+6.1. Part A is allowed to stop before the full task file is complete only when the Phase 3.1 context-bloat/context-drift stop rules are triggered. This is a safety success, not a runner failure.
 7. Commit handoff safety between parts:
    - After Part A: ensure task checkboxes, implementation changes, and task-level commits are complete before entering Part B.
    - After Part B: review-only; no file edits and no commit expected.
@@ -38,12 +38,13 @@ To execute Phase 3 end-to-end: implement tasks, run the technical audit gate, ap
 1. Read the execution rules in `docs/workflow/phase-3-1-implement-tasks.md`.
 2. Following those rules exactly, process tasks in order until either:
    - all tasks are complete, or
-   - an explicit Phase 3.1 stop boundary is hit.
+   - a Phase 3.1 context-bloat/context-drift safety stop is hit.
 3. Implement each task and commit sequentially as instructed in that file.
 4. Check off (`[x]`) tasks in the task artifact as you go.
 5. If Part A stopped early, do not proceed to Part B/C as though implementation were complete. Report the stop reason and hand back the next unfinished task.
-6. If the stop reason is context bloat, explicitly warn that reasoning quality is at risk, say whether Part B/C is blocked, recommend a fresh chat/session, and print a copy-pasteable resume prompt.
-7. Only proceed to Part B when implementation scope is complete for the current approved task plan.
+6. If Part A encountered non-stop continuation risks such as task-plan mismatch, verification instability, file-surface spillover, or planned session-boundary guidance, report them as warnings with a recommendation, but continue in the same chat unless Phase 3.1 escalates them into context-bloat/context-drift risk.
+7. If the stop reason is context bloat or context drift, explicitly warn that reasoning quality is at risk, say whether Part B/C is blocked, recommend a fresh chat/session, and print a copy-pasteable resume prompt.
+8. Only proceed to Part B when implementation scope is complete for the current approved task plan.
 
 ### PART B: Review [GATE]
 1. Stop implementing features.
