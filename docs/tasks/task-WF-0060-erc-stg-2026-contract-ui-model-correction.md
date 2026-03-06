@@ -146,7 +146,7 @@ Verification Steps:
 - `cd backend && rg -n "submitted_leaf_ids|legacy_ambiguous|compatibility" app/repositories/review_repository.py app/schemas/api.py`
 Risks (if any): A flat replacement of old `submitted_nodes` data can silently destroy evidence needed for mixed-version review interpretation.
 
-### [ ] Task 5 — Review-detail grouping and ordering from corrected metadata
+### [x] Task 5 — Review-detail grouping and ordering from corrected metadata
 
 Goal:
 Switch ERC review detail to corrected leaf-group ordering backed by persisted review-linked coverage plus call metadata, not legacy query-param or container assumptions.

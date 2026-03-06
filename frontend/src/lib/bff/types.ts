@@ -1,3 +1,4 @@
+// frontend/src/lib/bff/types.ts
 export type ReviewStatus = "PENDING" | "COMPLETED" | "FAILED";
 export type ReviewRating = "CRITICAL" | "WARNING" | "SUCCESS" | "NOTE";
 export type ReviewStage = "STEP_1" | "STEP_2";
@@ -150,6 +151,9 @@ export type ReviewDetailResponse = {
   call_code?: string | null;
   ordering_source?: "call_nodes" | "review_payload_fallback";
   unmapped_node_logical_ids?: string[];
+  submitted_leaf_ids?: string[];
+  legacy_ambiguous_container_ids?: string[];
+  moved_legacy_node_references?: string[];
   review: ReviewSummary;
   cards: ReviewCardSummary[];
 };

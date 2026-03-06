@@ -1,7 +1,8 @@
+// frontend/src/app/app/reviews/[reviewId]/page.tsx
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -170,11 +171,27 @@ function buildOrderedCardGroups(
 
   const nodeTitleByLogicalId = new Map<string, string>();
   const nodeIndexByLogicalId = new Map<string, number>();
+  const nodeById = new Map(sortedCallNodes.map((node) => [node.id, node]));
+
+  function buildPathLabel(node: NodeSummary): string {
+    const titleChain: string[] = [node.title];
+    let parentId = node.parent_node_id;
+    while (parentId) {
+      const parent = nodeById.get(parentId);
+      if (!parent) {
+        break;
+      }
+      titleChain.unshift(parent.title);
+      parentId = parent.parent_node_id;
+    }
+    return titleChain.join(" / ");
+  }
+
   sortedCallNodes.forEach((node, index) => {
     if (typeof node.logical_id !== "string") {
       return;
     }
-    nodeTitleByLogicalId.set(node.logical_id, node.title);
+    nodeTitleByLogicalId.set(node.logical_id, buildPathLabel(node));
     nodeIndexByLogicalId.set(node.logical_id, index);
   });
 
@@ -219,7 +236,6 @@ function buildOrderedCardGroups(
 
 export default function ReviewDetailPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const params = useParams<{ reviewId: string }>();
   const reviewId = params.reviewId;
 
@@ -581,32 +597,78 @@ export default function ReviewDetailPage() {
   const hasOverallSummary = Boolean(
     reviewDetail.review.overall_summary?.trim(),
   );
-  const submittedNodesParam = searchParams.get("submitted_nodes") ?? "";
-  const submittedNodes = submittedNodesParam
-    .split(",")
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
+  const submittedNodes = reviewDetail.submitted_leaf_ids ?? [];
   const sortedCallNodes = callNodes ?? [];
-  const nodeTitleByLogicalId = new Map(
+  const leafCallNodes = sortedCallNodes.filter((node) => node.has_expectations);
+  const nodeById = new Map(sortedCallNodes.map((node) => [node.id, node]));
+  const nodeByLogicalId = new Map(
     sortedCallNodes
       .filter((node) => typeof node.logical_id === "string")
-      .map((node) => [node.logical_id as string, node.title]),
+      .map((node) => [node.logical_id as string, node]),
   );
-  const reviewedNodeLabels = submittedNodes.map(
-    (nodeId) => nodeTitleByLogicalId.get(nodeId) ?? nodeId,
+
+  function buildPathLabel(node: NodeSummary): string {
+    const titleChain: string[] = [node.title];
+    let parentId = node.parent_node_id;
+    while (parentId) {
+      const parent = nodeById.get(parentId);
+      if (!parent) {
+        break;
+      }
+      titleChain.unshift(parent.title);
+      parentId = parent.parent_node_id;
+    }
+    return titleChain.join(" / ");
+  }
+
+  const nodeTitleByLogicalId = new Map(
+    leafCallNodes
+      .filter((node) => typeof node.logical_id === "string")
+      .map((node) => [node.logical_id as string, buildPathLabel(node)]),
   );
-  const notReviewedNodeLabels = sortedCallNodes
+  const reviewedNodeLabels = [...submittedNodes]
+    .sort((left, right) => {
+      const leftNode = nodeByLogicalId.get(left);
+      const rightNode = nodeByLogicalId.get(right);
+      if (!leftNode || !rightNode) {
+        return left.localeCompare(right);
+      }
+      if (leftNode.order_index !== rightNode.order_index) {
+        return leftNode.order_index - rightNode.order_index;
+      }
+      return left.localeCompare(right);
+    })
+    .map((nodeId) => nodeTitleByLogicalId.get(nodeId) ?? nodeId);
+  const submittedSet = new Set(submittedNodes);
+  const notReviewedNodeLabels = leafCallNodes
     .filter(
       (node) =>
-        typeof node.logical_id === "string" &&
-        !submittedNodes.includes(node.logical_id),
+        typeof node.logical_id === "string" && !submittedSet.has(node.logical_id),
     )
-    .map((node) => node.title);
+    .map((node) => buildPathLabel(node));
   const orderedCardGroups = buildOrderedCardGroups(reviewDetail, sortedCallNodes);
   const fallbackToPayloadOrder =
     reviewDetail.ordering_source === "review_payload_fallback" ||
     reviewDetail.call_id == null ||
     sortedCallNodes.length === 0;
+  const hasCoverageSummary =
+    submittedNodes.length > 0 || notReviewedNodeLabels.length > 0;
+
+  const compatibilityLines = [
+    ...(reviewDetail.legacy_ambiguous_container_ids ?? []).map(
+      (id) => `Legacy container evidence preserved (ambiguous): ${id}`,
+    ),
+    ...(reviewDetail.moved_legacy_node_references ?? []).map(
+      (id) => `Moved legacy node reference resolved to corrected leaf: ${id}`,
+    ),
+  ];
+
+  const hasCompatibilityNotes = compatibilityLines.length > 0;
+
+  const reviewedSectionText =
+    reviewedNodeLabels.length > 0 ? reviewedNodeLabels.join(", ") : "None";
+  const notReviewedSectionText =
+    notReviewedNodeLabels.length > 0 ? notReviewedNodeLabels.join(", ") : "None";
 
   return (
     <article
@@ -644,21 +706,25 @@ export default function ReviewDetailPage() {
           </div>
         ) : null}
 
-        {submittedNodes.length > 0 ? (
+        {hasCoverageSummary ? (
           <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)]">
             <p className="font-medium">Coverage summary</p>
             <p className="mt-1">
-              Reviewed sections:{" "}
-              {reviewedNodeLabels.length > 0
-                ? reviewedNodeLabels.join(", ")
-                : "None"}
+              Reviewed sections: {reviewedSectionText}
             </p>
             <p className="mt-1 text-[var(--color-muted-foreground)]">
-              Not reviewed sections:{" "}
-              {notReviewedNodeLabels.length > 0
-                ? notReviewedNodeLabels.join(", ")
-                : "None"}
+              Not reviewed sections: {notReviewedSectionText}
             </p>
+          </div>
+        ) : null}
+        {hasCompatibilityNotes ? (
+          <div className="mt-3 rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <p className="font-medium">Compatibility notes</p>
+            <ul className="mt-1 list-disc pl-5">
+              {compatibilityLines.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
           </div>
         ) : null}
         {fallbackToPayloadOrder ? (
@@ -833,7 +899,7 @@ export default function ReviewDetailPage() {
               </div>
             </section>
           ))}
-          {submittedNodes.length > 0
+          {hasCoverageSummary
             ? notReviewedNodeLabels.map((nodeLabel) => (
                 <section
                   className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
