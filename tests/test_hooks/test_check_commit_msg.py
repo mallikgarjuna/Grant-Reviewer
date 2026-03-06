@@ -33,6 +33,16 @@ def test_check_commit_msg_valid_revert(temp_commit_msg_file):
     result = run_hook(f)
     assert result.returncode == 0
 
+def test_check_commit_msg_valid_maintenance_chore_prefix(temp_commit_msg_file):
+    f = temp_commit_msg_file("chore: bound phase 3 execution and align workflow docs")
+    result = run_hook(f)
+    assert result.returncode == 0
+
+def test_check_commit_msg_valid_maintenance_fix_prefix(temp_commit_msg_file):
+    f = temp_commit_msg_file("fix: allow maintenance branch commit messages")
+    result = run_hook(f)
+    assert result.returncode == 0
+
 def test_check_commit_msg_invalid_prefix(temp_commit_msg_file):
     f = temp_commit_msg_file("Fixed a bug")
     result = run_hook(f)

@@ -205,6 +205,7 @@ For maintenance branches:
 
 - Merge via PR as usual.
 - Keep commits readable; squashing OK if you prefer.
+- Use maintenance-scoped commit messages such as `fix: <short title>` or `chore: <short title>`; WF-prefixed task commits are not required.
 
 ---
 

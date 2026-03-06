@@ -2,6 +2,10 @@ import sys
 import re
 import os
 
+WF_PREFIX_PATTERN = re.compile(r"^WF-\d{4}.*: ")
+MAINTENANCE_PREFIX_PATTERN = re.compile(r"^(fix|chore): ")
+
+
 def check_commit_msg(filepath):
     if not os.path.exists(filepath):
         print(f"Error: Commit message file {filepath} not found.", file=sys.stderr)
@@ -20,14 +24,19 @@ def check_commit_msg(filepath):
     if first_line.startswith("Merge branch") or first_line.startswith("Revert"):
         return 0
 
-    # Standard format: WF-XXXX: <slug> — Task <N> — <short title>
-    # Requirement: ^WF-\d{4}.*:
-    pattern = r'^WF-\d{4}.*: '
-    if re.match(pattern, first_line):
+    # Accepted formats:
+    # - WF-XXXX: <slug> — Task <N> — <short title>
+    # - fix: <short title>
+    # - chore: <short title>
+    if WF_PREFIX_PATTERN.match(first_line) or MAINTENANCE_PREFIX_PATTERN.match(first_line):
         return 0
 
     print(f"Error: Invalid commit message prefix. (Current: '{first_line}')", file=sys.stderr)
-    print("Format must be: 'WF-XXXX: <slug> — Task <N> — <short title>'", file=sys.stderr)
+    print(
+        "Format must be: 'WF-XXXX: <slug> — Task <N> — <short title>' or "
+        "'fix: <short title>' or 'chore: <short title>'",
+        file=sys.stderr,
+    )
     print("Exceptions: 'Merge branch ...' or 'Revert ...'", file=sys.stderr)
     return 1
 
