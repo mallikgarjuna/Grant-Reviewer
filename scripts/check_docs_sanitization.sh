@@ -5,10 +5,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # Keep core workflow/process docs tool/model agnostic.
-mapfile -t WORKFLOW_DOCS < <(
-  find "${REPO_ROOT}/docs/workflow" -maxdepth 1 -type f -name "*.md" | sort
-)
-TARGETS=("${REPO_ROOT}/AGENTS.md" "${WORKFLOW_DOCS[@]}")
+if [[ -n "${DOCS_SANITIZATION_TARGETS:-}" ]]; then
+  IFS=':' read -r -a TARGETS <<<"${DOCS_SANITIZATION_TARGETS}"
+else
+  mapfile -t WORKFLOW_DOCS < <(
+    find "${REPO_ROOT}/docs/workflow" -maxdepth 1 -type f -name "*.md" | sort
+  )
+  TARGETS=("${REPO_ROOT}/AGENTS.md" "${WORKFLOW_DOCS[@]}")
+fi
 
 # Lowercase patterns; search is case-insensitive.
 readonly FORBIDDEN_PATTERN='antigravity|gemini|codex|gpt|claude|cursor|copilot'
