@@ -60,6 +60,62 @@
 - **Tradeoff**: Evidence artifacts may grow; raw payloads must avoid secrets and remain response-body only.
 - **Status**: Approved.
 
+## Date: 2026-03-06 (WF-0057: ops evidence debt closure)
+
+### AD 57.1: "Done" status must be evidence-backed; placeholders are a closure defect
+- **WF ID**: WF-0057
+- **Context**: The repo can claim workflows are Done in `docs/index.md` while walkthrough evidence remains waived or contains `<pending live run>` placeholders. WF-0056 is marked Done but its walkthrough still has placeholders even though it states stub/static evidence is invalid.
+- **Decision**: Treat placeholder or waived runtime evidence as a closure defect. During WF-0057, re-align WF statuses so any workflow with required evidence placeholders is not marked Done until real live-run evidence is recorded, or an explicit waiver is documented with updated constraints and owner sign-off.
+- **Why**: Preserves governance traceability; prevents "fake-done" sequencing; makes auditability and operational readiness claims defensible.
+- **Tradeoff**: May temporarily downgrade previously "Done" items, which can be uncomfortable but reflects reality and reduces risk.
+- **Status**: Approved.
+
+### AD 57.2: WF-0040 evidence debt closes via strict dual-path contract
+- **WF ID**: WF-0057
+- **Context**: WF-0040 has unresolved runtime-evidence gates (staging/prod observation windows and per-call counts) that may remain unavailable in a given execution environment.
+- **Decision**: Close each unresolved WF-0040 gate using one of two explicit paths only: (1) real evidence backfill with reproducible source links/query steps, or (2) refreshed waiver record containing date, waived gates, exact constraint, residual risk, and owner sign-off reference.
+- **Why**: Eliminates ambiguous closure claims and keeps evidence-vs-waiver state auditable in docs-only review.
+- **Tradeoff**: Adds documentation rigor and can delay closure if owner sign-off metadata is incomplete.
+- **Status**: Approved.
+
+### AD 57.3: WF-0040 path selection for this run is waiver refresh with explicit sign-off trace
+- **WF ID**: WF-0057
+- **Context**: WF-0057 execution requires a single explicit closure mode for WF-0040 before index status semantics can be finalized.
+- **Decision**: Select `waiver refresh` for WF-0040 in this run (instead of runtime evidence backfill) and record owner sign-off trace directly in WF-0040 walkthrough + this decision log.
+- **Why**: Current execution environment does not provide deterministic staging/prod telemetry windows or reproducible per-call production counts that can be linked from repo docs alone.
+- **Tradeoff**: Runtime gates remain waived and must stay visible as residual risk until a dedicated backfill workflow provides reproducible live evidence.
+- **Owner sign-off**: Repo owner (chat approval), reference captured in `docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`.
+- **Sign-off date**: 2026-03-06.
+- **Alternative not selected**: Runtime evidence backfill was not chosen because telemetry/query access needed to produce reproducible observation-window counts is unavailable in this run context.
+- **Status**: Approved.
+
+### AD 57.4: WF-0040 waiver refresh is finalized with explicit waived-gate inventory
+- **WF ID**: WF-0057
+- **Context**: Task execution now requires WF-0040 runtime gate ambiguity to be fully removed using the selected closure path.
+- **Decision**: Finalize WF-0040 as `waiver refresh` with exactly three waived gates recorded: staging runtime window, production runtime window, and per-call minimum production counts.
+- **Constraint**: No deterministic telemetry access in this run context for observation-window or production-count extraction.
+- **Residual risk**: Runtime gating defects may persist undetected until a dedicated telemetry backfill workflow is completed.
+- **Owner sign-off**: Repo owner (chat approval), linked from WF-0040 walkthrough waiver record section.
+- **Sign-off date**: 2026-03-06.
+- **Status**: Approved.
+
+### AD 57.5: WF-0057 docs-only closure audit is accepted
+- **WF ID**: WF-0057
+- **Context**: Final task requires a deterministic closure audit proving evidence/waiver/status alignment without tribal knowledge.
+- **Decision**: Accept WF-0057 closure audit as `PASS` based on three checks: WF-0056 placeholder removal, WF-0040 single-path runtime gate closure, and docs index status alignment.
+- **Reviewer**: Codex (GPT-5) workflow runner.
+- **Audit date**: 2026-03-06.
+- **Status**: Approved.
+
+### AD 57.6: WF-0056 closure semantics are downgraded to waiver-backed
+- **WF ID**: WF-0057
+- **Context**: WF-0056 verify/apply evidence is live-linked, but rollback evidence remains failure-state metadata due artifact download/upload path failure.
+- **Decision**: Mark WF-0056 as `Done (Waiver-backed)` instead of evidence-backed, with explicit rollback waiver record and residual risk in the WF-0056 walkthrough.
+- **Why**: Prevents false-positive closure semantics while preserving traceable live metadata for successful verify/apply runs.
+- **Owner sign-off**: Repo owner (chat approval), referenced in WF-0056 rollback waiver record.
+- **Sign-off date**: 2026-03-06.
+- **Status**: Approved.
+
 ## Date: 2026-03-04 (WF-0053: contract boundary governance enforcement)
 
 ### AD 53.1: Boundary-governance trigger inventory is explicit and path-mapped
