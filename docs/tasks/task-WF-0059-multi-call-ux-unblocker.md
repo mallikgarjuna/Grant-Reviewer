@@ -286,7 +286,7 @@ Verification Steps:
 - `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0059_review_detail_proof_path_blocks_query_param_fallback"`
 Risks (if any): If the regression selectors stay broad, Phase 3 can claim closure while still missing the persisted-coverage invariant.
 
-### [ ] Task 8 — Concrete ERC proof artifact and walkthrough handoff
+### [x] Task 8 — Concrete ERC proof artifact and walkthrough handoff
 
 Goal:
 Capture the required end-to-end proof artifact for `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml` after the automated scope guards are green.
