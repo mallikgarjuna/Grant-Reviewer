@@ -245,7 +245,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0059_contract_persisted_submitted_node_coverage"`
 Risks (if any): Mixing legacy and proof-path states in one flag can cause false-positive parity on older reviews while masking proof-call defects.
 
-### [ ] Task 7 — Scope guard: proof-path closure regressions and Veni parity
+### [x] Task 7 — Scope guard: proof-path closure regressions and Veni parity
 
 Goal:
 Close the implementation plan with deterministic automated regressions that prove Veni parity, no fallback leakage, and persisted submitted-node coverage for the proof path.

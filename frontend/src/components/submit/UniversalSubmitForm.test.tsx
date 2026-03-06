@@ -706,6 +706,110 @@ describe("UniversalSubmitForm", () => {
     });
   });
 
+  it("wf0059_submit_tracer_preserves_veni_flat_path", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-veni",
+                code: "nwo_veni_2025_preproposal",
+                name: "NWO Veni",
+                year: 2025,
+                agency_short_name: "NWO",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-veni/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-1",
+                logical_id: "academic_profile",
+                title: "Academic Profile",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 1,
+                has_expectations: true,
+              },
+              {
+                id: "node-2",
+                logical_id: "key_outputs",
+                title: "Key Outputs",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 2,
+                has_expectations: true,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/nwo_veni_2025_preproposal/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "nwo_veni_2025_preproposal",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+          status: 200,
+        });
+      }
+      if (url === "/api/bff/structured-review") {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          nodes?: Array<{ node_logical_id: string; text: string }>;
+        };
+        expect(body.nodes).toEqual([
+          { node_logical_id: "academic_profile", text: "Profile text" },
+        ]);
+        return new Response(JSON.stringify({ review_id: "review-veni-1" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Academic Profile"), {
+      target: { value: "Profile text" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/bff/structured-review",
+        expect.objectContaining({ method: "POST" }),
+      );
+    });
+    expect(
+      screen.queryByText("This call uses nested sections and is not yet supported in this form."),
+    ).toBeNull();
+  });
+
   it("shows contract error for missing logical_id", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);

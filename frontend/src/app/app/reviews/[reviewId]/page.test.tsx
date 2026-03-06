@@ -283,6 +283,75 @@ describe("ReviewDetailPage", () => {
     );
   });
 
+  it("wf0059_review_detail_proof_path_blocks_query_param_fallback", async () => {
+    submittedNodesParam = "query_param_only";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-erc-stg",
+                call_code: "erc_stg_2026_full",
+                submitted_node_logical_ids: ["b1_cv_track_record"],
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-b1-cv",
+                    node_expectation_id: "exp-b1-cv",
+                    node_logical_id: "b1_cv_track_record",
+                    node_title: "Curriculum Vitae and Track Record",
+                    criterion: "Excellence",
+                    criterion_description: "ERC excellence criterion",
+                    evaluation_element_name: "PI evidence of creative and original thinking",
+                    expectation_guidance_note: "Demonstrate track record quality.",
+                    rating: "SUCCESS",
+                    feedback_text: "Strong track record evidence.",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc-stg/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-b1-cv",
+                  logical_id: "b1_cv_track_record",
+                  title: "Curriculum Vitae and Track Record",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }), {
+          status: 404,
+        });
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(screen.getByText(/Reviewed sections:/)).toHaveTextContent(
+      "Reviewed sections: Curriculum Vitae and Track Record",
+    );
+    expect(screen.queryByText(/query_param_only/)).toBeNull();
+    expect(
+      screen.queryByText("Call metadata unavailable; using review payload order."),
+    ).toBeNull();
+  });
+
   it("uses review payload fallback ordering for legacy review detail", async () => {
     submittedNodesParam = "academic_profile,key_outputs";
     vi.stubGlobal(
