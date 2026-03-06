@@ -166,6 +166,7 @@ class ReviewDetailResponse(BaseModel):
 
     call_id: UUID | None = None
     call_code: str | None = None
+    submitted_node_logical_ids: list[str] = Field(default_factory=list)
     ordering_source: Literal["call_nodes", "review_payload_fallback"] = "call_nodes"
     unmapped_node_logical_ids: list[str] = Field(default_factory=list)
     review: ReviewSummary

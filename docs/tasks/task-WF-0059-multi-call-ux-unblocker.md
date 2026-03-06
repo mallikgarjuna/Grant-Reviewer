@@ -2,7 +2,7 @@
 # WF-0059 — Multi-call UX Unblocker
 
 Artifact: task
-Version: v0.3
+Version: v0.4
 Status: Ready for Implementation
 Last Updated: 2026-03-06
 
@@ -127,7 +127,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0059_structured_payload_normalization_contract"`
 Risks (if any): Validation-order regressions can hide behind a passing happy-path test if mismatch coverage is not kept in the same slice.
 
-### [ ] Task 4 — Persist submitted-node coverage for proof-path reviews
+### [x] Task 4 — Persist submitted-node coverage for proof-path reviews
 
 Goal:
 Persist a review-linked submitted-node coverage source so proof-call review detail can account for reviewed nodes even when they emit zero cards.
@@ -143,7 +143,7 @@ Must touch files:
 - `backend/app/schemas/api.py`
 - `backend/tests/test_api.py`
 May touch files:
-- `none`
+- `backend/main.py`
 Out of scope:
 - `frontend/src/app/api/bff/reviews/[reviewId]/route.ts`
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx`
@@ -164,6 +164,10 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0059_contract_persisted_submitted_node_coverage"`
 - `cd backend && rg -n "submitted_node|coverage" app/repositories/review_repository.py app/schemas/api.py`
 Risks (if any): Card-derived coverage shortcuts would silently violate the persisted-node invariant for zero-card nodes.
+
+## Changelog
+
+- v0.4 (2026-03-06): Corrected Task 4 execution boundary to allow `backend/main.py` for review-detail response assembly; persisted coverage cannot reach the API contract otherwise.
 
 ### [ ] Task 5 — Review detail flips to call-linked ordering for the proof path
 

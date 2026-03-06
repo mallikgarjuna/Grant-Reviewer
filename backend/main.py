@@ -1162,6 +1162,9 @@ def get_review(
 
     call_id = _resolve_review_call_id(review, repository)
     call = repository.get_call_by_id(call_id) if call_id is not None else None
+    submitted_node_logical_ids = repository.get_submitted_node_logical_ids_for_review(
+        review
+    )
     cards = [
         ReviewCardSummary(
             id=card.id,
@@ -1204,6 +1207,7 @@ def get_review(
     return ReviewDetailResponse(
         call_id=call_id,
         call_code=call.code if call is not None else None,
+        submitted_node_logical_ids=submitted_node_logical_ids,
         ordering_source=ordering_source,
         unmapped_node_logical_ids=unmapped_node_logical_ids,
         review=ReviewSummary(

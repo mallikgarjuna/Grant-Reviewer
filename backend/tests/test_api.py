@@ -3240,6 +3240,53 @@ def test_wf0059_contract_hierarchical_submit_validation_and_idempotency(
     assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
 
 
+def test_wf0059_contract_persisted_submitted_node_coverage(monkeypatch) -> None:
+    from app.engine.contracts import PipelineResult
+    import app.services.structured_reviewer_service as structured_service_module
+
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+
+    def zero_card_pipeline(request):
+        return PipelineResult(
+            request_id=request.request_id,
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[],
+            review_cards=[],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(structured_service_module, "run_review_pipeline", zero_card_pipeline)
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_2",
+            "nodes": [
+                {"node_logical_id": "b2", "text": "Part B2 summary"},
+                {
+                    "node_logical_id": "resources_time_commitment",
+                    "text": "Resource justification",
+                },
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["cards"] == []
+    assert payload["submitted_node_logical_ids"] == [
+        "b2",
+        "resources_time_commitment",
+    ]
+
+
 def test_create_structured_review_non_idempotency_integrity_error_returns_500(
     monkeypatch,
 ) -> None:

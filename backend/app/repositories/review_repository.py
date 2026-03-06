@@ -191,6 +191,33 @@ class ReviewRepository:
         """Fetch a review by ID."""
         return self.session.get(Review, review_id)
 
+    def get_submitted_node_logical_ids_for_review(
+        self,
+        review: Review,
+    ) -> list[str]:
+        """Read persisted submitted-node coverage from structured review payload."""
+        structured_payload = review.structured_payload
+        if not isinstance(structured_payload, dict):
+            return []
+
+        submitted_node_logical_ids = structured_payload.get("submitted_node_logical_ids")
+        if isinstance(submitted_node_logical_ids, list):
+            return [
+                node_id
+                for node_id in submitted_node_logical_ids
+                if isinstance(node_id, str) and node_id.strip()
+            ]
+
+        nodes = structured_payload.get("nodes")
+        if isinstance(nodes, dict):
+            return [
+                node_id
+                for node_id in nodes.keys()
+                if isinstance(node_id, str) and node_id.strip()
+            ]
+
+        return []
+
     def get_review_by_external_user_and_idempotency_key(
         self,
         *,
