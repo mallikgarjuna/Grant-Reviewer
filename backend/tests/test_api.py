@@ -1125,7 +1125,44 @@ def test_review_detail_ordering_source_fallback_when_call_linkage_missing(
     payload = detail.json()
     assert payload["call_id"] is None
     assert payload["call_code"] is None
+    assert payload["detail_state"] == "legacy_fallback"
     assert payload["ordering_source"] == "review_payload_fallback"
+
+
+def test_wf0059_review_detail_contract_reports_proof_path_unmapped_state(
+    monkeypatch,
+) -> None:
+    import main as main_module
+
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+
+    def forced_unmapped(cards, *, order_map):
+        return cards, ["unmapped_bonus_node"]
+
+    monkeypatch.setattr(main_module, "_order_review_cards", forced_unmapped)
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "b1_part1_scientific_proposal",
+                    "text": "Part I scientific proposal",
+                },
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["detail_state"] == "proof_path_unmapped"
+    assert payload["ordering_source"] == "call_nodes"
+    assert payload["unmapped_node_logical_ids"] == ["unmapped_bonus_node"]
 
 
 def test_create_review_shared_core_happy_path_parity(monkeypatch) -> None:

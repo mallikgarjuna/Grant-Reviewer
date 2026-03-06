@@ -8,3 +8,4 @@
 - **Review Stage Strictness**: `review_stage` (`STEP_1`/`STEP_2`) is explicit API input. Critical reviewer constraints like "Excellence-only" at Step 1 are `BLOCKING` rather than warning-only.
 - **Error Semantics vs Execution Failures**: Contract failures (e.g. malformed inputs) reject the entire request with NO partial findings. Execution failures (e.g. LLM timeout) indicate the engine failed.
 - **Idempotency**: Client-side idempotency via UUID v4 session identifier passed as `Idempotency-Key` header on submission. Bounded polling every 3 seconds with a 90-second cap is used for tracking backend review process.
+- **Review Detail Contract State**: When `ReviewDetailResponse` adds state fields such as `detail_state`, set them in `backend/main.py` `/reviews/{id}` assembly. Do not make BFF inference the only source of truth.

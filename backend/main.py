@@ -340,6 +340,20 @@ def _resolve_review_call_id(review: Any, repository: ReviewRepository) -> UUID |
     return None
 
 
+def _infer_review_detail_state(
+    *,
+    call_id: UUID | None,
+    call_code: str | None,
+    ordering_source: Literal["call_nodes", "review_payload_fallback"],
+    unmapped_node_logical_ids: list[str],
+) -> Literal["call_linked", "legacy_fallback", "proof_path_unmapped"]:
+    if ordering_source == "review_payload_fallback" or call_id is None:
+        return "legacy_fallback"
+    if call_code == "erc_stg_2026_full" and unmapped_node_logical_ids:
+        return "proof_path_unmapped"
+    return "call_linked"
+
+
 def _build_call_order_index_map(
     call_id: UUID,
     repository: ReviewRepository,
@@ -1203,11 +1217,18 @@ def get_review(
         order_map = _build_call_order_index_map(call_id, repository)
         cards, unmapped_node_logical_ids = _order_review_cards(cards, order_map=order_map)
         ordering_source = "call_nodes"
+    detail_state = _infer_review_detail_state(
+        call_id=call_id,
+        call_code=call.code if call is not None else None,
+        ordering_source=ordering_source,
+        unmapped_node_logical_ids=unmapped_node_logical_ids,
+    )
 
     return ReviewDetailResponse(
         call_id=call_id,
         call_code=call.code if call is not None else None,
         submitted_node_logical_ids=submitted_node_logical_ids,
+        detail_state=detail_state,
         ordering_source=ordering_source,
         unmapped_node_logical_ids=unmapped_node_logical_ids,
         review=ReviewSummary(
