@@ -1,7 +1,7 @@
 # Phase 2.2 — Tasks Review (No Edits)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-2-2-task-review.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-2-2-task-review.md.
 Do NOT modify this file during execution.
 
 ---
