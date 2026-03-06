@@ -35,6 +35,15 @@ Always cover these six dimensions:
 
 ---
 
+## Mindset (Required)
+
+- Be adversarial and fail-closed.
+- Prioritize invariant/safety violations over completion speed.
+- Treat ambiguity as a defect until resolved.
+- Keep findings concrete, minimal, and actionable.
+
+---
+
 ## Output Contract (Exact)
 
 Return findings in this exact structure:

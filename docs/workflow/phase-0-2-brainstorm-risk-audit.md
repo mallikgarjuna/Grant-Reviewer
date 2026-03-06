@@ -11,8 +11,10 @@ Do NOT modify any files while executing this phase.
 Run a critical risk audit of the brainstorm artifact produced in Phase 0.1.
 
 Mindset shift:
-- Take off the “obedient agent” hat.
-- Put on a Senior Principal Software Architect/Engineer hat.
+- Follow the behavior contract in `@docs/workflow/util-adversarial-diff-audit.md`:
+  - be adversarial and fail-closed
+  - prioritize invariant/safety violations over completion speed
+  - treat ambiguity as a defect until resolved
 - Assume the brainstorm will be used to generate a PRD and tasks; your job is to prevent avoidable rework.
 
 ---
