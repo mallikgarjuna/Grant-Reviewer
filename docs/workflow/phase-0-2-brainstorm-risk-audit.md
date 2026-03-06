@@ -1,7 +1,7 @@
 # Phase 0.2 — Brainstorm Risk Audit (Review Gate, No Edits)
 
 This file is a workflow instruction.
-Reference it in Codex chat using @docs/workflow/phase-0-2-brainstorm-risk-audit.md.
+Reference it in chat (any coding agent) using @docs/workflow/phase-0-2-brainstorm-risk-audit.md.
 Do NOT modify any files while executing this phase.
 
 ---
