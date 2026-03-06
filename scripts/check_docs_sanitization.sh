@@ -5,6 +5,9 @@ set -euo pipefail
 readonly TARGETS=(
   "AGENTS.md"
   "docs/workflow/README.md"
+  "docs/workflow/phase-0-0-start-workflow.md"
+  "docs/workflow/phase-1-1-prd-generate.md"
+  "docs/workflow/phase-2-1-task-generate.md"
 )
 
 # Lowercase patterns; search is case-insensitive.
