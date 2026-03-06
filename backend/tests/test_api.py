@@ -567,6 +567,32 @@ def create_client_with_erc_cog_seed(monkeypatch) -> tuple[TestClient, UUID, str]
         session.close()
 
 
+def create_client_with_erc_stg_seed(monkeypatch) -> tuple[TestClient, UUID, str]:
+    """Create test client with ERC StG proof call ingested from canonical YAML."""
+    monkeypatch.setenv("LLM_MODE", "stub")
+    monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    reset_database()
+    ingest_call(Path("data/calls/canonical/erc/erc_stg_2026_full.yaml"), dry_run=False)
+
+    session = get_session()
+    try:
+        template = PromptTemplate(
+            name="ERC StG structured template",
+            template_text="Template",
+            is_active=True,
+        )
+        session.add(template)
+        session.commit()
+
+        call = session.exec(
+            select(FundingCall).where(FundingCall.code == "erc_stg_2026_full")
+        ).first()
+        assert call is not None
+        return TestClient(app), call.id, call.code
+    finally:
+        session.close()
+
+
 def _set_call_definition_reviewer_policy_rules(
     *,
     call_id: UUID,
@@ -1101,7 +1127,44 @@ def test_review_detail_ordering_source_fallback_when_call_linkage_missing(
     payload = detail.json()
     assert payload["call_id"] is None
     assert payload["call_code"] is None
+    assert payload["detail_state"] == "legacy_fallback"
     assert payload["ordering_source"] == "review_payload_fallback"
+
+
+def test_wf0059_review_detail_contract_reports_proof_path_unmapped_state(
+    monkeypatch,
+) -> None:
+    import main as main_module
+
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+
+    def forced_unmapped(cards, *, order_map):
+        return cards, ["unmapped_bonus_node"]
+
+    monkeypatch.setattr(main_module, "_order_review_cards", forced_unmapped)
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "b1_part1_scientific_proposal",
+                    "text": "Part I scientific proposal",
+                },
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["detail_state"] == "proof_path_unmapped"
+    assert payload["ordering_source"] == "call_nodes"
+    assert payload["unmapped_node_logical_ids"] == ["unmapped_bonus_node"]
 
 
 def test_create_review_shared_core_happy_path_parity(monkeypatch) -> None:
@@ -1875,8 +1938,13 @@ def test_structured_review_wf0044_policy_structured_api_modes(
     )
 
     def run_pipeline_with_case_feedback(request):
-        expectation = request.call_config_snapshot["expectations"][0]
+        expectation = request.call_config_snapshot.to_canonical_payload()["expectations"][0]
         return PipelineResult(
+            request_id=request.request_id,
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
             findings=[],
             review_cards=[
                 EngineReviewCard(
@@ -1945,6 +2013,11 @@ def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:
 
     def run_pipeline_with_unknown_expectation(_request):
         return PipelineResult(
+            request_id="wf0043-unresolvable",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
             findings=[],
             review_cards=[
                 EngineReviewCard(
@@ -3172,6 +3245,11 @@ def test_structured_review_unresolvable_expectation_marks_failed_review(
 
     def run_pipeline_with_unknown_expectation(_request):
         return PipelineResult(
+            request_id="structured-unresolvable",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
             findings=[],
             review_cards=[
                 EngineReviewCard(
@@ -3261,6 +3339,189 @@ def test_structured_review_validation_error_precedes_idempotency_mismatch(
     invalid = client.post("/api/structured-review", content=body, headers=headers)
     assert invalid.status_code == 400
     assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_wf0059_structured_review_proof_target_contract_guard(monkeypatch) -> None:
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+
+    malformed_payload = {"call_id": str(call_id), "nodes": "not-a-list"}
+    body = json.dumps(malformed_payload).encode("utf-8")
+    headers = build_signature_headers(body=body)
+    headers["Content-Type"] = "application/json"
+
+    invalid = client.post("/api/structured-review", content=body, headers=headers)
+    assert invalid.status_code == 400
+    assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_wf0059_contract_hierarchical_submit_validation_and_idempotency(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+    idempotency_key = "idem-wf0059-erc-stg-hierarchical"
+    proof_payload = {
+        "call_id": str(call_id),
+        "review_stage": "STEP_1",
+        "nodes": [
+            {
+                "node_logical_id": "proposal_summary",
+                "text": "Proposal summary",
+            },
+            {
+                "node_logical_id": "b1_cv_track_record",
+                "text": "Track record narrative",
+            },
+        ],
+    }
+
+    first = post_structured_review(
+        client=client,
+        payload=proof_payload,
+        idempotency_key=idempotency_key,
+    )
+    assert first.status_code == 200
+
+    replay = post_structured_review(
+        client=client,
+        payload=proof_payload,
+        idempotency_key=idempotency_key,
+    )
+    assert replay.status_code == 200
+    assert replay.json() == first.json()
+
+    mismatched = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "proposal_summary",
+                    "text": "Updated proposal summary",
+                },
+            ],
+        },
+        idempotency_key=idempotency_key,
+    )
+    assert mismatched.status_code == 409
+    assert mismatched.json()["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+
+    malformed_payload = {
+        "call_id": str(call_id),
+        "review_stage": "STEP_1",
+        "nodes": [
+            {
+                "node_logical_id": "proposal_summary",
+                "text": "Proposal summary",
+                "children": "not-a-list",
+            }
+        ],
+    }
+    body = json.dumps(malformed_payload).encode("utf-8")
+    headers = build_signature_headers(body=body)
+    headers["Content-Type"] = "application/json"
+    headers["Idempotency-Key"] = idempotency_key
+
+    invalid = client.post("/api/structured-review", content=body, headers=headers)
+    assert invalid.status_code == 400
+    assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_wf0059_contract_persisted_submitted_node_coverage(monkeypatch) -> None:
+    from app.engine.contracts import PipelineResult
+    import app.services.structured_reviewer_service as structured_service_module
+
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+
+    def zero_card_pipeline(request):
+        return PipelineResult(
+            request_id=request.request_id,
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[],
+            review_cards=[],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(structured_service_module, "run_review_pipeline", zero_card_pipeline)
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_2",
+            "nodes": [
+                {
+                    "node_logical_id": "b2_part2_scientific_proposal",
+                    "text": "Part II scientific proposal",
+                },
+                {
+                    "node_logical_id": "resources_time_commitment",
+                    "text": "Resource justification",
+                },
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["cards"] == []
+    assert payload["submitted_leaf_ids"] == [
+        "b2_part2_scientific_proposal",
+        "resources_time_commitment",
+    ]
+
+
+def test_wf0059_zero_card_node_remains_reviewed_from_persisted_coverage(
+    monkeypatch,
+) -> None:
+    from app.engine.contracts import PipelineResult
+    import app.services.structured_reviewer_service as structured_service_module
+
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+
+    def zero_card_pipeline(request):
+        return PipelineResult(
+            request_id=request.request_id,
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[],
+            review_cards=[],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(structured_service_module, "run_review_pipeline", zero_card_pipeline)
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_2",
+            "nodes": [
+                {
+                    "node_logical_id": "resources_time_commitment",
+                    "text": "Resource justification",
+                },
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["cards"] == []
+    assert payload["submitted_node_logical_ids"] == ["resources_time_commitment"]
 
 
 def test_create_structured_review_non_idempotency_integrity_error_returns_500(

@@ -150,6 +150,7 @@ export type ReviewCardSummary = {
 export type ReviewDetailResponse = {
   call_id?: string | null;
   call_code?: string | null;
+  submitted_node_logical_ids?: string[];
   ordering_source?: "call_nodes" | "review_payload_fallback";
   unmapped_node_logical_ids?: string[];
   submitted_leaf_ids?: string[];

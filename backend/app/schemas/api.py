@@ -181,6 +181,12 @@ class ReviewDetailResponse(BaseModel):
 
     call_id: UUID | None = None
     call_code: str | None = None
+    submitted_node_logical_ids: list[str] = Field(default_factory=list)
+    detail_state: Literal[
+        "call_linked",
+        "legacy_fallback",
+        "proof_path_unmapped",
+    ] = "call_linked"
     ordering_source: Literal["call_nodes", "review_payload_fallback"] = "call_nodes"
     unmapped_node_logical_ids: list[str] = Field(default_factory=list)
     submitted_leaf_ids: list[str] = Field(default_factory=list)

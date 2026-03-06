@@ -46,6 +46,15 @@ type ReviewCardGroup = {
   cards: ReviewDetailResponse["cards"];
 };
 
+type ReviewDetailViewState =
+  | "call_linked"
+  | "legacy_fallback"
+  | "proof_path_unmapped";
+
+type ReviewDetailViewModel = ReviewDetailResponse & {
+  detail_state?: ReviewDetailViewState;
+};
+
 async function parseApiError(response: Response): Promise<ApiError> {
   const fallback: ApiError = {
     code: "INTERNAL_ERROR",
@@ -234,6 +243,28 @@ function buildOrderedCardGroups(
   });
 }
 
+function inferDetailState(
+  reviewDetail: ReviewDetailViewModel,
+): ReviewDetailViewState {
+  if (reviewDetail.detail_state) {
+    return reviewDetail.detail_state;
+  }
+  if (
+    reviewDetail.ordering_source === "review_payload_fallback" ||
+    reviewDetail.call_id == null
+  ) {
+    return "legacy_fallback";
+  }
+  if (
+    reviewDetail.call_code === "erc_stg_2026_full" &&
+    Array.isArray(reviewDetail.unmapped_node_logical_ids) &&
+    reviewDetail.unmapped_node_logical_ids.length > 0
+  ) {
+    return "proof_path_unmapped";
+  }
+  return "call_linked";
+}
+
 export default function ReviewDetailPage() {
   const router = useRouter();
   const params = useParams<{ reviewId: string }>();
@@ -241,7 +272,7 @@ export default function ReviewDetailPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isRetrying, setIsRetrying] = useState(false);
-  const [reviewDetail, setReviewDetail] = useState<ReviewDetailResponse | null>(
+  const [reviewDetail, setReviewDetail] = useState<ReviewDetailViewModel | null>(
     null,
   );
   const [callNodes, setCallNodes] = useState<NodeSummary[] | null>(null);
@@ -280,7 +311,7 @@ export default function ReviewDetailPage() {
         }
         return;
       }
-      const payload = (await response.json()) as ReviewDetailResponse;
+      const payload = (await response.json()) as ReviewDetailViewModel;
       let nextCallNodes: NodeSummary[] | null = null;
       if (typeof payload.call_id === "string" && payload.call_id.length > 0) {
         const callNodesResponse = await fetch(`/api/bff/calls/${payload.call_id}/nodes`, {
@@ -357,7 +388,7 @@ export default function ReviewDetailPage() {
           return;
         }
 
-        const payload = (await response.json()) as ReviewDetailResponse;
+        const payload = (await response.json()) as ReviewDetailViewModel;
         if (cancelled) {
           return;
         }
@@ -647,8 +678,9 @@ export default function ReviewDetailPage() {
     )
     .map((node) => buildPathLabel(node));
   const orderedCardGroups = buildOrderedCardGroups(reviewDetail, sortedCallNodes);
+  const detailState = inferDetailState(reviewDetail);
   const fallbackToPayloadOrder =
-    reviewDetail.ordering_source === "review_payload_fallback" ||
+    detailState === "legacy_fallback" ||
     reviewDetail.call_id == null ||
     sortedCallNodes.length === 0;
   const hasCoverageSummary =
@@ -738,6 +770,11 @@ export default function ReviewDetailPage() {
         {fallbackToPayloadOrder ? (
           <p className="mt-3 text-sm text-[var(--color-muted-foreground)]">
             Call metadata unavailable; using review payload order.
+          </p>
+        ) : null}
+        {detailState === "proof_path_unmapped" ? (
+          <p className="mt-3 text-sm text-amber-700">
+            Some submitted proof-call sections could not be mapped to call metadata and are shown as unmapped.
           </p>
         ) : null}
 

@@ -1,0 +1,24 @@
+{
+  "source_path": "docs/walkthroughs/evidence/WF-0059/erc_stg_2026_full_submit.json",
+  "call_code": "erc_stg_2026_full",
+  "call_id": "c5282d1d-ad04-4072-b228-9e6ac84b5ea2",
+  "request_payload": {
+    "call_id": "c5282d1d-ad04-4072-b228-9e6ac84b5ea2",
+    "review_stage": "STEP_1",
+    "nodes": [
+      {
+        "node_logical_id": "b1_part1_scientific_proposal",
+        "text": "Frontier proposal narrative."
+      },
+      {
+        "node_logical_id": "b1_cv_track_record",
+        "text": "Principal investigator track record narrative."
+      }
+    ]
+  },
+  "response_status": 200,
+  "response_body": {
+    "review_id": "bb5b6f57-6f16-4a20-a5b0-eab71cf91d69",
+    "status": "COMPLETED"
+  }
+}

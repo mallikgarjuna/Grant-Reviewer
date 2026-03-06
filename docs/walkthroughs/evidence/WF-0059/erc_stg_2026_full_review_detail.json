@@ -1,0 +1,59 @@
+{
+  "source_path": "docs/walkthroughs/evidence/WF-0059/erc_stg_2026_full_review_detail.json",
+  "review_id": "bb5b6f57-6f16-4a20-a5b0-eab71cf91d69",
+  "response_status": 200,
+  "response_body": {
+    "call_id": "c5282d1d-ad04-4072-b228-9e6ac84b5ea2",
+    "call_code": "erc_stg_2026_full",
+    "submitted_node_logical_ids": [
+      "b1_part1_scientific_proposal",
+      "b1_cv_track_record"
+    ],
+    "submitted_leaf_ids": [
+      "b1_part1_scientific_proposal",
+      "b1_cv_track_record"
+    ],
+    "detail_state": "call_linked",
+    "ordering_source": "call_nodes",
+    "unmapped_node_logical_ids": [],
+    "legacy_ambiguous_container_ids": [],
+    "moved_legacy_node_references": [],
+    "compatibility_notes": [],
+    "review": {
+      "id": "bb5b6f57-6f16-4a20-a5b0-eab71cf91d69",
+      "status": "COMPLETED",
+      "overall_rating": "NOTE",
+      "overall_summary": "Structured review completed with 2 findings via pipeline_v1."
+    },
+    "cards": [
+      {
+        "id": "39b0d07d-cefe-43ad-ac7b-c28cb32052a6",
+        "node_expectation_id": "73736da8-a1de-4c6f-a91c-a0531e0ac5e7",
+        "node_logical_id": "b1_part1_scientific_proposal",
+        "node_title": "Part I of the Scientific Proposal",
+        "criterion": "Excellence",
+        "criterion_description": "stage=step1_step2; weight_percent=100",
+        "evaluation_element_name": "Research addresses important scientific questions",
+        "expectation_guidance_note": null,
+        "rating": "NOTE",
+        "feedback_text": "The scientific proposal frames ambitious frontier objectives with clear importance.",
+        "assessment_status": "ASSESSED",
+        "not_assessable_reason": null
+      },
+      {
+        "id": "d1ae572b-442a-48ea-96b4-8daaf3c0f9f1",
+        "node_expectation_id": "6dd211c8-b684-46fd-b76a-19cd3f80c1fb",
+        "node_logical_id": "b1_cv_track_record",
+        "node_title": "Curriculum Vitae and Track Record",
+        "criterion": "Excellence",
+        "criterion_description": "stage=step1_step2; weight_percent=100",
+        "evaluation_element_name": "PI ability to conduct ground-breaking research",
+        "expectation_guidance_note": null,
+        "rating": "NOTE",
+        "feedback_text": "Track record evidence is specific and well linked to the ERC excellence criteria.",
+        "assessment_status": "ASSESSED",
+        "not_assessable_reason": null
+      }
+    ]
+  }
+}
