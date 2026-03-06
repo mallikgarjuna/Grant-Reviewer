@@ -2,7 +2,7 @@
 
 Artifact: walkthrough
 Version: v1.0
-Status: Complete (Docs Audit Passed; Pending Ship Gate)
+Status: Done
 Last Updated: 2026-03-06
 
 ---
@@ -41,7 +41,7 @@ Closed documentation evidence debt for WF-0056 and WF-0040 so status claims in `
   - `rg -n "WF-0040|WF-0056|Done|waiver|evidence" docs/index.md docs/walkthroughs/completed/walkthrough-WF-0056-platform-policy-enforcement-live-rehearsal.md docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
   - Result: `PASS`
 - WF lifecycle-state consistency check:
-  - `rg -n "Status: Implementation Complete|Status: Complete|WF-0057 .*Pending Ship Gate" docs/tasks/task-WF-0057-ops-evidence-debt-closure.md docs/walkthroughs/walkthrough-WF-0057-ops-evidence-debt-closure.md docs/index.md`
+  - `rg -n "Status: Completed|Status: Done|WF-0057 .*Done" docs/tasks/completed/task-WF-0057-ops-evidence-debt-closure.md docs/walkthroughs/completed/walkthrough-WF-0057-ops-evidence-debt-closure.md docs/index.md`
   - Result: `PASS`
 
 ## Remaining Items
