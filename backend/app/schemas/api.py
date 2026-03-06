@@ -163,6 +163,18 @@ class ReviewCardSummary(BaseModel):
     not_assessable_reason: str | None = None
 
 
+class ReviewCompatibilityNote(BaseModel):
+    """Compatibility annotation for mixed-version review records."""
+
+    note_type: Literal[
+        "deprecated_container_submission",
+        "moved_legacy_node_reference",
+        "mixed_version_review",
+    ]
+    node_logical_ids: list[str] = Field(default_factory=list)
+    message: str
+
+
 class ReviewDetailResponse(BaseModel):
     """Response for GET /reviews/{review_id}."""
 
@@ -173,6 +185,7 @@ class ReviewDetailResponse(BaseModel):
     submitted_leaf_ids: list[str] = Field(default_factory=list)
     legacy_ambiguous_container_ids: list[str] = Field(default_factory=list)
     moved_legacy_node_references: list[str] = Field(default_factory=list)
+    compatibility_notes: list[ReviewCompatibilityNote] = Field(default_factory=list)
     review: ReviewSummary
     cards: list[ReviewCardSummary]
 

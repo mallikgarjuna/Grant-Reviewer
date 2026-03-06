@@ -179,7 +179,7 @@ Verification Steps:
 - `cd frontend && rg -n "submitted_nodes|compatibility|resources_time_commitment" src/app/api/bff/reviews/[reviewId]/route.ts src/app/app/reviews/[reviewId]/page.tsx`
 Risks (if any): Query-param fallback can remain accidentally reachable for ERC even after the corrected call-linked path is added.
 
-### [ ] Task 6 — Explicit compatibility notes for mixed-version ERC reviews
+### [x] Task 6 — Explicit compatibility notes for mixed-version ERC reviews
 
 Goal:
 Render deterministic compatibility-state semantics for deprecated container evidence, moved-node aliases, and mixed-version precedence without overstating reviewed coverage.

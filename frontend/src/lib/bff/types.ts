@@ -154,6 +154,14 @@ export type ReviewDetailResponse = {
   submitted_leaf_ids?: string[];
   legacy_ambiguous_container_ids?: string[];
   moved_legacy_node_references?: string[];
+  compatibility_notes?: Array<{
+    note_type:
+      | "deprecated_container_submission"
+      | "moved_legacy_node_reference"
+      | "mixed_version_review";
+    node_logical_ids: string[];
+    message: string;
+  }>;
   review: ReviewSummary;
   cards: ReviewCardSummary[];
 };

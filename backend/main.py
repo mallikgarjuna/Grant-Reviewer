@@ -40,6 +40,7 @@ from app.schemas.api import (
     NodeSummary,
     NodeTreeNode,
     ReviewCardSummary,
+    ReviewCompatibilityNote,
     ReviewDetailResponse,
     ReviewListItem,
     ReviewsListResponse,
@@ -1205,6 +1206,33 @@ def get_review(
     submitted_leaf_ids, legacy_ambiguous_container_ids, moved_legacy_node_references = (
         repository.resolve_structured_review_coverage(review)
     )
+    compatibility_notes: list[ReviewCompatibilityNote] = []
+    if legacy_ambiguous_container_ids:
+        compatibility_notes.append(
+            ReviewCompatibilityNote(
+                note_type="deprecated_container_submission",
+                node_logical_ids=legacy_ambiguous_container_ids,
+                message="Deprecated container submissions are preserved as ambiguous legacy evidence.",
+            )
+        )
+    if moved_legacy_node_references:
+        compatibility_notes.append(
+            ReviewCompatibilityNote(
+                note_type="moved_legacy_node_reference",
+                node_logical_ids=moved_legacy_node_references,
+                message="Legacy moved-node references were mapped to corrected leaf identities.",
+            )
+        )
+    if submitted_leaf_ids and legacy_ambiguous_container_ids:
+        compatibility_notes.append(
+            ReviewCompatibilityNote(
+                note_type="mixed_version_review",
+                node_logical_ids=sorted(
+                    [*submitted_leaf_ids, *legacy_ambiguous_container_ids]
+                ),
+                message="Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage.",
+            )
+        )
 
     return ReviewDetailResponse(
         call_id=call_id,
@@ -1214,6 +1242,7 @@ def get_review(
         submitted_leaf_ids=submitted_leaf_ids,
         legacy_ambiguous_container_ids=legacy_ambiguous_container_ids,
         moved_legacy_node_references=moved_legacy_node_references,
+        compatibility_notes=compatibility_notes,
         review=ReviewSummary(
             id=review.id,
             status=review.status,

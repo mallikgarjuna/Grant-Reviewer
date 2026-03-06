@@ -654,14 +654,22 @@ export default function ReviewDetailPage() {
   const hasCoverageSummary =
     submittedNodes.length > 0 || notReviewedNodeLabels.length > 0;
 
-  const compatibilityLines = [
-    ...(reviewDetail.legacy_ambiguous_container_ids ?? []).map(
-      (id) => `Legacy container evidence preserved (ambiguous): ${id}`,
-    ),
-    ...(reviewDetail.moved_legacy_node_references ?? []).map(
-      (id) => `Moved legacy node reference resolved to corrected leaf: ${id}`,
-    ),
-  ];
+  const compatibilityLines = (reviewDetail.compatibility_notes ?? []).map((note) => {
+    const nodeSuffix =
+      note.node_logical_ids.length > 0
+        ? ` [${note.node_logical_ids.join(", ")}]`
+        : "";
+    switch (note.note_type) {
+      case "deprecated_container_submission":
+        return `deprecated_container_submission: ${note.message}${nodeSuffix}`;
+      case "moved_legacy_node_reference":
+        return `moved_legacy_node_reference: ${note.message}${nodeSuffix}`;
+      case "mixed_version_review":
+        return `mixed_version_review: ${note.message}${nodeSuffix}`;
+      default:
+        return note.message;
+    }
+  });
 
   const hasCompatibilityNotes = compatibilityLines.length > 0;
 
