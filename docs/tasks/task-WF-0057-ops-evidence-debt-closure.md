@@ -125,7 +125,7 @@ Verification Steps:
 - `rg -n "WF-0040|WF-0056|Done|waiver|debt|evidence" docs/index.md docs/walkthroughs/completed/walkthrough-WF-0056-platform-policy-enforcement-live-rehearsal.md docs/walkthroughs/completed/walkthrough-WF-0040-structured-pipeline-v1-legacy-retirement.md`
 Risks (if any): Historical expectations around `Done` can conflict with strict evidence semantics.
 
-### [ ] Task 6 — Final audit pass for docs-only closure package
+### [x] Task 6 — Final audit pass for docs-only closure package
 
 Goal:
 Perform one deterministic docs-only audit pass proving WF-0057 closure can be verified without tribal knowledge.

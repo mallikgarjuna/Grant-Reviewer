@@ -99,6 +99,14 @@
 - **Sign-off date**: 2026-03-06.
 - **Status**: Approved.
 
+### AD 57.5: WF-0057 docs-only closure audit is accepted
+- **WF ID**: WF-0057
+- **Context**: Final task requires a deterministic closure audit proving evidence/waiver/status alignment without tribal knowledge.
+- **Decision**: Accept WF-0057 closure audit as `PASS` based on three checks: WF-0056 placeholder removal, WF-0040 single-path runtime gate closure, and docs index status alignment.
+- **Reviewer**: Codex (GPT-5) workflow runner.
+- **Audit date**: 2026-03-06.
+- **Status**: Approved.
+
 ## Date: 2026-03-04 (WF-0053: contract boundary governance enforcement)
 
 ### AD 53.1: Boundary-governance trigger inventory is explicit and path-mapped
