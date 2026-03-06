@@ -415,23 +415,34 @@ class ReviewRepository:
             if isinstance(nodes, dict)
             else []
         )
+        erc_container_ids = {"part_a", "budget", "part_b", "b1", "b2"}
 
         if not submitted_leaf_ids:
             submitted_leaf_ids = sorted(
                 [
                     node_id
                     for node_id in submitted_node_ids
-                    if node_id not in {"b1", "b2"}
+                    if node_id not in erc_container_ids
                 ]
             )
         if not legacy_ambiguous_container_ids:
             legacy_ambiguous_container_ids = sorted(
                 [node_id for node_id in submitted_node_ids if node_id in {"b1", "b2"}]
             )
+
+        call_code: str | None = None
+        payload_call_id = payload.get("call_id")
+        if isinstance(payload_call_id, str):
+            try:
+                resolved_call = self.session.get(FundingCall, UUID(payload_call_id))
+                call_code = resolved_call.code if resolved_call is not None else None
+            except ValueError:
+                call_code = None
         if (
             not moved_legacy_node_references
             and "resources_time_commitment" in submitted_node_ids
             and "submitted_leaf_ids" not in payload
+            and call_code == "erc_stg_2026_full"
         ):
             moved_legacy_node_references = ["resources_time_commitment"]
 

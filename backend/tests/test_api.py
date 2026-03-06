@@ -1431,6 +1431,7 @@ def test_wf0060_review_detail_persists_leaf_coverage_and_legacy_compatibility_st
                     "resources_time_commitment": "legacy resources evidence",
                     "b1_part1_scientific_proposal": "leaf evidence",
                 },
+                "moved_legacy_node_references": ["resources_time_commitment"],
                 "engine_path": "pipeline_v1",
             },
         )
@@ -1488,6 +1489,44 @@ def test_wf0060_zero_card_leaf_stays_visible_in_review_detail(monkeypatch) -> No
             "academic_profile",
             "scientific_proposal",
         ]
+    finally:
+        session.close()
+
+
+def test_wf0060_legacy_erc_container_nodes_do_not_inflate_submitted_leaf_coverage(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+        repository = ReviewRepository(session)
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0060-container-only-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+                "review_stage": "STEP_1",
+                "nodes": {
+                    "part_a": "legacy container",
+                    "budget": "legacy container",
+                    "part_b": "legacy container",
+                },
+                "engine_path": "pipeline_v1",
+            },
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+
+        detail = get_review_detail(client=client, review_id=str(review.id))
+        assert detail.status_code == 200
+        payload = detail.json()
+        assert payload["submitted_leaf_ids"] == []
     finally:
         session.close()
 
