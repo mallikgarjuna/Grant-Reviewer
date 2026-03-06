@@ -1532,3 +1532,37 @@
 - **Why**: Ships deterministic policy hardening now while preserving a clean boundary for platform-admin enforcement work.
 - **Tradeoff**: Full required-check enforcement is deferred until the follow-on WF is completed.
 - **Status**: Approved.
+
+## Date: 2026-03-06 (WF-0059: multi-call UX unblocker)
+
+### AD 59.1: WF-0059 scope is locked to one ERC hierarchical proof call
+- **WF ID**: WF-0059
+- **Context**: The workflow can easily sprawl into universal multi-call redesign if the proof target and acceptance boundary are not fixed early.
+- **Decision**: Lock implementation and proof scope to `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`, preserving Veni parity while limiting in-scope changes to the submit unblocker, review-create invariants, and call-aware review-detail seams required by that path.
+- **Why**: Keeps the workflow falsifiable and aligned to the finalized brainstorm's proof obligation.
+- **Tradeoff**: Broader multi-call hardening remains deferred after this workflow.
+- **Status**: Approved.
+
+### AD 59.2: Proof-path review detail uses explicit call-linked source precedence with no silent fallback
+- **WF ID**: WF-0059
+- **Context**: Review detail already has partial call-aware seams, but the proof path fails credibility if partially missing linkage silently falls back to Veni-shaped ordering or `submitted_nodes` query-param behavior.
+- **Decision**: For proof-call reviews, use stored review node linkage as the source of truth, enrich with fetched call-node metadata for ordering/grouping/labels, and allow legacy fallback only for older or mixed-version reviews with absent call-linked metadata.
+- **Why**: Protects traceability and prevents a false-positive "multi-call works" result caused by silent fallback behavior.
+- **Tradeoff**: Requires explicit unmapped-state handling and tests instead of relying on permissive fallback behavior.
+- **Status**: Approved.
+
+### AD 59.3: WF-0059 submit boundary is the structured-review path, not flat `POST /reviews`
+- **WF ID**: WF-0059
+- **Context**: The repo's hierarchical submit flow already goes through `/api/bff/structured-review` to `/api/structured-review`, while flat `POST /reviews` remains the legacy single-snippet path.
+- **Decision**: Define WF-0059 review-create invariants against the structured-review boundary and preserve that path's idempotency, validation ordering, persistence, and history behavior.
+- **Why**: Prevents task planning from targeting the wrong transport and hiding the real integration seam.
+- **Tradeoff**: The PRD must distinguish structured-review invariants from legacy flat-review invariants instead of collapsing them into one generic boundary.
+- **Status**: Approved.
+
+### AD 59.4: Proof-path coverage summary requires persisted submitted-node coverage data
+- **WF ID**: WF-0059
+- **Context**: Current review detail coverage summary still depends on the `submitted_nodes` URL query param, and cards-only inference is insufficient because some submitted nodes can legitimately yield zero review cards.
+- **Decision**: Require the structured-review flow to persist submitted node logical IDs, or an equivalent persisted review-linked coverage source, and require review detail to compute reviewed/not-reviewed coverage from that persisted source plus call metadata.
+- **Why**: Makes proof-path coverage trustworthy and removes closure dependence on URL parameters or card-count assumptions.
+- **Tradeoff**: Adds a small persistence/detail-contract expansion that legacy reviews will not have, so explicit fallback handling remains necessary.
+- **Status**: Approved.
