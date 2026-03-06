@@ -142,11 +142,15 @@ class StructuredReviewerService:
             if isinstance(node.logical_id, str) and node.logical_id
         }
         submitted_text_by_node = {node_logical_id: text for node_logical_id, text in nodes}
+        submitted_leaf_ids = [node_logical_id for node_logical_id, _ in nodes]
         structured_payload = {
             "call_id": str(call_id),
             "call_name": call.name,
             "review_stage": review_stage,
             "nodes": submitted_text_by_node,
+            "submitted_leaf_ids": submitted_leaf_ids,
+            "legacy_ambiguous_container_ids": [],
+            "moved_legacy_node_references": [],
             "engine_path": "pipeline_v1",
         }
 

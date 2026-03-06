@@ -1,4 +1,6 @@
-"""FastAPI endpoint tests for Task 7.0."""
+"""backend/tests/test_api.py
+FastAPI endpoint tests for Task 7.0.
+"""
 
 import hashlib
 import hmac
@@ -1359,6 +1361,9 @@ def test_create_structured_review_success_persists_structured_fields(monkeypatch
             "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
             "review_stage": "STEP_1",
             "nodes": {"academic_profile": "profile text"},
+            "submitted_leaf_ids": ["academic_profile"],
+            "legacy_ambiguous_container_ids": [],
+            "moved_legacy_node_references": [],
             "engine_path": "pipeline_v1",
         }
         assert review.structured_payload == expected_payload
@@ -1399,6 +1404,50 @@ def test_structured_review_e2e_happy_path_three_nodes(monkeypatch) -> None:
     assert ordered_nodes[2:] == ["research_idea", "research_idea", "research_idea"]
     assert all(card["assessment_status"] == "ASSESSED" for card in cards)
     assert all(card["not_assessable_reason"] is None for card in cards)
+
+
+def test_wf0060_review_detail_persists_leaf_coverage_and_legacy_compatibility_state(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+        repository = ReviewRepository(session)
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0060-compat-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "call_name": "NWO Talent Programme — Veni 2025 — Pre-proposal",
+                "review_stage": "STEP_1",
+                "nodes": {
+                    "b1": "legacy container evidence",
+                    "b2": "legacy container evidence",
+                    "resources_time_commitment": "legacy resources evidence",
+                    "b1_part1_scientific_proposal": "leaf evidence",
+                },
+                "engine_path": "pipeline_v1",
+            },
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+
+        detail = get_review_detail(client=client, review_id=str(review.id))
+        assert detail.status_code == 200
+        payload = detail.json()
+        assert payload["submitted_leaf_ids"] == [
+            "b1_part1_scientific_proposal",
+            "resources_time_commitment",
+        ]
+        assert payload["legacy_ambiguous_container_ids"] == ["b1", "b2"]
+        assert payload["moved_legacy_node_references"] == ["resources_time_commitment"]
+    finally:
+        session.close()
 
 
 def test_structured_review_erc_cog_2026_full_happy_path(monkeypatch) -> None:

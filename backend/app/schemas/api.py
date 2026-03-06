@@ -1,4 +1,6 @@
-"""Pydantic models for FastAPI request/response contracts."""
+"""backend/app/schemas/api.py
+Pydantic models for FastAPI request/response contracts.
+"""
 
 from typing import Any, Literal
 from uuid import UUID
@@ -168,6 +170,9 @@ class ReviewDetailResponse(BaseModel):
     call_code: str | None = None
     ordering_source: Literal["call_nodes", "review_payload_fallback"] = "call_nodes"
     unmapped_node_logical_ids: list[str] = Field(default_factory=list)
+    submitted_leaf_ids: list[str] = Field(default_factory=list)
+    legacy_ambiguous_container_ids: list[str] = Field(default_factory=list)
+    moved_legacy_node_references: list[str] = Field(default_factory=list)
     review: ReviewSummary
     cards: list[ReviewCardSummary]
 

@@ -113,7 +113,7 @@ Verification Steps:
 - `cd backend && rg -n "b2|resources_time_commitment|STEP_2" app/services/reviewer_policy.py app/services/structured_reviewer_service.py`
 Risks (if any): Stage rules can look green while still accepting deprecated container IDs unless rejection is asserted explicitly.
 
-### [ ] Task 4 — Persist submitted leaf coverage and legacy compatibility state
+### [x] Task 4 — Persist submitted leaf coverage and legacy compatibility state
 
 Goal:
 Persist review-linked submitted leaf coverage and deprecated-container compatibility metadata so review detail no longer infers ERC coverage from cards or containers.

@@ -1,4 +1,6 @@
-"""FastAPI entrypoint for Grant Reviewer backend."""
+"""backend/main.py
+FastAPI entrypoint for Grant Reviewer backend.
+"""
 
 import hashlib
 import hmac
@@ -1200,12 +1202,18 @@ def get_review(
         order_map = _build_call_order_index_map(call_id, repository)
         cards, unmapped_node_logical_ids = _order_review_cards(cards, order_map=order_map)
         ordering_source = "call_nodes"
+    submitted_leaf_ids, legacy_ambiguous_container_ids, moved_legacy_node_references = (
+        repository.resolve_structured_review_coverage(review)
+    )
 
     return ReviewDetailResponse(
         call_id=call_id,
         call_code=call.code if call is not None else None,
         ordering_source=ordering_source,
         unmapped_node_logical_ids=unmapped_node_logical_ids,
+        submitted_leaf_ids=submitted_leaf_ids,
+        legacy_ambiguous_container_ids=legacy_ambiguous_container_ids,
+        moved_legacy_node_references=moved_legacy_node_references,
         review=ReviewSummary(
             id=review.id,
             status=review.status,
