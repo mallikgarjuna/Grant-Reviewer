@@ -593,6 +593,32 @@ def create_client_with_erc_stg_seed(monkeypatch) -> tuple[TestClient, UUID, str]
         session.close()
 
 
+def create_client_with_msca_pf_seed(monkeypatch) -> tuple[TestClient, UUID, str]:
+    """Create test client with MSCA-PF-2025 call ingested from canonical YAML."""
+    monkeypatch.setenv("LLM_MODE", "stub")
+    monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    reset_database()
+    ingest_call(Path("data/calls/canonical/msca/msca_pf_2025_full.yaml"), dry_run=False)
+
+    session = get_session()
+    try:
+        template = PromptTemplate(
+            name="MSCA PF structured template",
+            template_text="Template",
+            is_active=True,
+        )
+        session.add(template)
+        session.commit()
+
+        call = session.exec(
+            select(FundingCall).where(FundingCall.code == "MSCA-PF-2025")
+        ).first()
+        assert call is not None
+        return TestClient(app), call.id, call.code
+    finally:
+        session.close()
+
+
 def _set_call_definition_reviewer_policy_rules(
     *,
     call_id: UUID,
@@ -801,6 +827,71 @@ def test_healthcheck_db_unavailable_returns_503(monkeypatch) -> None:
             "details": {},
         },
     }
+
+
+def test_wf0061_contract_structured_api_tracer_accepts_real_msca_pf_2025_call(
+    monkeypatch,
+) -> None:
+    """WF-0061 tracer: structured API accepts real MSCA-PF-2025 canonical call."""
+    client, call_id, call_code = create_client_with_msca_pf_seed(monkeypatch)
+    assert call_code == "MSCA-PF-2025"
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "excellence",
+                    "text": "Tracer bullet text for MSCA-PF-2025 excellence.",
+                }
+            ],
+        },
+        idempotency_key=f"wf0061-msca-api-{time.time_ns()}",
+    )
+    assert response.status_code in {200, 201}
+
+    payload = response.json()
+    assert payload["status"] in {"PENDING", "COMPLETED"}
+    assert isinstance(payload.get("review_id"), str)
+
+    session = get_session()
+    try:
+        definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        assert (
+            definition.source_path
+            == "data/calls/canonical/msca/msca_pf_2025_full.yaml"
+        )
+    finally:
+        session.close()
+
+
+def test_wf0061_contract_runtime_proof_requires_upload_validate_ingest_order(
+    monkeypatch,
+) -> None:
+    """WF-0061 gate order: structured runtime proof is invalid before ingest readiness."""
+    client, _ = create_client_with_seed(monkeypatch)
+    unknown_call_id = UUID("00000000-0000-0000-0000-000000000061")
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(unknown_call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "excellence",
+                    "text": "Runtime proof must fail when call ingest prerequisites are unmet.",
+                }
+            ],
+        },
+        idempotency_key=f"wf0061-order-gate-{time.time_ns()}",
+    )
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "CALL_NOT_FOUND"
 
 
 def test_normalize_database_url_for_render_postgres() -> None:
