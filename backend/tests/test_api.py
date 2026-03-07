@@ -1604,7 +1604,7 @@ def test_structured_review_erc_cog_2026_full_happy_path(monkeypatch) -> None:
             "call_id": str(call_id),
             "nodes": [
                 {
-                    "node_logical_id": "b1_part1_state_of_knowledge",
+                    "node_logical_id": "b1_part1_scientific_proposal",
                     "text": "The proposal explains current state of knowledge and frontier gap.",
                 },
             ],
@@ -1927,7 +1927,7 @@ def test_structured_review_wf0044_policy_structured_api_modes(
             {
                 "id": f"wf0044_rule_{case['case_id']}",
                 "applies_to_stage": "STEP_1",
-                "applies_to_node_ids": ["b1_part1_state_of_knowledge"],
+                "applies_to_node_ids": ["b1_part1_scientific_proposal"],
                 "rule_type": "criterion_scope",
                 "instruction": "WF-0044 structured policy contract test rule.",
                 "severity": "WARNING",
@@ -1948,7 +1948,7 @@ def test_structured_review_wf0044_policy_structured_api_modes(
             findings=[],
             review_cards=[
                 EngineReviewCard(
-                    node_logical_id="b1_part1_state_of_knowledge",
+                    node_logical_id="b1_part1_scientific_proposal",
                     expectation_id=str(expectation["expectation_id"]),
                     rating="NOTE",
                     feedback=case["feedback_text"],
@@ -1969,7 +1969,7 @@ def test_structured_review_wf0044_policy_structured_api_modes(
             "review_stage": "STEP_1",
             "nodes": [
                 {
-                    "node_logical_id": "b1_part1_state_of_knowledge",
+                    "node_logical_id": "b1_part1_scientific_proposal",
                     "text": "Structured submission text for policy contract coverage.",
                 }
             ],
