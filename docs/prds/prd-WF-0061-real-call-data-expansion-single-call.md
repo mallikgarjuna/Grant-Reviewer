@@ -2,8 +2,8 @@
 # WF-0061 — Real Call Data Expansion: Single New Canonical Call
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-07
 
 Type: feature
@@ -79,6 +79,7 @@ Type: feature
 - FR7 (US1, US3): The call must pass local ingest using the repo's existing ingest path without schema ambiguity or silent fallback behavior.
 - FR8 (US3): The WF must define and execute at least one deterministic runtime proof that exercises `MSCA-PF-2025` through one intended product path using the real canonical call definition.
 - FR9 (US3): The runtime proof must be minimal but real; planning-only, dry-run-only, or mock-only evidence is insufficient for WF completion.
+- FR9a (US3, US4): Phase 2 planning must lock exactly one existing product-path seam as the MVP runtime proof surface before implementation begins; if no single existing seam is viable without broad redesign, the WF must stop and surface that blocker.
 - FR10 (US4): Any compatibility fix discovered during `MSCA-PF-2025` onboarding must stay limited to the smallest direct change required for this call to land safely.
 - FR11 (US4): If the required compatibility work exceeds a narrow seam and becomes broader redesign, the WF must stop and surface that as a blocker instead of expanding scope implicitly.
 - FR12 (US4): Any compatibility fix accepted into scope must include regression evidence proving the touched seam remains stable for existing behavior.
@@ -90,7 +91,7 @@ Type: feature
 
 - `MSCA-PF-2025` authoring requires two official source classes before substantive YAML content work: one structure/narrative source and one evaluation criteria/elements source. (US2, FR2, FR3)
 - The upload gate applies immediately before substantive authoring, not only before finalizing the YAML. (US2, FR2)
-- If one document appears to cover both structure and criteria/elements, implementation may still require a second source only when the first source does not ground both surfaces unambiguously; default planning assumption remains two source classes. (US2, FR3)
+- If one document appears to cover both structure and criteria/elements, the workflow must still fail closed and require supplemental official evidence whenever that document does not ground both surfaces unambiguously; default planning assumption remains two source classes. (US2, FR3)
 
 ### 5.2 Canonical artifact contract
 
@@ -123,8 +124,8 @@ Type: feature
   - Per-call traceability manifest for official-source provenance and hash evidence. (FR4)
 - Validation and ingest tooling under `backend/scripts/` and `backend/app/`
   - Deterministic contract-validation and local-ingest seams that must accept the new call without ambiguity. (FR6, FR7)
-- Minimal runtime proof seam under existing backend/frontend product surfaces
-  - The single proof path that must demonstrate `MSCA-PF-2025` is operationally real without broad redesign. (FR8, FR9, FR10)
+- One existing runtime proof seam selected in Phase 2
+  - The single MVP proof path that must demonstrate `MSCA-PF-2025` is operationally real without broad redesign; Phase 2 must freeze this seam before implementation tasking proceeds. (FR8, FR9, FR9a, FR10)
 - Narrow compatibility seam, if forced
   - The smallest touched module boundary required to make the selected runtime proof work safely for `MSCA-PF-2025`. (FR10, FR11, FR12)
 
@@ -144,8 +145,8 @@ Deep module guidance:
 Suggested file-path clusters (coarse only):
 
 - canonical call and source manifest under `backend/data/calls/`
-- validation/ingest tooling under `backend/scripts/` and supporting backend seams
-- one existing runtime proof surface under the current product path
+- validation/ingest tooling under the existing ingest seam plus only the directly supporting backend modules
+- one existing runtime proof surface frozen in Phase 2 as the sole MVP evidence path
 - targeted regression tests near the touched validation, ingest, or runtime seam
 
 ## 7. Edge Cases
@@ -162,15 +163,17 @@ Suggested file-path clusters (coarse only):
 - Public test seams must cover canonical validation, local ingest, and the selected runtime proof boundary for `MSCA-PF-2025`. (US1, US3, FR6, FR7, FR8)
 - Mock only true external boundaries when needed for determinism; do not mock away the canonical-call contract, ingest path, or the selected runtime proof seam itself. (US3, FR8, FR9)
 - Minimum verification required:
+  - upload-gate coverage proving substantive `MSCA-PF-2025` authoring stops until the required official source classes are present. (US2, FR2, FR3)
   - validation coverage proving `msca_pf_2025_full.yaml` fails closed on contract errors and passes once source-grounded content is correct. (US1, US2, US3, FR2, FR6)
   - local ingest verification proving `MSCA-PF-2025` loads through the repo's real ingest path. (US1, US3, FR7)
   - one deterministic runtime proof exercising the chosen product seam with the real `MSCA-PF-2025` call definition. (US3, FR8, FR9)
+  - blocker-boundary coverage proving a proposed fix that exceeds narrow compatibility scope is surfaced as a stop/escalation condition rather than silently absorbed into the WF. (US4, FR9a, FR10, FR11, FR12)
   - regression coverage for any narrow compatibility fix required to support that runtime proof. (US4, FR10, FR12)
 
 ## 9. Telemetry (Minimal)
 
 - Add only minimal diagnostics needed to distinguish validation failure, ingest failure, and runtime-proof failure for `MSCA-PF-2025`.
-- Telemetry is not an MVP deliverable unless a touched compatibility seam requires a small diagnostic to keep the proof path debuggable.
+- Telemetry is not an MVP deliverable unless a touched seam cannot be verified or debugged deterministically without one small diagnostic.
 
 ## 10. Deferred / Not in MVP
 
@@ -181,8 +184,9 @@ Suggested file-path clusters (coarse only):
 
 ## 11. Open Questions (if any)
 
-- Which existing runtime surface should serve as the single deterministic proof seam for `MSCA-PF-2025` in implementation: the final answer must stay narrow and must not broaden this WF's scope.
+- None blocking. Phase 2 must lock the single MVP runtime proof seam before implementation starts; if no narrow existing seam is viable, the WF stops for re-scope instead of broadening.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-07): Initial PRD from brainstorm.
+- v0.2 (2026-03-07): Applied risk-audit edits for fail-closed source intake, explicit single-seam runtime-proof planning, and scope-boundary test coverage; marked Ready for Tasks.

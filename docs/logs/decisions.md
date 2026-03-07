@@ -1,6 +1,24 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-07 (WF-0061: real call data expansion single call)
+
+### AD 61.1: WF-0061 must freeze exactly one MVP proof seam for MSCA-PF-2025
+- **WF ID**: WF-0061
+- **Context**: The brainstorm locked scope to one promised canonical call with one minimal runtime proof, but PRD v0.1 still left the runtime proof surface implicit enough that Phase 2 could broaden into multiple seams.
+- **Decision**: Phase 2 must lock exactly one existing product-path seam as the MVP runtime proof surface for `MSCA-PF-2025`. If no single narrow seam is viable without broad redesign, the workflow stops and surfaces that blocker instead of widening scope.
+- **Why**: Preserves the one-call/one-proof contract and prevents task generation from turning "operationally real" into cross-surface expansion.
+- **Tradeoff**: The selected proof seam may not represent every product surface, but it gives a defensible minimal proof for this WF.
+- **Status**: Approved.
+
+### AD 61.2: Ambiguous single-document source coverage fails closed for MSCA-PF-2025
+- **WF ID**: WF-0061
+- **Context**: The workflow allows planning before uploads, but Phase 3 authoring must remain source-grounded. A nominally comprehensive single document could otherwise be used to weaken the hard upload gate by interpretation.
+- **Decision**: Treat the default intake contract as two official source classes for `MSCA-PF-2025` and fail closed whenever one document does not ground both structure and evaluation criteria/elements unambiguously; require supplemental official evidence before substantive authoring continues.
+- **Why**: Keeps the upload gate strict in practice, not just in wording, and prevents speculative YAML authoring from slipping through ambiguity.
+- **Tradeoff**: May require one extra official source upload even when a single document appears close, but the traceability bar stays defensible.
+- **Status**: Approved.
+
 ## Date: 2026-03-06 (WF-0060: ERC StG 2026 contract/UI model correction)
 
 ### AD 60.1: ERC StG 2026 canonical contract is leaf-reviewable and container-structural
