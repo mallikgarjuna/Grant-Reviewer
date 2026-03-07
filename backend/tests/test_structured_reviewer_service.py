@@ -317,6 +317,30 @@ def _build_erc_stg_service(monkeypatch):
     return service, call.id
 
 
+def _build_msca_pf_service(monkeypatch):
+    monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
+    _reset_database()
+    ingest_call(Path("data/calls/canonical/msca/msca_pf_2025_full.yaml"), dry_run=False)
+    session = get_session()
+    template = PromptTemplate(
+        name="MSCA PF structured template",
+        template_text="Template",
+        is_active=True,
+    )
+    session.add(template)
+    session.commit()
+
+    call = session.exec(select(FundingCall).where(FundingCall.code == "MSCA-PF-2025")).first()
+    assert call is not None
+
+    repository = ReviewRepository(session)
+    service = StructuredReviewerService(
+        repository=repository,
+        llm_client=EchoExpectationLLMClient(),
+    )
+    return service, call.id
+
+
 def _build_erc_service(monkeypatch):
     monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
     _reset_database()
@@ -696,5 +720,33 @@ def test_structured_pipeline_v1_reviewer_policy_prompt_only_has_no_side_effects(
         assert review.overall_summary is not None
         assert "policy" not in review.overall_summary.lower()
         assert all(card.assessment_status == AssessmentStatus.ASSESSED for card in cards)
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0061_contract_structured_service_uses_real_msca_pf_2025_snapshot(
+    monkeypatch,
+) -> None:
+    """WF-0061 tracer: structured service uses ingested real MSCA-PF-2025 snapshot."""
+    service, call_id = _build_msca_pf_service(monkeypatch)
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("excellence", "Tracer bullet text for MSCA-PF-2025 excellence.")],
+            external_user_id="wf0061-msca-service",
+            idempotency_key="wf0061-msca-service",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) >= 1
+
+        definition = service.repository.session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        assert (
+            definition.source_path
+            == "data/calls/canonical/msca/msca_pf_2025_full.yaml"
+        )
     finally:
         service.repository.session.close()

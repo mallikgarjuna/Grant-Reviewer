@@ -77,7 +77,7 @@ Verification Steps:
 - `cd backend && rg -n "SHA256|Used for|MSCA" data/calls/sources/msca_pf_2025_full.sources.md`
 Risks (if any): MSCA source documents may blur structure and evaluation evidence boundaries; the task must fail closed rather than infer missing details.
 
-### [ ] Task 3 — Tracer bullet: local ingest plus backend structured-review proof
+### [x] Task 3 — Tracer bullet: local ingest plus backend structured-review proof
 
 Goal:
 Use the real ingested `MSCA-PF-2025` call as the earliest end-to-end tracer bullet by proving the selected MVP seam, backend `/api/structured-review`, works with the canonical artifact and no frontend/BFF dependency.
