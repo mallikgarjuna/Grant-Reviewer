@@ -26,7 +26,7 @@ Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0061-real-cal
 - WF-0061 should prove real product progress by adding exactly one new official-source canonical call, not by doing more framework, governance, or generic hardening work.
 - The repo has strong machinery and several corrected canonical calls, but validated coverage is still too narrow to support broad product confidence.
 - Current canonical coverage is still only NWO and ERC, so the remaining gap is another real call that broadens trust in the product's claimed support surface.
-- This workflow should answer one concrete question: can PeerLens onboard one more real call safely through the existing path, using official sources, without collapsing into another meta-workflow?
+- This workflow should answer one concrete question: can PeerLens onboard one more real call safely through the intended product path, using official sources, without collapsing into another meta-workflow?
 - The selected target for this workflow is `MSCA Postdoctoral Fellowships 2025` (`MSCA-PF-2025`) because it expands credible coverage more than more NWO/ERC rework would.
 - Real progress means moving `MSCA-PF-2025` from absent to official-source-grounded canonical coverage with validation evidence; fake progress means more machinery, frontend redesign, broad cross-call hardening, batch expansion, or speculative YAML authoring without official source uploads.
 - Hard constraint: no substantive `MSCA-PF-2025` YAML structure or criteria authoring until the user uploads the official narrative/application-structure source and the official evaluation/assessment-criteria source for that exact call.
@@ -39,16 +39,15 @@ Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0061-real-cal
   - `backend/data/calls/canonical/erc/erc_stg_2026_full.yaml`
   - `backend/data/calls/canonical/erc/erc_cog_2026_full.yaml`
 - Parking-lot P1 #11 is stale as-written because WF-0044 already delivered its core bundle: ERC CoG canonical migration plus baseline validation / source-gated refreshes for the named existing canonical calls.
-- Parking-lot P1 #12 is closer to the real remaining gap: add one new non-NWO call for agency diversity, with MSCA preferred before ZonMw.
+- Parking-lot P1 #12 is the closest backlog anchor for this WF, but its older "MSCA first" phrasing is now resolved here as one locked target: `MSCA-PF-2025`.
 - Current product claims would still be weak if this WF only re-tunes ERC/NWO internals again; that is more framework orbit, not real call-data expansion.
 - Source-gating remains hard SSOT: no substantive YAML authoring/re-authoring for a call until that call's official source documents are explicitly uploaded in-workflow.
 
 ### Open Questions Suggested by Repo Snapshot
 
-- Which single new official-source call best increases credible coverage with the least framework churn: MSCA first (recommended) or ZonMw first?
-- What is the smallest validation bar that proves a new call is real product progress rather than another ingest-only artifact?
-- Does the selected call fit current structured-review surfaces without forcing a nested-UI/platform redesign into this WF?
-- What source set must be uploaded for the first target call before any YAML authoring can start?
+- Does `MSCA-PF-2025` fit current structured-review surfaces without forcing a nested-UI/platform redesign into this WF?
+- What is the smallest deterministic proof bar that proves `MSCA-PF-2025` is real product progress rather than another ingest-only artifact?
+- Are the official `MSCA-PF-2025` narrative/application-structure source and evaluation/assessment-criteria source sufficient for grounded authoring, or will a reviewer guide/annex also be needed as a supplement?
 
 ## 1. Problem Statement
 
@@ -79,7 +78,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0061-real-call-data
 
 Contract notes / non-obvious constraints:
 - `WF-0061` is not complete if it stops at planning-only or dry-run-only evidence.
-- Minimum proof bar is: canonical YAML validation pass, local ingest pass, and at least one deterministic verification proving the call can be exercised through the intended product path.
+- Minimum proof bar is: canonical YAML validation pass, local ingest pass, and at least one deterministic verification proving the call can be exercised through the intended product path selected in later planning.
 - Runtime proof should be minimal but real; do not inflate this into full cross-surface parity work.
 - Existing canonical calls are not in-scope for re-authoring in this WF unless `MSCA-PF-2025` depends on a direct compatibility fix.
 
@@ -94,7 +93,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0061-real-call-data
 
 Contract notes / non-obvious constraints:
 - Optimize for operator trust and product-proof value, not UI breadth.
-- Success depends on evidence that the system can support one more real call safely, not on exposing every possible user-facing convenience.
+- Success depends on evidence that the system can support one more real call safely through the intended product path, not on exposing every possible user-facing convenience.
 
 ## 4. Rough Idea (Unstructured Thinking)
 
@@ -146,11 +145,11 @@ Contract notes / non-obvious constraints:
 ## 7. MVP Definition
 
 - Smallest valid slice:
-  - choose one new target call from a new agency/program family,
+  - land one new promised canonical call: `MSCA-PF-2025`,
   - enforce source upload gate,
   - author one canonical YAML plus traceability manifest from official sources for `MSCA-PF-2025`,
   - make its validation / local ingest pass,
-  - capture the minimum smoke-proof that it is a real supported call path.
+  - capture the minimum deterministic operational proof that it is a real supported call through the intended product path selected in later planning.
 
 ## 8. Explicit Non-Goals
 
