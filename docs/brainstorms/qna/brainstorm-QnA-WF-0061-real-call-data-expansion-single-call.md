@@ -39,14 +39,14 @@ The hard constraints are: keep scope tight, use the workflow system properly, do
  > **Selected: A**
 
 **Q3: What should count as fake progress inside this WF?**
-- A) Any work that does not move one official-source MSCA call toward validated canonical coverage.
+- A) Any work that does not move one official-source `MSCA-PF-2025` call toward validated canonical coverage.
 - B) Only obvious meta-doc/process work; limited platform hardening is fine even if no call lands.
 - C) Nothing specific; decide case by case during implementation.
  > Recommendation: A — it creates a crisp anti-drift boundary. B leaves too much room for “useful” churn with no real call landed. C guarantees ambiguity and weak scope control.
  > **Selected: A**
 
 **Q4: How strict is the source-upload gate before YAML work?**
-- A) No substantive MSCA YAML structure/criteria authoring until the official structure source and evaluation source for that exact call are uploaded.
+- A) No substantive `MSCA-PF-2025` YAML structure/criteria authoring until the official structure source and evaluation source for that exact call are uploaded.
 - B) Allow draft YAML structure before upload, but block final criteria mapping.
 - C) Allow substantial authoring from public recollection and backfill sources later.
  > Recommendation: A — it is the only option that preserves source-grounded authorship. B invites speculative structure that later has to be “confirmed.” C breaks the repo's source-gating rule outright.
@@ -67,6 +67,29 @@ The hard constraints are: keep scope tight, use the workflow system properly, do
 - C) Planning artifacts are enough if the source set and structure are clear.
  > Recommendation: A — it is the smallest credible “real expansion” bar. B leaves the repo with another almost-real call. C is documentation-only churn.
  > **Selected: A** by delegated recommendation.
+
+## Part B Clarifications
+
+**Q1: What exact coverage claim should `WF-0061` use consistently?**
+- A) One new promised canonical call, specifically `MSCA-PF-2025`, regardless of how agency taxonomy is labeled.
+- B) One new program family under the EU/Horizon umbrella.
+- C) One new agency-level coverage expansion.
+ > Recommendation: A — it is the least ambiguous and best aligned with the actual deliverable. B is workable but still taxonomy-heavy. C is the weakest unless agency semantics are defended explicitly.
+ > **Selected: A**
+
+**Q2: What minimum proof bar should count as `operationally real`?**
+- A) Canonical YAML validation pass, local ingest pass, and at least one deterministic verification proving the call can be exercised through the intended product path.
+- B) Validation pass and ingest pass only.
+- C) Validation pass, ingest pass, and a manual smoke check only.
+ > Recommendation: A — B is too weak, and C still leaves too much room for subjective proof.
+ > **Selected: A**
+
+**Q3: What exact upload set should be locked before Phase 3 authoring starts?**
+- A) The official `MSCA-PF-2025` application/narrative structure source and the official evaluation/assessment criteria source; reviewer guide or annexes are optional supplements if needed.
+- B) Only one official source document if it appears to contain both structure and criteria.
+- C) Any two official MSCA documents that seem close enough.
+ > Recommendation: A — it preserves the source gate without creating ambiguity.
+ > **Selected: A**
 
 **Q2: How strong should the runtime proof be for this WF?**
 - A) Minimal but real: enough deterministic validation/ingest proof plus one narrow operational smoke proof that the call is actually usable.

@@ -70,15 +70,16 @@ Contract notes / non-obvious constraints:
 
 ## 2. Desired Outcome
 
-- `MSCA-PF-2025` exists as one new official-source canonical call from a new agency/program family not already represented in current canonical coverage.
+- `MSCA-PF-2025` exists as one new promised official-source canonical call not already represented in current canonical coverage.
 - That call has one expected canonical artifact target: `backend/data/calls/canonical/msca/msca_pf_2025_full.yaml`.
-- The call passes the agreed validation baseline, ingests locally without schema ambiguity, and has one narrow operational smoke proof that it works through the existing product path.
+- The call passes the agreed validation baseline, ingests locally without schema ambiguity, and has one deterministic operational proof that it can be exercised through the intended product path.
 - The WF produces enough evidence to show real call expansion happened, not just YAML drafting or planning churn.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0061-real-call-data-expansion-single-call.md` (Section 2)
 
 Contract notes / non-obvious constraints:
 - `WF-0061` is not complete if it stops at planning-only or dry-run-only evidence.
+- Minimum proof bar is: canonical YAML validation pass, local ingest pass, and at least one deterministic verification proving the call can be exercised through the intended product path.
 - Runtime proof should be minimal but real; do not inflate this into full cross-surface parity work.
 - Existing canonical calls are not in-scope for re-authoring in this WF unless `MSCA-PF-2025` depends on a direct compatibility fix.
 
@@ -111,7 +112,7 @@ Contract notes / non-obvious constraints:
 ## 5. Constraints
 
 - Hard scope: one call only.
-- Hard source gate: before substantive YAML authoring, explicitly stop and request `MSCA-PF-2025` official application-form/instructions plus assessment/evaluation source documents.
+- Hard source gate: before substantive YAML authoring, explicitly stop and request the official `MSCA-PF-2025` application/narrative-structure source and the official evaluation/assessment-criteria source. Reviewer guide or annexes are optional supplements if needed.
 - Do not bundle frontend work, cross-call runtime hardening, ops/governance cleanup, or a second call.
 - Keep implementation tasks small enough that later Phase 2 / Phase 3 work can still respect the repo's bounded-step discipline.
 
@@ -121,6 +122,7 @@ Contract notes / non-obvious constraints:
 - Pre-authoring planning is allowed before uploads; YAML authoring is not.
 - If `MSCA-PF-2025` would force more than one major surface change at once, this WF should stop and surface that as a blocker instead of quietly widening scope.
 - Compatibility fixes must stay limited to the smallest change needed to land this one call safely.
+- Any compatibility fix discovered during implementation must carry scoped regression evidence; do not accept an unverified “necessary fix.”
 
 ## 6. Risks / Unknowns
 
@@ -138,7 +140,6 @@ Contract notes / non-obvious constraints:
 
 ## Open Questions / Deferred
 
-- Confirm the official source-document set to upload for `MSCA-PF-2025` before Phase 3 YAML authoring starts.
 - Defer any second new call to a follow-on WF.
 - Defer any product-wide call onboarding framework cleanup unless Phase 3 reveals a narrow blocker that must be fixed for the selected call.
 
