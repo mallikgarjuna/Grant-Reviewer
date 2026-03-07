@@ -272,7 +272,6 @@ reviewer_policy:
   - id: pol_step1_no_resource_judgement
     applies_to_stage: STEP_1
     applies_to_node_ids:
-      - b1
       - b1_part1_scientific_proposal
       - b1_cv_track_record
     rule_type: stage_scope
