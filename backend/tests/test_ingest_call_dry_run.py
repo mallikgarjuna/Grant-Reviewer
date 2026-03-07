@@ -132,3 +132,24 @@ def test_dry_run_ingests_erc_stg_2026_full_with_wf0044_manifest_traceability(
         "`backend/data/calls/source_files/WF-0044/erc_stg_2026_full/"
         in manifest
     )
+
+
+@pytest.mark.no_db
+def test_wf0061_contract_ingest_blocks_msca_pf_2025_without_two_uploaded_sources(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """WF-0061 gate should fail closed without the required MSCA source manifest."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    source_yaml = Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml")
+    yaml_text = source_yaml.read_text(encoding="utf-8").replace(
+        "code: nwo_veni_2025_preproposal",
+        "code: MSCA-PF-2025",
+        1,
+    )
+    msca_yaml = tmp_path / "msca_pf_2025_full.yaml"
+    msca_yaml.write_text(yaml_text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="MSCA-PF-2025 source-upload gate"):
+        ingest_call(msca_yaml, dry_run=True)

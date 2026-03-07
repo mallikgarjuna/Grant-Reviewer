@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import logging
+import re
 import sys
 from collections.abc import Sequence
 from datetime import UTC, datetime
@@ -63,6 +64,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+WF0061_MSCA_PF_2025_CODE = "MSCA-PF-2025"
+WF0061_MSCA_PF_2025_MANIFEST_PATH = Path(
+    "data/calls/sources/msca_pf_2025_full.sources.md"
+)
+
 
 def _format_validation_error(err: ValidationError, schema_version: str) -> str:
     """Render concise validation errors with field paths."""
@@ -100,6 +106,73 @@ def _format_yaml_syntax_error(err: yaml.YAMLError, path: Path, raw_text: str) ->
         message.append(str(problem))
 
     return ": ".join(message)
+
+
+def _manifest_has_required_wf0061_msca_evidence(manifest_text: str) -> bool:
+    """Check whether manifest text proves both required MSCA source classes."""
+    lowered_text = manifest_text.lower()
+    has_two_hashes = (
+        len(
+            list(
+                re.finditer(
+                    r"sha256:\s*`[0-9a-f]{64}`",
+                    lowered_text,
+                )
+            )
+        )
+        >= 2
+    )
+    has_two_usage_blocks = manifest_text.count("Used for:") >= 2
+    has_structure_source = any(
+        marker in lowered_text
+        for marker in (
+            "proposal-node structure",
+            "proposal structure",
+            "application-structure",
+            "narrative structure",
+        )
+    )
+    has_evaluation_source = any(
+        marker in lowered_text
+        for marker in (
+            "evaluation criteria",
+            "assessment criteria",
+            "evaluation elements",
+            "criteria/elements",
+        )
+    )
+    return (
+        has_two_hashes
+        and has_two_usage_blocks
+        and has_structure_source
+        and has_evaluation_source
+    )
+
+
+def _enforce_wf0061_msca_source_upload_gate(
+    call_def: CallDefinitionV1 | CallDefinitionV2,
+) -> None:
+    """Fail closed for MSCA-PF-2025 unless manifest proves required sources."""
+    if call_def.funding_call.code != WF0061_MSCA_PF_2025_CODE:
+        return
+
+    manifest_path = WF0061_MSCA_PF_2025_MANIFEST_PATH
+    if not manifest_path.exists():
+        raise ValueError(
+            "MSCA-PF-2025 source-upload gate: missing required manifest "
+            f"`{manifest_path}`. Upload both required official source classes "
+            "(proposal/application structure + evaluation criteria/elements) "
+            "with SHA256 metadata before dry-run or ingest."
+        )
+
+    manifest_text = manifest_path.read_text(encoding="utf-8")
+    if not _manifest_has_required_wf0061_msca_evidence(manifest_text):
+        raise ValueError(
+            "MSCA-PF-2025 source-upload gate: manifest is incomplete. "
+            "Require two source entries with `Used for:` sections, SHA256 hashes, "
+            "and explicit coverage of proposal/application structure and "
+            "evaluation criteria/elements before dry-run or ingest."
+        )
 
 
 # ============================================================================
@@ -997,6 +1070,7 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
     """
     # Load and validate
     schema_version, call_def, raw_yaml = load_yaml(yaml_path)
+    _enforce_wf0061_msca_source_upload_gate(call_def)
 
     if dry_run:
         logger.info("=== DRY RUN MODE - No database changes will be made ===")

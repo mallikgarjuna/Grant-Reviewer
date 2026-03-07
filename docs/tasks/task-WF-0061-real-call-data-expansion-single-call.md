@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Fail-closed MSCA upload gate on the ingest seam
+### [x] Task 1 — Fail-closed MSCA upload gate on the ingest seam
 
 Goal:
 Freeze the Phase 3 authoring gate in executable form so `MSCA-PF-2025` cannot be treated as valid ingest progress without a complete per-call manifest covering both required official source classes, while locking the MVP proof seam to backend `/api/structured-review` only.

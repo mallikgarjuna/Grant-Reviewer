@@ -66,6 +66,14 @@ When source files are copied locally for source-gated authoring:
 - After WF completion, move retained copies to secure long-term storage or purge local copies that are not required in-repo.
 - Keep manifests committed even when copied binaries are not retained in git.
 
+## WF-0061 MSCA-PF-2025 Upload Gate
+
+- `MSCA-PF-2025` dry-run/ingest is fail-closed until `backend/data/calls/sources/msca_pf_2025_full.sources.md` exists and documents both required official source classes:
+  - proposal/application structure source
+  - evaluation criteria/elements source
+- The manifest must include durable hash evidence (`SHA256`) and `Used for` traceability for those entries.
+- WF-0061 MVP runtime proof scope is backend `POST /api/structured-review` only.
+
 ## Test Files
 
 These files are for testing validation logic and are not real funding calls:
