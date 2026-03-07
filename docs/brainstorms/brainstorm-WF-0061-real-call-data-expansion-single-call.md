@@ -2,8 +2,8 @@
 # WF-0061 — Real Call Data Expansion: Single New Canonical Call
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-07
 
 Type: feature
