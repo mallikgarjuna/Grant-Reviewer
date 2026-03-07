@@ -3,7 +3,7 @@
 
 Artifact: prd
 Version: v0.1
-Status: Ready for Tasks
+Status: Completed
 Last Updated: 2026-03-07
 
 Type: feature
@@ -20,6 +20,7 @@ Type: feature
 - Refresh [erc_cog_2026_full.sources.md](/home/mgurram/Projects/Github/AIEng_MG/Grant-Reviewer/backend/data/calls/sources/erc_cog_2026_full.sources.md) to match the accepted source set for this run.
 - Record the generalized CoG/StG structure rule in memory.
 - Align CoG DB/API proof seams in [test_api.py](/home/mgurram/Projects/Github/AIEng_MG/Grant-Reviewer/backend/tests/test_api.py) to the corrected leaf IDs.
+- Close ship-gate compatibility gaps for legacy CoG persisted review coverage and corrected CoG read surfaces.
 
 ## 2. Out of Scope
 
@@ -34,6 +35,8 @@ Type: feature
 - FR3: Reviewable/input-bearing leaves must be `proposal_summary`, `b1_part1_scientific_proposal`, `b1_cv_track_record`, `b2_part2_scientific_proposal`, and `resources_time_commitment`.
 - FR4: CoG-specific nuance must remain in guidance/runtime notes for PI independence and 40% PI project time commitment.
 - FR5: Existing CoG DB/API proof seams must pass against the corrected leaf-node contract.
+- FR6: Pre-correction persisted CoG review payloads must resolve to corrected reviewed-leaf coverage in review detail while preserving legacy IDs as compatibility metadata.
+- FR7: CoG tree and metadata read APIs must expose the corrected hierarchy and leaf review stages.
 
 ## 4. Testing Decisions
 
@@ -43,3 +46,5 @@ Type: feature
   - DB-backed ingest
   - structured-review API happy path
   - structured reviewer-policy API proof seam
+  - persisted legacy CoG review-detail compatibility proof
+  - CoG tree/metadata read-surface proofs
