@@ -1,0 +1,281 @@
+# backend/data/calls/canonical/msca/msca_pf_2025_full.yaml
+# MSCA-PF-2025 (full proposal) — source-grounded call definition
+#
+# Traceability manifest:
+# - backend/data/calls/sources/msca_pf_2025_full.sources.md
+#
+# Primary source grounding:
+# - af_he-msca-pf_en.pdf (Part A/Part B structure, headings, page-limit constraints)
+# - ef_he-msca_en.pdf + wp-2-msca-actions_horizon-2023-2024_en.pdf
+#   (evaluation criteria/elements and weighting)
+
+funding_agency:
+  id: eu
+  name: European Commission
+  country: EU
+
+funding_call:
+  id: horizon_msca_pf_2025_full
+  code: MSCA-PF-2025
+  title: HORIZON-MSCA-2025-PF-01 — MSCA Postdoctoral Fellowships 2025
+  year: 2025
+  stage: full_proposal
+  language: en
+
+evaluation_criteria:
+  - id: crit_excellence
+    name: Excellence
+    stage: full_proposal
+    weight_percent: 50
+    evaluation_elements:
+      - id: elem_excellence_objectives_state_of_art
+        name: Quality and pertinence of objectives beyond state of the art
+        description: >
+          Quality and pertinence of the project's research and innovation objectives,
+          including ambition and progression beyond the state of the art.
+        source_hint: "MSCA WP §2.4 Award criteria; Evaluation form HE MSCA"
+      - id: elem_excellence_methodology_open_science
+        name: Soundness of methodology and open science practices
+        description: >
+          Soundness of the proposed methodology, including interdisciplinarity,
+          relevant gender/diversity considerations, and quality of open science practices.
+        source_hint: "MSCA WP §2.4 Award criteria; Evaluation form HE MSCA"
+      - id: elem_excellence_supervision_training_knowledge_transfer
+        name: Quality of supervision, training, and two-way knowledge transfer
+        description: >
+          Quality of supervision and training and the two-way transfer of knowledge
+          between researcher and host.
+        source_hint: "MSCA WP §2.4 Award criteria; Evaluation form HE MSCA"
+      - id: elem_excellence_researcher_profile_fit
+        name: Quality and appropriateness of researcher profile
+        description: >
+          Quality and appropriateness of the researcher's professional experience,
+          competences, and skills for the proposal.
+        source_hint: "MSCA WP §2.4 Award criteria; Evaluation form HE MSCA"
+
+  - id: crit_impact
+    name: Impact
+    stage: full_proposal
+    weight_percent: 30
+    evaluation_elements:
+      - id: elem_impact_career_perspectives_skills
+        name: Credibility of measures for career perspectives and skills development
+        description: >
+          Credibility of measures to enhance career perspectives and employability
+          of the researcher and contribution to skills development.
+        source_hint: "MSCA WP §2.4 Award criteria; Evaluation form HE MSCA"
+      - id: elem_impact_dissemination_exploitation_communication
+        name: Suitability and quality of dissemination/exploitation/communication measures
+        description: >
+          Suitability and quality of measures to maximise expected outcomes and impacts,
+          including dissemination, exploitation, and communication activities.
+        source_hint: "MSCA WP §2.4 Award criteria; Evaluation form HE MSCA"
+      - id: elem_impact_scientific_societal_economic_contribution
+        name: Magnitude and importance of expected contribution
+        description: >
+          Magnitude and importance of the project's contribution to expected
+          scientific, societal, and economic impacts.
+        source_hint: "MSCA WP §2.4 Award criteria; Evaluation form HE MSCA"
+
+  - id: crit_quality_efficiency_implementation
+    name: Quality and efficiency of implementation
+    stage: full_proposal
+    weight_percent: 20
+    evaluation_elements:
+      - id: elem_implementation_work_plan_risks_effort
+        name: Quality and effectiveness of work plan, risks, and effort allocation
+        description: >
+          Quality and effectiveness of the work plan, risk assessment, and
+          appropriateness of effort assigned to work packages.
+        source_hint: "MSCA WP §2.4 Award criteria; Evaluation form HE MSCA"
+      - id: elem_implementation_host_capacity_arrangements
+        name: Quality and capacity of host and participating organisations
+        description: >
+          Quality and capacity of host institutions and participating organisations,
+          including hosting arrangements.
+        source_hint: "MSCA WP §2.4 Award criteria; Evaluation form HE MSCA"
+
+proposal_nodes:
+  - id: part_a
+    label: Part A (Application form)
+    node_type: section
+    source_section: "Part A"
+    guidance_text: >
+      Structured administrative and contextual form information submitted in Part A.
+
+  - id: general_information
+    parent_logical_id: part_a
+    label: 1. General information
+    node_type: section
+    source_section: "Part A.1"
+    guidance_text: >
+      Topic/action metadata, descriptors, and summary-level proposal framing fields.
+
+  - id: abstract
+    parent_logical_id: general_information
+    label: Abstract
+    node_type: narrative
+    source_section: "Part A.1"
+    guidance_text: >
+      Proposal abstract text from the Application Form Part A.
+      Template indicates a 2000-character abstract field.
+    compliance_rules:
+      - id: comp_abstract_character_limit_reference
+        severity: WARNING
+        rule_type: formatting_reference
+        description: "Template reference indicates abstract field target of 2000 characters."
+
+  - id: part_b
+    label: Part B (Project proposal - Technical description)
+    node_type: section
+    source_section: "Part B"
+    guidance_text: >
+      Scientific/technical narrative proposal structured as Part B1 and Part B2.
+
+  - id: part_b1
+    parent_logical_id: part_b
+    label: Part B1 (Document 1)
+    node_type: section
+    source_section: "Part B1"
+    content_constraints:
+      max_pages: 10
+      note: >
+        Sections 1, 2, and 3 together are limited to 10 pages in the template.
+    guidance_text: >
+      Part B1 contains Sections 1-3 and is subject to a 10-page overall limit.
+    compliance_rules:
+      - id: comp_part_b1_page_limit
+        severity: ERROR
+        rule_type: hard_limit
+        description: "Part B1 (Sections 1-3 together) must not exceed 10 pages."
+
+  - id: excellence
+    parent_logical_id: part_b1
+    label: 1. Excellence
+    node_type: narrative
+    source_section: "Part B1.1"
+    guidance_text: >
+      Address objectives, methodology/open science, supervision/training/knowledge transfer,
+      and researcher profile fit.
+    node_expectations:
+      - evaluation_element_id: elem_excellence_objectives_state_of_art
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_excellence_methodology_open_science
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_excellence_supervision_training_knowledge_transfer
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_excellence_researcher_profile_fit
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: impact
+    parent_logical_id: part_b1
+    label: 2. Impact
+    node_type: narrative
+    source_section: "Part B1.2"
+    guidance_text: >
+      Address career-development measures, dissemination/exploitation/communication measures,
+      and expected scientific/societal/economic contribution.
+    node_expectations:
+      - evaluation_element_id: elem_impact_career_perspectives_skills
+        expectation_strength: MANDATORY
+        evaluation_intent: STRATEGIC_FIT
+      - evaluation_element_id: elem_impact_dissemination_exploitation_communication
+        expectation_strength: MANDATORY
+        evaluation_intent: STRATEGIC_FIT
+      - evaluation_element_id: elem_impact_scientific_societal_economic_contribution
+        expectation_strength: MANDATORY
+        evaluation_intent: STRATEGIC_FIT
+
+  - id: quality_efficiency_implementation
+    parent_logical_id: part_b1
+    label: 3. Quality and Efficiency of the Implementation
+    node_type: narrative
+    source_section: "Part B1.3"
+    guidance_text: >
+      Address work plan quality/risk/effort and host/participating organisation capacity.
+    node_expectations:
+      - evaluation_element_id: elem_implementation_work_plan_risks_effort
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+      - evaluation_element_id: elem_implementation_host_capacity_arrangements
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: part_b2
+    parent_logical_id: part_b
+    label: Part B2 (Document 2)
+    node_type: section
+    source_section: "Part B2"
+    guidance_text: >
+      Part B2 has no overall page limit and contains sections 4-8 (and section 9 for Global Fellowship only).
+
+  - id: cv_researcher
+    parent_logical_id: part_b2
+    label: 4. CV of the researcher
+    node_type: narrative
+    source_section: "Part B2.4"
+    content_constraints:
+      max_pages: 5
+      note: "Template indicates an indicative CV length of 5 pages."
+    compliance_rules:
+      - id: comp_cv_indicative_length
+        severity: WARNING
+        rule_type: formatting_reference
+        description: "Template indicates an indicative CV length of 5 pages."
+
+  - id: capacity_participating_organisations
+    parent_logical_id: part_b2
+    label: 5. Capacity of the Participating Organisation(s)
+    node_type: narrative
+    source_section: "Part B2.5"
+    guidance_text: >
+      Include template table 5.1 (organisation overview) and table 5.2 (capacity details).
+
+  - id: additional_ethics_information
+    parent_logical_id: part_b2
+    label: 6. Additional ethics information
+    node_type: narrative
+    source_section: "Part B2.6"
+    guidance_text: >
+      Additional ethics information only when relevant details are not already covered
+      in the ethics self-assessment.
+
+  - id: additional_security_screening_information
+    parent_logical_id: part_b2
+    label: 7. Additional information on security screening
+    node_type: narrative
+    source_section: "Part B2.7"
+    guidance_text: >
+      Additional information on security screening when applicable.
+
+  - id: environmental_considerations_msca_green_charter
+    parent_logical_id: part_b2
+    label: 8. Environmental considerations in light of the MSCA Green Charter
+    node_type: narrative
+    source_section: "Part B2.8"
+    guidance_text: >
+      Environmental considerations aligned with the MSCA Green Charter guidance.
+
+  - id: gf_letter_of_commitment_outgoing_host
+    parent_logical_id: part_b2
+    label: 9. Letter of commitment for Global Fellowship outgoing host
+    node_type: narrative
+    source_section: "Part B2.9"
+    guidance_text: >
+      Required for Global Fellowships only: letter of commitment from the associated
+      partner hosting the outgoing phase.
+    compliance_rules:
+      - id: comp_gf_letter_required_only_for_global_fellowship
+        severity: WARNING
+        rule_type: conditional_requirement
+        description: "This section applies only to Global Fellowships."
+
+runtime_notes:
+  - id: note_msca_pf_single_stage
+    description: "MSCA-PF-2025 is modeled as single-stage full proposal evaluation."
+  - id: note_msca_pf_threshold_weighting_reference
+    description: "Reference weighting is 50/30/20 and threshold guidance is 70% from official documents."

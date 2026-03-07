@@ -150,6 +150,30 @@ def test_wf0061_contract_ingest_blocks_msca_pf_2025_without_two_uploaded_sources
     )
     msca_yaml = tmp_path / "msca_pf_2025_full.yaml"
     msca_yaml.write_text(yaml_text, encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
 
     with pytest.raises(ValueError, match="MSCA-PF-2025 source-upload gate"):
         ingest_call(msca_yaml, dry_run=True)
+
+
+@pytest.mark.no_db
+def test_wf0061_contract_msca_pf_2025_dry_run_passes_with_uploaded_sources(
+    monkeypatch,
+) -> None:
+    """WF-0061 should dry-run the real MSCA-PF-2025 canonical call after upload gate."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    result = ingest_call(
+        Path("data/calls/canonical/msca/msca_pf_2025_full.yaml"),
+        dry_run=True,
+    )
+    assert result["dry_run"] is True
+    assert result["schema_version"] == "v2"
+    assert result["source_path"] == "data/calls/canonical/msca/msca_pf_2025_full.yaml"
+
+    manifest = Path("data/calls/sources/msca_pf_2025_full.sources.md").read_text(
+        encoding="utf-8"
+    )
+    assert "MSCA" in manifest
+    assert "Used for:" in manifest
+    assert "SHA256:" in manifest

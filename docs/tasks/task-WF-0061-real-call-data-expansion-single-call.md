@@ -43,7 +43,7 @@ Verification Steps:
 - `cd backend && rg -n "MSCA-PF-2025|/api/structured-review|sources.md" scripts/ingest_call.py data/calls/README.md`
 Risks (if any): A weak manifest check could create fake “source-gated” progress while still allowing speculative MSCA authoring to pass as valid.
 
-### [ ] Task 2 — Source-grounded MSCA manifest and canonical dry-run
+### [x] Task 2 — Source-grounded MSCA manifest and canonical dry-run
 
 Goal:
 After the official `MSCA-PF-2025` source documents are uploaded in Phase 3, author the per-call manifest and canonical YAML from those exact sources and prove deterministic dry-run validation on the real artifact.
