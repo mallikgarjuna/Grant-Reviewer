@@ -1,9 +1,9 @@
-<!-- docs/tasks/task-WF-0061-real-call-data-expansion-single-call.md -->
+<!-- docs/tasks/completed/task-WF-0061-real-call-data-expansion-single-call.md -->
 # WF-0061 — Real Call Data Expansion: Single New Canonical Call
 
 Artifact: task
 Version: v0.2
-Status: Ready for Implementation
+Status: Completed
 Last Updated: 2026-03-07
 
 Type: feature
@@ -190,7 +190,7 @@ Enables: none
 Parallelizable: no
 Files to modify:
 Must touch files:
-- `docs/walkthroughs/walkthrough-WF-0061-real-call-data-expansion-single-call.md`
+- `docs/walkthroughs/completed/walkthrough-WF-0061-real-call-data-expansion-single-call.md`
 May touch files:
 - `docs/index.md`
 - `docs/logs/decisions.md`
@@ -203,8 +203,8 @@ Acceptance Criteria:
 - Success language is limited to landing one new promised canonical call, `MSCA-PF-2025`.
 TDD Plan: N/A
 Verification Steps:
-- `rg -n "MSCA-PF-2025|/api/structured-review|one new promised canonical call" docs/walkthroughs/walkthrough-WF-0061-real-call-data-expansion-single-call.md`
-- `git diff -- docs/walkthroughs/walkthrough-WF-0061-real-call-data-expansion-single-call.md`
+- `rg -n "MSCA-PF-2025|/api/structured-review|one new promised canonical call" docs/walkthroughs/completed/walkthrough-WF-0061-real-call-data-expansion-single-call.md`
+- `git diff -- docs/walkthroughs/completed/walkthrough-WF-0061-real-call-data-expansion-single-call.md`
 Risks (if any): Evidence wording can drift into vague “MSCA support” claims unless the walkthrough stays pinned to the one-call proof claim.
 
 ## Changelog

@@ -1,4 +1,4 @@
-<!-- docs/walkthroughs/walkthrough-WF-0061-real-call-data-expansion-single-call.md -->
+<!-- docs/walkthroughs/completed/walkthrough-WF-0061-real-call-data-expansion-single-call.md -->
 # WF-0061 — Real Call Data Expansion: Single New Canonical Call
 
 Artifact: walkthrough
