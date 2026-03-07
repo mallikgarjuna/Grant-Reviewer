@@ -65,8 +65,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 WF0061_MSCA_PF_2025_CODE = "MSCA-PF-2025"
+_BACKEND_ROOT = Path(__file__).resolve().parent.parent
 WF0061_MSCA_PF_2025_MANIFEST_PATH = Path(
-    "data/calls/sources/msca_pf_2025_full.sources.md"
+    _BACKEND_ROOT / "data/calls/sources/msca_pf_2025_full.sources.md"
 )
 
 
@@ -122,7 +123,7 @@ def _manifest_has_required_wf0061_msca_evidence(manifest_text: str) -> bool:
         )
         >= 2
     )
-    has_two_usage_blocks = manifest_text.count("Used for:") >= 2
+    has_two_usage_blocks = lowered_text.count("used for:") >= 2
     has_structure_source = any(
         marker in lowered_text
         for marker in (

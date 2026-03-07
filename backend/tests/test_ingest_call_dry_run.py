@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import scripts.ingest_call as ingest_call_module
 from scripts.ingest_call import ingest_call
 
 
@@ -150,7 +151,11 @@ def test_wf0061_contract_ingest_blocks_msca_pf_2025_without_two_uploaded_sources
     )
     msca_yaml = tmp_path / "msca_pf_2025_full.yaml"
     msca_yaml.write_text(yaml_text, encoding="utf-8")
-    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        ingest_call_module,
+        "WF0061_MSCA_PF_2025_MANIFEST_PATH",
+        tmp_path / "missing.sources.md",
+    )
 
     with pytest.raises(ValueError, match="MSCA-PF-2025 source-upload gate"):
         ingest_call(msca_yaml, dry_run=True)
@@ -195,7 +200,37 @@ def test_wf0061_contract_ingest_gate_blocks_runtime_credit_without_uploaded_msca
     )
     msca_yaml = tmp_path / "msca_pf_2025_full.yaml"
     msca_yaml.write_text(yaml_text, encoding="utf-8")
-    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        ingest_call_module,
+        "WF0061_MSCA_PF_2025_MANIFEST_PATH",
+        tmp_path / "missing.sources.md",
+    )
 
     with pytest.raises(ValueError, match="source-upload gate"):
         ingest_call(msca_yaml, dry_run=True)
+
+
+@pytest.mark.no_db
+def test_wf0061_contract_non_dry_run_ingest_stops_before_db_when_manifest_missing(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """WF-0061 gate should block non-dry-run ingest before any DB wiring is required."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    source_yaml = Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml")
+    yaml_text = source_yaml.read_text(encoding="utf-8").replace(
+        "code: nwo_veni_2025_preproposal",
+        "code: MSCA-PF-2025",
+        1,
+    )
+    msca_yaml = tmp_path / "msca_pf_2025_full.yaml"
+    msca_yaml.write_text(yaml_text, encoding="utf-8")
+    monkeypatch.setattr(
+        ingest_call_module,
+        "WF0061_MSCA_PF_2025_MANIFEST_PATH",
+        tmp_path / "missing.sources.md",
+    )
+
+    with pytest.raises(ValueError, match="source-upload gate"):
+        ingest_call(msca_yaml, dry_run=False)
