@@ -1,4 +1,4 @@
-<!-- docs/walkthroughs/walkthrough-WF-0062-erc-cog-2026-contract-model-correction.md -->
+<!-- docs/walkthroughs/completed/walkthrough-WF-0062-erc-cog-2026-contract-model-correction.md -->
 # WF-0062 Walkthrough — ERC CoG 2026 Contract Model Correction
 
 Artifact: walkthrough

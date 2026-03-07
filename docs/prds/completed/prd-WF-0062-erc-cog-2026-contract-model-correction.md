@@ -1,4 +1,4 @@
-<!-- docs/prds/prd-WF-0062-erc-cog-2026-contract-model-correction.md -->
+<!-- docs/prds/completed/prd-WF-0062-erc-cog-2026-contract-model-correction.md -->
 # WF-0062 — ERC CoG 2026 Contract Model Correction
 
 Artifact: prd
