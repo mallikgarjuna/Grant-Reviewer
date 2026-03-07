@@ -750,3 +750,38 @@ def test_wf0061_contract_structured_service_uses_real_msca_pf_2025_snapshot(
         )
     finally:
         service.repository.session.close()
+
+
+def test_wf0061_contract_msca_backend_compatibility_stays_single_seam(
+    monkeypatch,
+) -> None:
+    """WF-0061 no-fix regression: MSCA works without widening backend compatibility seams."""
+    msca_service, msca_call_id = _build_msca_pf_service(monkeypatch)
+    try:
+        review, cards = msca_service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=msca_call_id,
+            nodes=[("excellence", "MSCA compatibility seam regression text.")],
+            external_user_id="wf0061-msca-single-seam",
+            idempotency_key="wf0061-msca-single-seam",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) >= 1
+    finally:
+        msca_service.repository.session.close()
+
+    erc_service, erc_call_id = _build_erc_stg_service(monkeypatch)
+    try:
+        review, cards = erc_service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=erc_call_id,
+            nodes=[("b1", "container text should be rejected")],
+            external_user_id="wf0061-erc-guardrail",
+            idempotency_key="wf0061-erc-guardrail",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert review.overall_summary is not None
+        assert "MALFORMED_REVIEW_REQUEST" in review.overall_summary
+    finally:
+        erc_service.repository.session.close()

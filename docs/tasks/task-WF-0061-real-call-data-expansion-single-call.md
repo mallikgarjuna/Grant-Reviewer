@@ -111,7 +111,7 @@ Verification Steps:
 - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/msca/msca_pf_2025_full.yaml`
 Risks (if any): The new call may validate yet still expose backend assumptions about currently ingested call families; that is acceptable only if the fix stays on one narrow backend seam.
 
-### [ ] Task 4 — Narrow backend compatibility seam or explicit no-fix proof
+### [x] Task 4 — Narrow backend compatibility seam or explicit no-fix proof
 
 Goal:
 If Task 3 exposes an MSCA-specific backend incompatibility, constrain the fix to one narrow seam and codify the resulting invariant; if no fix is needed, codify that no-fix outcome with a deterministic regression.
