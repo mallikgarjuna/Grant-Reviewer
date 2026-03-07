@@ -190,6 +190,7 @@ Promotion dependency note:
 | 37 | WF-0047 | git-hooks-rule-enforcement | promoted | P2 #31 | 2026-03-04 |
 | 38 | WF-0048 | agency-call-variability-policy | promoted | P1 #15 | 2026-03-04 |
 | 39 | WF-0057 | ops-evidence-debt-closure | promoted | P1 #10 | 2026-03-06 |
+| 40 | WF-0062 | erc-cog-2026-contract-model-correction | started-directly | - | 2026-03-07 |
 
 ---
 

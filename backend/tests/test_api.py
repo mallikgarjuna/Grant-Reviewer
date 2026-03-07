@@ -1594,6 +1594,58 @@ def test_wf0060_legacy_erc_container_nodes_do_not_inflate_submitted_leaf_coverag
         session.close()
 
 
+def test_wf0062_review_detail_maps_legacy_cog_leaf_ids_to_corrected_leaf_coverage(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_erc_cog_seed(monkeypatch)
+    assert call_code == "erc_cog_2026_full"
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+        repository = ReviewRepository(session)
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0062-cog-legacy-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(call_id),
+                "call_name": "ERC Consolidator Grant 2026",
+                "review_stage": "STEP_2",
+                "nodes": {
+                    "b1_part1_state_of_knowledge": "legacy part I evidence",
+                    "b1_part1_objectives": "legacy part I evidence",
+                    "b2_methodology": "legacy part II evidence",
+                    "b2_risks": "legacy part II evidence",
+                },
+                "engine_path": "pipeline_v1",
+            },
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+
+        detail = get_review_detail(client=client, review_id=str(review.id))
+        assert detail.status_code == 200
+        payload = detail.json()
+        assert payload["submitted_leaf_ids"] == [
+            "b1_part1_scientific_proposal",
+            "b2_part2_scientific_proposal",
+        ]
+        assert payload["legacy_ambiguous_container_ids"] == []
+        assert payload["moved_legacy_node_references"] == [
+            "b1_part1_objectives",
+            "b1_part1_state_of_knowledge",
+            "b2_methodology",
+            "b2_risks",
+        ]
+        note_types = {note["note_type"] for note in payload["compatibility_notes"]}
+        assert "moved_legacy_node_reference" in note_types
+    finally:
+        session.close()
+
+
 def test_structured_review_erc_cog_2026_full_happy_path(monkeypatch) -> None:
     client, call_id, call_code = create_client_with_erc_cog_seed(monkeypatch)
     assert call_code == "erc_cog_2026_full"
@@ -1604,7 +1656,7 @@ def test_structured_review_erc_cog_2026_full_happy_path(monkeypatch) -> None:
             "call_id": str(call_id),
             "nodes": [
                 {
-                    "node_logical_id": "b1_part1_state_of_knowledge",
+                    "node_logical_id": "b1_part1_scientific_proposal",
                     "text": "The proposal explains current state of knowledge and frontier gap.",
                 },
             ],
@@ -1616,6 +1668,31 @@ def test_structured_review_erc_cog_2026_full_happy_path(monkeypatch) -> None:
     assert detail.status_code == 200
     cards = detail.json()["cards"]
     assert cards
+
+
+def test_structured_review_erc_cog_2026_full_rejects_legacy_leaf_ids(monkeypatch) -> None:
+    client, call_id, call_code = create_client_with_erc_cog_seed(monkeypatch)
+    assert call_code == "erc_cog_2026_full"
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "nodes": [
+                {
+                    "node_logical_id": "b1_part1_state_of_knowledge",
+                    "text": "Legacy node text",
+                },
+            ],
+        },
+    )
+
+    assert response.status_code == 422
+    body = response.json()
+    assert body["error"]["code"] == "UNKNOWN_NODE_ID"
+    assert body["error"]["details"]["node_logical_ids"] == [
+        "b1_part1_state_of_knowledge"
+    ]
 
 
 def test_structured_review_e2e_partial_submission_marks_alignment_not_assessable(
@@ -1927,7 +2004,7 @@ def test_structured_review_wf0044_policy_structured_api_modes(
             {
                 "id": f"wf0044_rule_{case['case_id']}",
                 "applies_to_stage": "STEP_1",
-                "applies_to_node_ids": ["b1_part1_state_of_knowledge"],
+                "applies_to_node_ids": ["b1_part1_scientific_proposal"],
                 "rule_type": "criterion_scope",
                 "instruction": "WF-0044 structured policy contract test rule.",
                 "severity": "WARNING",
@@ -1948,7 +2025,7 @@ def test_structured_review_wf0044_policy_structured_api_modes(
             findings=[],
             review_cards=[
                 EngineReviewCard(
-                    node_logical_id="b1_part1_state_of_knowledge",
+                    node_logical_id="b1_part1_scientific_proposal",
                     expectation_id=str(expectation["expectation_id"]),
                     rating="NOTE",
                     feedback=case["feedback_text"],
@@ -1969,7 +2046,7 @@ def test_structured_review_wf0044_policy_structured_api_modes(
             "review_stage": "STEP_1",
             "nodes": [
                 {
-                    "node_logical_id": "b1_part1_state_of_knowledge",
+                    "node_logical_id": "b1_part1_scientific_proposal",
                     "text": "Structured submission text for policy contract coverage.",
                 }
             ],

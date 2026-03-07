@@ -444,14 +444,6 @@ class ReviewRepository:
         )
         erc_container_ids = {"part_a", "budget", "part_b", "b1", "b2"}
 
-        if not submitted_leaf_ids:
-            submitted_leaf_ids = sorted(
-                [
-                    node_id
-                    for node_id in submitted_node_ids
-                    if node_id not in erc_container_ids
-                ]
-            )
         if not legacy_ambiguous_container_ids:
             legacy_ambiguous_container_ids = sorted(
                 [node_id for node_id in submitted_node_ids if node_id in {"b1", "b2"}]
@@ -472,6 +464,39 @@ class ReviewRepository:
             and call_code == "erc_stg_2026_full"
         ):
             moved_legacy_node_references = ["resources_time_commitment"]
+
+        legacy_leaf_aliases_by_call: dict[str, dict[str, str]] = {
+            "erc_cog_2026_full": {
+                "b1_part1_state_of_knowledge": "b1_part1_scientific_proposal",
+                "b1_part1_objectives": "b1_part1_scientific_proposal",
+                "b1_part1_strategy": "b1_part1_scientific_proposal",
+                "b2_methodology": "b2_part2_scientific_proposal",
+                "b2_work_plan": "b2_part2_scientific_proposal",
+                "b2_risks": "b2_part2_scientific_proposal",
+            },
+        }
+        legacy_leaf_aliases = legacy_leaf_aliases_by_call.get(call_code or "", {})
+
+        if not submitted_leaf_ids:
+            submitted_leaf_ids = sorted(
+                {
+                    legacy_leaf_aliases.get(node_id, node_id)
+                    for node_id in submitted_node_ids
+                    if node_id not in erc_container_ids
+                }
+            )
+
+        legacy_leaf_references = sorted(
+            {
+                node_id
+                for node_id in submitted_node_ids
+                if node_id in legacy_leaf_aliases
+            }
+        )
+        if legacy_leaf_references:
+            moved_legacy_node_references = sorted(
+                {*(moved_legacy_node_references), *legacy_leaf_references}
+            )
 
         return (
             submitted_leaf_ids,
