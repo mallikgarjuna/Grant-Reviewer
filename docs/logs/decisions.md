@@ -19,6 +19,14 @@
 - **Tradeoff**: May require one extra official source upload even when a single document appears close, but the traceability bar stays defensible.
 - **Status**: Approved.
 
+### AD 61.3: Runtime proof must remain ordered-gate and single-surface biased
+- **WF ID**: WF-0061
+- **Context**: PRD v0.2 locked one proof seam, but it still left room for Phase 2 to treat a wider multi-surface proof path as normal MVP scope or to count proof evidence before earlier gates had passed.
+- **Decision**: Require ordered proof gating (`upload -> validate -> ingest -> runtime proof`) for the same canonical artifact, require a minimal proof-evidence bundle, and treat proof seams spanning more than one major product surface as blocker candidates unless proven to be the minimum direct fix for `MSCA-PF-2025`.
+- **Why**: Prevents fake progress through out-of-order proof claims or quiet broadening into frontend/backend expansion while preserving a defensible one-call proof bar.
+- **Tradeoff**: Narrows acceptable implementation routes further and may force earlier re-scope if the current product path is broader than expected.
+- **Status**: Approved.
+
 ## Date: 2026-03-06 (WF-0060: ERC StG 2026 contract/UI model correction)
 
 ### AD 60.1: ERC StG 2026 canonical contract is leaf-reviewable and container-structural

@@ -2,7 +2,7 @@
 # WF-0061 — Real Call Data Expansion: Single New Canonical Call
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-07
 
@@ -78,10 +78,13 @@ Type: feature
 - FR6 (US1, US3): The canonical YAML must pass deterministic validation before any runtime proof is considered valid.
 - FR7 (US1, US3): The call must pass local ingest using the repo's existing ingest path without schema ambiguity or silent fallback behavior.
 - FR8 (US3): The WF must define and execute at least one deterministic runtime proof that exercises `MSCA-PF-2025` through one intended product path using the real canonical call definition.
+- FR8a (US3, US4): MVP runtime-proof evidence must include the exact proof seam exercised, the real `MSCA-PF-2025` canonical artifact used, the deterministic pass/fail result, and any narrow compatibility seam relied on.
+- FR8b (US2, US3): Runtime proof is invalid unless the upload gate, validation gate, and ingest gate have already passed for the same canonical artifact.
 - FR9 (US3): The runtime proof must be minimal but real; planning-only, dry-run-only, or mock-only evidence is insufficient for WF completion.
 - FR9a (US3, US4): Phase 2 planning must lock exactly one existing product-path seam as the MVP runtime proof surface before implementation begins; if no single existing seam is viable without broad redesign, the WF must stop and surface that blocker.
 - FR10 (US4): Any compatibility fix discovered during `MSCA-PF-2025` onboarding must stay limited to the smallest direct change required for this call to land safely.
 - FR11 (US4): If the required compatibility work exceeds a narrow seam and becomes broader redesign, the WF must stop and surface that as a blocker instead of expanding scope implicitly.
+- FR11a (US3, US4): A proposed MVP proof seam that requires coordinated expansion across more than one major product surface is presumed out of scope and must be treated as a blocker candidate unless proven to be the minimum direct fix for `MSCA-PF-2025`.
 - FR12 (US4): Any compatibility fix accepted into scope must include regression evidence proving the touched seam remains stable for existing behavior.
 - FR13 (US1, US2, US3): Success claims for this WF must be phrased as one new promised canonical call landed, not as generic agency/family coverage growth.
 
@@ -113,6 +116,8 @@ Type: feature
 ### 5.5 Runtime proof contract
 
 - Runtime proof must use the real `MSCA-PF-2025` canonical call definition rather than a synthetic fixture that bypasses the new call path. (US3, FR8, FR9)
+- Runtime proof evidence must record the exact seam exercised, the canonical artifact under test, the deterministic result, and any narrow compatibility seam used to make that proof succeed. (US3, US4, FR8a)
+- Runtime proof cannot count toward WF completion unless the same canonical artifact has already satisfied the upload gate, validation gate, and ingest gate. (US2, US3, FR8b)
 - The proof surface may be narrow, but it must be deterministic, repeatable, and tied to one explicit product-path seam selected in implementation planning. (US3, FR8)
 - If the selected proof surface requires a compatibility fix, the proof must demonstrate the fix at that seam and the corresponding regression evidence. (US3, US4, FR10, FR12)
 
@@ -122,10 +127,10 @@ Type: feature
   - Canonical call definition delivered by this WF once the source gate is satisfied. (FR2, FR5, FR6)
 - `backend/data/calls/sources/msca_pf_2025_full.sources.md`
   - Per-call traceability manifest for official-source provenance and hash evidence. (FR4)
-- Validation and ingest tooling under `backend/scripts/` and `backend/app/`
-  - Deterministic contract-validation and local-ingest seams that must accept the new call without ambiguity. (FR6, FR7)
+- One selected existing validation/ingest path and only its directly supporting modules
+  - Deterministic contract-validation and local-ingest seams that must accept the new call without ambiguity without broad backend expansion. (FR6, FR7, FR11a)
 - One existing runtime proof seam selected in Phase 2
-  - The single MVP proof path that must demonstrate `MSCA-PF-2025` is operationally real without broad redesign; Phase 2 must freeze this seam before implementation tasking proceeds. (FR8, FR9, FR9a, FR10)
+  - The single MVP proof path that must demonstrate `MSCA-PF-2025` is operationally real without broad redesign; Phase 2 must freeze this seam before implementation tasking proceeds and treat multi-surface expansion as a blocker candidate first. (FR8, FR8a, FR9, FR9a, FR10, FR11a)
 - Narrow compatibility seam, if forced
   - The smallest touched module boundary required to make the selected runtime proof work safely for `MSCA-PF-2025`. (FR10, FR11, FR12)
 
@@ -133,7 +138,7 @@ Design tree / dependencies / ordering:
 1. Freeze the scope claim: one promised canonical call, `MSCA-PF-2025`, with the upload gate preserved. (FR1, FR2, FR13)
 2. Gather and verify official source inputs, then define the per-call manifest requirements. (FR3, FR4)
 3. Author the canonical YAML only after the upload gate is satisfied, then validate and ingest it. (FR5, FR6, FR7)
-4. Select one narrow runtime proof seam and implement only the smallest compatibility fix required, if any. (FR8, FR9, FR10, FR11)
+4. Select one narrow runtime proof seam and implement only the smallest compatibility fix required, if any; if the seam implies multi-surface expansion, stop and treat it as a blocker candidate first. (FR8, FR8a, FR9, FR10, FR11, FR11a)
 5. Add regression evidence for any touched compatibility seam and capture the final proof bundle. (FR12)
 
 Deep module guidance:
@@ -145,7 +150,7 @@ Deep module guidance:
 Suggested file-path clusters (coarse only):
 
 - canonical call and source manifest under `backend/data/calls/`
-- validation/ingest tooling under the existing ingest seam plus only the directly supporting backend modules
+- the selected existing validation/ingest seam plus only the directly supporting modules it already depends on
 - one existing runtime proof surface frozen in Phase 2 as the sole MVP evidence path
 - targeted regression tests near the touched validation, ingest, or runtime seam
 
@@ -154,6 +159,7 @@ Suggested file-path clusters (coarse only):
 - Official uploads arrive, but one source does not actually ground the needed structure or criteria/elements; the workflow must request supplemental official evidence before authoring ambiguous sections. (US2, FR3)
 - `MSCA-PF-2025` can validate but not ingest due to a runtime assumption tailored to existing calls; this may justify only a narrow compatibility fix, not a broader redesign. (US3, US4, FR7, FR10, FR11)
 - Runtime proof works only through a mocked or manual shortcut; this does not satisfy the operational-proof requirement. (US3, FR8, FR9)
+- The only viable proof seam crosses multiple major product surfaces; this is a blocker candidate and cannot be normalized as ordinary MVP scope without explicit narrow-fix justification. (US3, US4, FR9a, FR11a)
 - A proposed fix improves multiple calls opportunistically but is not required to land `MSCA-PF-2025`; this is out of scope and must be deferred. (US4, FR10, FR11)
 - Source binaries exist locally but are not safe to commit; traceability must still remain durable through manifest metadata and hashes. (US2, FR4)
 
@@ -166,8 +172,11 @@ Suggested file-path clusters (coarse only):
   - upload-gate coverage proving substantive `MSCA-PF-2025` authoring stops until the required official source classes are present. (US2, FR2, FR3)
   - validation coverage proving `msca_pf_2025_full.yaml` fails closed on contract errors and passes once source-grounded content is correct. (US1, US2, US3, FR2, FR6)
   - local ingest verification proving `MSCA-PF-2025` loads through the repo's real ingest path. (US1, US3, FR7)
+  - ordered-gate coverage proving runtime proof cannot count when upload-gate, validation, or ingest has failed for the same canonical artifact. (US2, US3, FR8b)
   - one deterministic runtime proof exercising the chosen product seam with the real `MSCA-PF-2025` call definition. (US3, FR8, FR9)
+  - proof-evidence coverage proving the runtime-proof artifact records the exercised seam, canonical artifact, deterministic result, and any narrow compatibility seam used. (US3, US4, FR8a)
   - blocker-boundary coverage proving a proposed fix that exceeds narrow compatibility scope is surfaced as a stop/escalation condition rather than silently absorbed into the WF. (US4, FR9a, FR10, FR11, FR12)
+  - multi-surface blocker coverage proving a proof seam that spans more than one major product surface is treated as a blocker candidate unless justified as the minimum direct fix. (US3, US4, FR11a)
   - regression coverage for any narrow compatibility fix required to support that runtime proof. (US4, FR10, FR12)
 
 ## 9. Telemetry (Minimal)
@@ -190,3 +199,4 @@ Suggested file-path clusters (coarse only):
 
 - v0.1 (2026-03-07): Initial PRD from brainstorm.
 - v0.2 (2026-03-07): Applied risk-audit edits for fail-closed source intake, explicit single-seam runtime-proof planning, and scope-boundary test coverage; marked Ready for Tasks.
+- v0.3 (2026-03-07): Applied review-and-harden edits for ordered gate enforcement, proof-evidence contract, and explicit multi-surface blocker handling while preserving single-call scope.
