@@ -785,3 +785,31 @@ def test_wf0061_contract_msca_backend_compatibility_stays_single_seam(
         assert "MALFORMED_REVIEW_REQUEST" in review.overall_summary
     finally:
         erc_service.repository.session.close()
+
+
+def test_wf0061_contract_multisurface_proof_candidate_stops_for_rescope(
+    monkeypatch,
+) -> None:
+    """WF-0061 blocker boundary: unknown cross-surface node IDs fail closed."""
+    service, call_id = _build_msca_pf_service(monkeypatch)
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                ("excellence", "Valid MSCA structured node text."),
+                (
+                    "frontend_universal_submit_surface",
+                    "Cross-surface payload should trigger blocker handling.",
+                ),
+            ],
+            external_user_id="wf0061-multisurface-blocker",
+            idempotency_key="wf0061-multisurface-blocker",
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert review.overall_summary is not None
+        assert "MALFORMED_REVIEW_REQUEST" in review.overall_summary
+        assert "Unknown node_logical_id" in review.overall_summary
+    finally:
+        service.repository.session.close()

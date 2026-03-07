@@ -177,3 +177,25 @@ def test_wf0061_contract_msca_pf_2025_dry_run_passes_with_uploaded_sources(
     assert "MSCA" in manifest
     assert "Used for:" in manifest
     assert "SHA256:" in manifest
+
+
+@pytest.mark.no_db
+def test_wf0061_contract_ingest_gate_blocks_runtime_credit_without_uploaded_msca_manifest(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """WF-0061 runtime-credit guard: no manifest means no ingest proof credit."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    source_yaml = Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml")
+    yaml_text = source_yaml.read_text(encoding="utf-8").replace(
+        "code: nwo_veni_2025_preproposal",
+        "code: MSCA-PF-2025",
+        1,
+    )
+    msca_yaml = tmp_path / "msca_pf_2025_full.yaml"
+    msca_yaml.write_text(yaml_text, encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(ValueError, match="source-upload gate"):
+        ingest_call(msca_yaml, dry_run=True)

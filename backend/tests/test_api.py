@@ -870,6 +870,30 @@ def test_wf0061_contract_structured_api_tracer_accepts_real_msca_pf_2025_call(
         session.close()
 
 
+def test_wf0061_contract_runtime_proof_requires_upload_validate_ingest_order(
+    monkeypatch,
+) -> None:
+    """WF-0061 gate order: structured runtime proof is invalid before ingest readiness."""
+    client, _ = create_client_with_seed(monkeypatch)
+    unknown_call_id = UUID("00000000-0000-0000-0000-000000000061")
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(unknown_call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "excellence",
+                    "text": "Runtime proof must fail when call ingest prerequisites are unmet.",
+                }
+            ],
+        },
+        idempotency_key=f"wf0061-order-gate-{time.time_ns()}",
+    )
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "CALL_NOT_FOUND"
+
+
 def test_normalize_database_url_for_render_postgres() -> None:
     normalized = normalize_database_url("postgres://u:p@db.example.com:5432/grant_db")
     assert normalized.startswith("postgresql+psycopg://")

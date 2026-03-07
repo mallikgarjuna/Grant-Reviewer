@@ -143,7 +143,7 @@ Verification Steps:
 - `cd backend && rg -n "msca|MSCA|wf0061" app/services/structured_reviewer_service.py main.py tests/test_structured_reviewer_service.py`
 Risks (if any): A seemingly “small” fix can silently become cross-call hardening if the task does not assert the single-seam boundary.
 
-### [ ] Task 5 — Ordered-gate and blocker-boundary closure contracts
+### [x] Task 5 — Ordered-gate and blocker-boundary closure contracts
 
 Goal:
 Lock the workflow’s core safety invariants so runtime proof cannot count before upload/validation/ingest succeed for the same artifact, and broad multi-surface proof candidates fail as blockers instead of sliding into scope.
