@@ -2,8 +2,8 @@
 # WF-0061 — Real Call Data Expansion: Single New Canonical Call
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-07
 
 Type: feature
@@ -89,10 +89,10 @@ Enables: 4, 5, 6
 Parallelizable: no
 Files to modify:
 Must touch files:
-- `backend/main.py`
 - `backend/tests/test_api.py`
 - `backend/tests/test_structured_reviewer_service.py`
 May touch files:
+- `backend/main.py`
 - `backend/app/services/structured_reviewer_service.py`
 Out of scope: frontend universal-submit changes, BFF proxy changes, multi-surface runtime proof
 Stop if: the real `MSCA-PF-2025` ingest reveals that backend `/api/structured-review` cannot be used without coordinated frontend/BFF or other multi-surface expansion
@@ -169,13 +169,13 @@ Acceptance Criteria:
 - Automated coverage proves a proof candidate that would require multiple major surfaces is treated as a blocker/escalation condition rather than normal MVP work.
 - Verification remains scoped to `MSCA-PF-2025` and the chosen backend structured-review seam.
 TDD Plan:
-- RED: add `wf0061_contract_runtime_proof_requires_upload_validate_ingest_order` in `backend/tests/test_api.py` and `wf0061_contract_multisurface_proof_candidate_stops_for_rescope` in `backend/tests/test_structured_reviewer_service.py`.
+- RED: add `wf0061_contract_runtime_proof_requires_upload_validate_ingest_order` in `backend/tests/test_api.py`, `wf0061_contract_multisurface_proof_candidate_stops_for_rescope` in `backend/tests/test_structured_reviewer_service.py`, and `wf0061_contract_ingest_gate_blocks_runtime_credit_without_uploaded_msca_manifest` in `backend/tests/test_ingest_call_dry_run.py`.
 - GREEN: add only the minimal assertions and guard logic required to enforce ordered proof acceptance and blocker surfacing for the selected seam.
 - REFACTOR: trim duplicated WF-0061 setup/helpers across the three backend test files if closure selectors become noisy.
 Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0061_contract_runtime_proof_requires_upload_validate_ingest_order"`
 - `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0061_contract_multisurface_proof_candidate_stops_for_rescope"`
-- `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k "wf0061_contract_"`
+- `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k "wf0061_contract_ingest_gate_blocks_runtime_credit_without_uploaded_msca_manifest"`
 Risks (if any): Without explicit ordered-gate and blocker selectors, Phase 3 can claim success from a passing tracer while still violating the WF’s core scope and evidence rules.
 
 ### [ ] Task 6 — Walkthrough evidence for the one-call proof claim
@@ -198,7 +198,7 @@ Out of scope: new product claims, multi-call marketing copy, unrelated workflow 
 Stop if: the recorded evidence would need to claim frontend/BFF coverage, a second call, or a broader platform redesign to present `WF-0061` as complete
 Session boundary after: yes
 Acceptance Criteria:
-- The walkthrough records the exact canonical artifact, manifest artifact, selected proof seam, verification commands, and deterministic outcomes used for `WF-0061`.
+- The walkthrough records the exact canonical artifact path `backend/data/calls/canonical/msca/msca_pf_2025_full.yaml`, the exact manifest path `backend/data/calls/sources/msca_pf_2025_full.sources.md`, the selected proof seam, verification commands, and deterministic outcomes used for `WF-0061`.
 - If a compatibility seam was touched, the walkthrough names that seam and the regression evidence proving it remained narrow.
 - Success language is limited to landing one new promised canonical call, `MSCA-PF-2025`.
 TDD Plan: N/A
@@ -210,3 +210,4 @@ Risks (if any): Evidence wording can drift into vague “MSCA support” claims 
 ## Changelog
 
 - v0.1 (2026-03-07): Initial task breakdown from PRD.
+- v0.2 (2026-03-07): Hardened deterministic verification selectors, reduced Task 3 must-touch scope, tightened walkthrough artifact traceability, and marked Ready for Implementation.
