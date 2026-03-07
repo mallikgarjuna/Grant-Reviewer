@@ -178,7 +178,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k "wf0061_contract_ingest_gate_blocks_runtime_credit_without_uploaded_msca_manifest"`
 Risks (if any): Without explicit ordered-gate and blocker selectors, Phase 3 can claim success from a passing tracer while still violating the WF’s core scope and evidence rules.
 
-### [ ] Task 6 — Walkthrough evidence for the one-call proof claim
+### [x] Task 6 — Walkthrough evidence for the one-call proof claim
 
 Goal:
 Capture the final WF-0061 evidence bundle so completion claims stay traceable to one landed canonical call, one manifest, one selected runtime seam, and any narrow compatibility seam actually used.
