@@ -179,7 +179,7 @@ Verification Steps:
 - `cd frontend && rg -n "Visible but not part of this review|supporting_context_node_logical_ids|coverage" src/app/app/reviews/[reviewId]/page.tsx`
 Risks (if any): Coverage can appear honest in one example while still drifting on other visible supporting nodes if the page bypasses the shared classifier anywhere.
 
-### [ ] Task 6 — Rollback and non-opted-in parity proof for the existing opt-in seam
+### [x] Task 6 — Rollback and non-opted-in parity proof for the existing opt-in seam
 
 Goal:
 Prove the proof-path behavior is fully reversible through the existing opt-in seam and that removing or disabling that seam restores current behavior without extra rollback work.

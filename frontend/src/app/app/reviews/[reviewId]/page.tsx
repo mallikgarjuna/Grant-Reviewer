@@ -813,9 +813,11 @@ export default function ReviewDetailPage() {
             <p className="mt-1 text-[var(--color-muted-foreground)]">
               Supporting context: {supportingContextSectionText}
             </p>
-            <p className="mt-1 text-[var(--color-muted-foreground)]">
-              Visible but not part of this review: {visibleNotReviewedSectionText}
-            </p>
+            {isWf0064ProofPathOptedIn ? (
+              <p className="mt-1 text-[var(--color-muted-foreground)]">
+                Visible but not part of this review: {visibleNotReviewedSectionText}
+              </p>
+            ) : null}
           </div>
         ) : null}
         {hasCompatibilityNotes ? (

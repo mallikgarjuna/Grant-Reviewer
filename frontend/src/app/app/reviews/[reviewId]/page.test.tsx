@@ -880,6 +880,68 @@ describe("ReviewDetailPage", () => {
     );
   });
 
+  it("wf0064_review_detail_preserves_legacy_behavior_without_proof_opt_in", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "nwo_veni_2025_preproposal",
+                ordering_source: "call_nodes",
+                primary_evaluated_node_logical_ids: ["academic_profile"],
+                supporting_context_node_logical_ids: [],
+                submitted_leaf_ids: ["academic_profile"],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "academic_profile",
+                  title: "Academic Profile",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+                {
+                  id: "node-2",
+                  logical_id: "research_idea",
+                  title: "Research Idea",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Visible but not part of this review:/),
+    ).not.toBeInTheDocument();
+  });
+
   it("guardrail: review detail path contains no hardcoded VENI constants", () => {
     const source = fs.readFileSync("src/app/app/reviews/[reviewId]/page.tsx", "utf-8");
     const legacyLabels = ["VENI", "NODE", "LABELS"].join("_");
