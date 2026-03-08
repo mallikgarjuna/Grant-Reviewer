@@ -13,7 +13,12 @@ import type {
   StructuredReviewNodeInput,
 } from "@/lib/bff/types";
 import { buildReviewDetailRoute, SIGN_IN_ROUTE } from "@/lib/routes";
-import { clearDraft, loadDraft, saveDraft } from "@/lib/submit/draftStore";
+import {
+  clearDraft,
+  loadDraft,
+  saveDraft,
+  saveDraftFiltered,
+} from "@/lib/submit/draftStore";
 import {
   loadStructuredCalls,
   type StructuredCallSummary,
@@ -229,6 +234,9 @@ export function UniversalSubmitForm() {
             {},
           ) ?? {};
         if (!cancelled) {
+          const isWf0064ProofPathCall =
+            selectedCall?.code === WF0064_PROOF_CALL_CODE &&
+            selectedCall.splitVisibilityReviewabilityEnabled === true;
           const nextNodes = Array.isArray(payload.nodes) ? payload.nodes : [];
           const storedDraft = loadDraft(selectedCallId);
           const storedDomain = storedDraft[DOMAIN_DRAFT_KEY] ?? null;
@@ -257,6 +265,9 @@ export function UniversalSubmitForm() {
             const next: Record<string, string> = {};
             if (nextRenderModel.state === "ready") {
               for (const node of nextRenderModel.nodes) {
+                if (isWf0064ProofPathCall && node.nodeRole === "SUPPORTING") {
+                  continue;
+                }
                 next[node.nodeLogicalId] =
                   storedDraft[node.nodeLogicalId] ?? current[node.nodeLogicalId] ?? "";
               }
@@ -310,12 +321,32 @@ export function UniversalSubmitForm() {
     if (!selectedCallId) {
       return;
     }
+    if (isWf0064ProofPathCall && renderModel.state === "ready") {
+      const matchedNode = renderModel.nodes.find(
+        (node) => node.nodeLogicalId === nodeLogicalId,
+      );
+      if (matchedNode?.nodeRole === "SUPPORTING") {
+        return;
+      }
+    }
     setDraft((current) => {
       const next = {
         ...current,
         [nodeLogicalId]: value,
       };
-      saveDraft(selectedCallId, serializeDraftState(next, effectiveDomain));
+      if (isWf0064ProofPathCall && renderModel.state === "ready") {
+        const allowedKeys = new Set(
+          renderModel.nodes
+            .filter((node) => node.nodeRole === "PRIMARY")
+            .map((node) => node.nodeLogicalId),
+        );
+        if (effectiveDomain) {
+          allowedKeys.add(DOMAIN_DRAFT_KEY);
+        }
+        saveDraftFiltered(selectedCallId, serializeDraftState(next, effectiveDomain), allowedKeys);
+      } else {
+        saveDraft(selectedCallId, serializeDraftState(next, effectiveDomain));
+      }
       return next;
     });
   }
@@ -380,7 +411,9 @@ export function UniversalSubmitForm() {
       setFormError("Review submitted but no review id was returned.");
       return;
     }
-    clearDraft(selectedCallId);
+    if (!isWf0064ProofPathCall) {
+      clearDraft(selectedCallId);
+    }
     const query = new URLSearchParams({
       submitted_nodes: nonEmptyNodes.map((node) => node.node_logical_id).join(","),
     });
@@ -588,7 +621,23 @@ export function UniversalSubmitForm() {
                   const nextDomain = event.target.value ? event.target.value : null;
                   setSelectedDomain(nextDomain);
                   if (selectedCallId) {
-                    saveDraft(selectedCallId, serializeDraftState(draft, nextDomain));
+                    if (isWf0064ProofPathCall && renderModel.state === "ready") {
+                      const allowedKeys = new Set(
+                        renderModel.nodes
+                          .filter((node) => node.nodeRole === "PRIMARY")
+                          .map((node) => node.nodeLogicalId),
+                      );
+                      if (nextDomain) {
+                        allowedKeys.add(DOMAIN_DRAFT_KEY);
+                      }
+                      saveDraftFiltered(
+                        selectedCallId,
+                        serializeDraftState(draft, nextDomain),
+                        allowedKeys,
+                      );
+                    } else {
+                      saveDraft(selectedCallId, serializeDraftState(draft, nextDomain));
+                    }
                   }
                 }}
                 value={effectiveDomain ?? ""}

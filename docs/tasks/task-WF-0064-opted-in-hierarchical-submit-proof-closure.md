@@ -48,7 +48,7 @@ Verification Steps:
 - `cd frontend && rg -n "readOnly|disabled|node_role|supporting" src/components/submit/UniversalSubmitForm.tsx`
 Risks (if any): A visual read-only treatment without a real input-state block will leave a hidden write path intact.
 
-### [ ] Task 2 — Block supporting draft writes and stale clear-loss on the proof path
+### [x] Task 2 — Block supporting draft writes and stale clear-loss on the proof path
 
 Goal:
 Remove supporting-node answer writes from local draft state on the proof path and prove stale supporting draft residue cannot be silently cleared during successful primary submit.

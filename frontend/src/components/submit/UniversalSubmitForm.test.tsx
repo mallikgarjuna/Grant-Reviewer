@@ -3492,6 +3492,209 @@ describe("UniversalSubmitForm", () => {
     expect(supportingInput).not.toHaveAttribute("readonly");
   });
 
+  it("wf0064_submit_form_does_not_write_supporting_nodes_to_draft_state", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "MSCA-PF-2025",
+                name: "MSCA PF 2025",
+                year: 2025,
+                agency_short_name: "EU",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/MSCA-PF-2025/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "MSCA-PF-2025",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            split_visibility_reviewability_enabled: true,
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-abstract",
+                logical_id: "abstract",
+                title: "Abstract",
+                parent_node_id: null,
+                node_type: "SUBSECTION",
+                order_index: 1,
+                has_expectations: false,
+                node_role: "SUPPORTING",
+              },
+              {
+                id: "node-excellence",
+                logical_id: "excellence",
+                title: "Excellence",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 2,
+                has_expectations: true,
+                node_role: "PRIMARY",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/MSCA-PF-2025/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "MSCA-PF-2025",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+        status: 200,
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    fireEvent.change(await screen.findByLabelText("Abstract"), {
+      target: { value: "supporting draft text" },
+    });
+    fireEvent.change(await screen.findByLabelText("Excellence"), {
+      target: { value: "primary draft text" },
+    });
+
+    const savedDraft = JSON.parse(
+      window.localStorage.getItem("draft_universal_submit_call-1_v1") ?? "{}",
+    ) as Record<string, string>;
+    expect(savedDraft.abstract).toBeUndefined();
+    expect(savedDraft.excellence).toBe("primary draft text");
+  });
+
+  it("wf0064_submit_success_does_not_silently_clear_stale_supporting_draft_residue", async () => {
+    window.localStorage.setItem(
+      "draft_universal_submit_call-1_v1",
+      JSON.stringify({
+        abstract: "stale supporting residue",
+        excellence: "preloaded primary",
+      }),
+    );
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/bff/calls") {
+        return new Response(
+          JSON.stringify({
+            calls: [
+              {
+                id: "call-1",
+                code: "MSCA-PF-2025",
+                name: "MSCA PF 2025",
+                year: 2025,
+                agency_short_name: "EU",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/MSCA-PF-2025/config") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "MSCA-PF-2025",
+            config_version: "1",
+            ui_mode: "structured_nodes",
+            expected_nodes: [],
+            split_visibility_reviewability_enabled: true,
+            domain_options: [],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/call-1/nodes") {
+        return new Response(
+          JSON.stringify({
+            nodes: [
+              {
+                id: "node-abstract",
+                logical_id: "abstract",
+                title: "Abstract",
+                parent_node_id: null,
+                node_type: "SUBSECTION",
+                order_index: 1,
+                has_expectations: false,
+                node_role: "SUPPORTING",
+              },
+              {
+                id: "node-excellence",
+                logical_id: "excellence",
+                title: "Excellence",
+                parent_node_id: null,
+                node_type: "SECTION",
+                order_index: 2,
+                has_expectations: true,
+                node_role: "PRIMARY",
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/calls/MSCA-PF-2025/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "MSCA-PF-2025",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          draft_nodes: Array<{ node_logical_id: string }>;
+        };
+        expect(body.draft_nodes.map((node) => node.node_logical_id)).toEqual([
+          "excellence",
+        ]);
+        return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+          status: 200,
+        });
+      }
+      if (url === "/api/bff/structured-review") {
+        return new Response(JSON.stringify({ review_id: "review-1" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "not found" } }), {
+        status: 404,
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<UniversalSubmitForm />);
+
+    expect(await screen.findByDisplayValue("preloaded primary")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/bff/structured-review",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    expect(window.localStorage.getItem("draft_universal_submit_call-1_v1")).not.toBeNull();
+  });
+
   it("guardrail: submit path contains no legacy domain map constant", () => {
     const source = fs.readFileSync("src/lib/submit/domainOptions.ts", "utf-8");
     const legacyConstant = ["DOMAIN", "OPTIONS", "BY", "CALL"].join("_");
