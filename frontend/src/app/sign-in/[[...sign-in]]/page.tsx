@@ -1,4 +1,7 @@
+// frontend/src/app/sign-in/[[...sign-in]]/page.tsx
 import { SignIn } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+import { resolveDefaultBypassUserId } from "@/lib/auth/testBypassAuth";
 import { APP_CREATE_REVIEW_ROUTE } from "@/lib/routes";
 
 type SearchParams = {
@@ -38,6 +41,11 @@ export default async function SignInPage({
   const configError =
     firstValue(resolvedSearchParams?.auth_config_error) === "1" || hasMissingClerkEnv;
   const redirectTarget = safeRedirectTarget(firstValue(resolvedSearchParams?.redirect_url));
+  const bypassDefaultUserId = resolveDefaultBypassUserId();
+
+  if (bypassDefaultUserId) {
+    redirect(redirectTarget);
+  }
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-4xl items-center justify-center px-6 py-16">

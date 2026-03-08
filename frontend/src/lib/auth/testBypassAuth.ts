@@ -48,6 +48,17 @@ function isValidBypassUserId(userId: string): boolean {
   return /^[A-Za-z0-9:_-]{1,128}$/.test(userId);
 }
 
+function getDefaultBypassUserId(): string | null {
+  const candidate = process.env.TEST_AUTH_DEFAULT_USER_ID?.trim() ?? "";
+  if (!candidate) {
+    return null;
+  }
+  if (!isValidBypassUserId(candidate)) {
+    return null;
+  }
+  return candidate;
+}
+
 function getBypassMaxAgeSeconds(): number {
   const configured = Number.parseInt(
     process.env.TEST_AUTH_MAX_AGE_SECONDS?.trim() ?? "",
@@ -132,7 +143,7 @@ export async function resolveBypassUserId(request: Request): Promise<string | nu
 
   const token = getBypassTokenFromRequest(request);
   if (!token) {
-    return null;
+    return getDefaultBypassUserId();
   }
 
   const parts = token.split(".");
@@ -160,6 +171,16 @@ export async function resolveBypassUserId(request: Request): Promise<string | nu
     return null;
   }
   return userId;
+}
+
+export function resolveDefaultBypassUserId(): string | null {
+  if (!isTestBypassMode()) {
+    return null;
+  }
+  if (getTestBypassConfigError() !== null) {
+    return null;
+  }
+  return getDefaultBypassUserId();
 }
 
 export async function buildTestBypassToken(
