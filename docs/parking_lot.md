@@ -91,13 +91,12 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 ### P1 Rationale Snapshot (2026-03-08)
 
 - WF-0063 and WF-0064 closed the proof-call split-visibility and opted-in hierarchical submit gap for `MSCA-PF-2025`; that work should no longer sit in active P1.
-- Current launch blocker is now the mismatch between promised multi-program coverage and insufficient proof that the base review contract holds across calls and failure modes.
-- Cross-call hardening stays ahead of broader onboarding so new calls land on a contract surface that is actually proven across failure modes.
+- WF-0065 closed the cross-call base-review contract hardening gap for the locked representative set; this should no longer be treated as an open launch blocker in P1.
+- Current launch blocker is now the remaining promised-program coverage gap (for example adding one credible ZonMw or equivalent missing call) on top of the now-proven base contract surface.
 - Broad content expansion should now target the remaining promised-program gap, not re-park already completed ERC/MSCA authoring work.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 
 Promotion dependency note:
-- If promoting P1 #2, first verify WF-0035 and P1 #1 are done, or bundle them in the same WF with explicit dependency sequencing.
 - If promoting P1 #4, first verify WF-0035 and P1 #1 are done (or included in that same WF).
 
 ---
@@ -240,3 +239,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v3.7** (2026-03-08): Strengthened P2 #30 with explicit promotion timing and gating: treat supporting-context semantics as post-launch-baseline work only, after multi-call proof and cross-call hardening, and only when product semantics are concrete enough to specify influence boundaries honestly.
 - **v3.8** (2026-03-08): Removed the stale P1 hierarchical proof-gap item after WF-0064 closure, renumbered active P1 items, rewrote the P1 rationale around the real remaining blockers (cross-call hardening plus one missing promised-program call), and tightened P2 #30 gating to reflect both WF-0063 and WF-0064 closure status.
 - **v3.9** (2026-03-08): Promoted P1 #1 to `WF-0065` for cross-call contract hardening of base review semantics, renumbered active P1 items, and recorded the promotion in the unified WF initiative log.
+- **v4.0** (2026-03-08): Post-WF-0065 parking-lot refresh: removed stale P1 rationale that still treated cross-call hardening as open, and cleaned dependency-note renumber drift so active dependencies match current P1 ordering.
