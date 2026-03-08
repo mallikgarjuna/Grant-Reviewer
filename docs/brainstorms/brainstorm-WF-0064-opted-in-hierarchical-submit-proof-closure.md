@@ -2,8 +2,8 @@
 # WF-0064 — Opted-In Hierarchical Submit Proof Closure
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-08
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0064-opted-in-hierarchical-submit-proof-closure.md`
@@ -82,6 +82,8 @@ Open questions suggested by repo snapshot:
 - Do not treat this as docs-only unless current code/tests prove the path is already defensible; current audit says they do not.
 - Preserve current backend `/api/check-compliance` and `/api/structured-review` primary-path rejection semantics for supporting nodes, including their fail-closed request-boundary posture, unless this workflow explicitly re-contracts them.
 - Preserve existing idempotency and primary review persistence semantics unless a narrower explicit change is proven necessary.
+- Treat supporting-node persistence as a fallback only if the read-only/non-editable proof-path fix is proven insufficient during planning; it is not an equal default direction for MVP.
+- Keep implementation proof-path-local to `MSCA-PF-2025`; do not introduce generic multi-call supporting-context infrastructure in this workflow.
 
 Section 5 decisions:
 
@@ -99,6 +101,7 @@ Section 6 decisions:
 
 - Primary fail-closed assumption: if the UI cannot safely persist supporting-node text in this WF, it should stop collecting it on the proof path.
 - The main unknown to validate in planning is whether review-detail honesty can be fixed without introducing a new persisted supporting-context field.
+- Successful primary review submission must not clear any supporting-node draft state unless the UI no longer allows editing it or the workflow explicitly persists that data by contract.
 
 ## Open Questions / Deferred
 
@@ -123,7 +126,8 @@ Section 7 decisions:
 - Verification must prove:
   - supporting nodes are no longer silently collected then discarded,
   - primary-only submit/compliance semantics still hold,
-  - review detail no longer implies invisible or missing coverage semantics for the proof call.
+  - review detail no longer implies invisible or missing coverage semantics for stage-eligible visible supporting nodes on the proof call,
+  - proof-call behavior remains reversible through the existing opt-in seam and non-opted-in calls do not change behavior.
 
 ## 8. Explicit Non-Goals
 
