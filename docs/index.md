@@ -2,6 +2,7 @@
 # Project Dashboard
 
 Quick links:
+- Mission: `docs/mission.md`
 - Parking lot / backlog: `docs/parking_lot.md`
 
 ## Legacy Task Registry (pre-WF)

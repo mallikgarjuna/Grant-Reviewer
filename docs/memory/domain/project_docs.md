@@ -1,6 +1,7 @@
 <!-- docs/memory/domain/project_docs.md -->
 # Project Documentation
 
+- **2026-03-08**: Product mission statement SSOT lives in `docs/mission.md`. Preserve this wording as the default anchor for landing-page copy, internal docs, and product-positioning decisions unless a deliberate mission update is made.
 - **2026-03-01**: All new code phrases and agent chat triggers must be added to `docs/reference/code_phrases.md` (the SSOT), not directly to `AGENTS.md`. `AGENTS.md` should remain as tiny as possible.
 - **2026-03-02**: WF interactive Q&A decisions must be written into `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`; the main brainstorm remains the SSOT for contracts/decisions and must link to the Q&A section(s) used.
 - **Traceability in outputs**: Workflow runner completion summaries must always include explicit provenance: which files were considered/edited and which skills/instructions were used.
