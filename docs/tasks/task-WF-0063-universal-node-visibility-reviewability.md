@@ -277,7 +277,7 @@ Verification Steps:
 - `cd backend && rg -n "_STEP_2_NODE_IDS|node_role|has_expectations" app/services/reviewer_policy.py`
 Risks (if any): Leaving even one proof-call hardcoded fallback behind defeats the single-source role requirement across layers.
 
-### [ ] Task 9 — Fail-closed backend submit and compliance validation for supporting nodes
+### [x] Task 9 — Fail-closed backend submit and compliance validation for supporting nodes
 
 Goal:
 Make the backend authoritative on the primary-only boundary by rejecting supporting-node content in structured review and compliance requests instead of silently accepting or dropping it.

@@ -53,7 +53,10 @@ from app.schemas.structured_review import (
     StructuredReviewRequest,
 )
 from app.services.call_definition_service import CallDefinitionService
-from app.services.compliance_engine import evaluate_compliance
+from app.services.compliance_engine import (
+    evaluate_compliance,
+    find_supporting_node_ids_in_primary_path_draft,
+)
 from app.services.llm_client import build_llm_client
 from app.services.node_metadata_service import NodeMetadataService
 from app.services.node_tree_service import (
@@ -64,6 +67,9 @@ from app.services.node_tree_service import (
 from app.services.reviewer_policy import matches_review_stage
 from app.services.reviewer_service import ReviewerService
 from app.services.structured_reviewer_service import StructuredReviewerService
+from app.services.structured_reviewer_service import (
+    resolve_supporting_node_logical_ids_for_primary_path,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +113,7 @@ ERROR_STATUS_BY_CODE = {
     "SNIPPET_TOO_LONG": 400,
     "UNKNOWN_NODE_ID": 422,
     "DUPLICATE_NODE_ID": 422,
+    "SUPPORTING_NODE_NOT_ALLOWED": 422,
     "DOMAIN_REQUIRED": 422,
     "DOMAIN_INVALID": 422,
     "STRUCTURED_NODES_REQUIRED": 422,
@@ -803,6 +810,19 @@ def check_compliance(
             message="One or more node_logical_id values are unknown for this call.",
             details={"node_logical_ids": unknown_ids},
         )
+    supporting_node_ids = resolve_supporting_node_logical_ids_for_primary_path(
+        call_definition
+    )
+    submitted_supporting_ids = find_supporting_node_ids_in_primary_path_draft(
+        payload,
+        supporting_node_ids,
+    )
+    if submitted_supporting_ids:
+        raise APIException(
+            code="SUPPORTING_NODE_NOT_ALLOWED",
+            message="Supporting node_logical_id values are not allowed for primary review path.",
+            details={"node_logical_ids": submitted_supporting_ids},
+        )
 
     normalized_domain = _normalize_domain(payload.domain)
     domain_limited_nodes = [
@@ -983,6 +1003,18 @@ def create_structured_review(
                 "review_stage": payload.review_stage,
                 "node_logical_ids": stage_mismatch_ids,
             },
+        )
+    supporting_node_ids = resolve_supporting_node_logical_ids_for_primary_path(
+        call_definition
+    )
+    submitted_supporting_ids = sorted(
+        {node.node_logical_id for node in payload.nodes if node.node_logical_id in supporting_node_ids}
+    )
+    if submitted_supporting_ids:
+        raise APIException(
+            code="SUPPORTING_NODE_NOT_ALLOWED",
+            message="Supporting node_logical_id values are not allowed for primary review path.",
+            details={"node_logical_ids": submitted_supporting_ids},
         )
 
     reviewer_service = StructuredReviewerService(

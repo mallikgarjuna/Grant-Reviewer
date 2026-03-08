@@ -1586,6 +1586,55 @@ def test_create_structured_review_duplicate_node_returns_422(monkeypatch) -> Non
     assert response.json()["error"]["code"] == "DUPLICATE_NODE_ID"
 
 
+def test_wf0063_structured_review_rejects_supporting_nodes_for_primary_path(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_msca_pf_seed(monkeypatch)
+    assert call_code == "MSCA-PF-2025"
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "abstract",
+                    "text": "Supporting content must be rejected for primary path.",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 422
+    payload = response.json()
+    assert payload["error"]["code"] == "SUPPORTING_NODE_NOT_ALLOWED"
+    assert payload["error"]["details"]["node_logical_ids"] == ["abstract"]
+
+
+def test_wf0063_compliance_rejects_supporting_nodes_for_primary_path(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_msca_pf_seed(monkeypatch)
+    assert call_code == "MSCA-PF-2025"
+
+    response = post_compliance(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "draft_nodes": [
+                {
+                    "node_logical_id": "abstract",
+                    "text": "Supporting content must be rejected for primary path.",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 422
+    payload = response.json()
+    assert payload["error"]["code"] == "SUPPORTING_NODE_NOT_ALLOWED"
+    assert payload["error"]["details"]["node_logical_ids"] == ["abstract"]
+
+
 def test_create_structured_review_payload_too_large_returns_422(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = post_structured_review(

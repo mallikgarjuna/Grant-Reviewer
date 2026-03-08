@@ -20,6 +20,7 @@ from app.engine.review_request_validator import (
 )
 from app.models.domain import (
     AssessmentStatus,
+    CallDefinition,
     NodeExpectation,
     Review,
     ReviewCard,
@@ -47,6 +48,38 @@ STRUCTURED_SUMMARY_COMPLETED_PREFIX = "Structured review completed with"
 STRUCTURED_POLICY_BLOCKING_PREFIX = "POLICY_BLOCKING:"
 STRUCTURED_POLICY_WARNING_PREFIX = "Reviewer-policy warnings:"
 WF0060_ERC_CONTAINER_NODE_IDS = {"part_a", "budget", "part_b", "b1", "b2"}
+
+
+def resolve_supporting_node_logical_ids_for_primary_path(
+    call_definition: CallDefinition | None,
+) -> set[str]:
+    """Return supporting node logical ids only when split behavior opt-in is enabled."""
+    if call_definition is None:
+        return set()
+    canonical_json = call_definition.canonical_json
+    if not isinstance(canonical_json, dict):
+        return set()
+
+    runtime_config = canonical_json.get("runtime_config")
+    if not isinstance(runtime_config, dict):
+        return set()
+    if runtime_config.get("split_visibility_reviewability_enabled") is not True:
+        return set()
+
+    proposal_nodes = canonical_json.get("proposal_nodes")
+    if not isinstance(proposal_nodes, list):
+        return set()
+
+    supporting_ids: set[str] = set()
+    for node in proposal_nodes:
+        if not isinstance(node, dict):
+            continue
+        node_id = node.get("id")
+        if not isinstance(node_id, str) or not node_id.strip():
+            continue
+        if node.get("node_role") == "SUPPORTING":
+            supporting_ids.add(node_id)
+    return supporting_ids
 
 
 class StructuredReviewerService:
@@ -134,6 +167,17 @@ class StructuredReviewerService:
         if call is None:
             raise ValueError("Funding call not found.")
         call_definition = self.repository.get_call_definition_by_call_id(call_id)
+        supporting_node_ids = resolve_supporting_node_logical_ids_for_primary_path(
+            call_definition
+        )
+        submitted_supporting_ids = sorted(
+            {node_logical_id for node_logical_id, _ in nodes if node_logical_id in supporting_node_ids}
+        )
+        if submitted_supporting_ids:
+            raise ValueError(
+                "Supporting node_logical_id values are not allowed for primary review path: "
+                + ", ".join(submitted_supporting_ids)
+            )
 
         call_nodes = self.repository.get_nodes_for_call(call_id)
         node_by_logical_id = {
