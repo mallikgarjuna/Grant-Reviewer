@@ -361,6 +361,149 @@ describe("ReviewDetailPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("wf0067_review_detail_boundary_no_generated_cards_distinct_from_visible_not_reviewed", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "erc_stg_2026_full",
+                ordering_source: "call_nodes",
+                cards: [],
+                primary_evaluated_node_logical_ids: [],
+                supporting_context_node_logical_ids: [],
+                visible_not_reviewed_node_logical_ids: [
+                  "b1_part1_scientific_proposal",
+                ],
+                no_generated_cards_node_logical_ids: ["proposal_summary"],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "proposal_summary",
+                  title: "Proposal Summary",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+                {
+                  id: "node-2",
+                  logical_id: "b1_part1_scientific_proposal",
+                  title: "Part B1 Scientific Proposal",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Visible but not reviewed sections: Part B1 Scientific Proposal",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("No generated card sections: Proposal Summary"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Visible but not reviewed section: Part B1 Scientific Proposal"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("No generated cards section: Proposal Summary"),
+    ).toBeInTheDocument();
+  });
+
+  it("wf0067_review_detail_boundary_limitation_copy_for_legacy_and_mixed_version", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: null,
+                call_code: null,
+                detail_state: "legacy_fallback",
+                ordering_source: "review_payload_fallback",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: null,
+                    node_title: "Legacy section",
+                    criterion: "Excellence",
+                    criterion_description: "Excellence criterion",
+                    evaluation_element_name: "Legacy element",
+                    expectation_guidance_note: null,
+                    rating: "NOTE",
+                    feedback_text: "Legacy feedback",
+                    source_basis_label: null,
+                    source_basis_state: "legacy_fallback",
+                  },
+                ],
+                compatibility_notes: [
+                  {
+                    note_type: "mixed_version_review",
+                    node_logical_ids: ["proposal_summary", "legacy_node"],
+                    message:
+                      "Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage.",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.getByText("Call metadata unavailable; using review payload order."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Compatibility notes")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /mixed_version_review: Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Official source basis: unavailable (legacy fallback)."),
+    ).toBeInTheDocument();
+  });
+
   it("uses call-driven ordering and labels when call metadata is available", async () => {
     vi.stubGlobal(
       "fetch",

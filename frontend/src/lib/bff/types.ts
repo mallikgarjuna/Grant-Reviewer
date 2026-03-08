@@ -161,6 +161,8 @@ export type ReviewDetailResponse = {
   submitted_leaf_ids?: string[];
   primary_evaluated_node_logical_ids?: string[];
   supporting_context_node_logical_ids?: string[];
+  visible_not_reviewed_node_logical_ids?: string[];
+  no_generated_cards_node_logical_ids?: string[];
   legacy_ambiguous_container_ids?: string[];
   moved_legacy_node_references?: string[];
   compatibility_notes?: Array<{

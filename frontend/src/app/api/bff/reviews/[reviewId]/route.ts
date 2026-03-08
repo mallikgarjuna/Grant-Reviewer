@@ -71,6 +71,20 @@ function normalizeReviewDetailResponse(payload: unknown): unknown {
           (item): item is string => typeof item === "string",
         )
       : [],
+    visible_not_reviewed_node_logical_ids: Array.isArray(
+      record.visible_not_reviewed_node_logical_ids,
+    )
+      ? record.visible_not_reviewed_node_logical_ids.filter(
+          (item): item is string => typeof item === "string",
+        )
+      : [],
+    no_generated_cards_node_logical_ids: Array.isArray(
+      record.no_generated_cards_node_logical_ids,
+    )
+      ? record.no_generated_cards_node_logical_ids.filter(
+          (item): item is string => typeof item === "string",
+        )
+      : [],
     // Preserve backend card trust fields verbatim; avoid local source-basis synthesis.
     cards: normalizeReviewCards(record),
   };
@@ -112,12 +126,24 @@ export async function GET(request: Request, context: RouteContext) {
   )
     ? payload.supporting_context_node_logical_ids
     : [];
+  const visibleNotReviewedNodeLogicalIds = Array.isArray(
+    payload.visible_not_reviewed_node_logical_ids,
+  )
+    ? payload.visible_not_reviewed_node_logical_ids
+    : [];
+  const noGeneratedCardsNodeLogicalIds = Array.isArray(
+    payload.no_generated_cards_node_logical_ids,
+  )
+    ? payload.no_generated_cards_node_logical_ids
+    : [];
   return NextResponse.json(
     normalizeReviewDetailResponse({
       ...payload,
       submitted_leaf_ids: submittedLeafIds,
       primary_evaluated_node_logical_ids: primaryEvaluatedNodeLogicalIds,
       supporting_context_node_logical_ids: supportingContextNodeLogicalIds,
+      visible_not_reviewed_node_logical_ids: visibleNotReviewedNodeLogicalIds,
+      no_generated_cards_node_logical_ids: noGeneratedCardsNodeLogicalIds,
       legacy_ambiguous_container_ids: legacyAmbiguousContainerIds,
       moved_legacy_node_references: movedLegacyNodeReferences,
     }),

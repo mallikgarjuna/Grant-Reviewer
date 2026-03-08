@@ -160,7 +160,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0067_backend_boundary_contract_zero_card_visible_section or wf0067_backend_boundary_contract_mixed_version_legacy_fallback"`
 Risks (if any): Boundary logic can accidentally overfit one representative call and fail the locked three-call wedge.
 
-### [ ] Task 6 — Frontend boundary and limitation surfaces stay truthful without positive supporting inference
+### [x] Task 6 — Frontend boundary and limitation surfaces stay truthful without positive supporting inference
 
 Goal:
 Render page-level coverage and limitation surfaces that stay honest about reviewed, visible-but-not-reviewed, no-card, and legacy/fallback states while keeping positive supporting labels optional.
