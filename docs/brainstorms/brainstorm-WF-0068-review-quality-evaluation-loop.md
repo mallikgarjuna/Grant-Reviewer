@@ -2,7 +2,7 @@
 # WF-0068 — Review Quality Evaluation Loop
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-08
 
@@ -100,7 +100,7 @@ Use a narrow, deterministic manual evaluation loop on representative real snippe
 
 Preferred direction:
 - define a mission-anchored scoring framework before looking for fixes
-- sample a small but representative snippet set across the locked three-call wedge
+- sample a small, representative, and failure-seeking snippet set across the locked three-call wedge; Phase 1 must explicitly prevent convenience sampling and cherry-picked "easy" examples
 - evaluate outputs using a fixed human-review procedure with stable ordering and a frozen evaluation baseline:
   - same app commit / branch baseline
   - same prompt + model/runtime configuration for the evaluated batch
@@ -124,6 +124,7 @@ Contract Notes / Non-obvious constraints:
 - The evaluation loop should be small enough to run repeatedly, but not so small that it overfits one polished example.
 - Determinism here means stable procedure and evidence recording, not exact textual output equality from the model.
 - If the frozen evaluation baseline changes mid-run, the batch is no longer comparable and should be restarted or split explicitly.
+- Phase 1 must make the snippet-selection rationale auditable per included item so later phases can prove the batch was representative and failure-seeking rather than convenience-sampled.
 
 ## 5. Constraints
 
@@ -136,6 +137,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0068-review-quality
 - The procedure must be repeatable by a future maintainer without relying on private intuition.
 - Keep later implementation boundaries explicit: evaluation artifacts may recommend a follow-on WF, but may not silently contain implementation scope.
 - If any representative call lacks enough approved snippet material to support the planned proof set, Phase 1 must treat that as a snippet-set planning gap inside this WF rather than widening to extra calls.
+- No proceed recommendation is valid without an explicit verification evidence bundle captured in the WF artifacts; missing evidence must resolve to `do not proceed` or `more evidence required`, never an optimistic pass.
 
 Contract Notes / Non-obvious constraints:
 - The evaluation framework must anchor to `docs/mission.md` language, not an ad hoc "rubric."
@@ -182,6 +184,7 @@ Minimum acceptable proof:
 - enough evaluated snippets to expose whether failures are isolated or patterned
 - evidence records that show exact findings and their official-call traceability basis
 - one frozen evaluation baseline per evidence batch, captured explicitly so later comparisons are not hand-wavy
+- a pass/fail summary that cites the verification evidence bundle used to support the conclusion
 - a conclusion that names the next narrow move, if any, without jumping into fixes here
 
 Explicitly excluded:
@@ -195,6 +198,7 @@ Contract Notes / Non-obvious constraints:
 - The evaluation must focus on snippet usefulness, not whole-proposal completeness.
 - The evidence format must preserve raw observed output plus structured judgment, so later fix WFs can trace back to concrete failures.
 - This WF is complete only when the boundary between evaluation and remediation is explicit enough to prevent a disguised implementation phase.
+- The verification evidence bundle for any proceed/do-not-proceed recommendation must include, at minimum: representative snippet coverage across the locked calls, the frozen evaluation baseline, completed evidence records for all reviewed items including insufficient-evidence cases, and an explicit pass/fail rationale tied to those records.
 
 ## 8. Explicit Non-Goals
 
