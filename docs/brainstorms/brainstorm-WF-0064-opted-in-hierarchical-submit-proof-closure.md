@@ -39,11 +39,23 @@ Contract Notes / Non-obvious constraints:
 - The product contract should state clearly whether supporting nodes are read-only structure/context in this path, separately persisted as non-reviewed context, or intentionally excluded with explicit UX and no data-loss trap.
 - Backlog framing should describe the real remaining gap accurately so future work does not restart from the removed nested-node blocker.
 
+Section 2 decisions:
+
+- Success is one proof path that is honest and safe for users, not a broader capability claim.
+- The preferred MVP outcome is fail-closed UX on the current primary-review path rather than adding supporting-context persistence by default.
+- Review detail should say visible supporting nodes were not part of the review unless the WF explicitly persists and traces them.
+
 ## 3. Target User / Actor
 
 - Primary actor: a researcher using universal submit on an opted-in hierarchical call.
 - Proof actor: the existing `MSCA-PF-2025` split-visibility path, because it is the only current repo proof call explicitly opted into the WF-0063 contract.
 - Secondary actor: maintainers relying on backlog/docs to understand what remains broken after WF-0063.
+
+Section 3 decisions:
+
+- The workflow optimizes for researcher-facing truthfulness first.
+- The proof call is locked to `MSCA-PF-2025` only.
+- Maintainers are a secondary audience through clearer backlog and workflow artifacts, not an excuse to make this docs-only.
 
 ## 4. Rough Idea (Unstructured Thinking)
 
@@ -68,6 +80,13 @@ Open questions suggested by repo snapshot:
 - Do not broaden into generic multi-call hardening, extraction work, or a general supporting-context engine.
 - Preserve the WF-0063 primary-path contract unless this WF explicitly changes it with tests and decision logging.
 - Do not treat this as docs-only unless current code/tests prove the path is already defensible; current audit says they do not.
+- Preserve current backend `/api/check-compliance` and `/api/structured-review` primary-path rejection semantics for supporting nodes, including their fail-closed request-boundary posture, unless this workflow explicitly re-contracts them.
+- Preserve existing idempotency and primary review persistence semantics unless a narrower explicit change is proven necessary.
+
+Section 5 decisions:
+
+- Maximum intended scope is submit-form affordance/copy plus review-detail coverage/label honesty plus bounded tests.
+- Backend persistence expansion for supporting nodes is explicitly not the default plan for MVP.
 
 ## 6. Risks / Unknowns
 
@@ -76,11 +95,18 @@ Open questions suggested by repo snapshot:
 - A persistence-heavy fix could broaden into the deferred supporting-context semantics work if the boundary is not kept narrow.
 - Review-detail coverage may remain misleading even after submit-path changes if supporting nodes stay absent from coverage labeling.
 
+Section 6 decisions:
+
+- Primary fail-closed assumption: if the UI cannot safely persist supporting-node text in this WF, it should stop collecting it on the proof path.
+- The main unknown to validate in planning is whether review-detail honesty can be fixed without introducing a new persisted supporting-context field.
+
 ## Open Questions / Deferred
 
 - Whether supporting-node text should persist onto the review record in MVP, or whether the smaller fix is to make supporting nodes non-editable in the primary path.
 - Whether `supporting_context_node_logical_ids` should remain empty in this WF or become a first-class persisted boundary for the proof path.
 - Whether MSCA conditional sections need special handling in the proof slice beyond the current visible-role path.
+- Exact UI wording for non-editable supporting nodes and the exact review-detail wording for visible-but-not-reviewed supporting sections. Deferred to Phase 1.
+- Whether review detail should list all visible supporting nodes or only the subset relevant to the selected review stage. Deferred to Phase 1.
 
 ## 7. MVP Definition
 
@@ -91,9 +117,18 @@ Open questions suggested by repo snapshot:
   - make review detail and user-facing copy accurately reflect what happened to visible hierarchical nodes.
 - This WF succeeds only if one researcher-facing hierarchical path is defensible end-to-end, not merely renderable.
 
+Section 7 decisions:
+
+- Recommended MVP path: keep supporting nodes visible but non-editable in the primary path, and make review detail classify them as visible but not part of this review unless explicitly persisted later.
+- Verification must prove:
+  - supporting nodes are no longer silently collected then discarded,
+  - primary-only submit/compliance semantics still hold,
+  - review detail no longer implies invisible or missing coverage semantics for the proof call.
+
 ## 8. Explicit Non-Goals
 
 - Generalized support for all hierarchical calls.
 - Broad supporting-context engine semantics across calls.
 - New scored review behavior for supporting nodes.
 - Multi-call migration or broad refactors not directly required for the MSCA proof path.
+- Re-contracting idempotency or review-create persistence for the general structured-review surface.
