@@ -11,7 +11,7 @@ describe("nodeRoles", () => {
         has_expectations: false,
         node_type: "SECTION",
       },
-      { splitVisibilityReviewabilityEnabled: true },
+      { splitVisibilityReviewabilityEnabled: true, hasChildren: true },
     );
     expect(optedInSupporting.role).toBe("SUPPORTING");
     expect(optedInSupporting.isContainer).toBe(true);

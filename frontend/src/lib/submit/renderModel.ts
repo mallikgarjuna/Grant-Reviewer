@@ -131,6 +131,11 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
   }
 
   const nodeById = new Map(input.nodes.map((node) => [node.id, node]));
+  const hasChildrenByNodeId = new Set(
+    input.nodes
+      .filter((node) => node.parent_node_id !== null)
+      .map((node) => node.parent_node_id as string),
+  );
   const renderNodeByLogicalId = new Map<string, RenderNode>();
   for (const node of input.nodes) {
     const nodeLogicalId = node.logical_id as string;
@@ -146,6 +151,7 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
     const reviewStage = metadata?.reviewStage ?? "BOTH";
     const role = classifyNodeRole(node, {
       splitVisibilityReviewabilityEnabled,
+      hasChildren: hasChildrenByNodeId.has(node.id),
     });
     renderNodeByLogicalId.set(nodeLogicalId, {
       nodeLogicalId,
@@ -159,6 +165,7 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
   const visibleNodes = input.nodes.filter((node) => {
     const role = classifyNodeRole(node, {
       splitVisibilityReviewabilityEnabled,
+      hasChildren: hasChildrenByNodeId.has(node.id),
     });
     if (splitVisibilityReviewabilityEnabled) {
       return !role.isContainer;

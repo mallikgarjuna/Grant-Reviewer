@@ -19,7 +19,10 @@ export function isSplitVisibilityReviewabilityEnabled(
 
 export function classifyNodeRole(
   node: Pick<NodeSummary, "node_role" | "has_expectations" | "node_type">,
-  options: { splitVisibilityReviewabilityEnabled: boolean },
+  options: {
+    splitVisibilityReviewabilityEnabled: boolean;
+    hasChildren?: boolean;
+  },
 ): NodeRoleClassification {
   const role: Role = options.splitVisibilityReviewabilityEnabled
     ? node.node_role === "SUPPORTING"
@@ -29,7 +32,7 @@ export function classifyNodeRole(
       ? "PRIMARY"
       : "SUPPORTING";
 
-  const isContainer = node.has_expectations === false && node.node_type === "SECTION";
+  const isContainer = node.has_expectations === false && options.hasChildren === true;
   const isPrimary = role === "PRIMARY";
   const isSupporting = role === "SUPPORTING";
   const isPrimarySubmittable = isPrimary && !isContainer;
