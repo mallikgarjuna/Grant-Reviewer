@@ -81,7 +81,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Universal Form: nested/hierarchical submit support | product | Merge the still-open nested-call gap into one item: remove the current nested-node block in universal submit, render hierarchical parent/child sections safely, and stop preserving a duplicate “recursive UI” placeholder plus an ERC symptom-only duplicate. (Ref: WF-0035 Phase 0.2 risk audit Q1; user report 2026-03-02; current unsupported state in `UniversalSubmitForm`.) | 2026-02-22 |
+| 1 | Universal Form: close opted-in hierarchical submit proof gap | product | Replace the stale "remove nested-node block" framing with the real remaining gap: opted-in hierarchical calls already render, but the MSCA proof path is still not defensible end-to-end because supporting nodes are editable yet dropped from compliance/submit, cleared on success, and omitted from review-detail supporting-context coverage. Keep scope to one proof path, not generic multi-call expansion. (Ref: WF-0064 Phase 0 audit, 2026-03-08; WF-0063 decisions/tests.) | 2026-02-22 |
 | 2 | Cross-call contract hardening for base review semantics | tech-debt | Extend deterministic cross-call coverage beyond the current proof set and add explicit `QUOTA_EXCEEDED` / `REVIEWS_DISABLED` assertions so universal review behavior is proven before broader onboarding. Keep this focused on real contract gaps, not another planning-only hardening pass. (Ref: `next move` follow-up after WF-0038/0039/0040/0041/0043, 2026-03-02.) | 2026-03-02 |
 | 3 | Expand coverage to the remaining promised call gap | product | Real call coverage now exists for NWO, ERC, and MSCA. Rewrite the old “ingest real call data” placeholder into the real remaining gap: add at least one credible ZonMw or equivalent missing promised-program call only after P1 #1-#2 are handled or explicitly bundled. (Ref: WF-0037, WF-0044, WF-0061, WF-0062, backlog audit 2026-03-08.) | 2026-02-16 |
 | 4 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
@@ -93,7 +93,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 ### P1 Rationale Snapshot (2026-03-08)
 
 - Current launch blocker is still the mismatch between promised multi-program coverage and incomplete truly universal submit behavior.
-- The nested/hierarchical submit gap is the main unresolved product bottleneck; do not hide it behind duplicate backlog rows or more call-authoring churn.
+- The remaining hierarchical submit gap is no longer the old renderer hard-block; it is the still-undefended proof-path contract/UX gap on the opted-in split-visibility flow.
 - Cross-call hardening stays ahead of broader onboarding so new calls land on a contract surface that is actually proven across failure modes.
 - Broad content expansion should now target the remaining promised-program gap, not re-park already completed ERC/MSCA authoring work.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
@@ -193,6 +193,8 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 38 | WF-0048 | agency-call-variability-policy | promoted | P1 #15 (historical) | 2026-03-04 |
 | 39 | WF-0057 | ops-evidence-debt-closure | promoted | P1 #10 (historical) | 2026-03-06 |
 | 40 | WF-0062 | erc-cog-2026-contract-model-correction | started-directly | - | 2026-03-07 |
+| 41 | WF-0063 | universal-node-visibility-reviewability | started-directly | - | 2026-03-08 |
+| 42 | WF-0064 | opted-in-hierarchical-submit-proof-closure | started-directly | - | 2026-03-08 |
 
 ---
 
