@@ -325,3 +325,26 @@ Read-only repo snapshot captured before Section 1 questioning:
 - C) No test additions.
  > Recommendation: A — The WF still needs docs and tests; what it must exclude is speculative scope outside the boundary.
  > **Selected: A**
+
+### Part B Clarifications — Blocking Audit Resolution
+
+**Q1: How should the representative-call contract be locked?**
+- A) Exactly 3 calls for MVP: one real call each from NWO, ERC, and MSCA; widen only if Phase 1 documents a blocker.
+- B) At least 3 calls, with freedom to include more during planning.
+- C) All currently supported real calls.
+ > Recommendation: A — This locks a real MVP boundary while preserving a fail-closed expansion path if evidence shows the 3-call set is not enough. B leaves too much drift. C may be stronger than needed and can inflate scope before the gap is proven.
+ > **Selected: A**
+
+**Q2: How should `QUOTA_EXCEEDED` and `REVIEWS_DISABLED` be scoped?**
+- A) API/service-entry gate proofs only, with explicit assertions that pipeline execution and persistence do not happen.
+- B) Require paired engine+API proof for those gates too.
+- C) Treat them as secondary and leave seam choice open.
+ > Recommendation: A — These are entry-gate semantics, so the correct fail-closed proof is that they stop before engine execution and before persistence side effects. B confuses the runtime seam. C leaves a critical trust rule ambiguous.
+ > **Selected: A**
+
+**Q3: What fail-closed side-effect rule should be locked?**
+- A) Blocked gate outcomes create no review, run no pipeline, and leave no partial persisted review state.
+- B) Only “no successful review creation” needs to be guaranteed.
+- C) Leave persistence semantics to Phase 1.
+ > Recommendation: A — This is the strictest trustworthy contract and matches the user’s trust-surface goal. B still allows silent partial state. C defers a core fail-closed invariant.
+ > **Selected: A**

@@ -2,8 +2,8 @@
 # WF-0065 — Cross-Call Contract Hardening of Base Review Semantics
 
 Artifact: brainstorm
-Version: v0.2
-Status: Draft
+Version: v0.3
+Status: Draft Complete
 Last Updated: 2026-03-08
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-contract-hardening-base-review-semantics.md`
@@ -52,13 +52,13 @@ Open questions from snapshot:
 ### Decisions (selected)
 
 - The primary defect is that the base review contract is not yet proven consistent at the contract boundary across supported calls and failure gates.
-- Minimum credible cross-call scope for this WF is one representative real call from each active family: NWO, ERC, and MSCA.
+- WF-0065 MVP proof set is exactly one real supported call from each active family: NWO, ERC, and MSCA.
 - Fail-closed consistency must be proven at the paired boundary: service/API entrypoints plus the underlying base-review execution seam.
 - Blocking drift includes any mismatch in status/error semantics, gating behavior, or review-contract outcomes for the same boundary case across calls.
 - The problem statement explicitly excludes supporting-context semantics, new-call onboarding, and broad pipeline redesign.
 
 Contract Notes / Non-obvious constraints:
-- “Cross-call” here means cross-family contract evidence, not broadening to every available call unless a family representative proves insufficient.
+- “Cross-call” here means the locked 3-call proof set unless Phase 1 documents a blocker showing family-level variance still leaves a material semantic gap.
 - API-only evidence is not enough if internal execution could still fail open before the boundary response is formed.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-contract-hardening-base-review-semantics.md` (Section 1)
@@ -72,12 +72,12 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-con
 - Success means deterministic evidence that the same base review semantics hold across representative NWO, ERC, and MSCA calls at the paired engine-plus-API boundary.
 - “Good enough” for MVP is a narrow evidence bundle of deterministic contract tests proving consistent success, fail-closed gating, and failure-mode behavior without broadening scope.
 - Expected behavior change is increased release confidence: supported calls stop relying on proof slices and instead share an explicit cross-call trust baseline.
-- Required failure-mode outcome includes explicit deterministic coverage for `QUOTA_EXCEEDED` and `REVIEWS_DISABLED`, with no hidden execution beyond the boundary gate.
+- Required failure-mode outcome includes explicit deterministic coverage for `QUOTA_EXCEEDED` and `REVIEWS_DISABLED` at the API/service entry boundary, with no engine execution or partial persistence beyond the gate.
 - The desired outcome is evidence-first, not architecture-first: tests and invariant proof count more than prose expansion.
 
 Contract Notes / Non-obvious constraints:
 - Passing evidence must be concrete enough to support the product claim “traceable enough to trust,” not just “works in representative demos.”
-- Failure-mode proof must show both the returned semantics and the absence of fail-open downstream review creation/execution where relevant.
+- Failure-mode proof must show returned semantics plus explicit absence of downstream review creation, pipeline execution, and partial persisted review state for blocked gate outcomes.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-contract-hardening-base-review-semantics.md` (Section 2)
 
@@ -107,7 +107,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-con
 
 - The simplest direction is a contract-hardening WF centered on deterministic cross-call tests at the engine and API/service seams, not a redesign of the pipeline.
 - Representative calls should come from real supported families already in-repo, with no speculative onboarding unless current representatives cannot expose the required semantics.
-- The WF should harden both happy-path and failure-gate semantics using the same core contract assertions, rather than treating quota/policy gates as separate ad hoc checks.
+- The WF should harden both happy-path and failure-gate semantics under one trust story, while keeping the proof surfaces explicit: review execution cases use paired engine-plus-API parity; quota/policy gates use API/service entry fail-closed assertions.
 - Existing WF-0045 stage contracts and WF-0063/WF-0064 fail-closed proof behavior are baseline inputs, not subjects for reinvention.
 - The implementation direction should prefer extending existing deterministic fixtures/selectors over inventing new broad harnesses unless current seams are inadequate.
 
@@ -132,6 +132,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-con
 Contract Notes / Non-obvious constraints:
 - Tight scope means some superficially related items remain deferred even if encountered during analysis.
 - A missing proof seam may justify a narrow code change, but not a “while we are here” redesign.
+- For `QUOTA_EXCEEDED` and `REVIEWS_DISABLED`, fail-closed means no review creation, no pipeline run, and no partial persisted review state.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-contract-hardening-base-review-semantics.md` (Section 5)
 
@@ -157,7 +158,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-con
 
 ## Open Questions / Deferred
 
-- Open question: does one real representative per active family provide enough cross-call confidence, or will Phase 1 need to require all currently supported real calls at one boundary surface?
+- Phase 1 decision gate: if the locked 3-call proof set proves insufficient to expose material semantic variance, document the blocker and rationale before widening call coverage.
 - Deferred: remaining promised-program breadth gap (for example ZonMw-equivalent expansion) stays out of this WF unless current supported-call coverage proves insufficient to validate the contract.
 - Deferred: explicit supporting-context semantics beyond the WF-0063/WF-0064 proof-call MVP remain out of scope.
 - Deferred: broad pipeline redesign, performance optimization, and optional extension boundary redesign remain outside this WF.
@@ -169,7 +170,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-con
 ### Decisions (selected)
 
 - The smallest acceptable slice is a deterministic proof bundle showing that representative NWO, ERC, and MSCA calls preserve the same core base-review contract semantics at paired engine and API/service boundaries.
-- MVP must explicitly cover `QUOTA_EXCEEDED` and `REVIEWS_DISABLED` as fail-closed contract outcomes.
+- MVP must explicitly cover `QUOTA_EXCEEDED` and `REVIEWS_DISABLED` as API/service-entry fail-closed contract outcomes with no execution or persistence side effects.
 - MVP should prefer existing real call snapshots and current runtime seams over creating synthetic abstractions, unless synthetic coverage is only needed to isolate a boundary invariant.
 - The minimum acceptable output is evidence strong enough to decide whether the current review behavior is dependable across calls and failure modes.
 - Anything not required to reach that decision is excluded from MVP.
@@ -177,6 +178,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-con
 Contract Notes / Non-obvious constraints:
 - “Dependable” in MVP terms means proven stable semantics, not perfect feature completeness across the product.
 - A planning artifact alone is insufficient; the later phases must be structured toward executable deterministic evidence.
+- If the locked 3-call proof set proves insufficient, widening call coverage requires an explicit Phase 1 blocker note rather than silent scope expansion.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0065-cross-call-contract-hardening-base-review-semantics.md` (Section 7)
 
