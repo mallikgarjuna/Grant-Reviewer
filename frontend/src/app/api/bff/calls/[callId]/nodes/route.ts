@@ -1,15 +1,18 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { listNodes } from "@/lib/bff/adapter";
-import { apiErrorResponse, requireBffContext } from "@/lib/bff/route-helpers";
+import {
+  apiErrorResponse,
+  requireBffContext,
+  resolveExternalUserId,
+} from "@/lib/bff/route-helpers";
 
 type RouteContext = {
   params: Promise<{ callId: string }>;
 };
 
-export async function GET(_: Request, context: RouteContext) {
-  const { userId } = await auth();
+export async function GET(request: Request, context: RouteContext) {
+  const userId = await resolveExternalUserId(request);
   const contextResult = requireBffContext(userId);
   if (!contextResult.ok) {
     return apiErrorResponse(contextResult.error);

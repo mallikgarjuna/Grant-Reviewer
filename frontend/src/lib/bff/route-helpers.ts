@@ -1,4 +1,8 @@
+// frontend/src/lib/bff/route-helpers.ts
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+
+import { resolveBypassUserId } from "@/lib/auth/testBypassAuth";
 
 import type { ApiError, BffRequestContext, Result } from "./types";
 
@@ -28,4 +32,13 @@ export function apiErrorResponse(error: ApiError): NextResponse {
     },
     { status: error.status },
   );
+}
+
+export async function resolveExternalUserId(request: Request): Promise<string | null> {
+  const bypassUserId = await resolveBypassUserId(request);
+  if (bypassUserId) {
+    return bypassUserId;
+  }
+  const { userId } = await auth();
+  return userId ?? null;
 }
