@@ -65,7 +65,8 @@ Interim status for named targets:
     - `docs/parking_lot.md`
     - `docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
 - `bash -lc 'test -z "$(git diff --name-only d9f7d9df8900c07b7b90d1b1171b86db51b062ee...HEAD | rg -n "^(docs/parking_lot\\.md|docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca\\.md)$" -v)"'`
-  - result: `PASS`
+  - result: `FAIL` (`docs/tasks/task-WF-0066-peerlens-scope-lock-nwo-erc-msca.md` is also in the range)
+  - interpretation: named target-set correction stayed narrow (`docs/parking_lot.md` edited; other named targets no-op), but branch-level closure still includes task-artifact bookkeeping drift versus the captured baseline.
 
 ## Part B — Technical Audit (No Edits)
 
@@ -85,7 +86,7 @@ Range: `main...HEAD`
 
 Mandatory focus-area coverage:
 - architecture violations vs `AGENTS.md`: no blocking violations found in implementation files touched.
-- broken invariants: no baseline-range invariant break; scope remained narrow to contradiction-bearing live docs + walkthrough.
+- broken invariants: named-target invariant holds, but strict branch-level two-file allowlist invariant is non-blocking red because the task artifact is also in the baseline range.
 - security issues: none in this docs-only diff.
 - edge cases: historical sections remained untouched; mission no-op explicitly proven.
 - missing tests: no automated-code tests required; doc evidence bundle present.
@@ -96,7 +97,8 @@ Mandatory focus-area coverage:
 - Part C1: no blocking findings from Part B; no additional revisions required.
 - Part C2 verification:
   - Baseline preflight: `cd backend && uv run pytest -m no_db` -> `234 passed, 179 deselected`.
-  - Task-level doc verification commands for contradiction removal and baseline-range scope proof -> pass.
+  - Task-level doc verification commands for contradiction removal -> pass.
+  - Baseline-range strict two-file allowlist check -> fail (non-blocking; bookkeeping file also changed).
 - Part C3:
   - Walkthrough finalized with per-file evidence bundle.
   - Archive/index status moves were intentionally not applied in this run to preserve the WF-0066 docs-only atomic correction scope.
