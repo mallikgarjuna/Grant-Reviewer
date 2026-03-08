@@ -2,7 +2,7 @@
 # WF-0064 — Opted-In Hierarchical Submit Proof Closure
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-08
 
@@ -36,7 +36,7 @@ Contract Notes / Non-obvious constraints:
 
 - One real opted-in hierarchical call already in the repo is defensible end-to-end.
 - A researcher should not be invited to enter text that silently disappears or is misrepresented after submit.
-- The product contract should state clearly whether supporting nodes are read-only structure/context in this path, separately persisted as non-reviewed context, or intentionally excluded with explicit UX and no data-loss trap.
+- The product contract should state clearly that supporting nodes stay visible but non-editable in this proof path, remain outside submit/compliance/persistence boundaries, and do not create a silent data-loss trap.
 - Backlog framing should describe the real remaining gap accurately so future work does not restart from the removed nested-node blocker.
 
 Section 2 decisions:
@@ -81,14 +81,13 @@ Open questions suggested by repo snapshot:
 - Preserve the WF-0063 primary-path contract unless this WF explicitly changes it with tests and decision logging.
 - Do not treat this as docs-only unless current code/tests prove the path is already defensible; current audit says they do not.
 - Preserve current backend `/api/check-compliance` and `/api/structured-review` primary-path rejection semantics for supporting nodes, including their fail-closed request-boundary posture, unless this workflow explicitly re-contracts them.
-- Preserve existing idempotency and primary review persistence semantics unless a narrower explicit change is proven necessary.
-- Treat supporting-node persistence as a fallback only if the read-only/non-editable proof-path fix is proven insufficient during planning; it is not an equal default direction for MVP.
+- Preserve existing idempotency and primary review persistence semantics; this WF must not add supporting-node persistence or a parallel supporting-context request path.
 - Keep implementation proof-path-local to `MSCA-PF-2025`; do not introduce generic multi-call supporting-context infrastructure in this workflow.
 
 Section 5 decisions:
 
 - Maximum intended scope is submit-form affordance/copy plus review-detail coverage/label honesty plus bounded tests.
-- Backend persistence expansion for supporting nodes is explicitly not the default plan for MVP.
+- Backend persistence expansion for supporting nodes is explicitly out of scope for MVP.
 
 ## 6. Risks / Unknowns
 
@@ -100,16 +99,14 @@ Section 5 decisions:
 Section 6 decisions:
 
 - Primary fail-closed assumption: if the UI cannot safely persist supporting-node text in this WF, it should stop collecting it on the proof path.
-- The main unknown to validate in planning is whether review-detail honesty can be fixed without introducing a new persisted supporting-context field.
+- The main unknown to validate in planning is the exact presentation of review-detail honesty, not whether a new persisted supporting-context field is needed.
 - Successful primary review submission must not clear any supporting-node draft state unless the UI no longer allows editing it or the workflow explicitly persists that data by contract.
 
 ## Open Questions / Deferred
 
-- Whether supporting-node text should persist onto the review record in MVP, or whether the smaller fix is to make supporting nodes non-editable in the primary path.
-- Whether `supporting_context_node_logical_ids` should remain empty in this WF or become a first-class persisted boundary for the proof path.
 - Whether MSCA conditional sections need special handling in the proof slice beyond the current visible-role path.
 - Exact UI wording for non-editable supporting nodes and the exact review-detail wording for visible-but-not-reviewed supporting sections. Deferred to Phase 1.
-- Whether review detail should list all visible supporting nodes or only the subset relevant to the selected review stage. Deferred to Phase 1.
+- Whether review detail should list all visible supporting nodes or only the stage-eligible visible subset. Deferred to Phase 1.
 
 ## 7. MVP Definition
 
@@ -123,11 +120,21 @@ Section 6 decisions:
 Section 7 decisions:
 
 - Recommended MVP path: keep supporting nodes visible but non-editable in the primary path, and make review detail classify them as visible but not part of this review unless explicitly persisted later.
+- MVP must not add supporting-node persistence to the review record or any separate supporting-context request branch.
+- `supporting_context_node_logical_ids` must remain empty in this WF.
+- Review detail coverage must be computed from the stage-eligible visible non-container nodes on the proof path, not from `has_expectations` leaves, so visible supporting nodes such as `abstract` and Part B2 sections cannot disappear from the coverage summary.
 - Verification must prove:
-  - supporting nodes are no longer silently collected then discarded,
+  - supporting nodes are no longer editable, written into local draft state, or silently collected then discarded on the proof path,
   - primary-only submit/compliance semantics still hold,
+  - backend `SUPPORTING_NODE_NOT_ALLOWED` fail-closed semantics remain unchanged for primary-path submit/compliance requests,
   - review detail no longer implies invisible or missing coverage semantics for stage-eligible visible supporting nodes on the proof call,
   - proof-call behavior remains reversible through the existing opt-in seam and non-opted-in calls do not change behavior.
+- Required test seams for Phase 1/2:
+  - submit-form UI test proving visible supporting nodes render as non-editable on `MSCA-PF-2025` while primary nodes remain editable,
+  - draft-state regression test proving supporting nodes do not write local draft state and cannot be silently cleared on successful primary submit,
+  - backend API tests proving primary-path submit/compliance still reject supporting nodes with `SUPPORTING_NODE_NOT_ALLOWED`,
+  - review-detail UI/API tests proving visible supporting nodes such as `abstract` appear under `Visible but not part of this review`,
+  - parity test proving non-opted-in calls preserve current behavior when the proof-call opt-in seam is absent.
 
 ## 8. Explicit Non-Goals
 
