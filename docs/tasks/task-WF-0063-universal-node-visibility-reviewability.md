@@ -98,12 +98,14 @@ Acceptance Criteria:
 - `GET /api/public/calls/{call_logical_id}/config` exposes one machine-readable split-behavior flag derived from canonical runtime config.
 - `GET /calls/{call_id}/nodes` returns all official nodes plus `node_role` for opted-in proof-call behavior without removing `has_expectations`.
 - Non-opted-in calls keep legacy config behavior and do not silently switch to split visibility semantics.
+- The same proof-call-shaped canonical data can be forced back to legacy behavior by disabling the runtime opt-in seam, proving rollback does not require YAML re-authoring.
 TDD Plan:
-- RED: add `test_wf0063_call_config_exposes_split_opt_in_for_msca_pf_2025_only` and `test_wf0063_flat_nodes_api_returns_all_official_nodes_with_node_role` in `backend/tests/test_api.py`.
-- GREEN: implement the smallest API contract changes needed to surface the opt-in flag and flat-node role metadata from canonical data.
+- RED: add `test_wf0063_call_config_exposes_split_opt_in_for_msca_pf_2025_only`, `test_wf0063_flat_nodes_api_returns_all_official_nodes_with_node_role`, and `test_wf0063_disabling_split_opt_in_restores_legacy_call_behavior` in `backend/tests/test_api.py`.
+- GREEN: implement the smallest API contract changes needed to surface the opt-in flag and flat-node role metadata from canonical data while preserving explicit rollback behavior when the opt-in is off.
 - REFACTOR: extract a small config-response helper only if opt-in resolution becomes duplicated inside `backend/main.py`.
 Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0063_call_config_exposes_split_opt_in_for_msca_pf_2025_only or wf0063_flat_nodes_api_returns_all_official_nodes_with_node_role"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0063_disabling_split_opt_in_restores_legacy_call_behavior"`
 - `cd backend && rg -n "node_role|split_visibility|has_expectations" app/schemas/api.py main.py`
 Risks (if any): If the tracer bullet only proves MSCA and not legacy fallback in the same test area, the rollout gate can drift unnoticed.
 
@@ -400,12 +402,14 @@ Acceptance Criteria:
 - Automated coverage proves `MSCA-PF-2025` opt-in behavior is aligned across canonical YAML, nodes API, submit/compliance boundaries, and review-detail labels.
 - Automated coverage proves supporting nodes never silently influence primary review outputs in MVP.
 - Automated coverage proves non-opted-in legacy calls retain current behavior.
+- Automated coverage proves the proof-call runtime opt-in can be disabled to restore legacy behavior without re-authoring the canonical YAML.
 TDD Plan:
-- RED: add `wf0063_proof_call_parity_holds_across_api_submit_and_review_detail` and `wf0063_non_opted_in_calls_preserve_legacy_behavior` across the touched backend/frontend test files.
+- RED: add `wf0063_proof_call_parity_holds_across_api_submit_and_review_detail`, `wf0063_non_opted_in_calls_preserve_legacy_behavior`, and `wf0063_proof_call_opt_in_rollback_restores_legacy_behavior` across the touched backend/frontend test files.
 - GREEN: add only the final assertions and fixture wiring required after Tasks 1 through 11 are green.
 - REFACTOR: trim duplicated WF-0063 fixtures if parity setup becomes noisy across backend and frontend tests.
 Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0063_proof_call_parity_holds_across_api_submit_and_review_detail or wf0063_non_opted_in_calls_preserve_legacy_behavior"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0063_proof_call_opt_in_rollback_restores_legacy_behavior"`
 - `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0063_proof_call_parity_holds_across_api_submit_and_review_detail"`
 - `cd frontend && npx vitest run src/app/app/reviews/[reviewId]/page.test.tsx -t "wf0063_non_opted_in_calls_preserve_legacy_behavior"`
 Risks (if any): Without an explicit closure guard, the proof call can look correct in one surface while still leaking silent regressions across another.
@@ -414,3 +418,4 @@ Risks (if any): Without an explicit closure guard, the proof call can look corre
 
 - v0.1 (2026-03-08): Initial task breakdown from PRD.
 - v0.2 (2026-03-08): Tightened proof-call opt-in versus legacy boundaries, split frontend/backend role seams into atomic tasks, and added explicit parity and fail-closed closure coverage; marked Ready for Implementation.
+- v0.3 (2026-03-08): Review-and-harden pass added explicit proof-call rollback coverage so disabling the opt-in seam must restore legacy behavior without YAML re-authoring.
