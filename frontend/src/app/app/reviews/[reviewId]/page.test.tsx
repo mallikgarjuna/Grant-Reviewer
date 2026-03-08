@@ -942,6 +942,70 @@ describe("ReviewDetailPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("wf0064_review_detail_preserves_legacy_behavior_for_msca_when_node_roles_absent", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-msca",
+                call_code: "MSCA-PF-2025",
+                ordering_source: "call_nodes",
+                primary_evaluated_node_logical_ids: ["excellence"],
+                supporting_context_node_logical_ids: [],
+                submitted_leaf_ids: ["excellence"],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-msca/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "excellence",
+                  title: "Excellence",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                  node_role: null,
+                },
+                {
+                  id: "node-2",
+                  logical_id: "impact",
+                  title: "Impact",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                  node_role: null,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Visible but not part of this review:/),
+    ).not.toBeInTheDocument();
+  });
+
   it("guardrail: review detail path contains no hardcoded VENI constants", () => {
     const source = fs.readFileSync("src/app/app/reviews/[reviewId]/page.tsx", "utf-8");
     const legacyLabels = ["VENI", "NODE", "LABELS"].join("_");
