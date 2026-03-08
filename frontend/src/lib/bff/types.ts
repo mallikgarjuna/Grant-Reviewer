@@ -147,11 +147,14 @@ export type ReviewCardSummary = {
   feedback_text: string;
   assessment_status?: "ASSESSED" | "NOT_ASSESSABLE" | null;
   not_assessable_reason?: string | null;
+  source_basis_label?: string | null;
+  source_basis_state?: "available" | "unavailable" | "legacy_fallback";
 };
 
 export type ReviewDetailResponse = {
   call_id?: string | null;
   call_code?: string | null;
+  detail_state?: "call_linked" | "legacy_fallback" | "proof_path_unmapped";
   submitted_node_logical_ids?: string[];
   ordering_source?: "call_nodes" | "review_payload_fallback";
   unmapped_node_logical_ids?: string[];

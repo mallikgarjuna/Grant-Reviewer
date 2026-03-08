@@ -12,6 +12,16 @@ type RouteContext = {
   params: Promise<{ reviewId: string }>;
 };
 
+function normalizeReviewCards(record: Record<string, unknown>) {
+  if (!Array.isArray(record.cards)) {
+    return [];
+  }
+  return record.cards.filter(
+    (item): item is Record<string, unknown> =>
+      Boolean(item) && typeof item === "object" && !Array.isArray(item),
+  );
+}
+
 function inferDetailState(record: Record<string, unknown>) {
   const callCode =
     typeof record.call_code === "string" ? record.call_code : null;
@@ -61,6 +71,8 @@ function normalizeReviewDetailResponse(payload: unknown): unknown {
           (item): item is string => typeof item === "string",
         )
       : [],
+    // Preserve backend card trust fields verbatim; avoid local source-basis synthesis.
+    cards: normalizeReviewCards(record),
   };
 }
 

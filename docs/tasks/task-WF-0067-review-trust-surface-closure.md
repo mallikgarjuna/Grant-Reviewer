@@ -41,7 +41,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0067_backend_source_basis_contract_nwo_veni_2025_preproposal or wf0067_backend_source_basis_contract_erc_stg_2026_full or wf0067_backend_source_basis_contract_msca_pf_2025"`
 Risks (if any): The source-basis precedence may be implemented too far from the response seam, leaving Phase 3 with schema-only proof instead of public-contract proof.
 
-### [ ] Task 2 — Tracer bullet: preserve trust fields through the BFF review-detail route
+### [x] Task 2 — Tracer bullet: preserve trust fields through the BFF review-detail route
 
 Goal:
 Prove the BFF review-detail seam preserves the backend trust contract for one representative review detail without inventing stronger semantics.
