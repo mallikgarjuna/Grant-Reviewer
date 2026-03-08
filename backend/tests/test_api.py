@@ -1663,6 +1663,55 @@ def test_wf0063_compliance_rejects_supporting_nodes_for_primary_path(
     assert payload["error"]["details"]["node_logical_ids"] == ["abstract"]
 
 
+def test_wf0064_check_compliance_rejects_supporting_nodes_with_existing_error(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_msca_pf_seed(monkeypatch)
+    assert call_code == "MSCA-PF-2025"
+
+    response = post_compliance(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "draft_nodes": [
+                {
+                    "node_logical_id": "abstract",
+                    "text": "Supporting content must stay fail-closed for primary path.",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 422
+    payload = response.json()
+    assert payload["error"]["code"] == "SUPPORTING_NODE_NOT_ALLOWED"
+    assert payload["error"]["details"]["node_logical_ids"] == ["abstract"]
+
+
+def test_wf0064_structured_review_rejects_supporting_nodes_with_existing_error(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_msca_pf_seed(monkeypatch)
+    assert call_code == "MSCA-PF-2025"
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "abstract",
+                    "text": "Supporting content must stay fail-closed for primary path.",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 422
+    payload = response.json()
+    assert payload["error"]["code"] == "SUPPORTING_NODE_NOT_ALLOWED"
+    assert payload["error"]["details"]["node_logical_ids"] == ["abstract"]
+
+
 def test_wf0063_proof_call_parity_holds_across_api_submit_and_review_detail(
     monkeypatch,
 ) -> None:

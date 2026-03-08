@@ -81,7 +81,7 @@ Verification Steps:
 - `cd frontend && rg -n "loadDraft|saveDraft|clearDraft|localStorage|supporting" src/components/submit/UniversalSubmitForm.tsx src/lib/submit/draftStore.ts`
 Risks (if any): Hidden autosave or submit-success cleanup code can still erase or serialize supporting entries after the form looks correct.
 
-### [ ] Task 3 — Preserve fail-closed backend rejection for supporting-node primary submits
+### [x] Task 3 — Preserve fail-closed backend rejection for supporting-node primary submits
 
 Goal:
 Lock unchanged backend primary-path behavior so crafted supporting-node payloads still fail closed with `SUPPORTING_NODE_NOT_ALLOWED` on both compliance and structured-review endpoints.
