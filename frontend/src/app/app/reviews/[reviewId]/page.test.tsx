@@ -572,6 +572,7 @@ describe("ReviewDetailPage", () => {
                   node_type: "SECTION",
                   order_index: 1,
                   has_expectations: true,
+                  node_role: "PRIMARY",
                 },
                 {
                   id: "n2",
@@ -581,6 +582,7 @@ describe("ReviewDetailPage", () => {
                   node_type: "SUBSECTION",
                   order_index: 2,
                   has_expectations: false,
+                  node_role: "SUPPORTING",
                 },
                 {
                   id: "n3",
@@ -590,6 +592,7 @@ describe("ReviewDetailPage", () => {
                   node_type: "SECTION",
                   order_index: 3,
                   has_expectations: true,
+                  node_role: "PRIMARY",
                 },
               ],
             }),
@@ -614,7 +617,7 @@ describe("ReviewDetailPage", () => {
     );
     expect(
       screen.getByText(/Visible but not part of this review:/),
-    ).toHaveTextContent("Visible but not part of this review: Impact");
+    ).toHaveTextContent("Visible but not part of this review: Abstract, Impact");
   });
 
   it("wf0064_review_detail_shows_visible_supporting_nodes_with_empty_supporting_context_ids", async () => {
