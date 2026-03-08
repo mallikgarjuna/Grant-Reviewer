@@ -1,6 +1,32 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-08 (WF-0065: cross-call contract hardening of base review semantics)
+
+### AD 65.1: WF-0065 proof scope is locked to one representative real call per active family
+- **WF ID**: WF-0065
+- **Context**: The remaining trust gap is not broad feature coverage; it is missing deterministic evidence that base review semantics hold across supported call families without relying on single-call slices or synthetic stand-ins.
+- **Decision**: Lock WF-0065 MVP proof scope to exactly three representative calls: `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, and `MSCA-PF-2025`. Any widening beyond this 3-call proof set requires an explicit blocker showing the locked representatives are insufficient to expose a material semantic variance.
+- **Why**: Preserves the approved narrow trust-hardening scope while still forcing cross-family proof coverage.
+- **Tradeoff**: Leaves broader promised-program breadth deferred and requires the chosen representatives to carry a stronger evidence burden.
+- **Status**: Approved.
+
+### AD 65.2: Paired boundary parity is semantic and fail-closed, not endpoint-unification work
+- **WF ID**: WF-0065
+- **Context**: The brainstorm requires proof across `POST /reviews`, `POST /api/structured-review`, `StructuredReviewerService.generate_structured_review_pipeline_v1`, and `pipeline_v1`, but broad interpretation could incorrectly turn Phase 2 into endpoint convergence or force parity where one endpoint does not expose the same contract surface.
+- **Decision**: Require semantic parity only for the overlapping base-review contract surfaces that the two endpoints expose today, while also proving service/engine fail-closed invariants. Preserve current DTO/routing differences, and require `QUOTA_EXCEEDED` plus `REVIEWS_DISABLED` to show zero review creation, zero partial persistence, and zero pipeline execution.
+- **Why**: Keeps WF-0065 focused on dependable trust-surface semantics instead of broad API redesign, while still preventing fail-open drift from hiding behind boundary responses.
+- **Tradeoff**: Phase 2 must be precise about what counts as overlapping semantics per endpoint, and coverage gaps cannot be papered over by treating unmatched surfaces as equivalent.
+- **Status**: Approved.
+
+### AD 65.3: WF-0065 proof must follow the actual two-path runtime split, and named gates are API-boundary invariants
+- **WF ID**: WF-0065
+- **Context**: Phase 1 PRD v0.2 still described `/reviews` as if it shared the structured service seam, and it described `QUOTA_EXCEEDED` / `REVIEWS_DISABLED` as if they existed at a service-entry boundary. In repo reality, `/reviews` flows through `ReviewerService.generate_review`, `/api/structured-review` flows through `StructuredReviewerService.generate_structured_review_pipeline_v1` and `pipeline_v1`, and the named gates live in `backend/main.py` before either service path is invoked.
+- **Decision**: Make the runtime proof contract path-specific: prove `/reviews` against `ReviewerService.generate_review`, prove `/api/structured-review` against `StructuredReviewerService.generate_structured_review_pipeline_v1` plus `pipeline_v1`, and attach `QUOTA_EXCEEDED` / `REVIEWS_DISABLED` proof to the API boundary with explicit non-invocation assertions for both downstream service paths.
+- **Why**: Removes a planning-layer hallucination, keeps Phase 2 aligned to the actual architecture, and preserves fail-closed evidence requirements without inventing a service gate that the code does not implement.
+- **Tradeoff**: Phase 2 must cover one extra explicit service seam and cannot claim gate closure from service tests alone.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0064: opted-in hierarchical submit proof closure)
 
 ### AD 64.1: WF-0064 stays fail-closed and primary-only for the MSCA proof path
