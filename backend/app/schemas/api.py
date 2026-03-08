@@ -193,6 +193,8 @@ class ReviewDetailResponse(BaseModel):
     ordering_source: Literal["call_nodes", "review_payload_fallback"] = "call_nodes"
     unmapped_node_logical_ids: list[str] = Field(default_factory=list)
     submitted_leaf_ids: list[str] = Field(default_factory=list)
+    primary_evaluated_node_logical_ids: list[str] = Field(default_factory=list)
+    supporting_context_node_logical_ids: list[str] = Field(default_factory=list)
     legacy_ambiguous_container_ids: list[str] = Field(default_factory=list)
     moved_legacy_node_references: list[str] = Field(default_factory=list)
     compatibility_notes: list[ReviewCompatibilityNote] = Field(default_factory=list)

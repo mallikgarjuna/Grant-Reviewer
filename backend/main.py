@@ -1333,6 +1333,10 @@ def get_review(
     submitted_leaf_ids, legacy_ambiguous_container_ids, moved_legacy_node_references = (
         repository.resolve_structured_review_coverage(review)
     )
+    (
+        primary_evaluated_node_logical_ids,
+        supporting_context_node_logical_ids,
+    ) = repository.resolve_review_detail_role_labels(review=review, call_id=call_id)
     compatibility_notes: list[ReviewCompatibilityNote] = []
     if legacy_ambiguous_container_ids:
         compatibility_notes.append(
@@ -1369,6 +1373,8 @@ def get_review(
         ordering_source=ordering_source,
         unmapped_node_logical_ids=unmapped_node_logical_ids,
         submitted_leaf_ids=submitted_leaf_ids,
+        primary_evaluated_node_logical_ids=primary_evaluated_node_logical_ids,
+        supporting_context_node_logical_ids=supporting_context_node_logical_ids,
         legacy_ambiguous_container_ids=legacy_ambiguous_container_ids,
         moved_legacy_node_references=moved_legacy_node_references,
         compatibility_notes=compatibility_notes,

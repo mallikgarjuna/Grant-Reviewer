@@ -1179,6 +1179,34 @@ def test_review_detail_includes_call_id_and_call_code(monkeypatch) -> None:
     assert detail_payload["call_code"] == seeded_ids.structured_call_code
 
 
+def test_wf0063_review_detail_exposes_primary_evaluated_and_empty_supporting_context_fields(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_msca_pf_seed(monkeypatch)
+    assert call_code == "MSCA-PF-2025"
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "excellence",
+                    "text": "Primary reviewed content for role-label seam test.",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["primary_evaluated_node_logical_ids"] == ["excellence"]
+    assert payload["supporting_context_node_logical_ids"] == []
+
+
 def test_review_detail_order_index_tie_uses_node_logical_id_fallback(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
 

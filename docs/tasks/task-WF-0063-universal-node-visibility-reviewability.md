@@ -311,7 +311,7 @@ Verification Steps:
 - `cd backend && rg -n "supporting|node_role|submitted_leaf_ids|draft_nodes" app/services/structured_reviewer_service.py app/services/compliance_engine.py`
 Risks (if any): Silent dropping of supporting-node payloads would violate the WF’s fail-closed semantic boundary even if the UI filters correctly.
 
-### [ ] Task 10 — Backend review-detail role labeling seam
+### [x] Task 10 — Backend review-detail role labeling seam
 
 Goal:
 Add explicit review-detail output fields for primary evaluated content and reserved supporting context so downstream consumers no longer infer participation semantics from cards or submitted-leaf heuristics alone.
