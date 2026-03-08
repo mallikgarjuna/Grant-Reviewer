@@ -27,6 +27,9 @@ from app.models.domain import (
     ReviewRating,
     User,
 )
+from app.services.node_role_resolution import (
+    extract_supporting_node_ids_from_canonical_json,
+)
 
 
 class ReviewRepository:
@@ -536,26 +539,7 @@ class ReviewRepository:
         self,
         canonical_json: dict[str, Any],
     ) -> set[str]:
-        runtime_config = canonical_json.get("runtime_config")
-        if not isinstance(runtime_config, dict):
-            return set()
-        if runtime_config.get("split_visibility_reviewability_enabled") is not True:
-            return set()
-
-        proposal_nodes = canonical_json.get("proposal_nodes")
-        if not isinstance(proposal_nodes, list):
-            return set()
-
-        supporting_node_ids: set[str] = set()
-        for node in proposal_nodes:
-            if not isinstance(node, dict):
-                continue
-            node_id = node.get("id")
-            if not isinstance(node_id, str) or not node_id.strip():
-                continue
-            if node.get("node_role") == "SUPPORTING":
-                supporting_node_ids.add(node_id)
-        return supporting_node_ids
+        return extract_supporting_node_ids_from_canonical_json(canonical_json)
 
     def rollback(self) -> None:
         """Rollback active transaction after commit failure."""
