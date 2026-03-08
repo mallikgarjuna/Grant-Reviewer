@@ -29,7 +29,7 @@ export function classifyNodeRole(
       ? "PRIMARY"
       : "SUPPORTING";
 
-  const isContainer = node.has_expectations === false;
+  const isContainer = node.has_expectations === false && node.node_type === "SECTION";
   const isPrimary = role === "PRIMARY";
   const isSupporting = role === "SUPPORTING";
   const isPrimarySubmittable = isPrimary && !isContainer;

@@ -176,7 +176,7 @@ Verification Steps:
 - `cd frontend && rg -n "node_role|split_visibility" src/lib/bff/types.ts src/lib/submit/nodeRoles.ts`
 Risks (if any): If the helper and BFF types diverge, later UI fixes can appear correct while still encoding hidden coupling.
 
-### [ ] Task 6 — Render model decouples visibility from expectations
+### [x] Task 6 — Render model decouples visibility from expectations
 
 Goal:
 Make the render model treat node-role-aware structural completeness, not `has_expectations`, as the visibility contract for opted-in calls while preserving legacy fallback for non-opted-in nested calls.

@@ -299,4 +299,101 @@ describe("buildRenderModel", () => {
       "Part B / Part B1",
     ]);
   });
+
+  it("wf0063_render_model_uses_node_role_for_opted_in_visibility", () => {
+    const result = buildRenderModel({
+      nodes: [
+        {
+          id: "node-part-b",
+          logical_id: "part_b",
+          title: "Part B",
+          parent_node_id: null,
+          node_type: "SECTION",
+          order_index: 1,
+          has_expectations: false,
+          node_role: "SUPPORTING",
+        },
+        {
+          id: "node-abstract",
+          logical_id: "abstract",
+          title: "Abstract",
+          parent_node_id: "node-part-b",
+          node_type: "SUBSECTION",
+          order_index: 2,
+          has_expectations: false,
+          node_role: "SUPPORTING",
+        },
+        {
+          id: "node-excellence",
+          logical_id: "excellence",
+          title: "Excellence",
+          parent_node_id: "node-part-b",
+          node_type: "SUBSECTION",
+          order_index: 3,
+          has_expectations: true,
+          node_role: "PRIMARY",
+        },
+      ],
+      metadataByLogicalId: {},
+      splitVisibilityReviewabilityEnabled: true,
+    });
+
+    expect(result.state).toBe("ready");
+    if (result.state !== "ready") {
+      return;
+    }
+    expect(result.nodes.map((node) => node.nodeLogicalId)).toEqual([
+      "abstract",
+      "excellence",
+    ]);
+    expect(result.nodes.map((node) => node.nodeRole)).toEqual([
+      "SUPPORTING",
+      "PRIMARY",
+    ]);
+  });
+
+  it("wf0063_render_model_preserves_legacy_nested_fallback_without_opt_in", () => {
+    const result = buildRenderModel({
+      nodes: [
+        {
+          id: "node-part-b",
+          logical_id: "part_b",
+          title: "Part B",
+          parent_node_id: null,
+          node_type: "SECTION",
+          order_index: 1,
+          has_expectations: false,
+          node_role: "SUPPORTING",
+        },
+        {
+          id: "node-abstract",
+          logical_id: "abstract",
+          title: "Abstract",
+          parent_node_id: "node-part-b",
+          node_type: "SUBSECTION",
+          order_index: 2,
+          has_expectations: false,
+          node_role: "SUPPORTING",
+        },
+        {
+          id: "node-excellence",
+          logical_id: "excellence",
+          title: "Excellence",
+          parent_node_id: "node-part-b",
+          node_type: "SUBSECTION",
+          order_index: 3,
+          has_expectations: true,
+          node_role: "PRIMARY",
+        },
+      ],
+      metadataByLogicalId: {},
+      splitVisibilityReviewabilityEnabled: false,
+    });
+
+    expect(result.state).toBe("ready");
+    if (result.state !== "ready") {
+      return;
+    }
+    expect(result.nodes.map((node) => node.nodeLogicalId)).toEqual(["excellence"]);
+  });
 });
