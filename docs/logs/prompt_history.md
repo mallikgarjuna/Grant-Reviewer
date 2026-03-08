@@ -2,6 +2,10 @@
 
 ## 2026-03-08
 
+### 18:45 - WF-0066 Completed-Artifact Archival Normalization
+> User asked why WF-0066 artifacts had not been moved into `completed/` during ship/cleanup and then requested the fix for all completed WFs.
+> Outcome: Archived the remaining completed live-path WF artifacts (`WF-0042`, `WF-0063`, `WF-0066`), updated `docs/index.md` and affected cross-doc references to `completed/` paths, ran `pre-commit`, and committed the normalization pass.
+
 ### 18:20 - WF-0066 Docs Cleanup
 > User requested `docs cleanup` after WF-0066 closure and parking-lot refresh.
 > Outcome: Reconciled WF-0066 status surfaces to `Done`, refreshed parking-lot traceability/rationale, ran `pre-commit`, and committed the docs-only cleanup boundary.
