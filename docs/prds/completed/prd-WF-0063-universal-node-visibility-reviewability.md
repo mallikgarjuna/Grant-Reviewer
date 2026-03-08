@@ -1,4 +1,4 @@
-<!-- docs/prds/prd-WF-0063-universal-node-visibility-reviewability.md -->
+<!-- docs/prds/completed/prd-WF-0063-universal-node-visibility-reviewability.md -->
 # WF-0063 — Universal Node Visibility Reviewability PRD
 
 Artifact: prd

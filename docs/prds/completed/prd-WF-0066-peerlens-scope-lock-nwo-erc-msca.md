@@ -1,4 +1,4 @@
-<!-- docs/prds/prd-WF-0066-peerlens-scope-lock-nwo-erc-msca.md -->
+<!-- docs/prds/completed/prd-WF-0066-peerlens-scope-lock-nwo-erc-msca.md -->
 # WF-0066 — PeerLens Scope Lock to NWO/ERC/MSCA
 
 Artifact: prd
@@ -93,7 +93,7 @@ Type: docs
 
 ### 5.1 Artifact contract
 
-- The governing input is `docs/brainstorms/brainstorm-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`, which locks the workflow to a docs-only scope correction focused on active live docs. (US1, US2, FR1, FR4)
+- The governing input is `docs/brainstorms/completed/brainstorm-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`, which locks the workflow to a docs-only scope correction focused on active live docs. (US1, US2, FR1, FR4)
 - The governing output of this phase is this PRD, which must constrain Phase 2 to documentation edits only unless a concrete mission contradiction is found. (US1, US4, FR1, FR8)
 
 ### 5.2 Live-doc correction contract

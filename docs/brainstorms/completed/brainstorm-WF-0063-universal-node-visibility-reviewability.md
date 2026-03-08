@@ -1,4 +1,4 @@
-<!-- docs/brainstorms/brainstorm-WF-0063-universal-node-visibility-reviewability.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0063-universal-node-visibility-reviewability.md -->
 # WF-0063 — Universal Node Visibility Reviewability Brainstorm
 
 Artifact: brainstorm
@@ -277,7 +277,7 @@ Traceability / references:
 
 - Architect recommendation carried in chat on 2026-03-08: separate structural visibility, direct criterion reviewability, and supporting/secondary context; do not overload `node_expectations`.
 - This brainstorm Sections 1, 4, 5, and 7.
-- `docs/prds/prd-WF-0063-universal-node-visibility-reviewability.md`:
+- `docs/prds/completed/prd-WF-0063-universal-node-visibility-reviewability.md`:
   - Deferred Stories `DS1`, `DS3`
   - Functional Requirements `FR9`, `FR11`, `FR12`
   - Deferred / Not in MVP

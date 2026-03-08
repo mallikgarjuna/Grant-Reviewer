@@ -681,6 +681,18 @@ export default function ReviewDetailPage() {
     reviewDetail.primary_evaluated_node_logical_ids ?? submittedNodes;
   const supportingContextNodeIds =
     reviewDetail.supporting_context_node_logical_ids ?? [];
+  const hasExplicitVisibleNotReviewedNodeIds = Array.isArray(
+    reviewDetail.visible_not_reviewed_node_logical_ids,
+  );
+  const explicitVisibleNotReviewedNodeIds = hasExplicitVisibleNotReviewedNodeIds
+    ? reviewDetail.visible_not_reviewed_node_logical_ids
+    : [];
+  const hasExplicitNoGeneratedCardsNodeIds = Array.isArray(
+    reviewDetail.no_generated_cards_node_logical_ids,
+  );
+  const explicitNoGeneratedCardsNodeIds = hasExplicitNoGeneratedCardsNodeIds
+    ? reviewDetail.no_generated_cards_node_logical_ids
+    : [];
   const reviewedNodeLabels = [...primaryEvaluatedNodeIds]
     .sort((left, right) => {
       const leftNode = nodeByLogicalId.get(left);
@@ -711,15 +723,27 @@ export default function ReviewDetailPage() {
     )
     .map((nodeLogicalId) => nodeTitleByLogicalId.get(nodeLogicalId) ?? nodeLogicalId);
   const visibleButNotReviewedNodeLabels =
-    isWf0064ProofPathOptedIn && reviewDetailNodeClassification
-      ? reviewDetailNodeClassification.visibleSupportingNodeLogicalIds
-          .filter(
-            (nodeLogicalId) =>
-              !primaryEvaluatedSet.has(nodeLogicalId) &&
-              !supportingContextSet.has(nodeLogicalId),
-          )
-          .map((nodeLogicalId) => nodeTitleByLogicalId.get(nodeLogicalId) ?? nodeLogicalId)
-      : [];
+    hasExplicitVisibleNotReviewedNodeIds
+      ? explicitVisibleNotReviewedNodeIds.map(
+          (nodeLogicalId) => nodeTitleByLogicalId.get(nodeLogicalId) ?? nodeLogicalId,
+        )
+      : isWf0064ProofPathOptedIn && reviewDetailNodeClassification
+        ? reviewDetailNodeClassification.visibleSupportingNodeLogicalIds
+            .filter(
+              (nodeLogicalId) =>
+                !primaryEvaluatedSet.has(nodeLogicalId) &&
+                !supportingContextSet.has(nodeLogicalId),
+            )
+            .map((nodeLogicalId) => nodeTitleByLogicalId.get(nodeLogicalId) ?? nodeLogicalId)
+        : [];
+  const noGeneratedCardsNodeLabels = explicitNoGeneratedCardsNodeIds.map(
+    (nodeLogicalId) => nodeTitleByLogicalId.get(nodeLogicalId) ?? nodeLogicalId,
+  );
+  const hasExplicitBoundaryBuckets =
+    hasExplicitVisibleNotReviewedNodeIds || hasExplicitNoGeneratedCardsNodeIds;
+  const notReviewedBoundaryLabels = hasExplicitBoundaryBuckets
+    ? [...visibleButNotReviewedNodeLabels, ...noGeneratedCardsNodeLabels]
+    : notReviewedNodeLabels;
   const orderedCardGroups = buildOrderedCardGroups(reviewDetail, sortedCallNodes);
   const detailState = inferDetailState(reviewDetail);
   const fallbackToPayloadOrder =
@@ -729,7 +753,7 @@ export default function ReviewDetailPage() {
   const hasCoverageSummary =
     primaryEvaluatedNodeIds.length > 0 ||
     supportingContextNodeIds.length > 0 ||
-    notReviewedNodeLabels.length > 0 ||
+    notReviewedBoundaryLabels.length > 0 ||
     visibleButNotReviewedNodeLabels.length > 0;
 
   const compatibilityLines = (reviewDetail.compatibility_notes ?? []).map((note) => {
@@ -758,12 +782,16 @@ export default function ReviewDetailPage() {
       ? supportingContextNodeLabels.join(", ")
       : "None";
   const notReviewedSectionText =
-    notReviewedNodeLabels.length > 0
-      ? notReviewedNodeLabels.join(", ")
+    notReviewedBoundaryLabels.length > 0
+      ? notReviewedBoundaryLabels.join(", ")
       : "None";
-  const visibleSupportingNotReviewedSectionText =
+  const visibleButNotReviewedSectionText =
     visibleButNotReviewedNodeLabels.length > 0
       ? visibleButNotReviewedNodeLabels.join(", ")
+      : "None";
+  const noGeneratedCardsSectionText =
+    noGeneratedCardsNodeLabels.length > 0
+      ? noGeneratedCardsNodeLabels.join(", ")
       : "None";
 
   return (
@@ -817,9 +845,16 @@ export default function ReviewDetailPage() {
             <p className="mt-1 text-[var(--color-muted-foreground)]">
               Supporting context: {supportingContextSectionText}
             </p>
-            {isWf0064ProofPathOptedIn ? (
+            {(hasExplicitVisibleNotReviewedNodeIds
+              ? visibleButNotReviewedNodeLabels.length > 0
+              : isWf0064ProofPathOptedIn) ? (
               <p className="mt-1 text-[var(--color-muted-foreground)]">
-                Visible but not part of this review: {visibleSupportingNotReviewedSectionText}
+                Visible but not reviewed sections: {visibleButNotReviewedSectionText}
+              </p>
+            ) : null}
+            {explicitNoGeneratedCardsNodeIds.length > 0 ? (
+              <p className="mt-1 text-[var(--color-muted-foreground)]">
+                No generated card sections: {noGeneratedCardsSectionText}
               </p>
             ) : null}
           </div>
@@ -975,7 +1010,9 @@ export default function ReviewDetailPage() {
         ) : null}
       </header>
 
-      {reviewDetail.cards.length > 0 ? (
+      {reviewDetail.cards.length > 0 ||
+      visibleButNotReviewedNodeLabels.length > 0 ||
+      noGeneratedCardsNodeLabels.length > 0 ? (
         <div
           role="region"
           aria-label="Review Feedback Cards"
@@ -993,19 +1030,22 @@ export default function ReviewDetailPage() {
               >
                 Reviewed section: {group.title}
               </h2>
-                <div className="mt-3 grid gap-4">
-                  {group.cards.map((card, index) => (
-                    <ReviewCard
-                      key={`${group.key}:${card.id}`}
-                      index={index + 1}
-                      criterion={card.criterion}
-                      description={card.criterion_description}
+              <div className="mt-3 grid gap-4">
+                {group.cards.map((card, index) => (
+                  <ReviewCard
+                    key={`${group.key}:${card.id}`}
+                    index={index + 1}
+                    criterion={card.criterion}
+                    description={card.criterion_description}
+                    reviewedSectionLabel={group.title}
                     evaluationElementName={card.evaluation_element_name}
                     expectationGuidanceNote={card.expectation_guidance_note}
                     rating={card.rating}
                     feedback={card.feedback_text}
                     assessmentStatus={card.assessment_status}
                     notAssessableReason={card.not_assessable_reason}
+                    sourceBasisLabel={card.source_basis_label}
+                    sourceBasisState={card.source_basis_state}
                   />
                 ))}
               </div>
@@ -1015,18 +1055,36 @@ export default function ReviewDetailPage() {
             ? visibleButNotReviewedNodeLabels.map((nodeLabel) => (
                 <section
                   className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
-                  key={`not-reviewed-${nodeLabel}`}
-                  aria-labelledby={`heading-not-reviewed-${nodeLabel}`}
+                  key={`visible-not-reviewed-${nodeLabel}`}
+                  aria-labelledby={`heading-visible-not-reviewed-${nodeLabel}`}
                 >
                   <h2
-                    id={`heading-not-reviewed-${nodeLabel}`}
+                    id={`heading-visible-not-reviewed-${nodeLabel}`}
                     className="text-base font-semibold text-[var(--color-foreground)]"
                   >
-                    Not reviewed section: {nodeLabel}
+                    Visible but not reviewed section: {nodeLabel}
                   </h2>
                   <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
-                    No text was submitted for this section in this review, so no
-                    evaluation cards were generated.
+                    No text was submitted for this section in this review.
+                  </div>
+                </section>
+              ))
+            : null}
+          {hasCoverageSummary
+            ? noGeneratedCardsNodeLabels.map((nodeLabel) => (
+                <section
+                  className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                  key={`no-generated-cards-${nodeLabel}`}
+                  aria-labelledby={`heading-no-generated-cards-${nodeLabel}`}
+                >
+                  <h2
+                    id={`heading-no-generated-cards-${nodeLabel}`}
+                    className="text-base font-semibold text-[var(--color-foreground)]"
+                  >
+                    No generated cards section: {nodeLabel}
+                  </h2>
+                  <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
+                    Text was submitted for this section, but no evaluation cards were generated.
                   </div>
                 </section>
               ))

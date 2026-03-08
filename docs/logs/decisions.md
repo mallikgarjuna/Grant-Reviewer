@@ -1,6 +1,24 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-08 (WF-0067: review trust surface closure)
+
+### AD 67.1: Card-level source basis is one backend-resolved official-call label with fail-closed state
+- **WF ID**: WF-0067
+- **Context**: The brainstorm and PRD require source-basis visibility as a launch-blocking trust surface, but leaving criterion-vs-element precedence unresolved would let Phase 2 produce inconsistent per-call rendering and non-deterministic tests.
+- **Decision**: Expose one canonical card-level source-basis surface on review detail: resolve `evaluation element source_hint` first, fall back to `criterion source_hint`, and otherwise return an explicit unavailable or legacy-fallback state rather than synthesized text.
+- **Why**: Keeps the trust surface deterministic, authoritative, and testable across the locked representative call set.
+- **Tradeoff**: Some lower-priority official context may be hidden when both levels have source hints, but the UI stays concise and Phase 2 avoids per-call branching.
+- **Status**: Approved.
+
+### AD 67.2: Supporting-context closure is fail-closed non-inference, not positive-label expansion
+- **WF ID**: WF-0067
+- **Context**: The current review-detail path still resolves `supporting_context_node_logical_ids` to an empty list, so requiring positive supporting-context labels for MVP would widen Phase 2 into supporting-context semantics expansion.
+- **Decision**: Treat positive `supporting context` labels as optional and non-blocking for WF-0067. MVP closure requires only that the UI never infers supporting-context semantics when authoritative metadata is absent and that reviewed/not-reviewed boundaries remain truthful.
+- **Why**: Preserves the approved review-detail trust scope and prevents schema/UI polish work from reopening WF-0063/WF-0064 semantics.
+- **Tradeoff**: Some representative reviews may ship without a positive supporting-context affordance, but they remain honest about that limitation.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0066: peerlens scope lock to NWO/ERC/MSCA)
 
 ### AD 66.1: NWO/ERC/MSCA is the permanent product-scope wedge; broader promised-program expansion is not deferred

@@ -1,3 +1,4 @@
+<!-- docs/tasks/completed/task-WF-0042-agent-memory-system.md -->
 # Task WF-0042: Agent Memory System Setup
 
 ## Goal

@@ -1,3 +1,4 @@
+// frontend/src/components/review/ReviewCard.tsx
 import { ReviewRating } from "@/lib/bff/types";
 import { ScoreBadge } from "./ScoreBadge";
 
@@ -5,24 +6,43 @@ interface ReviewCardProps {
   index: number;
   criterion: string;
   description?: string | null;
+  reviewedSectionLabel?: string | null;
   evaluationElementName: string;
   expectationGuidanceNote?: string | null;
   rating: ReviewRating;
   feedback: string;
   assessmentStatus?: "ASSESSED" | "NOT_ASSESSABLE" | null;
   notAssessableReason?: string | null;
+  sourceBasisLabel?: string | null;
+  sourceBasisState?: "available" | "unavailable" | "legacy_fallback";
+}
+
+function sourceBasisLine(
+  sourceBasisState: ReviewCardProps["sourceBasisState"],
+  sourceBasisLabel: ReviewCardProps["sourceBasisLabel"],
+): string {
+  if (sourceBasisState === "available" && sourceBasisLabel) {
+    return `Official source basis: ${sourceBasisLabel}`;
+  }
+  if (sourceBasisState === "legacy_fallback") {
+    return "Official source basis: unavailable (legacy fallback).";
+  }
+  return "Official source basis: unavailable.";
 }
 
 export function ReviewCard({
   index,
   criterion,
   description,
+  reviewedSectionLabel,
   evaluationElementName,
   expectationGuidanceNote,
   rating,
   feedback,
   assessmentStatus,
   notAssessableReason,
+  sourceBasisLabel,
+  sourceBasisState,
 }: ReviewCardProps) {
   return (
     <article className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm transition-all hover:shadow-md">
@@ -42,6 +62,11 @@ export function ReviewCard({
               {description}
             </p>
           )}
+          {reviewedSectionLabel ? (
+            <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
+              Reviewed section context: {reviewedSectionLabel}
+            </p>
+          ) : null}
           {expectationGuidanceNote ? (
             <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
               Reviewer focus: {expectationGuidanceNote}
@@ -53,6 +78,9 @@ export function ReviewCard({
               {notAssessableReason ? ` (${notAssessableReason})` : ""}
             </p>
           ) : null}
+          <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
+            {sourceBasisLine(sourceBasisState, sourceBasisLabel)}
+          </p>
         </div>
         <div className="flex-shrink-0">
           <ScoreBadge rating={rating} />

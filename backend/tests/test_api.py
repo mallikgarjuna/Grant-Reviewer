@@ -1902,6 +1902,360 @@ def test_wf0063_review_detail_exposes_primary_evaluated_and_empty_supporting_con
     assert payload["supporting_context_node_logical_ids"] == []
 
 
+@pytest.mark.parametrize(
+    "case_id,create_client,node_logical_id",
+    [
+        (
+            "nwo_veni_2025_preproposal",
+            create_client_with_nwo_veni_seed,
+            "key_outputs",
+        ),
+        (
+            "erc_stg_2026_full",
+            create_client_with_erc_stg_seed,
+            "b1_part1_scientific_proposal",
+        ),
+        ("MSCA-PF-2025", create_client_with_msca_pf_seed, "excellence"),
+    ],
+    ids=[
+        "wf0067_backend_source_basis_contract_nwo_veni_2025_preproposal",
+        "wf0067_backend_source_basis_contract_erc_stg_2026_full",
+        "wf0067_backend_source_basis_contract_msca_pf_2025",
+    ],
+)
+def test_wf0067_backend_source_basis_contract_representative_calls_expose_card_fields(
+    monkeypatch,
+    case_id: str,
+    create_client,
+    node_logical_id: str,
+) -> None:
+    client, call_id, call_code = create_client(monkeypatch)
+    assert call_code == case_id
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": node_logical_id,
+                    "text": f"WF-0067 source-basis contract proof for {case_id}.",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert len(payload["cards"]) > 0
+
+    for card in payload["cards"]:
+        assert "source_basis_label" in card
+        assert "source_basis_state" in card
+        assert card["source_basis_state"] == "available"
+        assert isinstance(card["source_basis_label"], str)
+        assert card["source_basis_label"].strip()
+        assert isinstance(card["node_title"], str)
+
+
+def test_wf0067_backend_source_basis_contract_unavailable_state_when_authoritative_basis_missing(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "academic_profile",
+                    "text": "WF-0067 unavailable source basis test.",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert len(payload["cards"]) > 0
+    for card in payload["cards"]:
+        assert card["source_basis_state"] == "unavailable"
+        assert card["source_basis_label"] is None
+
+
+def test_wf0067_backend_source_basis_contract_legacy_fallback_state_without_synthesized_basis(
+    monkeypatch,
+) -> None:
+    client, _ = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        expectation = session.exec(select(NodeExpectation)).first()
+        assert template is not None
+        assert expectation is not None
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0067-legacy-fallback-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={"nodes": {"academic_profile": "legacy text"}},
+        )
+        repository.create_review_card(
+            review_id=review.id,
+            expectation_id=expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback="Legacy fallback source-basis test card",
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+    finally:
+        session.close()
+
+    detail = get_review_detail(client=client, review_id=str(review.id))
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["detail_state"] == "legacy_fallback"
+    assert len(payload["cards"]) > 0
+    for card in payload["cards"]:
+        assert card["source_basis_state"] == "legacy_fallback"
+        assert card["source_basis_label"] is None
+
+
+def test_wf0067_backend_boundary_contract_zero_card_visible_section(monkeypatch) -> None:
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0067-zero-card-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(call_id),
+                "submitted_leaf_ids": ["proposal_summary"],
+                "nodes": {"proposal_summary": "Submitted text without generated cards."},
+            },
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+    finally:
+        session.close()
+
+    detail = get_review_detail(client=client, review_id=str(review.id))
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["detail_state"] == "call_linked"
+    assert payload["cards"] == []
+    assert payload["supporting_context_node_logical_ids"] == []
+    assert payload["no_generated_cards_node_logical_ids"] == ["proposal_summary"]
+    assert "proposal_summary" not in payload["visible_not_reviewed_node_logical_ids"]
+    assert "b1_part1_scientific_proposal" in payload["visible_not_reviewed_node_logical_ids"]
+
+
+def test_wf0067_backend_boundary_contract_mixed_version_legacy_fallback(monkeypatch) -> None:
+    client, _ = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        expectation = session.exec(select(NodeExpectation)).first()
+        assert template is not None
+        assert expectation is not None
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0067-mixed-version-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "submitted_leaf_ids": ["academic_profile"],
+                "nodes": {"academic_profile": "Legacy payload text"},
+            },
+        )
+        repository.create_review_card(
+            review_id=review.id,
+            expectation_id=expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback="Legacy fallback boundary test card",
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+    finally:
+        session.close()
+
+    detail = get_review_detail(client=client, review_id=str(review.id))
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["detail_state"] == "legacy_fallback"
+    assert payload["supporting_context_node_logical_ids"] == []
+    assert payload["visible_not_reviewed_node_logical_ids"] == []
+    assert payload["no_generated_cards_node_logical_ids"] == []
+
+
+def test_wf0067_backend_source_basis_contract_mixed_per_card_availability(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_nwo_veni_seed(monkeypatch)
+    assert call_code == "nwo_veni_2025_preproposal"
+
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+
+        available_expectation_row = session.exec(
+            select(NodeExpectation)
+            .join(EvaluationElement, NodeExpectation.evaluation_element_id == EvaluationElement.id)
+            .join(
+                EvaluationCriterion,
+                EvaluationElement.evaluation_criterion_id == EvaluationCriterion.id,
+            )
+            .join(ProposalNode, NodeExpectation.proposal_node_id == ProposalNode.id)
+            .where(
+                ProposalNode.funding_call_id == call_id,
+                ProposalNode.logical_id == "academic_profile",
+                EvaluationElement.logical_id == "elem_peer_exceeding_quality",
+            )
+        ).first()
+        unavailable_expectation_row = session.exec(
+            select(NodeExpectation)
+            .join(EvaluationElement, NodeExpectation.evaluation_element_id == EvaluationElement.id)
+            .join(
+                EvaluationCriterion,
+                EvaluationElement.evaluation_criterion_id == EvaluationCriterion.id,
+            )
+            .join(ProposalNode, NodeExpectation.proposal_node_id == ProposalNode.id)
+            .where(
+                ProposalNode.funding_call_id == call_id,
+                ProposalNode.logical_id == "research_idea",
+                EvaluationElement.logical_id == "elem_cv_idea_alignment",
+            )
+        ).first()
+        assert available_expectation_row is not None
+        assert unavailable_expectation_row is not None
+
+        available_element = session.get(
+            EvaluationElement, available_expectation_row.evaluation_element_id
+        )
+        unavailable_element = session.get(
+            EvaluationElement, unavailable_expectation_row.evaluation_element_id
+        )
+        assert available_element is not None
+        assert unavailable_element is not None
+        available_criterion = session.get(
+            EvaluationCriterion, available_element.evaluation_criterion_id
+        )
+        unavailable_criterion = session.get(
+            EvaluationCriterion, unavailable_element.evaluation_criterion_id
+        )
+        assert available_criterion is not None
+        assert unavailable_criterion is not None
+        assert isinstance(available_element.logical_id, str)
+        assert isinstance(unavailable_element.logical_id, str)
+        assert isinstance(available_criterion.logical_id, str)
+        assert isinstance(unavailable_criterion.logical_id, str)
+
+        mixed_criteria: list[dict[str, object]]
+        if available_criterion.logical_id == unavailable_criterion.logical_id:
+            mixed_criteria = [
+                {
+                    "id": available_criterion.logical_id,
+                    "evaluation_elements": [
+                        {
+                            "id": available_element.logical_id,
+                            "source_hint": "WF-0067 mixed basis available hint",
+                        },
+                        {"id": unavailable_element.logical_id},
+                    ],
+                }
+            ]
+        else:
+            mixed_criteria = [
+                {
+                    "id": available_criterion.logical_id,
+                    "evaluation_elements": [
+                        {
+                            "id": available_element.logical_id,
+                            "source_hint": "WF-0067 mixed basis available hint",
+                        }
+                    ],
+                },
+                {
+                    "id": unavailable_criterion.logical_id,
+                    "evaluation_elements": [{"id": unavailable_element.logical_id}],
+                },
+            ]
+
+        definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        assert isinstance(definition.canonical_json, dict)
+        canonical_json = dict(definition.canonical_json)
+        canonical_json["evaluation_criteria"] = mixed_criteria
+        definition.canonical_json = canonical_json
+        session.add(definition)
+        session.commit()
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0067-mixed-source-basis-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(call_id),
+                "submitted_leaf_ids": ["academic_profile", "research_idea"],
+                "nodes": {
+                    "academic_profile": "available source basis text",
+                    "research_idea": "unavailable source basis text",
+                },
+            },
+        )
+        repository.create_review_card(
+            review_id=review.id,
+            expectation_id=available_expectation_row.id,
+            rating=ReviewRating.SUCCESS,
+            feedback="Available source basis card",
+        )
+        repository.create_review_card(
+            review_id=review.id,
+            expectation_id=unavailable_expectation_row.id,
+            rating=ReviewRating.NOTE,
+            feedback="Unavailable source basis card",
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+    finally:
+        session.close()
+
+    detail = get_review_detail(client=client, review_id=str(review.id))
+    assert detail.status_code == 200
+    payload = detail.json()
+    states = {card["source_basis_state"] for card in payload["cards"]}
+    assert states == {"available", "unavailable"}
+    assert payload["supporting_context_node_logical_ids"] == []
+
+
 def test_review_detail_order_index_tie_uses_node_logical_id_fallback(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
 

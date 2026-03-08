@@ -12,6 +12,16 @@ type RouteContext = {
   params: Promise<{ reviewId: string }>;
 };
 
+function normalizeReviewCards(record: Record<string, unknown>) {
+  if (!Array.isArray(record.cards)) {
+    return [];
+  }
+  return record.cards.filter(
+    (item): item is Record<string, unknown> =>
+      Boolean(item) && typeof item === "object" && !Array.isArray(item),
+  );
+}
+
 function inferDetailState(record: Record<string, unknown>) {
   const callCode =
     typeof record.call_code === "string" ? record.call_code : null;
@@ -32,6 +42,17 @@ function inferDetailState(record: Record<string, unknown>) {
   return "call_linked";
 }
 
+function normalizeDetailState(record: Record<string, unknown>) {
+  if (
+    record.detail_state === "call_linked" ||
+    record.detail_state === "legacy_fallback" ||
+    record.detail_state === "proof_path_unmapped"
+  ) {
+    return record.detail_state;
+  }
+  return inferDetailState(record);
+}
+
 function normalizeReviewDetailResponse(payload: unknown): unknown {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return payload;
@@ -40,7 +61,7 @@ function normalizeReviewDetailResponse(payload: unknown): unknown {
   const record = payload as Record<string, unknown>;
   return {
     ...record,
-    detail_state: inferDetailState(record),
+    detail_state: normalizeDetailState(record),
     submitted_node_logical_ids: Array.isArray(record.submitted_node_logical_ids)
       ? record.submitted_node_logical_ids.filter((item): item is string => typeof item === "string")
       : [],
@@ -61,6 +82,22 @@ function normalizeReviewDetailResponse(payload: unknown): unknown {
           (item): item is string => typeof item === "string",
         )
       : [],
+    visible_not_reviewed_node_logical_ids: Array.isArray(
+      record.visible_not_reviewed_node_logical_ids,
+    )
+      ? record.visible_not_reviewed_node_logical_ids.filter(
+          (item): item is string => typeof item === "string",
+        )
+      : [],
+    no_generated_cards_node_logical_ids: Array.isArray(
+      record.no_generated_cards_node_logical_ids,
+    )
+      ? record.no_generated_cards_node_logical_ids.filter(
+          (item): item is string => typeof item === "string",
+        )
+      : [],
+    // Preserve backend card trust fields verbatim; avoid local source-basis synthesis.
+    cards: normalizeReviewCards(record),
   };
 }
 
@@ -100,12 +137,24 @@ export async function GET(request: Request, context: RouteContext) {
   )
     ? payload.supporting_context_node_logical_ids
     : [];
+  const visibleNotReviewedNodeLogicalIds = Array.isArray(
+    payload.visible_not_reviewed_node_logical_ids,
+  )
+    ? payload.visible_not_reviewed_node_logical_ids
+    : [];
+  const noGeneratedCardsNodeLogicalIds = Array.isArray(
+    payload.no_generated_cards_node_logical_ids,
+  )
+    ? payload.no_generated_cards_node_logical_ids
+    : [];
   return NextResponse.json(
     normalizeReviewDetailResponse({
       ...payload,
       submitted_leaf_ids: submittedLeafIds,
       primary_evaluated_node_logical_ids: primaryEvaluatedNodeLogicalIds,
       supporting_context_node_logical_ids: supportingContextNodeLogicalIds,
+      visible_not_reviewed_node_logical_ids: visibleNotReviewedNodeLogicalIds,
+      no_generated_cards_node_logical_ids: noGeneratedCardsNodeLogicalIds,
       legacy_ambiguous_container_ids: legacyAmbiguousContainerIds,
       moved_legacy_node_references: movedLegacyNodeReferences,
     }),

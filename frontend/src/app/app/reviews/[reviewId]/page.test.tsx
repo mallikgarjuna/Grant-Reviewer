@@ -53,6 +53,620 @@ function reviewPayload(overrides: Record<string, unknown> = {}) {
 }
 
 describe("ReviewDetailPage", () => {
+  it("wf0067_review_detail_tracer_surfaces_source_basis_fields_in_reading_flow", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "nwo_veni_2025_preproposal",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "academic_profile",
+                    node_title: "Academic profile",
+                    criterion: "Quality",
+                    criterion_description: "Quality criterion",
+                    evaluation_element_name: "Peer-exceeding quality",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Feedback text",
+                    source_basis_label: "Call for Proposals (Veni 2025) §4.3.1",
+                    source_basis_state: "available",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "academic_profile",
+                  title: "Academic profile",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Official source basis: Call for Proposals (Veni 2025) §4.3.1",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("wf0067_review_detail_tracer_unavailable_source_basis_card", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "nwo_veni_2025_preproposal",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "academic_profile",
+                    node_title: "Academic profile",
+                    criterion: "Quality",
+                    criterion_description: "Quality criterion",
+                    evaluation_element_name: "Peer-exceeding quality",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Feedback text",
+                    source_basis_label: null,
+                    source_basis_state: "unavailable",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "academic_profile",
+                  title: "Academic profile",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.getByText("Official source basis: unavailable."),
+    ).toBeInTheDocument();
+  });
+
+  it("wf0067_review_card_trust_metadata_shows_available_and_unavailable_basis", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "nwo_veni_2025_preproposal",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "academic_profile",
+                    node_title: "Academic profile",
+                    criterion: "Quality",
+                    criterion_description: "Quality criterion",
+                    evaluation_element_name: "Peer-exceeding quality",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Feedback text",
+                    source_basis_label: "Call for Proposals (Veni 2025) §4.3.1",
+                    source_basis_state: "available",
+                  },
+                  {
+                    id: "card-2",
+                    node_expectation_id: "exp-2",
+                    node_logical_id: "key_outputs",
+                    node_title: "Key outputs",
+                    criterion: "Quality",
+                    criterion_description: "Quality criterion",
+                    evaluation_element_name: "Network visibility",
+                    expectation_guidance_note: null,
+                    rating: "NOTE",
+                    feedback_text: "Feedback text",
+                    source_basis_label: null,
+                    source_basis_state: "unavailable",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "academic_profile",
+                  title: "2a. Academic Profile",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+                {
+                  id: "node-2",
+                  logical_id: "key_outputs",
+                  title: "2b. Key Outputs",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(screen.getAllByText("Evaluation criterion: Quality")).toHaveLength(2);
+    expect(screen.getByText("Peer-exceeding quality")).toBeInTheDocument();
+    expect(screen.getByText("Network visibility")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Official source basis: Call for Proposals (Veni 2025) §4.3.1",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Official source basis: unavailable."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Reviewed section context: 2a. Academic Profile"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Reviewed section context: 2b. Key Outputs"),
+    ).toBeInTheDocument();
+  });
+
+  it("wf0067_review_card_trust_not_assessable_label", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "nwo_veni_2025_preproposal",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "academic_profile",
+                    node_title: "Academic profile",
+                    criterion: "Quality",
+                    criterion_description: "Quality criterion",
+                    evaluation_element_name: "Peer-exceeding quality",
+                    expectation_guidance_note: null,
+                    rating: "NOTE",
+                    feedback_text: "Feedback text",
+                    assessment_status: "NOT_ASSESSABLE",
+                    not_assessable_reason: "insufficient_evidence",
+                    source_basis_label: null,
+                    source_basis_state: "legacy_fallback",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "academic_profile",
+                  title: "Academic profile",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.getByText("Status: Not assessable (insufficient_evidence)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Official source basis: unavailable (legacy fallback)."),
+    ).toBeInTheDocument();
+  });
+
+  it("wf0067_review_detail_boundary_no_generated_cards_distinct_from_visible_not_reviewed", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "erc_stg_2026_full",
+                ordering_source: "call_nodes",
+                cards: [],
+                primary_evaluated_node_logical_ids: [],
+                supporting_context_node_logical_ids: [],
+                visible_not_reviewed_node_logical_ids: [
+                  "b1_part1_scientific_proposal",
+                ],
+                no_generated_cards_node_logical_ids: ["proposal_summary"],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "proposal_summary",
+                  title: "Proposal Summary",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+                {
+                  id: "node-2",
+                  logical_id: "b1_part1_scientific_proposal",
+                  title: "Part B1 Scientific Proposal",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Visible but not reviewed sections: Part B1 Scientific Proposal",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("No generated card sections: Proposal Summary"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Visible but not reviewed section: Part B1 Scientific Proposal"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("No generated cards section: Proposal Summary"),
+    ).toBeInTheDocument();
+  });
+
+  it("wf0067_review_detail_boundary_explicit_empty_buckets_do_not_fallback_to_inference", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "MSCA-PF-2025",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "excellence",
+                    node_title: "Excellence",
+                    criterion: "Excellence",
+                    criterion_description: "Criterion description",
+                    evaluation_element_name: "Quality and credibility",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Feedback text",
+                    source_basis_label: "Official source",
+                    source_basis_state: "available",
+                  },
+                ],
+                primary_evaluated_node_logical_ids: ["excellence"],
+                supporting_context_node_logical_ids: [],
+                visible_not_reviewed_node_logical_ids: [],
+                no_generated_cards_node_logical_ids: [],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "excellence",
+                  title: "Excellence",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                  node_role: "PRIMARY",
+                },
+                {
+                  id: "node-2",
+                  logical_id: "impact",
+                  title: "Impact",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                  node_role: "SUPPORTING",
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Visible but not reviewed sections:/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/No generated card sections:/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Visible but not reviewed section:/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/No generated cards section:/),
+    ).not.toBeInTheDocument();
+  });
+
+  it("wf0067_review_detail_boundary_limitation_copy_for_legacy_and_mixed_version", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: null,
+                call_code: null,
+                detail_state: "legacy_fallback",
+                ordering_source: "review_payload_fallback",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: null,
+                    node_title: "Legacy section",
+                    criterion: "Excellence",
+                    criterion_description: "Excellence criterion",
+                    evaluation_element_name: "Legacy element",
+                    expectation_guidance_note: null,
+                    rating: "NOTE",
+                    feedback_text: "Legacy feedback",
+                    source_basis_label: null,
+                    source_basis_state: "legacy_fallback",
+                  },
+                ],
+                compatibility_notes: [
+                  {
+                    note_type: "mixed_version_review",
+                    node_logical_ids: ["proposal_summary", "legacy_node"],
+                    message:
+                      "Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage.",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.getByText("Call metadata unavailable; using review payload order."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Compatibility notes")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /mixed_version_review: Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Official source basis: unavailable (legacy fallback)."),
+    ).toBeInTheDocument();
+  });
+
+  it.each([
+    "nwo_veni_2025_preproposal",
+    "erc_stg_2026_full",
+    "MSCA-PF-2025",
+  ])(
+    "wf0067_review_detail_representative_calls_render_trust_surface_%s",
+    async (callCode) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: RequestInfo | URL) => {
+          const url = String(input);
+          if (url.includes("/api/bff/reviews/review-1")) {
+            return new Response(
+              JSON.stringify(
+                reviewPayload({
+                  call_id: "call-1",
+                  call_code: callCode,
+                  ordering_source: "call_nodes",
+                  cards: [
+                    {
+                      id: "card-1",
+                      node_expectation_id: "exp-1",
+                      node_logical_id: "academic_profile",
+                      node_title: "Academic profile",
+                      criterion: "Quality",
+                      criterion_description: "Quality criterion",
+                      evaluation_element_name: "Peer-exceeding quality",
+                      expectation_guidance_note: null,
+                      rating: "SUCCESS",
+                      feedback_text: "Feedback text",
+                      source_basis_label: "Official source",
+                      source_basis_state: "available",
+                    },
+                  ],
+                  supporting_context_node_logical_ids: [],
+                }),
+              ),
+              { status: 200 },
+            );
+          }
+          if (url.includes("/api/bff/calls/call-1/nodes")) {
+            return new Response(
+              JSON.stringify({
+                nodes: [
+                  {
+                    id: "node-1",
+                    logical_id: "academic_profile",
+                    title: "Academic profile",
+                    parent_node_id: null,
+                    node_type: "SECTION",
+                    order_index: 1,
+                    has_expectations: true,
+                  },
+                ],
+              }),
+              { status: 200 },
+            );
+          }
+          return new Response(
+            JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+            { status: 404 },
+          );
+        }),
+      );
+
+      render(<ReviewDetailPage />);
+
+      expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+      expect(screen.getByText("Official source basis: Official source")).toBeInTheDocument();
+      expect(screen.getByText("Supporting context: None")).toBeInTheDocument();
+    },
+  );
+
   it("uses call-driven ordering and labels when call metadata is available", async () => {
     vi.stubGlobal(
       "fetch",
