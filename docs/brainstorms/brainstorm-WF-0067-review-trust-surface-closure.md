@@ -135,7 +135,6 @@ Section 6 decisions:
 
 - Exact visual treatment of trust metadata on each card. Deferred to Phase 1.
 - Whether the page needs a compact "How to read this review" explainer versus only inline labels. Deferred to Phase 1.
-- Whether source-basis visibility should cite criterion-level or element-level `source_hint` when both exist. Deferred to Phase 1.
 - Whether ERC stage-specific limitation copy needs a dedicated variant beyond a shared trust pattern. Deferred to Phase 1.
 
 ## 7. MVP Definition
@@ -168,6 +167,8 @@ Section 7 decisions:
 - The WF should not attempt assisted extraction, supporting-context semantics expansion, or new call coverage.
 - The minimum acceptable proof of improvement is cross-representative honesty on the locked wedge, not one polished single-call demo.
 - Source-basis visibility in this WF means official call-basis disclosure tied to the mapped evaluation criterion/element or equivalent authoritative review-detail metadata, not full LLM-chain provenance.
+- When both criterion-level and evaluation-element-level `source_hint` values exist, Phase 1 resolves the card-level source-basis precedence to `evaluation element source_hint` first, then `criterion source_hint`, and otherwise an explicit unavailable or legacy limitation state.
+- Boundary honesty must keep `visible but not reviewed` distinct from `no generated cards`, because both are non-reviewed surfaces but they communicate different trust limitations to the researcher.
 
 Required evidence before claiming WF-0067 is done:
 

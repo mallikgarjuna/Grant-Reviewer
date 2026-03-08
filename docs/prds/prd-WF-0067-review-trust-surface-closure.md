@@ -2,7 +2,7 @@
 # WF-0067 — Review Trust Surface Closure
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-08
 
@@ -45,7 +45,7 @@ Type: feature
 2. The backend review-detail response assembles the trust fields the page needs, including mapped evaluation criterion/element, reviewed node title/context, assessment state, limitation state, and authoritative source-basis metadata when available. (US1, US3)
 3. The BFF review-detail route normalizes those trust fields without inventing missing semantics and passes them to the frontend render model. (US1, US3, US4)
 4. Each review card displays the mapped evaluation criterion/element, the reviewed section, a concise official source-basis line when authoritative basis exists, and explicit `NOT_ASSESSABLE` or equivalent limitation labeling when the finding is not evaluable. (US1, US2)
-5. The page-level coverage and boundary surfaces distinguish reviewed sections, visible-but-not-reviewed sections, and any trustworthy supporting-context labels only when the contract explicitly supplies them. (US2, US3)
+5. The page-level coverage and boundary surfaces distinguish reviewed sections, visible-but-not-reviewed sections, sections with no generated cards, and any trustworthy supporting-context labels only when the contract explicitly supplies them. (US2, US3)
 6. If source basis is unavailable, legacy fallback linkage is in effect, or supporting-context semantics are not authoritative, the page uses explicit limitation copy instead of implying stronger trust than the contract supports. (US1, US2, US3)
 7. Launch-readiness for this WF is claimed only after automated and manual evidence passes for the locked representative call set with no out-of-scope expansion. (US3, US4)
 
@@ -73,7 +73,7 @@ Type: feature
 - FR2 (US1): Every review card must display the reviewed proposal section context from authoritative review-detail data.
 - FR3 (US1, US3): Every review card must expose one canonical official source-basis surface backed by authoritative call metadata, using backend precedence `evaluation element source_hint` -> `criterion source_hint` -> explicit unavailable state.
 - FR4 (US1, US3): Each review card must carry an explicit source-basis state so the UI can fail closed when basis is unavailable or when legacy/fallback linkage prevents authoritative basis disclosure; the page must never infer or synthesize basis text.
-- FR5 (US2, US3): The review-detail page must distinguish reviewed sections, visible-but-not-reviewed sections, and `NOT_ASSESSABLE` findings explicitly.
+- FR5 (US2, US3): The review-detail page must distinguish reviewed sections, visible-but-not-reviewed sections, sections with no generated cards, and `NOT_ASSESSABLE` findings explicitly.
 - FR6 (US2, US3): The UI may label content as `supporting context` only when authoritative review-detail metadata explicitly provides that role; otherwise it must use fail-closed reviewed/not-reviewed wording.
 - FR7 (US2, US3): Page-level limitation/boundary copy must explicitly state what the review did not evaluate and must remain visible in the main review-detail reading flow.
 - FR8 (US3, US4): Any trust field required by the UI must be proven across the actual backend review-detail response assembly seam and the BFF normalization seam, not just in schemas or frontend assumptions.
@@ -105,7 +105,7 @@ Type: feature
   - assessment state and `not_assessable_reason` when applicable,
   - card-level `source_basis_label` derived from authoritative official-call definitions when available,
   - card-level `source_basis_state` with deterministic values `available`, `unavailable`, or `legacy_fallback`,
-  - review-boundary metadata needed to distinguish reviewed versus visible-but-not-reviewed surfaces. (US1, US2, US3, FR1-FR8)
+  - review-boundary metadata needed to distinguish reviewed versus visible-but-not-reviewed versus no-generated-card surfaces. (US1, US2, US3, FR1-FR8)
 - `source_basis_label` must be resolved once on the backend using precedence `evaluation element source_hint` -> `criterion source_hint`; Phase 2 must not leave precedence to frontend heuristics or per-call copy branches. (US1, US3, FR3, FR4)
 - The contract must not invent source basis from model output. Source-basis text in scope for WF-0067 means official call-basis metadata tied to the mapped evaluation criterion/element or equivalent authoritative review-detail metadata only. (US1, US3, FR3, FR4)
 - If authoritative source basis or authoritative supporting-context role data is missing, the contract must surface an explicit unavailable/legacy limitation state rather than a guessed label. (US2, US3, FR4, FR6, FR7)
@@ -129,6 +129,7 @@ Type: feature
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx` and the review-card rendering path must place trust surfaces in the primary reading flow, not only in a distant summary block. (US1, US2, FR1-FR7)
 - `frontend/src/components/review/ReviewCard.tsx` or its replacement seam must render only contract-backed trust labels and limitation states. (US1, US2, FR1-FR7)
 - `NOT_ASSESSABLE` findings must remain explicitly labeled and must not be restyled into normal positive/negative findings. (US1, US2, FR5, FR7)
+- The page must not collapse `visible but not reviewed` and `no generated cards` into one label when the underlying boundary states differ. (US2, FR5, FR7)
 - If all representative fixtures carry empty `supporting_context_node_logical_ids`, the frontend must still satisfy MVP by showing fail-closed reviewed/not-reviewed boundaries without a positive supporting-context label. (US2, US3, FR6, FR15)
 
 ## 6. Components / Modules
@@ -176,6 +177,7 @@ Suggested file-path clusters (coarse only):
 - One card in a call-linked review has an authoritative `source_hint` while another card in the same review does not; the contract must support mixed per-card `source_basis_state` values without downgrading the entire page to a legacy state. (US1, US3, FR3, FR4)
 - A legacy review record can still render cards, but its call linkage is fallback-only; the page must show limitation copy rather than implying full trust closure. (US1, US3, FR4, FR7, FR14)
 - `supporting_context_node_logical_ids` remains empty or absent even when visible supporting nodes exist; the UI must not infer supporting semantics from page-local heuristics. (US2, US3, FR6, FR8)
+- A visible section has no generated cards at all; the page must not mislabel it as reviewed or collapse it into a different non-reviewed state without explicit contract support. (US2, US3, FR5, FR7, FR8)
 - A card is `NOT_ASSESSABLE`; the page must keep that label explicit while still showing the mapped evaluation criterion/element and reviewed section context if available. (US1, US2, FR1, FR2, FR5, FR7)
 - Page-level summary copy is accurate, but trust context remains absent inside the card reading flow; this is still launch-blocking because researchers decide at the card level. (US1, US3, FR10)
 - Tests pass for one polished call only; this does not satisfy WF-0067 because representative proof is locked to three calls. (US3, FR9, FR10, FR14)
@@ -195,6 +197,7 @@ Suggested file-path clusters (coarse only):
   - frontend tests proving review cards show mapped evaluation criterion/element plus reviewed-section context. (US1, FR1, FR2, FR10)
   - frontend tests proving source-basis visibility renders correctly when authoritative basis exists, fails closed when it does not, and supports mixed per-card availability within the same review detail. (US1, US3, FR3, FR4, FR10)
   - frontend tests proving reviewed/supporting/not-reviewed labeling is truthful, never infers `supporting context` when the contract does not provide it, and still passes when representative fixtures expose zero positive supporting-context labels. (US2, US3, FR5, FR6, FR10, FR15)
+  - frontend tests proving `visible but not reviewed` and `no generated cards` remain distinct when the representative fixture or contract data distinguishes them. (US2, US3, FR5, FR7, FR10)
   - frontend tests proving limitation copy appears for required unavailable/legacy/`NOT_ASSESSABLE` states. (US1, US2, US3, FR5, FR7, FR10)
   - fixture-backed or automated compatibility tests covering fail-closed limitation states at the backend and BFF seams, including `legacy_fallback`, unavailable source basis, mixed per-card source-basis availability, and any mixed-version case used to justify trust copy. (US3, FR4, FR8, FR10, FR14)
 
@@ -219,9 +222,10 @@ Suggested file-path clusters (coarse only):
 
 ## 11. Open Questions (if any)
 
-- Exact visual treatment of the page-level `How to read this review` or equivalent trust explainer, if one is needed after the minimum inline labels are specified.
+- Exact visual treatment of the page-level `How to read this review` or equivalent trust explainer, if one is needed after the minimum inline labels are specified. This remains non-blocking if inline trust labels already satisfy FR1-FR7.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-08): Initial PRD from brainstorm.
 - v0.2 (2026-03-08): Applied risk-audit edits to lock card-level source-basis precedence/state and make fail-closed supporting-context non-inference explicit; marked Ready for Tasks.
+- v0.3 (2026-03-08): Restored the distinct `no generated cards` trust boundary, aligned non-blocking explainer wording, and synced the PRD with the brainstorm SSOT contract closure.
