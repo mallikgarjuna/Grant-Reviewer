@@ -146,7 +146,7 @@ Verification Steps:
 - `cd frontend && rg -n "has_expectations|supporting|visible|isContainer|reviewStage" src/lib/submit/nodeRoles.ts src/lib/submit/nodeRoles.test.ts src/lib/submit/renderModel.ts src/lib/submit/renderModel.test.ts`
 Risks (if any): A helper that still mirrors page-local fallbacks will hide the same coupling behind a new filename.
 
-### [ ] Task 5 — Review detail labels visible supporting nodes and preserves empty supporting context
+### [x] Task 5 — Review detail labels visible supporting nodes and preserves empty supporting context
 
 Goal:
 Use the shared classifier in review detail so visible supporting nodes appear under `Visible but not part of this review`, coverage counts only stage-eligible visible non-container nodes, and `supporting_context_node_logical_ids` stays empty.
