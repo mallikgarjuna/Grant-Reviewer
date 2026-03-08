@@ -85,6 +85,14 @@ class Wf0044PolicyCase(TypedDict):
     expected_cards_count: int
 
 
+class Wf0065RepresentativeCase(TypedDict):
+    case_id: str
+    call_code: str
+    stage: str
+    node_logical_id: str
+    node_text: str
+
+
 def _load_wf0043_matrix_cases() -> list[Wf0043ContractCase]:
     fixture_path = Path("tests/fixtures/wf_0043_contract_matrix.yaml")
     loaded = yaml.safe_load(fixture_path.read_text(encoding="utf-8"))
@@ -122,6 +130,87 @@ def _load_wf0044_policy_cases() -> list[Wf0044PolicyCase]:
 
 def _wf0044_policy_case_id(value: str, *, surface: str) -> str:
     return f"wf0044_policy_{surface}_{value}"
+
+
+def _wf0065_representative_cases() -> list[Wf0065RepresentativeCase]:
+    return [
+        {
+            "case_id": "nwo_veni_2025_preproposal",
+            "call_code": "nwo_veni_2025_preproposal",
+            "stage": "STEP_1",
+            "node_logical_id": "key_outputs",
+            "node_text": "Representative proof text for NWO key outputs.",
+        },
+        {
+            "case_id": "erc_stg_2026_full",
+            "call_code": "erc_stg_2026_full",
+            "stage": "STEP_1",
+            "node_logical_id": "proposal_summary",
+            "node_text": "Representative proof text for ERC proposal summary.",
+        },
+        {
+            "case_id": "MSCA-PF-2025",
+            "call_code": "MSCA-PF-2025",
+            "stage": "STEP_1",
+            "node_logical_id": "excellence",
+            "node_text": "Representative proof text for MSCA excellence.",
+        },
+    ]
+
+
+def _wf0065_paired_boundary_cases() -> list[Wf0065RepresentativeCase]:
+    return [
+        {
+            "case_id": "nwo_veni_2025_preproposal",
+            "call_code": "nwo_veni_2025_preproposal",
+            "stage": "STEP_1",
+            "node_logical_id": "key_outputs",
+            "node_text": "Representative paired-boundary text for NWO key outputs.",
+        },
+        {
+            "case_id": "erc_stg_2026_full",
+            "call_code": "erc_stg_2026_full",
+            "stage": "STEP_2",
+            "node_logical_id": "b1_part1_scientific_proposal",
+            "node_text": "Representative paired-boundary text for ERC scientific proposal.",
+        },
+        {
+            "case_id": "MSCA-PF-2025",
+            "call_code": "MSCA-PF-2025",
+            "stage": "STEP_1",
+            "node_logical_id": "excellence",
+            "node_text": "Representative paired-boundary text for MSCA excellence.",
+        },
+    ]
+
+
+def _create_structured_client_for_call(
+    monkeypatch,
+    *,
+    call_code: str,
+) -> tuple[TestClient, UUID, str]:
+    if call_code == "nwo_veni_2025_preproposal":
+        return create_client_with_nwo_veni_seed(monkeypatch)
+    if call_code == "erc_stg_2026_full":
+        return create_client_with_erc_stg_seed(monkeypatch)
+    if call_code == "MSCA-PF-2025":
+        return create_client_with_msca_pf_seed(monkeypatch)
+    raise AssertionError(f"Unsupported wf0065 representative call: {call_code}")
+
+
+def _node_id_for_call_and_logical_id(*, call_id: UUID, node_logical_id: str) -> UUID:
+    session = get_session()
+    try:
+        node = session.exec(
+            select(ProposalNode).where(
+                ProposalNode.funding_call_id == call_id,
+                ProposalNode.logical_id == node_logical_id,
+            )
+        ).first()
+        assert node is not None
+        return node.id
+    finally:
+        session.close()
 
 
 def _count_reviews_in_db() -> int:
@@ -619,6 +708,32 @@ def create_client_with_msca_pf_seed(monkeypatch) -> tuple[TestClient, UUID, str]
         session.close()
 
 
+def create_client_with_nwo_veni_seed(monkeypatch) -> tuple[TestClient, UUID, str]:
+    """Create test client with real NWO Veni preproposal call from canonical YAML."""
+    monkeypatch.setenv("LLM_MODE", "stub")
+    monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    reset_database()
+    ingest_call(Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml"), dry_run=False)
+
+    session = get_session()
+    try:
+        template = PromptTemplate(
+            name="NWO Veni structured template",
+            template_text="Template",
+            is_active=True,
+        )
+        session.add(template)
+        session.commit()
+
+        call = session.exec(
+            select(FundingCall).where(FundingCall.code == "nwo_veni_2025_preproposal")
+        ).first()
+        assert call is not None
+        return TestClient(app), call.id, call.code
+    finally:
+        session.close()
+
+
 def _set_call_definition_reviewer_policy_rules(
     *,
     call_id: UUID,
@@ -892,6 +1007,538 @@ def test_wf0061_contract_runtime_proof_requires_upload_validate_ingest_order(
     )
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "CALL_NOT_FOUND"
+
+
+def test_wf0065_nwo_structured_api_tracer_uses_real_canonical_call(monkeypatch) -> None:
+    """WF-0065 tracer: structured API uses real NWO canonical call artifact."""
+    client, call_id, call_code = create_client_with_nwo_veni_seed(monkeypatch)
+    assert call_code == "nwo_veni_2025_preproposal"
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "key_outputs",
+                    "text": "Tracer bullet text proving the real NWO structured path.",
+                }
+            ],
+        },
+        idempotency_key=f"wf0065-nwo-api-{time.time_ns()}",
+    )
+    assert response.status_code in {200, 201}
+
+    payload = response.json()
+    assert payload["status"] in {"PENDING", "COMPLETED"}
+    assert isinstance(payload.get("review_id"), str)
+
+    session = get_session()
+    try:
+        definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        assert (
+            definition.source_path
+            == "data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml"
+        )
+    finally:
+        session.close()
+
+
+@pytest.mark.parametrize(
+    "case",
+    _wf0065_representative_cases(),
+    ids=lambda case: f"wf0065_structured_representative_{case['case_id']}",
+)
+def test_wf0065_structured_api_representative_success_matrix_persists_review(
+    monkeypatch,
+    case: Wf0065RepresentativeCase,
+) -> None:
+    """WF-0065 matrix: structured API parity for the locked representative calls."""
+    client, call_id, call_code = _create_structured_client_for_call(
+        monkeypatch,
+        call_code=case["call_code"],
+    )
+    assert call_code == case["call_code"]
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": case["stage"],
+            "nodes": [
+                {
+                    "node_logical_id": case["node_logical_id"],
+                    "text": case["node_text"],
+                }
+            ],
+        },
+        idempotency_key=f"wf0065-representative-api-{case['case_id']}-{time.time_ns()}",
+    )
+    assert response.status_code in {200, 201}
+    payload = response.json()
+    assert set(payload.keys()) == {"review_id", "status"}
+    assert payload["status"] in {"PENDING", "COMPLETED"}
+    assert isinstance(payload["review_id"], str)
+
+    session = get_session()
+    try:
+        review = session.get(Review, UUID(payload["review_id"]))
+        assert review is not None
+        assert review.review_type == "structured"
+        assert review.structured_payload is not None
+        assert review.structured_payload["call_id"] == str(call_id)
+        assert review.structured_payload["engine_path"] == "pipeline_v1"
+        persisted_cards = list(
+            session.exec(select(ReviewCard).where(ReviewCard.review_id == review.id)).all()
+        )
+        assert len(persisted_cards) >= 1
+    finally:
+        session.close()
+
+    detail = get_review_detail(client=client, review_id=payload["review_id"])
+    assert detail.status_code == 200
+    assert len(detail.json()["cards"]) >= 1
+
+
+@pytest.mark.parametrize(
+    "case",
+    _wf0065_paired_boundary_cases(),
+    ids=lambda case: f"wf0065_create_review_representative_{case['case_id']}",
+)
+def test_wf0065_create_review_representative_success_matrix_persists_review(
+    monkeypatch,
+    case: Wf0065RepresentativeCase,
+) -> None:
+    """WF-0065 matrix: /reviews parity for the locked representative calls."""
+    client, call_id, call_code = _create_structured_client_for_call(
+        monkeypatch,
+        call_code=case["call_code"],
+    )
+    assert call_code == case["call_code"]
+    node_id = _node_id_for_call_and_logical_id(
+        call_id=call_id,
+        node_logical_id=case["node_logical_id"],
+    )
+
+    response = post_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "node_id": str(node_id),
+            "snippet_text": case["node_text"],
+            "review_stage": case["stage"],
+        },
+        idempotency_key=f"wf0065-representative-single-{case['case_id']}-{time.time_ns()}",
+    )
+    assert response.status_code in {200, 201}
+    payload = response.json()
+    assert set(payload.keys()) == {"review_id", "status"}
+    assert payload["status"] in {"PENDING", "COMPLETED"}
+    assert isinstance(payload["review_id"], str)
+
+    detail = get_review_detail(client=client, review_id=payload["review_id"])
+    assert detail.status_code == 200
+    detail_payload = detail.json()
+    assert detail_payload["review"]["status"] in {"PENDING", "COMPLETED"}
+    assert len(detail_payload["cards"]) >= 1
+
+
+@pytest.mark.parametrize(
+    "case",
+    _wf0065_paired_boundary_cases(),
+    ids=lambda case: f"wf0065_validation_order_representative_{case['case_id']}",
+)
+def test_wf0065_representative_validation_order_precedes_idempotency_on_both_endpoints(
+    monkeypatch,
+    case: Wf0065RepresentativeCase,
+) -> None:
+    """WF-0065 parity: validation errors win before idempotency mismatch checks."""
+    client, call_id, call_code = _create_structured_client_for_call(
+        monkeypatch,
+        call_code=case["call_code"],
+    )
+    assert call_code == case["call_code"]
+    node_id = _node_id_for_call_and_logical_id(
+        call_id=call_id,
+        node_logical_id=case["node_logical_id"],
+    )
+
+    review_idem = f"wf0065-validation-order-single-{case['case_id']}-{time.time_ns()}"
+    first_single = post_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "node_id": str(node_id),
+            "snippet_text": case["node_text"],
+            "review_stage": case["stage"],
+        },
+        idempotency_key=review_idem,
+    )
+    assert first_single.status_code in {200, 201}
+
+    invalid_single_payload = {
+        "call_id": str(call_id),
+        "node_id": "not-a-uuid",
+        "snippet_text": case["node_text"],
+        "review_stage": case["stage"],
+    }
+    invalid_single_body = json.dumps(invalid_single_payload).encode("utf-8")
+    invalid_single_headers = build_signature_headers(body=invalid_single_body)
+    invalid_single_headers["Idempotency-Key"] = review_idem
+    invalid_single_headers["Content-Type"] = "application/json"
+    invalid_single = client.post(
+        "/reviews",
+        content=invalid_single_body,
+        headers=invalid_single_headers,
+    )
+    assert invalid_single.status_code == 400
+    invalid_single_payload_json = invalid_single.json()
+    assert invalid_single_payload_json["error"]["code"] == "VALIDATION_ERROR"
+    assert isinstance(invalid_single_payload_json["error"]["details"].get("errors"), list)
+
+    structured_idem = (
+        f"wf0065-validation-order-structured-{case['case_id']}-{time.time_ns()}"
+    )
+    first_structured = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": case["stage"],
+            "nodes": [
+                {
+                    "node_logical_id": case["node_logical_id"],
+                    "text": case["node_text"],
+                }
+            ],
+        },
+        idempotency_key=structured_idem,
+    )
+    assert first_structured.status_code in {200, 201}
+
+    invalid_structured_payload = {
+        "call_id": str(call_id),
+        "review_stage": case["stage"],
+        "nodes": [
+            {
+                "node_logical_id": case["node_logical_id"],
+            }
+        ],
+    }
+    invalid_structured_body = json.dumps(invalid_structured_payload).encode("utf-8")
+    invalid_structured_headers = build_signature_headers(body=invalid_structured_body)
+    invalid_structured_headers["Idempotency-Key"] = structured_idem
+    invalid_structured_headers["Content-Type"] = "application/json"
+    invalid_structured = client.post(
+        "/api/structured-review",
+        content=invalid_structured_body,
+        headers=invalid_structured_headers,
+    )
+    assert invalid_structured.status_code == 400
+    invalid_structured_json = invalid_structured.json()
+    assert invalid_structured_json["error"]["code"] == "VALIDATION_ERROR"
+    assert isinstance(invalid_structured_json["error"]["details"].get("errors"), list)
+
+
+@pytest.mark.parametrize(
+    "case",
+    _wf0065_paired_boundary_cases(),
+    ids=lambda case: f"wf0065_replay_mismatch_representative_{case['case_id']}",
+)
+def test_wf0065_representative_replay_and_mismatch_parity_on_both_endpoints(
+    monkeypatch,
+    case: Wf0065RepresentativeCase,
+) -> None:
+    """WF-0065 parity: replay is idempotent and mismatch is conflict without mutation."""
+    client, call_id, call_code = _create_structured_client_for_call(
+        monkeypatch,
+        call_code=case["call_code"],
+    )
+    assert call_code == case["call_code"]
+    node_id = _node_id_for_call_and_logical_id(
+        call_id=call_id,
+        node_logical_id=case["node_logical_id"],
+    )
+
+    initial_count = _count_reviews_in_db()
+    single_idem = f"wf0065-replay-single-{case['case_id']}-{time.time_ns()}"
+    single_payload = {
+        "call_id": str(call_id),
+        "node_id": str(node_id),
+        "snippet_text": case["node_text"],
+        "review_stage": case["stage"],
+    }
+    single_first = post_review(
+        client=client,
+        payload=dict(single_payload),
+        idempotency_key=single_idem,
+    )
+    assert single_first.status_code in {200, 201}
+    single_first_payload = single_first.json()
+    single_second = post_review(
+        client=client,
+        payload=dict(single_payload),
+        idempotency_key=single_idem,
+    )
+    assert single_second.status_code in {200, 201}
+    assert single_second.json() == single_first_payload
+    assert _count_reviews_in_db() == initial_count + 1
+
+    single_mismatch = post_review(
+        client=client,
+        payload={
+            **single_payload,
+            "snippet_text": f"{case['node_text']} changed mismatch payload",
+        },
+        idempotency_key=single_idem,
+    )
+    assert single_mismatch.status_code == 409
+    single_mismatch_json = single_mismatch.json()
+    assert single_mismatch_json["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+    assert single_mismatch_json["error"]["details"] == {}
+    assert _count_reviews_in_db() == initial_count + 1
+
+    structured_idem = f"wf0065-replay-structured-{case['case_id']}-{time.time_ns()}"
+    structured_payload = {
+        "call_id": str(call_id),
+        "review_stage": case["stage"],
+        "nodes": [
+            {
+                "node_logical_id": case["node_logical_id"],
+                "text": case["node_text"],
+            }
+        ],
+    }
+    structured_first = post_structured_review(
+        client=client,
+        payload=dict(structured_payload),
+        idempotency_key=structured_idem,
+    )
+    assert structured_first.status_code in {200, 201}
+    structured_first_payload = structured_first.json()
+    structured_second = post_structured_review(
+        client=client,
+        payload=dict(structured_payload),
+        idempotency_key=structured_idem,
+    )
+    assert structured_second.status_code in {200, 201}
+    assert structured_second.json() == structured_first_payload
+    assert _count_reviews_in_db() == initial_count + 2
+
+    structured_mismatch = post_structured_review(
+        client=client,
+        payload={
+            **structured_payload,
+            "nodes": [
+                {
+                    "node_logical_id": case["node_logical_id"],
+                    "text": f"{case['node_text']} changed mismatch payload",
+                }
+            ],
+        },
+        idempotency_key=structured_idem,
+    )
+    assert structured_mismatch.status_code == 409
+    structured_mismatch_json = structured_mismatch.json()
+    assert structured_mismatch_json["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
+    assert structured_mismatch_json["error"]["details"] == {}
+    assert _count_reviews_in_db() == initial_count + 2
+
+
+@pytest.mark.parametrize(
+    "case",
+    _wf0065_paired_boundary_cases(),
+    ids=lambda case: f"wf0065_reviews_disabled_representative_{case['case_id']}",
+)
+def test_wf0065_reviews_disabled_representative_fail_closed_across_both_endpoints(
+    monkeypatch,
+    case: Wf0065RepresentativeCase,
+) -> None:
+    """WF-0065 gate: REVIEWS_DISABLED blocks both endpoints before any downstream work."""
+    from app.services.reviewer_service import ReviewerService
+    from app.services.structured_reviewer_service import StructuredReviewerService
+
+    monkeypatch.setenv("REVIEWS_ENABLED", "0")
+    client, call_id, call_code = _create_structured_client_for_call(
+        monkeypatch,
+        call_code=case["call_code"],
+    )
+    assert call_code == case["call_code"]
+    node_id = _node_id_for_call_and_logical_id(
+        call_id=call_id,
+        node_logical_id=case["node_logical_id"],
+    )
+
+    calls = {"generate_review": 0, "generate_structured": 0, "pipeline_v1": 0}
+
+    def blocked_generate_review(self, *args, **kwargs):
+        calls["generate_review"] += 1
+        raise AssertionError("generate_review should not execute when REVIEWS_DISABLED")
+
+    def blocked_generate_structured(self, *args, **kwargs):
+        calls["generate_structured"] += 1
+        raise AssertionError(
+            "generate_structured_review_pipeline_v1 should not execute when REVIEWS_DISABLED"
+        )
+
+    def blocked_pipeline_v1(*args, **kwargs):
+        calls["pipeline_v1"] += 1
+        raise AssertionError("pipeline_v1 should not execute when REVIEWS_DISABLED")
+
+    monkeypatch.setattr(ReviewerService, "generate_review", blocked_generate_review)
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review_pipeline_v1",
+        blocked_generate_structured,
+    )
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        blocked_pipeline_v1,
+    )
+
+    before_count = _count_reviews_in_db()
+
+    single_response = post_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "node_id": str(node_id),
+            "snippet_text": case["node_text"],
+            "review_stage": case["stage"],
+        },
+        idempotency_key=f"wf0065-reviews-disabled-single-{case['case_id']}-{time.time_ns()}",
+    )
+    assert single_response.status_code == 503
+    single_payload = single_response.json()
+    assert single_payload["error"]["code"] == "REVIEWS_DISABLED"
+    assert single_payload["error"]["details"] == {}
+
+    structured_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": case["stage"],
+            "nodes": [
+                {
+                    "node_logical_id": case["node_logical_id"],
+                    "text": case["node_text"],
+                }
+            ],
+        },
+        idempotency_key=(
+            f"wf0065-reviews-disabled-structured-{case['case_id']}-{time.time_ns()}"
+        ),
+    )
+    assert structured_response.status_code == 503
+    structured_payload = structured_response.json()
+    assert structured_payload["error"]["code"] == "REVIEWS_DISABLED"
+    assert structured_payload["error"]["details"] == {}
+
+    assert calls == {"generate_review": 0, "generate_structured": 0, "pipeline_v1": 0}
+    assert _count_reviews_in_db() == before_count
+
+
+@pytest.mark.parametrize(
+    "case",
+    _wf0065_paired_boundary_cases(),
+    ids=lambda case: f"wf0065_quota_exceeded_representative_{case['case_id']}",
+)
+def test_wf0065_quota_exceeded_representative_fail_closed_across_both_endpoints(
+    monkeypatch,
+    case: Wf0065RepresentativeCase,
+) -> None:
+    """WF-0065 gate: QUOTA_EXCEEDED blocks both endpoints before downstream execution."""
+    from app.services.reviewer_service import ReviewerService
+    from app.services.structured_reviewer_service import StructuredReviewerService
+
+    monkeypatch.setenv("REVIEWS_ENABLED", "1")
+    monkeypatch.setenv("FREE_DAILY_REVIEW_LIMIT", "0")
+    client, call_id, call_code = _create_structured_client_for_call(
+        monkeypatch,
+        call_code=case["call_code"],
+    )
+    assert call_code == case["call_code"]
+    node_id = _node_id_for_call_and_logical_id(
+        call_id=call_id,
+        node_logical_id=case["node_logical_id"],
+    )
+
+    calls = {"generate_review": 0, "generate_structured": 0, "pipeline_v1": 0}
+
+    def blocked_generate_review(self, *args, **kwargs):
+        calls["generate_review"] += 1
+        raise AssertionError("generate_review should not execute when QUOTA_EXCEEDED")
+
+    def blocked_generate_structured(self, *args, **kwargs):
+        calls["generate_structured"] += 1
+        raise AssertionError(
+            "generate_structured_review_pipeline_v1 should not execute when QUOTA_EXCEEDED"
+        )
+
+    def blocked_pipeline_v1(*args, **kwargs):
+        calls["pipeline_v1"] += 1
+        raise AssertionError("pipeline_v1 should not execute when QUOTA_EXCEEDED")
+
+    monkeypatch.setattr(ReviewerService, "generate_review", blocked_generate_review)
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review_pipeline_v1",
+        blocked_generate_structured,
+    )
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        blocked_pipeline_v1,
+    )
+
+    before_count = _count_reviews_in_db()
+
+    single_response = post_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "node_id": str(node_id),
+            "snippet_text": case["node_text"],
+            "review_stage": case["stage"],
+        },
+        idempotency_key=f"wf0065-quota-single-{case['case_id']}-{time.time_ns()}",
+    )
+    assert single_response.status_code == 429
+    single_payload = single_response.json()
+    assert single_payload["error"]["code"] == "QUOTA_EXCEEDED"
+    assert set(single_payload["error"]["details"].keys()) == {"limit", "remaining", "reset_at"}
+    assert single_payload["error"]["details"]["limit"] == 0
+    assert single_payload["error"]["details"]["remaining"] == 0
+
+    structured_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": case["stage"],
+            "nodes": [
+                {
+                    "node_logical_id": case["node_logical_id"],
+                    "text": case["node_text"],
+                }
+            ],
+        },
+        idempotency_key=f"wf0065-quota-structured-{case['case_id']}-{time.time_ns()}",
+    )
+    assert structured_response.status_code == 429
+    structured_payload = structured_response.json()
+    assert structured_payload["error"]["code"] == "QUOTA_EXCEEDED"
+    assert set(structured_payload["error"]["details"].keys()) == {
+        "limit",
+        "remaining",
+        "reset_at",
+    }
+    assert structured_payload["error"]["details"]["limit"] == 0
+    assert structured_payload["error"]["details"]["remaining"] == 0
+
+    assert calls == {"generate_review": 0, "generate_structured": 0, "pipeline_v1": 0}
+    assert _count_reviews_in_db() == before_count
 
 
 def test_normalize_database_url_for_render_postgres() -> None:
