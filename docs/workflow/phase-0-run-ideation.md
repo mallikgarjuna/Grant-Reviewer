@@ -1,3 +1,4 @@
+<!-- docs/workflow/phase-0-run-ideation.md -->
 # Workflow Runner — Phase 0 (Ideation)
 
 This file is a workflow instruction.
@@ -129,7 +130,8 @@ After completing Part C, output:
   - hallucination/scope-drift detection versus approved prior-phase artifacts (if any),
   - strict reporting of bugs/missing tests/design issues/suggested fixes,
   - safe closure of all justified findings (blocking mandatory; non-blocking unless rejected with rationale),
-  - and explicit pass/fail verification evidence before any ship recommendation.
+  - explicit pass/fail verification evidence before any ship recommendation,
+  - and end with this exact instruction: `And then: Address ALL your audit findings (raised bugs/tests/issues/fixes/comments/etc.) safely and carefully.`
 
 If `Type: page` and UX/state/positioning is non-trivial, you MAY recommend this optional add-on before Phase 1:
 
