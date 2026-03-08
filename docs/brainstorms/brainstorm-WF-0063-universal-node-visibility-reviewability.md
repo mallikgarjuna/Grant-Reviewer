@@ -2,7 +2,7 @@
 # WF-0063 — Universal Node Visibility Reviewability Brainstorm
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-08
 
@@ -156,11 +156,14 @@ Constraints:
 - Avoid bulk multi-call reauthoring/migration in the first slice.
 - Do not introduce speculative criteria/elements mappings for non-primary nodes.
 - Keep the first deliverable small enough to validate quickly on one proof call.
+- Rollout must be proof-call-first: preserve current behavior for existing expectation-backed calls before any broader universal flip.
+- Supporting/context-only nodes must fail closed semantically: they must not silently alter primary criterion-grounded review outputs unless a later explicit traced contract authorizes that behavior.
 
 Contract Notes / Non-obvious constraints:
 
 - Existing contracts and tests assume `has_expectations` is meaningful, so any split must manage compatibility carefully. See Section 5 in `docs/brainstorms/qna/brainstorm-QnA-WF-0063-universal-node-visibility-reviewability.md`.
 - Official source grounding remains a hard boundary even if product UX wants broader visibility. See Section 5 in `docs/brainstorms/qna/brainstorm-QnA-WF-0063-universal-node-visibility-reviewability.md`.
+- “Repo-safe” specifically means no broad default-behavior flip until proof-target parity is demonstrated. Added from Part B risk audit.
 
 ---
 
@@ -175,6 +178,7 @@ Key risks:
 - Backward compatibility may be more fragile than expected because current frontend/backend logic assumes visibility follows expectations.
 - The first slice may reveal that “supporting/context-only” needs a clearer review-output vocabulary than currently assumed.
 - The proof target may surface hidden coupling in submit/compliance/review-detail paths beyond the current understanding.
+- Conditional or agency-specific supporting-node rules may be accidentally universalized from the MSCA proof target too early.
 
 Contract Notes / Non-obvious constraints:
 
@@ -189,6 +193,8 @@ Contract Notes / Non-obvious constraints:
 - How review detail should represent “considered as context” versus “directly evaluated.” Deferred to Phase 1.
 - Whether `abstract` and each MSCA Part B2 section should all share one supporting-role policy or be differentiated further. Deferred to Phase 1.
 - Whether the first implementation slice touches YAML only, UI only, or an end-to-end contract seam. Deferred to Phase 1.
+- How conditional supporting nodes (for example MSCA Section 9) should be represented without over-generalizing the proof target. Deferred to Phase 1.
+- What exact parity checks are required across YAML, API, submit/compliance payloads, and review-detail labeling before any rollout expands beyond the proof target. Deferred to Phase 1.
 
 ---
 
@@ -210,10 +216,16 @@ If we had to ship in 2-3 days:
   - final context-aware engine behavior,
   - new scored review-card semantics for supporting sections,
   - solving all agency-specific nuances.
+- Phase 1 validation seams must explicitly cover:
+  - YAML/authoring contract,
+  - API visibility contract,
+  - submit/compliance payload boundary,
+  - review-detail/output labeling for primary-evaluated versus supporting-context content.
 
 Contract Notes / Non-obvious constraints:
 
 - MVP success is a safe proof of the contract split, not completion of the full supporting-node behavior model. See Section 7 in `docs/brainstorms/qna/brainstorm-QnA-WF-0063-universal-node-visibility-reviewability.md`.
+- “Proof call” is not enough by itself; parity and fail-closed rollout rules must be explicit before broader adoption. Added from Part B risk audit.
 
 ---
 
