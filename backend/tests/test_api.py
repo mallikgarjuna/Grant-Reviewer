@@ -1663,6 +1663,99 @@ def test_wf0063_compliance_rejects_supporting_nodes_for_primary_path(
     assert payload["error"]["details"]["node_logical_ids"] == ["abstract"]
 
 
+def test_wf0063_proof_call_parity_holds_across_api_submit_and_review_detail(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_msca_pf_seed(monkeypatch)
+    assert call_code == "MSCA-PF-2025"
+    session = get_session()
+    try:
+        call = session.get(FundingCall, call_id)
+        assert call is not None
+        call.is_active = True
+        session.add(call)
+        session.commit()
+    finally:
+        session.close()
+
+    config_response = client.get(f"/api/public/calls/{call_code}/config")
+    assert config_response.status_code == 200
+    assert config_response.json()["split_visibility_reviewability_enabled"] is True
+
+    nodes_response = client.get(f"/calls/{call_id}/nodes")
+    assert nodes_response.status_code == 200
+    nodes_by_logical_id = {
+        node["logical_id"]: node for node in nodes_response.json()["nodes"]
+    }
+    assert "excellence" in nodes_by_logical_id
+    assert "abstract" in nodes_by_logical_id
+
+    submit_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "excellence",
+                    "text": "Primary path review text for parity closure guard.",
+                }
+            ],
+        },
+    )
+    assert submit_response.status_code == 200
+    detail = get_review_detail(client=client, review_id=submit_response.json()["review_id"])
+    assert detail.status_code == 200
+    detail_payload = detail.json()
+    assert detail_payload["primary_evaluated_node_logical_ids"] == ["excellence"]
+    assert detail_payload["supporting_context_node_logical_ids"] == []
+
+
+def test_wf0063_non_opted_in_calls_preserve_legacy_behavior(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    config_response = client.get(
+        f"/api/public/calls/{seeded_ids.structured_call_code}/config"
+    )
+    assert config_response.status_code == 200
+    assert config_response.json()["split_visibility_reviewability_enabled"] is False
+
+    nodes_response = client.get(f"/calls/{seeded_ids.structured_call_id}/nodes")
+    assert nodes_response.status_code == 200
+    assert all(node["node_role"] is None for node in nodes_response.json()["nodes"])
+
+
+def test_wf0063_proof_call_opt_in_rollback_restores_legacy_behavior(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_msca_pf_seed(monkeypatch)
+    assert call_code == "MSCA-PF-2025"
+
+    session = get_session()
+    try:
+        definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        canonical_json = dict(definition.canonical_json)
+        canonical_json["runtime_config"] = {
+            "split_visibility_reviewability_enabled": False
+        }
+        definition.canonical_json = canonical_json
+        session.add(definition)
+        session.commit()
+    finally:
+        session.close()
+
+    config_response = client.get(f"/api/public/calls/{call_code}/config")
+    assert config_response.status_code == 200
+    assert config_response.json()["split_visibility_reviewability_enabled"] is False
+
+    nodes_response = client.get(f"/calls/{call_id}/nodes")
+    assert nodes_response.status_code == 200
+    assert all(node["node_role"] is None for node in nodes_response.json()["nodes"])
+
+
 def test_create_structured_review_payload_too_large_returns_422(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     response = post_structured_review(

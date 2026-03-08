@@ -377,7 +377,7 @@ Verification Steps:
 - `cd frontend && rg -n "Primary evaluated|Supporting context|Visible but not part of this review" 'src/app/api/bff/reviews/[reviewId]/route.ts' 'src/app/app/reviews/[reviewId]/page.tsx'`
 Risks (if any): A UI-only label update without backend field plumbing can reintroduce inference-based semantics and hide regressions.
 
-### [ ] Task 12 — Proof-call parity and legacy-behavior closure guard
+### [x] Task 12 — Proof-call parity and legacy-behavior closure guard
 
 Goal:
 Close the workflow with deterministic regressions that prove opted-in `MSCA-PF-2025` behavior across YAML/API/submit/review-detail seams while confirming non-opted-in legacy calls do not flip behavior.
