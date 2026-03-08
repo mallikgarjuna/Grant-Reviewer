@@ -757,9 +757,13 @@ export default function ReviewDetailPage() {
     supportingContextNodeLabels.length > 0
       ? supportingContextNodeLabels.join(", ")
       : "None";
-  const visibleNotReviewedSectionText =
+  const notReviewedSectionText =
     notReviewedNodeLabels.length > 0
       ? notReviewedNodeLabels.join(", ")
+      : "None";
+  const visibleSupportingNotReviewedSectionText =
+    visibleButNotReviewedNodeLabels.length > 0
+      ? visibleButNotReviewedNodeLabels.join(", ")
       : "None";
 
   return (
@@ -805,7 +809,7 @@ export default function ReviewDetailPage() {
               Reviewed sections: {reviewedSectionText}
             </p>
             <p className="mt-1 text-[var(--color-muted-foreground)]">
-              Not reviewed sections: {visibleNotReviewedSectionText}
+              Not reviewed sections: {notReviewedSectionText}
             </p>
             <p className="mt-1">
               Primary evaluated: {reviewedSectionText}
@@ -815,7 +819,7 @@ export default function ReviewDetailPage() {
             </p>
             {isWf0064ProofPathOptedIn ? (
               <p className="mt-1 text-[var(--color-muted-foreground)]">
-                Visible but not part of this review: {visibleNotReviewedSectionText}
+                Visible but not part of this review: {visibleSupportingNotReviewedSectionText}
               </p>
             ) : null}
           </div>

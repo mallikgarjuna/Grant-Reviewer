@@ -590,7 +590,7 @@ export function UniversalSubmitForm() {
                         <p className="text-xs text-[var(--color-muted-foreground)]">
                           {node.nodeRole === "PRIMARY"
                             ? "Primary evaluated"
-                            : "Supporting context (draft-only for this review path)"}
+                            : "Supporting context (visible, not submitted in this review path)"}
                         </p>
                         <textarea
                           id={inputId}
