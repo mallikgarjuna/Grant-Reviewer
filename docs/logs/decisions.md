@@ -19,6 +19,14 @@
 - **Tradeoff**: Implementation must thread one explicit classification seam instead of letting the page compute its own fallback logic.
 - **Status**: Approved.
 
+### AD 64.3: WF-0064 must reuse existing proof-path seams and stay evidence-gated
+- **WF ID**: WF-0064
+- **Context**: The Phase 1 audit found the PRD correctly required a single authoritative classification source, but the wording still left room for Phase 2 to introduce a new generalized cross-layer abstraction or to treat readiness as implicit rather than evidence-backed.
+- **Decision**: Satisfy WF-0064's single-source classification requirement by reusing an existing resolver or normalized BFF output where possible, and do not widen the workflow into a new generalized classification framework. Phase 2 or ship readiness may be recommended only with explicit passing evidence for every required automated check, zero unresolved blocking findings, and closure of non-blocking findings unless explicitly rejected with rationale.
+- **Why**: Preserves the narrow `MSCA-PF-2025` proof-path scope and keeps the fail-closed contract enforceable through explicit evidence instead of optimistic interpretation.
+- **Tradeoff**: Implementation flexibility is narrower, and readiness claims require a stricter documented evidence bundle.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0063: universal node visibility reviewability)
 
 ### AD 63.1: Universal node-role split is opt-in at the call/runtime level for MVP

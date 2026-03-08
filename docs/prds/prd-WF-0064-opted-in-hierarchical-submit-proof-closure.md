@@ -182,7 +182,8 @@ Suggested file-path clusters (coarse only):
 
 ## 8.1 Readiness Gate
 
-- No ship or Phase 2 readiness recommendation is valid without explicit passing evidence for every required automated check in Section 8, zero unresolved blocking findings, and closure of all non-blocking findings unless they are explicitly rejected with rationale.
+- No implementation-complete or ship recommendation is valid without explicit passing evidence for every required automated check in Section 8, zero unresolved blocking findings, and closure of all non-blocking findings unless they are explicitly rejected with rationale.
+- Phase 2 may be marked `Ready for Implementation` only when the task plan is stable, fail-closed, and fully aligned to these required checks; executing those checks and capturing the evidence is mandatory before any claim that WF-0064 is implemented safely enough to ship.
 - Evidence must show the fail-closed contract remains intact for the proof path: supporting nodes visible but non-editable, no supporting persistence, empty `supporting_context_node_logical_ids`, unchanged backend `SUPPORTING_NODE_NOT_ALLOWED` behavior, and review-detail coverage derived from stage-eligible visible non-container nodes rather than `has_expectations` leaves.
 
 ## 9. Telemetry (Minimal)
@@ -206,3 +207,4 @@ Suggested file-path clusters (coarse only):
 - v0.1 (2026-03-08): Initial PRD from brainstorm.
 - v0.2 (2026-03-08): Applied risk-audit edits for single-source review-detail classification, stale supporting-draft fail-closed handling, and explicit empty supporting-context verification; marked Ready for Tasks.
 - v0.3 (2026-03-08): Hardened FR12 scope to prefer existing classification seams and added explicit evidence-based readiness gate for Phase 2/ship recommendations.
+- v0.4 (2026-03-08): Resolved workflow-gate contradiction by requiring explicit evidence before implementation-complete or ship recommendations while allowing Phase 2 readiness once the task plan is stable and aligned.
