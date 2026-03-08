@@ -1286,6 +1286,17 @@ def test_wf0065_representative_replay_and_mismatch_parity_on_both_endpoints(
     assert single_second.status_code in {200, 201}
     assert single_second.json() == single_first_payload
     assert _count_reviews_in_db() == initial_count + 1
+    session = get_session()
+    try:
+        single_review_before = session.get(Review, UUID(single_first_payload["review_id"]))
+        assert single_review_before is not None
+        single_review_before_snapshot = (
+            single_review_before.status,
+            single_review_before.request_payload_sha256,
+            single_review_before.overall_summary,
+        )
+    finally:
+        session.close()
 
     single_mismatch = post_review(
         client=client,
@@ -1300,6 +1311,17 @@ def test_wf0065_representative_replay_and_mismatch_parity_on_both_endpoints(
     assert single_mismatch_json["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
     assert single_mismatch_json["error"]["details"] == {}
     assert _count_reviews_in_db() == initial_count + 1
+    session = get_session()
+    try:
+        single_review_after = session.get(Review, UUID(single_first_payload["review_id"]))
+        assert single_review_after is not None
+        assert (
+            single_review_after.status,
+            single_review_after.request_payload_sha256,
+            single_review_after.overall_summary,
+        ) == single_review_before_snapshot
+    finally:
+        session.close()
 
     structured_idem = f"wf0065-replay-structured-{case['case_id']}-{time.time_ns()}"
     structured_payload = {
@@ -1327,6 +1349,19 @@ def test_wf0065_representative_replay_and_mismatch_parity_on_both_endpoints(
     assert structured_second.status_code in {200, 201}
     assert structured_second.json() == structured_first_payload
     assert _count_reviews_in_db() == initial_count + 2
+    session = get_session()
+    try:
+        structured_review_before = session.get(
+            Review, UUID(structured_first_payload["review_id"])
+        )
+        assert structured_review_before is not None
+        structured_review_before_snapshot = (
+            structured_review_before.status,
+            structured_review_before.request_payload_sha256,
+            structured_review_before.overall_summary,
+        )
+    finally:
+        session.close()
 
     structured_mismatch = post_structured_review(
         client=client,
@@ -1346,6 +1381,19 @@ def test_wf0065_representative_replay_and_mismatch_parity_on_both_endpoints(
     assert structured_mismatch_json["error"]["code"] == "IDEMPOTENCY_PAYLOAD_MISMATCH"
     assert structured_mismatch_json["error"]["details"] == {}
     assert _count_reviews_in_db() == initial_count + 2
+    session = get_session()
+    try:
+        structured_review_after = session.get(
+            Review, UUID(structured_first_payload["review_id"])
+        )
+        assert structured_review_after is not None
+        assert (
+            structured_review_after.status,
+            structured_review_after.request_payload_sha256,
+            structured_review_after.overall_summary,
+        ) == structured_review_before_snapshot
+    finally:
+        session.close()
 
 
 @pytest.mark.parametrize(
