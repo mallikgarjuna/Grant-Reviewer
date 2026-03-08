@@ -1,9 +1,9 @@
-<!-- docs/tasks/task-WF-0067-review-trust-surface-closure.md -->
+<!-- docs/tasks/completed/task-WF-0067-review-trust-surface-closure.md -->
 # WF-0067 — Review Trust Surface Closure
 
 Artifact: task
-Version: v0.3
-Status: Ready for Implementation
+Version: v0.4
+Status: Completed
 Last Updated: 2026-03-08
 
 Type: feature
@@ -228,3 +228,4 @@ Risks (if any): If proof is summarized only in prose instead of seam-specific pa
 - v0.1 (2026-03-08): Initial task breakdown from PRD.
 - v0.2 (2026-03-08): Made the early tracer bullet reach the rendered review-detail path, demoted submit-flow helper edits to optional spillover, and tightened proof-closure verification to fail on out-of-scope file changes; marked Ready for Implementation.
 - v0.3 (2026-03-08): Split the tracer bullet into atomic BFF and page tasks, replaced ambiguous verification commands with deterministic WF-0067 selectors, and anchored scope-guard proof to an explicit Phase 3 baseline SHA.
+- v0.4 (2026-03-08): Completed Phase 3 implementation, closed fail-closed audit findings, and archived task under `completed/`.

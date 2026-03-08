@@ -1,4 +1,4 @@
-<!-- docs/prds/prd-WF-0067-review-trust-surface-closure.md -->
+<!-- docs/prds/completed/prd-WF-0067-review-trust-surface-closure.md -->
 # WF-0067 — Review Trust Surface Closure
 
 Artifact: prd

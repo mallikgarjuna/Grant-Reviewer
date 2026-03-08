@@ -681,10 +681,18 @@ export default function ReviewDetailPage() {
     reviewDetail.primary_evaluated_node_logical_ids ?? submittedNodes;
   const supportingContextNodeIds =
     reviewDetail.supporting_context_node_logical_ids ?? [];
-  const explicitVisibleNotReviewedNodeIds =
-    reviewDetail.visible_not_reviewed_node_logical_ids ?? [];
-  const explicitNoGeneratedCardsNodeIds =
-    reviewDetail.no_generated_cards_node_logical_ids ?? [];
+  const hasExplicitVisibleNotReviewedNodeIds = Array.isArray(
+    reviewDetail.visible_not_reviewed_node_logical_ids,
+  );
+  const explicitVisibleNotReviewedNodeIds = hasExplicitVisibleNotReviewedNodeIds
+    ? reviewDetail.visible_not_reviewed_node_logical_ids
+    : [];
+  const hasExplicitNoGeneratedCardsNodeIds = Array.isArray(
+    reviewDetail.no_generated_cards_node_logical_ids,
+  );
+  const explicitNoGeneratedCardsNodeIds = hasExplicitNoGeneratedCardsNodeIds
+    ? reviewDetail.no_generated_cards_node_logical_ids
+    : [];
   const reviewedNodeLabels = [...primaryEvaluatedNodeIds]
     .sort((left, right) => {
       const leftNode = nodeByLogicalId.get(left);
@@ -715,7 +723,7 @@ export default function ReviewDetailPage() {
     )
     .map((nodeLogicalId) => nodeTitleByLogicalId.get(nodeLogicalId) ?? nodeLogicalId);
   const visibleButNotReviewedNodeLabels =
-    explicitVisibleNotReviewedNodeIds.length > 0
+    hasExplicitVisibleNotReviewedNodeIds
       ? explicitVisibleNotReviewedNodeIds.map(
           (nodeLogicalId) => nodeTitleByLogicalId.get(nodeLogicalId) ?? nodeLogicalId,
         )
@@ -732,8 +740,7 @@ export default function ReviewDetailPage() {
     (nodeLogicalId) => nodeTitleByLogicalId.get(nodeLogicalId) ?? nodeLogicalId,
   );
   const hasExplicitBoundaryBuckets =
-    explicitVisibleNotReviewedNodeIds.length > 0 ||
-    explicitNoGeneratedCardsNodeIds.length > 0;
+    hasExplicitVisibleNotReviewedNodeIds || hasExplicitNoGeneratedCardsNodeIds;
   const notReviewedBoundaryLabels = hasExplicitBoundaryBuckets
     ? [...visibleButNotReviewedNodeLabels, ...noGeneratedCardsNodeLabels]
     : notReviewedNodeLabels;
@@ -838,7 +845,9 @@ export default function ReviewDetailPage() {
             <p className="mt-1 text-[var(--color-muted-foreground)]">
               Supporting context: {supportingContextSectionText}
             </p>
-            {isWf0064ProofPathOptedIn || explicitVisibleNotReviewedNodeIds.length > 0 ? (
+            {(hasExplicitVisibleNotReviewedNodeIds
+              ? visibleButNotReviewedNodeLabels.length > 0
+              : isWf0064ProofPathOptedIn) ? (
               <p className="mt-1 text-[var(--color-muted-foreground)]">
                 Visible but not reviewed sections: {visibleButNotReviewedSectionText}
               </p>

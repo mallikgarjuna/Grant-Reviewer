@@ -438,6 +438,96 @@ describe("ReviewDetailPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("wf0067_review_detail_boundary_explicit_empty_buckets_do_not_fallback_to_inference", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "MSCA-PF-2025",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "excellence",
+                    node_title: "Excellence",
+                    criterion: "Excellence",
+                    criterion_description: "Criterion description",
+                    evaluation_element_name: "Quality and credibility",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Feedback text",
+                    source_basis_label: "Official source",
+                    source_basis_state: "available",
+                  },
+                ],
+                primary_evaluated_node_logical_ids: ["excellence"],
+                supporting_context_node_logical_ids: [],
+                visible_not_reviewed_node_logical_ids: [],
+                no_generated_cards_node_logical_ids: [],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "excellence",
+                  title: "Excellence",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                  node_role: "PRIMARY",
+                },
+                {
+                  id: "node-2",
+                  logical_id: "impact",
+                  title: "Impact",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                  node_role: "SUPPORTING",
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Visible but not reviewed sections:/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/No generated card sections:/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Visible but not reviewed section:/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/No generated cards section:/),
+    ).not.toBeInTheDocument();
+  });
+
   it("wf0067_review_detail_boundary_limitation_copy_for_legacy_and_mixed_version", async () => {
     vi.stubGlobal(
       "fetch",

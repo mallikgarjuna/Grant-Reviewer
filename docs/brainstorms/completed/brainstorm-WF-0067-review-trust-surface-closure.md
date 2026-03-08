@@ -1,4 +1,4 @@
-<!-- docs/brainstorms/brainstorm-WF-0067-review-trust-surface-closure.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0067-review-trust-surface-closure.md -->
 # WF-0067 — Review Trust Surface Closure
 
 Artifact: brainstorm

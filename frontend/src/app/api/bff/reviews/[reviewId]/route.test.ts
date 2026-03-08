@@ -170,6 +170,46 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
     expect(body.no_generated_cards_node_logical_ids).toEqual([]);
   });
 
+  it("wf0067_bff_review_detail_preserves_backend_detail_state_verbatim", async () => {
+    authMock.mockResolvedValue({ userId: "user-1" });
+    getReviewMock.mockResolvedValue({
+      ok: true,
+      data: {
+        call_id: "call-erc",
+        call_code: "erc_stg_2026_full",
+        detail_state: "proof_path_unmapped",
+        ordering_source: "call_nodes",
+        submitted_node_logical_ids: ["node-1"],
+        submitted_leaf_ids: ["node-1"],
+        primary_evaluated_node_logical_ids: ["node-1"],
+        supporting_context_node_logical_ids: [],
+        visible_not_reviewed_node_logical_ids: [],
+        no_generated_cards_node_logical_ids: [],
+        unmapped_node_logical_ids: [],
+        review: {
+          id: "review-proof-path",
+          status: "COMPLETED",
+          overall_rating: "NOTE",
+          overall_summary: "Summary",
+        },
+        cards: [],
+      },
+    });
+
+    const { GET } = await import("./route");
+    const response = await GET(new Request("http://localhost"), {
+      params: Promise.resolve({ reviewId: "review-proof-path" }),
+    });
+    const body = (await response.json()) as {
+      detail_state: string;
+      unmapped_node_logical_ids: string[];
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.detail_state).toBe("proof_path_unmapped");
+    expect(body.unmapped_node_logical_ids).toEqual([]);
+  });
+
   it.each([
     "nwo_veni_2025_preproposal",
     "erc_stg_2026_full",

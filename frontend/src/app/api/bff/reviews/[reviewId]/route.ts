@@ -42,6 +42,17 @@ function inferDetailState(record: Record<string, unknown>) {
   return "call_linked";
 }
 
+function normalizeDetailState(record: Record<string, unknown>) {
+  if (
+    record.detail_state === "call_linked" ||
+    record.detail_state === "legacy_fallback" ||
+    record.detail_state === "proof_path_unmapped"
+  ) {
+    return record.detail_state;
+  }
+  return inferDetailState(record);
+}
+
 function normalizeReviewDetailResponse(payload: unknown): unknown {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return payload;
@@ -50,7 +61,7 @@ function normalizeReviewDetailResponse(payload: unknown): unknown {
   const record = payload as Record<string, unknown>;
   return {
     ...record,
-    detail_state: inferDetailState(record),
+    detail_state: normalizeDetailState(record),
     submitted_node_logical_ids: Array.isArray(record.submitted_node_logical_ids)
       ? record.submitted_node_logical_ids.filter((item): item is string => typeof item === "string")
       : [],
