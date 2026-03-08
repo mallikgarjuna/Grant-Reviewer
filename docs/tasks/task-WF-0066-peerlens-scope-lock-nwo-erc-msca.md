@@ -10,7 +10,7 @@ Type: docs
 
 ## Task Breakdown (Sequential Order)
 
-### [x] Task 1 — Inspect the named target set and classify edit vs verified no-op
+### [ ] Task 1 — Inspect the named target set and classify edit vs verified no-op
 
 Goal:
 Inspect `docs/parking_lot.md`, `docs/logs/decisions.md`, `docs/memory/domain/project_docs.md`, and `docs/mission.md` before any edits, record the per-file `edit required` vs `verified no-op` classification in the walkthrough, and capture the Phase 3 baseline commit SHA there before any implementation edits so later verification can compare against a deterministic range.
@@ -43,7 +43,7 @@ Verification Steps:
 - `sed -n '1,120p' docs/mission.md`
 Risks (if any): If the inspection scan is too broad, execution will falsely treat historical wording as an active contradiction and widen the edit set.
 
-### [x] Task 2 — Tracer bullet: rewrite all active parking-lot contradictions without touching historical sections
+### [ ] Task 2 — Tracer bullet: rewrite all active parking-lot contradictions without touching historical sections
 
 Goal:
 Rewrite every active contradiction-bearing `docs/parking_lot.md` row or rationale line so launch readiness is framed around truthful usefulness within the permanent NWO/ERC/MSCA wedge instead of a missing broader-program expansion, while preserving the no-op status of the other named targets and leaving historical sections untouched.
@@ -75,7 +75,7 @@ Verification Steps:
 - `git diff -- docs/parking_lot.md docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
 Risks (if any): A too-generic rewrite can remove the stale blocker but leave no actionable launch-readiness framing.
 
-### [x] Task 3 — Produce the named-file evidence bundle and prove scope stayed narrow
+### [ ] Task 3 — Produce the named-file evidence bundle and prove scope stayed narrow
 
 Goal:
 Finalize the walkthrough evidence bundle for the four named docs so WF-0066 cannot be closed with a generic “docs verified” claim.
