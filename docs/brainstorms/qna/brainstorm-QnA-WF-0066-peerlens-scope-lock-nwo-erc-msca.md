@@ -2,9 +2,15 @@
 # WF-0066 — PeerLens Scope Lock to NWO/ERC/MSCA
 
 Artifact: brainstorm-qna
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-08
+
+## Part B Clarifications Applied in Part C
+
+- Locked the semantic replacement for the stale "remaining promised-program gap" framing: later phases may choose exact sentence-level wording, but active backlog logic must pivot to truthfulness and usefulness within the permanent NWO/ERC/MSCA wedge.
+- Added an explicit readiness-evidence requirement: later phases must record pass/fail verification evidence before any readiness or ship recommendation.
+- Synced Q&A metadata to the finalized brainstorm state so future sessions do not treat this transcript as a stale pre-audit draft.
 
 ## Section 1 — Problem Statement
 

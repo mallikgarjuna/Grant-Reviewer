@@ -1,6 +1,16 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-08 (WF-0066: peerlens scope lock to NWO/ERC/MSCA)
+
+### AD 66.1: NWO/ERC/MSCA is the permanent product-scope wedge; broader promised-program expansion is not deferred
+- **WF ID**: WF-0066
+- **Context**: Live planning docs still imply ZonMw or equivalent broader coverage remains planned or launch-critical, while the approved WF-0066 brainstorm locks PeerLens to NWO/ERC/MSCA only and explicitly rejects a "deferred for later" reframing.
+- **Decision**: Treat NWO/ERC/MSCA as the permanent product-scope wedge for active planning/docs purposes. Active SSOT, backlog, and memory artifacts must not describe ZonMw or equivalent broader expansion as planned, deferred, or required for launch. Historical artifacts keep their original wording unless they still function as current SSOT.
+- **Why**: Prevents future planning from inheriting fake breadth commitments and keeps launch-readiness logic anchored to truthfulness and usefulness within the chosen wedge.
+- **Tradeoff**: Older completed artifacts and historical logs will continue to contain broader-coverage language, so live-doc boundaries must stay explicit to avoid provenance cleanup turning into scope drift.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0065: cross-call contract hardening of base review semantics)
 
 ### AD 65.1: WF-0065 proof scope is locked to one representative real call per active family

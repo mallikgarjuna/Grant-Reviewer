@@ -127,7 +127,7 @@ Contract Notes / Non-obvious constraints:
 
 - Whether `docs/mission.md` needs any current-phase interpretation note after the mission check. Default: no.
 - Whether any non-SSOT reference docs should be updated in this WF, or deferred to a later positioning cleanup.
-- Exact replacement wording for the old "remaining promised-program gap" launch-blocker framing in the active backlog.
+- Exact sentence-level wording for each active-doc edit is deferred to later phases, but the replacement semantic is locked now: active backlog language must prioritize truthful launch readiness and usefulness within the permanent NWO/ERC/MSCA wedge, not breadth expansion.
 
 ## 7. MVP Definition
 
@@ -148,7 +148,7 @@ Explicitly excluded:
 Contract Notes / Non-obvious constraints:
 - A docs-only closure is acceptable and preferred if it removes the misleading commitments cleanly.
 - This WF should not manufacture follow-on breadth work just to replace the removed backlog item.
-- Verification seam for later phases: mission check, targeted stale-language scan across active docs, and historical-provenance preservation check.
+- Verification seam for later phases: mission check, targeted stale-language scan across active docs, historical-provenance preservation check, and explicit pass/fail evidence recorded before any readiness or ship recommendation.
 
 ## 8. Explicit Non-Goals
 
