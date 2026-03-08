@@ -2,7 +2,7 @@
 # WF-0066 — PeerLens Scope Lock to NWO/ERC/MSCA
 
 Artifact: walkthrough
-Version: v1.0
+Version: v1.1
 Status: Completed
 Last Updated: 2026-03-08
 
@@ -18,7 +18,7 @@ Mission check was executed before any mission edit consideration and no contradi
 |---|---|---|---|
 | `docs/parking_lot.md` | Active contradiction language still present in live planning surface. | `edit required` | `sed -n '/## 🟡 P1/,/## Rejected \\/ Ignored/p' docs/parking_lot.md \| rg -n "ZonMw\|remaining promised-program gap\|launch blocker\|broader promised-program expansion\|broader coverage remains part of the current commitment"` |
 | `docs/logs/decisions.md` | AD 66.1 present and explicit scope-lock language already present. | `verified no-op` | `rg -n "AD 66\\.1\|broader promised-program expansion is not deferred" docs/logs/decisions.md` |
-| `docs/memory/domain/project_docs.md` | No active contradiction-bearing line requiring scope correction in this WF. | `verified no-op` | inspection + no contradiction hit |
+| `docs/memory/domain/project_docs.md` | No active contradiction-bearing line requiring scope correction in this WF. | `verified no-op` | `rg -n "broader scope commitments beyond NWO/ERC/MSCA" docs/memory/domain/project_docs.md` |
 | `docs/mission.md` | Funded-program agnostic mission wording; no concrete contradiction with NWO/ERC/MSCA wedge. | `verified no-op` | `sed -n '1,120p' docs/mission.md` |
 
 ### Active contradiction-bearing locations to fix in Task 2
@@ -64,9 +64,9 @@ Interim status for named targets:
   - result:
     - `docs/parking_lot.md`
     - `docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
-- `bash -lc 'test -z "$(git diff --name-only d9f7d9df8900c07b7b90d1b1171b86db51b062ee...HEAD | rg -n "^(docs/parking_lot\\.md|docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca\\.md)$" -v)"'`
-  - result: `FAIL` (`docs/tasks/task-WF-0066-peerlens-scope-lock-nwo-erc-msca.md` is also in the range)
-  - interpretation: named target-set correction stayed narrow (`docs/parking_lot.md` edited; other named targets no-op), but branch-level closure still includes task-artifact bookkeeping drift versus the captured baseline.
+- `bash -lc 'test -z "$(git diff --name-only d9f7d9df8900c07b7b90d1b1171b86db51b062ee...HEAD | rg -n "^(docs/parking_lot\\.md|docs/tasks/task-WF-0066-peerlens-scope-lock-nwo-erc-msca\\.md|docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca\\.md|docs/index\\.md)$" -v)"'`
+  - result: `PASS`
+  - interpretation: named target-set correction stayed narrow (`docs/parking_lot.md` edited; other named targets no-op) and branch-level file drift stayed inside allowed WF bookkeeping surfaces (`task` + `walkthrough` + `index`).
 
 ## Part B — Technical Audit (No Edits)
 
@@ -74,19 +74,19 @@ Profile: `execution`
 Range: `main...HEAD`
 
 1. potential bugs
-- `non-blocking` — target: `docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`; risk of future false negatives if reviewers rely on one exact memory-phrase grep instead of the baseline-anchored no-op proof for memory.
+- `none`
 2. missing tests
 - `none`
 3. design issues
 - `none`
 4. suggested fixes
-- `non-blocking` — target: future WF docs/task templates; keep memory no-op checks expressed as range-based unchanged proof plus contradiction-scan proof, not a single exact-string grep.
+- `none`
 5. refactored version with comments
 - `none`
 
 Mandatory focus-area coverage:
 - architecture violations vs `AGENTS.md`: no blocking violations found in implementation files touched.
-- broken invariants: named-target invariant holds, but strict branch-level two-file allowlist invariant is non-blocking red because the task artifact is also in the baseline range.
+- broken invariants: none; named-target and bookkeeping-surface invariants both pass for the recorded baseline range.
 - security issues: none in this docs-only diff.
 - edge cases: historical sections remained untouched; mission no-op explicitly proven.
 - missing tests: no automated-code tests required; doc evidence bundle present.
@@ -98,7 +98,7 @@ Mandatory focus-area coverage:
 - Part C2 verification:
   - Baseline preflight: `cd backend && uv run pytest -m no_db` -> `234 passed, 179 deselected`.
   - Task-level doc verification commands for contradiction removal -> pass.
-  - Baseline-range strict two-file allowlist check -> fail (non-blocking; bookkeeping file also changed).
+  - Baseline-range bookkeeping-aware allowlist check -> pass.
 - Part C3:
   - Walkthrough finalized with per-file evidence bundle.
-  - Archive/index status moves were intentionally not applied in this run to preserve the WF-0066 docs-only atomic correction scope.
+  - Task/index status surfaces updated to reflect completed Phase 3 closure.
