@@ -19,6 +19,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | **`new chat kickoff`** | Generate a reusable 3-line starter for opening a new chat with clear scope/constraints. |
 | **`interactive Q&A`** | Run an iterative clarification loop: ask 1–5 questions at a time, each with 2–4 options + one recommended option with rationale; continue until decisions are made or the user says stop. For WF brainstorms, write the detailed Q&A blocks into `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md` and keep the main brainstorm concise with links. |
 | **`adversarial critique`** | For a proposed decision: list the top 3 architectural risks/failure modes (authoring, runtime, downstream), and include a recommended mitigation/guardrail for each. |
+| **`mission check`** | Audit `docs/mission.md` for drift against the current product direction. Keep `Mission` and `Vision` stable unless strategy changed. Update only `MVP Goal`, `Product Goals`, and `MVP Success Criteria` when this is just a new phase. Make the smallest necessary edit, explain whether the change is mission-level, goals-level, or no change, and flag any downstream docs that should also be updated. |
 | **`repo reality check`** | Re-ground on repo + recent WF activity (status + relevant diffs + current WF registry), then propose 2–3 next-step options with one recommended option and rationale. |
 | **`run phase [N]`** | Execute WF phase runner (`0` runs `0.0 + 0.1` end-to-end, `1` PRD, `2` tasks, `3` implement). |
 | **`go ahead`** | Explicit approval to proceed to the next phase/step. |
@@ -60,6 +61,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 |--------|--------|
 | Add/reprioritize/reconcile backlog items | **`park this`**, **`pick P[x] #[n]`**, **`move P[x] #[n] to P[y]`**, **`refresh parking lot`** |
 | Understand current project reality before deciding | **`context refresh`** |
+| Audit whether product positioning or MVP framing has drifted | **`mission check`** |
 | Start a fresh conversation with clear inputs | **`new chat kickoff`** |
 | Approve continuation of current plan | **`go ahead`** |
 | Advance artifact pipeline by phase | **`run phase [N]`** |

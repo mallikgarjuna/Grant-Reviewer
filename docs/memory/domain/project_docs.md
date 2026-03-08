@@ -2,6 +2,8 @@
 # Project Documentation
 
 - **2026-03-08**: Product mission statement SSOT lives in `docs/mission.md`. Preserve this wording as the default anchor for landing-page copy, internal docs, and product-positioning decisions unless a deliberate mission update is made.
+- **2026-03-08**: `docs/mission.md` now distinguishes `Mission`, `Vision`, `MVP Goal`, `Product Goals`, and `MVP Success Criteria`; do not introduce a separate "MVP mission statement". Why: phase-specific intent should live under goals/success criteria while the mission remains stable.
+- **2026-03-08**: Canonical code phrase for `docs/mission.md` drift review is `mission check`; it should classify requested changes as mission-level, goals-level, or no change, and prefer minimal edits. Why: avoids prompt drift and inconsistent trigger naming.
 - **2026-03-01**: All new code phrases and agent chat triggers must be added to `docs/reference/code_phrases.md` (the SSOT), not directly to `AGENTS.md`. `AGENTS.md` should remain as tiny as possible.
 - **2026-03-02**: WF interactive Q&A decisions must be written into `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`; the main brainstorm remains the SSOT for contracts/decisions and must link to the Q&A section(s) used.
 - **Traceability in outputs**: Workflow runner completion summaries must always include explicit provenance: which files were considered/edited and which skills/instructions were used.
@@ -22,3 +24,5 @@
 - **2026-03-07**: Naming boundary policy: do not mix WF IDs, roadmap/phase numbers (`5.0`, `8.0A`), and contract/schema versions (`v1`, `V2`) in the same label or shorthand. Why: they answer different questions: history, delivery slice, and compatibility boundary.
 - **2026-03-08**: Parking-lot hygiene rule: when a WF or maintenance item lands, remove or rewrite any backlog row that still describes that solved work, and merge symptom-only duplicates into one live item. Why: stale backlog rows cause fake future planning and hide the real remaining bottlenecks.
 - **2026-03-08**: WF initiative-log backlog refs are provenance snapshots only; label them as historical at promotion time rather than implying they still map to the current numbered backlog. Why: parking-lot renumbering is expected, so unlabeled refs create false traceability.
+- **2026-03-08**: Docs-only planning PRDs must distinguish live correction targets from workflow bookkeeping surfaces (for example `docs/index.md`) and require per-target pass/fail evidence before any proceed recommendation. Why: otherwise Phase 2 can widen scope by accident or claim closure from generic doc-scan language.
+- **2026-03-08**: Docs-only task verification must anchor changed-file proof to an explicit implementation baseline SHA or commit range, not raw `git diff` worktree state. Why: prior-phase branch diffs and per-task commits make worktree-only evidence nondeterministic for closure.
