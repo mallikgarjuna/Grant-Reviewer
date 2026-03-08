@@ -1,4 +1,6 @@
-"""Schema-level tests for CallDefinitionV2 WF-0032 fields and validators."""
+"""backend/tests/test_call_definitions_v2_schema.py
+Schema-level tests for CallDefinitionV2 WF-0032 fields and validators.
+"""
 
 from __future__ import annotations
 
@@ -145,3 +147,24 @@ def test_wf0063_runtime_opt_in_flag_defaults_disabled() -> None:
 
     model = CallDefinitionV2.model_validate(payload)
     assert model.runtime_config.split_visibility_reviewability_enabled is False
+
+
+def test_wf0063_split_opt_in_calls_are_explicitly_allowlisted() -> None:
+    allowed_call_codes = {"MSCA-PF-2025"}
+    canonical_dir = Path("data/calls/canonical")
+    yaml_paths = sorted(canonical_dir.rglob("*.yaml"))
+    assert yaml_paths
+
+    split_enabled_call_codes: set[str] = set()
+    for yaml_path in yaml_paths:
+        loaded = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict):
+            continue
+        model = CallDefinitionV2.model_validate(loaded)
+        if model.runtime_config.split_visibility_reviewability_enabled:
+            split_enabled_call_codes.add(model.funding_call.code)
+            for node in model.proposal_nodes:
+                if node.node_role == "SUPPORTING":
+                    assert len(node.node_expectations) == 0
+
+    assert split_enabled_call_codes == allowed_call_codes
