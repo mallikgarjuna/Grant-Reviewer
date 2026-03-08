@@ -249,3 +249,36 @@ Non-goals:
 - Do not invent new scoring logic or fake expectations for unsupported sections.
 - Do not promise that all visible nodes will generate criterion-grounded review cards.
 - Do not solve every conditional/agency-specific nuance, including broader non-MSCA supporting-node policies, in the first slice.
+
+---
+
+## 9. Parked Scope Creep (Tracked Follow-up, Not MVP)
+
+The following ideas are valid but explicitly parked so WF-0063 stays a proof-call-first contract correction rather than expanding into engine redesign:
+
+- Richer three-axis modeling beyond MVP:
+  - structural visibility,
+  - direct criterion reviewability,
+  - supporting/secondary context semantics.
+- A future explicit contract with fields or equivalents such as:
+  - `is_visible_in_ui`,
+  - `is_primary_review_node`,
+  - `is_supporting_node`.
+- A future supporting-context execution path where visible supporting nodes can influence interpretation, completeness, cross-node checks, or reviewer reasoning without pretending they are primary scored sections.
+- A future universal supporting-node policy beyond the `MSCA-PF-2025` proof call, once parity is proven and the semantics are explicitly traced.
+
+Why parked here:
+
+- WF-0063 only needs to separate structural visibility from primary reviewability safely.
+- Adding a richer supporting-context engine now would create scope creep across submit/compliance/review-detail and likely push this WF into review-engine redesign.
+- The current WF already reserves the seam (`supporting context`) and keeps it fail-closed in MVP, which is the safe stopping point for this branch.
+
+Traceability / references:
+
+- Architect recommendation carried in chat on 2026-03-08: separate structural visibility, direct criterion reviewability, and supporting/secondary context; do not overload `node_expectations`.
+- This brainstorm Sections 1, 4, 5, and 7.
+- `docs/prds/prd-WF-0063-universal-node-visibility-reviewability.md`:
+  - Deferred Stories `DS1`, `DS3`
+  - Functional Requirements `FR9`, `FR11`, `FR12`
+  - Deferred / Not in MVP
+- Parked for future prioritization in `docs/parking_lot.md`.
