@@ -26,3 +26,22 @@ Mission check was executed before any mission edit consideration and no contradi
 - P1 row #1 still plans a broader promised-program gap via ZonMw-equivalent expansion.
 - P1 rationale snapshot still frames remaining promised-program gap as launch blocker/current blocker.
 - P2 row #30 still conditions promotion on closing the remaining promised-program gap.
+
+## Part A — Task 2 (Tracer Bullet Contradiction Rewrite)
+
+Edited only `docs/parking_lot.md` contradiction-bearing live planning lines:
+- P1 row #1 recommendation/title
+- P1 rationale snapshot contradiction lines
+- P2 row #30 promotion-gating wording
+
+No edits were made to `docs/logs/decisions.md`, `docs/memory/domain/project_docs.md`, or `docs/mission.md`.
+
+Task 2 verification:
+- `sed -n '/## 🟡 P1/,/## Rejected \\/ Ignored/p' docs/parking_lot.md | rg -n "truthful|usefulness|NWO/ERC/MSCA|launch readiness"` -> pass
+- `! sed -n "/## 🟡 P1/,/## Rejected \\/ Ignored/p" docs/parking_lot.md | rg -n "ZonMw|remaining promised-program gap|launch blocker|broader promised-program expansion|broader coverage remains part of the current commitment"` -> pass
+
+Interim status for named targets:
+- `docs/parking_lot.md`: `edited`
+- `docs/logs/decisions.md`: pending final no-op confirmation
+- `docs/memory/domain/project_docs.md`: pending final no-op confirmation
+- `docs/mission.md`: pending final no-op confirmation
