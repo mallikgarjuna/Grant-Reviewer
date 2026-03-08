@@ -1,6 +1,24 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-08 (WF-0068: review quality evaluation loop)
+
+### AD 68.1: Representative proof batch is fixed at 9 snippets with a per-call role matrix
+- **WF ID**: WF-0068
+- **Context**: PRD v0.1 required representative, failure-seeking coverage across the locked NWO/ERC/MSCA wedge, but it left the minimum batch shape and per-call distribution underspecified.
+- **Decision**: Lock the minimum MVP batch to 9 snippets total: exactly 3 snippets per locked call, with one `baseline representative`, one `traceability/specificity stress`, and one `actionability/prioritization stress` snippet per call.
+- **Why**: This keeps the loop small enough to run repeatedly while making convenience sampling and silent call omission auditable and fail-closed.
+- **Tradeoff**: The evaluator must source and maintain a fuller snippet inventory up front, and one under-supplied call now blocks a proceed recommendation instead of being masked by stronger coverage elsewhere.
+- **Status**: Approved.
+
+### AD 68.2: Evaluation outcomes separate mission result from follow-on decision, and follow-on labels stay failure-pattern-based
+- **WF ID**: WF-0068
+- **Context**: PRD v0.1 described bounded follow-on classes, but solution-type labels like prompt/UI/engine candidates would bias the workflow toward remediation surfaces before the evidence proved which failure pattern actually mattered.
+- **Decision**: Use one shared 4-state dimension scale (`pass`, `weak`, `fail`, `insufficient_evidence`), separate batch-level `mission_result` from `follow_on_decision`, and constrain follow-on boundaries to repeated failure patterns or tightly related clusters rather than preselected solution types.
+- **Why**: This preserves the evaluation-first contract, prevents hidden prompt/engine/UI planning inside WF-0068, and keeps any next WF grounded in repeated evidence rather than implementation guesses.
+- **Tradeoff**: The workflow produces slightly more abstract outputs, so a later remediation WF still needs one extra translation step from failure pattern to implementation surface.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0067: review trust surface closure)
 
 ### AD 67.1: Card-level source basis is one backend-resolved official-call label with fail-closed state

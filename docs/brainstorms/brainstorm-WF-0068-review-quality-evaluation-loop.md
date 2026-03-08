@@ -161,9 +161,9 @@ Contract Notes / Non-obvious constraints:
 
 ## Open Questions / Deferred
 
-- Exact numeric scale shape for each evaluation dimension is deferred to Phase 1, but the evaluated dimensions themselves are locked in this brainstorm.
-- Whether the representative snippet set should be balanced evenly across all three calls or weighted toward the riskiest call is deferred to Phase 1.
-- Whether a second reviewer pass is required for disagreement cases is deferred to Phase 1.
+- Part C decision: Phase 1 locks one shared 4-state scale for each mission dimension: `pass`, `weak`, `fail`, `insufficient_evidence`.
+- Part C decision: Phase 1 locks a minimum representative batch of 9 snippets total: exactly 3 snippets per locked call, with one `baseline representative`, one `traceability/specificity stress`, and one `actionability/prioritization stress` snippet per call.
+- Whether a second reviewer pass is required for disagreement cases is deferred to Phase 2 task planning.
 - Any prompt, engine, UI, or contract changes suggested by the evidence are explicitly deferred to a follow-on implementation WF.
 - Any broader continuous quality-monitoring system is deferred and out of scope.
 
@@ -199,6 +199,7 @@ Contract Notes / Non-obvious constraints:
 - The evidence format must preserve raw observed output plus structured judgment, so later fix WFs can trace back to concrete failures.
 - This WF is complete only when the boundary between evaluation and remediation is explicit enough to prevent a disguised implementation phase.
 - The verification evidence bundle for any proceed/do-not-proceed recommendation must include, at minimum: representative snippet coverage across the locked calls, the frozen evaluation baseline, completed evidence records for all reviewed items including insufficient-evidence cases, and an explicit pass/fail rationale tied to those records.
+- Part C decision: the evaluation summary must separate `mission result` from `follow-on decision`, and any follow-on boundary must be phrased as a repeated failure pattern rather than a pre-chosen solution type.
 
 ## 8. Explicit Non-Goals
 

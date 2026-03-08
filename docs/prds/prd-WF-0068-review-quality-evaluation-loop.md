@@ -2,8 +2,8 @@
 # WF-0068 — Review Quality Evaluation Loop
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-08
 
 Type: feature
@@ -75,16 +75,16 @@ Type: feature
 - FR4 (US1, US3): The framework must require fail-closed handling when the reviewer cannot support a judgment from accepted official call materials or snippet context; unsupported judgments must be recorded as insufficient evidence, not inferred.
 - FR5 (US2): The snippet-set strategy must stay locked to exactly `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, and `MSCA-PF-2025`.
 - FR6 (US2): The snippet-set strategy must ban convenience sampling and cherry-picked easy examples, and it must require auditable per-snippet inclusion rationale.
-- FR7 (US2): The snippet-set strategy must define minimum representative coverage across the locked calls and must treat missing approved snippet material in one call as a planning gap inside WF-0068 rather than a reason to widen the wedge.
+- FR7 (US2): The snippet-set strategy must require a minimum batch of 9 snippets total: exactly 3 snippets per locked call, with one `baseline representative` item, one `traceability/specificity stress` item, and one `actionability/prioritization stress` item per call.
 - FR8 (US3): The review procedure must freeze one evaluation baseline per batch, including app commit/branch reference, prompt/model-runtime configuration, reviewer instructions, and evidence template version.
 - FR9 (US3): The review procedure must define one stable item order and require that all items in a batch are evaluated with the same procedure before any aggregate conclusion is drawn.
 - FR10 (US3): The review procedure must require the reviewer to cite the exact official-call locator used for each material judgment in the evidence record.
 - FR11 (US3): The failure taxonomy must use one fixed tag set for this WF: `genericity`, `false_specificity`, `weak_traceability`, `bad_prioritization`, `low_actionability`, and `criteria_element_mismatch`.
 - FR12 (US3): The evidence format must preserve both raw observed output and structured judgment so later follow-on work can trace failures back to the exact reviewed item.
-- FR13 (US3, US4): Every reviewed item must record severity and one bounded follow-on class chosen from `none`, `evidence_gap`, `prompt_follow_on_candidate`, `engine_follow_on_candidate`, `ui_follow_on_candidate`, or `mixed_follow_on_candidate`, without prescribing implementation details.
-- FR14 (US4): The WF must define one named verification evidence bundle for any proceed/do-not-proceed conclusion, containing at minimum representative snippet coverage across the locked calls, the frozen baseline, completed evidence records for all items including insufficient-evidence cases, and an explicit rationale tied to those records.
-- FR15 (US4): No proceed recommendation is valid unless the verification evidence bundle exists and shows repeated, categorized failures or a credible pass condition; otherwise the allowed outcomes are `do not proceed` or `more evidence required`.
-- FR16 (US4): If a follow-on WF is recommended, the PRD must constrain it to one narrow failure pattern or tightly related failure cluster demonstrated repeatedly in the evidence bundle.
+- FR13 (US3): Every reviewed item must record severity and one bounded follow-on pattern class chosen from `none`, `evidence_gap`, `genericity_cluster`, `false_specificity_cluster`, `traceability_cluster`, `prioritization_cluster`, `actionability_cluster`, `criteria_element_alignment_cluster`, or `mixed_cluster`, without prescribing implementation details.
+- FR14 (US4): The WF must define one named verification evidence bundle for any mission result or follow-on decision, containing at minimum representative snippet coverage across the locked calls, the frozen baseline, completed evidence records for all items including insufficient-evidence cases, and an explicit rationale tied to those records.
+- FR15 (US4): The batch summary must separate `mission_result` from `follow_on_decision` so a completed batch can distinguish `pass/no follow-on`, `fail/proceed to one narrow follow-on WF`, and `inconclusive/more evidence required`.
+- FR16 (US4): No proceed recommendation is valid unless the verification evidence bundle exists and shows one repeated, categorized failure pattern across at least 2 reviewed snippets; if the pattern appears in only 1 locked call, the recommended follow-on boundary must state that it is call-specific and must not make a cross-wedge claim. Otherwise the allowed follow-on outcomes are `no_follow_on_wf` or `more_evidence_required`.
 - FR17 (US4): This WF must explicitly prohibit bundling prompt tuning, engine fixes, UI fixes, or scope expansion into its own implementation scope or its pass criteria.
 
 ## 5. Data & API Contracts
@@ -97,11 +97,11 @@ Type: feature
   - `revision_actionability`
   - `specificity_without_false_specificity`
   - `prioritization_quality`
-- Each dimension should use one shared ordinal scale for the whole WF so evidence records stay comparable. The scale shape must distinguish:
-  - pass-quality behavior,
-  - weak-but-supported behavior,
-  - failing behavior,
-  - insufficient-evidence behavior. (US1, US3, FR1-FR4)
+- Each dimension must use one shared 4-state ordinal scale for the whole WF so evidence records stay comparable:
+  - `pass`
+  - `weak`
+  - `fail`
+  - `insufficient_evidence` (US1, US3, FR1-FR4)
 - The framework must include dimension definitions tied back to mission language, not a generic external scoring standard. (US1, FR1)
 
 ### 5.2 Representative snippet-set contract
@@ -110,10 +110,12 @@ Type: feature
   - `call_id`
   - `snippet_id`
   - `proposal_section`
+  - `snippet_role`
   - `selection_rationale`
   - `risk_target`
   - `expected_official_materials`
   - `batch_order`
+- `snippet_role` is limited to `baseline_representative`, `traceability_specificity_stress`, or `actionability_prioritization_stress`, with each role appearing exactly once per locked call in the minimum 9-snippet batch. (US2, FR7)
 - `selection_rationale` must explain why the item is both representative of the locked wedge and failure-seeking enough to test mission risk. (US2, FR5-FR7)
 - `risk_target` should capture the primary failure mode the snippet is intended to expose without pre-judging the output result. (US2, FR6)
 - If a locked call cannot supply enough approved snippet material, the batch-plan state must record `coverage_gap` and block a proceed recommendation until resolved. (US2, US4, FR7, FR15)
@@ -148,7 +150,7 @@ Type: feature
   - `severity`
   - `revision_action_judgment`
   - `insufficient_evidence_reason`
-  - `follow_on_class`
+  - `follow_on_pattern_class`
   - `reviewer_rationale`
 - `failure_tags` must be multi-select from the fixed taxonomy only. (US3, FR11)
 - `revision_action_judgment` must state whether a researcher could take a defensible next revision move from the output and why. (US1, US3, FR3, FR12)
@@ -162,14 +164,19 @@ Type: feature
   - `coverage_status`
   - `baseline_consistency_status`
   - `pattern_summary`
-  - `decision`
+  - `mission_result`
+  - `follow_on_decision`
   - `decision_rationale`
   - `recommended_follow_on_boundary`
-- `decision` is limited to:
+- `mission_result` is limited to:
+  - `pass`
+  - `fail`
+  - `inconclusive`
+- `follow_on_decision` is limited to:
+  - `no_follow_on_wf`
   - `proceed_to_narrow_follow_on_wf`
-  - `do_not_proceed`
   - `more_evidence_required`
-- `recommended_follow_on_boundary` may only name a narrow failure pattern or cluster justified by repeated evidence records; otherwise it must be `none`. (US4, FR14-FR17)
+- `recommended_follow_on_boundary` may only name a narrow failure pattern or tightly related cluster justified by repeated evidence records; otherwise it must be `none`. (US4, FR14-FR17)
 
 ## 6. Components / Modules
 
@@ -206,7 +213,7 @@ Suggested file-path clusters (coarse only):
 
 ## 7. Edge Cases
 
-- A snippet appears representative but has no accepted official-call material sufficient for the planned judgment; the batch must record a `coverage_gap` and fail closed as `more evidence required`. (US2, US4, FR4, FR7, FR15)
+- A locked call can supply only two qualified snippets for the planned roles; the batch must record a `coverage_gap` and fail closed as `more evidence required` instead of borrowing a fourth snippet from another call. (US2, US4, FR4, FR7, FR15)
 - A review output sounds concrete but cites details not supportable from the snippet or official materials; this must be tagged `false_specificity` even if the prose is otherwise polished. (US1, US3, FR3, FR11)
 - A review card names the correct evaluation criterion/element but gives a generic revision suggestion; this should separate `criteria_groundedness` from `revision_actionability` rather than collapsing both into one score. (US1, US3, FR3, FR11)
 - The first few snippets in a batch expose failures and the reviewer wants to start proposing fixes mid-run; the procedure must block that drift and continue recording evidence first. (US3, US4, FR9, FR17)
@@ -225,10 +232,10 @@ Suggested file-path clusters (coarse only):
 - Mock only external boundaries if Phase 3 introduces helpers or scripts; do not mock the classification logic encoded in the evidence template, the pass/fail rules, or the locked wedge membership rules. (US2-US4)
 - Required minimum verification planning for Phase 2:
   - deterministic checks that the locked call set is exactly `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, and `MSCA-PF-2025`. (US2, FR5)
-  - checks that convenience-sampling protections and per-snippet rationale fields are mandatory. (US2, FR6, FR7)
-  - checks that the frozen baseline requires commit, prompt/model-runtime, reviewer instructions, and template version fields. (US3, FR8)
-  - checks that the evidence record requires official locators, failure tags from the fixed taxonomy, severity, revision-action judgment, and insufficient-evidence handling. (US1, US3, FR10-FR13)
-  - checks that batch-level decisions cannot emit `proceed_to_narrow_follow_on_wf` without a named verification evidence bundle and a bounded recommended follow-on boundary. (US4, FR14-FR16)
+  - checks that convenience-sampling protections, per-snippet rationale fields, and the exact `3 snippets x 3 calls` role matrix are mandatory. (US2, FR6, FR7)
+  - checks that the frozen baseline requires commit, prompt/model-runtime, reviewer instructions, template version, and a shared 4-state dimension scale. (US3, FR8)
+  - checks that the evidence record requires official locators, failure tags from the fixed taxonomy, severity, revision-action judgment, follow-on pattern class, and insufficient-evidence handling. (US1, US3, FR10-FR13)
+  - checks that batch-level summaries separate `mission_result` from `follow_on_decision` and cannot emit `proceed_to_narrow_follow_on_wf` without a named verification evidence bundle and a bounded recommended follow-on boundary. (US4, FR14-FR16)
   - checks that Phase 2/3 execution artifacts do not include prompt tuning, engine fixes, UI fixes, or wedge expansion under WF-0068 scope. (US4, FR17)
 
 ## 8.1 Readiness Gate
@@ -257,10 +264,9 @@ Suggested file-path clusters (coarse only):
 
 ## 11. Open Questions (if any)
 
-- Exact ordinal scale shape for the five mission dimensions remains to be finalized in Phase 2 if a tighter execution artifact is needed, but the dimensions themselves are locked in this PRD.
-- Phase 2 may decide the exact snippet count distribution across the three locked calls, but it must preserve auditable representativeness and failure-seeking rationale rather than equal counts for their own sake.
 - Phase 2 may decide whether disagreement handling needs a second reviewer path, but the default MVP assumption is one constrained reviewer procedure unless evidence says otherwise.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-08): Initial PRD from brainstorm.
+- v0.2 (2026-03-08): Applied risk-audit edits to lock the 9-snippet representative batch, formalize the 4-state scoring scale, and separate mission result from follow-on decision.
