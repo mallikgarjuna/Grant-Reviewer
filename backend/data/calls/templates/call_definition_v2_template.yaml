@@ -1,3 +1,4 @@
+# backend/data/calls/templates/call_definition_v2_template.yaml
 # Call Definition V2 template (authoring starter)
 # Copy this file and replace all placeholder values.
 # Filename convention: {agency}_{program}_{year}_{stage}.yaml
@@ -34,6 +35,7 @@ evaluation_criteria:
 
 proposal_nodes:
   - id: scientific_proposal
+    node_role: PRIMARY
     parent_logical_id: null
     label: Scientific proposal
     node_type: section
@@ -70,6 +72,9 @@ reviewer_policy:
     enforcement_mode: PROMPT_ONLY
     forbidden_terms: []
     source_hint: "Official reviewer guide section X.Y"
+
+runtime_config:
+  split_visibility_reviewability_enabled: false
 
 runtime_notes:
   - id: runtime_counting_method

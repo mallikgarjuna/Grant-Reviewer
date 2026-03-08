@@ -1,8 +1,9 @@
 ---
+path: "docs/call-yaml/guidelines.md"
 title: "Call YAML Guidelines"
 version: "1.0"
 status: "Active"
-updated: "2026-02-28"
+updated: "2026-03-08"
 scope: "PeerLens / Grant Reviewer call definition authoring (v2)"
 ---
 
@@ -42,6 +43,7 @@ Compatibility note:
 - `evaluation_criteria`
 - `proposal_nodes`
 - `reviewer_policy` (optional but recommended)
+- `runtime_config` (optional; required only for explicit runtime feature opt-ins)
 - `runtime_notes` (optional)
 
 ## Critical Data Rules
@@ -50,8 +52,19 @@ Compatibility note:
 - `evaluation_criteria[*].evaluation_elements[*].id` must be unique globally.
 - Every `proposal_nodes[*].node_expectations[*].evaluation_element_id` must reference an existing evaluation element.
 - `proposal_nodes[*].id` must be unique and stable across revisions.
+- `proposal_nodes[*].node_role` may be authored as `PRIMARY` or `SUPPORTING`; omitted values default to `PRIMARY` at schema validation.
+- `SUPPORTING` nodes must not define `node_expectations`.
 - Use `parent_logical_id` to encode hierarchy; do not encode hierarchy in IDs.
 - Populate `proposal_nodes[*].source_section` with source-grounded, display-ready section numbering when available (examples: `1.b`, `2.a`, `B1`, `B1.I`).
+
+## WF-0063 Split Visibility/Reviewability Rules
+
+- Proof-call-first: do not flip split behavior universally across all calls.
+- Split behavior is enabled only by `runtime_config.split_visibility_reviewability_enabled: true`.
+- Authoring `node_role` alone must never be treated as runtime opt-in.
+- Keep all official nodes in YAML, including structural/supporting nodes.
+- Keep structural containers visible for grouping only; do not fabricate expectations.
+- Preserve rollback safety: disabling split opt-in must restore legacy behavior without YAML re-authoring.
 
 ## V2 Enums You Must Respect
 

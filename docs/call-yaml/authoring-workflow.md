@@ -1,8 +1,9 @@
 ---
+path: "docs/call-yaml/authoring-workflow.md"
 title: "Spec: Call Authoring Workflow"
 version: "1.1"
 status: "Living Specification"
-updated: "2026-02-28"
+updated: "2026-03-08"
 applies_to: "All funding agencies (NWO, ERC, MSCA, Horizon Europe, etc.)"
 ---
 
@@ -121,6 +122,16 @@ Never encode brittle numbering into logical IDs.
 
 ---
 
+## 2.8 Split Visibility/Reviewability (WF-0063)
+
+- Model primary-vs-supporting intent with `proposal_nodes[*].node_role`.
+- `SUPPORTING` nodes must remain expectations-free.
+- Keep all official form nodes in YAML, including structural containers.
+- Runtime split behavior is opt-in only via `runtime_config.split_visibility_reviewability_enabled: true`.
+- Do not treat `node_role` presence alone as a universal runtime switch.
+
+---
+
 # 3. Required Inputs Per Call
 
 Minimum required documents:
@@ -234,6 +245,8 @@ Generate rich YAML including:
 - compliance_rules
 - content_constraints
 - node_expectations
+- node_role (for every authored node in split-enabled calls)
+- runtime_config (when enabling explicit runtime opt-in seams)
 - runtime_notes (if needed)
 
 Run validation before ingestion.
@@ -295,7 +308,8 @@ Never auto-evaluate silently extracted content.
 Before ingestion:
 
 - Every evaluation_element_id referenced must exist.
-- Every proposal_node must have at least one expectation.
+- Every `SUPPORTING` proposal node must have zero expectations.
+- `PRIMARY` nodes remain the only submittable/evaluable path in MVP split mode.
 - All word limits must be machine-enforceable.
 - No duplicate IDs.
 - All severities valid.
