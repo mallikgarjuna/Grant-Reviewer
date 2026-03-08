@@ -42,7 +42,7 @@ Verification Steps:
 - `cd backend && rg -n "node_role|runtime_config|split_visibility" app/schemas/call_definitions_v2.py`
 Risks (if any): A stringly typed or duplicated opt-in seam will create hidden rollout drift before implementation starts.
 
-### [ ] Task 2 — Source-grounded MSCA proof-call role authoring
+### [x] Task 2 — Source-grounded MSCA proof-call role authoring
 
 Goal:
 Apply the approved role split to `MSCA-PF-2025` only, keeping every official node in YAML and enabling the proof-call opt-in without inventing new evaluation criteria/elements mappings.

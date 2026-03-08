@@ -279,6 +279,63 @@ def test_v2_ingest_handles_concurrent_idempotency_collision() -> None:
     assert False in outcomes
 
 
+@pytest.mark.no_db
+def test_wf0063_msca_pf_2025_proof_call_roles_and_opt_in_are_source_grounded() -> None:
+    """WF-0063: MSCA proof call keeps official nodes while role/opt-in is explicit."""
+    payload = yaml.safe_load(
+        Path("data/calls/canonical/msca/msca_pf_2025_full.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert isinstance(payload, dict)
+
+    runtime_config = payload.get("runtime_config")
+    assert isinstance(runtime_config, dict)
+    assert runtime_config.get("split_visibility_reviewability_enabled") is True
+
+    proposal_nodes = payload.get("proposal_nodes")
+    assert isinstance(proposal_nodes, list)
+    node_by_id = {
+        node.get("id"): node for node in proposal_nodes if isinstance(node, dict)
+    }
+    assert len(node_by_id) == len(proposal_nodes)
+
+    for node_id in ("excellence", "impact", "quality_efficiency_implementation"):
+        node = node_by_id[node_id]
+        assert node.get("node_role") == "PRIMARY"
+        expectations = node.get("node_expectations")
+        assert isinstance(expectations, list) and expectations
+
+    for node_id in (
+        "abstract",
+        "cv_researcher",
+        "capacity_participating_organisations",
+        "additional_ethics_information",
+        "additional_security_screening_information",
+        "environmental_considerations_msca_green_charter",
+        "gf_letter_of_commitment_outgoing_host",
+    ):
+        node = node_by_id[node_id]
+        assert node.get("node_role") == "SUPPORTING"
+        expectations = node.get("node_expectations")
+        assert not isinstance(expectations, list) or len(expectations) == 0
+
+    dry_run = ingest_call(
+        Path("data/calls/canonical/msca/msca_pf_2025_full.yaml"), dry_run=True
+    )
+    assert dry_run["schema_version"] == "v2"
+
+    nwo_payload = yaml.safe_load(
+        Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert isinstance(nwo_payload, dict)
+    nwo_runtime_config = nwo_payload.get("runtime_config")
+    if isinstance(nwo_runtime_config, dict):
+        assert nwo_runtime_config.get("split_visibility_reviewability_enabled") is not True
+
+
 def test_wf0021_migration_downgrade_reupgrade_smoke(tmp_path: Path) -> None:
     """WF-0021 migration path should support upgrade->downgrade->upgrade on clean DB."""
     current_db_url = os.getenv("DATABASE_URL", "").strip()

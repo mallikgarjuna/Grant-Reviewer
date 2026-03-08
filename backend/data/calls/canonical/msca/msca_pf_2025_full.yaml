@@ -97,6 +97,7 @@ evaluation_criteria:
 
 proposal_nodes:
   - id: part_a
+    node_role: SUPPORTING
     label: Part A (Application form)
     node_type: section
     source_section: "Part A"
@@ -104,6 +105,7 @@ proposal_nodes:
       Structured administrative and contextual form information submitted in Part A.
 
   - id: general_information
+    node_role: SUPPORTING
     parent_logical_id: part_a
     label: 1. General information
     node_type: section
@@ -112,6 +114,7 @@ proposal_nodes:
       Topic/action metadata, descriptors, and summary-level proposal framing fields.
 
   - id: abstract
+    node_role: SUPPORTING
     parent_logical_id: general_information
     label: Abstract
     node_type: narrative
@@ -126,6 +129,7 @@ proposal_nodes:
         description: "Template reference indicates abstract field target of 2000 characters."
 
   - id: part_b
+    node_role: SUPPORTING
     label: Part B (Project proposal - Technical description)
     node_type: section
     source_section: "Part B"
@@ -133,6 +137,7 @@ proposal_nodes:
       Scientific/technical narrative proposal structured as Part B1 and Part B2.
 
   - id: part_b1
+    node_role: SUPPORTING
     parent_logical_id: part_b
     label: Part B1 (Document 1)
     node_type: section
@@ -150,6 +155,7 @@ proposal_nodes:
         description: "Part B1 (Sections 1-3 together) must not exceed 10 pages."
 
   - id: excellence
+    node_role: PRIMARY
     parent_logical_id: part_b1
     label: 1. Excellence
     node_type: narrative
@@ -172,6 +178,7 @@ proposal_nodes:
         evaluation_intent: QUALITY
 
   - id: impact
+    node_role: PRIMARY
     parent_logical_id: part_b1
     label: 2. Impact
     node_type: narrative
@@ -191,6 +198,7 @@ proposal_nodes:
         evaluation_intent: STRATEGIC_FIT
 
   - id: quality_efficiency_implementation
+    node_role: PRIMARY
     parent_logical_id: part_b1
     label: 3. Quality and Efficiency of the Implementation
     node_type: narrative
@@ -206,6 +214,7 @@ proposal_nodes:
         evaluation_intent: QUALITY
 
   - id: part_b2
+    node_role: SUPPORTING
     parent_logical_id: part_b
     label: Part B2 (Document 2)
     node_type: section
@@ -214,6 +223,7 @@ proposal_nodes:
       Part B2 has no overall page limit and contains sections 4-8 (and section 9 for Global Fellowship only).
 
   - id: cv_researcher
+    node_role: SUPPORTING
     parent_logical_id: part_b2
     label: 4. CV of the researcher
     node_type: narrative
@@ -228,6 +238,7 @@ proposal_nodes:
         description: "Template indicates an indicative CV length of 5 pages."
 
   - id: capacity_participating_organisations
+    node_role: SUPPORTING
     parent_logical_id: part_b2
     label: 5. Capacity of the Participating Organisation(s)
     node_type: narrative
@@ -236,6 +247,7 @@ proposal_nodes:
       Include template table 5.1 (organisation overview) and table 5.2 (capacity details).
 
   - id: additional_ethics_information
+    node_role: SUPPORTING
     parent_logical_id: part_b2
     label: 6. Additional ethics information
     node_type: narrative
@@ -245,6 +257,7 @@ proposal_nodes:
       in the ethics self-assessment.
 
   - id: additional_security_screening_information
+    node_role: SUPPORTING
     parent_logical_id: part_b2
     label: 7. Additional information on security screening
     node_type: narrative
@@ -253,6 +266,7 @@ proposal_nodes:
       Additional information on security screening when applicable.
 
   - id: environmental_considerations_msca_green_charter
+    node_role: SUPPORTING
     parent_logical_id: part_b2
     label: 8. Environmental considerations in light of the MSCA Green Charter
     node_type: narrative
@@ -261,6 +275,7 @@ proposal_nodes:
       Environmental considerations aligned with the MSCA Green Charter guidance.
 
   - id: gf_letter_of_commitment_outgoing_host
+    node_role: SUPPORTING
     parent_logical_id: part_b2
     label: 9. Letter of commitment for Global Fellowship outgoing host
     node_type: narrative
@@ -273,6 +288,9 @@ proposal_nodes:
         severity: WARNING
         rule_type: conditional_requirement
         description: "This section applies only to Global Fellowships."
+
+runtime_config:
+  split_visibility_reviewability_enabled: true
 
 runtime_notes:
   - id: note_msca_pf_single_stage
