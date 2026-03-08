@@ -62,7 +62,11 @@ To execute Phase 3 end-to-end: implement tasks, run the technical audit gate, ap
 After completing Phase 3 (including Part C revisions and commits), suggest the following next actions to the user:
 
 1. \`ship it\` (See `AGENTS.md` for PR/Merge definition).
-2. Provide an explicit, copy-pasteable prompt block using `@docs/workflow/review-and-harden-prompt.md` against the finalized walkthrough artifact so the user can run a generic adversarial review-and-harden pass before shipping, if desired.
+2. Provide an explicit, copy-pasteable prompt block that starts a fail-closed adversarial review in a new chat using `@docs/workflow/review-and-harden-prompt.md` against the finalized walkthrough artifact before shipping. The prompt block must explicitly require:
+   - hallucination/scope-drift detection versus approved prior-phase artifacts (if any),
+   - strict reporting of bugs/missing tests/design issues/suggested fixes,
+   - safe closure of all justified findings (blocking mandatory; non-blocking unless rejected with rationale),
+   - and explicit pass/fail verification evidence before final ship recommendation.
 
 ---
 
