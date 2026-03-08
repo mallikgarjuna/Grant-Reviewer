@@ -6,6 +6,7 @@ interface ReviewCardProps {
   index: number;
   criterion: string;
   description?: string | null;
+  reviewedSectionLabel?: string | null;
   evaluationElementName: string;
   expectationGuidanceNote?: string | null;
   rating: ReviewRating;
@@ -33,6 +34,7 @@ export function ReviewCard({
   index,
   criterion,
   description,
+  reviewedSectionLabel,
   evaluationElementName,
   expectationGuidanceNote,
   rating,
@@ -60,6 +62,11 @@ export function ReviewCard({
               {description}
             </p>
           )}
+          {reviewedSectionLabel ? (
+            <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
+              Reviewed section context: {reviewedSectionLabel}
+            </p>
+          ) : null}
           {expectationGuidanceNote ? (
             <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
               Reviewer focus: {expectationGuidanceNote}

@@ -1000,6 +1000,7 @@ export default function ReviewDetailPage() {
                     index={index + 1}
                     criterion={card.criterion}
                     description={card.criterion_description}
+                    reviewedSectionLabel={group.title}
                     evaluationElementName={card.evaluation_element_name}
                     expectationGuidanceNote={card.expectation_guidance_note}
                     rating={card.rating}

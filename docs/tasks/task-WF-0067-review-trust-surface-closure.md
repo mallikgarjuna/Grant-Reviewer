@@ -100,7 +100,7 @@ Verification Steps:
 - `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0067_review_detail_tracer_unavailable_source_basis_card'`
 Risks (if any): If the tracer bullet starts solving all boundary copy up front, it will hide whether the core contract path was actually proven first.
 
-### [ ] Task 4 — Render card-level trust metadata in the primary reading flow
+### [x] Task 4 — Render card-level trust metadata in the primary reading flow
 
 Goal:
 Make each review card truthfully display the mapped evaluation criterion/element, reviewed section context, official source basis when available, and explicit `NOT_ASSESSABLE` state in the main reading flow.
