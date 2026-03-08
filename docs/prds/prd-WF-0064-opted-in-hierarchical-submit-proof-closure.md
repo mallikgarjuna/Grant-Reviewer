@@ -2,7 +2,7 @@
 # WF-0064 — Opted-In Hierarchical Submit Proof Closure
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-08
 
@@ -81,7 +81,7 @@ Type: feature
 - FR9 (US4): The behavior must remain reversible through the existing opt-in seam; removing the opt-in must restore current non-proof-path behavior without extra rollback work.
 - FR10 (US4): Non-opted-in calls must preserve current behavior with explicit parity coverage proving no regression from the proof-path change.
 - FR11 (US1, US2, US3, US4): Structural containers may remain visible as grouping elements, but coverage and review-detail classification must operate on visible non-container nodes only.
-- FR12 (US2, US4): Stage eligibility, visible non-container classification, and visible-supporting classification for review detail must derive from one authoritative role-aware source, not separate frontend-only heuristics or page-local allowlists.
+- FR12 (US2, US4): Stage eligibility, visible non-container classification, and visible-supporting classification for review detail must derive from one authoritative role-aware source, not separate frontend-only heuristics or page-local allowlists. Reuse an existing resolver or normalized BFF output where possible; do not introduce a new cross-layer abstraction if it would broaden WF-0064 beyond the `MSCA-PF-2025` proof path.
 - FR13 (US1): If stale supporting-node draft entries already exist from older proof-path behavior, the revised path must ignore them for rendering/payload purposes and must not silently clear user-visible primary content when submit succeeds.
 
 ## 5. Data & API Contracts
@@ -105,7 +105,7 @@ Type: feature
 - Coverage derivation must use the stage-eligible visible non-container node set for the proof path. (US2, FR6, FR11)
 - Supporting nodes such as `abstract` and visible Part B2 sections must be listed under `Visible but not part of this review` rather than omitted or implied reviewed. (US2, FR7)
 - `supporting_context_node_logical_ids` remains present but empty in this WF. (US2, FR8)
-- Review-detail classification must be computed from the same authoritative role-aware stage-eligibility source used to decide visible reviewed versus visible supporting nodes, so coverage and labels cannot drift from the proof-path contract. (US2, US4, FR6, FR7, FR11, FR12)
+- Review-detail classification must be computed from the same authoritative role-aware stage-eligibility source used to decide visible reviewed versus visible supporting nodes, so coverage and labels cannot drift from the proof-path contract. This may be satisfied by reusing an existing resolver or normalized BFF output; WF-0064 must not widen into a new generalized cross-layer classification framework. (US2, US4, FR6, FR7, FR11, FR12)
 
 ### 5.4 Rollout and compatibility contract
 
@@ -127,7 +127,7 @@ Type: feature
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx`
   - Rebuild coverage and display logic from stage-eligible visible non-container nodes and surface `Visible but not part of this review`. (FR6, FR7, FR11)
 - Shared role/stage-eligibility derivation seam across backend/BFF/frontend review detail inputs
-  - Keep reviewed-versus-visible-supporting classification single-sourced so page rendering cannot drift from proof-path submit semantics. (FR12)
+  - Keep reviewed-versus-visible-supporting classification single-sourced so page rendering cannot drift from proof-path submit semantics, preferably by reusing an existing seam rather than creating a new generalized abstraction. (FR12)
 - Existing WF-0063 opt-in seam and related call metadata/runtime plumbing
   - Keep the proof-path rollout reversible and limited to `MSCA-PF-2025`. (FR1, FR9, FR10)
 
@@ -180,6 +180,11 @@ Suggested file-path clusters (coarse only):
   - rollback-oriented parity test proving the proof-path behavior is removed when the existing opt-in seam is disabled for `MSCA-PF-2025`. (US4, FR9)
   - stale-draft compatibility test proving pre-existing supporting-node draft residue does not re-enable editing, leak into payloads, or silently disappear as a user-visible data loss event. (US1, FR3, FR13)
 
+## 8.1 Readiness Gate
+
+- No ship or Phase 2 readiness recommendation is valid without explicit passing evidence for every required automated check in Section 8, zero unresolved blocking findings, and closure of all non-blocking findings unless they are explicitly rejected with rationale.
+- Evidence must show the fail-closed contract remains intact for the proof path: supporting nodes visible but non-editable, no supporting persistence, empty `supporting_context_node_logical_ids`, unchanged backend `SUPPORTING_NODE_NOT_ALLOWED` behavior, and review-detail coverage derived from stage-eligible visible non-container nodes rather than `has_expectations` leaves.
+
 ## 9. Telemetry (Minimal)
 
 - No new telemetry is required for MVP unless one narrow diagnostic is needed to distinguish proof-path read-only rendering from primary-node editability during implementation verification.
@@ -200,3 +205,4 @@ Suggested file-path clusters (coarse only):
 
 - v0.1 (2026-03-08): Initial PRD from brainstorm.
 - v0.2 (2026-03-08): Applied risk-audit edits for single-source review-detail classification, stale supporting-draft fail-closed handling, and explicit empty supporting-context verification; marked Ready for Tasks.
+- v0.3 (2026-03-08): Hardened FR12 scope to prefer existing classification seams and added explicit evidence-based readiness gate for Phase 2/ship recommendations.
