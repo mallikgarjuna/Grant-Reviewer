@@ -2,7 +2,7 @@
 # WF-0067 — Review Trust Surface Closure
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-08
 
@@ -70,7 +70,9 @@ Section 3 decisions:
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx` already exposes a coverage summary and some honest boundary text such as `Visible but not part of this review`, but that honesty is concentrated in one summary block rather than carried through the card-level reading flow.
 - `frontend/src/components/review/ReviewCard.tsx` shows criterion, evaluation element, reviewer focus, and rating, but does not show a clear official source basis, does not foreground the reviewed proposal section, and does not explain what kind of claim the card is making.
 - `backend/app/schemas/api.py` already returns useful trust-adjacent fields such as `node_title`, `criterion`, `criterion_description`, `evaluation_element_name`, `expectation_guidance_note`, `assessment_status`, and `not_assessable_reason`, but the frontend does not use all of them to make trust legible.
-- Canonical call definitions already carry `source_hint` for evaluation criteria/elements/rules across NWO/ERC/MSCA, which suggests a viable user-facing source-basis surface exists without broadening into new call authoring.
+- `frontend/src/app/api/bff/reviews/[reviewId]/route.ts` already normalizes `detail_state` plus review-detail array fields for the page, so any trust-surface contract change must cross the backend response seam and this BFF normalization seam rather than stopping at schema-only edits.
+- `backend/app/repositories/review_repository.py` currently resolves `supporting_context_node_logical_ids` to an empty list even when supporting nodes exist, which means truthful supporting-context labeling is not yet a proven wedge-wide backend contract.
+- Canonical call definitions already carry `source_hint` for evaluation criteria/elements across NWO/ERC/MSCA, which suggests a viable user-facing source-basis surface exists without broadening into reviewer-policy/rule provenance or new call authoring.
 - Existing completed workflows prove contract correctness and fail-closed boundaries, but they do not yet prove that a researcher can understand what a review card is grounded in and what is outside the review.
 
 Open questions suggested by repo snapshot:
@@ -105,6 +107,7 @@ Contract Notes / Non-obvious constraints:
   - supporting/visible but not reviewed sections,
   - sections with no generated cards,
   - findings that are `NOT_ASSESSABLE`.
+- Only label a surface as `supporting context` when authoritative review-detail metadata supplies that role; otherwise fail closed to `reviewed` vs `not reviewed` without inferring supporting semantics from page-local heuristics.
 - Researcher-facing wording must use `evaluation criteria/elements`, not `rubric`.
 
 Section 5 decisions:
@@ -120,6 +123,7 @@ Section 5 decisions:
 - Overloading each card with too much metadata could hurt readability and reduce usefulness.
 - If the page-level limitations panel is vague, the WF may still look polished while leaving the core trust gap unresolved.
 - If the trust contract is defined only in copy, without tests proving correct reviewed/not-reviewed labeling across the wedge, launch claims will still be weak.
+- If Phase 1 ignores the backend response-assembly seam or the BFF normalization seam, schema-only changes can look complete on paper while never reaching the live review page.
 
 Section 6 decisions:
 
@@ -141,7 +145,7 @@ Section 6 decisions:
   - make every review card clearly identify the reviewed section and mapped evaluation criterion/element,
   - expose a concise official source-basis line where available,
   - make page-level boundary/limitation messaging explicit about what was reviewed and what was not,
-  - label reviewed vs supporting vs not reviewed surfaces truthfully,
+  - label reviewed vs supporting vs not reviewed surfaces truthfully, but only claim `supporting context` when the review-detail contract explicitly provides that role,
   - avoid changing engine behavior unless required to expose this trust contract on the review-detail path.
 - Launch-blocking trust gaps for this WF:
   - weak or missing official source-basis visibility,
@@ -167,14 +171,15 @@ Section 7 decisions:
 
 Required evidence before claiming WF-0067 is done:
 
-- Automated contract tests proving the review-detail/BFF payload exposes the trust fields the UI depends on for exactly `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, and `MSCA-PF-2025`.
+- Automated contract tests proving the backend review-detail response assembly and the BFF review-detail payload expose the trust fields the UI depends on for exactly `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, and `MSCA-PF-2025`.
 - Frontend tests proving:
   - review cards show mapped evaluation criterion/element plus reviewed section context,
   - source-basis visibility renders correctly when available,
   - source-basis visibility fails closed when unavailable or when the review detail is legacy/fallback-linked,
-  - reviewed/supporting/not-reviewed labeling is truthful,
+  - reviewed/supporting/not-reviewed labeling is truthful and does not infer supporting-context labels when the contract does not provide them,
   - limitation copy appears for the required states,
   - `NOT_ASSESSABLE` cards remain explicitly labeled.
+- Tests or fixture-backed evidence covering fail-closed limitation states at the actual response seams, including `legacy_fallback`, unavailable source basis, and any representative mixed-version/compatibility case used to justify trust copy.
 - Manual review evidence or fixture-backed screenshots for those exact representative calls showing the trust pattern is understandable and not misleading.
 - Explicit proof that no out-of-scope expansion occurred into new calls, extraction, or generic platform work.
 
