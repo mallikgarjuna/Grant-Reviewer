@@ -13,7 +13,7 @@ Implement a persistent agent memory system natively in `docs/memory/` based on C
    - `docs/memory/tools/testing.md`
    - `docs/memory/tools/workflow.md`
 3. **Updated Agent Rules:** Replaced the gotchas section in `AGENTS.md` with explicit `Memory Management` rules requiring the agent to proactively document new architectural decisions, bug fixes, and gotchas into the `docs/memory/` directory. ("Don't wait to be asked. Don't wait for session end.")
-4. **Updated Documentation:** Registered WF-0042 in `docs/index.md` and created the task file in `docs/tasks/task-WF-0042-agent-memory-system.md`.
+4. **Updated Documentation:** Registered WF-0042 in `docs/index.md` and archived the task file at `docs/tasks/completed/task-WF-0042-agent-memory-system.md`.
 5. **Populated Historical Knowledge:** Scanned `docs/logs/prompt_history.md`, `docs/logs/qa_history.md`, and `docs/logs/decisions.md` to extract undocumented rules and populated them into:
    - `docs/memory/domain/architecture.md` (new file for architectural domain rules)
    - `docs/memory/domain/project_docs.md`

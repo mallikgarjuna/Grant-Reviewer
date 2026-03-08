@@ -1,4 +1,4 @@
-<!-- docs/tasks/task-WF-0066-peerlens-scope-lock-nwo-erc-msca.md -->
+<!-- docs/tasks/completed/task-WF-0066-peerlens-scope-lock-nwo-erc-msca.md -->
 # WF-0066 — PeerLens Scope Lock to NWO/ERC/MSCA
 
 Artifact: task
@@ -22,7 +22,7 @@ Enables: 2, 3
 Parallelizable: no
 Files to modify:
 Must touch files:
-- `docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
+- `docs/walkthroughs/completed/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
 May touch files:
 - `none`
 Out of scope: editing the named target docs during inspection, widening to non-target docs, claiming mission contradiction without quoting the sentence
@@ -56,7 +56,7 @@ Parallelizable: no
 Files to modify:
 Must touch files:
 - `docs/parking_lot.md`
-- `docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
+- `docs/walkthroughs/completed/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
 May touch files:
 - `none`
 Out of scope: adding new agency/program work, rewriting historical backlog provenance, changing `docs/logs/decisions.md`, changing `docs/memory/domain/project_docs.md`, changing `docs/mission.md`
@@ -72,7 +72,7 @@ TDD Plan: N/A
 Verification Steps:
 - `sed -n '/## 🟡 P1/,/## Rejected \\/ Ignored/p' docs/parking_lot.md | rg -n "truthful|usefulness|NWO/ERC/MSCA|launch readiness"`
 - `bash -lc '! sed -n "/## 🟡 P1/,/## Rejected \\/ Ignored/p" docs/parking_lot.md | rg -n "ZonMw|remaining promised-program gap|launch blocker|broader promised-program expansion|broader coverage remains part of the current commitment"'`
-- `git diff -- docs/parking_lot.md docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
+- `git diff -- docs/parking_lot.md docs/walkthroughs/completed/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
 Risks (if any): A too-generic rewrite can remove the stale blocker but leave no actionable launch-readiness framing.
 
 ### [x] Task 3 — Produce the named-file evidence bundle and prove scope stayed narrow
@@ -87,7 +87,7 @@ Enables: none
 Parallelizable: no
 Files to modify:
 Must touch files:
-- `docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
+- `docs/walkthroughs/completed/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
 May touch files:
 - `none`
 Out of scope: additional content edits, repo-wide scans that hide named-file results, any recommendation to proceed without explicit pass/fail evidence
@@ -103,8 +103,8 @@ Verification Steps:
 - `rg -n "AD 66\\.1|broader promised-program expansion is not deferred" docs/logs/decisions.md`
 - `rg -n "broader scope commitments beyond NWO/ERC/MSCA" docs/memory/domain/project_docs.md`
 - `git diff --exit-code <phase_3_baseline_sha> -- docs/mission.md`
-- `git diff --name-only <phase_3_baseline_sha>...HEAD -- docs/parking_lot.md docs/logs/decisions.md docs/memory/domain/project_docs.md docs/mission.md docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
-- `bash -lc 'test -z "$(git diff --name-only <phase_3_baseline_sha>...HEAD | rg -n \"^(docs/parking_lot\\\\.md|docs/tasks/task-WF-0066-peerlens-scope-lock-nwo-erc-msca\\\\.md|docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca\\\\.md|docs/index\\\\.md)$\" -v)"'`
+- `git diff --name-only <phase_3_baseline_sha>...HEAD -- docs/parking_lot.md docs/logs/decisions.md docs/memory/domain/project_docs.md docs/mission.md docs/walkthroughs/completed/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
+- `bash -lc 'test -z "$(git diff --name-only <phase_3_baseline_sha>...HEAD | rg -n \"^(docs/parking_lot\\\\.md|docs/tasks/completed/task-WF-0066-peerlens-scope-lock-nwo-erc-msca\\\\.md|docs/walkthroughs/completed/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca\\\\.md|docs/index\\\\.md)$\" -v)"'`
 Risks (if any): If closure depends on the live worktree instead of the recorded baseline range, the workflow can incorrectly pass or fail depending on unrelated branch state.
 
 ## Changelog

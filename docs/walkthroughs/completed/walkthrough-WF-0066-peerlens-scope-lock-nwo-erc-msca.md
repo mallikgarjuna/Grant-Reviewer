@@ -1,4 +1,4 @@
-<!-- docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md -->
+<!-- docs/walkthroughs/completed/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md -->
 # WF-0066 — PeerLens Scope Lock to NWO/ERC/MSCA
 
 Artifact: walkthrough
@@ -60,11 +60,11 @@ Interim status for named targets:
 ### Baseline-anchored scope proof
 
 - `phase_3_baseline_sha`: `d9f7d9df8900c07b7b90d1b1171b86db51b062ee`
-- `git diff --name-only d9f7d9df8900c07b7b90d1b1171b86db51b062ee...HEAD -- docs/parking_lot.md docs/logs/decisions.md docs/memory/domain/project_docs.md docs/mission.md docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
+- `git diff --name-only d9f7d9df8900c07b7b90d1b1171b86db51b062ee...HEAD -- docs/parking_lot.md docs/logs/decisions.md docs/memory/domain/project_docs.md docs/mission.md docs/walkthroughs/completed/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
   - result:
     - `docs/parking_lot.md`
-    - `docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
-- `bash -lc 'test -z "$(git diff --name-only d9f7d9df8900c07b7b90d1b1171b86db51b062ee...HEAD | rg -n "^(docs/parking_lot\\.md|docs/tasks/task-WF-0066-peerlens-scope-lock-nwo-erc-msca\\.md|docs/walkthroughs/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca\\.md|docs/index\\.md)$" -v)"'`
+    - `docs/walkthroughs/completed/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
+- `bash -lc 'test -z "$(git diff --name-only d9f7d9df8900c07b7b90d1b1171b86db51b062ee...HEAD | rg -n "^(docs/parking_lot\\.md|docs/tasks/completed/task-WF-0066-peerlens-scope-lock-nwo-erc-msca\\.md|docs/walkthroughs/completed/walkthrough-WF-0066-peerlens-scope-lock-nwo-erc-msca\\.md|docs/index\\.md)$" -v)"'`
   - result: `PASS`
   - interpretation: named target-set correction stayed narrow (`docs/parking_lot.md` edited; other named targets no-op) and branch-level file drift stayed inside allowed WF bookkeeping surfaces (`task` + `walkthrough` + `index`).
 

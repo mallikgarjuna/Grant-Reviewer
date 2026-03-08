@@ -1,4 +1,4 @@
-<!-- docs/tasks/task-WF-0063-universal-node-visibility-reviewability.md -->
+<!-- docs/tasks/completed/task-WF-0063-universal-node-visibility-reviewability.md -->
 # WF-0063 — Universal Node Visibility Reviewability Tasks
 
 Artifact: task

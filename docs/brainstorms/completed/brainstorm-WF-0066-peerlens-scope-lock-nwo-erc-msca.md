@@ -1,4 +1,4 @@
-<!-- docs/brainstorms/brainstorm-WF-0066-peerlens-scope-lock-nwo-erc-msca.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0066-peerlens-scope-lock-nwo-erc-msca.md -->
 # WF-0066 — PeerLens Scope Lock to NWO/ERC/MSCA
 
 Artifact: brainstorm
