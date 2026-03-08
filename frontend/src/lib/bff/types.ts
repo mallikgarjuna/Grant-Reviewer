@@ -44,6 +44,7 @@ export type NodeSummary = {
   node_type: "SECTION" | "SUBSECTION";
   order_index: number;
   has_expectations: boolean;
+  node_role?: "PRIMARY" | "SUPPORTING" | null;
 };
 
 export type NodesResponse = {
@@ -54,6 +55,7 @@ export type CallConfigResponse = {
   call_logical_id: string;
   config_version: string;
   ui_mode: "legacy_single_snippet" | "structured_nodes";
+  split_visibility_reviewability_enabled?: boolean;
   expected_nodes?: string[];
   domain_options?: Array<{
     value: string;

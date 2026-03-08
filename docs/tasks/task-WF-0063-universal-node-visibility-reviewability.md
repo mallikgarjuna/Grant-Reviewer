@@ -143,7 +143,7 @@ Verification Steps:
 - `cd backend && rg -n "node_role" app/services/node_tree_service.py tests/test_call_nodes_tree_api.py tests/test_node_tree_service.py`
 Risks (if any): A flat API fix can mask a still-broken tree path that continues to hide supporting nodes in nested consumers.
 
-### [ ] Task 5 — Frontend/BFF node-role typing and single-source classification helper
+### [x] Task 5 — Frontend/BFF node-role typing and single-source classification helper
 
 Goal:
 Create one frontend-side role-classification path derived from backend contracts so BFF adapters, submit rendering, and review detail do not drift into separate MSCA-specific allowlists.
