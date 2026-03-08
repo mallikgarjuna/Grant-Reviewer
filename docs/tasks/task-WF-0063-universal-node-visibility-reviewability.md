@@ -109,7 +109,7 @@ Verification Steps:
 - `cd backend && rg -n "node_role|split_visibility|has_expectations" app/schemas/api.py main.py`
 Risks (if any): If the tracer bullet only proves MSCA and not legacy fallback in the same test area, the rollout gate can drift unnoticed.
 
-### [ ] Task 4 — Tree API role propagation and structural completeness
+### [x] Task 4 — Tree API role propagation and structural completeness
 
 Goal:
 Extend the same role-aware completeness guarantee to tree responses so nested consumers do not fall back to `has_expectations` as a visibility proxy.

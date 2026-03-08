@@ -11,7 +11,13 @@ from app.db import get_session
 from app.models.domain import CallDefinition, FundingCall, NodeType, ProposalNode
 from main import app
 from scripts.ingest_call import ingest_call
-from tests.test_api import TEST_BFF_SHARED_SECRET, SeededIDs, create_client_with_seed, reset_database
+from tests.test_api import (
+    TEST_BFF_SHARED_SECRET,
+    SeededIDs,
+    create_client_with_msca_pf_seed,
+    create_client_with_seed,
+    reset_database,
+)
 
 
 def _seed_child_node(seeded_ids: SeededIDs) -> None:
@@ -243,3 +249,35 @@ def test_wf0062_erc_cog_tree_models_structural_containers_without_review_surface
     }
     for logical_id in leaf_ids:
         assert nodes_by_logical_id[logical_id]["has_expectations"] is True
+
+
+def test_wf0063_tree_api_keeps_supporting_nodes_visible_with_node_role(
+    monkeypatch,
+) -> None:
+    """WF-0063: opted-in MSCA tree keeps supporting nodes with explicit role labels."""
+    client, call_id, _ = create_client_with_msca_pf_seed(monkeypatch)
+
+    payload = _get_call_nodes_tree(client, str(call_id))
+    roots = payload["nodes"]
+    nodes_by_logical_id: dict[str, dict] = {}
+    stack = list(roots)
+    while stack:
+        node = stack.pop()
+        nodes_by_logical_id[node["logical_id"]] = node
+        stack.extend(node["children"])
+
+    assert nodes_by_logical_id["part_a"]["node_role"] == "SUPPORTING"
+    assert nodes_by_logical_id["general_information"]["node_role"] == "SUPPORTING"
+    assert nodes_by_logical_id["abstract"]["node_role"] == "SUPPORTING"
+    assert nodes_by_logical_id["part_b2"]["node_role"] == "SUPPORTING"
+    assert (
+        nodes_by_logical_id["gf_letter_of_commitment_outgoing_host"]["node_role"]
+        == "SUPPORTING"
+    )
+    assert nodes_by_logical_id["excellence"]["node_role"] == "PRIMARY"
+    assert nodes_by_logical_id["impact"]["node_role"] == "PRIMARY"
+    assert (
+        nodes_by_logical_id["quality_efficiency_implementation"]["node_role"]
+        == "PRIMARY"
+    )
+    assert nodes_by_logical_id["abstract"]["has_expectations"] is False
