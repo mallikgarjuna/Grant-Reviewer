@@ -2,8 +2,8 @@
 # WF-0068 — Review Quality Evaluation Loop
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-08
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0068-review-quality-evaluation-loop.md`
@@ -43,7 +43,7 @@ This WF exists to decide, with evidence, whether PeerLens currently delivers mis
 
 Contract Notes / Non-obvious constraints:
 - This is an evaluation WF, not a prompt-tuning WF and not a generic QA program.
-- The unit of proof is review output on real proposal snippets, not backend contracts alone.
+- The primary unit of proof is the `snippet -> review output` pair, scored at card level; review-level synthesis is secondary and exists only to judge prioritization quality across the same snippet.
 - The decision target is whether feedback quality is mission-credible enough to justify follow-on implementation work, not whether the product is fully launch-ready.
 
 ## 2. Desired Outcome
@@ -101,13 +101,19 @@ Use a narrow, deterministic manual evaluation loop on representative real snippe
 Preferred direction:
 - define a mission-anchored scoring framework before looking for fixes
 - sample a small but representative snippet set across the locked three-call wedge
-- evaluate outputs using a fixed human-review procedure with stable prompts and ordering
+- evaluate outputs using a fixed human-review procedure with stable ordering and a frozen evaluation baseline:
+  - same app commit / branch baseline
+  - same prompt + model/runtime configuration for the evaluated batch
+  - same reviewer instructions and evidence template
 - record findings in a structured evidence format that separates:
+  - representative call + snippet identifier
   - observed output
   - criterion/element mapping
-  - official source basis used to judge it
+  - official source basis used to judge it, including the exact call-material locator used by the reviewer
   - failure taxonomy tags
   - severity and suggested follow-on class
+  - revision-action judgment and rationale
+- require explicit recording of any insufficient-evidence case rather than omitting it from the batch
 - end this WF with a bounded recommendation:
   - no follow-on WF needed,
   - one narrow implementation WF,
@@ -117,6 +123,7 @@ Contract Notes / Non-obvious constraints:
 - This WF must not bundle remediation.
 - The evaluation loop should be small enough to run repeatedly, but not so small that it overfits one polished example.
 - Determinism here means stable procedure and evidence recording, not exact textual output equality from the model.
+- If the frozen evaluation baseline changes mid-run, the batch is no longer comparable and should be restarted or split explicitly.
 
 ## 5. Constraints
 
@@ -128,6 +135,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0068-review-quality
 - Evidence must stay grounded in official call materials already accepted in the repo; do not invent external scoring standards.
 - The procedure must be repeatable by a future maintainer without relying on private intuition.
 - Keep later implementation boundaries explicit: evaluation artifacts may recommend a follow-on WF, but may not silently contain implementation scope.
+- If any representative call lacks enough approved snippet material to support the planned proof set, Phase 1 must treat that as a snippet-set planning gap inside this WF rather than widening to extra calls.
 
 Contract Notes / Non-obvious constraints:
 - The evaluation framework must anchor to `docs/mission.md` language, not an ad hoc "rubric."
@@ -173,6 +181,7 @@ Smallest successful slice:
 Minimum acceptable proof:
 - enough evaluated snippets to expose whether failures are isolated or patterned
 - evidence records that show exact findings and their official-call traceability basis
+- one frozen evaluation baseline per evidence batch, captured explicitly so later comparisons are not hand-wavy
 - a conclusion that names the next narrow move, if any, without jumping into fixes here
 
 Explicitly excluded:

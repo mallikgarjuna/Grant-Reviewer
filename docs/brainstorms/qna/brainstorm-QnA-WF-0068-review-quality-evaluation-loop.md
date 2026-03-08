@@ -2,9 +2,16 @@
 # WF-0068 — Review Quality Evaluation Loop
 
 Artifact: brainstorm-qna
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-08
+
+## Part C — Audit Revisions
+
+- Promoted the primary evaluation object into the SSOT brainstorm as the `snippet -> review output` pair, with review-level synthesis limited to prioritization checks.
+- Tightened determinism to require one frozen evaluation baseline per batch: same app commit, same prompt/model-runtime configuration, and same reviewer instructions/template.
+- Expanded the evidence-format contract to require representative call + snippet identifier, exact official-call locator used by the reviewer, revision-action judgment, and explicit insufficient-evidence recording.
+- Added a fail-closed planning rule that missing snippet coverage in one representative call must be handled as a snippet-set planning gap, not by widening to new calls.
 
 ## Section 1 — Problem Statement
 
