@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Canonical node-role and proof-call opt-in schema contract
+### [x] Task 1 — Canonical node-role and proof-call opt-in schema contract
 
 Goal:
 Freeze the minimal V2 YAML contract for split visibility/reviewability by adding one explicit `node_role` field plus one machine-readable proof-call opt-in flag, without changing runtime behavior yet.
