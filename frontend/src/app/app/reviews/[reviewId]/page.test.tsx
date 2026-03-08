@@ -53,6 +53,140 @@ function reviewPayload(overrides: Record<string, unknown> = {}) {
 }
 
 describe("ReviewDetailPage", () => {
+  it("wf0067_review_detail_tracer_surfaces_source_basis_fields_in_reading_flow", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "nwo_veni_2025_preproposal",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "academic_profile",
+                    node_title: "Academic profile",
+                    criterion: "Quality",
+                    criterion_description: "Quality criterion",
+                    evaluation_element_name: "Peer-exceeding quality",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Feedback text",
+                    source_basis_label: "Call for Proposals (Veni 2025) §4.3.1",
+                    source_basis_state: "available",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "academic_profile",
+                  title: "Academic profile",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Official source basis: Call for Proposals (Veni 2025) §4.3.1",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("wf0067_review_detail_tracer_unavailable_source_basis_card", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "nwo_veni_2025_preproposal",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "academic_profile",
+                    node_title: "Academic profile",
+                    criterion: "Quality",
+                    criterion_description: "Quality criterion",
+                    evaluation_element_name: "Peer-exceeding quality",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Feedback text",
+                    source_basis_label: null,
+                    source_basis_state: "unavailable",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "academic_profile",
+                  title: "Academic profile",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.getByText("Official source basis: unavailable."),
+    ).toBeInTheDocument();
+  });
+
   it("uses call-driven ordering and labels when call metadata is available", async () => {
     vi.stubGlobal(
       "fetch",

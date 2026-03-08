@@ -71,7 +71,7 @@ Verification Steps:
 - `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t 'wf0067_bff_review_detail_unavailable_source_basis_preserved'`
 Risks (if any): If the BFF continues to derive trust semantics locally, the frontend can pass tests while violating the PRD’s seam-proof requirement.
 
-### [ ] Task 3 — Tracer bullet: surface BFF-preserved trust fields in the review-detail reading flow
+### [x] Task 3 — Tracer bullet: surface BFF-preserved trust fields in the review-detail reading flow
 
 Goal:
 Prove one representative BFF-normalized review detail surfaces trust fields in the user reading flow before broader card/page hardening begins.

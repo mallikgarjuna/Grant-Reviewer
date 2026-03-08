@@ -993,19 +993,21 @@ export default function ReviewDetailPage() {
               >
                 Reviewed section: {group.title}
               </h2>
-                <div className="mt-3 grid gap-4">
-                  {group.cards.map((card, index) => (
-                    <ReviewCard
-                      key={`${group.key}:${card.id}`}
-                      index={index + 1}
-                      criterion={card.criterion}
-                      description={card.criterion_description}
+              <div className="mt-3 grid gap-4">
+                {group.cards.map((card, index) => (
+                  <ReviewCard
+                    key={`${group.key}:${card.id}`}
+                    index={index + 1}
+                    criterion={card.criterion}
+                    description={card.criterion_description}
                     evaluationElementName={card.evaluation_element_name}
                     expectationGuidanceNote={card.expectation_guidance_note}
                     rating={card.rating}
                     feedback={card.feedback_text}
                     assessmentStatus={card.assessment_status}
                     notAssessableReason={card.not_assessable_reason}
+                    sourceBasisLabel={card.source_basis_label}
+                    sourceBasisState={card.source_basis_state}
                   />
                 ))}
               </div>
