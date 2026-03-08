@@ -344,7 +344,7 @@ Verification Steps:
 - `cd backend && rg -n "primary_evaluated_node_logical_ids|supporting_context_node_logical_ids" app/schemas/api.py app/repositories/review_repository.py`
 Risks (if any): If review detail keeps relying on cards-only inference, supporting nodes can appear silently reviewed despite fail-closed submit enforcement.
 
-### [ ] Task 11 — Review-detail BFF and page label primary evaluated versus supporting context
+### [x] Task 11 — Review-detail BFF and page label primary evaluated versus supporting context
 
 Goal:
 Thread the new backend role-label fields through the BFF and review page so researchers can distinguish what was evaluated, what remains reserved supporting context, and what was visible but not part of the review.
