@@ -191,7 +191,7 @@ Verification Steps:
 - `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0067_review_detail_boundary_no_generated_cards_distinct_from_visible_not_reviewed'`
 Risks (if any): The page can accidentally hide an important limitation in a summary-only block, which would fail the PRD even if the raw state exists.
 
-### [ ] Task 7 — Representative proof closure for the launch-blocking trust surfaces only
+### [x] Task 7 — Representative proof closure for the launch-blocking trust surfaces only
 
 Goal:
 Finish WF-0067 with deterministic proof across the locked representative calls and fail-closed states, without widening into non-blocking trust polish or adjacent platform work.

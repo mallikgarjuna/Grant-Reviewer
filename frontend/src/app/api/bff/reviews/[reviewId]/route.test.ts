@@ -157,4 +157,67 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
     expect(body.cards[0].source_basis_state).toBe("legacy_fallback");
     expect(body.supporting_context_node_logical_ids).toEqual([]);
   });
+
+  it.each([
+    "nwo_veni_2025_preproposal",
+    "erc_stg_2026_full",
+    "MSCA-PF-2025",
+  ])(
+    "wf0067_bff_review_detail_representative_calls_preserve_trust_fields_%s",
+    async (callCode) => {
+      authMock.mockResolvedValue({ userId: "user-1" });
+      getReviewMock.mockResolvedValue({
+        ok: true,
+        data: {
+          call_id: `call-${callCode}`,
+          call_code: callCode,
+          ordering_source: "call_nodes",
+          submitted_node_logical_ids: ["node-1"],
+          submitted_leaf_ids: ["node-1"],
+          primary_evaluated_node_logical_ids: ["node-1"],
+          supporting_context_node_logical_ids: [],
+          visible_not_reviewed_node_logical_ids: [],
+          no_generated_cards_node_logical_ids: [],
+          review: {
+            id: `review-${callCode}`,
+            status: "COMPLETED",
+            overall_rating: "SUCCESS",
+            overall_summary: "Summary",
+          },
+          cards: [
+            {
+              id: "card-1",
+              node_expectation_id: "expectation-1",
+              node_logical_id: "node-1",
+              node_title: "Node 1",
+              criterion: "Quality",
+              criterion_description: "Quality criterion",
+              evaluation_element_name: "Element 1",
+              expectation_guidance_note: null,
+              rating: "SUCCESS",
+              feedback_text: "Feedback",
+              source_basis_label: "Official source",
+              source_basis_state: "available",
+            },
+          ],
+        },
+      });
+
+      const { GET } = await import("./route");
+      const response = await GET(new Request("http://localhost"), {
+        params: Promise.resolve({ reviewId: `review-${callCode}` }),
+      });
+      const body = (await response.json()) as {
+        call_code: string;
+        cards: Array<{ source_basis_state: string; source_basis_label: string | null }>;
+        supporting_context_node_logical_ids: string[];
+      };
+
+      expect(response.status).toBe(200);
+      expect(body.call_code).toBe(callCode);
+      expect(body.cards[0].source_basis_state).toBe("available");
+      expect(body.cards[0].source_basis_label).toBe("Official source");
+      expect(body.supporting_context_node_logical_ids).toEqual([]);
+    },
+  );
 });

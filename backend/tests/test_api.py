@@ -2110,6 +2110,92 @@ def test_wf0067_backend_boundary_contract_mixed_version_legacy_fallback(monkeypa
     assert payload["no_generated_cards_node_logical_ids"] == []
 
 
+def test_wf0067_backend_source_basis_contract_mixed_per_card_availability(
+    monkeypatch,
+) -> None:
+    import main as main_module
+
+    client, call_id, call_code = create_client_with_nwo_veni_seed(monkeypatch)
+    assert call_code == "nwo_veni_2025_preproposal"
+
+    original_resolver = main_module._resolve_card_source_basis
+
+    def force_mixed_source_basis(*, element_logical_id: str | None, **kwargs):
+        if element_logical_id == "elem_cv_idea_alignment":
+            return None, "unavailable"
+        return original_resolver(element_logical_id=element_logical_id, **kwargs)
+
+    monkeypatch.setattr(main_module, "_resolve_card_source_basis", force_mixed_source_basis)
+
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+
+        available_expectation = session.exec(
+            select(NodeExpectation)
+            .join(EvaluationElement, NodeExpectation.evaluation_element_id == EvaluationElement.id)
+            .join(ProposalNode, NodeExpectation.proposal_node_id == ProposalNode.id)
+            .where(
+                ProposalNode.funding_call_id == call_id,
+                ProposalNode.logical_id == "academic_profile",
+                EvaluationElement.logical_id == "elem_peer_exceeding_quality",
+            )
+        ).first()
+        unavailable_expectation = session.exec(
+            select(NodeExpectation)
+            .join(EvaluationElement, NodeExpectation.evaluation_element_id == EvaluationElement.id)
+            .join(ProposalNode, NodeExpectation.proposal_node_id == ProposalNode.id)
+            .where(
+                ProposalNode.funding_call_id == call_id,
+                ProposalNode.logical_id == "research_idea",
+                EvaluationElement.logical_id == "elem_cv_idea_alignment",
+            )
+        ).first()
+        assert available_expectation is not None
+        assert unavailable_expectation is not None
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0067-mixed-source-basis-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(call_id),
+                "submitted_leaf_ids": ["academic_profile", "research_idea"],
+                "nodes": {
+                    "academic_profile": "available source basis text",
+                    "research_idea": "unavailable source basis text",
+                },
+            },
+        )
+        repository.create_review_card(
+            review_id=review.id,
+            expectation_id=available_expectation.id,
+            rating=ReviewRating.SUCCESS,
+            feedback="Available source basis card",
+        )
+        repository.create_review_card(
+            review_id=review.id,
+            expectation_id=unavailable_expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback="Unavailable source basis card",
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+    finally:
+        session.close()
+
+    detail = get_review_detail(client=client, review_id=str(review.id))
+    assert detail.status_code == 200
+    payload = detail.json()
+    states = {card["source_basis_state"] for card in payload["cards"]}
+    assert states == {"available", "unavailable"}
+    assert payload["supporting_context_node_logical_ids"] == []
+
+
 def test_review_detail_order_index_tie_uses_node_logical_id_fallback(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
 
