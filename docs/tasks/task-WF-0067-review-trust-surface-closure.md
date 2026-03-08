@@ -2,8 +2,8 @@
 # WF-0067 — Review Trust Surface Closure
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-08
 
 Type: feature
@@ -56,19 +56,21 @@ Must touch files:
 - `frontend/src/app/api/bff/reviews/[reviewId]/route.ts`
 - `frontend/src/lib/bff/types.ts`
 - `frontend/src/app/api/bff/reviews/[reviewId]/route.test.ts`
+- `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
 May touch files:
 - `frontend/src/lib/bff/adapter.ts`
+- `frontend/src/app/app/reviews/[reviewId]/page.tsx`
 Out of scope: page copy changes, review-card styling, broad frontend refactors, parallel fetch redesign
 Stop if: the BFF needs to guess `source_basis_state`, supporting-context roles, or boundary semantics that are absent from the backend response
 Session boundary after: no
 Acceptance Criteria:
 - The BFF preserves card-level `source_basis_label` and `source_basis_state` exactly as supplied by the backend.
 - The BFF preserves explicit fail-closed states needed downstream, including `legacy_fallback`, unavailable source basis, and empty supporting-context role data.
-- A dedicated BFF route test proves the representative end-to-end tracer bullet for at least one supported call and one unavailable-basis fallback card.
-TDD Plan: RED in new `frontend/src/app/api/bff/reviews/[reviewId]/route.test.ts` for dropped or synthesized trust fields; GREEN in `route.ts`; REFACTOR in `frontend/src/lib/bff/types.ts` to keep the normalized client contract aligned.
+- The tracer bullet includes one page-level render assertion proving that a representative BFF-normalized review detail surfaces the trust fields in the user reading flow for at least one supported call and one unavailable-basis fallback card.
+TDD Plan: RED in new `frontend/src/app/api/bff/reviews/[reviewId]/route.test.ts` and `frontend/src/app/app/reviews/[reviewId]/page.test.tsx` for dropped or synthesized trust fields; GREEN in `route.ts` and only the smallest page wiring needed for the tracer bullet; REFACTOR in `frontend/src/lib/bff/types.ts` to keep the normalized client contract aligned.
 Verification Steps:
 - `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts'`
-- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t "wf0067"`
+- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' 'src/app/app/reviews/[reviewId]/page.test.tsx' -t "wf0067|source basis"`
 Risks (if any): If the BFF continues to derive trust semantics locally, the frontend can pass tests while violating the PRD’s seam-proof requirement.
 
 ### [ ] Task 3 — Render card-level trust metadata in the primary reading flow
@@ -145,8 +147,8 @@ Files to modify:
 Must touch files:
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx`
 - `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
-- `frontend/src/lib/submit/renderModel.ts`
 May touch files:
+- `frontend/src/lib/submit/renderModel.ts`
 - `frontend/src/components/review/ReviewSummary.tsx`
 Out of scope: non-blocking explainer polish, new summary widgets, generic design-system cleanup
 Stop if: truthful boundary rendering cannot be achieved without widening the page contract or changing submission-time semantics
@@ -154,11 +156,12 @@ Session boundary after: no
 Acceptance Criteria:
 - The page distinguishes reviewed sections, visible-but-not-reviewed sections, and sections with no generated cards when the contract distinguishes them.
 - The page shows explicit limitation copy for unavailable basis, `legacy_fallback`, and mixed-version states in the main review-detail reading flow.
+- The page tests explicitly prove that `visible but not reviewed` and `no generated cards` do not collapse into the same rendered boundary when the contract distinguishes them.
 - The UI passes when representative fixtures provide zero positive supporting-context labels and never fabricates one.
 TDD Plan: RED in `frontend/src/app/app/reviews/[reviewId]/page.test.tsx` for collapsed non-reviewed states or inferred supporting labels; GREEN in `page.tsx` and `frontend/src/lib/submit/renderModel.ts`; REFACTOR by tightening the page view-model helpers after the new states are green.
 Verification Steps:
 - `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t "Not reviewed sections|legacy fallback|mixed-version|supporting context"`
-- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t "no generated cards|visible but not reviewed"`
+- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t "no generated cards|visible but not reviewed|zero-card"`
 Risks (if any): The page can accidentally hide an important limitation in a summary-only block, which would fail the PRD even if the raw state exists.
 
 ### [ ] Task 6 — Representative proof closure for the launch-blocking trust surfaces only
@@ -177,7 +180,7 @@ Must touch files:
 - `frontend/src/app/api/bff/reviews/[reviewId]/route.test.ts`
 - `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
 May touch files:
-- `docs/walkthroughs/walkthrough-WF-0067-review-trust-surface-closure.md`
+- `none`
 Out of scope: additional calls, assisted extraction, supporting-context semantics expansion, export/history work, generic trust-platform work
 Stop if: a required proof surface is missing for one of the three locked calls or the only path to green is broadening scope beyond review detail
 Session boundary after: yes
@@ -189,9 +192,10 @@ TDD Plan: RED by adding missing representative proof cases at backend, BFF, and 
 Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0067 or nwo_veni_2025_preproposal or erc_stg_2026_full or MSCA-PF-2025"`
 - `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' 'src/app/app/reviews/[reviewId]/page.test.tsx'`
-- `git diff --name-only HEAD~ -- backend frontend | rg -v '(^backend/|^frontend/)'`
+- `bash -lc 'test -z "$(git diff --name-only HEAD~1..HEAD | rg -v \"^(backend/(main\\.py|app/schemas/api\\.py|app/repositories/review_repository\\.py|tests/test_api\\.py)|frontend/src/app/api/bff/reviews/\\[reviewId\\]/route\\.ts|frontend/src/app/api/bff/reviews/\\[reviewId\\]/route\\.test\\.ts|frontend/src/lib/bff/types\\.ts|frontend/src/app/app/reviews/\\[reviewId\\]/page\\.tsx|frontend/src/app/app/reviews/\\[reviewId\\]/page\\.test\\.tsx|frontend/src/components/review/ReviewCard\\.tsx|frontend/src/lib/submit/renderModel\\.ts)$\")"'`
 Risks (if any): If proof is summarized only in prose instead of seam-specific passing tests, WF-0067 could be declared ready while a trust-surface regression remains unproven.
 
 ## Changelog
 
 - v0.1 (2026-03-08): Initial task breakdown from PRD.
+- v0.2 (2026-03-08): Made the early tracer bullet reach the rendered review-detail path, demoted submit-flow helper edits to optional spillover, and tightened proof-closure verification to fail on out-of-scope file changes; marked Ready for Implementation.
