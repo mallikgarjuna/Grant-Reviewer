@@ -2,7 +2,7 @@
 # WF-0063 — Universal Node Visibility Reviewability PRD
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-08
 
@@ -76,11 +76,13 @@ Type: feature
 
 - FR1 (US1, US2, US3, US4): `ProposalNodeDefinitionV2` must gain a new field `node_role: Literal["PRIMARY", "SUPPORTING"]` with backward-compatible default `PRIMARY`.
 - FR1a (US4): Split visibility/reviewability behavior must be guarded by an explicit call-level or runtime enablement seam in MVP; non-opted-in calls must preserve current behavior until explicitly migrated.
+- FR1b (US4): The MVP rollout gate must stay in canonical call metadata/runtime configuration space; this WF must not introduce new database persistence surfaces, per-review flags, or user-level toggles to enable split behavior.
 - FR2 (US2, US3, US4): `node_expectations` remains the only source-grounded evaluation criteria/elements mapping surface; this WF must not add invented expectations to supporting nodes.
 - FR3 (US2, US3): Any node marked `SUPPORTING` in MVP must have an empty `node_expectations` list unless a later explicitly approved contract says otherwise.
 - FR4 (US1, US4): Official node visibility must derive from presence in the call-definition structure plus API node outputs, not from `has_expectations`.
 - FR5 (US1, US4): `GET /calls/{call_id}/nodes` and `GET /calls/{call_id}/nodes?view=tree` must continue returning all official nodes and must add `node_role` to each node summary/tree item.
 - FR6 (US1, US2): Existing `has_expectations` remains available as a compatibility hint, but frontend visibility/render eligibility for this WF must no longer depend on it alone.
+- FR6a (US2, US4): Role-aware rendering and primary-submit filtering must derive from one authoritative node-role classification path per request; Phase 2 must not introduce separate hardcoded frontend/BFF/MSCA-specific allowlists for reviewable versus supporting nodes.
 - FR7 (US1, US2, US4): For calls explicitly opted into the split contract, the first submit UI path must render both `PRIMARY` and `SUPPORTING` nodes, with explicit visual distinction between `primary reviewed` and `supporting/non-primary`.
 - FR7a (US1, US2, US4): Structural container nodes remain visible/grouping-only and are never editable or submittable in the first path, regardless of role rollout state.
 - FR8 (US1, US2): In the first path, supporting content nodes are `read/write but non-submittable for primary review`; they may exist in local draft/UI state, but are excluded from the primary submission boundary.
@@ -102,6 +104,7 @@ Type: feature
 - In MVP, supporting nodes must validate only when `node_expectations == []`; this creates an explicit fail-closed boundary against fake mappings. (US2, US3, FR3)
 - Omitted `node_role` must behave as `PRIMARY` for backward compatibility so existing calls keep current behavior until explicitly migrated. (US4, FR1, FR15)
 - The proof-call-first rollout must use one explicit call-level or runtime enablement seam to activate split visibility behavior; `node_role` presence alone is insufficient to flip runtime behavior repo-wide. (US4, FR1a, FR15)
+- The rollout seam must be carried by canonical call metadata or runtime configuration already associated with the call definition; MVP must not require review-record migrations, new persistence tables, or user-controlled runtime toggles to decide whether the split is active. (US4, FR1a, FR1b, FR15)
 - `MSCA-PF-2025` must encode Part B1 Sections 1-3 as `PRIMARY` and the official non-primary nodes (`abstract`, Part B2 Sections 4-8, and conditional Section 9 when present) as `SUPPORTING` unless later source-grounded evidence changes that classification. (US1, US2, US3, FR13, FR14)
 
 ### 5.2 Node list/tree response contract
@@ -111,6 +114,7 @@ Type: feature
 - `has_expectations` stays in the response for compatibility and debugging, but callers must not treat it as the only renderability signal once `node_role` is available. (US1, US2, US4, FR6)
 - Visible-but-non-primary nodes are exposed by the pair `node_role == "SUPPORTING"` and `has_expectations == false`; no synthetic expectations are introduced to force visibility. (US1, US3, FR2, FR5, FR6)
 - Opted-in-call render behavior and non-opted-in-call legacy behavior must both be representable from the response contract without ambiguous fallback logic. (US4, FR1a, FR5, FR15)
+- If additional BFF or metadata endpoints need role information for UI behavior, they must derive it from the same canonical node-role source rather than defining a second role taxonomy or fallback mapping. (US2, US4, FR5, FR6a)
 
 ### 5.3 Submit/compliance request contract
 
@@ -119,6 +123,7 @@ Type: feature
 - Backend request validation must reject any submitted node whose canonical `node_role` is `SUPPORTING`, with a deterministic contract error rather than silent dropping. (US2, US4, FR10)
 - Supporting content nodes may remain in client-side draft state for UI continuity, but no persisted review request, compliance check, or review record may treat them as primary-submitted content in MVP. Structural containers remain non-editable and never enter draft state as content-bearing fields. (US1, US2, US4, FR7a, FR8, FR9, FR10)
 - No parallel `supporting_nodes` or `context_nodes` request branch is added in this WF; a separate context path is deferred until it has an explicit contract and review-output semantics. (US2, US4, FR9)
+- Client-side filtering of submittable nodes is a UX aid only; server-side request validation against canonical node-role data remains authoritative. (US2, US4, FR6a, FR10)
 
 ### 5.4 Review-detail/output contract
 
@@ -156,8 +161,12 @@ Type: feature
   - Proof-call authoring seam for explicit `PRIMARY` versus `SUPPORTING` node roles while keeping all official nodes in structure. (FR13, FR14, FR15)
 - `backend/app/schemas/api.py`, `backend/app/services/node_tree_service.py`, and response assembly in `backend/main.py`
   - Expose role-aware node list/tree outputs and role-aware review-detail fields without removing compatibility fields such as `has_expectations`. (FR5, FR11, FR12)
+- Call-level/runtime configuration seam under existing call-definition loading surfaces in `backend/app/` and BFF call-config plumbing in `frontend/src/app/api/bff/`
+  - Carry the proof-call opt-in without introducing a new persistence subsystem or user-toggle surface. (FR1a, FR1b, FR15)
 - `frontend/src/lib/submit/renderModel.ts` and `frontend/src/components/submit/UniversalSubmitForm.tsx`
   - Stop deriving opted-in-call renderability from `has_expectations` alone; render all official nodes for opted-in calls, keep structural containers grouping-only, and enforce primary-path submission from `PRIMARY` nodes only. (FR6, FR7, FR7a, FR8, FR10)
+- `frontend/src/lib/bff/types` and any role-aware BFF response adapters
+  - Keep node-role typing aligned with backend contracts so UI labels and submit filters do not drift into a second classification system. (FR5, FR6a, FR11, FR12)
 - Review-detail BFF/UI seams under `frontend/src/app/api/bff/reviews/[reviewId]/route.ts` and `frontend/src/app/app/reviews/[reviewId]/page.tsx`
   - Surface role-aware labels so researchers can tell `primary evaluated` apart from `supporting context` or `not part of this review`. (FR11, FR12)
 - Backend/frontend contract tests around nodes API, submit/compliance validation, and review-detail output
@@ -168,17 +177,20 @@ Design tree / dependencies / ordering:
 2. Freeze the proof-call-first rollout gate: one explicit call-level/runtime enablement seam activates split behavior for `MSCA-PF-2025` only. (FR1a, FR15)
 3. Apply the proof-call authoring update to `MSCA-PF-2025` while preserving all official nodes in YAML. (FR13, FR14, FR15)
 4. Expose `node_role` through list/tree API responses without removing `has_expectations`. (FR5, FR6)
-5. Update the submit render model/UI to render all official nodes for opted-in calls, keep structural containers grouping-only, and submit only `PRIMARY` nodes. (FR6, FR7, FR7a, FR8, FR10)
-6. Preserve current behavior for non-opted-in calls. (FR1a, FR15, FR16)
-7. Add submit/compliance fail-closed validation against `SUPPORTING` nodes. (FR10)
-8. Add review-detail/output labeling seams and parity tests. (FR11, FR12, FR16)
+5. Thread the same authoritative role classification through BFF/type adapters and any metadata consumers so render and submit logic do not fork. (FR5, FR6a)
+6. Update the submit render model/UI to render all official nodes for opted-in calls, keep structural containers grouping-only, and submit only `PRIMARY` nodes. (FR6, FR7, FR7a, FR8, FR10)
+7. Preserve current behavior for non-opted-in calls. (FR1a, FR1b, FR15, FR16)
+8. Add submit/compliance fail-closed validation against `SUPPORTING` nodes. (FR10)
+9. Add review-detail/output labeling seams and parity tests. (FR11, FR12, FR16)
 
 Deep module guidance:
 
 - Keep the authoritative split small: `node_role` is the new semantic field; do not add a broad family of overlapping booleans to YAML in this WF.
 - Keep rollout explicit: use one call-level/runtime opt-in seam rather than inferring universal behavior from `node_role` presence alone.
+- Keep the opt-in seam cheap: prefer existing call-definition/runtime-config plumbing over new persistence or operator-control surfaces.
 - Treat node list/tree completeness as the visibility contract; the UI should not need fake expectations or synthetic nodes.
 - Distinguish `structural container` from `supporting content`; only content-bearing nodes can be editable in the first path.
+- Keep role derivation single-sourced across backend, BFF, and frontend; duplicated classification logic is hidden coupling and should be treated as a regression.
 - Keep supporting-context behavior fail-closed: reserved output fields may exist, but no supporting context participates in primary review until a later explicit request path exists.
 - Prefer derived API flags only where they reduce UI branching materially; the core compatibility boundary is still the canonical `node_role`.
 
@@ -198,6 +210,7 @@ Suggested file-path clusters (coarse only):
 - A future call omits `node_role`; defaulting to `PRIMARY` must preserve current behavior rather than silently hiding nodes or inventing supporting semantics. (US4, FR1, FR15)
 - A future call defines `SUPPORTING` nodes but forgets to opt into split behavior; runtime must preserve legacy behavior rather than silently broadening visibility. (US4, FR1a, FR15)
 - A structural container is accidentally rendered as an editable field in the first path; UI and contract tests must block that regression. (US1, US2, US4, FR7a, FR16)
+- Backend, BFF, and frontend each derive reviewable/supporting sets differently for the same opted-in call; this hidden coupling must be blocked by contract tests rather than normalized as acceptable implementation variation. (US2, US4, FR6a, FR16)
 - `MSCA-PF-2025` Section 9 appears for non-Global-Fellowship cases or disappears for applicable cases because the supporting-node rollout over-generalized conditional logic; proof-call tests must keep conditional behavior source-grounded. (US1, US4, FR14, FR16)
 - A later implementation tries to treat some Part B2 nodes as “quasi-primary” without source-grounded evidence; Phase 2 tasks must keep this as a deferred question unless grounded proof is added. (US3, US4, FR2, FR14, FR15)
 
@@ -211,6 +224,7 @@ Suggested file-path clusters (coarse only):
   - proof-call YAML tests proving `MSCA-PF-2025` keeps all official nodes and classifies Part B1 versus supporting nodes as planned. (US1, US3, US4, FR13, FR14)
   - rollout-gate tests proving `MSCA-PF-2025` opt-in activates split visibility behavior while non-opted-in calls preserve current behavior. (US4, FR1a, FR15, FR16)
   - nodes API tests proving list/tree responses include all official nodes and expose `node_role` alongside `has_expectations`. (US1, US4, FR4, FR5, FR6, FR16)
+  - contract tests proving backend, BFF, and frontend consume one consistent role classification for rendering and primary-submit eligibility, without hardcoded MSCA-only allowlists. (US2, US4, FR6a, FR16)
   - submit render-model/UI tests proving supporting content nodes render visibly, structural containers remain grouping-only, display labels stay distinct, and only `PRIMARY` nodes enter primary submit construction. (US1, US2, US4, FR6, FR7, FR7a, FR8)
   - backend request-validation tests proving supporting-node submission to primary review/compliance fails closed. (US2, US4, FR10)
   - review-detail tests proving primary-path reviews expose `primary_evaluated_node_logical_ids`, keep `supporting_context_node_logical_ids` empty by default, and never imply silent supporting-context participation. (US2, US4, FR11, FR12)
@@ -241,3 +255,4 @@ Suggested file-path clusters (coarse only):
 
 - v0.1 (2026-03-08): Initial PRD from brainstorm.
 - v0.2 (2026-03-08): Applied risk-audit edits for explicit proof-call rollout gating, structural-container first-path behavior, and opt-in versus legacy parity coverage; marked Ready for Tasks.
+- v0.3 (2026-03-08): Applied review-and-harden edits for single-source role derivation, explicit rollout-seam scope boundaries, and clearer Phase 2 task seams while preserving Ready for Tasks status.
