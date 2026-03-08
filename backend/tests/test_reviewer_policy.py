@@ -108,7 +108,14 @@ def _build_wf0060_stage_definition() -> CallDefinition:
 
 
 def test_infer_review_stage_detects_step_2_nodes() -> None:
-    assert infer_review_stage("b2_part2_scientific_proposal") == "STEP_2"
+    call_definition = _build_wf0060_stage_definition()
+    assert (
+        infer_review_stage(
+            "b2_part2_scientific_proposal",
+            call_definition=call_definition,
+        )
+        == "STEP_2"
+    )
     assert infer_review_stage("b1_part1_scientific_proposal") == "STEP_1"
 
 
@@ -159,12 +166,45 @@ def test_policy_blocking_violation_classification() -> None:
 
 
 def test_wf0060_reviewer_policy_uses_corrected_erc_leaf_stage_scope() -> None:
-    assert infer_review_stage("proposal_summary") == "STEP_1"
-    assert infer_review_stage("b1_part1_scientific_proposal") == "STEP_1"
-    assert infer_review_stage("b1_cv_track_record") == "STEP_1"
-    assert infer_review_stage("b2") == "STEP_1"
-    assert infer_review_stage("b2_part2_scientific_proposal") == "STEP_2"
-    assert infer_review_stage("resources_time_commitment") == "STEP_2"
+    call_definition = _build_wf0060_stage_definition()
+    assert infer_review_stage("proposal_summary", call_definition=call_definition) == "BOTH"
+    assert (
+        infer_review_stage("b1_part1_scientific_proposal", call_definition=call_definition)
+        == "BOTH"
+    )
+    assert infer_review_stage("b1_cv_track_record", call_definition=call_definition) == "BOTH"
+    assert infer_review_stage("b2", call_definition=call_definition) == "STEP_1"
+    assert (
+        infer_review_stage("b2_part2_scientific_proposal", call_definition=call_definition)
+        == "STEP_2"
+    )
+    assert (
+        infer_review_stage("resources_time_commitment", call_definition=call_definition)
+        == "STEP_2"
+    )
+
+
+def test_wf0063_reviewer_policy_derives_proof_call_roles_from_canonical_data() -> None:
+    call_definition = _build_wf0060_stage_definition()
+
+    assert infer_review_stage("resources_time_commitment") == "STEP_1"
+    assert (
+        infer_review_stage(
+            "resources_time_commitment",
+            call_definition=call_definition,
+        )
+        == "STEP_2"
+    )
+    assert not matches_review_stage(
+        node_logical_id="resources_time_commitment",
+        review_stage="STEP_1",
+        call_definition=call_definition,
+    )
+    assert matches_review_stage(
+        node_logical_id="resources_time_commitment",
+        review_stage="STEP_2",
+        call_definition=call_definition,
+    )
 
 
 def test_infer_review_stage_prefers_call_definition_node_stage_map() -> None:

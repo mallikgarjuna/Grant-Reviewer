@@ -244,7 +244,7 @@ Verification Steps:
 - `cd frontend && rg -n "draft_nodes|nodes:|supporting|primary" src/components/submit/UniversalSubmitForm.tsx`
 Risks (if any): The UI can look correct while still leaking supporting nodes into compliance or review payloads through hidden form transforms.
 
-### [ ] Task 8 — Backend single-source role derivation replaces hardcoded reviewability fallbacks
+### [x] Task 8 — Backend single-source role derivation replaces hardcoded reviewability fallbacks
 
 Goal:
 Remove role/reviewability drift in backend policy logic by deriving proof-call primary/supporting behavior from canonical data instead of hardcoded Step 2 or MSCA-specific fallback sets.

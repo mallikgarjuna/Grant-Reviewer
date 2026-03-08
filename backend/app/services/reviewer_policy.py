@@ -12,8 +12,6 @@ from app.models.domain import CallDefinition
 ReviewStage = Literal["STEP_1", "STEP_2"]
 EnforcementMode = Literal["PROMPT_ONLY", "POST_CHECK", "BLOCKING"]
 
-_STEP_2_NODE_IDS = {"b2_part2_scientific_proposal", "resources_time_commitment"}
-
 
 @dataclass(frozen=True)
 class ReviewerPolicyRule:
@@ -42,8 +40,6 @@ def infer_review_stage(
         if inferred in {"STEP_1", "STEP_2", "BOTH"}:
             return inferred
 
-    if node_logical_id in _STEP_2_NODE_IDS:
-        return "STEP_2"
     return "STEP_1"
 
 
