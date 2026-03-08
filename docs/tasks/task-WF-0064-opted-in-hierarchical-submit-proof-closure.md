@@ -112,7 +112,7 @@ Verification Steps:
 - `cd backend && rg -n "SUPPORTING_NODE_NOT_ALLOWED|supporting_context_node_logical_ids" main.py tests/test_api.py`
 Risks (if any): Frontend-only filtering can mask a widened backend boundary unless the fail-closed contract stays explicitly tested.
 
-### [ ] Task 4 — Reuse the existing role-aware classification seam for review detail
+### [x] Task 4 — Reuse the existing role-aware classification seam for review detail
 
 Goal:
 Extend the existing proof-path classification seam across the live role and render-model helpers so review detail distinguishes reviewed primary nodes from visible supporting nodes without introducing a second review-only helper.

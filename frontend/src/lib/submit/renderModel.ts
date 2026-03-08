@@ -1,6 +1,6 @@
 // frontend/src/lib/submit/renderModel.ts
 import type { NodeSummary } from "@/lib/bff/types";
-import { classifyNodeRole } from "@/lib/submit/nodeRoles";
+import { classifyCallNodeRoles } from "@/lib/submit/nodeRoles";
 
 export type NodeMetadata = {
   title?: string | null;
@@ -28,6 +28,7 @@ export type RenderModelReady = {
   nodes: RenderNode[];
   groups: RenderGroup[];
   metadataFallbackCount: number;
+  structuralContainerNodeLogicalIds?: string[];
 };
 
 export type RenderModelUnsupported = {
@@ -49,6 +50,12 @@ export type RenderModelResult =
   | RenderModelContractError;
 
 export type ReviewStage = "STEP_1" | "STEP_2";
+
+export type ReviewDetailNodeClassification = {
+  stageEligibleVisibleNonContainerNodeLogicalIds: string[];
+  visibleSupportingNodeLogicalIds: string[];
+  structuralContainerNodeLogicalIds: string[];
+};
 
 type BuildRenderModelInput = {
   nodes: NodeSummary[];
@@ -131,11 +138,9 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
   }
 
   const nodeById = new Map(input.nodes.map((node) => [node.id, node]));
-  const hasChildrenByNodeId = new Set(
-    input.nodes
-      .filter((node) => node.parent_node_id !== null)
-      .map((node) => node.parent_node_id as string),
-  );
+  const roleSummary = classifyCallNodeRoles(input.nodes, {
+    splitVisibilityReviewabilityEnabled,
+  });
   const renderNodeByLogicalId = new Map<string, RenderNode>();
   for (const node of input.nodes) {
     const nodeLogicalId = node.logical_id as string;
@@ -149,10 +154,10 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
         : null;
     const baseLabel = metadataTitle ?? nodeTitle ?? toFallbackLabel(nodeLogicalId);
     const reviewStage = metadata?.reviewStage ?? "BOTH";
-    const role = classifyNodeRole(node, {
-      splitVisibilityReviewabilityEnabled,
-      hasChildren: hasChildrenByNodeId.has(node.id),
-    });
+    const role = roleSummary.byLogicalId.get(nodeLogicalId);
+    if (!role) {
+      continue;
+    }
     renderNodeByLogicalId.set(nodeLogicalId, {
       nodeLogicalId,
       label: sectionNumber ? `${baseLabel} (${sectionNumber})` : baseLabel,
@@ -163,14 +168,15 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
   }
 
   const visibleNodes = input.nodes.filter((node) => {
-    const role = classifyNodeRole(node, {
-      splitVisibilityReviewabilityEnabled,
-      hasChildren: hasChildrenByNodeId.has(node.id),
-    });
+    const nodeLogicalId = node.logical_id as string;
+    const role = roleSummary.byLogicalId.get(nodeLogicalId);
+    if (!role) {
+      return false;
+    }
     if (splitVisibilityReviewabilityEnabled) {
       return !role.isContainer;
     }
-    return node.has_expectations;
+    return role.isPrimarySubmittable;
   });
   const groupsByKey = new Map<string, RenderGroup>();
   for (const leafNode of visibleNodes) {
@@ -230,6 +236,7 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
       const metadata = input.metadataByLogicalId[nodeLogicalId];
       return !(typeof metadata?.title === "string" && metadata.title.trim());
     }).length,
+    structuralContainerNodeLogicalIds: roleSummary.structuralContainerNodeLogicalIds,
   };
 }
 
@@ -241,4 +248,22 @@ export function isNodeEligibleForStage(
     return true;
   }
   return node.reviewStage === reviewStage;
+}
+
+export function classifyReviewDetailNodes(
+  renderModel: RenderModelReady,
+  reviewStage: ReviewStage,
+): ReviewDetailNodeClassification {
+  const stageEligibleVisibleNonContainerNodeLogicalIds = renderModel.nodes
+    .filter((node) => isNodeEligibleForStage(node, reviewStage))
+    .map((node) => node.nodeLogicalId);
+  const visibleSupportingNodeLogicalIds = renderModel.nodes
+    .filter((node) => node.nodeRole === "SUPPORTING")
+    .map((node) => node.nodeLogicalId);
+  return {
+    stageEligibleVisibleNonContainerNodeLogicalIds,
+    visibleSupportingNodeLogicalIds,
+    structuralContainerNodeLogicalIds:
+      renderModel.structuralContainerNodeLogicalIds ?? [],
+  };
 }
