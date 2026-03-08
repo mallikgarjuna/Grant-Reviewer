@@ -2,8 +2,8 @@
 # WF-0064 — Opted-In Hierarchical Submit Proof Closure
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-08
 
 Type: feature
@@ -81,7 +81,7 @@ Lock unchanged backend primary-path behavior so crafted supporting-node payloads
 Slice: backend-guardrail
 User Stories: US3
 PRD Requirements: FR4, FR5, FR8
-Depends on: 2
+Depends on: 1
 Enables: 4, 5
 Parallelizable: no
 Files to modify:
@@ -105,11 +105,11 @@ Verification Steps:
 - `cd backend && rg -n "SUPPORTING_NODE_NOT_ALLOWED|supporting_context_node_logical_ids" main.py tests/test_api.py`
 Risks (if any): Frontend-only filtering can mask a widened backend boundary unless the fail-closed contract stays explicitly tested.
 
-### [ ] Task 4 — Single-source visible-node classification for review detail
+### [ ] Task 4 — Reuse the existing role-aware classification seam for review detail
 
 Goal:
-Replace expectation-only or page-local review-detail classification with one authoritative role-aware visible-node source that distinguishes reviewed primary nodes from visible supporting nodes.
-Slice: classification-source
+Extend the existing proof-path role-aware classification seam so review detail distinguishes reviewed primary nodes from visible supporting nodes without introducing a second review-only helper.
+Slice: shared-classification
 User Stories: US2, US4
 PRD Requirements: FR6, FR7, FR11, FR12
 Depends on: 3
@@ -117,24 +117,24 @@ Enables: 5
 Parallelizable: no
 Files to modify:
 Must touch files:
-- `frontend/src/lib/reviews/visibleNodeClassification.ts`
-- `frontend/src/lib/reviews/visibleNodeClassification.test.ts`
+- `frontend/src/lib/submit/nodeRoles.ts`
+- `frontend/src/lib/submit/nodeRoles.test.ts`
 May touch files:
 - `frontend/src/lib/bff/types.ts`
 Out of scope: review-detail page copy polish, submit-form rendering, new cross-layer abstraction beyond the existing seam
-Stop if: a single-source classifier cannot be implemented by reusing current role/stage metadata and instead needs a new generalized backend/frontend framework
+Stop if: single-source review-detail classification cannot be implemented by extending the current role/stage metadata seam and instead needs a new generalized backend/frontend framework
 Session boundary after: no
 Acceptance Criteria:
-- One shared classifier derives stage-eligible visible non-container nodes, visible supporting nodes, and structural containers from the existing role-aware source.
-- The classifier does not fall back to `has_expectations` leaves or page-local call-specific allowlists.
-- The classifier is scoped to current seams and does not introduce a broader multi-call framework beyond WF-0064 needs.
+- The existing shared role-aware seam derives stage-eligible visible non-container nodes, visible supporting nodes, and structural containers for review detail.
+- Review detail does not fall back to `has_expectations` leaves, page-local call-specific allowlists, or a new review-only classifier.
+- The change stays scoped to current seams and does not introduce a broader multi-call framework beyond WF-0064 needs.
 TDD Plan:
-- RED: add `wf0064_visible_node_classifier_uses_role_and_stage_not_expectations_proxy` in `frontend/src/lib/reviews/visibleNodeClassification.test.ts`.
-- GREEN: implement the minimum shared classifier needed for reviewed versus visible-supporting distinction from existing metadata.
-- REFACTOR: inline or collapse duplicated boolean branches only after tests prove the classifier is the single consumer path.
+- RED: add `wf0064_node_roles_support_review_detail_classification_without_new_helper` in `frontend/src/lib/submit/nodeRoles.test.ts`.
+- GREEN: implement the minimum `nodeRoles` seam extension needed so submit and review detail consume the same reviewed-versus-visible-supporting classification source.
+- REFACTOR: inline or collapse duplicated boolean branches only after tests prove `nodeRoles` remains the single consumer path.
 Verification Steps:
-- `cd frontend && npx vitest run src/lib/reviews/visibleNodeClassification.test.ts -t "wf0064_visible_node_classifier_uses_role_and_stage_not_expectations_proxy"`
-- `cd frontend && rg -n "has_expectations|supporting|visible" src/lib/reviews/visibleNodeClassification.ts src/lib/reviews/visibleNodeClassification.test.ts`
+- `cd frontend && npx vitest run src/lib/submit/nodeRoles.test.ts -t "wf0064_node_roles_support_review_detail_classification_without_new_helper"`
+- `cd frontend && rg -n "has_expectations|supporting|visible" src/lib/submit/nodeRoles.ts src/lib/submit/nodeRoles.test.ts`
 Risks (if any): A helper that still mirrors page-local fallbacks will hide the same coupling behind a new filename.
 
 ### [ ] Task 5 — Review detail labels visible supporting nodes and preserves empty supporting context
@@ -152,7 +152,7 @@ Must touch files:
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx`
 - `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`
 May touch files:
-- `frontend/src/lib/reviews/visibleNodeClassification.ts`
+- `frontend/src/lib/submit/nodeRoles.ts`
 Out of scope: backend review record persistence, new supporting-context submission, non-proof-path UI redesign
 Stop if: honest review-detail labeling requires a backend schema change larger than reusing the existing review-detail response and shared classification source
 Session boundary after: yes
@@ -160,6 +160,7 @@ Acceptance Criteria:
 - Visible supporting nodes such as `abstract` appear under `Visible but not part of this review`.
 - Review coverage is computed from stage-eligible visible non-container nodes only, excluding structural containers.
 - `supporting_context_node_logical_ids` remains present but empty in the rendered review-detail contract for this WF.
+- The visible-supporting section remains scoped to opted-in `MSCA-PF-2025` proof behavior only.
 TDD Plan:
 - RED: add `wf0064_review_detail_shows_visible_supporting_nodes_with_empty_supporting_context_ids` and `wf0064_review_detail_coverage_ignores_expectations_proxy_and_containers` in `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`.
 - GREEN: implement the smallest review-detail page changes needed to consume the shared classifier and preserve empty supporting-context labeling.
@@ -191,6 +192,7 @@ Session boundary after: yes
 Acceptance Criteria:
 - Disabling the existing proof-call opt-in for `MSCA-PF-2025` restores legacy editable submit behavior and removes proof-path-only review-detail labeling.
 - Non-opted-in calls continue matching legacy behavior across submit and review detail.
+- Non-opted-in calls do not render the `Visible but not part of this review` supporting label unless they separately opt in through the existing seam.
 - No task introduces a second activation or rollback mechanism.
 TDD Plan:
 - RED: add `wf0064_submit_form_rolls_back_when_proof_opt_in_disabled` in `frontend/src/components/submit/UniversalSubmitForm.test.tsx` and `wf0064_review_detail_preserves_legacy_behavior_without_proof_opt_in` in `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`.
@@ -205,3 +207,4 @@ Risks (if any): If rollback is only proven in one surface, the other can retain 
 ## Changelog
 
 - v0.1 (2026-03-08): Initial task breakdown from PRD.
+- v0.2 (2026-03-08): Applied review-gate edits to reuse the existing role-aware classification seam, tighten backend guardrail ordering, and make proof-path scope/rollback expectations explicit; marked Ready for Implementation.
