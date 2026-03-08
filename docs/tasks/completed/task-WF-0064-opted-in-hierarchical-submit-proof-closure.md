@@ -1,9 +1,9 @@
-<!-- docs/tasks/task-WF-0064-opted-in-hierarchical-submit-proof-closure.md -->
+<!-- docs/tasks/completed/task-WF-0064-opted-in-hierarchical-submit-proof-closure.md -->
 # WF-0064 — Opted-In Hierarchical Submit Proof Closure
 
 Artifact: task
-Version: v0.4
-Status: Ready for Implementation
+Version: v0.5
+Status: Complete
 Last Updated: 2026-03-08
 
 Type: feature
@@ -13,6 +13,14 @@ Type: feature
 - This artifact passed the fail-closed Phase 2 audit after closure of the justified planning findings below.
 - No implementation-complete or ship recommendation is valid until explicit pass/fail verification evidence is recorded for the WF-0064 selectors in this task after execution.
 - Blocking findings must close before any proceed recommendation. Non-blocking findings must also close unless explicitly rejected with rationale.
+
+## Phase 3 Verification Evidence (Execution)
+
+- `cd backend && uv run pytest -m no_db` -> PASS (`230 passed, 153 deselected`).
+- `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0064_submit_form_renders_supporting_nodes_read_only_for_msca_pf_2025|wf0064_submit_form_preserves_editable_behavior_without_opt_in|wf0064_submit_form_does_not_write_supporting_nodes_to_draft_state|wf0064_submit_success_does_not_silently_clear_stale_supporting_draft_residue|wf0064_submit_form_rolls_back_when_proof_opt_in_disabled"` -> PASS.
+- `cd backend && DATABASE_URL=sqlite:///./wf0064_api_test.db uv run pytest tests/test_api.py -k "wf0064_check_compliance_rejects_supporting_nodes_with_existing_error or wf0064_structured_review_rejects_supporting_nodes_with_existing_error"` -> PASS.
+- `cd frontend && npx vitest run src/lib/submit/nodeRoles.test.ts src/lib/submit/renderModel.test.ts -t "wf0064_node_roles_support_review_detail_classification_without_new_helper|wf0064_render_model_and_node_roles_share_review_detail_classification_contract"` -> PASS.
+- `cd frontend && npx vitest run 'src/app/app/reviews/[reviewId]/page.test.tsx' -t "wf0064_review_detail_shows_visible_supporting_nodes_with_empty_supporting_context_ids|wf0064_review_detail_coverage_ignores_expectations_proxy_and_containers|wf0064_review_detail_preserves_legacy_behavior_without_proof_opt_in"` -> PASS.
 
 ## Task Breakdown (Sequential Order)
 

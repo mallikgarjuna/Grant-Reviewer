@@ -1,4 +1,4 @@
-<!-- docs/brainstorms/brainstorm-WF-0064-opted-in-hierarchical-submit-proof-closure.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0064-opted-in-hierarchical-submit-proof-closure.md -->
 # WF-0064 — Opted-In Hierarchical Submit Proof Closure
 
 Artifact: brainstorm

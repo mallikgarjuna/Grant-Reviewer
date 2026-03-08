@@ -1,4 +1,4 @@
-<!-- docs/prds/prd-WF-0064-opted-in-hierarchical-submit-proof-closure.md -->
+<!-- docs/prds/completed/prd-WF-0064-opted-in-hierarchical-submit-proof-closure.md -->
 # WF-0064 — Opted-In Hierarchical Submit Proof Closure
 
 Artifact: prd
