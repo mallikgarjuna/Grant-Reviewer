@@ -2113,19 +2113,8 @@ def test_wf0067_backend_boundary_contract_mixed_version_legacy_fallback(monkeypa
 def test_wf0067_backend_source_basis_contract_mixed_per_card_availability(
     monkeypatch,
 ) -> None:
-    import main as main_module
-
     client, call_id, call_code = create_client_with_nwo_veni_seed(monkeypatch)
     assert call_code == "nwo_veni_2025_preproposal"
-
-    original_resolver = main_module._resolve_card_source_basis
-
-    def force_mixed_source_basis(*, element_logical_id: str | None, **kwargs):
-        if element_logical_id == "elem_cv_idea_alignment":
-            return None, "unavailable"
-        return original_resolver(element_logical_id=element_logical_id, **kwargs)
-
-    monkeypatch.setattr(main_module, "_resolve_card_source_basis", force_mixed_source_basis)
 
     session = get_session()
     try:
@@ -2133,9 +2122,13 @@ def test_wf0067_backend_source_basis_contract_mixed_per_card_availability(
         template = session.exec(select(PromptTemplate)).first()
         assert template is not None
 
-        available_expectation = session.exec(
+        available_expectation_row = session.exec(
             select(NodeExpectation)
             .join(EvaluationElement, NodeExpectation.evaluation_element_id == EvaluationElement.id)
+            .join(
+                EvaluationCriterion,
+                EvaluationElement.evaluation_criterion_id == EvaluationCriterion.id,
+            )
             .join(ProposalNode, NodeExpectation.proposal_node_id == ProposalNode.id)
             .where(
                 ProposalNode.funding_call_id == call_id,
@@ -2143,9 +2136,13 @@ def test_wf0067_backend_source_basis_contract_mixed_per_card_availability(
                 EvaluationElement.logical_id == "elem_peer_exceeding_quality",
             )
         ).first()
-        unavailable_expectation = session.exec(
+        unavailable_expectation_row = session.exec(
             select(NodeExpectation)
             .join(EvaluationElement, NodeExpectation.evaluation_element_id == EvaluationElement.id)
+            .join(
+                EvaluationCriterion,
+                EvaluationElement.evaluation_criterion_id == EvaluationCriterion.id,
+            )
             .join(ProposalNode, NodeExpectation.proposal_node_id == ProposalNode.id)
             .where(
                 ProposalNode.funding_call_id == call_id,
@@ -2153,8 +2150,71 @@ def test_wf0067_backend_source_basis_contract_mixed_per_card_availability(
                 EvaluationElement.logical_id == "elem_cv_idea_alignment",
             )
         ).first()
-        assert available_expectation is not None
-        assert unavailable_expectation is not None
+        assert available_expectation_row is not None
+        assert unavailable_expectation_row is not None
+
+        available_element = session.get(
+            EvaluationElement, available_expectation_row.evaluation_element_id
+        )
+        unavailable_element = session.get(
+            EvaluationElement, unavailable_expectation_row.evaluation_element_id
+        )
+        assert available_element is not None
+        assert unavailable_element is not None
+        available_criterion = session.get(
+            EvaluationCriterion, available_element.evaluation_criterion_id
+        )
+        unavailable_criterion = session.get(
+            EvaluationCriterion, unavailable_element.evaluation_criterion_id
+        )
+        assert available_criterion is not None
+        assert unavailable_criterion is not None
+        assert isinstance(available_element.logical_id, str)
+        assert isinstance(unavailable_element.logical_id, str)
+        assert isinstance(available_criterion.logical_id, str)
+        assert isinstance(unavailable_criterion.logical_id, str)
+
+        mixed_criteria: list[dict[str, object]]
+        if available_criterion.logical_id == unavailable_criterion.logical_id:
+            mixed_criteria = [
+                {
+                    "id": available_criterion.logical_id,
+                    "evaluation_elements": [
+                        {
+                            "id": available_element.logical_id,
+                            "source_hint": "WF-0067 mixed basis available hint",
+                        },
+                        {"id": unavailable_element.logical_id},
+                    ],
+                }
+            ]
+        else:
+            mixed_criteria = [
+                {
+                    "id": available_criterion.logical_id,
+                    "evaluation_elements": [
+                        {
+                            "id": available_element.logical_id,
+                            "source_hint": "WF-0067 mixed basis available hint",
+                        }
+                    ],
+                },
+                {
+                    "id": unavailable_criterion.logical_id,
+                    "evaluation_elements": [{"id": unavailable_element.logical_id}],
+                },
+            ]
+
+        definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        assert isinstance(definition.canonical_json, dict)
+        canonical_json = dict(definition.canonical_json)
+        canonical_json["evaluation_criteria"] = mixed_criteria
+        definition.canonical_json = canonical_json
+        session.add(definition)
+        session.commit()
 
         review = repository.create_review(
             template_id=template.id,
@@ -2173,13 +2233,13 @@ def test_wf0067_backend_source_basis_contract_mixed_per_card_availability(
         )
         repository.create_review_card(
             review_id=review.id,
-            expectation_id=available_expectation.id,
+            expectation_id=available_expectation_row.id,
             rating=ReviewRating.SUCCESS,
             feedback="Available source basis card",
         )
         repository.create_review_card(
             review_id=review.id,
-            expectation_id=unavailable_expectation.id,
+            expectation_id=unavailable_expectation_row.id,
             rating=ReviewRating.NOTE,
             feedback="Unavailable source basis card",
         )

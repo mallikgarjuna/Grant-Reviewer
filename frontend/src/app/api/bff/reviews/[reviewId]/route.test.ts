@@ -33,6 +33,8 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
         submitted_leaf_ids: ["key_outputs"],
         primary_evaluated_node_logical_ids: ["key_outputs"],
         supporting_context_node_logical_ids: [],
+        visible_not_reviewed_node_logical_ids: ["research_idea"],
+        no_generated_cards_node_logical_ids: ["academic_profile"],
         review: {
           id: "review-1",
           status: "COMPLETED",
@@ -86,6 +88,8 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
         source_basis_state: string;
       }>;
       supporting_context_node_logical_ids: string[];
+      visible_not_reviewed_node_logical_ids: string[];
+      no_generated_cards_node_logical_ids: string[];
     };
 
     expect(response.status).toBe(200);
@@ -96,6 +100,8 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
     expect(body.cards[1].source_basis_label).toBeNull();
     expect(body.cards[1].source_basis_state).toBe("unavailable");
     expect(body.supporting_context_node_logical_ids).toEqual([]);
+    expect(body.visible_not_reviewed_node_logical_ids).toEqual(["research_idea"]);
+    expect(body.no_generated_cards_node_logical_ids).toEqual(["academic_profile"]);
   });
 
   it("wf0067_bff_review_detail_unavailable_source_basis_preserved", async () => {
@@ -110,6 +116,8 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
         submitted_leaf_ids: [],
         primary_evaluated_node_logical_ids: [],
         supporting_context_node_logical_ids: [],
+        visible_not_reviewed_node_logical_ids: [],
+        no_generated_cards_node_logical_ids: [],
         review: {
           id: "review-legacy-1",
           status: "COMPLETED",
@@ -148,6 +156,8 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
       }>;
       detail_state: string;
       supporting_context_node_logical_ids: string[];
+      visible_not_reviewed_node_logical_ids: string[];
+      no_generated_cards_node_logical_ids: string[];
     };
 
     expect(response.status).toBe(200);
@@ -156,6 +166,8 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
     expect(body.cards[0].source_basis_label).toBeNull();
     expect(body.cards[0].source_basis_state).toBe("legacy_fallback");
     expect(body.supporting_context_node_logical_ids).toEqual([]);
+    expect(body.visible_not_reviewed_node_logical_ids).toEqual([]);
+    expect(body.no_generated_cards_node_logical_ids).toEqual([]);
   });
 
   it.each([
