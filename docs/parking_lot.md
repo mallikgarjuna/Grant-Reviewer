@@ -195,6 +195,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 43 | WF-0065 | cross-call-contract-hardening-base-review-semantics | promoted | P1 #1 (historical) | 2026-03-08 |
 | 44 | WF-0066 | peerlens-scope-lock-nwo-erc-msca | started-directly | - | 2026-03-08 |
 | 45 | WF-0067 | review-trust-surface-closure | promoted | P1 #1 (historical; narrowed at promotion to launch-blocking review trust surfaces) | 2026-03-08 |
+| 46 | WF-0068 | review-quality-evaluation-loop | started-directly | - | 2026-03-08 |
 
 ---
 
@@ -245,3 +246,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v4.1** (2026-03-08): Post-WF-0066 parking-lot refresh: recorded the direct-start workflow in the initiative log and tightened active P1 rationale/traceability so backlog planning stays anchored to the locked NWO/ERC/MSCA wedge.
 - **v4.2** (2026-03-08): Promoted the remaining broad P1 #1 launch-readiness bucket to `WF-0067`, narrowed it at promotion to launch-blocking review trust surfaces, renumbered active P1 items, and updated the dependency note for the deferred node hierarchy selector.
 - **v4.3** (2026-03-08): Post-WF-0067 parking-lot refresh: removed stale pending-WF-0067 gating language from active P1 and rewrote rationale/dependency text to reflect that trust-surface closure is now done.
+- **v4.4** (2026-03-08): Recorded direct-start `WF-0068` in the unified WF initiative log for the review-quality evaluation loop.
