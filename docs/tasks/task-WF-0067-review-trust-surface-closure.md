@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Backend trust contract for card-level source basis and reviewed section
+### [x] Task 1 — Backend trust contract for card-level source basis and reviewed section
 
 Goal:
 Expose the minimum card-level trust fields on the backend review-detail seam so the UI can render evaluation criterion/element, reviewed section context, and authoritative source-basis state without frontend inference.

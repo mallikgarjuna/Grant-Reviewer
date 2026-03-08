@@ -165,6 +165,8 @@ class ReviewCardSummary(BaseModel):
     feedback_text: str
     assessment_status: str | None = None
     not_assessable_reason: str | None = None
+    source_basis_label: str | None = None
+    source_basis_state: Literal["available", "unavailable", "legacy_fallback"]
 
 
 class ReviewCompatibilityNote(BaseModel):

@@ -404,6 +404,68 @@ def _build_call_order_index_map(
     return order_map
 
 
+def _extract_source_hints_by_logical_id(
+    canonical_json: dict[str, Any],
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Build criterion/element source-hint lookups from call definition metadata."""
+    criterion_hints: dict[str, str] = {}
+    element_hints: dict[str, str] = {}
+    raw_criteria = canonical_json.get("evaluation_criteria")
+    if not isinstance(raw_criteria, list):
+        return criterion_hints, element_hints
+
+    for raw_criterion in raw_criteria:
+        if not isinstance(raw_criterion, dict):
+            continue
+        criterion_logical_id = raw_criterion.get("id")
+        criterion_source_hint = raw_criterion.get("source_hint")
+        if isinstance(criterion_logical_id, str) and isinstance(criterion_source_hint, str):
+            stripped_hint = criterion_source_hint.strip()
+            if stripped_hint:
+                criterion_hints[criterion_logical_id] = stripped_hint
+
+        raw_elements = raw_criterion.get("evaluation_elements")
+        if not isinstance(raw_elements, list):
+            continue
+        for raw_element in raw_elements:
+            if not isinstance(raw_element, dict):
+                continue
+            element_logical_id = raw_element.get("id")
+            element_source_hint = raw_element.get("source_hint")
+            if not isinstance(element_logical_id, str) or not isinstance(
+                element_source_hint, str
+            ):
+                continue
+            stripped_hint = element_source_hint.strip()
+            if stripped_hint:
+                element_hints[element_logical_id] = stripped_hint
+
+    return criterion_hints, element_hints
+
+
+def _resolve_card_source_basis(
+    *,
+    has_call_linkage: bool,
+    criterion_logical_id: str | None,
+    element_logical_id: str | None,
+    criterion_hints: dict[str, str],
+    element_hints: dict[str, str],
+) -> tuple[str | None, Literal["available", "unavailable", "legacy_fallback"]]:
+    """Resolve per-card source-basis fields with fail-closed precedence."""
+    if not has_call_linkage:
+        return None, "legacy_fallback"
+
+    if isinstance(element_logical_id, str):
+        element_hint = element_hints.get(element_logical_id)
+        if isinstance(element_hint, str) and element_hint.strip():
+            return element_hint, "available"
+    if isinstance(criterion_logical_id, str):
+        criterion_hint = criterion_hints.get(criterion_logical_id)
+        if isinstance(criterion_hint, str) and criterion_hint.strip():
+            return criterion_hint, "available"
+    return None, "unavailable"
+
+
 def _order_review_cards(
     cards: list[ReviewCardSummary],
     *,
@@ -1283,38 +1345,59 @@ def get_review(
 
     call_id = _resolve_review_call_id(review, repository)
     call = repository.get_call_by_id(call_id) if call_id is not None else None
-    submitted_node_logical_ids = repository.get_submitted_node_logical_ids_for_review(
-        review
-    )
-    cards = [
-        ReviewCardSummary(
-            id=card.id,
-            node_expectation_id=card.node_expectation_id,
-            node_logical_id=node_logical_id,
-            node_title=node_title,
-            criterion=criterion_name,
-            criterion_description=criterion_desc,
-            evaluation_element_name=element_name,
-            expectation_guidance_note=guidance_note,
-            rating=card.rating,
-            feedback_text=card.feedback_text,
-            assessment_status=(
-                card.assessment_status if review.review_type == "structured" else None
-            ),
-            not_assessable_reason=(
-                card.not_assessable_reason if review.review_type == "structured" else None
-            ),
+    submitted_node_logical_ids = repository.get_submitted_node_logical_ids_for_review(review)
+    criterion_source_hints: dict[str, str] = {}
+    element_source_hints: dict[str, str] = {}
+    if call_id is not None:
+        call_definition = repository.get_call_definition_by_call_id(call_id)
+        if call_definition is not None and isinstance(call_definition.canonical_json, dict):
+            criterion_source_hints, element_source_hints = (
+                _extract_source_hints_by_logical_id(call_definition.canonical_json)
+            )
+
+    cards: list[ReviewCardSummary] = []
+    for (
+        card,
+        criterion_name,
+        criterion_desc,
+        element_name,
+        guidance_note,
+        node_logical_id,
+        node_title,
+        criterion_logical_id,
+        element_logical_id,
+    ) in cards_with_criteria:
+        source_basis_label, source_basis_state = _resolve_card_source_basis(
+            has_call_linkage=call_id is not None,
+            criterion_logical_id=criterion_logical_id,
+            element_logical_id=element_logical_id,
+            criterion_hints=criterion_source_hints,
+            element_hints=element_source_hints,
         )
-        for (
-            card,
-            criterion_name,
-            criterion_desc,
-            element_name,
-            guidance_note,
-            node_logical_id,
-            node_title,
-        ) in cards_with_criteria
-    ]
+        cards.append(
+            ReviewCardSummary(
+                id=card.id,
+                node_expectation_id=card.node_expectation_id,
+                node_logical_id=node_logical_id,
+                node_title=node_title,
+                criterion=criterion_name,
+                criterion_description=criterion_desc,
+                evaluation_element_name=element_name,
+                expectation_guidance_note=guidance_note,
+                rating=card.rating,
+                feedback_text=card.feedback_text,
+                assessment_status=(
+                    card.assessment_status if review.review_type == "structured" else None
+                ),
+                not_assessable_reason=(
+                    card.not_assessable_reason
+                    if review.review_type == "structured"
+                    else None
+                ),
+                source_basis_label=source_basis_label,
+                source_basis_state=source_basis_state,
+            )
+        )
 
     ordering_source: Literal["call_nodes", "review_payload_fallback"] = (
         "review_payload_fallback"

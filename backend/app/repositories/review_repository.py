@@ -301,7 +301,17 @@ class ReviewRepository:
     def get_review_cards_with_criteria(
         self, review_id: UUID
     ) -> list[
-        tuple[ReviewCard, str, str | None, str, str | None, str | None, str]
+        tuple[
+            ReviewCard,
+            str,
+            str | None,
+            str,
+            str | None,
+            str | None,
+            str,
+            str | None,
+            str | None,
+        ]
     ]:
         """Fetch review cards with criterion and expectation metadata ordered by expectation index.
 
@@ -318,6 +328,8 @@ class ReviewRepository:
                 NodeExpectation.guidance_note,
                 ProposalNode.logical_id,
                 ProposalNode.title,
+                EvaluationCriterion.logical_id,
+                EvaluationElement.logical_id,
             )
             .join(NodeExpectation, ReviewCard.node_expectation_id == NodeExpectation.id)
             .join(ProposalNode, NodeExpectation.proposal_node_id == ProposalNode.id)
