@@ -22,9 +22,10 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | **`run phase [N]`** | Execute WF phase runner (`0` runs `0.0 + 0.1` end-to-end, `1` PRD, `2` tasks, `3` implement). |
 | **`go ahead`** | Explicit approval to proceed to the next phase/step. |
 | **`critical review`** | Senior-level review of current work with actionable findings. |
-| **`workflow preflight`** | Critical review of current WF readiness, required actions before starting next WF, recommended order, and whether to start a new chat. |
+| **`workflow preflight`** | Critical review of current WF readiness, required actions before starting next WF, recommended order, and whether to start a new chat. If current changes touch auth/proxy/sign-in/BFF boundaries, include an explicit reminder to run both auth validation lanes (`test_bypass` + `clerk`). |
 | **`diff`** | Show changes on the current branch vs `main`. |
 | **`verify workflow`** | Run a verification bundle for the current workflow (composed phrase): `status` + `diff` + targeted checks (lint/build/tests used in this WF) + concise pass/fail summary. |
+| **`verify auth lanes`** | Run auth automation matrix for this repo: Playwright bypass smoke (`AUTH_MODE=test_bypass`) and Clerk auth checks (`AUTH_MODE=clerk`), then report pass/fail per lane and what was skipped (for example missing Clerk test credentials). |
 
 ## Knowledge & Memory
 
@@ -42,7 +43,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 |--------|--------|
 | **`status`** | Print project status: active WF, parking lot snapshot, recent changes. |
 | **`what's next`** | Suggest top 2 next actions (WF steps or parking lot picks). |
-| **`next move`** | Composed shortcut: run `repo reality check` first; if a WF is active, run `workflow preflight`; run `verify workflow` only when implementation/code changed since last verification; then return exactly 2 next actions with one recommended, one-line rationale each, and a copy-paste prompt block if runner-based. |
+| **`next move`** | Composed shortcut: run `repo reality check` first; if a WF is active, run `workflow preflight`; run `verify workflow` only when implementation/code changed since last verification; when auth-related files changed, also recommend `verify auth lanes`; then return exactly 2 next actions with one recommended, one-line rationale each, and a copy-paste prompt block if runner-based. |
 | **`wrap up`** | End-of-session save: update docs, commit, push. Does **not** merge. |
 | **`ship it`** | Push feature branch → Create PR → Merge (remote + delete branch) → Sync local `main`. |
 
@@ -64,6 +65,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | Deep quality/risk analysis of implementation | **`critical review`** |
 | Decide if current WF is cleanly closed before moving to the next WF | **`workflow preflight`** |
 | Inspect branch delta against `main` | **`diff`** |
+| Validate auth/session flows in both bypass and real Clerk mode | **`verify auth lanes`** |
 | Persist new standing workflow rule | **`remember this`** |
 | Run memory maintenance | **`reorganize memory`** |
 | Capture decision/clarification in logs | **`log this`** |

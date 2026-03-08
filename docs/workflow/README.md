@@ -293,6 +293,7 @@ The following are standard operational code phrases documented in `AGENTS.md` th
 
 - **`verify workflow`**: verification pass (status check, git diff review, lint/build execution, pass/fail summary). Trigger: user says "verify workflow".
 - **`workflow preflight`**: WF closure readiness review (artifacts synced, phase gates met, next phase ready). Trigger: user says "workflow preflight".
+- **`verify auth lanes`**: auth/session validation matrix for this repo (Playwright bypass lane with `AUTH_MODE=test_bypass`, plus Clerk lane with `AUTH_MODE=clerk`; report skipped credentialed-login coverage explicitly). Trigger: user says "verify auth lanes" or when workflow preflight detects auth-boundary file changes.
 
 ---
 

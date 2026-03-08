@@ -49,8 +49,10 @@ Apply fixes from Phase 3.2 technical audit, verify the final implementation, the
 1. Run `pre-commit run --all-files` (or equivalent lint/format checks).
 2. Run the project's relevant automated tests and explicitly print pass/fail evidence.
 3. If work touched UI/Frontend, ask the user whether to do manual visual validation or agentic browser validation.
-4. If any check fails, return to Part C1 and fix.
-5. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C3.
+4. If changed files include auth boundary surface (`frontend/src/proxy.ts`, `frontend/src/app/sign-in/**`, `frontend/src/lib/auth/**`, `frontend/src/lib/bff/**`, or Playwright auth specs/workflows), explicitly remind the user to run both auth lanes (`verify auth lanes`): `AUTH_MODE=test_bypass` and `AUTH_MODE=clerk`.
+5. For the Clerk lane, explicitly report whether credentialed login flow was executed or skipped due to missing test credentials.
+6. If any check fails, return to Part C1 and fix.
+7. Await explicit user approval ("go ahead", "LGTM") before proceeding to Part C3.
 
 ### PART C3: Walkthrough + Ship [GATE]
 1. Read `docs/walkthroughs/walkthrough-<WF-ID>-<slug>.md`.
