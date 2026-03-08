@@ -74,7 +74,7 @@ Verification Steps:
 - `cd backend && rg -n "node_role|runtime_config|abstract|part_b2|gf_letter_of_commitment_outgoing_host" data/calls/canonical/msca/msca_pf_2025_full.yaml`
 Risks (if any): A partial YAML edit can silently drop official nodes or reintroduce fake expectations on supporting content.
 
-### [ ] Task 3 — Tracer bullet: proof-call config and flat nodes API expose role-aware completeness
+### [x] Task 3 — Tracer bullet: proof-call config and flat nodes API expose role-aware completeness
 
 Goal:
 Prove the earliest end-to-end contract slice by surfacing the proof-call opt-in and role-aware node completeness through public call config and flat nodes APIs while preserving legacy behavior for non-opted-in calls.

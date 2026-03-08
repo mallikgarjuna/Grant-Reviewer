@@ -488,6 +488,40 @@ def _extract_domain_options(canonical_json: dict[str, Any]) -> list[DomainOption
     ]
 
 
+def _is_split_visibility_reviewability_enabled(canonical_json: dict[str, Any]) -> bool:
+    runtime_config = canonical_json.get("runtime_config")
+    if not isinstance(runtime_config, dict):
+        return False
+    return runtime_config.get("split_visibility_reviewability_enabled") is True
+
+
+def _extract_node_roles_by_logical_id(
+    *,
+    canonical_json: dict[str, Any],
+    split_opt_in_enabled: bool,
+) -> dict[str, Literal["PRIMARY", "SUPPORTING"]]:
+    if not split_opt_in_enabled:
+        return {}
+
+    proposal_nodes = canonical_json.get("proposal_nodes")
+    if not isinstance(proposal_nodes, list):
+        return {}
+
+    node_roles: dict[str, Literal["PRIMARY", "SUPPORTING"]] = {}
+    for node in proposal_nodes:
+        if not isinstance(node, dict):
+            continue
+        logical_id = node.get("id")
+        if not isinstance(logical_id, str) or not logical_id.strip():
+            continue
+        node_role = node.get("node_role")
+        if node_role in {"PRIMARY", "SUPPORTING"}:
+            node_roles[logical_id] = node_role
+        else:
+            node_roles[logical_id] = "PRIMARY"
+    return node_roles
+
+
 RepositoryDep = Annotated[ReviewRepository, Depends(get_repository)]
 
 
@@ -548,9 +582,11 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
             config_version="1",
             ui_mode="legacy_single_snippet",
             domain_options=[],
+            split_visibility_reviewability_enabled=False,
         )
 
     canonical_json = definition.canonical_json
+    split_opt_in_enabled = _is_split_visibility_reviewability_enabled(canonical_json)
     proposal_nodes = canonical_json.get("proposal_nodes")
     if not isinstance(proposal_nodes, list):
         logger.warning(
@@ -562,6 +598,7 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
             config_version="1",
             ui_mode="legacy_single_snippet",
             domain_options=[],
+            split_visibility_reviewability_enabled=split_opt_in_enabled,
         )
 
     expected_nodes = [
@@ -581,6 +618,7 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
             config_version="1",
             ui_mode="legacy_single_snippet",
             domain_options=[],
+            split_visibility_reviewability_enabled=split_opt_in_enabled,
         )
 
     domain_options = _extract_domain_options(canonical_json)
@@ -590,6 +628,7 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
         ui_mode="structured_nodes",
         expected_nodes=expected_nodes,
         domain_options=domain_options,
+        split_visibility_reviewability_enabled=split_opt_in_enabled,
     )
 
 
@@ -608,6 +647,18 @@ def list_call_nodes(
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
 
+    definition = repository.get_call_definition_by_call_id(call_id)
+    split_opt_in_enabled = False
+    node_roles_by_logical_id: dict[str, Literal["PRIMARY", "SUPPORTING"]] = {}
+    if definition is not None:
+        split_opt_in_enabled = _is_split_visibility_reviewability_enabled(
+            definition.canonical_json
+        )
+        node_roles_by_logical_id = _extract_node_roles_by_logical_id(
+            canonical_json=definition.canonical_json,
+            split_opt_in_enabled=split_opt_in_enabled,
+        )
+
     nodes = repository.get_nodes_for_call(call_id)
     flat_nodes = [
         NodeSummary(
@@ -618,6 +669,11 @@ def list_call_nodes(
             node_type=node.node_type,
             order_index=node.order_index,
             has_expectations=has_expectations,
+            node_role=(
+                node_roles_by_logical_id.get(node.logical_id)
+                if split_opt_in_enabled and isinstance(node.logical_id, str)
+                else None
+            ),
         )
         for node, has_expectations in nodes
     ]
@@ -625,7 +681,6 @@ def list_call_nodes(
     if view == "flat":
         return NodesResponse(nodes=flat_nodes)
 
-    definition = repository.get_call_definition_by_call_id(call_id)
     if definition is not None:
         try:
             canonical_tree = NodeTreeService().build_tree_from_canonical(
@@ -662,6 +717,7 @@ def list_call_nodes(
                 node_type=child.node_type,
                 order_index=child.order_index,
                 has_expectations=child.has_expectations,
+                node_role=child.node_role,
                 children=build_tree(child.id),
             )
             for child in ordered_children

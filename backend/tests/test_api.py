@@ -966,6 +966,7 @@ def test_get_call_config_returns_structured_mode_with_domain_options(monkeypatch
         "call_logical_id": "nwo_veni_2025_preproposal",
         "config_version": "1",
         "ui_mode": "structured_nodes",
+        "split_visibility_reviewability_enabled": False,
         "expected_nodes": [
             "academic_profile",
             "knowledge_utilisation",
@@ -979,6 +980,7 @@ def test_get_call_config_returns_structured_mode_with_domain_options(monkeypatch
         "call_logical_id",
         "config_version",
         "ui_mode",
+        "split_visibility_reviewability_enabled",
         "expected_nodes",
         "domain_options",
     }
@@ -994,12 +996,14 @@ def test_get_call_config_legacy_returns_empty_domain_options(monkeypatch) -> Non
     assert payload["call_logical_id"] == "ERC-2026-COG"
     assert payload["config_version"] == "1"
     assert payload["ui_mode"] == "legacy_single_snippet"
+    assert payload["split_visibility_reviewability_enabled"] is False
     assert payload["domain_options"] == []
     assert "expected_nodes" not in payload
     assert set(payload.keys()) == {
         "call_logical_id",
         "config_version",
         "ui_mode",
+        "split_visibility_reviewability_enabled",
         "domain_options",
     }
 
@@ -1017,6 +1021,111 @@ def test_get_call_config_unknown_call_returns_404(monkeypatch) -> None:
             "details": {},
         },
     }
+
+
+def test_wf0063_call_config_exposes_split_opt_in_for_msca_pf_2025_only(
+    monkeypatch,
+) -> None:
+    client, msca_call_id, msca_call_code = create_client_with_msca_pf_seed(monkeypatch)
+    assert msca_call_code == "MSCA-PF-2025"
+
+    msca_response = client.get(f"/api/public/calls/{msca_call_code}/config")
+    assert msca_response.status_code == 200
+    msca_payload = msca_response.json()
+    assert msca_payload["ui_mode"] == "structured_nodes"
+    assert msca_payload["split_visibility_reviewability_enabled"] is True
+
+    session = get_session()
+    try:
+        msca_call = session.get(FundingCall, msca_call_id)
+        assert msca_call is not None
+        msca_call.is_active = False
+        session.add(msca_call)
+        session.commit()
+    finally:
+        session.close()
+
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = client.get(f"/api/public/calls/{seeded_ids.structured_call_code}/config")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ui_mode"] == "structured_nodes"
+    assert payload["split_visibility_reviewability_enabled"] is False
+
+
+def test_wf0063_flat_nodes_api_returns_all_official_nodes_with_node_role(
+    monkeypatch,
+) -> None:
+    client, call_id, _ = create_client_with_msca_pf_seed(monkeypatch)
+
+    response = client.get(f"/calls/{call_id}/nodes")
+    assert response.status_code == 200
+    payload = response.json()
+    nodes = payload["nodes"]
+
+    nodes_by_logical_id = {node["logical_id"]: node for node in nodes}
+    assert {
+        "part_a",
+        "general_information",
+        "abstract",
+        "part_b",
+        "part_b1",
+        "excellence",
+        "impact",
+        "quality_efficiency_implementation",
+        "part_b2",
+        "cv_researcher",
+        "capacity_participating_organisations",
+        "additional_ethics_information",
+        "additional_security_screening_information",
+        "environmental_considerations_msca_green_charter",
+        "gf_letter_of_commitment_outgoing_host",
+    }.issubset(set(nodes_by_logical_id))
+    assert nodes_by_logical_id["excellence"]["node_role"] == "PRIMARY"
+    assert nodes_by_logical_id["impact"]["node_role"] == "PRIMARY"
+    assert (
+        nodes_by_logical_id["quality_efficiency_implementation"]["node_role"] == "PRIMARY"
+    )
+    assert nodes_by_logical_id["abstract"]["node_role"] == "SUPPORTING"
+    assert nodes_by_logical_id["part_b2"]["node_role"] == "SUPPORTING"
+    assert (
+        nodes_by_logical_id["gf_letter_of_commitment_outgoing_host"]["node_role"]
+        == "SUPPORTING"
+    )
+    assert nodes_by_logical_id["excellence"]["has_expectations"] is True
+    assert nodes_by_logical_id["abstract"]["has_expectations"] is False
+
+
+def test_wf0063_disabling_split_opt_in_restores_legacy_call_behavior(
+    monkeypatch,
+) -> None:
+    client, call_id, call_code = create_client_with_msca_pf_seed(monkeypatch)
+    assert call_code == "MSCA-PF-2025"
+
+    session = get_session()
+    try:
+        definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        canonical_json = dict(definition.canonical_json)
+        canonical_json["runtime_config"] = {
+            "split_visibility_reviewability_enabled": False
+        }
+        definition.canonical_json = canonical_json
+        session.add(definition)
+        session.commit()
+    finally:
+        session.close()
+
+    config_response = client.get(f"/api/public/calls/{call_code}/config")
+    assert config_response.status_code == 200
+    assert config_response.json()["split_visibility_reviewability_enabled"] is False
+
+    nodes_response = client.get(f"/calls/{call_id}/nodes")
+    assert nodes_response.status_code == 200
+    for node in nodes_response.json()["nodes"]:
+        assert node["node_role"] is None
 
 
 def test_create_review_success_with_stub_mode(monkeypatch) -> None:

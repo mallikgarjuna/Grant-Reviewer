@@ -50,6 +50,7 @@ class NodeSummary(BaseModel):
     node_type: NodeType
     order_index: int
     has_expectations: bool
+    node_role: Literal["PRIMARY", "SUPPORTING"] | None = None
 
 
 class NodesResponse(BaseModel):
@@ -68,6 +69,7 @@ class NodeTreeNode(BaseModel):
     node_type: NodeType
     order_index: int
     has_expectations: bool
+    node_role: Literal["PRIMARY", "SUPPORTING"] | None = None
     children: list["NodeTreeNode"] = Field(default_factory=list)
 
 
@@ -120,6 +122,7 @@ class CallConfigResponse(BaseModel):
     ui_mode: Literal["legacy_single_snippet", "structured_nodes"]
     expected_nodes: list[str] | None = None
     domain_options: list[DomainOptionDTO] = Field(default_factory=list)
+    split_visibility_reviewability_enabled: bool = False
 
 
 class CreateReviewRequest(BaseModel):
