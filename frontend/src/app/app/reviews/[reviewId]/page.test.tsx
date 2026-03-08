@@ -572,6 +572,7 @@ describe("ReviewDetailPage", () => {
                   node_type: "SECTION",
                   order_index: 1,
                   has_expectations: true,
+                  node_role: "PRIMARY",
                 },
                 {
                   id: "n2",
@@ -581,6 +582,7 @@ describe("ReviewDetailPage", () => {
                   node_type: "SUBSECTION",
                   order_index: 2,
                   has_expectations: false,
+                  node_role: "SUPPORTING",
                 },
                 {
                   id: "n3",
@@ -590,6 +592,7 @@ describe("ReviewDetailPage", () => {
                   node_type: "SECTION",
                   order_index: 3,
                   has_expectations: true,
+                  node_role: "PRIMARY",
                 },
               ],
             }),
@@ -614,7 +617,312 @@ describe("ReviewDetailPage", () => {
     );
     expect(
       screen.getByText(/Visible but not part of this review:/),
-    ).toHaveTextContent("Visible but not part of this review: Impact");
+    ).toHaveTextContent("Visible but not part of this review: Abstract, Impact");
+  });
+
+  it("wf0064_review_detail_shows_visible_supporting_nodes_with_empty_supporting_context_ids", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-msca",
+                call_code: "MSCA-PF-2025",
+                ordering_source: "call_nodes",
+                primary_evaluated_node_logical_ids: ["excellence"],
+                supporting_context_node_logical_ids: [],
+                submitted_leaf_ids: ["excellence"],
+                cards: [
+                  {
+                    id: "card-excellence",
+                    node_expectation_id: "exp-excellence",
+                    node_logical_id: "excellence",
+                    node_title: "Excellence",
+                    criterion: "Excellence",
+                    criterion_description: "Criterion",
+                    evaluation_element_name: "Element",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Feedback",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-msca/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "n1",
+                  logical_id: "part_b",
+                  title: "Part B",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: false,
+                  node_role: "SUPPORTING",
+                },
+                {
+                  id: "n2",
+                  logical_id: "abstract",
+                  title: "Abstract",
+                  parent_node_id: "n1",
+                  node_type: "SUBSECTION",
+                  order_index: 2,
+                  has_expectations: false,
+                  node_role: "SUPPORTING",
+                },
+                {
+                  id: "n3",
+                  logical_id: "excellence",
+                  title: "Excellence",
+                  parent_node_id: "n1",
+                  node_type: "SUBSECTION",
+                  order_index: 3,
+                  has_expectations: true,
+                  node_role: "PRIMARY",
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(screen.getByText(/Supporting context:/)).toHaveTextContent(
+      "Supporting context: None",
+    );
+    expect(
+      screen.getByText(/Visible but not part of this review:/),
+    ).toHaveTextContent(
+      /^Visible but not part of this review: Part B \/ Abstract$/,
+    );
+  });
+
+  it("wf0064_review_detail_coverage_ignores_expectations_proxy_and_containers", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-msca",
+                call_code: "MSCA-PF-2025",
+                ordering_source: "call_nodes",
+                primary_evaluated_node_logical_ids: ["excellence"],
+                supporting_context_node_logical_ids: [],
+                submitted_leaf_ids: ["excellence"],
+                cards: [
+                  {
+                    id: "card-excellence",
+                    node_expectation_id: "exp-excellence",
+                    node_logical_id: "excellence",
+                    node_title: "Excellence",
+                    criterion: "Excellence",
+                    criterion_description: "Criterion",
+                    evaluation_element_name: "Element",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Feedback",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-msca/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "n1",
+                  logical_id: "part_b",
+                  title: "Part B",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: false,
+                  node_role: "SUPPORTING",
+                },
+                {
+                  id: "n2",
+                  logical_id: "abstract",
+                  title: "Abstract",
+                  parent_node_id: "n1",
+                  node_type: "SUBSECTION",
+                  order_index: 2,
+                  has_expectations: false,
+                  node_role: "SUPPORTING",
+                },
+                {
+                  id: "n3",
+                  logical_id: "excellence",
+                  title: "Excellence",
+                  parent_node_id: "n1",
+                  node_type: "SUBSECTION",
+                  order_index: 3,
+                  has_expectations: true,
+                  node_role: "PRIMARY",
+                },
+                {
+                  id: "n4",
+                  logical_id: "part_c",
+                  title: "Part C",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 4,
+                  has_expectations: false,
+                  node_role: "PRIMARY",
+                },
+                {
+                  id: "n5",
+                  logical_id: "impact",
+                  title: "Impact",
+                  parent_node_id: "n4",
+                  node_type: "SUBSECTION",
+                  order_index: 5,
+                  has_expectations: true,
+                  node_role: "PRIMARY",
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(screen.getByText(/Not reviewed sections:/)).toHaveTextContent(
+      "Not reviewed sections: Part B / Abstract, Part C / Impact",
+    );
+    expect(screen.getByText(/Not reviewed sections:/)).not.toHaveTextContent("Part C,");
+  });
+
+  it("wf0064_review_detail_visible_not_reviewed_lists_supporting_only_not_all_not_reviewed", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-msca",
+                call_code: "MSCA-PF-2025",
+                ordering_source: "call_nodes",
+                primary_evaluated_node_logical_ids: ["excellence"],
+                supporting_context_node_logical_ids: [],
+                submitted_leaf_ids: ["excellence"],
+                cards: [
+                  {
+                    id: "card-excellence",
+                    node_expectation_id: "exp-excellence",
+                    node_logical_id: "excellence",
+                    node_title: "Excellence",
+                    criterion: "Excellence",
+                    criterion_description: "Criterion",
+                    evaluation_element_name: "Element",
+                    expectation_guidance_note: null,
+                    rating: "SUCCESS",
+                    feedback_text: "Feedback",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-msca/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "n1",
+                  logical_id: "part_b",
+                  title: "Part B",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: false,
+                  node_role: "SUPPORTING",
+                },
+                {
+                  id: "n2",
+                  logical_id: "abstract",
+                  title: "Abstract",
+                  parent_node_id: "n1",
+                  node_type: "SUBSECTION",
+                  order_index: 2,
+                  has_expectations: false,
+                  node_role: "SUPPORTING",
+                },
+                {
+                  id: "n3",
+                  logical_id: "excellence",
+                  title: "Excellence",
+                  parent_node_id: "n1",
+                  node_type: "SUBSECTION",
+                  order_index: 3,
+                  has_expectations: true,
+                  node_role: "PRIMARY",
+                },
+                {
+                  id: "n4",
+                  logical_id: "implementation",
+                  title: "Implementation",
+                  parent_node_id: "n1",
+                  node_type: "SUBSECTION",
+                  order_index: 4,
+                  has_expectations: true,
+                  node_role: "PRIMARY",
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(screen.getByText(/Not reviewed sections:/)).toHaveTextContent(
+      "Not reviewed sections: Part B / Abstract, Part B / Implementation",
+    );
+    expect(
+      screen.getByText(/Visible but not part of this review:/),
+    ).toHaveTextContent(
+      /^Visible but not part of this review: Part B \/ Abstract$/,
+    );
   });
 
   it("wf0063_non_opted_in_calls_preserve_legacy_behavior", async () => {
@@ -678,6 +986,132 @@ describe("ReviewDetailPage", () => {
     expect(screen.getByText(/Supporting context:/)).toHaveTextContent(
       "Supporting context: None",
     );
+  });
+
+  it("wf0064_review_detail_preserves_legacy_behavior_without_proof_opt_in", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-1",
+                call_code: "nwo_veni_2025_preproposal",
+                ordering_source: "call_nodes",
+                primary_evaluated_node_logical_ids: ["academic_profile"],
+                supporting_context_node_logical_ids: [],
+                submitted_leaf_ids: ["academic_profile"],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-1/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "academic_profile",
+                  title: "Academic Profile",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+                {
+                  id: "node-2",
+                  logical_id: "research_idea",
+                  title: "Research Idea",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Visible but not part of this review:/),
+    ).not.toBeInTheDocument();
+  });
+
+  it("wf0064_review_detail_preserves_legacy_behavior_for_msca_when_node_roles_absent", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-msca",
+                call_code: "MSCA-PF-2025",
+                ordering_source: "call_nodes",
+                primary_evaluated_node_logical_ids: ["excellence"],
+                supporting_context_node_logical_ids: [],
+                submitted_leaf_ids: ["excellence"],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-msca/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "excellence",
+                  title: "Excellence",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                  node_role: null,
+                },
+                {
+                  id: "node-2",
+                  logical_id: "impact",
+                  title: "Impact",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                  node_role: null,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Visible but not part of this review:/),
+    ).not.toBeInTheDocument();
   });
 
   it("guardrail: review detail path contains no hardcoded VENI constants", () => {

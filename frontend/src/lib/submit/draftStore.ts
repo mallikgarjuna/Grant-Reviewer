@@ -1,3 +1,4 @@
+// frontend/src/lib/submit/draftStore.ts
 const DRAFT_KEY_PREFIX = "draft_universal_submit";
 
 function buildDraftKey(callId: string): string {
@@ -33,6 +34,26 @@ export function saveDraft(callId: string, draft: Record<string, string>): void {
     return;
   }
   window.localStorage.setItem(buildDraftKey(callId), JSON.stringify(draft));
+}
+
+export function saveDraftFiltered(
+  callId: string,
+  draft: Record<string, string>,
+  allowedKeys: ReadonlySet<string>,
+): void {
+  if (!callId) {
+    return;
+  }
+  const filteredDraft = Object.entries(draft).reduce<Record<string, string>>(
+    (acc, [key, value]) => {
+      if (allowedKeys.has(key)) {
+        acc[key] = value;
+      }
+      return acc;
+    },
+    {},
+  );
+  window.localStorage.setItem(buildDraftKey(callId), JSON.stringify(filteredDraft));
 }
 
 export function clearDraft(callId: string): void {

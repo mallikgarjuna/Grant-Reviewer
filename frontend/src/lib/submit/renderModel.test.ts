@@ -2,7 +2,10 @@
 import { describe, expect, it } from "vitest";
 
 import type { NodeSummary } from "@/lib/bff/types";
-import { buildRenderModel } from "@/lib/submit/renderModel";
+import {
+  buildRenderModel,
+  classifyReviewDetailNodes,
+} from "@/lib/submit/renderModel";
 
 function wf0059ProofTargetNestedNodes(): NodeSummary[] {
   return [
@@ -395,5 +398,55 @@ describe("buildRenderModel", () => {
       return;
     }
     expect(result.nodes.map((node) => node.nodeLogicalId)).toEqual(["excellence"]);
+  });
+
+  it("wf0064_render_model_and_node_roles_share_review_detail_classification_contract", () => {
+    const result = buildRenderModel({
+      nodes: [
+        {
+          id: "node-part-b",
+          logical_id: "part_b",
+          title: "Part B",
+          parent_node_id: null,
+          node_type: "SECTION",
+          order_index: 1,
+          has_expectations: false,
+          node_role: "SUPPORTING",
+        },
+        {
+          id: "node-abstract",
+          logical_id: "abstract",
+          title: "Abstract",
+          parent_node_id: "node-part-b",
+          node_type: "SUBSECTION",
+          order_index: 2,
+          has_expectations: false,
+          node_role: "SUPPORTING",
+        },
+        {
+          id: "node-excellence",
+          logical_id: "excellence",
+          title: "Excellence",
+          parent_node_id: "node-part-b",
+          node_type: "SUBSECTION",
+          order_index: 3,
+          has_expectations: true,
+          node_role: "PRIMARY",
+        },
+      ],
+      metadataByLogicalId: {},
+      splitVisibilityReviewabilityEnabled: true,
+    });
+
+    expect(result.state).toBe("ready");
+    if (result.state !== "ready") {
+      return;
+    }
+
+    expect(classifyReviewDetailNodes(result, "STEP_1")).toEqual({
+      stageEligibleVisibleNonContainerNodeLogicalIds: ["abstract", "excellence"],
+      visibleSupportingNodeLogicalIds: ["abstract"],
+      structuralContainerNodeLogicalIds: ["part_b"],
+    });
   });
 });

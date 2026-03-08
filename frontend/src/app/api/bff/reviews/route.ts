@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import {
@@ -7,13 +6,17 @@ import {
   listReviews,
   normalizeCreateReviewDraft,
 } from "@/lib/bff/adapter";
-import { apiErrorResponse, requireBffContext } from "@/lib/bff/route-helpers";
+import {
+  apiErrorResponse,
+  requireBffContext,
+  resolveExternalUserId,
+} from "@/lib/bff/route-helpers";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-export async function GET() {
-  const { userId } = await auth();
+export async function GET(request: Request) {
+  const userId = await resolveExternalUserId(request);
   const contextResult = requireBffContext(userId);
   if (!contextResult.ok) {
     return apiErrorResponse(contextResult.error);
@@ -51,7 +54,7 @@ function isValidReviewStage(value: unknown): value is "STEP_1" | "STEP_2" {
 }
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
+  const userId = await resolveExternalUserId(request);
   const contextResult = requireBffContext(userId);
   if (!contextResult.ok) {
     return apiErrorResponse(contextResult.error);

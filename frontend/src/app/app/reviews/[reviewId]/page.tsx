@@ -18,9 +18,14 @@ import type {
 } from "@/lib/bff/types";
 import { ReviewCard } from "@/components/review/ReviewCard";
 import { ReviewSummary } from "@/components/review/ReviewSummary";
+import {
+  buildRenderModel,
+  classifyReviewDetailNodes,
+} from "@/lib/submit/renderModel";
 
 const POLL_INTERVAL_MS = 3_000;
 const POLL_MAX_DURATION_MS = 90_000;
+const WF0064_PROOF_CALL_CODE = "MSCA-PF-2025";
 
 type ApiErrorEnvelope = {
   error?: {
@@ -652,8 +657,23 @@ export default function ReviewDetailPage() {
     return titleChain.join(" / ");
   }
 
+  const isWf0064ProofPathOptedIn =
+    reviewDetail.call_code === WF0064_PROOF_CALL_CODE &&
+    sortedCallNodes.some(
+      (node) => node.node_role === "PRIMARY" || node.node_role === "SUPPORTING",
+    );
+  const reviewDetailRenderModel = buildRenderModel({
+    nodes: sortedCallNodes,
+    metadataByLogicalId: {},
+    splitVisibilityReviewabilityEnabled: isWf0064ProofPathOptedIn,
+  });
+  const reviewDetailNodeClassification =
+    reviewDetailRenderModel.state === "ready"
+      ? classifyReviewDetailNodes(reviewDetailRenderModel, "STEP_1")
+      : null;
+
   const nodeTitleByLogicalId = new Map(
-    leafCallNodes
+    sortedCallNodes
       .filter((node) => typeof node.logical_id === "string")
       .map((node) => [node.logical_id as string, buildPathLabel(node)]),
   );
@@ -676,16 +696,30 @@ export default function ReviewDetailPage() {
     .map((nodeId) => nodeTitleByLogicalId.get(nodeId) ?? nodeId);
   const primaryEvaluatedSet = new Set(primaryEvaluatedNodeIds);
   const supportingContextSet = new Set(supportingContextNodeIds);
+  const coverageNodeLogicalIds = reviewDetailNodeClassification
+    ? reviewDetailNodeClassification.stageEligibleVisibleNonContainerNodeLogicalIds
+    : leafCallNodes
+        .filter((node) => typeof node.logical_id === "string")
+        .map((node) => node.logical_id as string);
   const supportingContextNodeLabels = [...supportingContextNodeIds]
     .map((nodeId) => nodeTitleByLogicalId.get(nodeId) ?? nodeId);
-  const visibleButNotReviewedNodeLabels = leafCallNodes
+  const notReviewedNodeLabels = coverageNodeLogicalIds
     .filter(
-      (node) =>
-        typeof node.logical_id === "string" &&
-        !primaryEvaluatedSet.has(node.logical_id) &&
-        !supportingContextSet.has(node.logical_id),
+      (nodeLogicalId) =>
+        !primaryEvaluatedSet.has(nodeLogicalId) &&
+        !supportingContextSet.has(nodeLogicalId),
     )
-    .map((node) => buildPathLabel(node));
+    .map((nodeLogicalId) => nodeTitleByLogicalId.get(nodeLogicalId) ?? nodeLogicalId);
+  const visibleButNotReviewedNodeLabels =
+    isWf0064ProofPathOptedIn && reviewDetailNodeClassification
+      ? reviewDetailNodeClassification.visibleSupportingNodeLogicalIds
+          .filter(
+            (nodeLogicalId) =>
+              !primaryEvaluatedSet.has(nodeLogicalId) &&
+              !supportingContextSet.has(nodeLogicalId),
+          )
+          .map((nodeLogicalId) => nodeTitleByLogicalId.get(nodeLogicalId) ?? nodeLogicalId)
+      : [];
   const orderedCardGroups = buildOrderedCardGroups(reviewDetail, sortedCallNodes);
   const detailState = inferDetailState(reviewDetail);
   const fallbackToPayloadOrder =
@@ -695,6 +729,7 @@ export default function ReviewDetailPage() {
   const hasCoverageSummary =
     primaryEvaluatedNodeIds.length > 0 ||
     supportingContextNodeIds.length > 0 ||
+    notReviewedNodeLabels.length > 0 ||
     visibleButNotReviewedNodeLabels.length > 0;
 
   const compatibilityLines = (reviewDetail.compatibility_notes ?? []).map((note) => {
@@ -722,7 +757,11 @@ export default function ReviewDetailPage() {
     supportingContextNodeLabels.length > 0
       ? supportingContextNodeLabels.join(", ")
       : "None";
-  const visibleNotReviewedSectionText =
+  const notReviewedSectionText =
+    notReviewedNodeLabels.length > 0
+      ? notReviewedNodeLabels.join(", ")
+      : "None";
+  const visibleSupportingNotReviewedSectionText =
     visibleButNotReviewedNodeLabels.length > 0
       ? visibleButNotReviewedNodeLabels.join(", ")
       : "None";
@@ -770,7 +809,7 @@ export default function ReviewDetailPage() {
               Reviewed sections: {reviewedSectionText}
             </p>
             <p className="mt-1 text-[var(--color-muted-foreground)]">
-              Not reviewed sections: {visibleNotReviewedSectionText}
+              Not reviewed sections: {notReviewedSectionText}
             </p>
             <p className="mt-1">
               Primary evaluated: {reviewedSectionText}
@@ -778,9 +817,11 @@ export default function ReviewDetailPage() {
             <p className="mt-1 text-[var(--color-muted-foreground)]">
               Supporting context: {supportingContextSectionText}
             </p>
-            <p className="mt-1 text-[var(--color-muted-foreground)]">
-              Visible but not part of this review: {visibleNotReviewedSectionText}
-            </p>
+            {isWf0064ProofPathOptedIn ? (
+              <p className="mt-1 text-[var(--color-muted-foreground)]">
+                Visible but not part of this review: {visibleSupportingNotReviewedSectionText}
+              </p>
+            ) : null}
           </div>
         ) : null}
         {hasCompatibilityNotes ? (

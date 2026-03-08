@@ -1,0 +1,84 @@
+# .github/workflows/e2e-auth.yml
+name: E2E Auth
+
+on:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  e2e-bypass:
+    name: e2e (test_bypass)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NODE_ENV: development
+      AUTH_MODE: test_bypass
+      TEST_AUTH_SECRET: ci_test_bypass_secret
+      TEST_AUTH_DEFAULT_USER_ID: agentic_test_user
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_local_bypass
+      CLERK_SECRET_KEY: sk_test_local_bypass
+      FASTAPI_BASE_URL: http://127.0.0.1:8000
+      BFF_SHARED_SECRET: dev
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Run bypass auth smoke
+        run: npx playwright test e2e/auth-flows.spec.ts --project=chromium
+      - name: Upload bypass artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-bypass-artifacts
+          path: frontend/test-results
+          if-no-files-found: ignore
+
+  e2e-clerk:
+    name: e2e (clerk)
+    if: ${{ secrets.CLERK_E2E_PUBLISHABLE_KEY != '' && secrets.CLERK_E2E_SECRET_KEY != '' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NODE_ENV: development
+      AUTH_MODE: clerk
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_E2E_PUBLISHABLE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_E2E_SECRET_KEY }}
+      E2E_CLERK_TEST_EMAIL: ${{ secrets.CLERK_E2E_TEST_EMAIL }}
+      E2E_CLERK_TEST_PASSWORD: ${{ secrets.CLERK_E2E_TEST_PASSWORD }}
+      FASTAPI_BASE_URL: http://127.0.0.1:8000
+      BFF_SHARED_SECRET: dev
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Run clerk auth checks
+        run: npx playwright test e2e/auth-flows.spec.ts --project=chromium
+      - name: Upload clerk artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-clerk-artifacts
+          path: frontend/test-results
+          if-no-files-found: ignore

@@ -1,6 +1,32 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-08 (WF-0064: opted-in hierarchical submit proof closure)
+
+### AD 64.1: WF-0064 stays fail-closed and primary-only for the MSCA proof path
+- **WF ID**: WF-0064
+- **Context**: WF-0063 made supporting nodes visible on the opted-in proof path, but that left an unsafe gap: supporting nodes could be edited even though the primary submit/compliance boundary and backend validation intentionally excluded them.
+- **Decision**: For WF-0064 MVP, keep supporting nodes visible but non-editable on `MSCA-PF-2025`, do not persist supporting-node answers or add a separate supporting-context request branch, keep `supporting_context_node_logical_ids` empty, and preserve backend primary-path rejection semantics including `SUPPORTING_NODE_NOT_ALLOWED`.
+- **Why**: Removes the silent clear-loss trap without broadening persistence or review semantics beyond the approved proof-path scope.
+- **Tradeoff**: Researchers cannot author supporting sections in this path yet, but the product remains honest and fail-closed.
+- **Status**: Approved.
+
+### AD 64.2: Review-detail honesty derives from visible non-container eligibility, not expectations-only leaves
+- **WF ID**: WF-0064
+- **Context**: The proof path can still mislead users if review detail derives coverage from `has_expectations` leaves or page-local heuristics, because visible supporting nodes such as `abstract` would disappear or look implicitly reviewed.
+- **Decision**: Require review-detail coverage and `Visible but not part of this review` labeling to derive from one authoritative stage-eligible visible non-container classification source shared across the proof path; do not populate `supporting_context_node_logical_ids` in this WF.
+- **Why**: Preserves truthful review-detail output while preventing hidden coupling between submit semantics and review-detail rendering.
+- **Tradeoff**: Implementation must thread one explicit classification seam instead of letting the page compute its own fallback logic.
+- **Status**: Approved.
+
+### AD 64.3: WF-0064 must reuse existing proof-path seams and stay evidence-gated
+- **WF ID**: WF-0064
+- **Context**: The Phase 1 audit found the PRD correctly required a single authoritative classification source, but the wording still left room for Phase 2 to introduce a new generalized cross-layer abstraction or to treat readiness as implicit rather than evidence-backed.
+- **Decision**: Satisfy WF-0064's single-source classification requirement by reusing an existing resolver or normalized BFF output where possible, and do not widen the workflow into a new generalized classification framework. Phase 2 or ship readiness may be recommended only with explicit passing evidence for every required automated check, zero unresolved blocking findings, and closure of non-blocking findings unless explicitly rejected with rationale.
+- **Why**: Preserves the narrow `MSCA-PF-2025` proof-path scope and keeps the fail-closed contract enforceable through explicit evidence instead of optimistic interpretation.
+- **Tradeoff**: Implementation flexibility is narrower, and readiness claims require a stricter documented evidence bundle.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0063: universal node visibility reviewability)
 
 ### AD 63.1: Universal node-role split is opt-in at the call/runtime level for MVP

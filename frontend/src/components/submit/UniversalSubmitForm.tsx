@@ -13,7 +13,12 @@ import type {
   StructuredReviewNodeInput,
 } from "@/lib/bff/types";
 import { buildReviewDetailRoute, SIGN_IN_ROUTE } from "@/lib/routes";
-import { clearDraft, loadDraft, saveDraft } from "@/lib/submit/draftStore";
+import {
+  clearDraft,
+  loadDraft,
+  saveDraft,
+  saveDraftFiltered,
+} from "@/lib/submit/draftStore";
 import {
   loadStructuredCalls,
   type StructuredCallSummary,
@@ -35,6 +40,7 @@ type ApiErrorEnvelope = {
 };
 
 const DOMAIN_DRAFT_KEY = "__selected_domain";
+const WF0064_PROOF_CALL_CODE = "MSCA-PF-2025";
 
 function formatCallDisplayName(callName: string, callCode: string): string {
   const normalizedName = callName
@@ -228,6 +234,9 @@ export function UniversalSubmitForm() {
             {},
           ) ?? {};
         if (!cancelled) {
+          const isWf0064ProofPathCall =
+            selectedCall?.code === WF0064_PROOF_CALL_CODE &&
+            selectedCall.splitVisibilityReviewabilityEnabled === true;
           const nextNodes = Array.isArray(payload.nodes) ? payload.nodes : [];
           const storedDraft = loadDraft(selectedCallId);
           const storedDomain = storedDraft[DOMAIN_DRAFT_KEY] ?? null;
@@ -256,6 +265,9 @@ export function UniversalSubmitForm() {
             const next: Record<string, string> = {};
             if (nextRenderModel.state === "ready") {
               for (const node of nextRenderModel.nodes) {
+                if (isWf0064ProofPathCall && node.nodeRole === "SUPPORTING") {
+                  continue;
+                }
                 next[node.nodeLogicalId] =
                   storedDraft[node.nodeLogicalId] ?? current[node.nodeLogicalId] ?? "";
               }
@@ -277,6 +289,9 @@ export function UniversalSubmitForm() {
   }, [calls, selectedCallId]);
 
   const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
+  const isWf0064ProofPathCall =
+    selectedCall?.code === WF0064_PROOF_CALL_CODE &&
+    selectedCall.splitVisibilityReviewabilityEnabled === true;
   const domainOptions = selectedCall?.domainOptions ?? [];
   const effectiveDomain =
     selectedDomain && domainOptions.some((option) => option.value === selectedDomain)
@@ -306,12 +321,32 @@ export function UniversalSubmitForm() {
     if (!selectedCallId) {
       return;
     }
+    if (isWf0064ProofPathCall && renderModel.state === "ready") {
+      const matchedNode = renderModel.nodes.find(
+        (node) => node.nodeLogicalId === nodeLogicalId,
+      );
+      if (matchedNode?.nodeRole === "SUPPORTING") {
+        return;
+      }
+    }
     setDraft((current) => {
       const next = {
         ...current,
         [nodeLogicalId]: value,
       };
-      saveDraft(selectedCallId, serializeDraftState(next, effectiveDomain));
+      if (isWf0064ProofPathCall && renderModel.state === "ready") {
+        const allowedKeys = new Set(
+          renderModel.nodes
+            .filter((node) => node.nodeRole === "PRIMARY")
+            .map((node) => node.nodeLogicalId),
+        );
+        if (effectiveDomain) {
+          allowedKeys.add(DOMAIN_DRAFT_KEY);
+        }
+        saveDraftFiltered(selectedCallId, serializeDraftState(next, effectiveDomain), allowedKeys);
+      } else {
+        saveDraft(selectedCallId, serializeDraftState(next, effectiveDomain));
+      }
       return next;
     });
   }
@@ -376,7 +411,9 @@ export function UniversalSubmitForm() {
       setFormError("Review submitted but no review id was returned.");
       return;
     }
-    clearDraft(selectedCallId);
+    if (!isWf0064ProofPathCall) {
+      clearDraft(selectedCallId);
+    }
     const query = new URLSearchParams({
       submitted_nodes: nonEmptyNodes.map((node) => node.node_logical_id).join(","),
     });
@@ -540,6 +577,8 @@ export function UniversalSubmitForm() {
                   {group.nodes.map((node) => {
                     const logicalId = node.nodeLogicalId;
                     const inputId = `node-${logicalId.replace(/_/g, "-")}`;
+                    const isReadOnlySupportingNode =
+                      isWf0064ProofPathCall && node.nodeRole === "SUPPORTING";
                     return (
                       <div className="space-y-2" key={logicalId}>
                         <label
@@ -551,12 +590,13 @@ export function UniversalSubmitForm() {
                         <p className="text-xs text-[var(--color-muted-foreground)]">
                           {node.nodeRole === "PRIMARY"
                             ? "Primary evaluated"
-                            : "Supporting context (draft-only for this review path)"}
+                            : "Supporting context (visible, not submitted in this review path)"}
                         </p>
                         <textarea
                           id={inputId}
                           className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
                           onChange={(event) => updateNodeDraft(logicalId, event.target.value)}
+                          readOnly={isReadOnlySupportingNode}
                           value={draft[logicalId] ?? ""}
                         />
                       </div>
@@ -581,7 +621,23 @@ export function UniversalSubmitForm() {
                   const nextDomain = event.target.value ? event.target.value : null;
                   setSelectedDomain(nextDomain);
                   if (selectedCallId) {
-                    saveDraft(selectedCallId, serializeDraftState(draft, nextDomain));
+                    if (isWf0064ProofPathCall && renderModel.state === "ready") {
+                      const allowedKeys = new Set(
+                        renderModel.nodes
+                          .filter((node) => node.nodeRole === "PRIMARY")
+                          .map((node) => node.nodeLogicalId),
+                      );
+                      if (nextDomain) {
+                        allowedKeys.add(DOMAIN_DRAFT_KEY);
+                      }
+                      saveDraftFiltered(
+                        selectedCallId,
+                        serializeDraftState(draft, nextDomain),
+                        allowedKeys,
+                      );
+                    } else {
+                      saveDraft(selectedCallId, serializeDraftState(draft, nextDomain));
+                    }
                   }
                 }}
                 value={effectiveDomain ?? ""}

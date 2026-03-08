@@ -53,6 +53,27 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+### Agentic Browser Validation (Protected `/app` Without Clerk Login)
+
+For local/dev verification only, you can enable signed test bypass auth:
+
+1. In `frontend/.env.local`, set:
+   - `AUTH_MODE=test_bypass`
+   - `TEST_AUTH_SECRET=<strong-local-secret>`
+2. Start frontend dev server.
+3. Generate a signed token:
+
+```bash
+TEST_AUTH_SECRET=<strong-local-secret> npm run auth:test-token -- agentic_test_user
+```
+
+4. Use the emitted cookie value (`gr_test_auth=...`) in Playwright before navigating to `/app`.
+
+Safety guardrails:
+- `test_bypass` is blocked when `NODE_ENV=production`.
+- Missing/placeholder `TEST_AUTH_SECRET` disables bypass.
+- Tokens are HMAC-signed and time-bounded (`TEST_AUTH_MAX_AGE_SECONDS`, default `3600`).
+
 ## Verification
 
 ```bash

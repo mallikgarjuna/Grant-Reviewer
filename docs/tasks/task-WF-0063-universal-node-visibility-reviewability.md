@@ -2,8 +2,8 @@
 # WF-0063 — Universal Node Visibility Reviewability Tasks
 
 Artifact: task
-Version: v0.2
-Status: Ready for Implementation
+Version: v0.4
+Status: Completed
 Last Updated: 2026-03-08
 
 Type: feature
@@ -419,3 +419,4 @@ Risks (if any): Without an explicit closure guard, the proof call can look corre
 - v0.1 (2026-03-08): Initial task breakdown from PRD.
 - v0.2 (2026-03-08): Tightened proof-call opt-in versus legacy boundaries, split frontend/backend role seams into atomic tasks, and added explicit parity and fail-closed closure coverage; marked Ready for Implementation.
 - v0.3 (2026-03-08): Review-and-harden pass added explicit proof-call rollback coverage so disabling the opt-in seam must restore legacy behavior without YAML re-authoring.
+- v0.4 (2026-03-08): Marked completed after merge to `main`, walkthrough closure, and targeted backend/frontend verification on the landed WF-0063 seams.

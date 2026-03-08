@@ -1,9 +1,12 @@
 // frontend/src/app/api/bff/reviews/[reviewId]/route.ts
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { deleteReview, getReview } from "@/lib/bff/adapter";
-import { apiErrorResponse, requireBffContext } from "@/lib/bff/route-helpers";
+import {
+  apiErrorResponse,
+  requireBffContext,
+  resolveExternalUserId,
+} from "@/lib/bff/route-helpers";
 
 type RouteContext = {
   params: Promise<{ reviewId: string }>;
@@ -61,8 +64,8 @@ function normalizeReviewDetailResponse(payload: unknown): unknown {
   };
 }
 
-export async function GET(_: Request, context: RouteContext) {
-  const { userId } = await auth();
+export async function GET(request: Request, context: RouteContext) {
+  const userId = await resolveExternalUserId(request);
   const contextResult = requireBffContext(userId);
   if (!contextResult.ok) {
     return apiErrorResponse(contextResult.error);
@@ -110,8 +113,8 @@ export async function GET(_: Request, context: RouteContext) {
   );
 }
 
-export async function DELETE(_: Request, context: RouteContext) {
-  const { userId } = await auth();
+export async function DELETE(request: Request, context: RouteContext) {
+  const userId = await resolveExternalUserId(request);
   const contextResult = requireBffContext(userId);
   if (!contextResult.ok) {
     return apiErrorResponse(contextResult.error);
