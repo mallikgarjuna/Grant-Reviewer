@@ -1,6 +1,24 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-08 (WF-0063: universal node visibility reviewability)
+
+### AD 63.1: Universal node-role split is opt-in at the call/runtime level for MVP
+- **WF ID**: WF-0063
+- **Context**: The contract correction needs a new `PRIMARY` versus `SUPPORTING` node-role split, but broad runtime activation would violate the proof-call-first constraint and could silently change behavior for existing expectation-backed calls.
+- **Decision**: Add `node_role` to the canonical node contract, but activate split visibility behavior only through an explicit call-level or runtime opt-in seam in MVP. `MSCA-PF-2025` is the proof call; non-opted-in calls preserve current behavior until explicitly migrated.
+- **Why**: Preserves repo safety and compatibility boundaries while allowing one real proof call to validate the new contract.
+- **Tradeoff**: Introduces one extra rollout seam to manage, but avoids accidental universal behavior flips.
+- **Status**: Approved.
+
+### AD 63.2: First-path UI distinguishes structural containers from supporting content
+- **WF ID**: WF-0063
+- **Context**: Showing all official nodes is necessary for structural fidelity, but a naive “render all supporting nodes as editable” approach could incorrectly turn section containers into answer fields.
+- **Decision**: In the first path, structural container nodes remain visible/grouping-only and never editable or submittable. Supporting content nodes may be read/write in draft state, but they remain non-submittable for primary review in MVP.
+- **Why**: Preserves official proposal structure in the UI without corrupting submission semantics or confusing containers with content-bearing sections.
+- **Tradeoff**: The UI model becomes slightly more explicit, but the resulting semantics are safer and clearer.
+- **Status**: Approved.
+
 ## Date: 2026-03-07 (WF-0061: real call data expansion single call)
 
 ### AD 61.1: WF-0061 must freeze exactly one MVP proof seam for MSCA-PF-2025
