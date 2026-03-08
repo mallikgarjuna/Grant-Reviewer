@@ -46,7 +46,7 @@ Out-of-scope areas were not expanded (supporting-context semantics, new call onb
 
 Preflight baseline:
 - `cd backend && uv run pytest -m no_db`
-- Result: `230 passed, 153 deselected`
+- Result: `234 passed, 179 deselected`
 
 Task-level verification (all passed):
 - `cd backend && DATABASE_URL=postgresql://grant:grant@localhost:5432/grant_reviewer_test?sslmode=disable uv run pytest tests/test_api.py -k "wf0065 and nwo and structured"`

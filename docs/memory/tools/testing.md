@@ -1,3 +1,4 @@
+<!-- docs/memory/tools/testing.md -->
 # Testing Isolation & Practice
 
 - **DB Isolation (Tests):** Never run tests against the dev DB. Always isolate them. Tests must run only when `DATABASE_URL` points to a test database whose name includes `test`.
@@ -16,3 +17,4 @@
 - **2026-03-07 — WF-0061 DB selector contention:** Do not run DB-mutating pytest selectors in parallel against the same local Postgres test DB; serialize runs or use the repo reset/verify scripts first. Why: parallel `drop_all/create_all` can deadlock or leave enum/table state collisions (`duplicate type`, `undefined table`).
 - **2026-03-08 — WF-0065 cross-call evidence discipline:** `backend/tests/test_api.py` already has real-call client factories for `erc_cog_2026_full`, `erc_stg_2026_full`, and `MSCA-PF-2025`, but the current `QUOTA_EXCEEDED` / `REVIEWS_DISABLED` assertions still run through the generic synthetic `create_client_with_seed` path. Why: avoid overstating multi-call fail-closed evidence during WF-0065 planning/audit work.
 - **2026-03-08 — WF-0065 DB test execution:** Run WF-0065 DB-backed selectors serially with explicit `DATABASE_URL` set to the isolated test DB (e.g., `grant_reviewer_test`). Why: parallel runs can hang on DB reset/metadata locks and block deterministic verification.
+- **2026-03-08 — Walkthrough evidence counts can drift:** For WF closure docs, re-run listed verification commands and update numeric pass/deselect totals instead of copying earlier counts (example: `pytest -m no_db` moved to `234 passed, 179 deselected`). Why: stale totals create audit noise even when behavior is correct.
