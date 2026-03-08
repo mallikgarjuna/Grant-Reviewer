@@ -83,7 +83,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 |---|------|------|----------------|------|
 | 1 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
 | 2 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 3 | Add node hierarchy selector | product | Implement only after WF-0067 so selector behavior sits on trust-honest, call-aware review surfaces rather than one-off UI logic. | 2026-02-16 |
+| 3 | Add node hierarchy selector | product | WF-0067 trust-surface closure is complete; this item is now unblocked and should be promoted when ready for the next launch-readiness slice. | 2026-02-16 |
 | 4 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 | 5 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
 
@@ -92,12 +92,12 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 - WF-0063 and WF-0064 closed the proof-call split-visibility and opted-in hierarchical submit gap for `MSCA-PF-2025`; that work should no longer sit in active P1.
 - WF-0065 closed the cross-call base-review contract hardening gap for the locked representative set; that dependency is now closed in active P1 planning.
 - WF-0066 removed stale live-planning language that implied broader-program expansion was still planned or launch-critical; active P1 should stay anchored to the locked NWO/ERC/MSCA wedge.
-- The former broad launch-readiness bucket has been promoted and narrowed into WF-0067, focused on user-visible trust surfaces in the actual review experience.
+- WF-0067 is now complete and closed the launch-blocking review trust-surface gap in the active wedge.
 - Active P1 sequencing should prioritize launch-readiness improvements inside NWO/ERC/MSCA and avoid re-parking already completed ERC/MSCA authoring work.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 
 Promotion dependency note:
-- If promoting P1 #3, first verify WF-0035 and WF-0067 are done (or included in that same WF).
+- If promoting P1 #3, first verify WF-0035 remains done and no new trust-contract blockers have been introduced since WF-0067 closure.
 
 ---
 
@@ -244,3 +244,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v4.0** (2026-03-08): Post-WF-0065 parking-lot refresh: removed stale P1 rationale that still treated cross-call hardening as open, and cleaned dependency-note renumber drift so active dependencies match current P1 ordering.
 - **v4.1** (2026-03-08): Post-WF-0066 parking-lot refresh: recorded the direct-start workflow in the initiative log and tightened active P1 rationale/traceability so backlog planning stays anchored to the locked NWO/ERC/MSCA wedge.
 - **v4.2** (2026-03-08): Promoted the remaining broad P1 #1 launch-readiness bucket to `WF-0067`, narrowed it at promotion to launch-blocking review trust surfaces, renumbered active P1 items, and updated the dependency note for the deferred node hierarchy selector.
+- **v4.3** (2026-03-08): Post-WF-0067 parking-lot refresh: removed stale pending-WF-0067 gating language from active P1 and rewrote rationale/dependency text to reflect that trust-surface closure is now done.

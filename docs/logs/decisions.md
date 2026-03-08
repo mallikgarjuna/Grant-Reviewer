@@ -19,6 +19,14 @@
 - **Tradeoff**: Some representative reviews may ship without a positive supporting-context affordance, but they remain honest about that limitation.
 - **Status**: Approved.
 
+### AD 67.3: Boundary-state ownership stays backend-authoritative across BFF and UI seams
+- **WF ID**: WF-0067
+- **Context**: Audit closure found two drift risks: explicit empty boundary arrays could be treated as "absent" in UI fallback logic, and BFF could recompute `detail_state` instead of preserving backend semantics.
+- **Decision**: Treat boundary arrays (`visible_not_reviewed_node_logical_ids`, `no_generated_cards_node_logical_ids`) as authoritative whenever present, including empty arrays; preserve backend `detail_state` verbatim at the BFF seam when supplied, and infer only when absent.
+- **Why**: Keeps trust-surface semantics fail-closed and prevents hidden coupling between legacy inference paths and newly explicit backend contract fields.
+- **Tradeoff**: Requires stricter seam discipline and explicit regression tests to avoid reintroducing fallback behavior.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0066: peerlens scope lock to NWO/ERC/MSCA)
 
 ### AD 66.1: NWO/ERC/MSCA is the permanent product-scope wedge; broader promised-program expansion is not deferred

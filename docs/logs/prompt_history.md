@@ -2,6 +2,14 @@
 
 ## 2026-03-08
 
+### 21:13 - WF-0067 Ship + Workflow Closure
+> User requested browser-based visual validation, then full remaining WF-0067 closure including `ship it`.
+> Outcome: Ran browser validation on `/app/reviews` + live review-detail path, closed remaining trust-surface audit fixes, archived WF-0067 artifacts to `completed/`, updated `docs/index.md` to `Done`, pushed branch, created PR #88, merged, deleted remote branch, and synced local `main`.
+
+### 21:16 - Parking Lot Refresh After WF-0067
+> User requested `refresh parking lot`.
+> Outcome: Reconciled stale WF-0067 gating text in active P1 planning, updated recommendation/rationale/dependency wording for P1 #3, and appended `v4.3` revision history note.
+
 ### 18:45 - WF-0066 Completed-Artifact Archival Normalization
 > User asked why WF-0066 artifacts had not been moved into `completed/` during ship/cleanup and then requested the fix for all completed WFs.
 > Outcome: Archived the remaining completed live-path WF artifacts (`WF-0042`, `WF-0063`, `WF-0066`), updated `docs/index.md` and affected cross-doc references to `completed/` paths, ran `pre-commit`, and committed the normalization pass.
