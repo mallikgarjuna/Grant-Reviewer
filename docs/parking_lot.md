@@ -81,13 +81,12 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Cross-call contract hardening for base review semantics | tech-debt | Extend deterministic cross-call coverage beyond the current proof set and add explicit `QUOTA_EXCEEDED` / `REVIEWS_DISABLED` assertions so universal review behavior is proven before broader onboarding. Keep this focused on real contract gaps, not another planning-only hardening pass. (Ref: `next move` follow-up after WF-0038/0039/0040/0041/0043, 2026-03-02.) | 2026-03-02 |
-| 2 | Expand coverage to the remaining promised call gap | product | Real call coverage now exists for NWO, ERC, and MSCA. Add at least one credible ZonMw or equivalent missing promised-program call only after P1 #1 is handled or explicitly bundled, so breadth lands on a contract surface that is already proven. (Ref: WF-0037, WF-0044, WF-0061, WF-0062, backlog audit 2026-03-08.) | 2026-02-16 |
-| 3 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
-| 4 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 5 | Add node hierarchy selector | product | Implement only after P1 #1-#2 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
-| 6 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 7 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
+| 1 | Expand coverage to the remaining promised call gap | product | Real call coverage now exists for NWO, ERC, and MSCA. Add at least one credible ZonMw or equivalent missing promised-program call only after cross-call contract hardening is done or explicitly bundled, so breadth lands on a contract surface that is already proven. (Ref: WF-0037, WF-0044, WF-0061, WF-0062, backlog audit 2026-03-08.) | 2026-02-16 |
+| 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 3 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 4 | Add node hierarchy selector | product | Implement only after P1 #1 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
+| 5 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 6 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
 
 ### P1 Rationale Snapshot (2026-03-08)
 
@@ -98,8 +97,8 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 
 Promotion dependency note:
-- If promoting P1 #3, first verify WF-0035 and P1 #1-#2 are done, or bundle them in the same WF with explicit dependency sequencing.
-- If promoting P1 #5, first verify WF-0035 and P1 #1-#2 are done (or included in that same WF).
+- If promoting P1 #2, first verify WF-0035 and P1 #1 are done, or bundle them in the same WF with explicit dependency sequencing.
+- If promoting P1 #4, first verify WF-0035 and P1 #1 are done (or included in that same WF).
 
 ---
 
@@ -194,6 +193,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 40 | WF-0062 | erc-cog-2026-contract-model-correction | started-directly | - | 2026-03-07 |
 | 41 | WF-0063 | universal-node-visibility-reviewability | started-directly | - | 2026-03-08 |
 | 42 | WF-0064 | opted-in-hierarchical-submit-proof-closure | started-directly | - | 2026-03-08 |
+| 43 | WF-0065 | cross-call-contract-hardening-base-review-semantics | promoted | P1 #1 (historical) | 2026-03-08 |
 
 ---
 
@@ -239,3 +239,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v3.6** (2026-03-08): Second-pass WF initiative log wording audit renamed the backlog-reference column to historical promotion provenance, added an explicit note, and normalized promoted rows to mark backlog refs as historical snapshots rather than live active-slot references.
 - **v3.7** (2026-03-08): Strengthened P2 #30 with explicit promotion timing and gating: treat supporting-context semantics as post-launch-baseline work only, after multi-call proof and cross-call hardening, and only when product semantics are concrete enough to specify influence boundaries honestly.
 - **v3.8** (2026-03-08): Removed the stale P1 hierarchical proof-gap item after WF-0064 closure, renumbered active P1 items, rewrote the P1 rationale around the real remaining blockers (cross-call hardening plus one missing promised-program call), and tightened P2 #30 gating to reflect both WF-0063 and WF-0064 closure status.
+- **v3.9** (2026-03-08): Promoted P1 #1 to `WF-0065` for cross-call contract hardening of base review semantics, renumbered active P1 items, and recorded the promotion in the unified WF initiative log.
