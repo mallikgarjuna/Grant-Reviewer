@@ -1,3 +1,4 @@
+<!-- docs/memory/tools/backend.md -->
 # Backend Quirks
 
 - **Script Paths:** When running backend scripts, use `cd backend && PYTHONPATH=. uv run python scripts/my_script.py`.
@@ -14,5 +15,6 @@
 - 2026-03-06: `StructuredReviewerService` review-request payload must remain `ActivatedCallConfigSnapshotV1`-compliant (`schema_version: v1`, strict expectation keys only). Extra snapshot fields (e.g. `reviewer_policy_prompt_by_node`) or defaulted expectation keys included in digest input can trigger `MALFORMED_REVIEW_REQUEST` / `CALL_CONFIG_DIGEST_MISMATCH` and surface as `Review Failed`.
 - 2026-03-06: Stage gating must use canonical call-definition stage metadata (`evaluation_elements.stage` + `proposal_nodes.node_expectations`) when available; fallback node-id heuristics are legacy-only. Why: avoid frontend/backend drift where `BOTH` nodes render for Step 2 but API rejects with `REVIEW_STAGE_NODE_MISMATCH`.
 - 2026-03-06: Daily quota default is now relaxed in dev-like app envs (`APP_ENV` in `dev/development/local`) when `FREE_DAILY_REVIEW_LIMIT` is unset; explicit env value always wins. Why: prevent local workflow lockouts while preserving prod default enforcement.
+- 2026-03-07: If a newly authored canonical call does not appear in Funding Call dropdown, or ERC CoG shows "nested sections not yet supported", check local DB projection first: stale/missing ingest can leave `erc_cog_2026_full` on legacy leaf IDs and omit `MSCA-PF-2025`. Re-run `uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_cog_2026_full.yaml` and `.../msca/msca_pf_2025_full.yaml`. Why: frontend reads active calls/nodes from DB, not directly from YAML files.
 
 - 2026-03-05 - Env gotcha:  may be missing on PATH (pyenv); use  or  for repo scripts.
