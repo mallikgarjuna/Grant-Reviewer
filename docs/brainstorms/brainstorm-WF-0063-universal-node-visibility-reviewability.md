@@ -2,7 +2,7 @@
 # WF-0063 — Universal Node Visibility Reviewability Brainstorm
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-08
 
@@ -137,11 +137,13 @@ Section 4 decisions:
 - Simplest direction: separate node roles so official nodes can be visible without all being primary reviewed nodes.
 - First proof target: `MSCA-PF-2025`.
 - Preserve strict criteria-grounded primary review semantics while creating room for supporting/context-only nodes.
+- Keep all official proposal nodes representable in YAML and preserve structural completeness in node tree/list contracts independent of whether a node has expectations.
 - Defer full review-engine redesign and advanced context behavior to later phases/workflows.
 
 Contract Notes / Non-obvious constraints:
 
 - The rough idea must stay contract-level and MVP-focused; it should not commit to a large cross-agency migration plan yet. See Section 4 in `docs/brainstorms/qna/brainstorm-QnA-WF-0063-universal-node-visibility-reviewability.md`.
+- The first contract correction should be architectural, not funder-semantic: official-node visibility must stop depending on `node_expectations`. Added from review-and-harden pass.
 
 ---
 
@@ -158,12 +160,14 @@ Constraints:
 - Keep the first deliverable small enough to validate quickly on one proof call.
 - Rollout must be proof-call-first: preserve current behavior for existing expectation-backed calls before any broader universal flip.
 - Supporting/context-only nodes must fail closed semantically: they must not silently alter primary criterion-grounded review outputs unless a later explicit traced contract authorizes that behavior.
+- Initial UI behavior must distinguish primary-reviewable nodes from supporting/non-primary nodes rather than silently presenting one undifferentiated input class.
 
 Contract Notes / Non-obvious constraints:
 
 - Existing contracts and tests assume `has_expectations` is meaningful, so any split must manage compatibility carefully. See Section 5 in `docs/brainstorms/qna/brainstorm-QnA-WF-0063-universal-node-visibility-reviewability.md`.
 - Official source grounding remains a hard boundary even if product UX wants broader visibility. See Section 5 in `docs/brainstorms/qna/brainstorm-QnA-WF-0063-universal-node-visibility-reviewability.md`.
 - “Repo-safe” specifically means no broad default-behavior flip until proof-target parity is demonstrated. Added from Part B risk audit.
+- Proof-call-first scope also means the first path should keep primary review submission semantics explicit; visible supporting nodes must not be silently accepted as if they were primary reviewed content. Added from review-and-harden pass.
 
 ---
 
@@ -195,6 +199,7 @@ Contract Notes / Non-obvious constraints:
 - Whether the first implementation slice touches YAML only, UI only, or an end-to-end contract seam. Deferred to Phase 1.
 - How conditional supporting nodes (for example MSCA Section 9) should be represented without over-generalizing the proof target. Deferred to Phase 1.
 - What exact parity checks are required across YAML, API, submit/compliance payloads, and review-detail labeling before any rollout expands beyond the proof target. Deferred to Phase 1.
+- Whether the first proof-call UI renders supporting nodes as read/write but non-submittable in the primary review path, or hides submission affordances behind a later context mode. Deferred to Phase 1.
 
 ---
 
@@ -208,6 +213,10 @@ If we had to ship in 2-3 days:
   - define a universal contract direction that separates official node visibility from primary reviewability,
   - prove it on `MSCA-PF-2025`,
   - allow the proof call to represent visible-but-non-primary sections safely without fake expectations.
+- Structural completeness invariant for MVP:
+  - official nodes remain present in YAML,
+  - node tree/list contracts remain structurally complete regardless of expectations,
+  - the first UI path distinguishes visible supporting nodes from primary reviewable nodes.
 - Must preserve:
   - source-grounded primary review semantics for B1 Sections 1-3,
   - no invented criteria/elements mappings for abstract or Part B2 Sections 4-8.
