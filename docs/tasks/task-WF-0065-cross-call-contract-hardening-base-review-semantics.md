@@ -2,8 +2,8 @@
 # WF-0065 — Cross-Call Contract Hardening of Base Review Semantics
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-08
 
 Type: feature
@@ -92,8 +92,8 @@ Files to modify:
 Must touch files:
 - `backend/tests/test_api.py`
 - `backend/tests/test_reviewer_service.py`
-- `backend/app/services/reviewer_service.py`
 May touch files:
+- `backend/app/services/reviewer_service.py`
 - `backend/main.py`
 Out of scope: structured-path work already covered by Tasks 1-2, endpoint DTO convergence, non-overlapping endpoint semantics
 Stop if: the `/reviews` proof needs more than the overlapping base-review contract surface or requires redesigning `ReviewerService.generate_review`
@@ -101,6 +101,7 @@ Session boundary after: yes
 Acceptance Criteria:
 - The single-node path has explicit representative-call success tests for `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, and `MSCA-PF-2025`.
 - `/reviews` and `ReviewerService.generate_review` are proven on the overlapping base-review contract surface only.
+- The paired success assertions verify returned success contract shape in addition to representative-call coverage.
 - Any missing single-node seam needed for the 3-call proof is introduced minimally and remains subordinate to evidence collection.
 TDD Plan:
 - RED: add failing `wf0065` representative-call success tests in `backend/tests/test_reviewer_service.py` and matching `/reviews` endpoint assertions in `backend/tests/test_api.py`.
@@ -135,8 +136,9 @@ Acceptance Criteria:
 - Both endpoints explicitly preserve validation-before-idempotency ordering on the in-scope proof cases.
 - Replay returns the original review without creating a second row on both endpoints.
 - Payload mismatch preserves existing conflict semantics without mutating the persisted review on both endpoints.
+- Replay and payload-mismatch assertions preserve stable error `details` shape wherever the overlapping endpoint contract exposes it.
 TDD Plan:
-- RED: add failing cross-endpoint `wf0065` tests in `backend/tests/test_api.py` for validation ordering, replay, and mismatch cases on the locked proof calls.
+- RED: add failing cross-endpoint `wf0065` tests in `backend/tests/test_api.py` for validation ordering, replay, mismatch, and stable error `details` shape on the locked proof calls.
 - GREEN: apply the minimum API-boundary fix in `backend/main.py` only if current ordering or idempotency behavior drifts from the approved contract.
 - REFACTOR: collapse duplicate endpoint assertion helpers only if they keep the per-endpoint semantic checks explicit.
 Verification Steps:
@@ -165,10 +167,11 @@ Stop if: proving non-invocation requires moving gate logic below the API boundar
 Session boundary after: no
 Acceptance Criteria:
 - `REVIEWS_DISABLED` preserves the current stable HTTP and error-code contract on both endpoints.
+- `REVIEWS_DISABLED` preserves the current stable error `details` shape wherever the overlapping endpoint contract exposes it.
 - Blocked requests do not invoke `ReviewerService.generate_review`, `StructuredReviewerService.generate_structured_review_pipeline_v1`, or `pipeline_v1`.
 - Blocked requests do not create a review row or partial persisted review state.
 TDD Plan:
-- RED: add failing `wf0065` `REVIEWS_DISABLED` tests in `backend/tests/test_api.py` that assert boundary payloads plus downstream non-invocation and no-persistence evidence.
+- RED: add failing `wf0065` `REVIEWS_DISABLED` tests in `backend/tests/test_api.py` that assert boundary payloads, stable error `details` shape, downstream non-invocation, and no-persistence evidence.
 - GREEN: make only the smallest API-boundary change needed if either endpoint currently leaks execution or persistence after the gate.
 - REFACTOR: extract a tiny blocked-request assertion helper only if both endpoints repeat the same fail-closed checks verbatim.
 Verification Steps:
@@ -197,11 +200,12 @@ Stop if: proving no side effects requires bypassing the real API entry gate or c
 Session boundary after: yes
 Acceptance Criteria:
 - `QUOTA_EXCEEDED` preserves the current stable HTTP and error-code contract on both endpoints.
+- `QUOTA_EXCEEDED` preserves the current stable error `details` shape wherever the overlapping endpoint contract exposes it.
 - Blocked requests do not invoke `ReviewerService.generate_review`, `StructuredReviewerService.generate_structured_review_pipeline_v1`, or `pipeline_v1`.
 - Blocked requests do not create a review row or partial persisted review state.
-- The final task-level verification proves the full locked 3-call, paired-boundary, fail-closed scope without widening into supporting-context semantics or new-call onboarding.
+- The final task-level verification proves the full locked 3-call, paired-boundary, fail-closed scope without widening into supporting-context semantics, new-call onboarding, or extra representative calls.
 TDD Plan:
-- RED: add failing `wf0065` `QUOTA_EXCEEDED` tests in `backend/tests/test_api.py` that assert payloads, downstream non-invocation, and no-persistence evidence across the paired boundaries.
+- RED: add failing `wf0065` `QUOTA_EXCEEDED` tests in `backend/tests/test_api.py` that assert payloads, stable error `details` shape, downstream non-invocation, and no-persistence evidence across the paired boundaries.
 - GREEN: make only the smallest API-boundary fix needed if the quota gate leaks execution or persistence.
 - REFACTOR: keep cleanup limited to local fail-closed test helpers that do not broaden the workflow surface.
 Verification Steps:
@@ -213,3 +217,4 @@ Risks (if any): Sharing too much gate test setup between the two endpoints can h
 ## Changelog
 
 - v0.1 (2026-03-08): Initial task breakdown from PRD.
+- v0.2 (2026-03-08): Applied review-gate edits to remove the forced `reviewer_service.py` touch, require explicit success/error details-shape parity, and lock final verification to the approved 3-call proof set; marked Ready for Implementation.
