@@ -130,7 +130,7 @@ Verification Steps:
 - `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0067_review_card_trust_not_assessable_label'`
 Risks (if any): Card-level copy can accidentally drift into polished explanation text that obscures the launch-blocking trust facts.
 
-### [ ] Task 5 — Backend boundary metadata for fail-closed reviewed vs visible-but-not-reviewed vs no-card states
+### [x] Task 5 — Backend boundary metadata for fail-closed reviewed vs visible-but-not-reviewed vs no-card states
 
 Goal:
 Close the backend proof gap around review-detail boundary honesty so the frontend can distinguish reviewed sections, visible-but-not-reviewed sections, and sections with no generated cards without heuristics.

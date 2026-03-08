@@ -547,6 +547,40 @@ class ReviewRepository:
         ]
         return primary_evaluated_node_logical_ids, []
 
+    def resolve_review_detail_boundary_metadata(
+        self,
+        *,
+        call_id: UUID | None,
+        submitted_leaf_ids: list[str],
+        reviewed_card_node_logical_ids: list[str],
+    ) -> tuple[list[str], list[str]]:
+        """Return explicit non-reviewed boundary buckets for review detail surfaces."""
+        if call_id is None:
+            return [], []
+
+        visible_reviewable_node_ids = sorted(
+            {
+                node.logical_id
+                for node, has_expectations in self.get_nodes_for_call(call_id)
+                if has_expectations and isinstance(node.logical_id, str)
+            }
+        )
+        submitted_set = {
+            node_id for node_id in submitted_leaf_ids if isinstance(node_id, str)
+        }
+        reviewed_set = {
+            node_id for node_id in reviewed_card_node_logical_ids if isinstance(node_id, str)
+        }
+
+        no_generated_cards_node_logical_ids = sorted(submitted_set - reviewed_set)
+        visible_not_reviewed_node_logical_ids = sorted(
+            set(visible_reviewable_node_ids) - submitted_set
+        )
+        return (
+            visible_not_reviewed_node_logical_ids,
+            no_generated_cards_node_logical_ids,
+        )
+
     def _extract_supporting_node_ids_for_primary_path(
         self,
         canonical_json: dict[str, Any],

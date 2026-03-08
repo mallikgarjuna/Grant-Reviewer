@@ -1420,6 +1420,21 @@ def get_review(
         primary_evaluated_node_logical_ids,
         supporting_context_node_logical_ids,
     ) = repository.resolve_review_detail_role_labels(review=review, call_id=call_id)
+    reviewed_card_node_logical_ids = sorted(
+        {
+            card.node_logical_id
+            for card in cards
+            if isinstance(card.node_logical_id, str)
+        }
+    )
+    (
+        visible_not_reviewed_node_logical_ids,
+        no_generated_cards_node_logical_ids,
+    ) = repository.resolve_review_detail_boundary_metadata(
+        call_id=call_id,
+        submitted_leaf_ids=submitted_leaf_ids,
+        reviewed_card_node_logical_ids=reviewed_card_node_logical_ids,
+    )
     compatibility_notes: list[ReviewCompatibilityNote] = []
     if legacy_ambiguous_container_ids:
         compatibility_notes.append(
@@ -1458,6 +1473,8 @@ def get_review(
         submitted_leaf_ids=submitted_leaf_ids,
         primary_evaluated_node_logical_ids=primary_evaluated_node_logical_ids,
         supporting_context_node_logical_ids=supporting_context_node_logical_ids,
+        visible_not_reviewed_node_logical_ids=visible_not_reviewed_node_logical_ids,
+        no_generated_cards_node_logical_ids=no_generated_cards_node_logical_ids,
         legacy_ambiguous_container_ids=legacy_ambiguous_container_ids,
         moved_legacy_node_references=moved_legacy_node_references,
         compatibility_notes=compatibility_notes,

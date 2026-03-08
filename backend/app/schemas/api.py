@@ -197,6 +197,8 @@ class ReviewDetailResponse(BaseModel):
     submitted_leaf_ids: list[str] = Field(default_factory=list)
     primary_evaluated_node_logical_ids: list[str] = Field(default_factory=list)
     supporting_context_node_logical_ids: list[str] = Field(default_factory=list)
+    visible_not_reviewed_node_logical_ids: list[str] = Field(default_factory=list)
+    no_generated_cards_node_logical_ids: list[str] = Field(default_factory=list)
     legacy_ambiguous_container_ids: list[str] = Field(default_factory=list)
     moved_legacy_node_references: list[str] = Field(default_factory=list)
     compatibility_notes: list[ReviewCompatibilityNote] = Field(default_factory=list)

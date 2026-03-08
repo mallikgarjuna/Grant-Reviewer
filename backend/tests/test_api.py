@@ -2031,6 +2031,85 @@ def test_wf0067_backend_source_basis_contract_legacy_fallback_state_without_synt
         assert card["source_basis_label"] is None
 
 
+def test_wf0067_backend_boundary_contract_zero_card_visible_section(monkeypatch) -> None:
+    client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
+    assert call_code == "erc_stg_2026_full"
+
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0067-zero-card-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "call_id": str(call_id),
+                "submitted_leaf_ids": ["proposal_summary"],
+                "nodes": {"proposal_summary": "Submitted text without generated cards."},
+            },
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+    finally:
+        session.close()
+
+    detail = get_review_detail(client=client, review_id=str(review.id))
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["detail_state"] == "call_linked"
+    assert payload["cards"] == []
+    assert payload["supporting_context_node_logical_ids"] == []
+    assert payload["no_generated_cards_node_logical_ids"] == ["proposal_summary"]
+    assert "proposal_summary" not in payload["visible_not_reviewed_node_logical_ids"]
+    assert "b1_part1_scientific_proposal" in payload["visible_not_reviewed_node_logical_ids"]
+
+
+def test_wf0067_backend_boundary_contract_mixed_version_legacy_fallback(monkeypatch) -> None:
+    client, _ = create_client_with_seed(monkeypatch)
+    session = get_session()
+    try:
+        repository = ReviewRepository(session)
+        template = session.exec(select(PromptTemplate)).first()
+        expectation = session.exec(select(NodeExpectation)).first()
+        assert template is not None
+        assert expectation is not None
+
+        review = repository.create_review(
+            template_id=template.id,
+            snippet_id=None,
+            external_user_id=TEST_USER_ID,
+            idempotency_key=f"wf0067-mixed-version-{time.time_ns()}",
+            review_type="structured",
+            structured_payload={
+                "submitted_leaf_ids": ["academic_profile"],
+                "nodes": {"academic_profile": "Legacy payload text"},
+            },
+        )
+        repository.create_review_card(
+            review_id=review.id,
+            expectation_id=expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback="Legacy fallback boundary test card",
+        )
+        review.status = ReviewStatus.COMPLETED
+        repository.update_review(review)
+    finally:
+        session.close()
+
+    detail = get_review_detail(client=client, review_id=str(review.id))
+    assert detail.status_code == 200
+    payload = detail.json()
+    assert payload["detail_state"] == "legacy_fallback"
+    assert payload["supporting_context_node_logical_ids"] == []
+    assert payload["visible_not_reviewed_node_logical_ids"] == []
+    assert payload["no_generated_cards_node_logical_ids"] == []
+
+
 def test_review_detail_order_index_tie_uses_node_logical_id_fallback(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
 
