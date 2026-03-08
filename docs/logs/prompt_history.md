@@ -1,5 +1,11 @@
 # Prompt History
 
+## 2026-03-08
+
+### 18:20 - WF-0066 Docs Cleanup
+> User requested `docs cleanup` after WF-0066 closure and parking-lot refresh.
+> Outcome: Reconciled WF-0066 status surfaces to `Done`, refreshed parking-lot traceability/rationale, ran `pre-commit`, and committed the docs-only cleanup boundary.
+
 ## 2026-02-23
 
 ### 08:35 - WF-0030 Local DB/Test Isolation Hardening
