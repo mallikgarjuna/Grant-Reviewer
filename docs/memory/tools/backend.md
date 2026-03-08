@@ -18,4 +18,4 @@
 - 2026-03-07: If a newly authored canonical call does not appear in Funding Call dropdown, or ERC CoG shows "nested sections not yet supported", check local DB projection first: stale/missing ingest can leave `erc_cog_2026_full` on legacy leaf IDs and omit `MSCA-PF-2025`. Re-run `uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_cog_2026_full.yaml` and `.../msca/msca_pf_2025_full.yaml`. Why: frontend reads active calls/nodes from DB, not directly from YAML files.
 - 2026-03-08: WF-0063 primary-path guardrails are call-definition driven: `runtime_config.split_visibility_reviewability_enabled` gates supporting-node rejection, and `proposal_nodes.node_role` is reused across config/nodes/tree/review-detail surfaces. Why: keeps rollback to legacy behavior as a metadata flip with no YAML re-authoring or extra DB flags.
 
-- 2026-03-05 - Env gotcha:  may be missing on PATH (pyenv); use  or  for repo scripts.
+- 2026-03-05: Env gotcha: `uv` may be missing on PATH under pyenv/shell variations; prefer `python -m uv` (or fix shell init) when repo scripts fail to resolve `uv`.
