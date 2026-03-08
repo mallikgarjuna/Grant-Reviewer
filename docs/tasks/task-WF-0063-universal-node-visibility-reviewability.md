@@ -210,7 +210,7 @@ Verification Steps:
 - `cd frontend && rg -n "has_expectations|node_role|split_visibility" src/lib/submit/renderModel.ts src/lib/submit/nodeRoles.ts`
 Risks (if any): A partial render-model fix can still leave hidden `has_expectations` filtering in grouping or fallback code paths.
 
-### [ ] Task 7 — Universal submit form labels supporting nodes and filters primary-only payloads
+### [x] Task 7 — Universal submit form labels supporting nodes and filters primary-only payloads
 
 Goal:
 Complete the first-path submit UX by distinguishing primary versus supporting nodes in the form, preserving draft state for supporting content, and sending only primary nodes across submit/compliance boundaries.

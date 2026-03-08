@@ -18,6 +18,7 @@ export type DomainOption = {
 
 export type StructuredCallSummary = CallSummary & {
   domainOptions: DomainOption[];
+  splitVisibilityReviewabilityEnabled: boolean;
 };
 
 type LoadStructuredCallsInput = {
@@ -124,6 +125,8 @@ async function loadOneCall(
       call: {
         ...call,
         domainOptions: parseDomainOptions(parsed),
+        splitVisibilityReviewabilityEnabled:
+          parsed.split_visibility_reviewability_enabled === true,
       },
       warning: null,
     };
