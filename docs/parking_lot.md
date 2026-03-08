@@ -1,3 +1,4 @@
+<!-- docs/parking_lot.md -->
 # Parking Lot / Backlog
 
 **Purpose**: The prioritized backlog for "not now" items. When you're ready to work on one, promote it into the WF workflow system.
@@ -80,32 +81,26 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Universal Form: Recursive UI components for nested schemas | product | Required for hierarchical calls (ERC-like structures) so frontend can render real call structures without manual per-call coding. (Ref: WF-0035 Phase 0.2 risk audit Q1.) | 2026-02-22 |
-| 2 | Review detail page: remove hardcoded Veni node mapping | tech-debt | `/app/reviews/[reviewId]` must become call-aware so reviewed sections/cards remain correct once multiple real calls are live. | 2026-02-23 |
-| 3 | Re-author ERC CoG YAML from official sources | product | Rebuild `erc_cog_2026` with source-grounded evaluable structure + criteria/elements + reviewer-policy and source manifest traceability (follow-up from WF-0032). | 2026-02-26 |
-| 4 | Ingest real call data | product | After P1 #1-#4 are done (or bundled), deliver at least 1 complete call per promised program (NWO, ZonMw, ERC, MSCA) so landing claims match product reality. | 2026-02-16 |
-| 5 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
-| 6 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 7 | Add node hierarchy selector | product | Implement only after P1 #1-#3 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
-| 8 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 9 | Migrate `erc_cog_2026_full_official.yaml` to v2 (WF-0038-native) | tech-debt | Re-author/migrate ERC CoG YAML from legacy v1 shape (`short_name` + recursive `children`) to v2 call-definition shape (`funding_agency.id`, flat `proposal_nodes`, `parent_logical_id`) so it can be validated/ingested and safely routed through pipeline-v1. (Ref: user request 2026-02-28; file `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml`.) | 2026-02-28 |
-| 10 | Cross-call contract hardening for pipeline v1 | tech-debt | Extend WF-0043 deterministic matrix across multiple call codes and add deterministic `QUOTA_EXCEEDED`/`REVIEWS_DISABLED` coverage so universal review semantics are contract-proven before broader onboarding. (Ref: `next move` follow-up after WF-0038/0039/0040/0041/0043, 2026-03-02.) | 2026-03-02 |
-| 11 | Re-author ERC CoG + canonical validation baseline (source-gated per call) | product | Next WF scope: (1) primary target migrate `erc_cog_2026_full_official` legacy -> canonical v2 `erc_cog_2026_full`; (2) preflight validation baseline must pass for existing canonical calls `nwo_veni_2025_preproposal`, `nwo_vidi_2025_full_proposal`, `erc_stg_2026_full`; (3) in the same WF, re-author `nwo_vidi_2025_full_proposal` and `erc_stg_2026_full` from source PDFs too. For each call, stop and request official application-form + assessment-criteria PDFs separately before authoring that call YAML. (Ref: user directives, 2026-03-02.) | 2026-03-02 |
-| 12 | Optional follow-up expansion: add one new non-NWO call (MSCA first) | product | Parked separately from P1 #11: only if scope/time allows, add one new non-NWO call to maximize agency diversity without WF bloat; prefer MSCA first, then ZonMw in a follow-up WF. (Ref: user clarification on optional expansion, 2026-03-02.) | 2026-03-02 |
-| 13 | Universal Form: support nested call sections (ERC currently blocked) | product | Remove current nested-node gating in universal submit UI and render hierarchical calls (parent/child nodes) with stable ordering and clear labels so ERC calls no longer show “not yet supported”. (Ref: user report + screenshot, 2026-03-02.) | 2026-03-02 |
-| 14 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
+| 1 | Universal Form: nested/hierarchical submit support | product | Merge the still-open nested-call gap into one item: remove the current nested-node block in universal submit, render hierarchical parent/child sections safely, and stop preserving a duplicate “recursive UI” placeholder plus an ERC symptom-only duplicate. (Ref: WF-0035 Phase 0.2 risk audit Q1; user report 2026-03-02; current unsupported state in `UniversalSubmitForm`.) | 2026-02-22 |
+| 2 | Cross-call contract hardening for base review semantics | tech-debt | Extend deterministic cross-call coverage beyond the current proof set and add explicit `QUOTA_EXCEEDED` / `REVIEWS_DISABLED` assertions so universal review behavior is proven before broader onboarding. Keep this focused on real contract gaps, not another planning-only hardening pass. (Ref: `next move` follow-up after WF-0038/0039/0040/0041/0043, 2026-03-02.) | 2026-03-02 |
+| 3 | Expand coverage to the remaining promised call gap | product | Real call coverage now exists for NWO, ERC, and MSCA. Rewrite the old “ingest real call data” placeholder into the real remaining gap: add at least one credible ZonMw or equivalent missing promised-program call only after P1 #1-#2 are handled or explicitly bundled. (Ref: WF-0037, WF-0044, WF-0061, WF-0062, backlog audit 2026-03-08.) | 2026-02-16 |
+| 4 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 5 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 6 | Add node hierarchy selector | product | Implement only after P1 #1-#3 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
+| 7 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 8 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
 
-### P1 Rationale Snapshot (2026-02-26)
+### P1 Rationale Snapshot (2026-03-08)
 
-- Current launch blocker is the mismatch between promised multi-program coverage and call-specific frontend behavior.
-- Frontend call-agnostic foundations (WF-0035 + P1 #1-#2) are prioritized before broad data ingestion so added call YAMLs become immediately usable in UX.
-- ERC CoG re-authoring from official sources (P1 #3) is kept ahead of broad ingestion because it is the immediate quality/completeness follow-up from WF-0032.
-- Broad content expansion (P1 #4) should be promoted only after prerequisites are done (or explicitly bundled into one WF).
+- Current launch blocker is still the mismatch between promised multi-program coverage and incomplete truly universal submit behavior.
+- The nested/hierarchical submit gap is the main unresolved product bottleneck; do not hide it behind duplicate backlog rows or more call-authoring churn.
+- Cross-call hardening stays ahead of broader onboarding so new calls land on a contract surface that is actually proven across failure modes.
+- Broad content expansion should now target the remaining promised-program gap, not re-park already completed ERC/MSCA authoring work.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 
 Promotion dependency note:
 - If promoting P1 #4, first verify WF-0035 and P1 #1-#3 are done, or bundle them in the same WF with explicit dependency sequencing.
-- If promoting P1 #7, first verify WF-0035 and P1 #1-#2 are done (or included in that same WF).
+- If promoting P1 #6, first verify WF-0035 and P1 #1-#2 are done (or included in that same WF).
 
 ---
 
@@ -119,49 +114,55 @@ Promotion dependency note:
 | 4 | Add error monitoring (Sentry) | ops | Zero error tracking in production; blind to LLM timeouts, BFF failures, and client crashes with real users. ([Conv: 8c803359-d2c1-4594-aaf6-78da7fd6d305](vscode://cortex-app.antigravity/conversation?id=8c803359-d2c1-4594-aaf6-78da7fd6d305)) | 2026-02-16 |
 | 5 | E2E: Critical Negative Scenarios | ops | Run automated E2E tests for missing mandatory nodes, wrong stages, and policy-blocking content to prove operational readiness. (Ref: Architect Feedback Step 6) ([Conv: 8c803359-d2c1-4594-aaf6-78da7fd6d305](vscode://cortex-app.antigravity/conversation?id=8c803359-d2c1-4594-aaf6-78da7fd6d305)) | 2026-02-26 |
 | 6 | E2E: Happy-path ERC Sample | ops | Run a full happy-path E2E with a sample ERC proposal text (submit -> process -> cards shown correctly). (Ref: Architect Feedback Step 6) ([Conv: 8c803359-d2c1-4594-aaf6-78da7fd6d305](vscode://cortex-app.antigravity/conversation?id=8c803359-d2c1-4594-aaf6-78da7fd6d305)) | 2026-02-26 |
-| 7 | Set up Alembic migration baseline | tech-debt | Neon Postgres is live with `create_all()` — one schema change will silently break prod; create baseline migration. | 2026-02-16 |
-| 8 | Prompt quality tuning | product | Test AI output quality with real ERC/NWO proposals; tune `PromptTemplate` for actionable, criteria-specific feedback. | 2026-02-16 |
-| 9 | Production hardening | ops | Lock CORS, verify rate limiting beyond daily quota, add custom 404 page, tune Vercel/Render timeout alignment. | 2026-02-16 |
-| 10 | Structured review: single mega-prompt optimization | product | Replace per-node sequential LLM calls with a single mega-prompt for all nodes — fewer API calls, lower latency. Directly mitigates the 3× latency risk (15–45s) identified in WF-0029 brainstorm S6 Q4. Requires new prompt template + parser. (Ref: WF-0029 brainstorm Q4.2 option B) | 2026-02-22 |
-| 11 | Structured review: LLM-generated overall summary | product | After per-node reviews, add an additional LLM call to synthesize a holistic cross-node summary (alignment, strengths, gaps). (Ref: WF-0029 brainstorm Q4.4 option A) | 2026-02-22 |
-| 12 | Structured review: parallel per-node LLM calls | product | Fire LLM calls concurrently instead of sequentially — faster wall-clock time but adds rate-limiting and error-handling complexity. May be unnecessary if mega-prompt (P2 #5) is adopted instead. (Ref: WF-0029 brainstorm S4 Q2 option C, S8 Q5) | 2026-02-22 |
-| 13 | Structured review: batch submission of multiple proposals | product | Allow submitting multiple proposals or revisions in one request. May not be needed depending on app evolution. (Ref: WF-0029 brainstorm S8 Q5) | 2026-02-22 |
-| 14 | Structured review: async processing / polling | product | Synchronous MVP may hit 90s worst-case latency. Async would POST → return review_id → poll for completion. Adds WebSocket/polling complexity. (Ref: WF-0029 PRD v0.3 deferral) | 2026-02-22 |
-| 15 | Structured review: `StructuredSubmission` aggregate table | tech-debt | Replace JSONB `structured_payload` on Review with a proper normalized aggregate table linking multiple `ProposalSnippet` rows to one Review. Enables per-node audit history and replay. (Ref: WF-0029 brainstorm §9.1 option A, deferred in PRD v0.3) | 2026-02-22 |
-| 16 | Structured review: per-node grouped detail endpoint | product | New `/reviews/{id}/structured` endpoint returning `nodes[].cards[]` grouped response. Current MVP uses flat `cards[]` from existing detail endpoint. (Ref: WF-0029 PRD v0.3 deferral) | 2026-02-22 |
-| 17 | Assisted extraction via document upload (.docx / .pdf) | product | Use a service like MarkItDown or an MCP tool to parse uploaded documents and auto-populate the structured UI inputs (reducing copy-paste friction with tables/images). (Ref: WF-0030 S1 Q2) | 2026-02-22 |
-| 18 | Machine validation of page-based constraints (`max_pages`) | product | `max_pages` is currently authored merely as a UI signaling field. Since the MVP uses plain text strings rather than PDF uploads, we cannot physically count pages. Add a rough heuristic (e.g., 1 page = 4000 chars) or PDF parsing to strictly enforce this in the backend. (Ref: WF-0032 Brainstorm Section 6) | 2026-02-25 |
-| 19 | Deprecate `POST /reviews` (migrate to structured-only create flow) | tech-debt | Follow-on WF: make `POST /api/structured-review` support single-node UX cleanly (idempotency + persistence + errors), migrate frontend/BFF, then deprecate `POST /reviews` with a compatibility window. (Ref: WF-0034 Phase 0.1 chat: [WF-0034-phase-0-1](chats/wf/WF-0034-phase-0-1.md), 2026-02-26; branch `wf/WF-0034-unify-review-execution-core`; commit `a53843a`.) | 2026-02-26 |
-| 20 | Universal Form: Markdown / rich-text inputs per node | idea | MVP is plain text only. Follow-on: support Markdown or rich text per node (copy-paste with basic formatting) without breaking compliance counting and backend normalization. (Ref: WF-0035 brainstorm Q3 in Target User / Actor.) | 2026-02-26 |
-| 21 | Universal Form: Unify legacy single-snippet mode | idea | Follow-on: fold `legacy_single_snippet` calls into the same universal submit experience (selection + UX) without breaking current behavior; keep structured-node and legacy semantics explicit. (Ref: WF-0035 brainstorm MVP Definition Q5.) | 2026-02-26 |
-| 22 | Call onboarding: DB/API preflight for new call YAMLs | ops | Standardize a smoke-test checklist after ingesting a new call into DB (`/calls`, `/calls/{id}/nodes`, `/public config`, `/nodes/metadata`) to catch mapping/shape issues before frontend work. (Ref: WF-0037 brainstorm v0.1, Q1.) | 2026-02-27 |
-| 23 | Call YAML: domain/pilot variants scaffolding | idea | Don’t invent `domain_id` branching unless the official call defines it; follow-on: define a universal pattern for when/how to introduce domain selection and per-domain constraints. (Ref: WF-0037 brainstorm v0.2 Section 3 Q3.) | 2026-02-27 |
-| 24 | Compliance UX: “informational-only constraints” mode | idea | Add a way to surface constraints (fonts/margins/page layout etc.) in compliance check output as informational guidance without pretending they’re enforceable/deterministic. (Ref: WF-0037 brainstorm v0.3 Section 4 Q5; user request in chat.) | 2026-02-27 |
-| 25 | Call YAML schema: separate evaluable vs non-evaluable guidance fields | idea | Add explicit fields to keep “evaluation-tied guidance” separate from “helpful but non-evaluable explanatory notes”, so prompts can stay honest while still helping applicants. (Ref: WF-0037 brainstorm v0.4 Section 5 Q2; user request in chat.) | 2026-02-27 |
-| 26 | Universal Form: add backend structured-calls listing/filter endpoint | tech-debt | Replace frontend N+1 config gating with one backend-filtered list (e.g., `ui_mode=structured_nodes`) only after WF-0035 ships; keeps current WF scoped to existing APIs while reducing latency/failure fanout later. (Ref: WF-0035 brainstorm “Post-WF-0032..WF-0037 Reality Check” Q3 selected A; WF-0035 PRD v0.2 FR16/C1.) | 2026-02-28 |
-| 27 | Universal Form: canonical domain-options contract for UI | product | Remove interim per-call frontend domain-options mapping by adding source-grounded domain options to the canonical call-definition/public metadata/config contract. (Ref: WF-0035 brainstorm “Post-WF-0032..WF-0037 Reality Check” Q1 selected A; AD 35.4 in `docs/logs/decisions.md`.) | 2026-02-28 |
-| 28 | Universal Form: large-form navigation for >10 nodes | product | Add section navigation/stepper/TOC patterns for larger flat calls once MVP universality is stable; avoid bundling this UX expansion into WF-0035’s 3–10 node target. (Ref: WF-0035 brainstorm “Target User / Actor” Q5 selected A; PRD v0.2 Target scope.) | 2026-02-28 |
-| 29 | Universal Submit: split orchestration into dedicated hooks/modules | tech-debt | Defer large `UniversalSubmitForm` decomposition into focused hooks (`gating`, `render-model`, `submit orchestration`, `draft persistence`) to a new WF to reduce regression risk post-WF-0035 ship gate. (Ref: WF-0035 adversarial audit follow-up, branch `wf/WF-0035-universal-form-dynamic-ui-renderer`.) | 2026-02-28 |
-| 30 | Surface `DiagnosticFinding v1` directly in UI/API (deprecate `ReviewCard` adapter) | idea | Follow-on to WF-0038: make `DiagnosticFinding v1` the externally consumed contract (UI/API/analytics) and retire `DiagnosticFinding v1 → ReviewCard` compatibility mapping after a transition window. (Ref: WF-0038 PRD v0.2 + AD 38.15.) | 2026-02-28 |
-| 31 | [IGNORED] Adopt Ralph-style fresh-context execution | idea | Deferral from WF-0046. Ignored (2026-03-04): User rejected this because forcing the developer to manually swap chat windows and copy-paste prompts for every single task introduces far too much manual overhead and slows down the flow state. | 2026-03-04 |
-| 32 | Universal review: explicit supporting-context contract beyond WF-0063 MVP | product | Follow-up only after WF-0063 proof-call parity: model the third axis explicitly so official nodes can be visible, primary-reviewed, or supporting-context participants without overloading `node_expectations` or implying fake primary scoring. Scope should cover explicit contract fields/derivation, request semantics if context submission is added, and review-detail semantics for context participation. (Ref: `docs/brainstorms/brainstorm-WF-0063-universal-node-visibility-reviewability.md` §9, `docs/prds/prd-WF-0063-universal-node-visibility-reviewability.md` DS1/DS3/FR9/FR11/FR12, architect recommendation in chat 2026-03-08.) | 2026-03-08 |
+| 7 | Prompt quality tuning | product | Test AI output quality with real ERC/NWO proposals; tune `PromptTemplate` for actionable, criteria-specific feedback. | 2026-02-16 |
+| 8 | Production hardening | ops | Lock CORS, verify rate limiting beyond daily quota, add custom 404 page, tune Vercel/Render timeout alignment. | 2026-02-16 |
+| 9 | Structured review: single mega-prompt optimization | product | Replace per-node sequential LLM calls with a single mega-prompt for all nodes — fewer API calls, lower latency. Directly mitigates the 3x latency risk (15-45s) identified in WF-0029 brainstorm S6 Q4. Requires new prompt template + parser. (Ref: WF-0029 brainstorm Q4.2 option B) | 2026-02-22 |
+| 10 | Structured review: LLM-generated overall summary | product | After per-node reviews, add an additional LLM call to synthesize a holistic cross-node summary (alignment, strengths, gaps). (Ref: WF-0029 brainstorm Q4.4 option A) | 2026-02-22 |
+| 11 | Structured review: parallel per-node LLM calls | product | Fire LLM calls concurrently instead of sequentially — faster wall-clock time but adds rate-limiting and error-handling complexity. May be unnecessary if mega-prompt (P2 #9) is adopted instead. (Ref: WF-0029 brainstorm S4 Q2 option C, S8 Q5) | 2026-02-22 |
+| 12 | Structured review: batch submission of multiple proposals | product | Allow submitting multiple proposals or revisions in one request. May not be needed depending on app evolution. (Ref: WF-0029 brainstorm S8 Q5) | 2026-02-22 |
+| 13 | Backend async review execution beyond existing detail polling | product | Review detail already polls; the deferred gap is backend async job orchestration and terminal-status handling beyond the current synchronous create path. Keep this framed as backend/runtime work, not as if polling were still missing. (Ref: WF-0029 PRD v0.3 deferral; WF-0017 bounded polling already done.) | 2026-02-22 |
+| 14 | Structured review: `StructuredSubmission` aggregate table | tech-debt | Replace JSONB `structured_payload` on Review with a proper normalized aggregate table linking multiple `ProposalSnippet` rows to one Review. Enables per-node audit history and replay. (Ref: WF-0029 brainstorm §9.1 option A, deferred in PRD v0.3) | 2026-02-22 |
+| 15 | Structured review: per-node grouped detail endpoint | product | New `/reviews/{id}/structured` endpoint returning `nodes[].cards[]` grouped response. Current MVP uses flat `cards[]` from existing detail endpoint. (Ref: WF-0029 PRD v0.3 deferral) | 2026-02-22 |
+| 16 | Assisted extraction via document upload (.docx / .pdf) | product | Use a service like MarkItDown or an MCP tool to parse uploaded documents and auto-populate the structured UI inputs (reducing copy-paste friction with tables/images). (Ref: WF-0030 S1 Q2) | 2026-02-22 |
+| 17 | Machine validation of page-based constraints (`max_pages`) | product | `max_pages` is currently authored merely as a UI signaling field. Since the MVP uses plain text strings rather than PDF uploads, we cannot physically count pages. Add a rough heuristic (e.g., 1 page = 4000 chars) or PDF parsing to strictly enforce this in the backend. (Ref: WF-0032 Brainstorm Section 6) | 2026-02-25 |
+| 18 | Deprecate `POST /reviews` (migrate to structured-only create flow) | tech-debt | Follow-on WF: make `POST /api/structured-review` support single-node UX cleanly (idempotency + persistence + errors), migrate frontend/BFF, then deprecate `POST /reviews` with a compatibility window. (Ref: WF-0034 Phase 0.1 chat: [WF-0034-phase-0-1](chats/wf/WF-0034-phase-0-1.md), 2026-02-26; branch `wf/WF-0034-unify-review-execution-core`; commit `a53843a`.) | 2026-02-26 |
+| 19 | Universal Form: Markdown / rich-text inputs per node | idea | MVP is plain text only. Follow-on: support Markdown or rich text per node (copy-paste with basic formatting) without breaking compliance counting and backend normalization. (Ref: WF-0035 brainstorm Q3 in Target User / Actor.) | 2026-02-26 |
+| 20 | Universal Form: Unify legacy single-snippet mode | idea | Follow-on: fold `legacy_single_snippet` calls into the same universal submit experience (selection + UX) without breaking current behavior; keep structured-node and legacy semantics explicit. (Ref: WF-0035 brainstorm MVP Definition Q5.) | 2026-02-26 |
+| 21 | Call onboarding: DB/API preflight for new call YAMLs | ops | Standardize a smoke-test checklist after ingesting a new call into DB (`/calls`, `/calls/{id}/nodes`, `/public config`, `/nodes/metadata`) to catch mapping/shape issues before frontend work. (Ref: WF-0037 brainstorm v0.1, Q1.) | 2026-02-27 |
+| 22 | Call YAML: domain/pilot variants scaffolding | idea | Don’t invent `domain_id` branching unless the official call defines it; follow-on: define a universal pattern for when/how to introduce domain selection and per-domain constraints. (Ref: WF-0037 brainstorm v0.2 Section 3 Q3.) | 2026-02-27 |
+| 23 | Compliance UX: “informational-only constraints” mode | idea | Add a way to surface constraints (fonts/margins/page layout etc.) in compliance check output as informational guidance without pretending they’re enforceable/deterministic. (Ref: WF-0037 brainstorm v0.3 Section 4 Q5; user request in chat.) | 2026-02-27 |
+| 24 | Call YAML schema: separate evaluable vs non-evaluable guidance fields | idea | Add explicit fields to keep “evaluation-tied guidance” separate from “helpful but non-evaluable explanatory notes”, so prompts can stay honest while still helping applicants. (Ref: WF-0037 brainstorm v0.4 Section 5 Q2; user request in chat.) | 2026-02-27 |
+| 25 | Universal Form: add backend structured-calls listing/filter endpoint | tech-debt | Replace frontend N+1 config gating with one backend-filtered list (e.g., `ui_mode=structured_nodes`) only after WF-0035 ships; keeps current WF scoped to existing APIs while reducing latency/failure fanout later. (Ref: WF-0035 brainstorm “Post-WF-0032..WF-0037 Reality Check” Q3 selected A; WF-0035 PRD v0.2 FR16/C1.) | 2026-02-28 |
+| 26 | Universal Form: canonical domain-options contract for UI | product | Remove interim per-call frontend domain-options mapping by adding source-grounded domain options to the canonical call-definition/public metadata/config contract. (Ref: WF-0035 brainstorm “Post-WF-0032..WF-0037 Reality Check” Q1 selected A; AD 35.4 in `docs/logs/decisions.md`.) | 2026-02-28 |
+| 27 | Universal Form: large-form navigation for >10 nodes | product | Add section navigation/stepper/TOC patterns for larger flat calls once MVP universality is stable; avoid bundling this UX expansion into WF-0035’s 3-10 node target. (Ref: WF-0035 brainstorm “Target User / Actor” Q5 selected A; PRD v0.2 Target scope.) | 2026-02-28 |
+| 28 | Universal Submit: split orchestration into dedicated hooks/modules | tech-debt | Defer large `UniversalSubmitForm` decomposition into focused hooks (`gating`, `render-model`, `submit orchestration`, `draft persistence`) to a new WF to reduce regression risk post-WF-0035 ship gate. (Ref: WF-0035 adversarial audit follow-up, branch `wf/WF-0035-universal-form-dynamic-ui-renderer`.) | 2026-02-28 |
+| 29 | Surface `DiagnosticFinding v1` directly in UI/API (deprecate `ReviewCard` adapter) | idea | Follow-on to WF-0038: make `DiagnosticFinding v1` the externally consumed contract (UI/API/analytics) and retire `DiagnosticFinding v1 -> ReviewCard` compatibility mapping after a transition window. (Ref: WF-0038 PRD v0.2 + AD 38.15.) | 2026-02-28 |
+| 30 | Universal review: explicit supporting-context contract beyond WF-0063 MVP | product | Do not promote for launch-baseline work. Promote only after the split contract is proven beyond the MSCA proof call and after cross-call hardening is complete, because this changes semantics, not just visibility. WF should explicitly define: which supporting nodes may influence primary review, whether context is opt-in or automatic, request/persistence boundaries, fail-closed validation, prompt/runtime behavior, and review-detail/user-facing labels proving when supporting content was visible vs primary-reviewed vs context-used. Trigger to promote: once current launch-critical submit/review contract work is done and we have a concrete product answer to “what exactly may supporting content influence?” If that answer is still vague, keep parked. (Ref: `docs/brainstorms/brainstorm-WF-0063-universal-node-visibility-reviewability.md` §9, `docs/prds/prd-WF-0063-universal-node-visibility-reviewability.md` DS1/DS3/FR9/FR11/FR12, WF-0063 closure clarification chat 2026-03-08.) | 2026-03-08 |
+
+## Rejected / Ignored
+
+| Task | Status | Rationale | Date |
+|---|---|---|---|
+| Adopt Ralph-style fresh-context execution | Ignored | User rejected this because forcing manual chat/window swapping and repeated copy-paste prompts adds overhead and breaks flow. Keep out of the active numbered backlog. (Ref: WF-0046 deferral.) | 2026-03-04 |
 
 ---
 
 ## WF Initiative Log (All WF IDs)
 
-| Seq | WF ID | Slug / Initiative | Origin | Backlog Ref | Date |
+Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slot used when that WF was promoted. It is provenance only, not a promise that the same numbered slot still exists or means the same thing today.
+
+| Seq | WF ID | Slug / Initiative | Origin | Backlog Ref At Promotion | Date |
 |---|---|---|---|---|---|
 | 1 | WF-0009 | peerlens-landing-page | started-directly | - | unknown |
 | 2 | WF-0010 | peerlens-landing-design-refresh | started-directly | - | unknown |
 | 3 | WF-0011 | local-postgres-dev-db | started-directly | - | unknown |
 | 4 | WF-0012 | alembic-migration-baseline | started-directly | - | unknown |
-| 5 | WF-0013 | app-shell-signout | promoted | P0 #1 | 2026-02-16 |
-| 6 | WF-0014 | review-history | promoted | P0 #2 | 2026-02-16 |
+| 5 | WF-0013 | app-shell-signout | promoted | P0 #1 (historical) | 2026-02-16 |
+| 6 | WF-0014 | review-history | promoted | P0 #2 (historical) | 2026-02-16 |
 | 7 | WF-0015 | practices-upgrade | promoted | P1 #3 (historical) | 2026-02-17 |
-| 8 | WF-0016 | review-results-ux | promoted | P0 #4 | 2026-02-17 |
-| 9 | WF-0017 | auto-polling-processing-reviews | promoted | P0 #5 | 2026-02-18 |
-| 10 | WF-0018 | harden-submit-flow-ux | promoted | P0 #6 | 2026-02-18 |
+| 8 | WF-0016 | review-results-ux | promoted | P0 #4 (historical) | 2026-02-17 |
+| 9 | WF-0017 | auto-polling-processing-reviews | promoted | P0 #5 (historical) | 2026-02-18 |
+| 10 | WF-0018 | harden-submit-flow-ux | promoted | P0 #6 (historical) | 2026-02-18 |
 | 11 | WF-0019 | add-loading-empty-states | promoted | P1 #7 (historical) | 2026-02-18 |
 | 12 | WF-0020 | nwo-veni-2025-preproposal-wf1 | promoted | P1 #8 (historical) | 2026-02-21 |
 | 13 | WF-0021 | nwo-veni-2025-preproposal-wf2 | promoted | P1 #9 (historical) | 2026-02-21 |
@@ -177,25 +178,27 @@ Promotion dependency note:
 | 23 | WF-0032 | erc-2026-stg | started-directly | - | 2026-02-26 |
 | 24 | WF-0033 | data-contract-foundation | promoted | P2 #15 (historical) | 2026-02-26 |
 | 25 | WF-0034 | unify-review-execution-core | promoted | P2 #16 (historical) | 2026-02-26 |
-| 26 | WF-0035 | universal-form-dynamic-ui-renderer | promoted | P1 #1 | 2026-02-26 |
-| 27 | WF-0036 | nwo-veni-2025-preproposal-yaml-reauthor | promoted | P1 #9 | 2026-02-26 |
+| 26 | WF-0035 | universal-form-dynamic-ui-renderer | promoted | P1 #1 (historical) | 2026-02-26 |
+| 27 | WF-0036 | nwo-veni-2025-preproposal-yaml-reauthor | promoted | P1 #9 (historical) | 2026-02-26 |
 | 28 | WF-0037 | nwo-vidi-2025-full-proposal-yaml-reauthor | started-directly | - | 2026-02-27 |
 | 29 | WF-0038 | peerlens-review-engine-pipeline-v1 | started-directly | - | 2026-02-28 |
 | 30 | WF-0039 | structured-pipeline-v1-rollout | started-directly | - | 2026-03-01 |
-| 31 | WF-0040 | structured-pipeline-v1-legacy-retirement | promoted | P1 #10 | 2026-03-01 |
-| 32 | WF-0041 | nwo-veni-2025-preproposal-single-call-mvp | promoted | P0 #1 | 2026-03-01 |
+| 31 | WF-0040 | structured-pipeline-v1-legacy-retirement | promoted | P1 #10 (historical) | 2026-03-01 |
+| 32 | WF-0041 | nwo-veni-2025-preproposal-single-call-mvp | promoted | P0 #1 (historical) | 2026-03-01 |
 | 33 | WF-0042 | agent-memory-system | started-directly | - | 2026-03-01 |
-| 34 | WF-0043 | nwo-veni-2025-preproposal-single-call-mvp-harden | promoted | P0 #1 | 2026-03-01 |
+| 34 | WF-0043 | nwo-veni-2025-preproposal-single-call-mvp-harden | promoted | P0 #1 (historical) | 2026-03-01 |
 | 35 | WF-0045 | base-review-pipeline-v1-call-agnostic | promoted | P1 #15 (historical same-day park/pick; numbering later reused) | 2026-03-03 |
 | 36 | WF-0046 | agent-instruction-optimization | started-directly | - | 2026-03-04 |
-| 37 | WF-0047 | git-hooks-rule-enforcement | promoted | P2 #31 | 2026-03-04 |
-| 38 | WF-0048 | agency-call-variability-policy | promoted | P1 #15 | 2026-03-04 |
-| 39 | WF-0057 | ops-evidence-debt-closure | promoted | P1 #10 | 2026-03-06 |
+| 37 | WF-0047 | git-hooks-rule-enforcement | promoted | P2 #31 (historical) | 2026-03-04 |
+| 38 | WF-0048 | agency-call-variability-policy | promoted | P1 #15 (historical) | 2026-03-04 |
+| 39 | WF-0057 | ops-evidence-debt-closure | promoted | P1 #10 (historical) | 2026-03-06 |
 | 40 | WF-0062 | erc-cog-2026-contract-model-correction | started-directly | - | 2026-03-07 |
 
 ---
 
 ## Revision History
+
+Note: backlog slot references inside revision-history entries (for example `P1 #10`) describe the numbering that existed at the time of that edit. They are historical snapshots, not guaranteed matches to the current active tables.
 
 - **v0.1** (2026-02-13): Created as a dedicated parking place for snapshot + priorities + non-urgent TODOs.
 - **v0.2** (2026-02-16): Restructured into P0/P1/P2 priority tables with independent numbering, code phrase (`park this`), and promotion mechanics. Pre-populated 15 MVP readiness items from deep frontend + infra audit.
@@ -231,3 +234,6 @@ Promotion dependency note:
 - **v3.1** (2026-03-03): Parked two critical deferred follow-ups from WF-0045 Phase 0.1: agency/call-specific variability policy definition and optional competitive-analysis extension boundary design.
 - **v3.2** (2026-03-03): Clarified WF-0045 initiative-log backlog reference as historical to avoid confusion with later reused active P1 numbering.
 - **v3.3** (2026-03-04): Appended deferred improvements from WF-0046 brainstorm to P2 tracking (hooks-based rule enforcement and Ralph-style zero-context loops).
+- **v3.5** (2026-03-08): Backlog audit cleanup removed already-implemented items (Alembic baseline, review-detail hardcoded mapping, completed ERC CoG/MSCA expansion placeholders), merged duplicate nested-submit items, rewrote stale coverage/async entries to match current repo reality, and moved the rejected fresh-context idea out of the active priority table.
+- **v3.6** (2026-03-08): Second-pass WF initiative log wording audit renamed the backlog-reference column to historical promotion provenance, added an explicit note, and normalized promoted rows to mark backlog refs as historical snapshots rather than live active-slot references.
+- **v3.7** (2026-03-08): Strengthened P2 #30 with explicit promotion timing and gating: treat supporting-context semantics as post-launch-baseline work only, after multi-call proof and cross-call hardening, and only when product semantics are concrete enough to specify influence boundaries honestly.
