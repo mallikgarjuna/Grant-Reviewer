@@ -1,9 +1,15 @@
+"""backend/tests/test_review_engine_pipeline_v1.py
+Pipeline v1 deterministic and contract tests.
+"""
+
 from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import Path
 
 import pytest
+import yaml
 
 from app.engine.contracts import ActivatedCallConfigSnapshotV1, ReviewRequestV1
 from app.engine.pipeline_v1 import CORE_STAGE_SEQUENCE, run_review_pipeline
@@ -36,6 +42,51 @@ def _minimal_request() -> ReviewRequestV1:
         },
         proposal_nodes={"research_idea": "Clear proposal text."},
     )
+
+
+def _wf0065_representative_cases() -> list[dict[str, str]]:
+    return [
+        {
+            "case_id": "nwo_veni_2025_preproposal",
+            "call_path": "data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml",
+            "stage": "STEP_1",
+            "node_logical_id": "key_outputs",
+            "node_text": "Representative proof text for NWO key outputs.",
+        },
+        {
+            "case_id": "erc_stg_2026_full",
+            "call_path": "data/calls/canonical/erc/erc_stg_2026_full.yaml",
+            "stage": "STEP_1",
+            "node_logical_id": "proposal_summary",
+            "node_text": "Representative proof text for ERC proposal summary.",
+        },
+        {
+            "case_id": "MSCA-PF-2025",
+            "call_path": "data/calls/canonical/msca/msca_pf_2025_full.yaml",
+            "stage": "STEP_1",
+            "node_logical_id": "excellence",
+            "node_text": "Representative proof text for MSCA excellence.",
+        },
+    ]
+
+
+def _wf0065_snapshot_from_call(call_path: str) -> dict[str, object]:
+    call_snapshot = yaml.safe_load(Path(call_path).read_text(encoding="utf-8"))
+    expectations: list[dict[str, object]] = []
+    for node in call_snapshot["proposal_nodes"]:
+        node_logical_id = node["id"]
+        for node_expectation in node.get("node_expectations", []):
+            expectation_payload: dict[str, object] = {
+                "expectation_id": f"{node_logical_id}:{node_expectation['evaluation_element_id']}",
+                "node_logical_id": node_logical_id,
+            }
+            if node_expectation.get("expectation_strength") == "MANDATORY":
+                expectation_payload["required"] = True
+            expectations.append(expectation_payload)
+    return {
+        "schema_version": "v1",
+        "expectations": expectations,
+    }
 
 
 def test_tracer_bullet_deterministic_pipeline_path() -> None:
@@ -71,6 +122,74 @@ def test_wf0045_contract_tracer_happy_path() -> None:
     assert json.dumps(first.to_dict(), sort_keys=True) == json.dumps(
         second.to_dict(),
         sort_keys=True,
+    )
+
+
+def test_wf0065_nwo_pipeline_v1_tracer_uses_real_canonical_snapshot() -> None:
+    """WF-0065 tracer: pipeline_v1 executes against NWO canonical activated snapshot."""
+    canonical_snapshot = _wf0065_snapshot_from_call(
+        "data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml"
+    )
+    digest = "sha256:" + hashlib.sha256(
+        canonicalize_for_digest(canonical_snapshot).encode("utf-8")
+    ).hexdigest()
+    payload = {
+        "request_id": "wf0065-nwo-pipeline",
+        "mode": "DIAGNOSTIC",
+        "stage_ref": "STEP_1",
+        "call_config_digest": digest,
+        "call_config_snapshot": canonical_snapshot,
+        "proposal_nodes": {
+            "key_outputs": "Tracer bullet text proving the real canonical path.",
+        },
+    }
+
+    request = validate_review_request_payload(payload)
+    result = run_review_pipeline(request)
+
+    assert result.pipeline_status == "SUCCESS"
+    assert result.failure_code is None
+    assert result.compatibility_output["status"] == "COMPLETED"
+    assert len(result.review_cards) >= 1
+    assert any(
+        finding.subject_ref.node_logical_id == "key_outputs" for finding in result.findings
+    )
+
+
+@pytest.mark.parametrize(
+    "case",
+    _wf0065_representative_cases(),
+    ids=lambda case: f"wf0065_pipeline_representative_{case['case_id']}",
+)
+def test_wf0065_pipeline_v1_representative_success_matrix(case: dict[str, str]) -> None:
+    """WF-0065 matrix: pipeline_v1 parity for locked representative calls."""
+    canonical_snapshot = _wf0065_snapshot_from_call(case["call_path"])
+    digest = "sha256:" + hashlib.sha256(
+        canonicalize_for_digest(canonical_snapshot).encode("utf-8")
+    ).hexdigest()
+    payload = {
+        "request_id": f"wf0065-pipeline-{case['case_id']}",
+        "mode": "DIAGNOSTIC",
+        "stage_ref": case["stage"],
+        "call_config_digest": digest,
+        "call_config_snapshot": canonical_snapshot,
+        "proposal_nodes": {
+            case["node_logical_id"]: case["node_text"],
+        },
+    }
+
+    request = validate_review_request_payload(payload)
+    result = run_review_pipeline(request)
+
+    assert result.pipeline_status == "SUCCESS"
+    assert result.failure_code is None
+    assert result.compatibility_output["status"] == "COMPLETED"
+    assert isinstance(result.compatibility_output["cards"], list)
+    assert len(result.review_cards) >= 1
+    assert len(result.findings) >= 1
+    assert any(
+        finding.subject_ref.node_logical_id == case["node_logical_id"]
+        for finding in result.findings
     )
 
 

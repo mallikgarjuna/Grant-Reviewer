@@ -1,3 +1,4 @@
+<!-- docs/workflow/phase-1-or-2-run-planning.md -->
 # Workflow Runner — Phase 1/2 (Planning)
 
 This file is a workflow instruction orchestrator.
@@ -115,7 +116,8 @@ After completing Part C, output:
      - hallucination/scope-drift detection versus approved prior-phase artifacts (if any),
      - strict reporting of bugs/missing tests/design issues/suggested fixes,
      - safe closure of all justified findings (blocking mandatory; non-blocking unless rejected with rationale),
-     - and explicit pass/fail verification evidence before any ship recommendation.
+     - explicit pass/fail verification evidence before any ship recommendation,
+     - and end with this exact instruction: `And then: Address ALL your audit findings (raised bugs/tests/issues/fixes/comments/etc.) safely and carefully.`
 3. **Traceability Statement (Required)**:
    - Part A output reviewed in Part B: `<yes/no>` + `<path/version>`
    - Part B feedback applied in Part C: `<yes/no>` + `<key edits>`

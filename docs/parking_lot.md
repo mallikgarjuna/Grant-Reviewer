@@ -81,26 +81,24 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | Universal Form: close opted-in hierarchical submit proof gap | product | Replace the stale "remove nested-node block" framing with the real remaining gap: opted-in hierarchical calls already render, but the MSCA proof path is still not defensible end-to-end because supporting nodes are editable yet dropped from compliance/submit, cleared on success, and omitted from review-detail supporting-context coverage. Keep scope to one proof path, not generic multi-call expansion. (Ref: WF-0064 Phase 0 audit, 2026-03-08; WF-0063 decisions/tests.) | 2026-02-22 |
-| 2 | Cross-call contract hardening for base review semantics | tech-debt | Extend deterministic cross-call coverage beyond the current proof set and add explicit `QUOTA_EXCEEDED` / `REVIEWS_DISABLED` assertions so universal review behavior is proven before broader onboarding. Keep this focused on real contract gaps, not another planning-only hardening pass. (Ref: `next move` follow-up after WF-0038/0039/0040/0041/0043, 2026-03-02.) | 2026-03-02 |
-| 3 | Expand coverage to the remaining promised call gap | product | Real call coverage now exists for NWO, ERC, and MSCA. Rewrite the old “ingest real call data” placeholder into the real remaining gap: add at least one credible ZonMw or equivalent missing promised-program call only after P1 #1-#2 are handled or explicitly bundled. (Ref: WF-0037, WF-0044, WF-0061, WF-0062, backlog audit 2026-03-08.) | 2026-02-16 |
-| 4 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
-| 5 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 6 | Add node hierarchy selector | product | Implement only after P1 #1-#3 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
-| 7 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 8 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
+| 1 | Expand coverage to the remaining promised call gap | product | Real call coverage now exists for NWO, ERC, and MSCA. Add at least one credible ZonMw or equivalent missing promised-program call only after cross-call contract hardening is done or explicitly bundled, so breadth lands on a contract surface that is already proven. (Ref: WF-0037, WF-0044, WF-0061, WF-0062, backlog audit 2026-03-08.) | 2026-02-16 |
+| 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 3 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Optional extraction UX that requires explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 4 | Add node hierarchy selector | product | Implement only after P1 #1 so selector behavior sits on dynamic/call-aware foundations rather than one-off UI logic. | 2026-02-16 |
+| 5 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 6 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
 
 ### P1 Rationale Snapshot (2026-03-08)
 
-- Current launch blocker is still the mismatch between promised multi-program coverage and incomplete truly universal submit behavior.
-- The remaining hierarchical submit gap is no longer the old renderer hard-block; it is the still-undefended proof-path contract/UX gap on the opted-in split-visibility flow.
+- WF-0063 and WF-0064 closed the proof-call split-visibility and opted-in hierarchical submit gap for `MSCA-PF-2025`; that work should no longer sit in active P1.
+- Current launch blocker is now the mismatch between promised multi-program coverage and insufficient proof that the base review contract holds across calls and failure modes.
 - Cross-call hardening stays ahead of broader onboarding so new calls land on a contract surface that is actually proven across failure modes.
 - Broad content expansion should now target the remaining promised-program gap, not re-park already completed ERC/MSCA authoring work.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 
 Promotion dependency note:
-- If promoting P1 #4, first verify WF-0035 and P1 #1-#3 are done, or bundle them in the same WF with explicit dependency sequencing.
-- If promoting P1 #6, first verify WF-0035 and P1 #1-#2 are done (or included in that same WF).
+- If promoting P1 #2, first verify WF-0035 and P1 #1 are done, or bundle them in the same WF with explicit dependency sequencing.
+- If promoting P1 #4, first verify WF-0035 and P1 #1 are done (or included in that same WF).
 
 ---
 
@@ -137,7 +135,7 @@ Promotion dependency note:
 | 27 | Universal Form: large-form navigation for >10 nodes | product | Add section navigation/stepper/TOC patterns for larger flat calls once MVP universality is stable; avoid bundling this UX expansion into WF-0035’s 3-10 node target. (Ref: WF-0035 brainstorm “Target User / Actor” Q5 selected A; PRD v0.2 Target scope.) | 2026-02-28 |
 | 28 | Universal Submit: split orchestration into dedicated hooks/modules | tech-debt | Defer large `UniversalSubmitForm` decomposition into focused hooks (`gating`, `render-model`, `submit orchestration`, `draft persistence`) to a new WF to reduce regression risk post-WF-0035 ship gate. (Ref: WF-0035 adversarial audit follow-up, branch `wf/WF-0035-universal-form-dynamic-ui-renderer`.) | 2026-02-28 |
 | 29 | Surface `DiagnosticFinding v1` directly in UI/API (deprecate `ReviewCard` adapter) | idea | Follow-on to WF-0038: make `DiagnosticFinding v1` the externally consumed contract (UI/API/analytics) and retire `DiagnosticFinding v1 -> ReviewCard` compatibility mapping after a transition window. (Ref: WF-0038 PRD v0.2 + AD 38.15.) | 2026-02-28 |
-| 30 | Universal review: explicit supporting-context contract beyond WF-0063 MVP | product | Do not promote for launch-baseline work. Promote only after the split contract is proven beyond the MSCA proof call and after cross-call hardening is complete, because this changes semantics, not just visibility. WF should explicitly define: which supporting nodes may influence primary review, whether context is opt-in or automatic, request/persistence boundaries, fail-closed validation, prompt/runtime behavior, and review-detail/user-facing labels proving when supporting content was visible vs primary-reviewed vs context-used. Trigger to promote: once current launch-critical submit/review contract work is done and we have a concrete product answer to “what exactly may supporting content influence?” If that answer is still vague, keep parked. (Ref: `docs/brainstorms/brainstorm-WF-0063-universal-node-visibility-reviewability.md` §9, `docs/prds/prd-WF-0063-universal-node-visibility-reviewability.md` DS1/DS3/FR9/FR11/FR12, WF-0063 closure clarification chat 2026-03-08.) | 2026-03-08 |
+| 30 | Universal review: explicit supporting-context contract beyond WF-0063/WF-0064 MVP | product | Do not promote for launch-baseline work. Promote only after the split contract is proven beyond the MSCA proof call, after cross-call hardening is complete, and after at least one additional credible call closes the remaining promised-program gap. This changes semantics, not just visibility. WF should explicitly define: which supporting nodes may influence primary review, whether context is opt-in or automatic, request/persistence boundaries, fail-closed validation, prompt/runtime behavior, and review-detail/user-facing labels proving when supporting content was visible vs primary-reviewed vs context-used. Trigger to promote: once current launch-critical submit/review contract work is done and we have a concrete product answer to “what exactly may supporting content influence?” If that answer is still vague, keep parked. (Ref: `docs/brainstorms/brainstorm-WF-0063-universal-node-visibility-reviewability.md` §9, `docs/prds/prd-WF-0063-universal-node-visibility-reviewability.md` DS1/DS3/FR9/FR11/FR12, [docs/walkthroughs/completed/walkthrough-WF-0064-opted-in-hierarchical-submit-proof-closure.md](walkthroughs/completed/walkthrough-WF-0064-opted-in-hierarchical-submit-proof-closure.md).) | 2026-03-08 |
 
 ## Rejected / Ignored
 
@@ -195,6 +193,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 40 | WF-0062 | erc-cog-2026-contract-model-correction | started-directly | - | 2026-03-07 |
 | 41 | WF-0063 | universal-node-visibility-reviewability | started-directly | - | 2026-03-08 |
 | 42 | WF-0064 | opted-in-hierarchical-submit-proof-closure | started-directly | - | 2026-03-08 |
+| 43 | WF-0065 | cross-call-contract-hardening-base-review-semantics | promoted | P1 #1 (historical) | 2026-03-08 |
 
 ---
 
@@ -239,3 +238,5 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v3.5** (2026-03-08): Backlog audit cleanup removed already-implemented items (Alembic baseline, review-detail hardcoded mapping, completed ERC CoG/MSCA expansion placeholders), merged duplicate nested-submit items, rewrote stale coverage/async entries to match current repo reality, and moved the rejected fresh-context idea out of the active priority table.
 - **v3.6** (2026-03-08): Second-pass WF initiative log wording audit renamed the backlog-reference column to historical promotion provenance, added an explicit note, and normalized promoted rows to mark backlog refs as historical snapshots rather than live active-slot references.
 - **v3.7** (2026-03-08): Strengthened P2 #30 with explicit promotion timing and gating: treat supporting-context semantics as post-launch-baseline work only, after multi-call proof and cross-call hardening, and only when product semantics are concrete enough to specify influence boundaries honestly.
+- **v3.8** (2026-03-08): Removed the stale P1 hierarchical proof-gap item after WF-0064 closure, renumbered active P1 items, rewrote the P1 rationale around the real remaining blockers (cross-call hardening plus one missing promised-program call), and tightened P2 #30 gating to reflect both WF-0063 and WF-0064 closure status.
+- **v3.9** (2026-03-08): Promoted P1 #1 to `WF-0065` for cross-call contract hardening of base review semantics, renumbered active P1 items, and recorded the promotion in the unified WF initiative log.

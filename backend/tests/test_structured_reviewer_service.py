@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 from uuid import UUID
 
+import pytest
 from sqlmodel import SQLModel, select
 
 from app.db import engine, get_session
@@ -25,6 +26,7 @@ from app.models.domain import (
     NodeType,
     PromptTemplate,
     ProposalNode,
+    ReviewCard,
     ReviewStatus,
 )
 from app.repositories.review_repository import ReviewRepository
@@ -341,6 +343,32 @@ def _build_msca_pf_service(monkeypatch):
     return service, call.id
 
 
+def _build_nwo_veni_service(monkeypatch):
+    monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
+    _reset_database()
+    ingest_call(Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml"), dry_run=False)
+    session = get_session()
+    template = PromptTemplate(
+        name="NWO Veni structured template",
+        template_text="Template",
+        is_active=True,
+    )
+    session.add(template)
+    session.commit()
+
+    call = session.exec(
+        select(FundingCall).where(FundingCall.code == "nwo_veni_2025_preproposal")
+    ).first()
+    assert call is not None
+
+    repository = ReviewRepository(session)
+    service = StructuredReviewerService(
+        repository=repository,
+        llm_client=EchoExpectationLLMClient(),
+    )
+    return service, call.id
+
+
 def _build_erc_service(monkeypatch):
     monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
     _reset_database()
@@ -370,6 +398,46 @@ def _set_call_definition_reviewer_policy(
     )
     service.repository.session.add(definition)
     service.repository.session.commit()
+
+
+def _wf0065_representative_cases() -> list[dict[str, str]]:
+    return [
+        {
+            "case_id": "nwo_veni_2025_preproposal",
+            "call_code": "nwo_veni_2025_preproposal",
+            "stage": "STEP_1",
+            "node_logical_id": "key_outputs",
+            "node_text": "Representative proof text for NWO key outputs.",
+        },
+        {
+            "case_id": "erc_stg_2026_full",
+            "call_code": "erc_stg_2026_full",
+            "stage": "STEP_1",
+            "node_logical_id": "proposal_summary",
+            "node_text": "Representative proof text for ERC proposal summary.",
+        },
+        {
+            "case_id": "MSCA-PF-2025",
+            "call_code": "MSCA-PF-2025",
+            "stage": "STEP_1",
+            "node_logical_id": "excellence",
+            "node_text": "Representative proof text for MSCA excellence.",
+        },
+    ]
+
+
+def _build_service_for_wf0065_representative_call(
+    monkeypatch,
+    *,
+    call_code: str,
+):
+    if call_code == "nwo_veni_2025_preproposal":
+        return _build_nwo_veni_service(monkeypatch)
+    if call_code == "erc_stg_2026_full":
+        return _build_erc_stg_service(monkeypatch)
+    if call_code == "MSCA-PF-2025":
+        return _build_msca_pf_service(monkeypatch)
+    raise AssertionError(f"Unsupported wf0065 representative call: {call_code}")
 
 
 def test_structured_pipeline_v1_happy_path(monkeypatch) -> None:
@@ -811,5 +879,72 @@ def test_wf0061_contract_multisurface_proof_candidate_stops_for_rescope(
         assert review.overall_summary is not None
         assert "MALFORMED_REVIEW_REQUEST" in review.overall_summary
         assert "Unknown node_logical_id" in review.overall_summary
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0065_nwo_structured_service_tracer_uses_real_canonical_call(
+    monkeypatch,
+) -> None:
+    """WF-0065 tracer: structured service uses real NWO canonical snapshot."""
+    service, call_id = _build_nwo_veni_service(monkeypatch)
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("key_outputs", "Tracer bullet text for NWO key outputs.")],
+            external_user_id="wf0065-nwo-service",
+            idempotency_key="wf0065-nwo-service",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) >= 1
+
+        definition = service.repository.session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        assert (
+            definition.source_path
+            == "data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml"
+        )
+    finally:
+        service.repository.session.close()
+
+
+@pytest.mark.parametrize(
+    "case",
+    _wf0065_representative_cases(),
+    ids=lambda case: f"wf0065_structured_service_representative_{case['case_id']}",
+)
+def test_wf0065_structured_service_representative_success_matrix_persists_review(
+    monkeypatch,
+    case: dict[str, str],
+) -> None:
+    """WF-0065 matrix: structured service parity for locked representative calls."""
+    service, call_id = _build_service_for_wf0065_representative_call(
+        monkeypatch,
+        call_code=case["call_code"],
+    )
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage=case["stage"],
+            call_id=call_id,
+            nodes=[(case["node_logical_id"], case["node_text"])],
+            external_user_id=f"wf0065-representative-service-{case['case_id']}",
+            idempotency_key=f"wf0065-representative-service-{case['case_id']}",
+        )
+        assert review.status in {ReviewStatus.PENDING, ReviewStatus.COMPLETED}
+        assert review.review_type == "structured"
+        assert review.structured_payload is not None
+        assert review.structured_payload["call_id"] == str(call_id)
+        assert review.structured_payload["engine_path"] == "pipeline_v1"
+        assert len(cards) >= 1
+
+        persisted_cards = list(
+            service.repository.session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == review.id)
+            ).all()
+        )
+        assert len(persisted_cards) == len(cards)
     finally:
         service.repository.session.close()

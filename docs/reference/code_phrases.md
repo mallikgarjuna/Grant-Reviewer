@@ -9,6 +9,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | **`park this`** `: [description]` | Add item to parking lot under the right P0/P1/P2 table. |
 | **`pick P[x] #[n]`** | Promote a parking lot item into a new WF. |
 | **`move P[x] #[n] to P[y]`** | Re-prioritize a parking lot item between tiers. |
+| **`refresh parking lot`** | Reconcile `docs/parking_lot.md` against recent WF work and current repo reality: remove or rewrite solved/stale items, renumber affected rows, and update rationale/dependency notes when needed. Use after completing a WF or anytime backlog reality may have drifted. |
 
 ## Workflow & Execution
 
@@ -57,7 +58,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 
 | If you need... | Use this phrase |
 |--------|--------|
-| Add/reprioritize backlog items | **`park this`**, **`pick P[x] #[n]`**, **`move P[x] #[n] to P[y]`** |
+| Add/reprioritize/reconcile backlog items | **`park this`**, **`pick P[x] #[n]`**, **`move P[x] #[n] to P[y]`**, **`refresh parking lot`** |
 | Understand current project reality before deciding | **`context refresh`** |
 | Start a fresh conversation with clear inputs | **`new chat kickoff`** |
 | Approve continuation of current plan | **`go ahead`** |
