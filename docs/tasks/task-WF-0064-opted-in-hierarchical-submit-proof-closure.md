@@ -2,15 +2,21 @@
 # WF-0064 — Opted-In Hierarchical Submit Proof Closure
 
 Artifact: task
-Version: v0.2
+Version: v0.4
 Status: Ready for Implementation
 Last Updated: 2026-03-08
 
 Type: feature
 
+## Phase 2 Audit Gate
+
+- This artifact passed the fail-closed Phase 2 audit after closure of the justified planning findings below.
+- No implementation-complete or ship recommendation is valid until explicit pass/fail verification evidence is recorded for the WF-0064 selectors in this task after execution.
+- Blocking findings must close before any proceed recommendation. Non-blocking findings must also close unless explicitly rejected with rationale.
+
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: proof-path submit renders supporting nodes read-only with opt-in parity
+### [x] Task 1 — Tracer bullet: proof-path submit renders supporting nodes read-only with opt-in parity
 
 Goal:
 Prove the first end-to-end WF-0064 slice by making visible supporting nodes read-only for opted-in `MSCA-PF-2025` while non-opted-in calls keep current editable behavior.
@@ -56,8 +62,9 @@ Files to modify:
 Must touch files:
 - `frontend/src/components/submit/UniversalSubmitForm.tsx`
 - `frontend/src/components/submit/UniversalSubmitForm.test.tsx`
+- `frontend/src/lib/submit/draftStore.ts`
 May touch files:
-- `frontend/src/lib/submit/payloadBuilder.ts`
+- `frontend/src/lib/submit/renderModel.ts`
 Out of scope: supporting-context persistence, backend request semantics, review-detail rendering
 Stop if: preventing supporting draft writes requires introducing a new supporting draft store or changing successful primary-submit semantics outside the proof path
 Session boundary after: yes
@@ -67,11 +74,11 @@ Acceptance Criteria:
 - Successful primary submit does not silently clear user-visible primary content or mutate stale supporting residue as part of a hidden cleanup path.
 TDD Plan:
 - RED: add `wf0064_submit_form_does_not_write_supporting_nodes_to_draft_state` and `wf0064_submit_success_does_not_silently_clear_stale_supporting_draft_residue` in `frontend/src/components/submit/UniversalSubmitForm.test.tsx`.
-- GREEN: implement the minimum form-state and submit-path changes needed to ignore supporting-node writes and stale supporting draft residue on the proof path.
+- GREEN: implement the minimum form-state and draft-store changes needed to ignore supporting-node writes and stale supporting draft residue on the proof path.
 - REFACTOR: isolate a small primary-answer filtering helper only if draft-state and submit-state filtering start to diverge.
 Verification Steps:
 - `cd frontend && npx vitest run src/components/submit/UniversalSubmitForm.test.tsx -t "wf0064_submit_form_does_not_write_supporting_nodes_to_draft_state|wf0064_submit_success_does_not_silently_clear_stale_supporting_draft_residue"`
-- `cd frontend && rg -n "draft|localStorage|supporting|payload" src/components/submit/UniversalSubmitForm.tsx`
+- `cd frontend && rg -n "loadDraft|saveDraft|clearDraft|localStorage|supporting" src/components/submit/UniversalSubmitForm.tsx src/lib/submit/draftStore.ts`
 Risks (if any): Hidden autosave or submit-success cleanup code can still erase or serialize supporting entries after the form looks correct.
 
 ### [ ] Task 3 — Preserve fail-closed backend rejection for supporting-node primary submits
@@ -108,7 +115,7 @@ Risks (if any): Frontend-only filtering can mask a widened backend boundary unle
 ### [ ] Task 4 — Reuse the existing role-aware classification seam for review detail
 
 Goal:
-Extend the existing proof-path role-aware classification seam so review detail distinguishes reviewed primary nodes from visible supporting nodes without introducing a second review-only helper.
+Extend the existing proof-path classification seam across the live role and render-model helpers so review detail distinguishes reviewed primary nodes from visible supporting nodes without introducing a second review-only helper.
 Slice: shared-classification
 User Stories: US2, US4
 PRD Requirements: FR6, FR7, FR11, FR12
@@ -119,22 +126,24 @@ Files to modify:
 Must touch files:
 - `frontend/src/lib/submit/nodeRoles.ts`
 - `frontend/src/lib/submit/nodeRoles.test.ts`
+- `frontend/src/lib/submit/renderModel.ts`
+- `frontend/src/lib/submit/renderModel.test.ts`
 May touch files:
 - `frontend/src/lib/bff/types.ts`
 Out of scope: review-detail page copy polish, submit-form rendering, new cross-layer abstraction beyond the existing seam
-Stop if: single-source review-detail classification cannot be implemented by extending the current role/stage metadata seam and instead needs a new generalized backend/frontend framework
+Stop if: single-source review-detail classification cannot be implemented by extending the current role plus render-model seam and instead needs a new generalized backend/frontend framework
 Session boundary after: no
 Acceptance Criteria:
-- The existing shared role-aware seam derives stage-eligible visible non-container nodes, visible supporting nodes, and structural containers for review detail.
+- The existing shared role-aware seam derives stage-eligible visible non-container nodes, visible supporting nodes, and structural containers for review detail without duplicating child/container inference in the page.
 - Review detail does not fall back to `has_expectations` leaves, page-local call-specific allowlists, or a new review-only classifier.
 - The change stays scoped to current seams and does not introduce a broader multi-call framework beyond WF-0064 needs.
 TDD Plan:
-- RED: add `wf0064_node_roles_support_review_detail_classification_without_new_helper` in `frontend/src/lib/submit/nodeRoles.test.ts`.
-- GREEN: implement the minimum `nodeRoles` seam extension needed so submit and review detail consume the same reviewed-versus-visible-supporting classification source.
-- REFACTOR: inline or collapse duplicated boolean branches only after tests prove `nodeRoles` remains the single consumer path.
+- RED: add `wf0064_node_roles_support_review_detail_classification_without_new_helper` in `frontend/src/lib/submit/nodeRoles.test.ts` and `wf0064_render_model_and_node_roles_share_review_detail_classification_contract` in `frontend/src/lib/submit/renderModel.test.ts`.
+- GREEN: implement the minimum shared seam changes needed so submit and review detail consume the same reviewed-versus-visible-supporting classification source.
+- REFACTOR: inline or collapse duplicated boolean branches only after tests prove the shared `nodeRoles` plus `renderModel` seam remains the single classification source.
 Verification Steps:
-- `cd frontend && npx vitest run src/lib/submit/nodeRoles.test.ts -t "wf0064_node_roles_support_review_detail_classification_without_new_helper"`
-- `cd frontend && rg -n "has_expectations|supporting|visible" src/lib/submit/nodeRoles.ts src/lib/submit/nodeRoles.test.ts`
+- `cd frontend && npx vitest run src/lib/submit/nodeRoles.test.ts src/lib/submit/renderModel.test.ts -t "wf0064_node_roles_support_review_detail_classification_without_new_helper|wf0064_render_model_and_node_roles_share_review_detail_classification_contract"`
+- `cd frontend && rg -n "has_expectations|supporting|visible|isContainer|reviewStage" src/lib/submit/nodeRoles.ts src/lib/submit/nodeRoles.test.ts src/lib/submit/renderModel.ts src/lib/submit/renderModel.test.ts`
 Risks (if any): A helper that still mirrors page-local fallbacks will hide the same coupling behind a new filename.
 
 ### [ ] Task 5 — Review detail labels visible supporting nodes and preserves empty supporting context
@@ -208,3 +217,5 @@ Risks (if any): If rollback is only proven in one surface, the other can retain 
 
 - v0.1 (2026-03-08): Initial task breakdown from PRD.
 - v0.2 (2026-03-08): Applied review-gate edits to reuse the existing role-aware classification seam, tighten backend guardrail ordering, and make proof-path scope/rollback expectations explicit; marked Ready for Implementation.
+- v0.3 (2026-03-08): Reopened readiness after fail-closed audit; required explicit verification evidence before proceed recommendation, replaced nonexistent payload seam with the real draft-store boundary, and expanded shared-classification work to include the live render-model seam.
+- v0.4 (2026-03-08): Closed the remaining planning blocker by aligning the PRD readiness gate with Phase 3 runner semantics, then restored `Ready for Implementation` with the hardened Task 2 and Task 4 seams intact.

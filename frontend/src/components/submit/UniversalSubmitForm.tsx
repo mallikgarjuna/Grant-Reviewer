@@ -35,6 +35,7 @@ type ApiErrorEnvelope = {
 };
 
 const DOMAIN_DRAFT_KEY = "__selected_domain";
+const WF0064_PROOF_CALL_CODE = "MSCA-PF-2025";
 
 function formatCallDisplayName(callName: string, callCode: string): string {
   const normalizedName = callName
@@ -277,6 +278,9 @@ export function UniversalSubmitForm() {
   }, [calls, selectedCallId]);
 
   const selectedCall = calls.find((call) => call.id === selectedCallId) ?? null;
+  const isWf0064ProofPathCall =
+    selectedCall?.code === WF0064_PROOF_CALL_CODE &&
+    selectedCall.splitVisibilityReviewabilityEnabled === true;
   const domainOptions = selectedCall?.domainOptions ?? [];
   const effectiveDomain =
     selectedDomain && domainOptions.some((option) => option.value === selectedDomain)
@@ -540,6 +544,8 @@ export function UniversalSubmitForm() {
                   {group.nodes.map((node) => {
                     const logicalId = node.nodeLogicalId;
                     const inputId = `node-${logicalId.replace(/_/g, "-")}`;
+                    const isReadOnlySupportingNode =
+                      isWf0064ProofPathCall && node.nodeRole === "SUPPORTING";
                     return (
                       <div className="space-y-2" key={logicalId}>
                         <label
@@ -557,6 +563,7 @@ export function UniversalSubmitForm() {
                           id={inputId}
                           className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
                           onChange={(event) => updateNodeDraft(logicalId, event.target.value)}
+                          readOnly={isReadOnlySupportingNode}
                           value={draft[logicalId] ?? ""}
                         />
                       </div>
