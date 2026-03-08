@@ -16,6 +16,7 @@ EvaluationIntent = Literal["COMPLIANCE", "QUALITY", "RISK", "STRATEGIC_FIT"]
 RuleSeverity = Literal["ERROR", "WARNING"]
 EvaluationStage = Literal["STEP_1", "STEP_2", "BOTH"]
 ReviewerPolicyEnforcementMode = Literal["PROMPT_ONLY", "POST_CHECK", "BLOCKING"]
+ProposalNodeRole = Literal["PRIMARY", "SUPPORTING"]
 
 
 class StrictBaseModel(BaseModel):
@@ -136,7 +137,14 @@ class ProposalNodeDefinitionV2(StrictBaseModel):
     content_constraints: ContentConstraintsDefinitionV2 | None = None
     guidance_text: str | None = None
     compliance_rules: list[ComplianceRuleDefinitionV2] = Field(default_factory=list)
+    node_role: ProposalNodeRole = "PRIMARY"
     node_expectations: list[NodeExpectationDefinitionV2] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_supporting_node_expectations(self) -> ProposalNodeDefinitionV2:
+        if self.node_role == "SUPPORTING" and self.node_expectations:
+            raise ValueError("SUPPORTING nodes cannot define node_expectations")
+        return self
 
 
 class RuntimeNoteDefinitionV2(StrictBaseModel):
@@ -144,6 +152,12 @@ class RuntimeNoteDefinitionV2(StrictBaseModel):
 
     id: str = Field(min_length=1)
     description: str = Field(min_length=1)
+
+
+class RuntimeConfigDefinitionV2(StrictBaseModel):
+    """Call-scoped runtime feature controls."""
+
+    split_visibility_reviewability_enabled: bool = False
 
 
 class ReviewerPolicyRuleDefinitionV2(StrictBaseModel):
@@ -171,6 +185,9 @@ class CallDefinitionV2(StrictBaseModel):
     proposal_nodes: list[ProposalNodeDefinitionV2] = Field(default_factory=list)
     reviewer_policy: list[ReviewerPolicyRuleDefinitionV2] = Field(default_factory=list)
     runtime_notes: list[RuntimeNoteDefinitionV2] = Field(default_factory=list)
+    runtime_config: RuntimeConfigDefinitionV2 = Field(
+        default_factory=RuntimeConfigDefinitionV2
+    )
 
     @model_validator(mode="after")
     def check_references(self) -> CallDefinitionV2:

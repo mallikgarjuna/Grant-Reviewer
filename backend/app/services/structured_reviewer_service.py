@@ -28,6 +28,9 @@ from app.models.domain import (
 )
 from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import LLMClientProtocol, OpenAIClient
+from app.services.node_role_resolution import (
+    resolve_supporting_node_logical_ids_for_primary_path,
+)
 from app.services.review_execution_core import ReviewExecutionCore
 from app.services.reviewer_policy import (
     ReviewerPolicyRule,
@@ -134,6 +137,17 @@ class StructuredReviewerService:
         if call is None:
             raise ValueError("Funding call not found.")
         call_definition = self.repository.get_call_definition_by_call_id(call_id)
+        supporting_node_ids = resolve_supporting_node_logical_ids_for_primary_path(
+            call_definition
+        )
+        submitted_supporting_ids = sorted(
+            {node_logical_id for node_logical_id, _ in nodes if node_logical_id in supporting_node_ids}
+        )
+        if submitted_supporting_ids:
+            raise ValueError(
+                "Supporting node_logical_id values are not allowed for primary review path: "
+                + ", ".join(submitted_supporting_ids)
+            )
 
         call_nodes = self.repository.get_nodes_for_call(call_id)
         node_by_logical_id = {

@@ -27,6 +27,9 @@ from app.models.domain import (
     ReviewRating,
     User,
 )
+from app.services.node_role_resolution import (
+    extract_supporting_node_ids_from_canonical_json,
+)
 
 
 class ReviewRepository:
@@ -503,6 +506,40 @@ class ReviewRepository:
             legacy_ambiguous_container_ids,
             moved_legacy_node_references,
         )
+
+    def resolve_review_detail_role_labels(
+        self,
+        *,
+        review: Review,
+        call_id: UUID | None,
+    ) -> tuple[list[str], list[str]]:
+        """Derive role-labeled review coverage for review-detail API fields."""
+        submitted_leaf_ids, _, _ = self.resolve_structured_review_coverage(review)
+        if call_id is None:
+            return submitted_leaf_ids, []
+
+        definition = self.get_call_definition_by_call_id(call_id)
+        if definition is None:
+            return submitted_leaf_ids, []
+
+        supporting_node_ids = self._extract_supporting_node_ids_for_primary_path(
+            definition.canonical_json
+        )
+        if not supporting_node_ids:
+            return submitted_leaf_ids, []
+
+        primary_evaluated_node_logical_ids = [
+            node_id
+            for node_id in submitted_leaf_ids
+            if node_id not in supporting_node_ids
+        ]
+        return primary_evaluated_node_logical_ids, []
+
+    def _extract_supporting_node_ids_for_primary_path(
+        self,
+        canonical_json: dict[str, Any],
+    ) -> set[str]:
+        return extract_supporting_node_ids_from_canonical_json(canonical_json)
 
     def rollback(self) -> None:
         """Rollback active transaction after commit failure."""

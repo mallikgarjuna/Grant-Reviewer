@@ -111,6 +111,7 @@ class NodeTreeService:
                     node_type=child.node_type,
                     order_index=child.order_index,
                     has_expectations=child.has_expectations,
+                    node_role=child.node_role,
                     children=build_subtree(child.logical_id),
                 )
                 for child in children

@@ -1,5 +1,6 @@
 // frontend/src/lib/submit/renderModel.ts
 import type { NodeSummary } from "@/lib/bff/types";
+import { classifyNodeRole } from "@/lib/submit/nodeRoles";
 
 export type NodeMetadata = {
   title?: string | null;
@@ -12,6 +13,8 @@ export type RenderNode = {
   nodeLogicalId: string;
   label: string;
   reviewStage: "STEP_1" | "STEP_2" | "BOTH";
+  nodeRole: "PRIMARY" | "SUPPORTING";
+  isContainer: boolean;
 };
 
 export type RenderGroup = {
@@ -50,6 +53,7 @@ export type ReviewStage = "STEP_1" | "STEP_2";
 type BuildRenderModelInput = {
   nodes: NodeSummary[];
   metadataByLogicalId: Record<string, NodeMetadata>;
+  splitVisibilityReviewabilityEnabled?: boolean;
 };
 
 function toFallbackLabel(logicalId: string): string {
@@ -98,9 +102,15 @@ function normalizeSectionNumber(raw: string): string | null {
 }
 
 export function buildRenderModel(input: BuildRenderModelInput): RenderModelResult {
+  const splitVisibilityReviewabilityEnabled =
+    input.splitVisibilityReviewabilityEnabled === true;
   const nestedNodes = input.nodes.filter((node) => node.parent_node_id !== null);
   const hasStructuralContainers = input.nodes.some((node) => !node.has_expectations);
-  if (nestedNodes.length > 0 && !hasStructuralContainers) {
+  if (
+    !splitVisibilityReviewabilityEnabled &&
+    nestedNodes.length > 0 &&
+    !hasStructuralContainers
+  ) {
     return {
       state: "unsupported",
       reason: "nested_nodes",
@@ -121,6 +131,11 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
   }
 
   const nodeById = new Map(input.nodes.map((node) => [node.id, node]));
+  const hasChildrenByNodeId = new Set(
+    input.nodes
+      .filter((node) => node.parent_node_id !== null)
+      .map((node) => node.parent_node_id as string),
+  );
   const renderNodeByLogicalId = new Map<string, RenderNode>();
   for (const node of input.nodes) {
     const nodeLogicalId = node.logical_id as string;
@@ -134,16 +149,31 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
         : null;
     const baseLabel = metadataTitle ?? nodeTitle ?? toFallbackLabel(nodeLogicalId);
     const reviewStage = metadata?.reviewStage ?? "BOTH";
+    const role = classifyNodeRole(node, {
+      splitVisibilityReviewabilityEnabled,
+      hasChildren: hasChildrenByNodeId.has(node.id),
+    });
     renderNodeByLogicalId.set(nodeLogicalId, {
       nodeLogicalId,
       label: sectionNumber ? `${baseLabel} (${sectionNumber})` : baseLabel,
       reviewStage,
+      nodeRole: role.role,
+      isContainer: role.isContainer,
     });
   }
 
-  const leafNodes = input.nodes.filter((node) => node.has_expectations);
+  const visibleNodes = input.nodes.filter((node) => {
+    const role = classifyNodeRole(node, {
+      splitVisibilityReviewabilityEnabled,
+      hasChildren: hasChildrenByNodeId.has(node.id),
+    });
+    if (splitVisibilityReviewabilityEnabled) {
+      return !role.isContainer;
+    }
+    return node.has_expectations;
+  });
   const groupsByKey = new Map<string, RenderGroup>();
-  for (const leafNode of leafNodes) {
+  for (const leafNode of visibleNodes) {
     const leafLogicalId = leafNode.logical_id as string;
     const renderLeaf = renderNodeByLogicalId.get(leafLogicalId);
     if (!renderLeaf) {
@@ -184,7 +214,7 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
     });
   }
 
-  const readyNodes = leafNodes
+  const readyNodes = visibleNodes
     .map((node) => {
       const nodeLogicalId = node.logical_id as string;
       return renderNodeByLogicalId.get(nodeLogicalId) ?? null;

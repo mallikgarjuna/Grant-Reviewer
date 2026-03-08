@@ -1,8 +1,9 @@
 ---
+path: "docs/call-yaml/README.md"
 title: "Call YAML Docs Hub"
 version: "1.0"
 status: "Active"
-updated: "2026-02-28"
+updated: "2026-03-08"
 ---
 
 # Call YAML Docs Hub
@@ -33,6 +34,13 @@ Call-specific truth lives in:
 
 - Authoring workflow: `docs/call-yaml/authoring-workflow.md`
 - Authoring guidelines: `docs/call-yaml/guidelines.md`
+- Onboarding checklist: `docs/call-yaml/onboarding-checklist.md`
+
+## WF-0063 Policy Snapshot
+
+- Runtime split behavior is opt-in only through `runtime_config.split_visibility_reviewability_enabled`.
+- `proposal_nodes[*].node_role` is authoritative for primary-vs-supporting intent.
+- Proof-call-first policy applies: do not enable split mode for additional calls without explicit approval and parity verification.
 
 ## Runtime/data artifacts
 

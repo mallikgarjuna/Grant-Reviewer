@@ -53,7 +53,10 @@ from app.schemas.structured_review import (
     StructuredReviewRequest,
 )
 from app.services.call_definition_service import CallDefinitionService
-from app.services.compliance_engine import evaluate_compliance
+from app.services.compliance_engine import (
+    evaluate_compliance,
+    find_supporting_node_ids_in_primary_path_draft,
+)
 from app.services.llm_client import build_llm_client
 from app.services.node_metadata_service import NodeMetadataService
 from app.services.node_tree_service import (
@@ -64,6 +67,9 @@ from app.services.node_tree_service import (
 from app.services.reviewer_policy import matches_review_stage
 from app.services.reviewer_service import ReviewerService
 from app.services.structured_reviewer_service import StructuredReviewerService
+from app.services.structured_reviewer_service import (
+    resolve_supporting_node_logical_ids_for_primary_path,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +113,7 @@ ERROR_STATUS_BY_CODE = {
     "SNIPPET_TOO_LONG": 400,
     "UNKNOWN_NODE_ID": 422,
     "DUPLICATE_NODE_ID": 422,
+    "SUPPORTING_NODE_NOT_ALLOWED": 422,
     "DOMAIN_REQUIRED": 422,
     "DOMAIN_INVALID": 422,
     "STRUCTURED_NODES_REQUIRED": 422,
@@ -488,6 +495,40 @@ def _extract_domain_options(canonical_json: dict[str, Any]) -> list[DomainOption
     ]
 
 
+def _is_split_visibility_reviewability_enabled(canonical_json: dict[str, Any]) -> bool:
+    runtime_config = canonical_json.get("runtime_config")
+    if not isinstance(runtime_config, dict):
+        return False
+    return runtime_config.get("split_visibility_reviewability_enabled") is True
+
+
+def _extract_node_roles_by_logical_id(
+    *,
+    canonical_json: dict[str, Any],
+    split_opt_in_enabled: bool,
+) -> dict[str, Literal["PRIMARY", "SUPPORTING"]]:
+    if not split_opt_in_enabled:
+        return {}
+
+    proposal_nodes = canonical_json.get("proposal_nodes")
+    if not isinstance(proposal_nodes, list):
+        return {}
+
+    node_roles: dict[str, Literal["PRIMARY", "SUPPORTING"]] = {}
+    for node in proposal_nodes:
+        if not isinstance(node, dict):
+            continue
+        logical_id = node.get("id")
+        if not isinstance(logical_id, str) or not logical_id.strip():
+            continue
+        node_role = node.get("node_role")
+        if node_role in {"PRIMARY", "SUPPORTING"}:
+            node_roles[logical_id] = node_role
+        else:
+            node_roles[logical_id] = "PRIMARY"
+    return node_roles
+
+
 RepositoryDep = Annotated[ReviewRepository, Depends(get_repository)]
 
 
@@ -548,9 +589,11 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
             config_version="1",
             ui_mode="legacy_single_snippet",
             domain_options=[],
+            split_visibility_reviewability_enabled=False,
         )
 
     canonical_json = definition.canonical_json
+    split_opt_in_enabled = _is_split_visibility_reviewability_enabled(canonical_json)
     proposal_nodes = canonical_json.get("proposal_nodes")
     if not isinstance(proposal_nodes, list):
         logger.warning(
@@ -562,6 +605,7 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
             config_version="1",
             ui_mode="legacy_single_snippet",
             domain_options=[],
+            split_visibility_reviewability_enabled=split_opt_in_enabled,
         )
 
     expected_nodes = [
@@ -581,6 +625,7 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
             config_version="1",
             ui_mode="legacy_single_snippet",
             domain_options=[],
+            split_visibility_reviewability_enabled=split_opt_in_enabled,
         )
 
     domain_options = _extract_domain_options(canonical_json)
@@ -590,6 +635,7 @@ def get_call_config(call_logical_id: str, repository: RepositoryDep) -> CallConf
         ui_mode="structured_nodes",
         expected_nodes=expected_nodes,
         domain_options=domain_options,
+        split_visibility_reviewability_enabled=split_opt_in_enabled,
     )
 
 
@@ -608,6 +654,18 @@ def list_call_nodes(
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
 
+    definition = repository.get_call_definition_by_call_id(call_id)
+    split_opt_in_enabled = False
+    node_roles_by_logical_id: dict[str, Literal["PRIMARY", "SUPPORTING"]] = {}
+    if definition is not None:
+        split_opt_in_enabled = _is_split_visibility_reviewability_enabled(
+            definition.canonical_json
+        )
+        node_roles_by_logical_id = _extract_node_roles_by_logical_id(
+            canonical_json=definition.canonical_json,
+            split_opt_in_enabled=split_opt_in_enabled,
+        )
+
     nodes = repository.get_nodes_for_call(call_id)
     flat_nodes = [
         NodeSummary(
@@ -618,6 +676,11 @@ def list_call_nodes(
             node_type=node.node_type,
             order_index=node.order_index,
             has_expectations=has_expectations,
+            node_role=(
+                node_roles_by_logical_id.get(node.logical_id)
+                if split_opt_in_enabled and isinstance(node.logical_id, str)
+                else None
+            ),
         )
         for node, has_expectations in nodes
     ]
@@ -625,7 +688,6 @@ def list_call_nodes(
     if view == "flat":
         return NodesResponse(nodes=flat_nodes)
 
-    definition = repository.get_call_definition_by_call_id(call_id)
     if definition is not None:
         try:
             canonical_tree = NodeTreeService().build_tree_from_canonical(
@@ -662,6 +724,7 @@ def list_call_nodes(
                 node_type=child.node_type,
                 order_index=child.order_index,
                 has_expectations=child.has_expectations,
+                node_role=child.node_role,
                 children=build_tree(child.id),
             )
             for child in ordered_children
@@ -746,6 +809,19 @@ def check_compliance(
             code="UNKNOWN_NODE_ID",
             message="One or more node_logical_id values are unknown for this call.",
             details={"node_logical_ids": unknown_ids},
+        )
+    supporting_node_ids = resolve_supporting_node_logical_ids_for_primary_path(
+        call_definition
+    )
+    submitted_supporting_ids = find_supporting_node_ids_in_primary_path_draft(
+        payload,
+        supporting_node_ids,
+    )
+    if submitted_supporting_ids:
+        raise APIException(
+            code="SUPPORTING_NODE_NOT_ALLOWED",
+            message="Supporting node_logical_id values are not allowed for primary review path.",
+            details={"node_logical_ids": submitted_supporting_ids},
         )
 
     normalized_domain = _normalize_domain(payload.domain)
@@ -927,6 +1003,18 @@ def create_structured_review(
                 "review_stage": payload.review_stage,
                 "node_logical_ids": stage_mismatch_ids,
             },
+        )
+    supporting_node_ids = resolve_supporting_node_logical_ids_for_primary_path(
+        call_definition
+    )
+    submitted_supporting_ids = sorted(
+        {node.node_logical_id for node in payload.nodes if node.node_logical_id in supporting_node_ids}
+    )
+    if submitted_supporting_ids:
+        raise APIException(
+            code="SUPPORTING_NODE_NOT_ALLOWED",
+            message="Supporting node_logical_id values are not allowed for primary review path.",
+            details={"node_logical_ids": submitted_supporting_ids},
         )
 
     reviewer_service = StructuredReviewerService(
@@ -1245,6 +1333,10 @@ def get_review(
     submitted_leaf_ids, legacy_ambiguous_container_ids, moved_legacy_node_references = (
         repository.resolve_structured_review_coverage(review)
     )
+    (
+        primary_evaluated_node_logical_ids,
+        supporting_context_node_logical_ids,
+    ) = repository.resolve_review_detail_role_labels(review=review, call_id=call_id)
     compatibility_notes: list[ReviewCompatibilityNote] = []
     if legacy_ambiguous_container_ids:
         compatibility_notes.append(
@@ -1281,6 +1373,8 @@ def get_review(
         ordering_source=ordering_source,
         unmapped_node_logical_ids=unmapped_node_logical_ids,
         submitted_leaf_ids=submitted_leaf_ids,
+        primary_evaluated_node_logical_ids=primary_evaluated_node_logical_ids,
+        supporting_context_node_logical_ids=supporting_context_node_logical_ids,
         legacy_ambiguous_container_ids=legacy_ambiguous_container_ids,
         moved_legacy_node_references=moved_legacy_node_references,
         compatibility_notes=compatibility_notes,

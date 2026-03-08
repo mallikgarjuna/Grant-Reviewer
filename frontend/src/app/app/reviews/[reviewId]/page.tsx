@@ -657,7 +657,11 @@ export default function ReviewDetailPage() {
       .filter((node) => typeof node.logical_id === "string")
       .map((node) => [node.logical_id as string, buildPathLabel(node)]),
   );
-  const reviewedNodeLabels = [...submittedNodes]
+  const primaryEvaluatedNodeIds =
+    reviewDetail.primary_evaluated_node_logical_ids ?? submittedNodes;
+  const supportingContextNodeIds =
+    reviewDetail.supporting_context_node_logical_ids ?? [];
+  const reviewedNodeLabels = [...primaryEvaluatedNodeIds]
     .sort((left, right) => {
       const leftNode = nodeByLogicalId.get(left);
       const rightNode = nodeByLogicalId.get(right);
@@ -670,11 +674,16 @@ export default function ReviewDetailPage() {
       return left.localeCompare(right);
     })
     .map((nodeId) => nodeTitleByLogicalId.get(nodeId) ?? nodeId);
-  const submittedSet = new Set(submittedNodes);
-  const notReviewedNodeLabels = leafCallNodes
+  const primaryEvaluatedSet = new Set(primaryEvaluatedNodeIds);
+  const supportingContextSet = new Set(supportingContextNodeIds);
+  const supportingContextNodeLabels = [...supportingContextNodeIds]
+    .map((nodeId) => nodeTitleByLogicalId.get(nodeId) ?? nodeId);
+  const visibleButNotReviewedNodeLabels = leafCallNodes
     .filter(
       (node) =>
-        typeof node.logical_id === "string" && !submittedSet.has(node.logical_id),
+        typeof node.logical_id === "string" &&
+        !primaryEvaluatedSet.has(node.logical_id) &&
+        !supportingContextSet.has(node.logical_id),
     )
     .map((node) => buildPathLabel(node));
   const orderedCardGroups = buildOrderedCardGroups(reviewDetail, sortedCallNodes);
@@ -684,7 +693,9 @@ export default function ReviewDetailPage() {
     reviewDetail.call_id == null ||
     sortedCallNodes.length === 0;
   const hasCoverageSummary =
-    submittedNodes.length > 0 || notReviewedNodeLabels.length > 0;
+    primaryEvaluatedNodeIds.length > 0 ||
+    supportingContextNodeIds.length > 0 ||
+    visibleButNotReviewedNodeLabels.length > 0;
 
   const compatibilityLines = (reviewDetail.compatibility_notes ?? []).map((note) => {
     const nodeSuffix =
@@ -707,8 +718,14 @@ export default function ReviewDetailPage() {
 
   const reviewedSectionText =
     reviewedNodeLabels.length > 0 ? reviewedNodeLabels.join(", ") : "None";
-  const notReviewedSectionText =
-    notReviewedNodeLabels.length > 0 ? notReviewedNodeLabels.join(", ") : "None";
+  const supportingContextSectionText =
+    supportingContextNodeLabels.length > 0
+      ? supportingContextNodeLabels.join(", ")
+      : "None";
+  const visibleNotReviewedSectionText =
+    visibleButNotReviewedNodeLabels.length > 0
+      ? visibleButNotReviewedNodeLabels.join(", ")
+      : "None";
 
   return (
     <article
@@ -753,7 +770,16 @@ export default function ReviewDetailPage() {
               Reviewed sections: {reviewedSectionText}
             </p>
             <p className="mt-1 text-[var(--color-muted-foreground)]">
-              Not reviewed sections: {notReviewedSectionText}
+              Not reviewed sections: {visibleNotReviewedSectionText}
+            </p>
+            <p className="mt-1">
+              Primary evaluated: {reviewedSectionText}
+            </p>
+            <p className="mt-1 text-[var(--color-muted-foreground)]">
+              Supporting context: {supportingContextSectionText}
+            </p>
+            <p className="mt-1 text-[var(--color-muted-foreground)]">
+              Visible but not part of this review: {visibleNotReviewedSectionText}
             </p>
           </div>
         ) : null}
@@ -945,7 +971,7 @@ export default function ReviewDetailPage() {
             </section>
           ))}
           {hasCoverageSummary
-            ? notReviewedNodeLabels.map((nodeLabel) => (
+            ? visibleButNotReviewedNodeLabels.map((nodeLabel) => (
                 <section
                   className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
                   key={`not-reviewed-${nodeLabel}`}

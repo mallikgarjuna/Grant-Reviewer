@@ -107,6 +107,22 @@ def _warning(
     )
 
 
+def find_supporting_node_ids_in_primary_path_draft(
+    request: ComplianceCheckRequest,
+    supporting_node_ids: set[str],
+) -> list[str]:
+    """Find submitted supporting nodes that are invalid for primary-path compliance."""
+    if not supporting_node_ids:
+        return []
+    return sorted(
+        {
+            draft_node.node_logical_id
+            for draft_node in request.draft_nodes
+            if draft_node.node_logical_id in supporting_node_ids
+        }
+    )
+
+
 def evaluate_compliance(
     request: ComplianceCheckRequest,
     hydrated_nodes: list[HydratedNode],

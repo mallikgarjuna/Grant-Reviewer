@@ -125,7 +125,11 @@ After completing Part C, output:
 
      Run Phase 1 ...
      ```
-- **Optional Review-And-Harden Pass (Same Session):** Provide an explicit, copy-pasteable prompt block using `@docs/workflow/review-and-harden-prompt.md` against the finalized brainstorm artifact so the user can run a generic adversarial review-and-harden pass without manually selecting the phase-specific review/revise docs.
+- **Critical Continuation Review (New Chat):** Provide an explicit, copy-pasteable prompt block that starts a fail-closed adversarial review in a new chat using `@docs/workflow/review-and-harden-prompt.md` against the finalized brainstorm artifact. The prompt block must explicitly require:
+  - hallucination/scope-drift detection versus approved prior-phase artifacts (if any),
+  - strict reporting of bugs/missing tests/design issues/suggested fixes,
+  - safe closure of all justified findings (blocking mandatory; non-blocking unless rejected with rationale),
+  - and explicit pass/fail verification evidence before any ship recommendation.
 
 If `Type: page` and UX/state/positioning is non-trivial, you MAY recommend this optional add-on before Phase 1:
 

@@ -144,6 +144,7 @@ Promotion dependency note:
 | 29 | Universal Submit: split orchestration into dedicated hooks/modules | tech-debt | Defer large `UniversalSubmitForm` decomposition into focused hooks (`gating`, `render-model`, `submit orchestration`, `draft persistence`) to a new WF to reduce regression risk post-WF-0035 ship gate. (Ref: WF-0035 adversarial audit follow-up, branch `wf/WF-0035-universal-form-dynamic-ui-renderer`.) | 2026-02-28 |
 | 30 | Surface `DiagnosticFinding v1` directly in UI/API (deprecate `ReviewCard` adapter) | idea | Follow-on to WF-0038: make `DiagnosticFinding v1` the externally consumed contract (UI/API/analytics) and retire `DiagnosticFinding v1 → ReviewCard` compatibility mapping after a transition window. (Ref: WF-0038 PRD v0.2 + AD 38.15.) | 2026-02-28 |
 | 31 | [IGNORED] Adopt Ralph-style fresh-context execution | idea | Deferral from WF-0046. Ignored (2026-03-04): User rejected this because forcing the developer to manually swap chat windows and copy-paste prompts for every single task introduces far too much manual overhead and slows down the flow state. | 2026-03-04 |
+| 32 | Universal review: explicit supporting-context contract beyond WF-0063 MVP | product | Follow-up only after WF-0063 proof-call parity: model the third axis explicitly so official nodes can be visible, primary-reviewed, or supporting-context participants without overloading `node_expectations` or implying fake primary scoring. Scope should cover explicit contract fields/derivation, request semantics if context submission is added, and review-detail semantics for context participation. (Ref: `docs/brainstorms/brainstorm-WF-0063-universal-node-visibility-reviewability.md` §9, `docs/prds/prd-WF-0063-universal-node-visibility-reviewability.md` DS1/DS3/FR9/FR11/FR12, architect recommendation in chat 2026-03-08.) | 2026-03-08 |
 
 ---
 
@@ -218,6 +219,7 @@ Promotion dependency note:
 - **v2.0** (2026-02-28): Parked WF-0035 scope-creep follow-ons: backend structured-call filter endpoint, canonical domain-options contract, and large-form navigation UX.
 - **v2.1** (2026-02-28): Parked deferred WF-0035 follow-up for `UniversalSubmitForm` structural decomposition into dedicated hooks/modules.
 - **v2.2** (2026-02-28): Parked explicit follow-up to migrate `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml` from legacy v1 shape to v2 WF-0038-native call-definition format.
+- **v3.4** (2026-03-08): Parked WF-0063 scope-creep follow-up for an explicit supporting-context contract beyond the proof-call MVP, with traceability back to the brainstorm/PRD and architect recommendation.
 - **v2.3** (2026-03-01): Added P1 #10 for legacy structured-review engine retirement after pipeline-v1 rollout and backfilled WF initiative log with WF-0037/WF-0038 plus new WF-0039.
 - **v2.4** (2026-03-01): Promoted P1 #10 to WF-0040 (`structured-pipeline-v1-legacy-retirement`) and removed it from active P1 backlog.
 - **v2.5** (2026-03-01): Added P1 #10 follow-up to backfill WF-0040 runtime evidence after waiver-based closure.

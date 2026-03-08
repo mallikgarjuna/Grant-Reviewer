@@ -44,6 +44,7 @@ export type NodeSummary = {
   node_type: "SECTION" | "SUBSECTION";
   order_index: number;
   has_expectations: boolean;
+  node_role?: "PRIMARY" | "SUPPORTING" | null;
 };
 
 export type NodesResponse = {
@@ -54,6 +55,7 @@ export type CallConfigResponse = {
   call_logical_id: string;
   config_version: string;
   ui_mode: "legacy_single_snippet" | "structured_nodes";
+  split_visibility_reviewability_enabled?: boolean;
   expected_nodes?: string[];
   domain_options?: Array<{
     value: string;
@@ -154,6 +156,8 @@ export type ReviewDetailResponse = {
   ordering_source?: "call_nodes" | "review_payload_fallback";
   unmapped_node_logical_ids?: string[];
   submitted_leaf_ids?: string[];
+  primary_evaluated_node_logical_ids?: string[];
+  supporting_context_node_logical_ids?: string[];
   legacy_ambiguous_container_ids?: string[];
   moved_legacy_node_references?: string[];
   compatibility_notes?: Array<{

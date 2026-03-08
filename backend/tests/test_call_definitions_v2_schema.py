@@ -1,4 +1,6 @@
-"""Schema-level tests for CallDefinitionV2 WF-0032 fields and validators."""
+"""backend/tests/test_call_definitions_v2_schema.py
+Schema-level tests for CallDefinitionV2 WF-0032 fields and validators.
+"""
 
 from __future__ import annotations
 
@@ -100,3 +102,69 @@ def test_v2_schema_requires_forbidden_terms_for_blocking_policy() -> None:
 
     with pytest.raises(ValueError, match="forbidden_terms required"):
         CallDefinitionV2.model_validate(payload)
+
+
+def test_wf0063_node_role_defaults_primary_and_supporting_requires_empty_expectations() -> None:
+    payload = _load_nwo_v2_yaml()
+    proposal_nodes = payload["proposal_nodes"]
+    assert isinstance(proposal_nodes, list)
+
+    primary_node = proposal_nodes[0]
+    assert isinstance(primary_node, dict)
+    primary_node.pop("node_role", None)
+
+    supporting_node = proposal_nodes[1]
+    assert isinstance(supporting_node, dict)
+    supporting_node["node_role"] = "SUPPORTING"
+
+    expectations = supporting_node.get("node_expectations")
+    if not isinstance(expectations, list):
+        expectations = []
+        supporting_node["node_expectations"] = expectations
+    expectations.append(
+        {
+            "evaluation_element_id": "elem_nonexistent",
+            "expectation_strength": "MANDATORY",
+            "evaluation_intent": "QUALITY",
+        }
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="SUPPORTING nodes cannot define node_expectations",
+    ):
+        CallDefinitionV2.model_validate(payload)
+
+    expectations.clear()
+    model = CallDefinitionV2.model_validate(payload)
+    assert model.proposal_nodes[0].node_role == "PRIMARY"
+    assert model.proposal_nodes[1].node_role == "SUPPORTING"
+
+
+def test_wf0063_runtime_opt_in_flag_defaults_disabled() -> None:
+    payload = _load_nwo_v2_yaml()
+    payload.pop("runtime_config", None)
+
+    model = CallDefinitionV2.model_validate(payload)
+    assert model.runtime_config.split_visibility_reviewability_enabled is False
+
+
+def test_wf0063_split_opt_in_calls_are_explicitly_allowlisted() -> None:
+    allowed_call_codes = {"MSCA-PF-2025"}
+    canonical_dir = Path("data/calls/canonical")
+    yaml_paths = sorted(canonical_dir.rglob("*.yaml"))
+    assert yaml_paths
+
+    split_enabled_call_codes: set[str] = set()
+    for yaml_path in yaml_paths:
+        loaded = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict):
+            continue
+        model = CallDefinitionV2.model_validate(loaded)
+        if model.runtime_config.split_visibility_reviewability_enabled:
+            split_enabled_call_codes.add(model.funding_call.code)
+            for node in model.proposal_nodes:
+                if node.node_role == "SUPPORTING":
+                    assert len(node.node_expectations) == 0
+
+    assert split_enabled_call_codes == allowed_call_codes

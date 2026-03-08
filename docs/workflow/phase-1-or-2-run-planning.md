@@ -111,7 +111,11 @@ After completing Part C, output:
 
        Run Phase X ...
        ```
-   - **Optional Review-And-Harden Pass (Same Session):** Provide an explicit, copy-pasteable prompt block using `@docs/workflow/review-and-harden-prompt.md` against the finalized output artifact from this runner (`brainstorm`, `prd`, or `task`) so the user can run a generic adversarial review-and-harden pass without manually selecting the phase-specific review/revise docs.
+   - **Critical Continuation Review (New Chat):** Provide an explicit, copy-pasteable prompt block that starts a fail-closed adversarial review in a new chat using `@docs/workflow/review-and-harden-prompt.md` against the finalized output artifact from this runner (`brainstorm`, `prd`, or `task`). The prompt block must explicitly require:
+     - hallucination/scope-drift detection versus approved prior-phase artifacts (if any),
+     - strict reporting of bugs/missing tests/design issues/suggested fixes,
+     - safe closure of all justified findings (blocking mandatory; non-blocking unless rejected with rationale),
+     - and explicit pass/fail verification evidence before any ship recommendation.
 3. **Traceability Statement (Required)**:
    - Part A output reviewed in Part B: `<yes/no>` + `<path/version>`
    - Part B feedback applied in Part C: `<yes/no>` + `<key edits>`

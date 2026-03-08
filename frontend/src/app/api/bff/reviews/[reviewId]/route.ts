@@ -44,6 +44,20 @@ function normalizeReviewDetailResponse(payload: unknown): unknown {
     unmapped_node_logical_ids: Array.isArray(record.unmapped_node_logical_ids)
       ? record.unmapped_node_logical_ids.filter((item): item is string => typeof item === "string")
       : [],
+    primary_evaluated_node_logical_ids: Array.isArray(
+      record.primary_evaluated_node_logical_ids,
+    )
+      ? record.primary_evaluated_node_logical_ids.filter(
+          (item): item is string => typeof item === "string",
+        )
+      : [],
+    supporting_context_node_logical_ids: Array.isArray(
+      record.supporting_context_node_logical_ids,
+    )
+      ? record.supporting_context_node_logical_ids.filter(
+          (item): item is string => typeof item === "string",
+        )
+      : [],
   };
 }
 
@@ -73,10 +87,22 @@ export async function GET(_: Request, context: RouteContext) {
   )
     ? payload.moved_legacy_node_references
     : [];
+  const primaryEvaluatedNodeLogicalIds = Array.isArray(
+    payload.primary_evaluated_node_logical_ids,
+  )
+    ? payload.primary_evaluated_node_logical_ids
+    : [];
+  const supportingContextNodeLogicalIds = Array.isArray(
+    payload.supporting_context_node_logical_ids,
+  )
+    ? payload.supporting_context_node_logical_ids
+    : [];
   return NextResponse.json(
     normalizeReviewDetailResponse({
       ...payload,
       submitted_leaf_ids: submittedLeafIds,
+      primary_evaluated_node_logical_ids: primaryEvaluatedNodeLogicalIds,
+      supporting_context_node_logical_ids: supportingContextNodeLogicalIds,
       legacy_ambiguous_container_ids: legacyAmbiguousContainerIds,
       moved_legacy_node_references: movedLegacyNodeReferences,
     }),

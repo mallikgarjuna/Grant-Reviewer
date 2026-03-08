@@ -234,6 +234,8 @@ export function UniversalSubmitForm() {
           const nextRenderModel = buildRenderModel({
             nodes: nextNodes,
             metadataByLogicalId,
+            splitVisibilityReviewabilityEnabled:
+              selectedCall?.splitVisibilityReviewabilityEnabled === true,
           });
           if (nextRenderModel.state !== "ready") {
             trackClientEvent("universal_submit.unsupported_call_selection", {
@@ -320,6 +322,7 @@ export function UniversalSubmitForm() {
     }
     return renderModel.nodes
       .filter((node) => isNodeEligibleForStage(node, selectedReviewStage))
+      .filter((node) => node.nodeRole === "PRIMARY")
       .map((node) => {
         return {
           node_logical_id: node.nodeLogicalId,
@@ -396,6 +399,7 @@ export function UniversalSubmitForm() {
     try {
       const draftNodesForStage = renderModel.nodes
         .filter((node) => isNodeEligibleForStage(node, selectedReviewStage))
+        .filter((node) => node.nodeRole === "PRIMARY")
         .map((node) => ({
           node_logical_id: node.nodeLogicalId,
           text: draft[node.nodeLogicalId] ?? "",
@@ -544,6 +548,11 @@ export function UniversalSubmitForm() {
                         >
                           {node.label}
                         </label>
+                        <p className="text-xs text-[var(--color-muted-foreground)]">
+                          {node.nodeRole === "PRIMARY"
+                            ? "Primary evaluated"
+                            : "Supporting context (draft-only for this review path)"}
+                        </p>
                         <textarea
                           id={inputId}
                           className="min-h-40 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white p-3 text-sm leading-6"
