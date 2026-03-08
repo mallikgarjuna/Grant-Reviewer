@@ -2,8 +2,8 @@
 # WF-0066 — PeerLens Scope Lock to NWO/ERC/MSCA
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-08
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0066-peerlens-scope-lock-nwo-erc-msca.md`
@@ -86,10 +86,12 @@ Use a docs-only workflow to lock the scope decision and remove stale breadth log
 Preferred direction:
 - keep `docs/mission.md` stable unless evidence proves real drift
 - rewrite only the live backlog/decision/memory surfaces that still imply broader promised-program coverage
+- initial active-doc target set: `docs/parking_lot.md`, `docs/logs/decisions.md`, and `docs/memory/domain/project_docs.md`; inspect `docs/mission.md` for mission check only unless a concrete contradiction is found
 - preserve historical/completed artifacts as historical evidence rather than retroactive SSOT
 
 Contract Notes / Non-obvious constraints:
 - Do not bundle landing-page changes, review-quality work, or call-authoring work into this WF.
+- If `docs/logs/decisions.md` is updated, prefer a new superseding dated decision entry or clearly additive note; do not silently rewrite historical approved decision text unless the wording sits outside the dated historical record.
 - If a live doc is not current SSOT or active planning input, default to leaving it alone.
 
 ## 5. Constraints
@@ -101,6 +103,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0066-peerlens-scope
 - Preserve traceability; do not erase historical references just because they are now obsolete strategically.
 - Keep `docs/mission.md` stable unless a mission check proves a concrete contradiction.
 - No new features, no call expansion, no review-quality or UX work in this WF.
+- Remove false future-breadth commitments without implying the current NWO/ERC/MSCA wedge is already fully complete or sufficient in every product dimension.
 
 Contract Notes / Non-obvious constraints:
 - This is a docs-only WF unless later planning reveals a truly required live product-copy dependency.
@@ -145,6 +148,7 @@ Explicitly excluded:
 Contract Notes / Non-obvious constraints:
 - A docs-only closure is acceptable and preferred if it removes the misleading commitments cleanly.
 - This WF should not manufacture follow-on breadth work just to replace the removed backlog item.
+- Verification seam for later phases: mission check, targeted stale-language scan across active docs, and historical-provenance preservation check.
 
 ## 8. Explicit Non-Goals
 
