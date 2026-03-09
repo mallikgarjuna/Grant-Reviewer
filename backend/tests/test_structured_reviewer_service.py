@@ -426,6 +426,16 @@ def _wf0065_representative_cases() -> list[dict[str, str]]:
     ]
 
 
+def _wf0069_stress_case_nwo() -> dict[str, str]:
+    return {
+        "item_id": "wf0068_nwo_actionability_prioritization_stress",
+        "call_code": "nwo_veni_2025_preproposal",
+        "stage": "STEP_1",
+        "node_logical_id": "key_outputs",
+        "node_text": "Representative paired-boundary text for NWO key outputs.",
+    }
+
+
 def _build_service_for_wf0065_representative_call(
     monkeypatch,
     *,
@@ -438,6 +448,40 @@ def _build_service_for_wf0065_representative_call(
     if call_code == "MSCA-PF-2025":
         return _build_msca_pf_service(monkeypatch)
     raise AssertionError(f"Unsupported wf0065 representative call: {call_code}")
+
+
+def test_wf0069_wf0068_nwo_actionability_prioritization_stress_proves_narrowest_actionable_seam(
+    monkeypatch,
+) -> None:
+    case = _wf0069_stress_case_nwo()
+    service, call_id = _build_nwo_veni_service(monkeypatch)
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage=case["stage"],
+            call_id=call_id,
+            nodes=[(case["node_logical_id"], case["node_text"])],
+            external_user_id=f"wf0069-{case['item_id']}",
+            idempotency_key=f"wf0069-{case['item_id']}",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert cards
+
+        assessed_cards = [
+            card
+            for card in cards
+            if card.assessment_status == AssessmentStatus.ASSESSED
+        ]
+        assert assessed_cards
+        assert any(
+            card.feedback_text.startswith("Revise ")
+            and "content_evaluated" not in card.feedback_text
+            for card in assessed_cards
+        )
+
+        # Missing-context fail-closed behavior is guarded by
+        # test_structured_pipeline_v1_not_assessable_cards_for_missing_context.
+    finally:
+        service.repository.session.close()
 
 
 def test_structured_pipeline_v1_happy_path(monkeypatch) -> None:

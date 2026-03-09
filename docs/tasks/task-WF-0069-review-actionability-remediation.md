@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: prove the narrowest actionable-feedback seam for one NWO stress case
+### [x] Task 1 — Tracer bullet: prove the narrowest actionable-feedback seam for one NWO stress case
 
 Goal:
 Prove the smallest viable backend seam can emit at least one concrete revision move without breaking explicit missing-context handling for NWO `wf0068_nwo_actionability_prioritization_stress`, starting from the primary evaluator / compatibility / pipeline seams implicated by the approved artifacts and using a service-layer reroute only if the tracer evidence shows those seams cannot preserve actionable feedback truthfully on their own.
