@@ -50,6 +50,11 @@ STRUCTURED_SUMMARY_COMPLETED_PREFIX = "Structured review completed with"
 STRUCTURED_POLICY_BLOCKING_PREFIX = "POLICY_BLOCKING:"
 STRUCTURED_POLICY_WARNING_PREFIX = "Reviewer-policy warnings:"
 WF0060_ERC_CONTAINER_NODE_IDS = {"part_a", "budget", "part_b", "b1", "b2"}
+WF0069_ACTIONABILITY_CALL_CODES = {
+    "nwo_veni_2025_preproposal",
+    "erc_stg_2026_full",
+    "MSCA-PF-2025",
+}
 
 
 class StructuredReviewerService:
@@ -336,11 +341,17 @@ class StructuredReviewerService:
         ] = list(not_assessable_payloads)
         for card in result.review_cards:
             expectation = expectation_map[card.expectation_id]
+            feedback_text = self._resolve_feedback_text_for_card(
+                call_code=call.code,
+                node_logical_id=card.node_logical_id,
+                expectation=expectation,
+                feedback_text=card.feedback,
+            )
             card_payloads.append(
                 (
                     expectation.id,
                     ReviewRating[card.rating],
-                    card.feedback,
+                    feedback_text,
                     AssessmentStatus.ASSESSED,
                     None,
                 )
@@ -415,3 +426,35 @@ class StructuredReviewerService:
             node_logical_id=node_logical_id,
             review_stage=review_stage,
         )
+
+    def _resolve_feedback_text_for_card(
+        self,
+        *,
+        call_code: str,
+        node_logical_id: str,
+        expectation: NodeExpectation,
+        feedback_text: str,
+    ) -> str:
+        if (
+            feedback_text != "content_evaluated"
+            or call_code not in WF0069_ACTIONABILITY_CALL_CODES
+        ):
+            return feedback_text
+
+        # Keep the remediation scoped to the locked call wedge at the service seam.
+        # Evaluator/mapper are call-agnostic and would widen behavior across unrelated calls.
+        element_label = self._normalize_expectation_element_label(expectation)
+        return (
+            f"Revise {node_logical_id} to explicitly strengthen {element_label} "
+            "with concrete evidence and outcomes."
+        )
+
+    @staticmethod
+    def _normalize_expectation_element_label(expectation: NodeExpectation) -> str:
+        if expectation.element is None:
+            return "this evaluation element"
+        if expectation.element.name:
+            return expectation.element.name.strip().lower()
+        if expectation.element.logical_id:
+            return expectation.element.logical_id.replace("_", " ").strip().lower()
+        return "this evaluation element"

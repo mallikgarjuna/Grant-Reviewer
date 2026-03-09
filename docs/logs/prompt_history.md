@@ -2,6 +2,10 @@
 
 ## 2026-03-09
 
+### WF-0069 Phase 3 Closeout Restart + Hardening
+> User requested a full WF-0069 Phase 3 audit/code-review with fail-closed evidence, then asked to restart closeout safely after a parallel DB verification collision.
+> Outcome: Identified and fixed a blocking evaluator invariant gap (`item_id -> role` not enforced), added regression coverage, reran WF-0069 verification serially on isolated test DB (`reset_test_db.sh` + replay + targeted service/API selectors), and updated closure docs/decision logs with the additional guard and evidence.
+
 ### WF-0068 Phase 3.3 Closure + Closeout Phrase Standardization
 > User requested strict Phase 3 closure sequencing: commit first, then verification gate, then walkthrough/archive/index closure, then stop for ship signal.
 > Outcome: Completed two WF-0068 closure commits (`7489674`, `b8a5c25`), finalized completed-artifact moves and index `Done` state, added composed code phrase `phase 3 closeout` to `docs/reference/code_phrases.md`, and encoded fail-closed stop-before-ship behavior.

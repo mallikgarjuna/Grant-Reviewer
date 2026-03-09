@@ -1,0 +1,62 @@
+{
+  "source_path": "backend/tests/fixtures/wf_0069_actionability_cases.json",
+  "cases": {
+    "pass_with_context_gap": {
+      "cards": [
+        {
+          "assessment_status": "ASSESSED",
+          "feedback_text": "Revise key_outputs to explicitly strengthen peer quality with concrete evidence and outcomes.",
+          "not_assessable_reason": null
+        },
+        {
+          "assessment_status": "NOT_ASSESSABLE",
+          "feedback_text": "Not assessable due to missing cross-node context.",
+          "not_assessable_reason": "Missing required context from: academic_profile"
+        }
+      ],
+      "expected_scores": {
+        "revision_actionability": "pass",
+        "prioritization_quality": "pass"
+      }
+    },
+    "fail_flat_status": {
+      "cards": [
+        {
+          "assessment_status": "ASSESSED",
+          "feedback_text": "content_evaluated",
+          "not_assessable_reason": null
+        }
+      ],
+      "expected_scores": {
+        "revision_actionability": "weak",
+        "prioritization_quality": "fail"
+      }
+    },
+    "fail_closed_missing_reason": {
+      "cards": [
+        {
+          "assessment_status": "NOT_ASSESSABLE",
+          "feedback_text": "Not assessable due to missing cross-node context.",
+          "not_assessable_reason": ""
+        }
+      ],
+      "expected_missing_reason_indices": [
+        0
+      ]
+    },
+    "baseline_floor_tie_handling": {
+      "observed_floor_equal": {
+        "revision_actionability": "weak",
+        "prioritization_quality": "weak"
+      },
+      "required_floor": {
+        "revision_actionability": "weak",
+        "prioritization_quality": "weak"
+      },
+      "observed_below_floor": {
+        "revision_actionability": "fail",
+        "prioritization_quality": "weak"
+      }
+    }
+  }
+}

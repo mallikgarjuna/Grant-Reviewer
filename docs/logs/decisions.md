@@ -1,6 +1,48 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-09 (WF-0069: review actionability remediation)
+
+### AD 69.1: WF-0069 closes a coupled actionability-plus-priority contract, not wording polish alone
+- **WF ID**: WF-0069
+- **Context**: WF-0068 closed with a repeated `actionability_cluster` boundary across the locked NWO/ERC/MSCA wedge, and the observed failing outputs were mostly flat `content_evaluated` or `NOTE`-style cards that did not tell the researcher what to revise first.
+- **Decision**: Treat actionability and prioritization as one coupled remediation contract for WF-0069. The minimum successful seam must preserve an explicit revision move, a defensible highest-priority-versus-lower-priority distinction for the same snippet, and an explicit fail-closed non-actionable state when evidence is insufficient.
+- **Why**: This keeps the follow-on WF anchored to the repeated WF-0068 failure pattern and prevents false closure through longer prose or single-dimension fixes that still leave researchers without defensible next-step ordering.
+- **Tradeoff**: The implementation cannot rely on generic text polishing alone; it may need a slightly richer structured contract or mapper behavior than the current flat output path.
+- **Status**: Approved.
+
+### AD 69.2: WF-0069 verification reuses WF-0068 evidence and blocks generic-scope remediation
+- **WF ID**: WF-0069
+- **Context**: The brainstorm and AD 68.5 lock this WF to a narrow remediation follow-on, but without an explicit closure rule Phase 2 could broaden into trust-surface, launch-floor, prompt-tuning, or wider quality work under the banner of “helpfulness.”
+- **Decision**: Reuse the exact WF-0068 stress and baseline item IDs as the primary closure evidence for WF-0069, require deterministic replay plus fail-closed and regression guards, and treat broader trust-surface, launch-floor, assisted-extraction, call-expansion, or generic prompt-tuning work as out of scope unless proven to be a hard dependency of the minimum contract.
+- **Why**: This keeps remediation fail-closed, replayable, and bounded to the approved repeated failure instead of letting Phase 2 convert a narrow follow-on into a general review-quality initiative.
+- **Tradeoff**: Some adjacent improvements that might help overall feedback quality remain deferred even if they are tempting to implement alongside the narrow fix.
+- **Status**: Approved.
+
+### AD 69.3: WF-0069 closure requires explicit audit disposition and baseline-anchored scope proof
+- **WF ID**: WF-0069
+- **Context**: Replay of the WF-0068 stress items is necessary but not sufficient for safe closure. Without stricter closure rules, a future ship/proceed recommendation could rely on nondeterministic worktree-only file listings or leave justified non-blocking audit findings unresolved without recording why.
+- **Decision**: Require WF-0069 closure artifacts to include a scope proof anchored to the frozen remediation baseline SHA or explicit commit range, plus an audit-disposition ledger that closes every blocking finding and either closes or explicitly rejects each justified non-blocking finding with rationale. If the chosen remediation contract allows equal-priority revision moves, deterministic tie-handling regression coverage is also mandatory.
+- **Why**: This keeps closure fail-closed, replayable, and explicit about what review concerns were actually resolved versus consciously rejected.
+- **Tradeoff**: Closure evidence becomes slightly heavier and Phase 2/3 must preserve a small amount of additional bookkeeping.
+- **Status**: Approved.
+
+### AD 69.4: WF-0069 replay evaluator must validate required item role mappings fail-closed
+- **WF ID**: WF-0069
+- **Context**: The evaluator already enforced exact `item_id -> call_id` mapping, but still trusted mutable batch `role` values during stress-gate evaluation.
+- **Decision**: Enforce exact `item_id -> role` mapping (`actionability_prioritization_stress` vs `baseline_representative`) for all required replay items and fail closed on mismatch before scoring.
+- **Why**: Prevents false closure where a mislabeled stress item could bypass stress gating and still produce an `overall_pass` artifact.
+- **Tradeoff**: Replay input is stricter and rejects malformed batches earlier, requiring item metadata discipline in fixtures/manifests.
+- **Status**: Approved.
+
+### AD 69.5: WF-0069 closure is approved with a strict no-follow-on boundary
+- **WF ID**: WF-0069
+- **Context**: Phase 3 closeout reran deterministic replay and targeted service/API selectors serially on isolated test DB after hardening evaluator invariants for `item_id -> call_id` and `item_id -> role`.
+- **Decision**: Mark WF-0069 as closure-ready and user-gated for ship, with no automatic follow-on workflow. Preserve the boundary at repeated actionability/prioritization remediation for the locked NWO/ERC/MSCA wedge only.
+- **Why**: All blocking findings were closed with reproducible pass evidence, and no unresolved trust-surface, launch-floor, assisted-extraction, broader call-coverage, or generic prompt-tuning work is required for this WF's closure contract.
+- **Tradeoff**: Adjacent quality opportunities remain intentionally deferred and must be raised as separate, explicitly scoped WFs if needed.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0068: review quality evaluation loop)
 
 ### AD 68.1: Representative proof batch is fixed at 9 snippets with a per-call role matrix

@@ -2302,6 +2302,79 @@ def test_review_detail_order_index_tie_uses_node_logical_id_fallback(monkeypatch
     assert payload["unmapped_node_logical_ids"] == []
 
 
+@pytest.mark.parametrize(
+    "case",
+    _wf0065_paired_boundary_cases(),
+    ids=lambda case: f"wf0069_review_detail_orders_assessed_cards_before_context_gaps_{case['case_id']}",
+)
+def test_wf0069_review_detail_orders_assessed_cards_before_context_gaps(
+    monkeypatch,
+    case: Wf0065RepresentativeCase,
+) -> None:
+    client, call_id, _ = _create_structured_client_for_call(
+        monkeypatch,
+        call_code=case["call_code"],
+    )
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": case["stage"],
+            "nodes": [
+                {
+                    "node_logical_id": case["node_logical_id"],
+                    "text": case["node_text"],
+                }
+            ],
+        },
+    )
+    assert response.status_code in {200, 201}
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+
+    assessed_submitted_indices = [
+        index
+        for index, card in enumerate(payload["cards"])
+        if card.get("node_logical_id") == case["node_logical_id"]
+        and card.get("assessment_status") == AssessmentStatus.ASSESSED
+    ]
+    assert assessed_submitted_indices
+
+    context_gap_indices = [
+        index
+        for index, card in enumerate(payload["cards"])
+        if card.get("assessment_status") == AssessmentStatus.NOT_ASSESSABLE
+    ]
+    if context_gap_indices:
+        assert min(assessed_submitted_indices) < min(context_gap_indices)
+
+
+def test_wf0069_review_detail_legacy_ordering_guard(monkeypatch) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [
+                {"node_logical_id": "academic_profile", "text": "profile text"},
+                {"node_logical_id": "scientific_proposal", "text": "science text"},
+            ],
+        },
+    )
+    assert response.status_code == 200
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    payload = detail.json()
+    ordered_nodes = [card["node_logical_id"] for card in payload["cards"]]
+
+    assert ordered_nodes == sorted(ordered_nodes)
+    assert payload["ordering_source"] == "call_nodes"
+    assert payload["unmapped_node_logical_ids"] == []
+
+
 def test_review_detail_unmapped_nodes_ordered_last_and_reported(monkeypatch) -> None:
     client, seeded_ids = create_client_with_seed(monkeypatch)
     session = get_session()
