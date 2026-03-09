@@ -43,7 +43,7 @@ Verification Steps:
 - `rg -n "snippet-batch\\.json|baseline\\.json|phase_3_baseline_sha" docs/walkthroughs/walkthrough-WF-0068-review-quality-evaluation-loop.md`
 Risks (if any): If the batch scaffold is weak, later evidence can look complete while hiding convenience sampling or baseline drift.
 
-### [ ] Task 2 — Tracer bullet: capture locked-batch raw review outputs with a fail-closed runner
+### [x] Task 2 — Tracer bullet: capture locked-batch raw review outputs with a fail-closed runner
 
 Goal:
 Prove the evaluation loop can replay the locked batch through an existing non-demo review-generation seam and persist raw outputs without widening into reviewer remediation or product behavior changes.
