@@ -27,6 +27,14 @@
 - **Tradeoff**: Closure evidence becomes slightly heavier and Phase 2/3 must preserve a small amount of additional bookkeeping.
 - **Status**: Approved.
 
+### AD 69.4: WF-0069 replay evaluator must validate required item role mappings fail-closed
+- **WF ID**: WF-0069
+- **Context**: The evaluator already enforced exact `item_id -> call_id` mapping, but still trusted mutable batch `role` values during stress-gate evaluation.
+- **Decision**: Enforce exact `item_id -> role` mapping (`actionability_prioritization_stress` vs `baseline_representative`) for all required replay items and fail closed on mismatch before scoring.
+- **Why**: Prevents false closure where a mislabeled stress item could bypass stress gating and still produce an `overall_pass` artifact.
+- **Tradeoff**: Replay input is stricter and rejects malformed batches earlier, requiring item metadata discipline in fixtures/manifests.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0068: review quality evaluation loop)
 
 ### AD 68.1: Representative proof batch is fixed at 9 snippets with a per-call role matrix

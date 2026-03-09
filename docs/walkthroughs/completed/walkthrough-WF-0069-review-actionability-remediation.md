@@ -2,7 +2,7 @@
 # WF-0069 — Review Actionability Remediation
 
 Artifact: walkthrough
-Version: v0.2
+Version: v0.3
 Status: Done (Phase 3.2 + 3.3 Complete; User-Gated Ship)
 Last Updated: 2026-03-09
 
@@ -22,14 +22,18 @@ Last Updated: 2026-03-09
 - Task 4 (deterministic replay evaluator): new evaluator script + fixture-backed tests for pass/fail/tie-handling/fail-closed regression
 - Task 5 (this artifact): closure evidence + scope proof + audit-disposition ledger + explicit recommendation state
 - Part C1 (post-audit fixes): evaluator DB safety guard + strict item_id↔call_id mapping guard
+- Part C1.1 (post-closeout hardening): strict required `item_id -> role` mapping guard to prevent stress-gate bypass via batch-role drift
 
 ## 3) Deterministic Replay Commands + Results
 
 Commands run:
 
 ```bash
+cd backend && ./scripts/reset_test_db.sh
 cd backend && uv run pytest tests/test_evaluate_wf_0069_actionability.py
 cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run python scripts/evaluate_wf_0069_actionability.py --batch ../docs/walkthroughs/evidence/WF-0068/snippet-batch.json --baseline ../docs/walkthroughs/evidence/WF-0068/baseline.json --output /tmp/wf_0069_actionability_eval.json
+cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_structured_reviewer_service.py -k "wf0069_wf0068_nwo_actionability_prioritization_stress_proves_narrowest_actionable_seam or wf0069_erc_actionability or wf0069_msca_actionability or wf0069_baseline_non_regression or structured_pipeline_v1_not_assessable_cards_for_missing_context"
+cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_api.py -k "wf0069_review_detail_orders_assessed_cards_before_context_gaps or wf0069_review_detail_legacy_ordering_guard"
 ```
 
 Result:
@@ -39,6 +43,9 @@ Result:
 - `stress_gate.pass: true`
 - `baseline_floor_gate.pass: true`
 - `fail_closed_guard.pass: true`
+- `tests/test_evaluate_wf_0069_actionability.py`: `6 passed`
+- `tests/test_structured_reviewer_service.py` WF-0069 selectors: `7 passed, 16 deselected`
+- `tests/test_api.py` WF-0069 selectors: `4 passed, 142 deselected`
 
 Per-item replay outcomes (exact required IDs):
 
@@ -75,6 +82,7 @@ No launch-floor ops, broader trust-surface redesign, assisted extraction, broad 
 | :--- | :--- | :--- | :--- |
 | WF0069-B-001 | Phase 3.2 technical audit | `closed` | `backend/scripts/evaluate_wf_0069_actionability.py` now fail-closes destructive DB reset unless `DATABASE_URL` targets a `test` database. |
 | WF0069-B-002 | Phase 3.2 technical audit | `closed` | Evaluator now enforces exact required `item_id -> call_id` mapping to prevent false cross-call closure. |
+| WF0069-B-003 | Phase 3 closeout technical audit | `closed` | Evaluator now enforces exact required `item_id -> role` mapping to prevent stress-gate bypass via role drift/mislabeled batch items. |
 
 ### Non-blocking findings/comments
 
