@@ -2,8 +2,8 @@
 # WF-0070 — ERC Structured Review: Enforce Step 1 vs Step 2 Evaluation Gating — Tasks
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-09
 
 ---
@@ -121,7 +121,7 @@ Risks:
 ### [ ] Task 4 — Backend: validate submitted ERC leaf ids against authoritative stage-truth before execution
 
 Goal: Harden `POST /api/structured-review` to validate, fail-closed, that every submitted ERC leaf id is eligible under the chosen `review_stage` (from the Task 1 authoritative contract) before any runtime execution or persistence side effect. Errors must identify offending node ids explicitly.
-Slice: fail-closed-validation
+Slice: tracer-bullet / fail-closed-validation
 User Stories: US1, US3, US4
 PRD Requirements: FR4, FR5, FR6, FR13
 Depends on: Task 1, Task 2
@@ -142,6 +142,7 @@ Acceptance Criteria:
   - `review_stage: STEP_1` + a `STEP_2` leaf id → rejected before execution with an explicit error listing offending leaf id(s); no side effects.
   - No silent dropping, no fallback rerouting, no post-persistence failure mode.
   - Existing `Idempotency-Key` replay and payload-hash conflict behavior for valid requests is unchanged.
+  - A request with valid `review_stage` but empty `submitted_leaf_ids: []` is handled deterministically — either accepted as a zero-node run or rejected with an explicit validation error; no silent undefined behaviour. (SF2: edge-case from FR5)
 TDD Plan:
   RED: Write `test_backend_stage_leaf_validation.py` cases: (a) valid Step 1 → passes, (b) Step 1 + Step 2 leaf id → 422 with offending ids, (c) valid Step 2 → passes, (d) invalid stage → 422. Run → (b) fails (currently accepted or silently dropped).
   GREEN: Add/extend stage-aware leaf-id validation using Task 2 derivation helper → all cases pass.
@@ -167,7 +168,7 @@ Files to modify:
   Must touch files:
     - `backend/app/services/structured_review_service.py` or equivalent runtime builder / activation seam
   May touch files:
-    - Any runtime expectation-builder module called before pipeline execution, if activation logic lives there separately
+    - `backend/app/services/expectation_builder.py` (or equivalent runtime expectation-builder — resolve actual path before editing; do not widen if not needed)
   Out of scope: persisted evidence fields (Task 6), review-detail projection (Task 7), evaluator/pipeline core internals (must remain call-agnostic per FR8)
 Stop if:
   - The shared execution core cannot consume the stage-scoped activation snapshot without broad evaluator specialization requiring ERC-specific branches inside the evaluator or pipeline core → surface as blocker (FR8, FR17); do not proceed.
@@ -273,7 +274,7 @@ Enables: Task 9
 Parallelizable: no
 Files to modify:
   Must touch files:
-    - ERC structured-review submit component/page (`frontend/src/app/.../(erc-structured-review)/...` or equivalent)
+    - ERC structured-review submit component/page — resolve path with `find frontend/src -name "*erc*" -o -name "*structured-review*" | grep -v node_modules` before editing; likely under `frontend/src/app/(erc-structured-review)/` or equivalent
   May touch files:
     - Shared `isNodeEligibleForStage()` helper if it still references a stale, non-derived stage source
     - Review-detail rendering component for stage-aware boundary display
@@ -306,7 +307,7 @@ Goal: Implement all blocking automated test coverage from FR14, add at least one
 Slice: verification
 User Stories: US2, US4
 PRD Requirements: FR14, FR15, FR16
-Depends on: Task 3, Task 4, Task 5, Task 6, Task 7, Task 8
+Depends on: Task 1, Task 2, Task 3, Task 4, Task 5, Task 6, Task 7, Task 8
 Enables: none (terminal task)
 Parallelizable: no
 Files to modify:
@@ -350,3 +351,4 @@ Risks:
 ## Changelog
 
 - v0.1 (2026-03-09): Initial task breakdown from PRD v0.3.
+- v0.2 (2026-03-09): Applied Part B review findings (all non-blocking): added Task 1+2 to Task 9 Depends on (SF1); added empty-submitted_leaf_ids edge case to Task 4 AC (SF2); replaced Task 8 Must-touch glob placeholder with resolve-before-edit instruction (SF3); named concrete expectation-builder file for Task 5 May touch (SF4); annotated Task 4 as tracer-bullet (SF5).
