@@ -105,6 +105,18 @@ def _validate_manifest(
         if roles != REQUIRED_ROLES:
             raise ValueError(f"ROLE_MATRIX_DRIFT: roles mismatch for {call_id}")
 
+    batch_orders: list[int] = []
+    for item in items:
+        batch_order = item.get("batch_order")
+        if not isinstance(batch_order, int) or batch_order < 1:
+            raise ValueError("BATCH_ORDER_INVALID: batch_order must be positive integer")
+        batch_orders.append(batch_order)
+    if len(set(batch_orders)) != len(batch_orders):
+        raise ValueError("BATCH_ORDER_INVALID: duplicate batch_order detected")
+    expected_orders = set(range(1, REQUIRED_ITEM_COUNT + 1))
+    if set(batch_orders) != expected_orders:
+        raise ValueError("BATCH_ORDER_INVALID: batch_order must be contiguous 1..9")
+
     return items
 
 

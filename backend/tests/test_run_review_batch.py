@@ -91,3 +91,23 @@ def test_wf0068_batch_runner_rejects_baseline_reference_mismatch(tmp_path: Path)
             baseline_path=baseline_path,
             output_path=output_path,
         )
+
+
+def test_wf0068_batch_runner_rejects_invalid_batch_order(tmp_path: Path) -> None:
+    manifest = _fixture_manifest()
+    manifest["items"][0]["batch_order"] = "first"
+    manifest["items"][1]["batch_order"] = 1
+
+    manifest_path = tmp_path / "manifest_bad_order.json"
+    baseline_path = tmp_path / "baseline.json"
+    output_path = tmp_path / "raw_outputs.json"
+
+    _write_json(manifest_path, manifest)
+    _write_json(baseline_path, _baseline_payload())
+
+    with pytest.raises(ValueError, match="BATCH_ORDER_INVALID"):
+        run_review_batch(
+            manifest_path=manifest_path,
+            baseline_path=baseline_path,
+            output_path=output_path,
+        )

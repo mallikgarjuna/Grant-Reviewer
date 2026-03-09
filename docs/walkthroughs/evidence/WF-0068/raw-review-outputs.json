@@ -4,7 +4,7 @@
   "baseline_ref": "../docs/walkthroughs/evidence/WF-0068/baseline.json",
   "batch_id": "wf0068_locked_batch_v1",
   "coverage_status": "locked",
-  "generated_at_utc": "2026-03-09T05:35:34.897816+00:00",
+  "generated_at_utc": "2026-03-09T05:39:15.204092+00:00",
   "items": [
     {
       "baseline_id": "wf0068_baseline_v1",

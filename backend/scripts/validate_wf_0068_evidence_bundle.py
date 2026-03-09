@@ -262,11 +262,7 @@ def validate_bundle_payload(
         )
         calls_for_boundary = repeated_patterns.get(boundary)
         if calls_for_boundary is None:
-            # Boundary can still be broader textual label only if one repeated class exists.
-            if len(repeated_patterns) == 1:
-                calls_for_boundary = next(iter(repeated_patterns.values()))
-            else:
-                raise ValueError("FOLLOW_ON_BOUNDARY_UNSUPPORTED")
+            raise ValueError("FOLLOW_ON_BOUNDARY_UNSUPPORTED")
 
         if len(calls_for_boundary) == 1 and "call-specific" not in boundary.lower():
             raise ValueError("CROSS_WEDGE_OVERCLAIM")

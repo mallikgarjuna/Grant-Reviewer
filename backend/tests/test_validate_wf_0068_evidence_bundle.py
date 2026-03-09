@@ -77,3 +77,14 @@ def test_wf0068_evidence_bundle_bundle_requires_repeated_failure_pattern() -> No
             raw_output=single_call_overclaim["raw_output"],
             baseline=single_call_overclaim["baseline"],
         )
+
+    unsupported_boundary = deepcopy(valid)
+    unsupported_boundary["summary"]["recommended_follow_on_boundary"] = "unknown_cluster"
+
+    with pytest.raises(ValueError, match="FOLLOW_ON_BOUNDARY_UNSUPPORTED"):
+        validate_bundle_payload(
+            summary=unsupported_boundary["summary"],
+            records=unsupported_boundary["records"],
+            raw_output=unsupported_boundary["raw_output"],
+            baseline=unsupported_boundary["baseline"],
+        )
