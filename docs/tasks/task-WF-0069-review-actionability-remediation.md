@@ -138,7 +138,7 @@ Verification Steps:
 - `cd backend && uv run python scripts/evaluate_wf_0069_actionability.py --batch ../docs/walkthroughs/evidence/WF-0068/snippet-batch.json --baseline ../docs/walkthroughs/evidence/WF-0068/baseline.json --output /tmp/wf_0069_actionability_eval.json`
 Risks (if any): If the evaluator drifts from the named WF-0068 IDs or dimensions, it can create false closure with a prettier but non-traceable proof path.
 
-### [ ] Task 5 — Produce the WF-0069 closure artifact with scope proof and audit disposition ledger
+### [x] Task 5 — Produce the WF-0069 closure artifact with scope proof and audit disposition ledger
 
 Goal:
 Finish WF-0069 with one walkthrough closure artifact that records exact replay evidence, baseline-anchored scope proof, and audit disposition, so the workflow cannot be marked ready or shipped on implied closure.
