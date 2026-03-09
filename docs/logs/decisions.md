@@ -19,6 +19,22 @@
 - **Tradeoff**: Adds one persisted derived field to maintain, but avoids a disconnected provenance system and keeps the proof path honest.
 - **Status**: Approved.
 
+### AD 70.3: WF-0070 proceed claims require baseline-anchored scope proof and audit disposition
+- **WF ID**: WF-0070
+- **Context**: The finalized PRD still required concrete verification evidence, but it left room for a future proceed or implementation-ready claim to rely on passing tests alone without an explicit scope proof or explicit closure of justified review findings.
+- **Decision**: Require every proceed, implementation-ready, or ship recommendation for WF-0070 to include both a baseline-SHA or explicit commit-range-anchored scope proof and an audit-disposition ledger that closes every blocking finding while closing or explicitly rejecting each justified non-blocking finding with rationale.
+- **Why**: This keeps the trust-closure claim fail-closed and prevents false readiness based on partial evidence or unresolved review debt.
+- **Tradeoff**: Closure evidence is heavier, and later phases must preserve explicit bookkeeping for scope and finding disposition.
+- **Status**: Approved.
+
+### AD 70.4: Single-node `/api/reviews` stays deferred unless structured-path honesty proves otherwise
+- **WF ID**: WF-0070
+- **Context**: The brainstorm required Phase 1 to decide whether deferring single-node review would undermine the structured ERC trust claim. Repo reality shows `POST /api/reviews` runs through `ReviewerService.generate_review`, while the WF target is the structured path through `POST /api/structured-review`, `StructuredReviewerService.generate_structured_review_pipeline_v1`, and structured review-detail evidence.
+- **Decision**: Keep `/api/reviews` out of MVP scope for WF-0070 and treat it as a blocker or follow-on only if a later phase proves that the structured ERC trust claim cannot remain honest while the single-node path stays untouched.
+- **Why**: This preserves the locked structured-review scope and avoids widening implementation into a separate service path without repo-grounded necessity.
+- **Tradeoff**: The repo may temporarily carry different stage-hardening maturity across the two review entrypoints, so later phases must watch for contradictory semantics instead of assuming parity.
+- **Status**: Approved.
+
 ## Date: 2026-03-09 (WF-0069: review actionability remediation)
 
 ### AD 69.1: WF-0069 closes a coupled actionability-plus-priority contract, not wording polish alone

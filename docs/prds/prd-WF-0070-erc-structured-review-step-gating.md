@@ -2,7 +2,7 @@
 # WF-0070 — ERC Structured Review: Enforce Step 1 vs Step 2 Evaluation Gating
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-09
 
@@ -17,7 +17,7 @@ Type: feature
 
 ## Deferred Stories (Not in MVP)
 
-- DS1: Align the single-node `POST /api/reviews` path to the same ERC stage contract.
+- DS1: Align the single-node `POST /api/reviews` path to the same ERC stage contract only if a later blocker proves the structured ERC trust claim cannot remain honest without it.
 - DS2: Broaden staged-review support beyond the locked ERC structured-review path.
 - DS3: Add prompt, extraction, supporting-context, or generalized provenance features beyond the minimum trust-closure evidence.
 - DS4: Rework compliance messaging unless Phase 2 proves it is required to keep structured ERC stage truth honest.
@@ -96,8 +96,9 @@ Type: feature
   - invalid-stage fail-closed proof at BFF/backend boundary,
   - idempotency and payload-hash parity proof after boundary hardening,
   - explicit review-evidence verification for the activated stage scope.
-- FR15 (US4): No proceed recommendation is valid unless every blocking item in FR14 has an explicit planned verification seam and later passes with concrete evidence.
-- FR16 (US3, US4): Single-node review-path alignment remains deferred by default; if Phase 2 concludes the structured ERC trust claim would otherwise become contradictory, that dependency must be logged explicitly as a blocker rather than absorbed silently.
+- FR15 (US4): No proceed recommendation is valid unless every blocking item in FR14 has an explicit planned verification seam, is later marked pass/fail with concrete evidence, and the final verification output includes a baseline-SHA or explicit commit-range-anchored scope proof.
+- FR16 (US4): Final closure for this WF must include an audit-disposition ledger that closes every blocking finding and either closes or explicitly rejects each justified non-blocking finding with rationale before any proceed, implementation-ready, or ship recommendation.
+- FR17 (US3, US4): Single-node `POST /api/reviews` alignment is explicitly deferred in Phase 1 because it uses a different service path from the structured ERC trust surface; if Phase 2 discovers a dependency on that path, it must be logged as a blocker or follow-on decision before implementation scope expands.
 
 ## 5. Data & API Contracts
 
@@ -140,6 +141,7 @@ Type: feature
 - Invalid-stage and stage/node mismatch errors must fail before any execution or persistence side effects. (US1, US4, FR4-FR6, FR13)
 - Existing replay and payload-mismatch semantics for valid structured-review requests must remain unchanged after stage hardening. (US4, FR13, FR14)
 - Phase 2 and Phase 3 verification must prove that tightened validation does not weaken current ordering guarantees around validation, idempotency handling, and payload-hash conflict behavior. (US4, FR13, FR14)
+- Scope proof for any readiness/proceed recommendation must be anchored to a frozen baseline SHA or explicit commit range rather than worktree-only diffs. (US4, FR15, FR16)
 
 ## 6. Components / Modules
 
@@ -158,14 +160,14 @@ Type: feature
 - Review-detail response assembly and BFF normalization seams
   - Must project stage-aware boundary buckets truthfully to the UI. (FR10-FR12)
 - Backend and frontend test seams
-  - Must prove the blocking matrix in FR14 without widening into unrelated calls or generalized stage systems. (FR14-FR16)
+  - Must prove the blocking matrix in FR14 without widening into unrelated calls or generalized stage systems. (FR14-FR17)
 
 Design tree / dependencies / ordering:
 1. Freeze the authoritative ERC stage-truth source and the exact derived outputs it must feed. (FR2, FR3)
 2. Freeze fail-closed boundary validation behavior and ordering invariants. (FR4-FR6, FR13)
 3. Implement stage-scoped runtime activation from the same authoritative source. (FR7, FR8)
 4. Extend persisted evidence and review-detail projection so the activated scope is inspectable. (FR9-FR12)
-5. Add the blocking verification matrix and reject any readiness claim without full coverage. (FR14-FR16)
+5. Add the blocking verification matrix, scope proof, and audit-disposition closure requirements before any readiness claim. (FR14-FR17)
 
 Deep module guidance:
 
@@ -190,7 +192,8 @@ Suggested file-path clusters (coarse only):
 - Persisted data stores `review_stage` and `submitted_leaf_ids` but cannot reconstruct which additional surfaces were in scope for the stage; one minimal derived evidence field is required before closure can be claimed. (US2, US3, FR9, FR10)
 - Review detail distinguishes reviewed vs `not reviewed` but has no explicit out-of-scope bucket for Step 2-only surfaces during Step 1; this overstates eligibility and remains blocking. (US2, US4, FR11, FR12)
 - Tightening stage validation changes idempotency replay or payload-hash conflict behavior for valid requests; this is a regression even if stage checks themselves pass. (US4, FR13, FR14)
-- Phase 2 discovers that single-node review-path semantics contradict the structured ERC contract for the same call; this must be raised as an explicit blocker or follow-on decision, not silently widened into scope. (US3, US4, FR16)
+- Phase 2 discovers that single-node review-path semantics contradict the structured ERC contract for the same call; this must be raised as an explicit blocker or follow-on decision, not silently widened into scope. (US3, US4, FR17)
+- Phase 3 verification passes the runtime/tests, but closure evidence relies only on worktree state or leaves justified audit findings unresolved; this remains a blocking failure even if the implementation itself is correct. (US4, FR15, FR16)
 
 ## 8. Testing Decisions (TDD)
 
@@ -211,12 +214,13 @@ Suggested file-path clusters (coarse only):
   - Idempotency replay and payload-mismatch tests proving current semantics remain intact after stage hardening. (US4, FR13, FR14)
   - Persisted-evidence and review-detail tests proving Step 1 exposes Step 2-only surfaces as out of scope rather than merely `not reviewed`. (US2, US4, FR9-FR12, FR14)
   - At least one representative end-to-end proof spanning submit, validation, activation, persistence, and review detail for ERC structured review. (US2, US4, FR14, FR15)
+  - Closure evidence proving the final proceed recommendation is anchored to an explicit baseline SHA or commit range and includes an audit-disposition ledger for all justified findings. (US4, FR15, FR16)
 
 ## 8.1 Readiness Gate
 
 - This WF is not ready for Tasks unless the PRD stays within the structured ERC trust-closure slice and leaves no unresolved blocking contract ambiguity on authoritative stage truth, runtime activation, or inspectable evidence. (US3, US4)
-- No implementation-ready or ship recommendation is valid unless every blocking verification item in FR14 has an explicit planned seam and later passing evidence. (US4, FR14, FR15)
-- If Phase 2 cannot keep evaluator/pipeline internals call-agnostic, cannot avoid duplicate peer-authoritative stage mappings, cannot prove inspectable executed scope, or cannot preserve idempotency/payload-hash guarantees, implementation planning must stop and surface the blocker. (US3, US4)
+- No implementation-ready or ship recommendation is valid unless every blocking verification item in FR14 has an explicit planned seam, later pass/fail evidence, a baseline-anchored scope proof, and an audit-disposition ledger closing or explicitly rejecting every justified finding. (US4, FR14-FR16)
+- If Phase 2 cannot keep evaluator/pipeline internals call-agnostic, cannot avoid duplicate peer-authoritative stage mappings, cannot prove inspectable executed scope, cannot preserve idempotency/payload-hash guarantees, or cannot keep the single-node path deferred honestly, implementation planning must stop and surface the blocker. (US3, US4, FR17)
 
 ## 9. Telemetry (Minimal)
 
@@ -238,3 +242,4 @@ Suggested file-path clusters (coarse only):
 
 - v0.1 (2026-03-09): Initial PRD from brainstorm.
 - v0.2 (2026-03-09): Applied risk-audit edits to lock the authored proposal-surface stage-truth source, persist a review-time stage-scope snapshot for inspectable evidence, add derivation-parity test coverage, and mark Ready for Tasks.
+- v0.3 (2026-03-09): Hardened proceed-proof requirements with baseline-anchored scope and audit-disposition closure, and resolved the single-node defer boundary explicitly in Phase 1.

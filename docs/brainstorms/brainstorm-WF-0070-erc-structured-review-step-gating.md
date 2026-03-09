@@ -2,7 +2,7 @@
 # WF-0070 — ERC Structured Review: Enforce Step 1 vs Step 2 Evaluation Gating
 
 Artifact: brainstorm
-Version: v0.3
+Version: v0.4
 Status: Draft Complete
 Last Updated: 2026-03-09
 
@@ -149,10 +149,6 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured
 ## Open Questions / Deferred
 
 - Whether compliance warnings/errors need explicit stage labeling in the user-facing response, beyond stage-correct node filtering. Deferred to Phase 1 if not required for trust closure.
-- Whether `POST /api/reviews` single-node path should align to the same ERC stage contract in this WF or remain parked. Default: parked unless trust closure on structured path requires it.
-- Whether existing persisted coverage (`review_stage`, `submitted_leaf_ids`) plus review-detail boundary fields are sufficient once made stage-aware, or whether one additional derived evidence field is required. Must be resolved in planning, not implementation.
-- Whether ERC authored config needs an explicit node-scope stage field separate from evaluation-element stage. Resolve in planning based on cleanest fail-closed design.
-- Single-node review remains out of scope by default, but Phase 1 must explicitly confirm that deferring it does not undermine the structured ERC trust claim or create conflicting stage semantics for the same call.
 
 ## Authoritative Stage Truth (Must Resolve in Phase 1)
 
@@ -166,6 +162,16 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured
 - Persisted `review_stage` alone is not sufficient.
 - The chosen evidence surface must let a researcher or reviewer verify what ERC surfaces were in scope for the completed review.
 - Do not invent a disconnected provenance system if the existing persisted/review-detail seams can carry the proof honestly.
+- Any proceed/phase-advance recommendation for this WF must include both:
+  - an explicit pass/fail verification ledger covering every blocking proof item in the locked matrix,
+  - a baseline-SHA or explicit commit-range-anchored scope proof plus an audit-disposition ledger closing every blocking finding and either closing or explicitly rejecting each justified non-blocking finding with rationale.
+
+## Structured-Path Scope Boundary (Resolved in Phase 1)
+
+- The structured ERC trust claim for this WF remains anchored to `POST /api/structured-review`, its stage-aware submit flow, its runtime activation seam, and its persisted/review-detail evidence path.
+- `POST /api/reviews` remains deferred because it runs through a different service seam and does not participate in the structured payload/review-detail trust path that this WF is closing.
+- Phase 2 must treat any required changes to `POST /api/reviews` as an explicit blocker or follow-on decision, not as silent implementation spillover.
+- No readiness/proceed recommendation is valid if implementation work touches the single-node path without first proving that dependency is necessary to keep the structured ERC trust claim honest.
 
 ## 7. MVP Definition
 
@@ -173,6 +179,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured
 - Required technical closure: no silent stage coercion at BFF, no Step 1 evaluation of Step 2-only ERC surfaces, and no runtime reliance on UI-only filtering.
 - Required artifact closure: tests and docs align on the authoritative ERC stage truth for affected nodes/surfaces.
 - Minimum proof matrix for planning/tests: Step 1 happy path, Step 1 with Step 2 node mismatch, Step 1 review-detail boundary proof that Step 2-only ERC surfaces are out of scope rather than “not reviewed”, Step 2 happy path, invalid-stage fail-closed proof at the BFF/backend boundary, idempotency/payload-hash parity proof for the tightened boundary, and explicit review-evidence verification for scope.
+- Proceed/phase-advance proof must be fail-closed: every blocking proof item is marked pass/fail with explicit evidence, and closure records the scope proof plus final disposition of every justified finding.
 - Explicitly excluded from MVP: prompt-quality improvements, extraction, new agencies, generalized supporting-context semantics, and broad multi-call stage redesign.
 - If a narrow ERC-specific seam is required, it must stay localized to config/activation rather than spreading across the evaluator core.
 
