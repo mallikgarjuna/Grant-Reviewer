@@ -2,8 +2,8 @@
 # WF-0070 — ERC Structured Review: Enforce Step 1 vs Step 2 Evaluation Gating
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-09
 
 Type: feature
@@ -73,7 +73,7 @@ Type: feature
 ## 4. Functional Requirements
 
 - FR1 (US1, US3): The ERC structured-review path must require an explicit `review_stage` selection for Step 1 vs Step 2 and must not rely on hidden defaults or coercion.
-- FR2 (US1, US3): Phase 2 must define one authoritative stage-truth source in canonical ERC call configuration for structured review, and all secondary stage-aware representations must be derived from it rather than authored independently.
+- FR2 (US1, US3): The authoritative stage-truth source for ERC structured review is an authored proposal-surface stage-scope contract in the canonical ERC call definition, and all secondary stage-aware representations must be derived from it rather than authored independently.
 - FR3 (US1, US3): The authoritative stage-truth source must resolve the current `b2_part2_scientific_proposal` drift explicitly so Step 2-only ERC surfaces are no longer treated as `BOTH` by default.
 - FR4 (US1, US3, US4): The frontend and BFF must fail closed on invalid or unsupported `review_stage` values and must not normalize them to `STEP_1`.
 - FR5 (US1, US3, US4): Backend request validation must reject submitted ERC leaf ids that are not allowed for the chosen stage before runtime execution begins, and the error must identify the offending node ids explicitly.
@@ -81,7 +81,7 @@ Type: feature
 - FR7 (US1, US3, US4): Structured-review runtime must derive a stage-scoped active expectation set from the authoritative stage-truth source before evaluation, so Step 1 execution cannot activate Step 2-only ERC expectations or surfaces.
 - FR8 (US3, US4): The implementation seam for stage-scoped execution must remain localized to configuration and activation boundaries; evaluator/pipeline internals must stay call-agnostic unless Phase 2 logs a blocker proving otherwise.
 - FR9 (US2, US3): The completed review must persist enough stage-scoped coverage evidence to reconstruct the activated ERC surface set honestly; `review_stage` alone is insufficient.
-- FR10 (US2, US3): Phase 2 should extend existing `structured_payload.review_stage`, `structured_payload.submitted_leaf_ids`, and review-detail boundary buckets first; it may add one minimal derived coverage field only if those existing seams cannot prove scope honestly.
+- FR10 (US2, US3): Persisted structured-review evidence must extend existing `structured_payload.review_stage` and `structured_payload.submitted_leaf_ids` with one derived review-time stage-scope snapshot field capturing the in-scope ERC leaf set used for the completed review, and review-detail boundary buckets must be projected from that persisted evidence.
 - FR11 (US2, US4): Review detail must project stage-aware boundary states that distinguish:
   - reviewed in-scope ERC surfaces,
   - visible/submitted but not reviewed in-scope ERC surfaces where applicable,
@@ -103,12 +103,12 @@ Type: feature
 
 ### 5.1 Authoritative stage-truth contract
 
-- The canonical ERC call definition must expose one authoritative stage-scope contract for structured review. (US1, US3, FR2, FR3)
+- The canonical ERC call definition must expose one authored proposal-surface stage-scope contract for structured review. (US1, US3, FR2, FR3)
 - That contract must be rich enough to derive:
   - stage-eligible ERC proposal leaf ids for submission/visibility,
   - stage-eligible expectation activation inputs,
   - stage-aware evidence projection for persisted review payloads and review detail. (US1, US2, US3, FR2, FR7, FR9-FR12)
-- Any existing node-level `review_stage` metadata used by UI helpers must become derived output from the authoritative contract rather than a peer-authored truth source. (US1, US3, FR2, FR3)
+- Any existing node-level `review_stage` metadata used by UI helpers must become generated output from the authoritative proposal-surface contract rather than a peer-authored truth source. (US1, US3, FR2, FR3)
 
 ### 5.2 Submit and validation contract
 
@@ -127,13 +127,13 @@ Type: feature
 
 ### 5.4 Persisted evidence and review-detail contract
 
-- Persisted structured-review payload data must expose the selected stage and the inspectable surface set that was eligible/activated for the review. (US2, US3, FR9, FR10)
+- Persisted structured-review payload data must expose the selected stage and the inspectable surface set that was eligible/activated for the review via a derived review-time stage-scope snapshot. (US2, US3, FR9, FR10)
 - The preferred evidence seam is:
   - existing `review_stage`,
   - existing `submitted_leaf_ids`,
-  - stage-aware review-detail boundary buckets,
-  - plus one minimal derived coverage field only if required to make executed stage scope stable and replayable. (US2, US3, FR9-FR12)
-- Review-detail responses for ERC structured reviews must include enough stage-aware boundary data for the page to distinguish out-of-scope from merely not-reviewed surfaces without local heuristics. (US2, US4, FR11, FR12)
+  - one persisted derived `stage_scope_leaf_ids`-style review-time snapshot of the in-scope ERC leaf set,
+  - stage-aware review-detail boundary buckets projected from that persisted evidence. (US2, US3, FR9-FR12)
+- Review-detail responses for ERC structured reviews must include enough stage-aware boundary data for the page to distinguish out-of-scope from merely not-reviewed surfaces without local heuristics or live recomputation from current call config. (US2, US4, FR11, FR12)
 
 ### 5.5 Boundary and idempotency contract
 
@@ -143,8 +143,8 @@ Type: feature
 
 ## 6. Components / Modules
 
-- Canonical ERC call-definition authoring seam under `backend/app/schemas/` and/or canonical call data
-  - Must become the sole authored stage-truth source for structured review. (FR2, FR3)
+- Canonical ERC call-definition authoring seam in canonical ERC call data and its schema boundary
+  - Must become the sole authored proposal-surface stage-truth source for structured review. (FR2, FR3)
 - Frontend ERC structured-review submit surface
   - Must show only stage-eligible ERC leaves and carry explicit stage selection. (FR1, FR4)
 - `frontend/src/app/api/bff/structured-review/route.ts` or equivalent BFF seam
@@ -171,7 +171,7 @@ Deep module guidance:
 
 - Prefer one narrow config/activation seam over ERC-specific branching scattered across UI, BFF, backend, and evaluator internals.
 - Treat derived UI metadata, validation snapshots, runtime activation inputs, and evidence fields as projections of one source, not independent truths.
-- Reuse existing persisted structured payload and review-detail response seams before inventing a second provenance path.
+- Reuse existing persisted structured payload and review-detail response seams, but anchor review-detail projection to one persisted review-time stage-scope snapshot rather than live recomputation.
 - Keep Phase 2 localized to the structured ERC trust-closure slice; adjacent compliance or single-node work is allowed only if proven necessary to keep this contract honest.
 
 Suggested file-path clusters (coarse only):
@@ -203,6 +203,7 @@ Suggested file-path clusters (coarse only):
   - review-detail/BFF projection for stage-aware boundaries. (US1, US2, US3, US4)
 - Mock only external boundaries such as LLM calls or quota/policy toggles. Do not mock the stage-truth derivation, validation, activation, persistence evidence, or review-detail boundary mapping being proven. (US2, US3, US4)
 - Required automated coverage:
+  - a derivation-parity test proving UI eligibility metadata and runtime activation inputs are both produced from the same authored proposal-surface stage-truth contract. (US1, US3, FR2, FR7, FR8)
   - Step 1 happy-path test proving only Step 1-eligible ERC surfaces are accepted and activated. (US1, US4, FR4-FR8, FR14)
   - Step 1 mismatch test proving Step 2-only ERC nodes are rejected fail-closed with explicit offending ids before execution. (US1, US4, FR5, FR6, FR14)
   - Step 2 happy-path test proving Step 2 surfaces activate correctly without Step 1 regressions. (US1, US4, FR7, FR14)
@@ -231,9 +232,9 @@ Suggested file-path clusters (coarse only):
 
 ## 11. Open Questions (if any)
 
-- Whether existing `review_stage` plus `submitted_leaf_ids` and stage-aware boundary buckets are sufficient once corrected, or whether one minimal derived persisted field is still required for stable scope reconstruction. This is the only remaining in-scope data-contract question for Phase 2.
-- Whether structured-review compliance feedback needs explicit stage labeling to avoid referencing out-of-scope ERC surfaces during Step 1. This remains in scope only if Phase 2 proves it is necessary for trust closure.
+- Whether structured-review compliance feedback needs explicit stage labeling to avoid referencing out-of-scope ERC surfaces during Step 1. This remains deferred unless Phase 2 proves it is necessary for trust closure.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-09): Initial PRD from brainstorm.
+- v0.2 (2026-03-09): Applied risk-audit edits to lock the authored proposal-surface stage-truth source, persist a review-time stage-scope snapshot for inspectable evidence, add derivation-parity test coverage, and mark Ready for Tasks.

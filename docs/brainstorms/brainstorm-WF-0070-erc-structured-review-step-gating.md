@@ -156,13 +156,13 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured
 
 ## Authoritative Stage Truth (Must Resolve in Phase 1)
 
-- Phase 1 must choose one authoritative source of ERC stage truth for structured review.
+- Phase 1 chooses the authored proposal-surface stage-scope contract in canonical ERC call configuration as the one authoritative source of ERC stage truth for structured review.
 - Any secondary representation, such as node metadata or execution snapshots, must be derived from that source and must not become a peer-authoritative mapping.
 - The selected contract must resolve the current code-vs-doc disagreement around `b2_part2_scientific_proposal` explicitly rather than inheriting the current `BOTH` drift silently.
 
 ## Minimum Traceability Evidence (Must Resolve in Phase 1)
 
-- Planning must choose an inspectable evidence surface for stage-scoped review coverage by extending current persisted structured payload coverage, current review-detail projection, or both.
+- Planning chooses an inspectable evidence surface by extending current persisted structured payload coverage with one derived review-time stage-scope snapshot field and projecting stage-aware review-detail boundaries from that persisted evidence.
 - Persisted `review_stage` alone is not sufficient.
 - The chosen evidence surface must let a researcher or reviewer verify what ERC surfaces were in scope for the completed review.
 - Do not invent a disconnected provenance system if the existing persisted/review-detail seams can carry the proof honestly.

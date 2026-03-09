@@ -1,6 +1,24 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-09 (WF-0070: erc structured review step gating)
+
+### AD 70.1: ERC structured review stage truth is authored at the proposal-surface stage-scope contract
+- **WF ID**: WF-0070
+- **Context**: The brainstorm and Phase 1 audit identified the current split-brain defect: evaluation-element stage metadata can still collapse `b2_part2_scientific_proposal` into an effective `BOTH` surface, while UI visibility, validation, and runtime activation need one authority for official ERC Step 1 vs Step 2 surface truth.
+- **Decision**: Treat the authored proposal-surface stage-scope contract in canonical ERC call configuration as the sole authoritative stage-truth source for ERC structured review. Any node metadata, validation snapshot, runtime activation input, or evidence projection must be derived from that contract rather than authored as a peer authority.
+- **Why**: This resolves the current surface-truth drift at the level researchers actually submit and review, keeps Phase 2 localized to one coherent contract, and avoids evaluator-wide ERC specialization.
+- **Tradeoff**: Existing generated node metadata and mixed element-stage assumptions must be updated to become derived outputs, which may invalidate tests or fixtures that currently rely on `BOTH` drift.
+- **Status**: Approved.
+
+### AD 70.2: Inspectable ERC stage evidence persists a review-time scope snapshot
+- **WF ID**: WF-0070
+- **Context**: The brainstorm required Phase 1 to resolve whether existing persisted `review_stage` plus `submitted_leaf_ids` and stage-aware review-detail buckets were sufficient, or whether one additional evidence field was necessary to prove what actually ran for a completed ERC structured review.
+- **Decision**: Extend the existing structured payload evidence seam with one derived review-time stage-scope snapshot field capturing the in-scope ERC leaf set for the completed review, and require review-detail stage-aware boundary buckets to be projected from that persisted evidence.
+- **Why**: This keeps the evidence inspectable and replayable even if authored call configuration changes later, and it prevents review detail from silently recomputing scope from a newer config state.
+- **Tradeoff**: Adds one persisted derived field to maintain, but avoids a disconnected provenance system and keeps the proof path honest.
+- **Status**: Approved.
+
 ## Date: 2026-03-09 (WF-0069: review actionability remediation)
 
 ### AD 69.1: WF-0069 closes a coupled actionability-plus-priority contract, not wording polish alone
