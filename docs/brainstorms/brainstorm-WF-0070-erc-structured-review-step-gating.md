@@ -2,8 +2,8 @@
 # WF-0070 — ERC Structured Review: Enforce Step 1 vs Step 2 Evaluation Gating
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-09
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md`
@@ -97,6 +97,7 @@ Contract Notes / Non-obvious constraints:
 
 - “Stage-scoped execution” means more than blocking a bad node id at the API route; the activated expectation set must also respect stage truth.
 - The cleanest architecture is likely pre-execution activation plus explicit coverage evidence, not prompt-only stage hints.
+- Phase 1 must choose one authoritative source of ERC stage truth for structured review; node metadata, request validation, runtime activation, and review evidence must all derive from that source rather than acting as peer-authoritative mappings.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md` (Section 4)
 
@@ -112,6 +113,7 @@ Contract Notes / Non-obvious constraints:
 
 - Existing tests and mocks already disagree about ERC B2 stage truth, so artifact updates must resolve that split-brain explicitly.
 - A UI-only fix is invalid even if it appears to hide the immediate symptom.
+- Stage mismatch and invalid-stage errors must preserve existing validation-order invariants; this WF must not reintroduce silent fallback or post-persistence failure behavior.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md` (Section 5)
 
@@ -136,12 +138,26 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured
 - Whether `POST /api/reviews` single-node path should align to the same ERC stage contract in this WF or remain parked. Default: parked unless trust closure on structured path requires it.
 - Whether stage-scoped review evidence belongs in persisted `structured_payload`, review detail projection, or both. Must be resolved in planning, not implementation.
 - Whether ERC authored config needs an explicit node-scope stage field separate from evaluation-element stage. Resolve in planning based on cleanest fail-closed design.
+- Single-node review remains out of scope by default, but Phase 1 must explicitly confirm that deferring it does not undermine the structured ERC trust claim or create conflicting stage semantics for the same call.
+
+## Authoritative Stage Truth (Must Resolve in Phase 1)
+
+- Phase 1 must choose one authoritative source of ERC stage truth for structured review.
+- Any secondary representation, such as node metadata or execution snapshots, must be derived from that source and must not become a peer-authoritative mapping.
+- The selected contract must resolve the current code-vs-doc disagreement around `b2_part2_scientific_proposal` explicitly rather than inheriting the current `BOTH` drift silently.
+
+## Minimum Traceability Evidence (Must Resolve in Phase 1)
+
+- Planning must choose at least one inspectable evidence surface for stage-scoped review coverage: persisted structured payload coverage, review-detail projection, or both.
+- Persisted `review_stage` alone is not sufficient.
+- The chosen evidence surface must let a researcher or reviewer verify what ERC surfaces were in scope for the completed review.
 
 ## 7. MVP Definition
 
 - Smallest acceptable slice: ERC structured-review path enforces explicit Step 1 vs Step 2 selection/routing, rejects out-of-stage submitted nodes fail-closed, stage-scopes runtime execution, and exposes review evidence proving scope.
 - Required technical closure: no silent stage coercion at BFF, no Step 1 evaluation of Step 2-only ERC surfaces, and no runtime reliance on UI-only filtering.
 - Required artifact closure: tests and docs align on the authoritative ERC stage truth for affected nodes/surfaces.
+- Minimum proof matrix for planning/tests: Step 1 happy path, Step 1 with Step 2 node mismatch, Step 2 happy path, and explicit review-evidence verification for scope.
 - Explicitly excluded from MVP: prompt-quality improvements, extraction, new agencies, generalized supporting-context semantics, and broad multi-call stage redesign.
 - If a narrow ERC-specific seam is required, it must stay localized to config/activation rather than spreading across the evaluator core.
 
@@ -149,6 +165,12 @@ Contract Notes / Non-obvious constraints:
 
 - The MVP is a trust-closure slice, not a convenience slice.
 - A successful demo must prove both prevention and evidence, not only prevention.
+
+## Stop Conditions
+
+- Stop planning if the chosen seam cannot keep evaluator/pipeline core call-agnostic.
+- Stop planning if authoritative stage truth still requires duplicate ambiguous peer-authoritative mappings across node metadata and runtime activation.
+- Stop planning if no inspectable evidence surface can prove executed ERC stage scope honestly.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md` (Section 7)
 
