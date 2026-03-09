@@ -2,7 +2,7 @@
 # WF-0069 — Review Actionability Remediation
 
 Artifact: brainstorm-qna
-Version: v0.1
+Version: v0.2
 Status: Draft
 Last Updated: 2026-03-09
 
@@ -304,4 +304,27 @@ Last Updated: 2026-03-09
 - B) A narrow remediation WF.
 - C) A follow-on to WF-0068.
 > Recommendation: A — this WF exists to convert a proven failure boundary into a remediation slice, not to restart evaluation planning.
+> **Selected: A**
+
+### Part B Clarifications
+
+**Q1: How should this brainstorm define “prioritization” for the remediation contract?**
+- A) Across findings for the same snippet: surface the highest-value revision move first.
+- B) Inside each card only: every card must explain its own local priority.
+- C) Both A and B.
+> Recommendation: A — it matches WF-0068’s failure framing without forcing a broader card-schema redesign unless later needed. B is too local. C may become necessary later but is not the minimum safe contract today.
+> **Selected: A**
+
+**Q2: What minimum regression gate should be explicit in the brainstorm?**
+- A) The 3 WF-0068 actionability stress cases must pass, plus narrow checks that baseline representative and fail-closed missing-context behavior do not regress.
+- B) Only the 3 stress cases must pass.
+- C) Re-run the full WF-0068 batch as a new launch gate.
+> Recommendation: A — it keeps the gate bounded while still protecting against obvious regressions. B is too weak. C widens scope into a new evaluation workflow.
+> **Selected: A**
+
+**Q3: When does prompt/policy work become allowed in this WF?**
+- A) Only if the primary engine/card contract path cannot satisfy the acceptance gate on its own.
+- B) Prompt work is co-primary from the start.
+- C) Prompt work stays fully out of scope no matter what.
+> Recommendation: A — it keeps scope narrow without blocking a necessary small follow-through. B is scope creep. C is too rigid if backend-only changes prove insufficient.
 > **Selected: A**

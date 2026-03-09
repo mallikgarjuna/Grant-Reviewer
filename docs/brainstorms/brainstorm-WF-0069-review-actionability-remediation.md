@@ -2,7 +2,7 @@
 # WF-0069 — Review Actionability Remediation
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft
 Last Updated: 2026-03-09
 
@@ -48,6 +48,8 @@ Contract Notes / Non-obvious constraints:
 ## 2. Desired Outcome
 
 After this WF, the review-output path should produce guidance that a researcher can use as a defensible next revision move, with the highest-priority revision surfaced ahead of lower-value comments for the same stress-case snippet.
+
+For this WF, prioritization means ordering revision moves across findings for the same reviewed snippet, not generic UI sort order or cosmetic card placement.
 
 The desired outcome is not broad launch proof. It is a fail-closed remediation closure: the exact WF-0068 stress pattern should stop failing on actionability and prioritization, while the locked wedge and adjacent trust surfaces remain unchanged.
 
@@ -97,6 +99,8 @@ It must not bundle launch-floor ops, broader trust-surface work, call expansion,
 
 The acceptance gate should reuse the existing WF-0068 actionability/prioritization stress evidence as the primary verification path rather than inventing a new launch-proof workflow.
 
+Prompt or reviewer-policy changes are allowed only if the primary engine/card contract path cannot satisfy the acceptance gate on its own.
+
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0069-review-actionability-remediation.md` (Section 5)
 
 Contract Notes / Non-obvious constraints:
@@ -121,6 +125,21 @@ Contract Notes / Non-obvious constraints:
 - Document any dependency on adjacent seams explicitly before implementation; do not let it creep in as accidental mixed scope. See Q&A Section 6.
 - Preserve unsupported or insufficient-evidence states instead of replacing them with fabricated advice. See Q&A Section 6.
 
+## Likely File / Code Seams (Coarse)
+
+Primary suspected seams:
+
+- `backend/app/engine/pipeline_v1.py`
+- `backend/app/engine/findings/evaluator.py`
+- `backend/app/engine/compat/review_card_mapper.py`
+- `backend/app/engine/contracts.py`
+- `backend/app/services/structured_reviewer_service.py`
+
+Conditional-only seams:
+
+- `backend/app/services/prompt_builder.py` and reviewer-policy paths, but only if the primary backend seam cannot satisfy the acceptance gate
+- downstream API/render exposure, but only if new actionability semantics cannot otherwise reach the user truthfully
+
 ## Open Questions / Deferred
 
 - Whether the minimum successful contract needs explicit per-card priority fields, review-level ordering metadata, or a smaller representational change.
@@ -134,6 +153,8 @@ Smallest functional slice: remediate the review-output path so the three WF-0068
 
 This MVP should include only the minimal seam changes needed to express and preserve actionable, prioritized revision guidance, plus deterministic tests and a fail-closed evidence replay gate.
 
+Minimum regression gate: the three named stress cases must pass, and narrow checks must show no regression in representative baseline behavior or fail-closed missing-context / insufficient-evidence behavior.
+
 Explicitly excluded from MVP: new call support, broader review-detail polish, operational launch proof, generic quality dashboards, and cross-dimension prompt tuning.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0069-review-actionability-remediation.md` (Section 7)
@@ -143,6 +164,14 @@ Contract Notes / Non-obvious constraints:
 - MVP closure should be stress-case based and bounded, not a blanket claim that all review quality issues are solved. See Q&A Section 7.
 - Keep verification deterministic and replayable against named evidence inputs. See Q&A Section 7.
 - Regression checks should ensure the fix does not silently degrade the representative baseline items or fail-closed states. See Q&A Section 7.
+
+## Evidence Basis
+
+- `docs/prds/completed/prd-WF-0068-review-quality-evaluation-loop.md`
+- `docs/walkthroughs/completed/walkthrough-WF-0068-review-quality-evaluation-loop.md`
+- `docs/walkthroughs/evidence/WF-0068/batch-summary.json`
+- `docs/walkthroughs/evidence/WF-0068/evidence-records.json`
+- `docs/logs/decisions.md` (AD 68.5)
 
 ## 8. Explicit Non-Goals
 
