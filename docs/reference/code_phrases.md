@@ -1,3 +1,4 @@
+<!-- docs/reference/code_phrases.md -->
 # Code Phrases
 
 Quick-reference shortcuts you can use in any conversation with the agent.
@@ -25,6 +26,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | **`go ahead`** | Explicit approval to proceed to the next phase/step. |
 | **`critical review`** | Senior-level review of current work with actionable findings. |
 | **`workflow preflight`** | Critical review of current WF readiness, required actions before starting next WF, recommended order, and whether to start a new chat. If current changes touch auth/proxy/sign-in/BFF boundaries, include an explicit reminder to run both auth validation lanes (`test_bypass` + `clerk`). |
+| **`phase 3 closeout`** | Composed Phase-3 endgame shortcut. Execute this exact order: `verify workflow` -> `update docs` -> `docs cleanup` -> `log this` (WF closure decision + follow-on boundary rationale) -> `reorganize memory` -> `refresh parking lot` -> `workflow preflight`. After completing all seven, stop and ask for explicit user approval before running `ship it`. Fail-closed rules: if any verification/doc hygiene step fails, stop, report blocker, and do not continue to later steps. |
 | **`diff`** | Show changes on the current branch vs `main`. |
 | **`verify workflow`** | Run a verification bundle for the current workflow (composed phrase): `status` + `diff` + targeted checks (lint/build/tests used in this WF) + concise pass/fail summary. |
 | **`verify auth lanes`** | Run auth automation matrix for this repo: Playwright bypass smoke (`AUTH_MODE=test_bypass`) and Clerk auth checks (`AUTH_MODE=clerk`), then report pass/fail per lane and what was skipped (for example missing Clerk test credentials). |
@@ -67,6 +69,7 @@ Quick-reference shortcuts you can use in any conversation with the agent.
 | Advance artifact pipeline by phase | **`run phase [N]`** |
 | Deep quality/risk analysis of implementation | **`critical review`** |
 | Decide if current WF is cleanly closed before moving to the next WF | **`workflow preflight`** |
+| Run full Phase 3 closure checklist with a mandatory stop before shipping | **`phase 3 closeout`** |
 | Inspect branch delta against `main` | **`diff`** |
 | Validate auth/session flows in both bypass and real Clerk mode | **`verify auth lanes`** |
 | Persist new standing workflow rule | **`remember this`** |

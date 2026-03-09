@@ -1,5 +1,11 @@
 # Prompt History
 
+## 2026-03-09
+
+### WF-0068 Phase 3.3 Closure + Closeout Phrase Standardization
+> User requested strict Phase 3 closure sequencing: commit first, then verification gate, then walkthrough/archive/index closure, then stop for ship signal.
+> Outcome: Completed two WF-0068 closure commits (`7489674`, `b8a5c25`), finalized completed-artifact moves and index `Done` state, added composed code phrase `phase 3 closeout` to `docs/reference/code_phrases.md`, and encoded fail-closed stop-before-ship behavior.
+
 ## 2026-03-08
 
 ### 21:13 - WF-0067 Ship + Workflow Closure
