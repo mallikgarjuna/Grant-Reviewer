@@ -145,15 +145,31 @@ def _validate_records_consistency(records: dict[str, Any], raw_output: dict[str,
     if records.get("baseline_id") != baseline_id:
         raise ValueError("BASELINE_REFERENCE_MISMATCH: records baseline_id")
 
-    raw_item_ids = {str(item.get("item_id")) for item in raw_items if isinstance(item, dict)}
+    raw_item_ids: set[str] = set()
+    for raw_item in raw_items:
+        if not isinstance(raw_item, dict):
+            raise ValueError("INVALID_RAW_ITEM")
+        raw_item_id = _ensure_non_empty_str(
+            raw_item.get("item_id"),
+            code="ITEM_ID_MISSING",
+            context="raw_output.item_id",
+        )
+        if raw_item_id in raw_item_ids:
+            raise ValueError("DUPLICATE_RAW_ITEM_ID")
+        raw_item_ids.add(raw_item_id)
+
     raw_baseline_ids = {str(item.get("baseline_id")) for item in raw_items if isinstance(item, dict)}
     if raw_baseline_ids != {baseline_id}:
         raise ValueError("BASELINE_REFERENCE_MISMATCH: raw output baseline_id")
 
+    seen_record_item_ids: set[str] = set()
     for item in records_items:
         if not isinstance(item, dict):
             raise ValueError("INVALID_RECORD_ITEM")
         item_id = _ensure_non_empty_str(item.get("item_id"), code="ITEM_ID_MISSING", context="item_id")
+        if item_id in seen_record_item_ids:
+            raise ValueError("DUPLICATE_RECORD_ITEM_ID")
+        seen_record_item_ids.add(item_id)
         if item_id not in raw_item_ids:
             raise ValueError("ITEM_REF_MISMATCH")
 
@@ -211,6 +227,16 @@ def _repeated_pattern_calls(records: dict[str, Any]) -> dict[str, set[str]]:
     return {pattern: calls for pattern, calls in repeated.items() if counts.get(pattern, 0) >= 2}
 
 
+def _parse_boundary_pattern(boundary: str) -> tuple[str, bool]:
+    normalized = boundary.strip()
+    if not normalized:
+        raise ValueError("FOLLOW_ON_BOUNDARY_MISSING")
+    pattern = normalized.split(" ", 1)[0].split("(", 1)[0].strip()
+    if not pattern:
+        raise ValueError("FOLLOW_ON_BOUNDARY_UNSUPPORTED")
+    return pattern, "call-specific" in normalized.lower()
+
+
 def validate_bundle_payload(
     *,
     summary: dict[str, Any],
@@ -244,6 +270,11 @@ def validate_bundle_payload(
     repeated_patterns = _repeated_pattern_calls(records)
 
     if decision == "proceed_to_narrow_follow_on_wf":
+        if summary.get("coverage_status") != "locked":
+            raise ValueError("COVERAGE_STATUS_INVALID_FOR_PROCEED")
+        if summary.get("baseline_consistency_status") != "consistent":
+            raise ValueError("BASELINE_CONSISTENCY_INVALID_FOR_PROCEED")
+
         verification_ref = _ensure_non_empty_str(
             summary.get("verification_evidence_bundle_ref"),
             code="VERIFICATION_BUNDLE_REF_MISSING",
@@ -260,11 +291,12 @@ def validate_bundle_payload(
             code="FOLLOW_ON_BOUNDARY_MISSING",
             context="recommended_follow_on_boundary",
         )
-        calls_for_boundary = repeated_patterns.get(boundary)
+        boundary_pattern, call_specific_label = _parse_boundary_pattern(boundary)
+        calls_for_boundary = repeated_patterns.get(boundary_pattern)
         if calls_for_boundary is None:
             raise ValueError("FOLLOW_ON_BOUNDARY_UNSUPPORTED")
 
-        if len(calls_for_boundary) == 1 and "call-specific" not in boundary.lower():
+        if len(calls_for_boundary) == 1 and not call_specific_label:
             raise ValueError("CROSS_WEDGE_OVERCLAIM")
 
 

@@ -89,6 +89,9 @@ def _validate_manifest(
         if not isinstance(raw_item, dict):
             raise ValueError(f"INVALID_ITEM: items[{index}] must be object")
         item = dict(raw_item)
+        item_id = item.get("item_id")
+        if not isinstance(item_id, str) or not item_id.strip():
+            raise ValueError(f"INVALID_ITEM: missing item_id for items[{index}]")
         call_id = str(item.get("call_id", ""))
         if call_id not in expected_call_set:
             raise ValueError("WEDGE_DRIFT: item call_id outside locked wedge")
@@ -97,6 +100,10 @@ def _validate_manifest(
         if "baseline_id_ref" in item and item["baseline_id_ref"] != baseline_id:
             raise ValueError("BASELINE_REFERENCE_MISMATCH: per-item baseline_id_ref override")
         items.append(item)
+
+    item_ids = [str(item["item_id"]) for item in items]
+    if len(set(item_ids)) != len(item_ids):
+        raise ValueError("ITEM_ID_INVALID: duplicate item_id detected")
 
     call_to_roles: dict[str, set[str]] = {call_id: set() for call_id in expected_call_set}
     for item in items:

@@ -111,3 +111,22 @@ def test_wf0068_batch_runner_rejects_invalid_batch_order(tmp_path: Path) -> None
             baseline_path=baseline_path,
             output_path=output_path,
         )
+
+
+def test_wf0068_batch_runner_rejects_duplicate_item_ids(tmp_path: Path) -> None:
+    manifest = _fixture_manifest()
+    manifest["items"][1]["item_id"] = manifest["items"][0]["item_id"]
+
+    manifest_path = tmp_path / "manifest_duplicate_item_id.json"
+    baseline_path = tmp_path / "baseline.json"
+    output_path = tmp_path / "raw_outputs.json"
+
+    _write_json(manifest_path, manifest)
+    _write_json(baseline_path, _baseline_payload())
+
+    with pytest.raises(ValueError, match="ITEM_ID_INVALID"):
+        run_review_batch(
+            manifest_path=manifest_path,
+            baseline_path=baseline_path,
+            output_path=output_path,
+        )
