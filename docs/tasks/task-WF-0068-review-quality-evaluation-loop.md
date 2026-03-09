@@ -77,7 +77,7 @@ Verification Steps:
 - `cd backend && uv run python - <<'PY'\nimport json\nfrom pathlib import Path\nraw_outputs = json.loads(Path('/tmp/wf_0068_raw_review_outputs.json').read_text())\nassert len(raw_outputs['items']) == 9\nassert len({item['baseline_id'] for item in raw_outputs['items']}) == 1\nPY`
 Risks (if any): If the runner mutates or interprets review quality instead of only capturing raw outputs, it will collapse the evidence and judgment seams together.
 
-### [ ] Task 3 — Add fail-closed validation for the WF-0068 evidence bundle contract
+### [x] Task 3 — Add fail-closed validation for the WF-0068 evidence bundle contract
 
 Goal:
 Make the evidence bundle machine-checkable before human judgment closure so missing provenance, illegal severity values, or invalid proceed logic fail before the walkthrough can claim readiness.

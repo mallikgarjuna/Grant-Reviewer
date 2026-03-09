@@ -1,0 +1,196 @@
+{
+  "source_path": "backend/tests/fixtures/wf_0068_evidence_bundle_cases.json",
+  "cases": {
+    "valid_records": {
+      "baseline": {
+        "baseline_id": "wf0068_baseline_v1",
+        "app_commit_sha": "ce6c8cf3df4aa664f3dc3eb81846dc1b321723b3",
+        "app_branch_ref": "wf/WF-0068-review-quality-evaluation-loop",
+        "prompt_config_ref": "backend/app/services/prompt_builder.py::build_prompt_from_node",
+        "model_runtime_ref": "backend/app/services/llm_client.py::LLM_MODE=stub",
+        "reviewer_instruction_ref": "backend/data/calls/canonical/{nwo,erc,msca}/*.yaml::reviewer_policy",
+        "evidence_template_version": "wf0068_evidence_template_v1",
+        "dimension_scale": ["pass", "weak", "fail", "insufficient_evidence"]
+      },
+      "raw_output": {
+        "batch_id": "wf0068_fixture_batch_v1",
+        "baseline_id": "wf0068_baseline_v1",
+        "items": [
+          {"item_id": "i1", "call_id": "nwo_veni_2025_preproposal", "snippet_id": "s1", "baseline_id": "wf0068_baseline_v1"},
+          {"item_id": "i2", "call_id": "erc_stg_2026_full", "snippet_id": "s2", "baseline_id": "wf0068_baseline_v1"},
+          {"item_id": "i3", "call_id": "MSCA-PF-2025", "snippet_id": "s3", "baseline_id": "wf0068_baseline_v1"}
+        ]
+      },
+      "records": {
+        "batch_id": "wf0068_fixture_batch_v1",
+        "baseline_id": "wf0068_baseline_v1",
+        "items": [
+          {
+            "item_id": "i1",
+            "call_id": "nwo_veni_2025_preproposal",
+            "snippet_id": "s1",
+            "review_output_ref": "raw:i1",
+            "criterion_or_element_target": "criterion.impact",
+            "official_locator_used": "backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md#section:impact",
+            "dimension_scores": {
+              "criteria_groundedness": "weak",
+              "official_traceability": "fail",
+              "revision_actionability": "weak",
+              "specificity_without_false_specificity": "fail",
+              "prioritization_quality": "weak"
+            },
+            "failure_tags": ["weak_traceability", "false_specificity"],
+            "severity": "high",
+            "revision_action_judgment": "actionable_with_major_gaps",
+            "insufficient_evidence_reason": "",
+            "follow_on_pattern_class": "traceability_cluster",
+            "reviewer_rationale": "Traceability anchors were weak and specificity overreached source support."
+          },
+          {
+            "item_id": "i2",
+            "call_id": "erc_stg_2026_full",
+            "snippet_id": "s2",
+            "review_output_ref": "raw:i2",
+            "criterion_or_element_target": "criterion.excellence",
+            "official_locator_used": "backend/data/calls/sources/erc_stg_2026_full.sources.md#section:scientific-proposal",
+            "dimension_scores": {
+              "criteria_groundedness": "weak",
+              "official_traceability": "fail",
+              "revision_actionability": "weak",
+              "specificity_without_false_specificity": "weak",
+              "prioritization_quality": "pass"
+            },
+            "failure_tags": ["weak_traceability"],
+            "severity": "medium",
+            "revision_action_judgment": "actionable_but_incomplete",
+            "insufficient_evidence_reason": "",
+            "follow_on_pattern_class": "traceability_cluster",
+            "reviewer_rationale": "Traceability remained weak across key claims."
+          },
+          {
+            "item_id": "i3",
+            "call_id": "MSCA-PF-2025",
+            "snippet_id": "s3",
+            "review_output_ref": "raw:i3",
+            "criterion_or_element_target": "criterion.excellence",
+            "official_locator_used": "backend/data/calls/sources/msca_pf_2025_full.sources.md#section:evaluation-elements",
+            "dimension_scores": {
+              "criteria_groundedness": "insufficient_evidence",
+              "official_traceability": "insufficient_evidence",
+              "revision_actionability": "weak",
+              "specificity_without_false_specificity": "insufficient_evidence",
+              "prioritization_quality": "weak"
+            },
+            "failure_tags": ["criteria_element_mismatch"],
+            "severity": "low",
+            "revision_action_judgment": "insufficient_evidence",
+            "insufficient_evidence_reason": "Official trace could not be matched to the generated claim.",
+            "follow_on_pattern_class": "evidence_gap",
+            "reviewer_rationale": "Evidence gap captured without inferring unsupported fixes."
+          }
+        ]
+      }
+    },
+    "valid_bundle": {
+      "baseline": {
+        "baseline_id": "wf0068_baseline_v1",
+        "app_commit_sha": "ce6c8cf3df4aa664f3dc3eb81846dc1b321723b3",
+        "app_branch_ref": "wf/WF-0068-review-quality-evaluation-loop",
+        "prompt_config_ref": "backend/app/services/prompt_builder.py::build_prompt_from_node",
+        "model_runtime_ref": "backend/app/services/llm_client.py::LLM_MODE=stub",
+        "reviewer_instruction_ref": "backend/data/calls/canonical/{nwo,erc,msca}/*.yaml::reviewer_policy",
+        "evidence_template_version": "wf0068_evidence_template_v1",
+        "dimension_scale": ["pass", "weak", "fail", "insufficient_evidence"]
+      },
+      "raw_output": {
+        "batch_id": "wf0068_fixture_batch_v1",
+        "baseline_id": "wf0068_baseline_v1",
+        "items": [
+          {"item_id": "i1", "call_id": "nwo_veni_2025_preproposal", "snippet_id": "s1", "baseline_id": "wf0068_baseline_v1"},
+          {"item_id": "i2", "call_id": "erc_stg_2026_full", "snippet_id": "s2", "baseline_id": "wf0068_baseline_v1"},
+          {"item_id": "i3", "call_id": "MSCA-PF-2025", "snippet_id": "s3", "baseline_id": "wf0068_baseline_v1"}
+        ]
+      },
+      "records": {
+        "batch_id": "wf0068_fixture_batch_v1",
+        "baseline_id": "wf0068_baseline_v1",
+        "items": [
+          {
+            "item_id": "i1",
+            "call_id": "nwo_veni_2025_preproposal",
+            "snippet_id": "s1",
+            "review_output_ref": "raw:i1",
+            "criterion_or_element_target": "criterion.impact",
+            "official_locator_used": "backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md#section:impact",
+            "dimension_scores": {
+              "criteria_groundedness": "weak",
+              "official_traceability": "fail",
+              "revision_actionability": "weak",
+              "specificity_without_false_specificity": "fail",
+              "prioritization_quality": "weak"
+            },
+            "failure_tags": ["weak_traceability"],
+            "severity": "high",
+            "revision_action_judgment": "actionable_with_major_gaps",
+            "insufficient_evidence_reason": "",
+            "follow_on_pattern_class": "traceability_cluster",
+            "reviewer_rationale": "Traceability pattern appears across calls."
+          },
+          {
+            "item_id": "i2",
+            "call_id": "erc_stg_2026_full",
+            "snippet_id": "s2",
+            "review_output_ref": "raw:i2",
+            "criterion_or_element_target": "criterion.excellence",
+            "official_locator_used": "backend/data/calls/sources/erc_stg_2026_full.sources.md#section:scientific-proposal",
+            "dimension_scores": {
+              "criteria_groundedness": "weak",
+              "official_traceability": "fail",
+              "revision_actionability": "weak",
+              "specificity_without_false_specificity": "weak",
+              "prioritization_quality": "pass"
+            },
+            "failure_tags": ["weak_traceability"],
+            "severity": "medium",
+            "revision_action_judgment": "actionable_but_incomplete",
+            "insufficient_evidence_reason": "",
+            "follow_on_pattern_class": "traceability_cluster",
+            "reviewer_rationale": "Repeated traceability category confirms bounded pattern."
+          },
+          {
+            "item_id": "i3",
+            "call_id": "MSCA-PF-2025",
+            "snippet_id": "s3",
+            "review_output_ref": "raw:i3",
+            "criterion_or_element_target": "criterion.excellence",
+            "official_locator_used": "backend/data/calls/sources/msca_pf_2025_full.sources.md#section:evaluation-elements",
+            "dimension_scores": {
+              "criteria_groundedness": "pass",
+              "official_traceability": "pass",
+              "revision_actionability": "weak",
+              "specificity_without_false_specificity": "pass",
+              "prioritization_quality": "weak"
+            },
+            "failure_tags": [],
+            "severity": "low",
+            "revision_action_judgment": "actionable",
+            "insufficient_evidence_reason": "",
+            "follow_on_pattern_class": "none",
+            "reviewer_rationale": "No repeated failure category here."
+          }
+        ]
+      },
+      "summary": {
+        "batch_id": "wf0068_fixture_batch_v1",
+        "verification_evidence_bundle_ref": "docs/walkthroughs/evidence/WF-0068/evidence-records.json",
+        "coverage_status": "locked",
+        "baseline_consistency_status": "consistent",
+        "pattern_summary": "Repeated traceability_cluster appears in at least two snippets across calls.",
+        "mission_result": "fail",
+        "follow_on_decision": "proceed_to_narrow_follow_on_wf",
+        "decision_rationale": "Repeated categorized pattern meets proceed threshold.",
+        "recommended_follow_on_boundary": "traceability_cluster"
+      }
+    }
+  }
+}
