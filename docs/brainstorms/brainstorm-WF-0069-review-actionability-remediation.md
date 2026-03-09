@@ -2,7 +2,7 @@
 # WF-0069 — Review Actionability Remediation
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.4
 Status: Draft Complete
 Last Updated: 2026-03-09
 
@@ -51,7 +51,7 @@ After this WF, the review-output path should produce guidance that a researcher 
 
 For this WF, prioritization means ordering revision moves across findings for the same reviewed snippet, not generic UI sort order or cosmetic card placement.
 
-The desired outcome is not broad launch proof. It is a fail-closed remediation closure: the exact WF-0068 stress pattern should stop failing on actionability and prioritization, while the locked wedge and adjacent trust surfaces remain unchanged.
+The desired outcome is not broad launch proof. It is a fail-closed remediation closure: the exact WF-0068 stress pattern should stop failing on actionability and prioritization, while the locked wedge remains unchanged and any downstream trust-surface touch stays limited to the minimum exposure needed to carry already-approved semantics truthfully.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0069-review-actionability-remediation.md` (Section 2)
 
@@ -60,6 +60,7 @@ Contract Notes / Non-obvious constraints:
 - Success must be measured on the proven WF-0068 stress cases first, not on a new generalized quality score. See Q&A Section 2.
 - The acceptance gate should require both concrete next moves and defensible ordering, not one without the other. See Q&A Section 2.
 - This WF should close with remediation evidence, not with a broader launch-readiness claim. See Q&A Section 2.
+- This WF does not reopen WF-0067 trust-surface contracts; any downstream exposure must stay limited to truthful rendering of already-approved remediation semantics. See Q&A Section 8.
 
 ## 3. Target User / Actor
 
@@ -81,14 +82,14 @@ The most credible remediation direction is to tighten the engine-to-review-card 
 
 The WF should inspect whether the current pipeline emits too little semantic structure for downstream cards to carry actionable guidance, whether the compatibility mapper collapses distinct finding signals into flat note text, and whether the persisted/output contract lacks fields needed to express “fix this first because X”.
 
-The rough idea is deliberately not a UI or ops initiative. The smallest useful slice is likely backend-first with regression tests and a narrow evidence replay gate using the existing WF-0068 stress artifacts.
+The rough idea is deliberately not a UI or ops initiative. The smallest useful slice is likely backend-first with regression tests and a narrow evidence replay gate using the existing WF-0068 stress artifacts, with downstream API/render changes allowed only if the new semantics cannot otherwise reach the user truthfully.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0069-review-actionability-remediation.md` (Section 4)
 
 Contract Notes / Non-obvious constraints:
 
 - Start with no-behavior-claim inspection of engine/card seams before expanding into prompt changes. See Q&A Section 4.
-- UI changes are optional only if the backend contract produces the right semantics and a minimal display seam is strictly required to expose them truthfully. See Q&A Section 4.
+- UI or BFF/API exposure changes are optional only if the backend contract produces the right semantics and a minimal downstream seam is strictly required to expose them truthfully. See Q&A Section 4.
 - Preserve fail-closed handling for missing context; do not “fake actionability” by inventing unsupported advice. See Q&A Section 4.
 
 ## 5. Constraints
@@ -97,7 +98,7 @@ This WF must stay locked to the NWO/ERC/MSCA wedge and to the bounded `actionabi
 
 It must not bundle launch-floor ops, broader trust-surface work, call expansion, assisted extraction, or generic prompt tuning. Changes should stay minimal and traceable, with TDD for any behavior change.
 
-The acceptance gate should reuse the existing WF-0068 actionability/prioritization stress evidence as the primary verification path rather than inventing a new launch-proof workflow.
+The acceptance gate should reuse the existing WF-0068 actionability/prioritization stress evidence as the primary verification path rather than inventing a new launch-proof workflow, and it must emit an explicit pass/fail evidence bundle before any ship, proceed, or phase-advance recommendation.
 
 Prompt or reviewer-policy changes are allowed only if the primary engine/card contract path cannot satisfy the acceptance gate on its own.
 
@@ -108,6 +109,7 @@ Contract Notes / Non-obvious constraints:
 - Keep file and seam scope narrow enough that this WF does not turn into “review quality overhaul.” See Q&A Section 5.
 - Prefer reuse of existing evidence artifacts and stress cases over creating a parallel evaluation framework. See Q&A Section 5.
 - Any new verification must be fail-closed remediation proof only, not product launch proof. See Q&A Section 5.
+- No proceed or ship recommendation is valid unless the closure evidence names the exact WF-0068 item IDs checked, the deterministic test/replay commands run, and the pass/fail result for each blocking gate. See Q&A Part B.
 
 ## 6. Risks / Unknowns
 
@@ -151,7 +153,7 @@ Conditional-only seams:
 
 Smallest functional slice: remediate the review-output path so the three WF-0068 `actionability_prioritization_stress` cases no longer fail on `revision_actionability` and `prioritization_quality`, with regression protection that prevents reversion to flat `NOTE`/status-like guidance.
 
-This MVP should include only the minimal seam changes needed to express and preserve actionable, prioritized revision guidance, plus deterministic tests and a fail-closed evidence replay gate.
+This MVP should include only the minimal seam changes needed to express and preserve actionable, prioritized revision guidance, plus deterministic RED -> GREEN tests and a fail-closed evidence replay gate.
 
 Minimum regression gate: the three named stress cases must pass, and narrow checks must show no regression in representative baseline behavior or fail-closed missing-context / insufficient-evidence behavior.
 
@@ -164,6 +166,37 @@ Contract Notes / Non-obvious constraints:
 - MVP closure should be stress-case based and bounded, not a blanket claim that all review quality issues are solved. See Q&A Section 7.
 - Keep verification deterministic and replayable against named evidence inputs. See Q&A Section 7.
 - Regression checks should ensure the fix does not silently degrade the representative baseline items or fail-closed states. See Q&A Section 7.
+- Closure must include explicit audit finding disposition before any proceed/ship recommendation.
+
+## 8. Verification / Closure Contract
+
+Blocking closure evidence must exist before any `ship`, `proceed`, or phase-advance recommendation for WF-0069.
+
+Required blocking checks:
+
+- Stress-case replay: `wf0068_nwo_actionability_prioritization_stress`, `wf0068_erc_actionability_prioritization_stress`, and `wf0068_msca_actionability_prioritization_stress` must each pass on both `revision_actionability` and `prioritization_quality` under one frozen remediation baseline.
+- Baseline regression guard: `wf0068_nwo_baseline_representative`, `wf0068_erc_baseline_representative`, and `wf0068_msca_baseline_representative` must not regress below their current WF-0068 `weak` judgments on `revision_actionability` and `prioritization_quality`.
+- Fail-closed guard: missing-context and insufficient-evidence states must remain explicit and truthful; remediation must not replace them with fabricated revision advice or flatten them into normal success wording.
+- Scope guard: verification must show the locked wedge remains NWO/ERC/MSCA only and that no broader review-quality, launch-floor, or trust-surface initiative was bundled, using a scope proof anchored to the frozen remediation baseline SHA or explicit commit range.
+- Audit-disposition guard: no `ship`, `proceed`, or phase-advance recommendation is valid unless every blocking finding is closed and every justified non-blocking finding is either closed or explicitly rejected with rationale in the closure artifact.
+
+Required verification artifacts:
+
+- One named closure artifact or walkthrough section that lists every blocking check, the exact item IDs or test targets exercised, the deterministic command or replay path used, and a final `pass`/`fail` result.
+- One evidence reference back to the approved WF-0068 inputs: `docs/walkthroughs/evidence/WF-0068/batch-summary.json`, `docs/walkthroughs/evidence/WF-0068/evidence-records.json`, and any exact raw-output items replayed for closure.
+- One baseline-anchored scope proof (`git diff --name-only <baseline_sha>...<closure_sha>` or equivalent explicit commit range) showing only justified files/seams changed for the chosen remediation slice.
+- One audit-disposition ledger listing each review finding/comment, severity, disposition (`closed` or `rejected_with_rationale`), and the evidence reference supporting that disposition.
+
+Minimum automated test seams:
+
+- RED tests must reproduce the current failure at the narrowest changed public seam, likely the engine finding/card-contract path (`evaluator`, `review_card_mapper`, `pipeline_v1`) before implementation.
+- GREEN tests must prove actionable and prioritized revision guidance survives through the changed output contract and any persisted compatibility seam touched by the fix.
+- If the chosen contract allows equal-priority revision moves, add an explicit regression test proving ties remain deterministic and visible rather than silently downgraded to arbitrary order or dropped guidance.
+- If a downstream API/BFF/render seam changes, matching contract/render regression tests become mandatory for that seam; otherwise those surfaces stay verification-only no-ops.
+
+Non-blocking closure:
+
+- Broader polish, richer wording, and adjacent review-detail improvements remain non-blocking unless they are proven hard dependencies for one of the blocking checks above.
 
 ## Evidence Basis
 
@@ -173,7 +206,7 @@ Contract Notes / Non-obvious constraints:
 - `docs/walkthroughs/evidence/WF-0068/evidence-records.json`
 - `docs/logs/decisions.md` (AD 68.5)
 
-## 8. Explicit Non-Goals
+## 9. Explicit Non-Goals
 
 - Reopening broader call coverage beyond NWO/ERC/MSCA.
 - Bundling launch-floor ops work, rollout monitoring, or general launch-readiness proof.
@@ -189,3 +222,10 @@ Contract Notes / Non-obvious constraints:
 - “Not in MVP” here means explicitly excluded from this WF, not soft follow-on work bundled into implementation if convenient. See Q&A Section 8.
 - Adjacent improvements are allowed only if they are proven hard dependencies for actionability closure and documented as such. See Q&A Section 8.
 - The parked “prompt quality tuning” idea remains too broad unless reduced to this exact remediation boundary. See Q&A Section 8.
+
+## Changelog
+
+- v0.1 (2026-03-09): Initial brainstorm draft.
+- v0.2 (2026-03-09): Tightened scope to the WF-0068 actionability cluster and added bounded MVP/remediation constraints.
+- v0.3 (2026-03-09): Added explicit closure evidence contract, minimum test seams, and stricter downstream trust-surface boundary wording from adversarial review.
+- v0.4 (2026-03-09): Added audit-disposition closure requirements, baseline-anchored scope proof, and explicit tie-handling regression coverage.

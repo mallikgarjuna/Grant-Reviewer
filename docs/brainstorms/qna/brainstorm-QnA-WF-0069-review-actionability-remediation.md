@@ -2,7 +2,7 @@
 # WF-0069 — Review Actionability Remediation
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: Draft
 Last Updated: 2026-03-09
 
@@ -327,4 +327,18 @@ Last Updated: 2026-03-09
 - B) Prompt work is co-primary from the start.
 - C) Prompt work stays fully out of scope no matter what.
 > Recommendation: A — it keeps scope narrow without blocking a necessary small follow-through. B is scope creep. C is too rigid if backend-only changes prove insufficient.
+> **Selected: A**
+
+**Q4: What explicit closure evidence must exist before any proceed or ship recommendation?**
+- A) A named pass/fail evidence bundle listing the exact WF-0068 item IDs rechecked, deterministic test/replay commands, and blocking-gate results.
+- B) A brief summary sentence saying the stress cases looked fixed.
+- C) Only green automated tests without artifact-level replay evidence.
+> Recommendation: A — WF-0068 already established a named evidence-bundle discipline, and WF-0069 needs the same fail-closed closure bar before any proceed recommendation.
+> **Selected: A**
+
+**Q5: What minimum automated seams should WF-0069 require?**
+- A) RED -> GREEN tests at the narrowest changed public seam, plus matching downstream contract/render tests only if those seams change.
+- B) One end-to-end replay only.
+- C) Tests are optional because WF-0068 already found the issue.
+> Recommendation: A — it satisfies AGENTS TDD requirements while keeping scope narrow and preventing silent downstream regressions.
 > **Selected: A**
