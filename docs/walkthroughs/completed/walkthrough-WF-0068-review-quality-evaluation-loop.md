@@ -1,9 +1,9 @@
-<!-- docs/walkthroughs/walkthrough-WF-0068-review-quality-evaluation-loop.md -->
+<!-- docs/walkthroughs/completed/walkthrough-WF-0068-review-quality-evaluation-loop.md -->
 # WF-0068 — Review Quality Evaluation Loop
 
 Artifact: walkthrough
-Version: v0.1
-Status: In progress
+Version: v0.2
+Status: Completed
 Last Updated: 2026-03-09
 
 ## Phase 3 execution log
@@ -53,3 +53,36 @@ Verification evidence:
 Final scope note:
 - WF-0068 is closed at evaluation-loop decision closure only.
 - no remediation implementation was planned or executed inside this workflow.
+
+## Phase 3.3 closure log (revise + verify + ship gate)
+
+### Part C1 — Revise
+
+- Applied fail-closed fixes from Phase 3.2 audit:
+  - `backend/scripts/validate_wf_0068_evidence_bundle.py`
+    - reject `proceed_to_narrow_follow_on_wf` when `coverage_status != locked` or `baseline_consistency_status != consistent`
+    - enforce duplicate `item_id` rejection in raw outputs and records
+    - support call-specific boundary labeling without breaking boundary-pattern matching
+  - `backend/scripts/run_review_batch.py`
+    - require non-empty per-item `item_id`
+    - reject duplicate manifest `item_id`
+- Added regression tests:
+  - `backend/tests/test_validate_wf_0068_evidence_bundle.py`
+  - `backend/tests/test_run_review_batch.py`
+
+### Part C2 — Verify
+
+- `pre-commit run --all-files` passed.
+- `cd backend && uv run pytest tests/test_run_review_batch.py tests/test_validate_wf_0068_evidence_bundle.py` passed (`9 passed`).
+
+### Part C3 — Walkthrough + Ship Gate
+
+- WF-0068 active artifacts were archived to completed paths:
+  - `docs/brainstorms/completed/brainstorm-WF-0068-review-quality-evaluation-loop.md`
+  - `docs/prds/completed/prd-WF-0068-review-quality-evaluation-loop.md`
+  - `docs/tasks/completed/task-WF-0068-review-quality-evaluation-loop.md`
+  - `docs/walkthroughs/completed/walkthrough-WF-0068-review-quality-evaluation-loop.md`
+- `docs/index.md` updated so WF-0068 row points to completed artifacts and status `Done`.
+
+Remaining risk:
+- Batch decision remains bounded to evaluation evidence only; remediation implementation is intentionally deferred to a follow-on WF.

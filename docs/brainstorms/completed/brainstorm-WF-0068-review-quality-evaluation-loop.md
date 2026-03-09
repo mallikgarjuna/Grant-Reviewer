@@ -1,4 +1,4 @@
-<!-- docs/brainstorms/brainstorm-WF-0068-review-quality-evaluation-loop.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0068-review-quality-evaluation-loop.md -->
 # WF-0068 — Review Quality Evaluation Loop
 
 Artifact: brainstorm

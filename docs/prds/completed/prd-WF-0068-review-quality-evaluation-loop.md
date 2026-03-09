@@ -1,4 +1,4 @@
-<!-- docs/prds/prd-WF-0068-review-quality-evaluation-loop.md -->
+<!-- docs/prds/completed/prd-WF-0068-review-quality-evaluation-loop.md -->
 # WF-0068 — Review Quality Evaluation Loop
 
 Artifact: prd
