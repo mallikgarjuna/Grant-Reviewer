@@ -36,3 +36,20 @@ Notes:
 Boundary statement:
 - WF-0068 Task 4 captured review-quality evidence only.
 - No remediation planning, prompt changes, engine changes, UI changes, or wedge-scope expansion was performed.
+
+### Task 5 — Batch decision closure
+
+- Batch summary artifact:
+  - `docs/walkthroughs/evidence/WF-0068/batch-summary.json`
+- Final decision fields:
+  - `mission_result`: `fail`
+  - `follow_on_decision`: `proceed_to_narrow_follow_on_wf`
+  - `recommended_follow_on_boundary`: `actionability_cluster`
+
+Verification evidence:
+- Records validator passed against real artifacts before summary closure.
+- Bundle validator passed against summary + records + raw outputs + baseline.
+
+Final scope note:
+- WF-0068 is closed at evaluation-loop decision closure only.
+- no remediation implementation was planned or executed inside this workflow.

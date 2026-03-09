@@ -143,7 +143,7 @@ Verification Steps:
 - `cd backend && uv run python - <<'PY'\nimport json\nfrom pathlib import Path\nrecords = json.loads(Path('../docs/walkthroughs/evidence/WF-0068/evidence-records.json').read_text())\nassert len(records['items']) == 9\nassert all('official_locator_used' in item for item in records['items'])\nPY`
 Risks (if any): Manual scoring can silently slip into solutioning unless the walkthrough and evidence records preserve the evaluation-only boundary explicitly.
 
-### [ ] Task 5 — Close the batch summary and prove the follow-on decision stayed bounded
+### [x] Task 5 — Close the batch summary and prove the follow-on decision stayed bounded
 
 Goal:
 Finish WF-0068 with a single batch-level mission result and follow-on decision that is traceable to the validated evidence bundle and does not overclaim beyond the locked wedge.
