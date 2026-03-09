@@ -1,0 +1,16 @@
+{
+  "source_path": "docs/walkthroughs/evidence/WF-0068/baseline.json",
+  "baseline_id": "wf0068_baseline_v1",
+  "app_commit_sha": "ce6c8cf3df4aa664f3dc3eb81846dc1b321723b3",
+  "app_branch_ref": "wf/WF-0068-review-quality-evaluation-loop",
+  "prompt_config_ref": "backend/app/services/prompt_builder.py::build_prompt_from_node",
+  "model_runtime_ref": "backend/app/services/llm_client.py::LLM_MODE=stub",
+  "reviewer_instruction_ref": "backend/data/calls/canonical/{nwo,erc,msca}/*.yaml::reviewer_policy",
+  "evidence_template_version": "wf0068_evidence_template_v1",
+  "dimension_scale": [
+    "pass",
+    "weak",
+    "fail",
+    "insufficient_evidence"
+  ]
+}

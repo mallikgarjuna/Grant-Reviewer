@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Lock the representative batch manifest and frozen baseline skeleton
+### [x] Task 1 — Lock the representative batch manifest and frozen baseline skeleton
 
 Goal:
 Create the auditable execution scaffold for WF-0068 so Phase 3 starts from a locked 9-snippet batch and one frozen baseline contract instead of ad hoc sampling.
