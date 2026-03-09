@@ -87,12 +87,13 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 | 4 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
 | 5 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
 
-### P1 Rationale Snapshot (2026-03-08)
+### P1 Rationale Snapshot (2026-03-09)
 
 - WF-0063 and WF-0064 closed the proof-call split-visibility and opted-in hierarchical submit gap for `MSCA-PF-2025`; that work should no longer sit in active P1.
 - WF-0065 closed the cross-call base-review contract hardening gap for the locked representative set; that dependency is now closed in active P1 planning.
 - WF-0066 removed stale live-planning language that implied broader-program expansion was still planned or launch-critical; active P1 should stay anchored to the locked NWO/ERC/MSCA wedge.
 - WF-0067 is now complete and closed the launch-blocking review trust-surface gap in the active wedge.
+- WF-0068 is now complete and closed the evaluation loop with a bounded proceed decision; follow-on work should stay narrowly scoped to the evidence-backed actionability/prioritization failure pattern.
 - Active P1 sequencing should prioritize launch-readiness improvements inside NWO/ERC/MSCA and avoid re-parking already completed ERC/MSCA authoring work.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 
@@ -111,7 +112,7 @@ Promotion dependency note:
 | 4 | Add error monitoring (Sentry) | ops | Zero error tracking in production; blind to LLM timeouts, BFF failures, and client crashes with real users. ([Conv: 8c803359-d2c1-4594-aaf6-78da7fd6d305](vscode://cortex-app.antigravity/conversation?id=8c803359-d2c1-4594-aaf6-78da7fd6d305)) | 2026-02-16 |
 | 5 | E2E: Critical Negative Scenarios | ops | Run automated E2E tests for missing mandatory nodes, wrong stages, and policy-blocking content to prove operational readiness. (Ref: Architect Feedback Step 6) ([Conv: 8c803359-d2c1-4594-aaf6-78da7fd6d305](vscode://cortex-app.antigravity/conversation?id=8c803359-d2c1-4594-aaf6-78da7fd6d305)) | 2026-02-26 |
 | 6 | E2E: Happy-path ERC Sample | ops | Run a full happy-path E2E with a sample ERC proposal text (submit -> process -> cards shown correctly). (Ref: Architect Feedback Step 6) ([Conv: 8c803359-d2c1-4594-aaf6-78da7fd6d305](vscode://cortex-app.antigravity/conversation?id=8c803359-d2c1-4594-aaf6-78da7fd6d305)) | 2026-02-26 |
-| 7 | Prompt quality tuning | product | Test AI output quality with real ERC/NWO proposals; tune `PromptTemplate` for actionable, criteria-specific feedback. | 2026-02-16 |
+| 7 | Prompt quality tuning | product | Narrow this into a follow-on WF bounded to the WF-0068 repeated failure pattern (`actionability_cluster`) across the locked NWO/ERC/MSCA wedge; avoid broad prompt/engine/UI bundling. | 2026-02-16 |
 | 8 | Production hardening | ops | Lock CORS, verify rate limiting beyond daily quota, add custom 404 page, tune Vercel/Render timeout alignment. | 2026-02-16 |
 | 9 | Structured review: single mega-prompt optimization | product | Replace per-node sequential LLM calls with a single mega-prompt for all nodes — fewer API calls, lower latency. Directly mitigates the 3x latency risk (15-45s) identified in WF-0029 brainstorm S6 Q4. Requires new prompt template + parser. (Ref: WF-0029 brainstorm Q4.2 option B) | 2026-02-22 |
 | 10 | Structured review: LLM-generated overall summary | product | After per-node reviews, add an additional LLM call to synthesize a holistic cross-node summary (alignment, strengths, gaps). (Ref: WF-0029 brainstorm Q4.4 option A) | 2026-02-22 |
@@ -247,3 +248,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v4.2** (2026-03-08): Promoted the remaining broad P1 #1 launch-readiness bucket to `WF-0067`, narrowed it at promotion to launch-blocking review trust surfaces, renumbered active P1 items, and updated the dependency note for the deferred node hierarchy selector.
 - **v4.3** (2026-03-08): Post-WF-0067 parking-lot refresh: removed stale pending-WF-0067 gating language from active P1 and rewrote rationale/dependency text to reflect that trust-surface closure is now done.
 - **v4.4** (2026-03-08): Recorded direct-start `WF-0068` in the unified WF initiative log for the review-quality evaluation loop.
+- **v4.5** (2026-03-09): Post-WF-0068 refresh: updated the rationale snapshot for evaluation-loop closure and narrowed the parked prompt-quality follow-on language to the evidence-backed `actionability_cluster` boundary.

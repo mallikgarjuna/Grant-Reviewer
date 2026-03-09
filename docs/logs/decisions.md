@@ -35,6 +35,14 @@
 - **Tradeoff**: Reviewers must capture slightly more provenance per record, and future artifacts must preserve the distinction between item severity and batch conclusion.
 - **Status**: Approved.
 
+### AD 68.5: WF-0068 closure is evaluation-complete with a bounded follow-on boundary
+- **WF ID**: WF-0068
+- **Context**: Phase 3 captured and validated the locked-batch evidence bundle, then finalized mission/follow-on decision closure under fail-closed checks.
+- **Decision**: Close WF-0068 as evaluation-complete (`mission_result=fail`) with `follow_on_decision=proceed_to_narrow_follow_on_wf` bounded to `actionability_cluster`, preserving the evaluation-only boundary and deferring remediation implementation to a separate WF.
+- **Why**: Repeated categorized failures met proceed threshold while staying within the locked NWO/ERC/MSCA wedge and consistent baseline evidence.
+- **Tradeoff**: WF-0068 intentionally stops before solution implementation; a follow-on WF is required to convert the boundary into concrete remediation work.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0067: review trust surface closure)
 
 ### AD 67.1: Card-level source basis is one backend-resolved official-call label with fail-closed state
