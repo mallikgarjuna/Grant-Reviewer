@@ -50,7 +50,11 @@ STRUCTURED_SUMMARY_COMPLETED_PREFIX = "Structured review completed with"
 STRUCTURED_POLICY_BLOCKING_PREFIX = "POLICY_BLOCKING:"
 STRUCTURED_POLICY_WARNING_PREFIX = "Reviewer-policy warnings:"
 WF0060_ERC_CONTAINER_NODE_IDS = {"part_a", "budget", "part_b", "b1", "b2"}
-WF0069_ACTIONABILITY_CALL_CODES = {"nwo_veni_2025_preproposal"}
+WF0069_ACTIONABILITY_CALL_CODES = {
+    "nwo_veni_2025_preproposal",
+    "erc_stg_2026_full",
+    "MSCA-PF-2025",
+}
 
 
 class StructuredReviewerService:

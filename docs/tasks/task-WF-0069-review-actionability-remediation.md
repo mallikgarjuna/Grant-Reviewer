@@ -44,7 +44,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "structured_pipeline_v1_not_assessable_cards_for_missing_context"`
 Risks (if any): The tracer may prove that actionable text is available upstream but still hidden later by review-detail ordering, which is why this task stops at the smallest backend seam only and fails closed if it cannot isolate one primary change surface.
 
-### [ ] Task 2 — Extend the actionable-review seam across the locked ERC/MSCA wedge without call drift
+### [x] Task 2 — Extend the actionable-review seam across the locked ERC/MSCA wedge without call drift
 
 Goal:
 Roll the Task 1-proven seam out to `erc_stg_2026_full` and `MSCA-PF-2025` only, so all three WF-0068 stress calls can produce actionable assessed cards while preserving the same fail-closed missing-context boundary and without introducing a second primary remediation seam.
