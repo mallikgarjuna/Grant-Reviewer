@@ -2,8 +2,165 @@
 # WF-0070 — ERC Structured Review: Enforce Step 1 vs Step 2 Evaluation Gating
 
 Artifact: brainstorm
-Version: v0.0
-Status: Not started
+Version: v0.1
+Status: Draft
 Last Updated: 2026-03-09
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md`
+
+---
+
+## Preflight Step 1 — Long-Form Problem Intake
+
+- User-selected WF target: close the mission-level trust gap where ERC can still evaluate the wrong proposal surfaces for the wrong official stage.
+- Required outcome: explicit ERC stage selection/routing for Step 1 vs Step 2, fail-closed validation when submitted nodes do not match the chosen stage, and stage-scoped runtime execution.
+- Required scope shape: one coherent WF spanning UX, API, and backend runtime. A frontend-only stage picker is explicitly unacceptable.
+- Required architectural constraint: preserve the call-agnostic core unless a narrowly justified extension seam is necessary.
+- Explicit non-goals from kickoff: no prompt-tuning WF, no assisted extraction, no new agencies, no supporting-context semantic expansion.
+
+## Repo Reality Snapshot (Read-Only)
+
+- The ERC canonical YAML encodes evaluation-element stage metadata, but the key B2 leaf `b2_part2_scientific_proposal` mixes `BOTH` and `STEP_2` elements, so derived node stage resolves to `BOTH` rather than a fail-closed Step 2-only surface.
+- Frontend stage visibility is driven by node metadata (`review_stage`) via `isNodeEligibleForStage()`, so the current ERC metadata model would keep `b2_part2_scientific_proposal` visible in Step 1 even though official ERC process says B2 is Step 2 only.
+- Backend `POST /api/structured-review` rejects explicit node/stage mismatches, but only at node granularity via `matches_review_stage()`; it does not activate expectations by stage before pipeline execution.
+- Structured runtime execution builds request expectations directly from repository expectations on submitted nodes and never calls `activate_expectations_for_stage()`, so a submitted ERC B2 node can still evaluate Step 2-only elements during a Step 1 run.
+- The BFF route normalizes invalid `review_stage` values to `STEP_1` instead of failing closed, which weakens trust and traceability at the boundary even before backend validation.
+
+### Repo Snapshot Open Questions
+
+- Should ERC stage truth live at the proposal-node level, the evaluation-element level, or both with an explicit reconciliation contract?
+- Is the cleanest fail-closed fix a generic stage-activation seam in the shared execution core, or an ERC-specific surface-selection seam layered above it?
+- Must compliance checking become stage-aware in the same WF so pre-submit warnings/errors cannot reference hidden or disallowed Step 2 surfaces during Step 1?
+- How should review detail/reporting expose stage-scoped coverage so researchers can verify what was and was not evaluated?
+- What is the narrowest acceptable extension seam if current call-agnostic contracts cannot represent “surface visible only in Step 2 while some linked elements remain BOTH”?
+
+## 1. Problem Statement
+
+- Current ERC stage handling is partially modeled but not end-to-end truthful.
+- The most acute trust failure is that Step 1 can still expose or evaluate Step 2 proposal surfaces.
+- This violates mission expectations for official-call grounding and defensible traceability.
+- Primary defect for this WF: ERC Step 1/Step 2 stage truth is broken across UI, API, and runtime, causing wrong-surface and wrong-element evaluation.
+- Authoritative stage boundary for this WF must cover both proposal surfaces allowed per stage and evaluation expectations executed per stage.
+- Fail-closed behavior is mandatory: mismatched submitted ERC nodes must be rejected before execution with explicit offending node ids and no silent dropping.
+- Closure bar for the trust gap requires submit UX, BFF, backend structured-review execution, and review evidence to agree on stage scope.
+- If the current call-agnostic core cannot cleanly express ERC stage surfaces, the allowed fallback is one narrow ERC seam at the config/activation boundary, not evaluator-wide ERC branching.
+
+Contract Notes / Non-obvious constraints:
+
+- Stage truth must hold at execution time, not only in UI visibility rules.
+- Fail-closed behavior is preferred over permissive fallback when stage metadata is ambiguous.
+- Official ERC process semantics matter more than preserving current mixed-stage node derivation.
+- Keep evaluator and pipeline core call-agnostic unless a narrow config/activation seam is proven necessary.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md` (Section 1)
+
+## 2. Desired Outcome
+
+- A researcher choosing ERC Step 1 cannot submit or review Step 2-only proposal surfaces, and the product makes that boundary legible.
+- Structured-review runtime becomes stage-scoped so Step 1 cannot evaluate Step 2-only ERC surfaces or Step 2-only expectations.
+- Persisted review data and review detail expose enough stage-scoped coverage to verify what was in scope.
+- “Good enough” evidence for this WF is targeted tests plus one representative ERC end-to-end proof across submit, validation, execution, and review detail.
+- If adjacent gaps appear, fix only what is required to preserve ERC stage truth on the structured-review path and park the rest.
+
+Contract Notes / Non-obvious constraints:
+
+- Persisting `review_stage` alone is insufficient if the evaluated surface set remains implicit.
+- Closure evidence must prove boundary truth, not just internal correctness.
+- This WF is allowed to touch adjacent seams only when they directly affect the ERC structured-review trust claim.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md` (Section 2)
+
+## 3. Target User / Actor
+
+- Primary actor: researchers submitting ERC Starting Grant material through the structured-review path.
+- Immediate trust consumer: a researcher deciding whether Step 1 feedback is grounded only in officially reviewable Step 1 surfaces.
+- Secondary actor: internal maintainers who need a stage contract that stays traceable and defensible across UI, BFF, backend, and review detail.
+- Current bad behavior for the actor: they can be shown or allowed to submit ERC B2 material during Step 1, and the resulting review cannot prove the executed stage boundary cleanly.
+- MVP target is not “all staged calls”; it is the locked ERC structured-review path with minimal spillover into the shared core.
+
+Contract Notes / Non-obvious constraints:
+
+- Researcher-facing trust is the primary optimization target, not generic stage abstraction.
+- This WF should not widen to legacy single-snippet UX unless the structured-review trust claim depends on it.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md` (Section 3)
+
+## 4. Rough Idea (Unstructured Thinking)
+
+- Establish one authoritative ERC stage-scope contract that can drive node metadata, request validation, runtime expectation activation, and review evidence consistently.
+- Prefer fixing stage truth at the boundary where authored call config becomes runtime-active scope, rather than scattering ERC-specific conditionals across UI, BFF, route, service, and evaluator layers.
+- Keep the evaluator/pipeline core call-agnostic; if ERC needs a special rule, place it in a narrow config/activation seam that produces a stage-scoped runtime snapshot before execution.
+- Treat BFF invalid-stage coercion as a contract defect and fail closed at the boundary.
+- Ensure review detail/persisted coverage can prove which ERC surfaces were actually in scope for the chosen stage.
+
+Contract Notes / Non-obvious constraints:
+
+- “Stage-scoped execution” means more than blocking a bad node id at the API route; the activated expectation set must also respect stage truth.
+- The cleanest architecture is likely pre-execution activation plus explicit coverage evidence, not prompt-only stage hints.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md` (Section 4)
+
+## 5. Constraints
+
+- Must remain one coherent WF across UX, BFF, backend validation, runtime execution, and review evidence.
+- Must preserve the call-agnostic evaluator/pipeline core unless a narrowly justified extension seam is necessary.
+- Must not widen into prompt tuning, extraction flows, new agencies, supporting-context semantics, or generalized stage-framework redesign.
+- Must fail closed on ambiguity; permissive fallback behavior is not acceptable for stage truth.
+- Must use current repo state as truth and explicitly call out any doc/code disagreement.
+
+Contract Notes / Non-obvious constraints:
+
+- Existing tests and mocks already disagree about ERC B2 stage truth, so artifact updates must resolve that split-brain explicitly.
+- A UI-only fix is invalid even if it appears to hide the immediate symptom.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md` (Section 5)
+
+## 6. Risks / Unknowns
+
+- Highest-risk unknown: the current mixed ERC node/element stage model may be too weak to express official stage surfaces without a new authored seam.
+- Architectural risk: stage truth could be “fixed” in metadata/UI while runtime expectation execution still leaks Step 2 evaluation.
+- Regression risk: tightening ERC stage truth could break current tests or review detail assumptions that were built around `BOTH` metadata for B2.
+- Evidence risk: even a correct runtime fix may still leave researchers unable to verify scope if review detail does not expose stage-scoped coverage explicitly.
+- Scope risk: adjacent compliance or legacy-review issues may tempt expansion beyond the structured ERC trust closure target.
+
+Contract Notes / Non-obvious constraints:
+
+- Any change that relies on implicit knowledge of submitted nodes without explicit review evidence leaves the mission-level trust gap partially open.
+- If fail-closed stage truth cannot be represented cleanly, Phase 1 must stop and resolve the contract before tasks are generated.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md` (Section 6)
+
+## Open Questions / Deferred
+
+- Whether compliance warnings/errors need explicit stage labeling in the user-facing response, beyond stage-correct node filtering. Deferred to Phase 1 if not required for trust closure.
+- Whether `POST /api/reviews` single-node path should align to the same ERC stage contract in this WF or remain parked. Default: parked unless trust closure on structured path requires it.
+- Whether stage-scoped review evidence belongs in persisted `structured_payload`, review detail projection, or both. Must be resolved in planning, not implementation.
+- Whether ERC authored config needs an explicit node-scope stage field separate from evaluation-element stage. Resolve in planning based on cleanest fail-closed design.
+
+## 7. MVP Definition
+
+- Smallest acceptable slice: ERC structured-review path enforces explicit Step 1 vs Step 2 selection/routing, rejects out-of-stage submitted nodes fail-closed, stage-scopes runtime execution, and exposes review evidence proving scope.
+- Required technical closure: no silent stage coercion at BFF, no Step 1 evaluation of Step 2-only ERC surfaces, and no runtime reliance on UI-only filtering.
+- Required artifact closure: tests and docs align on the authoritative ERC stage truth for affected nodes/surfaces.
+- Explicitly excluded from MVP: prompt-quality improvements, extraction, new agencies, generalized supporting-context semantics, and broad multi-call stage redesign.
+- If a narrow ERC-specific seam is required, it must stay localized to config/activation rather than spreading across the evaluator core.
+
+Contract Notes / Non-obvious constraints:
+
+- The MVP is a trust-closure slice, not a convenience slice.
+- A successful demo must prove both prevention and evidence, not only prevention.
+
+Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0070-erc-structured-review-step-gating.md` (Section 7)
+
+## 8. Explicit Non-Goals
+
+- Do not tune prompts or broaden reviewer-policy semantics as part of this WF.
+- Do not add new agencies or generalize staged-review support beyond what is necessary for the locked ERC path.
+- Do not expand supporting-context behavior or revisit opted-in hierarchical submit semantics except where current structured ERC trust depends on them.
+- Do not reopen assisted extraction, file parsing, or hierarchy-navigation work.
+- Do not solve every stage-related issue in every review path unless Phase 1 proves the structured ERC trust closure cannot be made honestly without it.
+
+Contract Notes / Non-obvious constraints:
+
+- “Preserve call-agnostic core” is a hard non-goal on broad evaluator specialization.
+- Any adjacent issue not necessary for ERC structured-review truth should be parked, not absorbed.
