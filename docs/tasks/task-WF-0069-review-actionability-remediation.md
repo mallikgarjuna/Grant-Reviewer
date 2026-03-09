@@ -107,7 +107,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0069_review_detail_legacy_ordering_guard"`
 Risks (if any): A sorting fix that is not call-scoped could silently change trusted review-detail behavior outside the approved wedge.
 
-### [ ] Task 4 — Add deterministic WF-0069 replay evaluation for exact stress, baseline, and fail-closed gates
+### [x] Task 4 — Add deterministic WF-0069 replay evaluation for exact stress, baseline, and fail-closed gates
 
 Goal:
 Create one fail-closed replay/evaluation seam that regenerates fresh WF-0069 outputs for the exact WF-0068 stress and baseline item IDs, then scores those regenerated outputs against the closure contract so implementation proof cannot reuse stale pre-remediation evidence.
