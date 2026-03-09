@@ -1,9 +1,9 @@
-<!-- docs/tasks/task-WF-0069-review-actionability-remediation.md -->
+<!-- docs/tasks/completed/task-WF-0069-review-actionability-remediation.md -->
 # WF-0069 — Review Actionability Remediation
 
 Artifact: task
 Version: v0.3
-Status: Ready for Implementation
+Status: Completed
 Last Updated: 2026-03-09
 
 Type: feature

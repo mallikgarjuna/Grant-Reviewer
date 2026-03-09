@@ -1,18 +1,18 @@
-<!-- docs/walkthroughs/walkthrough-WF-0069-review-actionability-remediation.md -->
+<!-- docs/walkthroughs/completed/walkthrough-WF-0069-review-actionability-remediation.md -->
 # WF-0069 — Review Actionability Remediation
 
 Artifact: walkthrough
-Version: v0.1
-Status: Draft (Post-Task-5, Pre-Phase-3.2-Audit)
+Version: v0.2
+Status: Done (Phase 3.2 + 3.3 Complete; User-Gated Ship)
 Last Updated: 2026-03-09
 
 ## 1) Scope + Baseline Anchor
 
 - WF: `WF-0069/review-actionability-remediation`
 - Locked remediation boundary: repeated actionability/prioritization failure only, locked wedge `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, `MSCA-PF-2025`
-- Implementation baseline range (scope proof anchor): `3247df5...b8defe6`
+- Implementation baseline range (scope proof anchor): `3247df5...3e60971`
   - baseline start commit: `3247df5` (`WF-0069: ... sync task v0.3 and workflow memory note`)
-  - current implementation head: `b8defe6` (`WF-0069: ... Task 4 — add deterministic replay evaluator`)
+  - current implementation head: `3e60971` (`WF-0069: ... Part C1 — harden evaluator safety and ID mapping`)
 
 ## 2) What Changed
 
@@ -21,6 +21,7 @@ Last Updated: 2026-03-09
 - Task 3 (review-detail ordering): verified-no-op implementation, added targeted ordering regression + untargeted legacy guard
 - Task 4 (deterministic replay evaluator): new evaluator script + fixture-backed tests for pass/fail/tie-handling/fail-closed regression
 - Task 5 (this artifact): closure evidence + scope proof + audit-disposition ledger + explicit recommendation state
+- Part C1 (post-audit fixes): evaluator DB safety guard + strict item_id↔call_id mapping guard
 
 ## 3) Deterministic Replay Commands + Results
 
@@ -54,7 +55,7 @@ Per-item replay outcomes (exact required IDs):
 
 ## 4) Scope Proof
 
-`git diff --name-only 3247df5...HEAD`:
+`git diff --name-only 3247df5...3e60971`:
 
 - `backend/app/services/structured_reviewer_service.py` (Task 1/2 single primary seam; call-locked actionable rewrite)
 - `backend/tests/test_structured_reviewer_service.py` (Task 1/2 tracer + wedge stress/baseline regressions)
@@ -62,7 +63,7 @@ Per-item replay outcomes (exact required IDs):
 - `backend/scripts/evaluate_wf_0069_actionability.py` (Task 4 deterministic replay evaluator)
 - `backend/tests/test_evaluate_wf_0069_actionability.py` (Task 4 evaluator tests)
 - `backend/tests/fixtures/wf_0069_actionability_cases.json` (Task 4 deterministic fixture matrix)
-- `docs/tasks/task-WF-0069-review-actionability-remediation.md` (Task completion checkboxes)
+- `docs/tasks/completed/task-WF-0069-review-actionability-remediation.md` (Task completion checkboxes)
 
 No launch-floor ops, broader trust-surface redesign, assisted extraction, broad call expansion, or generic prompt-tuning files were changed.
 
@@ -70,7 +71,10 @@ No launch-floor ops, broader trust-surface redesign, assisted extraction, broad 
 
 ### Blocking findings
 
-- none
+| Finding ID | Source | Disposition | Rationale |
+| :--- | :--- | :--- | :--- |
+| WF0069-B-001 | Phase 3.2 technical audit | `closed` | `backend/scripts/evaluate_wf_0069_actionability.py` now fail-closes destructive DB reset unless `DATABASE_URL` targets a `test` database. |
+| WF0069-B-002 | Phase 3.2 technical audit | `closed` | Evaluator now enforces exact required `item_id -> call_id` mapping to prevent false cross-call closure. |
 
 ### Non-blocking findings/comments
 
@@ -78,10 +82,11 @@ No launch-floor ops, broader trust-surface redesign, assisted extraction, broad 
 | :--- | :--- | :--- | :--- |
 | WF0069-NB-001 | Task execution note | `closed` | DB-backed selector contention observed once due parallel invocation; closed by serial reruns on isolated test DB with deterministic pass evidence. |
 | WF0069-NB-002 | Task execution note | `closed` | Transient Postgres startup timing issue immediately after DB reset; closed by rerun once container reached healthy state. |
+| WF0069-NB-003 | Phase 3.2 technical audit | `rejected_with_rationale` | Tie-handling is represented at baseline-floor comparison (`_meets_floor`) and covered by tests; no additional priority-field contract change is required in this narrow remediation WF. |
 
 ## 6) Recommendation State
 
-- Proceed recommendation (Phase 3.2 audit gate): `pass`
-- Ship recommendation: `blocked`
-  - Reason: Phase 3.2 adversarial technical audit and Phase 3.3 revise/verify/ship gates have not executed yet.
-  - Unblock conditions: Part B findings resolved (or explicitly rejected with rationale where allowed), full Part C verification pass, and explicit user `ship it`.
+- Proceed recommendation (Phase 3 complete): `pass`
+- Ship recommendation: `pass_pending_user_ship_it`
+  - Reason: Replay pass, baseline-floor guard pass, fail-closed guard pass, and audit-disposition ledger fully resolved.
+  - Final gate: explicit user `ship it` before push/PR/merge.

@@ -1,9 +1,9 @@
-<!-- docs/brainstorms/brainstorm-WF-0069-review-actionability-remediation.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0069-review-actionability-remediation.md -->
 # WF-0069 — Review Actionability Remediation
 
 Artifact: brainstorm
 Version: v0.4
-Status: Draft Complete
+Status: Completed
 Last Updated: 2026-03-09
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0069-review-actionability-remediation.md`
