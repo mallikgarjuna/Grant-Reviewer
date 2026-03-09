@@ -2,7 +2,7 @@
 # WF-0068 — Review Quality Evaluation Loop
 
 Artifact: brainstorm
-Version: v0.3
+Version: v0.4
 Status: Draft Complete
 Last Updated: 2026-03-08
 
@@ -163,6 +163,9 @@ Contract Notes / Non-obvious constraints:
 
 - Part C decision: Phase 1 locks one shared 4-state scale for each mission dimension: `pass`, `weak`, `fail`, `insufficient_evidence`.
 - Part C decision: Phase 1 locks a minimum representative batch of 9 snippets total: exactly 3 snippets per locked call, with one `baseline representative`, one `traceability/specificity stress`, and one `actionability/prioritization stress` snippet per call.
+- Part C decision: Phase 1 locks per-item evidence severity to `high`, `medium`, or `low`; this item-level severity describes mission impact for that reviewed pair only and does not replace the batch-level `mission_result`.
+- Part C decision: Phase 1 locks proceed recommendations to repeated categorized failure patterns appearing in at least 2 reviewed snippets; if repetition appears only within 1 locked call, any recommended follow-on boundary must be labeled call-specific rather than cross-wedge.
+- Part C decision: Phase 1 requires the frozen evaluation baseline to record both app commit SHA and app branch ref, and requires each evidence record to cite a replayable official-call locator rather than a derived label alone.
 - Whether a second reviewer pass is required for disagreement cases is deferred to Phase 2 task planning.
 - Any prompt, engine, UI, or contract changes suggested by the evidence are explicitly deferred to a follow-on implementation WF.
 - Any broader continuous quality-monitoring system is deferred and out of scope.
