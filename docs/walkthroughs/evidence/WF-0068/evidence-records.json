@@ -1,0 +1,222 @@
+{
+  "baseline_id": "wf0068_baseline_v1",
+  "batch_id": "wf0068_locked_batch_v1",
+  "items": [
+    {
+      "call_id": "nwo_veni_2025_preproposal",
+      "criterion_or_element_target": "key_outputs:evaluation_elements",
+      "dimension_scores": {
+        "criteria_groundedness": "weak",
+        "official_traceability": "weak",
+        "prioritization_quality": "weak",
+        "revision_actionability": "weak",
+        "specificity_without_false_specificity": "weak"
+      },
+      "failure_tags": [
+        "genericity",
+        "weak_traceability"
+      ],
+      "follow_on_pattern_class": "mixed_cluster",
+      "insufficient_evidence_reason": "",
+      "item_id": "wf0068_nwo_baseline_representative",
+      "official_locator_used": "backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md#node:key_outputs",
+      "review_output_ref": "raw-output:wf0068_nwo_baseline_representative",
+      "reviewer_rationale": "Output stayed structurally valid but remained broad, with limited criterion-targeted traceability.",
+      "revision_action_judgment": "actionable_but_incomplete",
+      "severity": "medium",
+      "snippet_id": "wf0065_representative_nwo_key_outputs"
+    },
+    {
+      "call_id": "nwo_veni_2025_preproposal",
+      "criterion_or_element_target": "key_outputs:evaluation_elements",
+      "dimension_scores": {
+        "criteria_groundedness": "weak",
+        "official_traceability": "fail",
+        "prioritization_quality": "weak",
+        "revision_actionability": "weak",
+        "specificity_without_false_specificity": "fail"
+      },
+      "failure_tags": [
+        "weak_traceability",
+        "false_specificity"
+      ],
+      "follow_on_pattern_class": "traceability_cluster",
+      "insufficient_evidence_reason": "",
+      "item_id": "wf0068_nwo_traceability_specificity_stress",
+      "official_locator_used": "backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md#node:key_outputs",
+      "review_output_ref": "raw-output:wf0068_nwo_traceability_specificity_stress",
+      "reviewer_rationale": "Traceability stress case showed unsupported specificity and weak replayable anchoring to official materials.",
+      "revision_action_judgment": "actionable_with_major_gaps",
+      "severity": "high",
+      "snippet_id": "wf0067_source_basis_nwo_key_outputs"
+    },
+    {
+      "call_id": "nwo_veni_2025_preproposal",
+      "criterion_or_element_target": "key_outputs:evaluation_elements",
+      "dimension_scores": {
+        "criteria_groundedness": "weak",
+        "official_traceability": "weak",
+        "prioritization_quality": "fail",
+        "revision_actionability": "fail",
+        "specificity_without_false_specificity": "weak"
+      },
+      "failure_tags": [
+        "low_actionability",
+        "bad_prioritization"
+      ],
+      "follow_on_pattern_class": "actionability_cluster",
+      "insufficient_evidence_reason": "",
+      "item_id": "wf0068_nwo_actionability_prioritization_stress",
+      "official_locator_used": "backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md#node:key_outputs",
+      "review_output_ref": "raw-output:wf0068_nwo_actionability_prioritization_stress",
+      "reviewer_rationale": "Actionability stress case did not provide defensible next moves in priority order for revision.",
+      "revision_action_judgment": "not_actionable_without_major_revision",
+      "severity": "high",
+      "snippet_id": "wf0065_paired_boundary_nwo_key_outputs"
+    },
+    {
+      "call_id": "erc_stg_2026_full",
+      "criterion_or_element_target": "proposal_summary:evaluation_elements",
+      "dimension_scores": {
+        "criteria_groundedness": "weak",
+        "official_traceability": "weak",
+        "prioritization_quality": "weak",
+        "revision_actionability": "weak",
+        "specificity_without_false_specificity": "weak"
+      },
+      "failure_tags": [
+        "genericity",
+        "weak_traceability"
+      ],
+      "follow_on_pattern_class": "mixed_cluster",
+      "insufficient_evidence_reason": "",
+      "item_id": "wf0068_erc_baseline_representative",
+      "official_locator_used": "backend/data/calls/sources/erc_stg_2026_full.sources.md#node:proposal_summary",
+      "review_output_ref": "raw-output:wf0068_erc_baseline_representative",
+      "reviewer_rationale": "Output stayed structurally valid but remained broad, with limited criterion-targeted traceability.",
+      "revision_action_judgment": "actionable_but_incomplete",
+      "severity": "medium",
+      "snippet_id": "wf0065_representative_erc_proposal_summary"
+    },
+    {
+      "call_id": "erc_stg_2026_full",
+      "criterion_or_element_target": "b1_part1_scientific_proposal:evaluation_elements",
+      "dimension_scores": {
+        "criteria_groundedness": "weak",
+        "official_traceability": "fail",
+        "prioritization_quality": "weak",
+        "revision_actionability": "weak",
+        "specificity_without_false_specificity": "fail"
+      },
+      "failure_tags": [
+        "weak_traceability",
+        "false_specificity"
+      ],
+      "follow_on_pattern_class": "traceability_cluster",
+      "insufficient_evidence_reason": "",
+      "item_id": "wf0068_erc_traceability_specificity_stress",
+      "official_locator_used": "backend/data/calls/sources/erc_stg_2026_full.sources.md#node:b1_part1_scientific_proposal",
+      "review_output_ref": "raw-output:wf0068_erc_traceability_specificity_stress",
+      "reviewer_rationale": "Traceability stress case showed unsupported specificity and weak replayable anchoring to official materials.",
+      "revision_action_judgment": "actionable_with_major_gaps",
+      "severity": "high",
+      "snippet_id": "wf0067_source_basis_erc_b1_part1_scientific_proposal"
+    },
+    {
+      "call_id": "erc_stg_2026_full",
+      "criterion_or_element_target": "b1_part1_scientific_proposal:evaluation_elements",
+      "dimension_scores": {
+        "criteria_groundedness": "weak",
+        "official_traceability": "weak",
+        "prioritization_quality": "fail",
+        "revision_actionability": "fail",
+        "specificity_without_false_specificity": "weak"
+      },
+      "failure_tags": [
+        "low_actionability",
+        "bad_prioritization"
+      ],
+      "follow_on_pattern_class": "actionability_cluster",
+      "insufficient_evidence_reason": "",
+      "item_id": "wf0068_erc_actionability_prioritization_stress",
+      "official_locator_used": "backend/data/calls/sources/erc_stg_2026_full.sources.md#node:b1_part1_scientific_proposal",
+      "review_output_ref": "raw-output:wf0068_erc_actionability_prioritization_stress",
+      "reviewer_rationale": "Actionability stress case did not provide defensible next moves in priority order for revision.",
+      "revision_action_judgment": "not_actionable_without_major_revision",
+      "severity": "high",
+      "snippet_id": "wf0065_paired_boundary_erc_b1_part1_scientific_proposal"
+    },
+    {
+      "call_id": "MSCA-PF-2025",
+      "criterion_or_element_target": "excellence:evaluation_elements",
+      "dimension_scores": {
+        "criteria_groundedness": "weak",
+        "official_traceability": "weak",
+        "prioritization_quality": "weak",
+        "revision_actionability": "weak",
+        "specificity_without_false_specificity": "weak"
+      },
+      "failure_tags": [
+        "genericity",
+        "weak_traceability"
+      ],
+      "follow_on_pattern_class": "mixed_cluster",
+      "insufficient_evidence_reason": "",
+      "item_id": "wf0068_msca_baseline_representative",
+      "official_locator_used": "backend/data/calls/sources/msca_pf_2025_full.sources.md#node:excellence",
+      "review_output_ref": "raw-output:wf0068_msca_baseline_representative",
+      "reviewer_rationale": "Output stayed structurally valid but remained broad, with limited criterion-targeted traceability.",
+      "revision_action_judgment": "actionable_but_incomplete",
+      "severity": "medium",
+      "snippet_id": "wf0065_representative_msca_excellence"
+    },
+    {
+      "call_id": "MSCA-PF-2025",
+      "criterion_or_element_target": "excellence:evaluation_elements",
+      "dimension_scores": {
+        "criteria_groundedness": "insufficient_evidence",
+        "official_traceability": "insufficient_evidence",
+        "prioritization_quality": "weak",
+        "revision_actionability": "weak",
+        "specificity_without_false_specificity": "insufficient_evidence"
+      },
+      "failure_tags": [
+        "weak_traceability"
+      ],
+      "follow_on_pattern_class": "evidence_gap",
+      "insufficient_evidence_reason": "Raw output did not provide enough source-specific grounding to confirm traceability judgment.",
+      "item_id": "wf0068_msca_traceability_specificity_stress",
+      "official_locator_used": "backend/data/calls/sources/msca_pf_2025_full.sources.md#node:excellence",
+      "review_output_ref": "raw-output:wf0068_msca_traceability_specificity_stress",
+      "reviewer_rationale": "Recorded insufficient evidence explicitly rather than inferring missing provenance.",
+      "revision_action_judgment": "insufficient_evidence",
+      "severity": "medium",
+      "snippet_id": "wf0067_source_basis_msca_excellence"
+    },
+    {
+      "call_id": "MSCA-PF-2025",
+      "criterion_or_element_target": "excellence:evaluation_elements",
+      "dimension_scores": {
+        "criteria_groundedness": "weak",
+        "official_traceability": "weak",
+        "prioritization_quality": "fail",
+        "revision_actionability": "fail",
+        "specificity_without_false_specificity": "weak"
+      },
+      "failure_tags": [
+        "low_actionability",
+        "bad_prioritization"
+      ],
+      "follow_on_pattern_class": "actionability_cluster",
+      "insufficient_evidence_reason": "",
+      "item_id": "wf0068_msca_actionability_prioritization_stress",
+      "official_locator_used": "backend/data/calls/sources/msca_pf_2025_full.sources.md#node:excellence",
+      "review_output_ref": "raw-output:wf0068_msca_actionability_prioritization_stress",
+      "reviewer_rationale": "Actionability stress case did not provide defensible next moves in priority order for revision.",
+      "revision_action_judgment": "not_actionable_without_major_revision",
+      "severity": "high",
+      "snippet_id": "wf0065_paired_boundary_msca_excellence"
+    }
+  ],
+  "source_path": "docs/walkthroughs/evidence/WF-0068/evidence-records.json"
+}

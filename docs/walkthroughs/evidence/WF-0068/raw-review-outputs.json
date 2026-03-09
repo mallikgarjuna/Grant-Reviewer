@@ -1,0 +1,2826 @@
+{
+  "artifact_type": "wf0068_raw_review_outputs",
+  "baseline_id": "wf0068_baseline_v1",
+  "baseline_ref": "../docs/walkthroughs/evidence/WF-0068/baseline.json",
+  "batch_id": "wf0068_locked_batch_v1",
+  "coverage_status": "locked",
+  "generated_at_utc": "2026-03-09T05:35:34.897816+00:00",
+  "items": [
+    {
+      "baseline_id": "wf0068_baseline_v1",
+      "batch_order": 1,
+      "call_config_digest": "sha256:abcd3994853e3505c49e035a467ffe9fd87c18dd31e1efb190e49c6f61ca633a",
+      "call_config_snapshot_ref": "data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml",
+      "call_id": "nwo_veni_2025_preproposal",
+      "item_id": "wf0068_nwo_baseline_representative",
+      "node_logical_id": "key_outputs",
+      "raw_review_output": {
+        "compatibility_output": {
+          "cards": [
+            {
+              "expectation_id": "academic_profile:elem_innovative_ideas_capability",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_network_collaboration_visibility",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_peer_exceeding_quality",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_positioning_in_themes",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_target_group_fit_and_growth",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "key_outputs:elem_innovative_ideas_capability",
+              "feedback": "content_evaluated",
+              "node_logical_id": "key_outputs",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "key_outputs:elem_network_collaboration_visibility",
+              "feedback": "content_evaluated",
+              "node_logical_id": "key_outputs",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "key_outputs:elem_peer_exceeding_quality",
+              "feedback": "content_evaluated",
+              "node_logical_id": "key_outputs",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "research_idea:elem_cv_idea_alignment",
+              "feedback": "missing_context:research_idea",
+              "node_logical_id": "research_idea",
+              "rating": "NOTE"
+            }
+          ],
+          "diagnostics": [],
+          "status": "COMPLETED"
+        },
+        "diagnostics": [],
+        "failure_code": null,
+        "findings": [
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_target_group_fit_and_growth:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_target_group_fit_and_growth",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_peer_exceeding_quality:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_peer_exceeding_quality",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_positioning_in_themes:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_positioning_in_themes",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_network_collaboration_visibility:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_network_collaboration_visibility",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_innovative_ideas_capability:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_innovative_ideas_capability",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "key_outputs:key_outputs:elem_peer_exceeding_quality:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "key_outputs:elem_peer_exceeding_quality",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "key_outputs"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "key_outputs:key_outputs:elem_network_collaboration_visibility:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "key_outputs:elem_network_collaboration_visibility",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "key_outputs"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "key_outputs:key_outputs:elem_innovative_ideas_capability:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "key_outputs:elem_innovative_ideas_capability",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "key_outputs"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "research_idea:research_idea:elem_cv_idea_alignment:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "research_idea:elem_cv_idea_alignment",
+            "reason": "missing_context:research_idea",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "research_idea"
+            }
+          }
+        ],
+        "pipeline_status": "SUCCESS",
+        "request_id": "wf0068_locked_batch_v1:wf0068_nwo_baseline_representative",
+        "review_cards": [
+          {
+            "expectation_id": "academic_profile:elem_innovative_ideas_capability",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_network_collaboration_visibility",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_peer_exceeding_quality",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_positioning_in_themes",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_target_group_fit_and_growth",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "key_outputs:elem_innovative_ideas_capability",
+            "feedback": "content_evaluated",
+            "node_logical_id": "key_outputs",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "key_outputs:elem_network_collaboration_visibility",
+            "feedback": "content_evaluated",
+            "node_logical_id": "key_outputs",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "key_outputs:elem_peer_exceeding_quality",
+            "feedback": "content_evaluated",
+            "node_logical_id": "key_outputs",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "research_idea:elem_cv_idea_alignment",
+            "feedback": "missing_context:research_idea",
+            "node_logical_id": "research_idea",
+            "rating": "NOTE"
+          }
+        ],
+        "telemetry": {
+          "counters": {
+            "assessment_status": {
+              "ASSESSED": 3,
+              "NOT_ASSESSABLE": 6
+            },
+            "finding_kind": {
+              "PRESENT_CONTENT": 9
+            },
+            "severity": {
+              "NOTE": 9
+            }
+          },
+          "redacted_nodes": {
+            "key_outputs": {
+              "length": 46,
+              "text_hash": "8924bd0225f3ebfe600cd7248397f7ac367658bb18a6cf68ac608301ccb2ef43"
+            }
+          },
+          "run": {
+            "engine_path": "pipeline_v1",
+            "executed_stages": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "mode": "DIAGNOSTIC",
+            "planned_stage_sequence": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "request_id": "wf0068_locked_batch_v1:wf0068_nwo_baseline_representative",
+            "stage_ref": "STEP_1",
+            "status": "success"
+          }
+        }
+      },
+      "review_stage": "STEP_1",
+      "role": "baseline_representative",
+      "snippet_id": "wf0065_representative_nwo_key_outputs"
+    },
+    {
+      "baseline_id": "wf0068_baseline_v1",
+      "batch_order": 2,
+      "call_config_digest": "sha256:abcd3994853e3505c49e035a467ffe9fd87c18dd31e1efb190e49c6f61ca633a",
+      "call_config_snapshot_ref": "data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml",
+      "call_id": "nwo_veni_2025_preproposal",
+      "item_id": "wf0068_nwo_traceability_specificity_stress",
+      "node_logical_id": "key_outputs",
+      "raw_review_output": {
+        "compatibility_output": {
+          "cards": [
+            {
+              "expectation_id": "academic_profile:elem_innovative_ideas_capability",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_network_collaboration_visibility",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_peer_exceeding_quality",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_positioning_in_themes",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_target_group_fit_and_growth",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "key_outputs:elem_innovative_ideas_capability",
+              "feedback": "content_evaluated",
+              "node_logical_id": "key_outputs",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "key_outputs:elem_network_collaboration_visibility",
+              "feedback": "content_evaluated",
+              "node_logical_id": "key_outputs",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "key_outputs:elem_peer_exceeding_quality",
+              "feedback": "content_evaluated",
+              "node_logical_id": "key_outputs",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "research_idea:elem_cv_idea_alignment",
+              "feedback": "missing_context:research_idea",
+              "node_logical_id": "research_idea",
+              "rating": "NOTE"
+            }
+          ],
+          "diagnostics": [],
+          "status": "COMPLETED"
+        },
+        "diagnostics": [],
+        "failure_code": null,
+        "findings": [
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_target_group_fit_and_growth:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_target_group_fit_and_growth",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_peer_exceeding_quality:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_peer_exceeding_quality",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_positioning_in_themes:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_positioning_in_themes",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_network_collaboration_visibility:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_network_collaboration_visibility",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_innovative_ideas_capability:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_innovative_ideas_capability",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "key_outputs:key_outputs:elem_peer_exceeding_quality:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "key_outputs:elem_peer_exceeding_quality",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "key_outputs"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "key_outputs:key_outputs:elem_network_collaboration_visibility:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "key_outputs:elem_network_collaboration_visibility",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "key_outputs"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "key_outputs:key_outputs:elem_innovative_ideas_capability:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "key_outputs:elem_innovative_ideas_capability",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "key_outputs"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "research_idea:research_idea:elem_cv_idea_alignment:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "research_idea:elem_cv_idea_alignment",
+            "reason": "missing_context:research_idea",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "research_idea"
+            }
+          }
+        ],
+        "pipeline_status": "SUCCESS",
+        "request_id": "wf0068_locked_batch_v1:wf0068_nwo_traceability_specificity_stress",
+        "review_cards": [
+          {
+            "expectation_id": "academic_profile:elem_innovative_ideas_capability",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_network_collaboration_visibility",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_peer_exceeding_quality",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_positioning_in_themes",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_target_group_fit_and_growth",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "key_outputs:elem_innovative_ideas_capability",
+            "feedback": "content_evaluated",
+            "node_logical_id": "key_outputs",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "key_outputs:elem_network_collaboration_visibility",
+            "feedback": "content_evaluated",
+            "node_logical_id": "key_outputs",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "key_outputs:elem_peer_exceeding_quality",
+            "feedback": "content_evaluated",
+            "node_logical_id": "key_outputs",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "research_idea:elem_cv_idea_alignment",
+            "feedback": "missing_context:research_idea",
+            "node_logical_id": "research_idea",
+            "rating": "NOTE"
+          }
+        ],
+        "telemetry": {
+          "counters": {
+            "assessment_status": {
+              "ASSESSED": 3,
+              "NOT_ASSESSABLE": 6
+            },
+            "finding_kind": {
+              "PRESENT_CONTENT": 9
+            },
+            "severity": {
+              "NOTE": 9
+            }
+          },
+          "redacted_nodes": {
+            "key_outputs": {
+              "length": 66,
+              "text_hash": "2f5f1a90d97a322d41478d83dd882f7cd3153d8fc03e04a75ac774dee5be9cd3"
+            }
+          },
+          "run": {
+            "engine_path": "pipeline_v1",
+            "executed_stages": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "mode": "DIAGNOSTIC",
+            "planned_stage_sequence": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "request_id": "wf0068_locked_batch_v1:wf0068_nwo_traceability_specificity_stress",
+            "stage_ref": "STEP_1",
+            "status": "success"
+          }
+        }
+      },
+      "review_stage": "STEP_1",
+      "role": "traceability_specificity_stress",
+      "snippet_id": "wf0067_source_basis_nwo_key_outputs"
+    },
+    {
+      "baseline_id": "wf0068_baseline_v1",
+      "batch_order": 3,
+      "call_config_digest": "sha256:abcd3994853e3505c49e035a467ffe9fd87c18dd31e1efb190e49c6f61ca633a",
+      "call_config_snapshot_ref": "data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml",
+      "call_id": "nwo_veni_2025_preproposal",
+      "item_id": "wf0068_nwo_actionability_prioritization_stress",
+      "node_logical_id": "key_outputs",
+      "raw_review_output": {
+        "compatibility_output": {
+          "cards": [
+            {
+              "expectation_id": "academic_profile:elem_innovative_ideas_capability",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_network_collaboration_visibility",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_peer_exceeding_quality",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_positioning_in_themes",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "academic_profile:elem_target_group_fit_and_growth",
+              "feedback": "missing_context:academic_profile",
+              "node_logical_id": "academic_profile",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "key_outputs:elem_innovative_ideas_capability",
+              "feedback": "content_evaluated",
+              "node_logical_id": "key_outputs",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "key_outputs:elem_network_collaboration_visibility",
+              "feedback": "content_evaluated",
+              "node_logical_id": "key_outputs",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "key_outputs:elem_peer_exceeding_quality",
+              "feedback": "content_evaluated",
+              "node_logical_id": "key_outputs",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "research_idea:elem_cv_idea_alignment",
+              "feedback": "missing_context:research_idea",
+              "node_logical_id": "research_idea",
+              "rating": "NOTE"
+            }
+          ],
+          "diagnostics": [],
+          "status": "COMPLETED"
+        },
+        "diagnostics": [],
+        "failure_code": null,
+        "findings": [
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_target_group_fit_and_growth:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_target_group_fit_and_growth",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_peer_exceeding_quality:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_peer_exceeding_quality",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_positioning_in_themes:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_positioning_in_themes",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_network_collaboration_visibility:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_network_collaboration_visibility",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "academic_profile:academic_profile:elem_innovative_ideas_capability:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "academic_profile:elem_innovative_ideas_capability",
+            "reason": "missing_context:academic_profile",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "academic_profile"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "key_outputs:key_outputs:elem_peer_exceeding_quality:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "key_outputs:elem_peer_exceeding_quality",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "key_outputs"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "key_outputs:key_outputs:elem_network_collaboration_visibility:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "key_outputs:elem_network_collaboration_visibility",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "key_outputs"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "key_outputs:key_outputs:elem_innovative_ideas_capability:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "key_outputs:elem_innovative_ideas_capability",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "key_outputs"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "research_idea:research_idea:elem_cv_idea_alignment:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "research_idea:elem_cv_idea_alignment",
+            "reason": "missing_context:research_idea",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "research_idea"
+            }
+          }
+        ],
+        "pipeline_status": "SUCCESS",
+        "request_id": "wf0068_locked_batch_v1:wf0068_nwo_actionability_prioritization_stress",
+        "review_cards": [
+          {
+            "expectation_id": "academic_profile:elem_innovative_ideas_capability",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_network_collaboration_visibility",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_peer_exceeding_quality",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_positioning_in_themes",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "academic_profile:elem_target_group_fit_and_growth",
+            "feedback": "missing_context:academic_profile",
+            "node_logical_id": "academic_profile",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "key_outputs:elem_innovative_ideas_capability",
+            "feedback": "content_evaluated",
+            "node_logical_id": "key_outputs",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "key_outputs:elem_network_collaboration_visibility",
+            "feedback": "content_evaluated",
+            "node_logical_id": "key_outputs",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "key_outputs:elem_peer_exceeding_quality",
+            "feedback": "content_evaluated",
+            "node_logical_id": "key_outputs",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "research_idea:elem_cv_idea_alignment",
+            "feedback": "missing_context:research_idea",
+            "node_logical_id": "research_idea",
+            "rating": "NOTE"
+          }
+        ],
+        "telemetry": {
+          "counters": {
+            "assessment_status": {
+              "ASSESSED": 3,
+              "NOT_ASSESSABLE": 6
+            },
+            "finding_kind": {
+              "PRESENT_CONTENT": 9
+            },
+            "severity": {
+              "NOTE": 9
+            }
+          },
+          "redacted_nodes": {
+            "key_outputs": {
+              "length": 56,
+              "text_hash": "24556a82658ae472e0f24ba248b7a7aebe6eaa7275475c0af89c170670d87c79"
+            }
+          },
+          "run": {
+            "engine_path": "pipeline_v1",
+            "executed_stages": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "mode": "DIAGNOSTIC",
+            "planned_stage_sequence": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "request_id": "wf0068_locked_batch_v1:wf0068_nwo_actionability_prioritization_stress",
+            "stage_ref": "STEP_1",
+            "status": "success"
+          }
+        }
+      },
+      "review_stage": "STEP_1",
+      "role": "actionability_prioritization_stress",
+      "snippet_id": "wf0065_paired_boundary_nwo_key_outputs"
+    },
+    {
+      "baseline_id": "wf0068_baseline_v1",
+      "batch_order": 4,
+      "call_config_digest": "sha256:e9cccf024c2d4c15174797ddc68b611006fc597b2ff6e3cff22c036e4e57e1d9",
+      "call_config_snapshot_ref": "data/calls/canonical/erc/erc_stg_2026_full.yaml",
+      "call_id": "erc_stg_2026_full",
+      "item_id": "wf0068_erc_baseline_representative",
+      "node_logical_id": "proposal_summary",
+      "raw_review_output": {
+        "compatibility_output": {
+          "cards": [
+            {
+              "expectation_id": "b1_cv_track_record:elem_pi_creative_original_thinking",
+              "feedback": "missing_context:b1_cv_track_record",
+              "node_logical_id": "b1_cv_track_record",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_cv_track_record:elem_pi_expertise_capacity",
+              "feedback": "missing_context:b1_cv_track_record",
+              "node_logical_id": "b1_cv_track_record",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_cv_track_record:elem_pi_groundbreaking_ability",
+              "feedback": "missing_context:b1_cv_track_record",
+              "node_logical_id": "b1_cv_track_record",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_part1_scientific_proposal:elem_project_ambition_frontier",
+              "feedback": "missing_context:b1_part1_scientific_proposal",
+              "node_logical_id": "b1_part1_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_part1_scientific_proposal:elem_project_importance_questions",
+              "feedback": "missing_context:b1_part1_scientific_proposal",
+              "node_logical_id": "b1_part1_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b2_part2_scientific_proposal:elem_project_ambition_frontier",
+              "feedback": "missing_context:b2_part2_scientific_proposal",
+              "node_logical_id": "b2_part2_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b2_part2_scientific_proposal:elem_project_importance_questions",
+              "feedback": "missing_context:b2_part2_scientific_proposal",
+              "node_logical_id": "b2_part2_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b2_part2_scientific_proposal:elem_project_methodology_arrangements",
+              "feedback": "missing_context:b2_part2_scientific_proposal",
+              "node_logical_id": "b2_part2_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "proposal_summary:elem_project_ambition_frontier",
+              "feedback": "content_evaluated",
+              "node_logical_id": "proposal_summary",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "proposal_summary:elem_project_importance_questions",
+              "feedback": "content_evaluated",
+              "node_logical_id": "proposal_summary",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "resources_time_commitment:elem_project_timescale_resources",
+              "feedback": "missing_context:resources_time_commitment",
+              "node_logical_id": "resources_time_commitment",
+              "rating": "NOTE"
+            }
+          ],
+          "diagnostics": [],
+          "status": "COMPLETED"
+        },
+        "diagnostics": [],
+        "failure_code": null,
+        "findings": [
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "proposal_summary:proposal_summary:elem_project_importance_questions:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "proposal_summary:elem_project_importance_questions",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "proposal_summary"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "proposal_summary:proposal_summary:elem_project_ambition_frontier:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "proposal_summary:elem_project_ambition_frontier",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "proposal_summary"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_part1_scientific_proposal:b1_part1_scientific_proposal:elem_project_importance_questions:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_part1_scientific_proposal:elem_project_importance_questions",
+            "reason": "missing_context:b1_part1_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_part1_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_part1_scientific_proposal:b1_part1_scientific_proposal:elem_project_ambition_frontier:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_part1_scientific_proposal:elem_project_ambition_frontier",
+            "reason": "missing_context:b1_part1_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_part1_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_cv_track_record:b1_cv_track_record:elem_pi_groundbreaking_ability:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_cv_track_record:elem_pi_groundbreaking_ability",
+            "reason": "missing_context:b1_cv_track_record",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_cv_track_record"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_cv_track_record:b1_cv_track_record:elem_pi_creative_original_thinking:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_cv_track_record:elem_pi_creative_original_thinking",
+            "reason": "missing_context:b1_cv_track_record",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_cv_track_record"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_cv_track_record:b1_cv_track_record:elem_pi_expertise_capacity:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_cv_track_record:elem_pi_expertise_capacity",
+            "reason": "missing_context:b1_cv_track_record",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_cv_track_record"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b2_part2_scientific_proposal:b2_part2_scientific_proposal:elem_project_importance_questions:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b2_part2_scientific_proposal:elem_project_importance_questions",
+            "reason": "missing_context:b2_part2_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b2_part2_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b2_part2_scientific_proposal:b2_part2_scientific_proposal:elem_project_ambition_frontier:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b2_part2_scientific_proposal:elem_project_ambition_frontier",
+            "reason": "missing_context:b2_part2_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b2_part2_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b2_part2_scientific_proposal:b2_part2_scientific_proposal:elem_project_methodology_arrangements:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b2_part2_scientific_proposal:elem_project_methodology_arrangements",
+            "reason": "missing_context:b2_part2_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b2_part2_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "resources_time_commitment:resources_time_commitment:elem_project_timescale_resources:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "resources_time_commitment:elem_project_timescale_resources",
+            "reason": "missing_context:resources_time_commitment",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "resources_time_commitment"
+            }
+          }
+        ],
+        "pipeline_status": "SUCCESS",
+        "request_id": "wf0068_locked_batch_v1:wf0068_erc_baseline_representative",
+        "review_cards": [
+          {
+            "expectation_id": "b1_cv_track_record:elem_pi_creative_original_thinking",
+            "feedback": "missing_context:b1_cv_track_record",
+            "node_logical_id": "b1_cv_track_record",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_cv_track_record:elem_pi_expertise_capacity",
+            "feedback": "missing_context:b1_cv_track_record",
+            "node_logical_id": "b1_cv_track_record",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_cv_track_record:elem_pi_groundbreaking_ability",
+            "feedback": "missing_context:b1_cv_track_record",
+            "node_logical_id": "b1_cv_track_record",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_part1_scientific_proposal:elem_project_ambition_frontier",
+            "feedback": "missing_context:b1_part1_scientific_proposal",
+            "node_logical_id": "b1_part1_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_part1_scientific_proposal:elem_project_importance_questions",
+            "feedback": "missing_context:b1_part1_scientific_proposal",
+            "node_logical_id": "b1_part1_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b2_part2_scientific_proposal:elem_project_ambition_frontier",
+            "feedback": "missing_context:b2_part2_scientific_proposal",
+            "node_logical_id": "b2_part2_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b2_part2_scientific_proposal:elem_project_importance_questions",
+            "feedback": "missing_context:b2_part2_scientific_proposal",
+            "node_logical_id": "b2_part2_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b2_part2_scientific_proposal:elem_project_methodology_arrangements",
+            "feedback": "missing_context:b2_part2_scientific_proposal",
+            "node_logical_id": "b2_part2_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "proposal_summary:elem_project_ambition_frontier",
+            "feedback": "content_evaluated",
+            "node_logical_id": "proposal_summary",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "proposal_summary:elem_project_importance_questions",
+            "feedback": "content_evaluated",
+            "node_logical_id": "proposal_summary",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "resources_time_commitment:elem_project_timescale_resources",
+            "feedback": "missing_context:resources_time_commitment",
+            "node_logical_id": "resources_time_commitment",
+            "rating": "NOTE"
+          }
+        ],
+        "telemetry": {
+          "counters": {
+            "assessment_status": {
+              "ASSESSED": 2,
+              "NOT_ASSESSABLE": 9
+            },
+            "finding_kind": {
+              "PRESENT_CONTENT": 11
+            },
+            "severity": {
+              "NOTE": 11
+            }
+          },
+          "redacted_nodes": {
+            "proposal_summary": {
+              "length": 51,
+              "text_hash": "ee5d150967c8089bacc5ea80162e46b64328a9b063c3adaa299c860b398a4390"
+            }
+          },
+          "run": {
+            "engine_path": "pipeline_v1",
+            "executed_stages": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "mode": "DIAGNOSTIC",
+            "planned_stage_sequence": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "request_id": "wf0068_locked_batch_v1:wf0068_erc_baseline_representative",
+            "stage_ref": "STEP_1",
+            "status": "success"
+          }
+        }
+      },
+      "review_stage": "STEP_1",
+      "role": "baseline_representative",
+      "snippet_id": "wf0065_representative_erc_proposal_summary"
+    },
+    {
+      "baseline_id": "wf0068_baseline_v1",
+      "batch_order": 5,
+      "call_config_digest": "sha256:e9cccf024c2d4c15174797ddc68b611006fc597b2ff6e3cff22c036e4e57e1d9",
+      "call_config_snapshot_ref": "data/calls/canonical/erc/erc_stg_2026_full.yaml",
+      "call_id": "erc_stg_2026_full",
+      "item_id": "wf0068_erc_traceability_specificity_stress",
+      "node_logical_id": "b1_part1_scientific_proposal",
+      "raw_review_output": {
+        "compatibility_output": {
+          "cards": [
+            {
+              "expectation_id": "b1_cv_track_record:elem_pi_creative_original_thinking",
+              "feedback": "missing_context:b1_cv_track_record",
+              "node_logical_id": "b1_cv_track_record",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_cv_track_record:elem_pi_expertise_capacity",
+              "feedback": "missing_context:b1_cv_track_record",
+              "node_logical_id": "b1_cv_track_record",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_cv_track_record:elem_pi_groundbreaking_ability",
+              "feedback": "missing_context:b1_cv_track_record",
+              "node_logical_id": "b1_cv_track_record",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_part1_scientific_proposal:elem_project_ambition_frontier",
+              "feedback": "content_evaluated",
+              "node_logical_id": "b1_part1_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_part1_scientific_proposal:elem_project_importance_questions",
+              "feedback": "content_evaluated",
+              "node_logical_id": "b1_part1_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b2_part2_scientific_proposal:elem_project_ambition_frontier",
+              "feedback": "missing_context:b2_part2_scientific_proposal",
+              "node_logical_id": "b2_part2_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b2_part2_scientific_proposal:elem_project_importance_questions",
+              "feedback": "missing_context:b2_part2_scientific_proposal",
+              "node_logical_id": "b2_part2_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b2_part2_scientific_proposal:elem_project_methodology_arrangements",
+              "feedback": "missing_context:b2_part2_scientific_proposal",
+              "node_logical_id": "b2_part2_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "proposal_summary:elem_project_ambition_frontier",
+              "feedback": "missing_context:proposal_summary",
+              "node_logical_id": "proposal_summary",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "proposal_summary:elem_project_importance_questions",
+              "feedback": "missing_context:proposal_summary",
+              "node_logical_id": "proposal_summary",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "resources_time_commitment:elem_project_timescale_resources",
+              "feedback": "missing_context:resources_time_commitment",
+              "node_logical_id": "resources_time_commitment",
+              "rating": "NOTE"
+            }
+          ],
+          "diagnostics": [],
+          "status": "COMPLETED"
+        },
+        "diagnostics": [],
+        "failure_code": null,
+        "findings": [
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "proposal_summary:proposal_summary:elem_project_importance_questions:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "proposal_summary:elem_project_importance_questions",
+            "reason": "missing_context:proposal_summary",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "proposal_summary"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "proposal_summary:proposal_summary:elem_project_ambition_frontier:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "proposal_summary:elem_project_ambition_frontier",
+            "reason": "missing_context:proposal_summary",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "proposal_summary"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "b1_part1_scientific_proposal:b1_part1_scientific_proposal:elem_project_importance_questions:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_part1_scientific_proposal:elem_project_importance_questions",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_part1_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "b1_part1_scientific_proposal:b1_part1_scientific_proposal:elem_project_ambition_frontier:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_part1_scientific_proposal:elem_project_ambition_frontier",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_part1_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_cv_track_record:b1_cv_track_record:elem_pi_groundbreaking_ability:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_cv_track_record:elem_pi_groundbreaking_ability",
+            "reason": "missing_context:b1_cv_track_record",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_cv_track_record"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_cv_track_record:b1_cv_track_record:elem_pi_creative_original_thinking:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_cv_track_record:elem_pi_creative_original_thinking",
+            "reason": "missing_context:b1_cv_track_record",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_cv_track_record"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_cv_track_record:b1_cv_track_record:elem_pi_expertise_capacity:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_cv_track_record:elem_pi_expertise_capacity",
+            "reason": "missing_context:b1_cv_track_record",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_cv_track_record"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b2_part2_scientific_proposal:b2_part2_scientific_proposal:elem_project_importance_questions:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b2_part2_scientific_proposal:elem_project_importance_questions",
+            "reason": "missing_context:b2_part2_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b2_part2_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b2_part2_scientific_proposal:b2_part2_scientific_proposal:elem_project_ambition_frontier:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b2_part2_scientific_proposal:elem_project_ambition_frontier",
+            "reason": "missing_context:b2_part2_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b2_part2_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b2_part2_scientific_proposal:b2_part2_scientific_proposal:elem_project_methodology_arrangements:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b2_part2_scientific_proposal:elem_project_methodology_arrangements",
+            "reason": "missing_context:b2_part2_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b2_part2_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "resources_time_commitment:resources_time_commitment:elem_project_timescale_resources:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "resources_time_commitment:elem_project_timescale_resources",
+            "reason": "missing_context:resources_time_commitment",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "resources_time_commitment"
+            }
+          }
+        ],
+        "pipeline_status": "SUCCESS",
+        "request_id": "wf0068_locked_batch_v1:wf0068_erc_traceability_specificity_stress",
+        "review_cards": [
+          {
+            "expectation_id": "b1_cv_track_record:elem_pi_creative_original_thinking",
+            "feedback": "missing_context:b1_cv_track_record",
+            "node_logical_id": "b1_cv_track_record",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_cv_track_record:elem_pi_expertise_capacity",
+            "feedback": "missing_context:b1_cv_track_record",
+            "node_logical_id": "b1_cv_track_record",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_cv_track_record:elem_pi_groundbreaking_ability",
+            "feedback": "missing_context:b1_cv_track_record",
+            "node_logical_id": "b1_cv_track_record",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_part1_scientific_proposal:elem_project_ambition_frontier",
+            "feedback": "content_evaluated",
+            "node_logical_id": "b1_part1_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_part1_scientific_proposal:elem_project_importance_questions",
+            "feedback": "content_evaluated",
+            "node_logical_id": "b1_part1_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b2_part2_scientific_proposal:elem_project_ambition_frontier",
+            "feedback": "missing_context:b2_part2_scientific_proposal",
+            "node_logical_id": "b2_part2_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b2_part2_scientific_proposal:elem_project_importance_questions",
+            "feedback": "missing_context:b2_part2_scientific_proposal",
+            "node_logical_id": "b2_part2_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b2_part2_scientific_proposal:elem_project_methodology_arrangements",
+            "feedback": "missing_context:b2_part2_scientific_proposal",
+            "node_logical_id": "b2_part2_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "proposal_summary:elem_project_ambition_frontier",
+            "feedback": "missing_context:proposal_summary",
+            "node_logical_id": "proposal_summary",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "proposal_summary:elem_project_importance_questions",
+            "feedback": "missing_context:proposal_summary",
+            "node_logical_id": "proposal_summary",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "resources_time_commitment:elem_project_timescale_resources",
+            "feedback": "missing_context:resources_time_commitment",
+            "node_logical_id": "resources_time_commitment",
+            "rating": "NOTE"
+          }
+        ],
+        "telemetry": {
+          "counters": {
+            "assessment_status": {
+              "ASSESSED": 2,
+              "NOT_ASSESSABLE": 9
+            },
+            "finding_kind": {
+              "PRESENT_CONTENT": 11
+            },
+            "severity": {
+              "NOTE": 11
+            }
+          },
+          "redacted_nodes": {
+            "b1_part1_scientific_proposal": {
+              "length": 58,
+              "text_hash": "d40566eb97f4871834f04e9b733cd91548df2bfd510e7e14873e93dbcdbf976b"
+            }
+          },
+          "run": {
+            "engine_path": "pipeline_v1",
+            "executed_stages": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "mode": "DIAGNOSTIC",
+            "planned_stage_sequence": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "request_id": "wf0068_locked_batch_v1:wf0068_erc_traceability_specificity_stress",
+            "stage_ref": "STEP_1",
+            "status": "success"
+          }
+        }
+      },
+      "review_stage": "STEP_1",
+      "role": "traceability_specificity_stress",
+      "snippet_id": "wf0067_source_basis_erc_b1_part1_scientific_proposal"
+    },
+    {
+      "baseline_id": "wf0068_baseline_v1",
+      "batch_order": 6,
+      "call_config_digest": "sha256:e9cccf024c2d4c15174797ddc68b611006fc597b2ff6e3cff22c036e4e57e1d9",
+      "call_config_snapshot_ref": "data/calls/canonical/erc/erc_stg_2026_full.yaml",
+      "call_id": "erc_stg_2026_full",
+      "item_id": "wf0068_erc_actionability_prioritization_stress",
+      "node_logical_id": "b1_part1_scientific_proposal",
+      "raw_review_output": {
+        "compatibility_output": {
+          "cards": [
+            {
+              "expectation_id": "b1_cv_track_record:elem_pi_creative_original_thinking",
+              "feedback": "missing_context:b1_cv_track_record",
+              "node_logical_id": "b1_cv_track_record",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_cv_track_record:elem_pi_expertise_capacity",
+              "feedback": "missing_context:b1_cv_track_record",
+              "node_logical_id": "b1_cv_track_record",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_cv_track_record:elem_pi_groundbreaking_ability",
+              "feedback": "missing_context:b1_cv_track_record",
+              "node_logical_id": "b1_cv_track_record",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_part1_scientific_proposal:elem_project_ambition_frontier",
+              "feedback": "content_evaluated",
+              "node_logical_id": "b1_part1_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b1_part1_scientific_proposal:elem_project_importance_questions",
+              "feedback": "content_evaluated",
+              "node_logical_id": "b1_part1_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b2_part2_scientific_proposal:elem_project_ambition_frontier",
+              "feedback": "missing_context:b2_part2_scientific_proposal",
+              "node_logical_id": "b2_part2_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b2_part2_scientific_proposal:elem_project_importance_questions",
+              "feedback": "missing_context:b2_part2_scientific_proposal",
+              "node_logical_id": "b2_part2_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "b2_part2_scientific_proposal:elem_project_methodology_arrangements",
+              "feedback": "missing_context:b2_part2_scientific_proposal",
+              "node_logical_id": "b2_part2_scientific_proposal",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "proposal_summary:elem_project_ambition_frontier",
+              "feedback": "missing_context:proposal_summary",
+              "node_logical_id": "proposal_summary",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "proposal_summary:elem_project_importance_questions",
+              "feedback": "missing_context:proposal_summary",
+              "node_logical_id": "proposal_summary",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "resources_time_commitment:elem_project_timescale_resources",
+              "feedback": "missing_context:resources_time_commitment",
+              "node_logical_id": "resources_time_commitment",
+              "rating": "NOTE"
+            }
+          ],
+          "diagnostics": [],
+          "status": "COMPLETED"
+        },
+        "diagnostics": [],
+        "failure_code": null,
+        "findings": [
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "proposal_summary:proposal_summary:elem_project_importance_questions:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "proposal_summary:elem_project_importance_questions",
+            "reason": "missing_context:proposal_summary",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "proposal_summary"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "proposal_summary:proposal_summary:elem_project_ambition_frontier:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "proposal_summary:elem_project_ambition_frontier",
+            "reason": "missing_context:proposal_summary",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "proposal_summary"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "b1_part1_scientific_proposal:b1_part1_scientific_proposal:elem_project_importance_questions:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_part1_scientific_proposal:elem_project_importance_questions",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_part1_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "b1_part1_scientific_proposal:b1_part1_scientific_proposal:elem_project_ambition_frontier:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_part1_scientific_proposal:elem_project_ambition_frontier",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_part1_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_cv_track_record:b1_cv_track_record:elem_pi_groundbreaking_ability:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_cv_track_record:elem_pi_groundbreaking_ability",
+            "reason": "missing_context:b1_cv_track_record",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_cv_track_record"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_cv_track_record:b1_cv_track_record:elem_pi_creative_original_thinking:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_cv_track_record:elem_pi_creative_original_thinking",
+            "reason": "missing_context:b1_cv_track_record",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_cv_track_record"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b1_cv_track_record:b1_cv_track_record:elem_pi_expertise_capacity:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b1_cv_track_record:elem_pi_expertise_capacity",
+            "reason": "missing_context:b1_cv_track_record",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b1_cv_track_record"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b2_part2_scientific_proposal:b2_part2_scientific_proposal:elem_project_importance_questions:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b2_part2_scientific_proposal:elem_project_importance_questions",
+            "reason": "missing_context:b2_part2_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b2_part2_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b2_part2_scientific_proposal:b2_part2_scientific_proposal:elem_project_ambition_frontier:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b2_part2_scientific_proposal:elem_project_ambition_frontier",
+            "reason": "missing_context:b2_part2_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b2_part2_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "b2_part2_scientific_proposal:b2_part2_scientific_proposal:elem_project_methodology_arrangements:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "b2_part2_scientific_proposal:elem_project_methodology_arrangements",
+            "reason": "missing_context:b2_part2_scientific_proposal",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "b2_part2_scientific_proposal"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "resources_time_commitment:resources_time_commitment:elem_project_timescale_resources:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "resources_time_commitment:elem_project_timescale_resources",
+            "reason": "missing_context:resources_time_commitment",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "resources_time_commitment"
+            }
+          }
+        ],
+        "pipeline_status": "SUCCESS",
+        "request_id": "wf0068_locked_batch_v1:wf0068_erc_actionability_prioritization_stress",
+        "review_cards": [
+          {
+            "expectation_id": "b1_cv_track_record:elem_pi_creative_original_thinking",
+            "feedback": "missing_context:b1_cv_track_record",
+            "node_logical_id": "b1_cv_track_record",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_cv_track_record:elem_pi_expertise_capacity",
+            "feedback": "missing_context:b1_cv_track_record",
+            "node_logical_id": "b1_cv_track_record",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_cv_track_record:elem_pi_groundbreaking_ability",
+            "feedback": "missing_context:b1_cv_track_record",
+            "node_logical_id": "b1_cv_track_record",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_part1_scientific_proposal:elem_project_ambition_frontier",
+            "feedback": "content_evaluated",
+            "node_logical_id": "b1_part1_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b1_part1_scientific_proposal:elem_project_importance_questions",
+            "feedback": "content_evaluated",
+            "node_logical_id": "b1_part1_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b2_part2_scientific_proposal:elem_project_ambition_frontier",
+            "feedback": "missing_context:b2_part2_scientific_proposal",
+            "node_logical_id": "b2_part2_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b2_part2_scientific_proposal:elem_project_importance_questions",
+            "feedback": "missing_context:b2_part2_scientific_proposal",
+            "node_logical_id": "b2_part2_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "b2_part2_scientific_proposal:elem_project_methodology_arrangements",
+            "feedback": "missing_context:b2_part2_scientific_proposal",
+            "node_logical_id": "b2_part2_scientific_proposal",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "proposal_summary:elem_project_ambition_frontier",
+            "feedback": "missing_context:proposal_summary",
+            "node_logical_id": "proposal_summary",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "proposal_summary:elem_project_importance_questions",
+            "feedback": "missing_context:proposal_summary",
+            "node_logical_id": "proposal_summary",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "resources_time_commitment:elem_project_timescale_resources",
+            "feedback": "missing_context:resources_time_commitment",
+            "node_logical_id": "resources_time_commitment",
+            "rating": "NOTE"
+          }
+        ],
+        "telemetry": {
+          "counters": {
+            "assessment_status": {
+              "ASSESSED": 2,
+              "NOT_ASSESSABLE": 9
+            },
+            "finding_kind": {
+              "PRESENT_CONTENT": 11
+            },
+            "severity": {
+              "NOTE": 11
+            }
+          },
+          "redacted_nodes": {
+            "b1_part1_scientific_proposal": {
+              "length": 64,
+              "text_hash": "3816bbeef8bedd1b50e3a17970716e9867ae610b2f7f7a615765a367c56bd5d1"
+            }
+          },
+          "run": {
+            "engine_path": "pipeline_v1",
+            "executed_stages": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "mode": "DIAGNOSTIC",
+            "planned_stage_sequence": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "request_id": "wf0068_locked_batch_v1:wf0068_erc_actionability_prioritization_stress",
+            "stage_ref": "STEP_2",
+            "status": "success"
+          }
+        }
+      },
+      "review_stage": "STEP_2",
+      "role": "actionability_prioritization_stress",
+      "snippet_id": "wf0065_paired_boundary_erc_b1_part1_scientific_proposal"
+    },
+    {
+      "baseline_id": "wf0068_baseline_v1",
+      "batch_order": 7,
+      "call_config_digest": "sha256:394a8bdf22de0b9587d2ffc901f4c45e4bf29d71feb81f475530fc33966b3b04",
+      "call_config_snapshot_ref": "data/calls/canonical/msca/msca_pf_2025_full.yaml",
+      "call_id": "MSCA-PF-2025",
+      "item_id": "wf0068_msca_baseline_representative",
+      "node_logical_id": "excellence",
+      "raw_review_output": {
+        "compatibility_output": {
+          "cards": [
+            {
+              "expectation_id": "excellence:elem_excellence_methodology_open_science",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "excellence:elem_excellence_objectives_state_of_art",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "excellence:elem_excellence_researcher_profile_fit",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "excellence:elem_excellence_supervision_training_knowledge_transfer",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "impact:elem_impact_career_perspectives_skills",
+              "feedback": "missing_context:impact",
+              "node_logical_id": "impact",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "impact:elem_impact_dissemination_exploitation_communication",
+              "feedback": "missing_context:impact",
+              "node_logical_id": "impact",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "impact:elem_impact_scientific_societal_economic_contribution",
+              "feedback": "missing_context:impact",
+              "node_logical_id": "impact",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "quality_efficiency_implementation:elem_implementation_host_capacity_arrangements",
+              "feedback": "missing_context:quality_efficiency_implementation",
+              "node_logical_id": "quality_efficiency_implementation",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "quality_efficiency_implementation:elem_implementation_work_plan_risks_effort",
+              "feedback": "missing_context:quality_efficiency_implementation",
+              "node_logical_id": "quality_efficiency_implementation",
+              "rating": "NOTE"
+            }
+          ],
+          "diagnostics": [],
+          "status": "COMPLETED"
+        },
+        "diagnostics": [],
+        "failure_code": null,
+        "findings": [
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_objectives_state_of_art:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_objectives_state_of_art",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_methodology_open_science:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_methodology_open_science",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_supervision_training_knowledge_transfer:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_supervision_training_knowledge_transfer",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_researcher_profile_fit:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_researcher_profile_fit",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "impact:impact:elem_impact_career_perspectives_skills:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "impact:elem_impact_career_perspectives_skills",
+            "reason": "missing_context:impact",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "impact"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "impact:impact:elem_impact_dissemination_exploitation_communication:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "impact:elem_impact_dissemination_exploitation_communication",
+            "reason": "missing_context:impact",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "impact"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "impact:impact:elem_impact_scientific_societal_economic_contribution:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "impact:elem_impact_scientific_societal_economic_contribution",
+            "reason": "missing_context:impact",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "impact"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "quality_efficiency_implementation:quality_efficiency_implementation:elem_implementation_work_plan_risks_effort:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "quality_efficiency_implementation:elem_implementation_work_plan_risks_effort",
+            "reason": "missing_context:quality_efficiency_implementation",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "quality_efficiency_implementation"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "quality_efficiency_implementation:quality_efficiency_implementation:elem_implementation_host_capacity_arrangements:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "quality_efficiency_implementation:elem_implementation_host_capacity_arrangements",
+            "reason": "missing_context:quality_efficiency_implementation",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "quality_efficiency_implementation"
+            }
+          }
+        ],
+        "pipeline_status": "SUCCESS",
+        "request_id": "wf0068_locked_batch_v1:wf0068_msca_baseline_representative",
+        "review_cards": [
+          {
+            "expectation_id": "excellence:elem_excellence_methodology_open_science",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "excellence:elem_excellence_objectives_state_of_art",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "excellence:elem_excellence_researcher_profile_fit",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "excellence:elem_excellence_supervision_training_knowledge_transfer",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "impact:elem_impact_career_perspectives_skills",
+            "feedback": "missing_context:impact",
+            "node_logical_id": "impact",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "impact:elem_impact_dissemination_exploitation_communication",
+            "feedback": "missing_context:impact",
+            "node_logical_id": "impact",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "impact:elem_impact_scientific_societal_economic_contribution",
+            "feedback": "missing_context:impact",
+            "node_logical_id": "impact",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "quality_efficiency_implementation:elem_implementation_host_capacity_arrangements",
+            "feedback": "missing_context:quality_efficiency_implementation",
+            "node_logical_id": "quality_efficiency_implementation",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "quality_efficiency_implementation:elem_implementation_work_plan_risks_effort",
+            "feedback": "missing_context:quality_efficiency_implementation",
+            "node_logical_id": "quality_efficiency_implementation",
+            "rating": "NOTE"
+          }
+        ],
+        "telemetry": {
+          "counters": {
+            "assessment_status": {
+              "ASSESSED": 4,
+              "NOT_ASSESSABLE": 5
+            },
+            "finding_kind": {
+              "PRESENT_CONTENT": 9
+            },
+            "severity": {
+              "NOTE": 9
+            }
+          },
+          "redacted_nodes": {
+            "excellence": {
+              "length": 46,
+              "text_hash": "87eae0fb749a304ff6429508a05018200091dc8b2c65cc16022fddd34f4d48c1"
+            }
+          },
+          "run": {
+            "engine_path": "pipeline_v1",
+            "executed_stages": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "mode": "DIAGNOSTIC",
+            "planned_stage_sequence": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "request_id": "wf0068_locked_batch_v1:wf0068_msca_baseline_representative",
+            "stage_ref": "STEP_1",
+            "status": "success"
+          }
+        }
+      },
+      "review_stage": "STEP_1",
+      "role": "baseline_representative",
+      "snippet_id": "wf0065_representative_msca_excellence"
+    },
+    {
+      "baseline_id": "wf0068_baseline_v1",
+      "batch_order": 8,
+      "call_config_digest": "sha256:394a8bdf22de0b9587d2ffc901f4c45e4bf29d71feb81f475530fc33966b3b04",
+      "call_config_snapshot_ref": "data/calls/canonical/msca/msca_pf_2025_full.yaml",
+      "call_id": "MSCA-PF-2025",
+      "item_id": "wf0068_msca_traceability_specificity_stress",
+      "node_logical_id": "excellence",
+      "raw_review_output": {
+        "compatibility_output": {
+          "cards": [
+            {
+              "expectation_id": "excellence:elem_excellence_methodology_open_science",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "excellence:elem_excellence_objectives_state_of_art",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "excellence:elem_excellence_researcher_profile_fit",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "excellence:elem_excellence_supervision_training_knowledge_transfer",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "impact:elem_impact_career_perspectives_skills",
+              "feedback": "missing_context:impact",
+              "node_logical_id": "impact",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "impact:elem_impact_dissemination_exploitation_communication",
+              "feedback": "missing_context:impact",
+              "node_logical_id": "impact",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "impact:elem_impact_scientific_societal_economic_contribution",
+              "feedback": "missing_context:impact",
+              "node_logical_id": "impact",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "quality_efficiency_implementation:elem_implementation_host_capacity_arrangements",
+              "feedback": "missing_context:quality_efficiency_implementation",
+              "node_logical_id": "quality_efficiency_implementation",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "quality_efficiency_implementation:elem_implementation_work_plan_risks_effort",
+              "feedback": "missing_context:quality_efficiency_implementation",
+              "node_logical_id": "quality_efficiency_implementation",
+              "rating": "NOTE"
+            }
+          ],
+          "diagnostics": [],
+          "status": "COMPLETED"
+        },
+        "diagnostics": [],
+        "failure_code": null,
+        "findings": [
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_objectives_state_of_art:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_objectives_state_of_art",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_methodology_open_science:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_methodology_open_science",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_supervision_training_knowledge_transfer:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_supervision_training_knowledge_transfer",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_researcher_profile_fit:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_researcher_profile_fit",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "impact:impact:elem_impact_career_perspectives_skills:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "impact:elem_impact_career_perspectives_skills",
+            "reason": "missing_context:impact",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "impact"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "impact:impact:elem_impact_dissemination_exploitation_communication:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "impact:elem_impact_dissemination_exploitation_communication",
+            "reason": "missing_context:impact",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "impact"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "impact:impact:elem_impact_scientific_societal_economic_contribution:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "impact:elem_impact_scientific_societal_economic_contribution",
+            "reason": "missing_context:impact",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "impact"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "quality_efficiency_implementation:quality_efficiency_implementation:elem_implementation_work_plan_risks_effort:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "quality_efficiency_implementation:elem_implementation_work_plan_risks_effort",
+            "reason": "missing_context:quality_efficiency_implementation",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "quality_efficiency_implementation"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "quality_efficiency_implementation:quality_efficiency_implementation:elem_implementation_host_capacity_arrangements:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "quality_efficiency_implementation:elem_implementation_host_capacity_arrangements",
+            "reason": "missing_context:quality_efficiency_implementation",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "quality_efficiency_implementation"
+            }
+          }
+        ],
+        "pipeline_status": "SUCCESS",
+        "request_id": "wf0068_locked_batch_v1:wf0068_msca_traceability_specificity_stress",
+        "review_cards": [
+          {
+            "expectation_id": "excellence:elem_excellence_methodology_open_science",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "excellence:elem_excellence_objectives_state_of_art",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "excellence:elem_excellence_researcher_profile_fit",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "excellence:elem_excellence_supervision_training_knowledge_transfer",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "impact:elem_impact_career_perspectives_skills",
+            "feedback": "missing_context:impact",
+            "node_logical_id": "impact",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "impact:elem_impact_dissemination_exploitation_communication",
+            "feedback": "missing_context:impact",
+            "node_logical_id": "impact",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "impact:elem_impact_scientific_societal_economic_contribution",
+            "feedback": "missing_context:impact",
+            "node_logical_id": "impact",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "quality_efficiency_implementation:elem_implementation_host_capacity_arrangements",
+            "feedback": "missing_context:quality_efficiency_implementation",
+            "node_logical_id": "quality_efficiency_implementation",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "quality_efficiency_implementation:elem_implementation_work_plan_risks_effort",
+            "feedback": "missing_context:quality_efficiency_implementation",
+            "node_logical_id": "quality_efficiency_implementation",
+            "rating": "NOTE"
+          }
+        ],
+        "telemetry": {
+          "counters": {
+            "assessment_status": {
+              "ASSESSED": 4,
+              "NOT_ASSESSABLE": 5
+            },
+            "finding_kind": {
+              "PRESENT_CONTENT": 9
+            },
+            "severity": {
+              "NOTE": 9
+            }
+          },
+          "redacted_nodes": {
+            "excellence": {
+              "length": 53,
+              "text_hash": "530304a6753aa5735378c3e33a828de9dffaf80267d8281a9826698f62017fc4"
+            }
+          },
+          "run": {
+            "engine_path": "pipeline_v1",
+            "executed_stages": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "mode": "DIAGNOSTIC",
+            "planned_stage_sequence": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "request_id": "wf0068_locked_batch_v1:wf0068_msca_traceability_specificity_stress",
+            "stage_ref": "STEP_1",
+            "status": "success"
+          }
+        }
+      },
+      "review_stage": "STEP_1",
+      "role": "traceability_specificity_stress",
+      "snippet_id": "wf0067_source_basis_msca_excellence"
+    },
+    {
+      "baseline_id": "wf0068_baseline_v1",
+      "batch_order": 9,
+      "call_config_digest": "sha256:394a8bdf22de0b9587d2ffc901f4c45e4bf29d71feb81f475530fc33966b3b04",
+      "call_config_snapshot_ref": "data/calls/canonical/msca/msca_pf_2025_full.yaml",
+      "call_id": "MSCA-PF-2025",
+      "item_id": "wf0068_msca_actionability_prioritization_stress",
+      "node_logical_id": "excellence",
+      "raw_review_output": {
+        "compatibility_output": {
+          "cards": [
+            {
+              "expectation_id": "excellence:elem_excellence_methodology_open_science",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "excellence:elem_excellence_objectives_state_of_art",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "excellence:elem_excellence_researcher_profile_fit",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "excellence:elem_excellence_supervision_training_knowledge_transfer",
+              "feedback": "content_evaluated",
+              "node_logical_id": "excellence",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "impact:elem_impact_career_perspectives_skills",
+              "feedback": "missing_context:impact",
+              "node_logical_id": "impact",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "impact:elem_impact_dissemination_exploitation_communication",
+              "feedback": "missing_context:impact",
+              "node_logical_id": "impact",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "impact:elem_impact_scientific_societal_economic_contribution",
+              "feedback": "missing_context:impact",
+              "node_logical_id": "impact",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "quality_efficiency_implementation:elem_implementation_host_capacity_arrangements",
+              "feedback": "missing_context:quality_efficiency_implementation",
+              "node_logical_id": "quality_efficiency_implementation",
+              "rating": "NOTE"
+            },
+            {
+              "expectation_id": "quality_efficiency_implementation:elem_implementation_work_plan_risks_effort",
+              "feedback": "missing_context:quality_efficiency_implementation",
+              "node_logical_id": "quality_efficiency_implementation",
+              "rating": "NOTE"
+            }
+          ],
+          "diagnostics": [],
+          "status": "COMPLETED"
+        },
+        "diagnostics": [],
+        "failure_code": null,
+        "findings": [
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_objectives_state_of_art:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_objectives_state_of_art",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_methodology_open_science:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_methodology_open_science",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_supervision_training_knowledge_transfer:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_supervision_training_knowledge_transfer",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "ASSESSED",
+            "check_id": "check.presence",
+            "finding_id": "excellence:excellence:elem_excellence_researcher_profile_fit:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "excellence:elem_excellence_researcher_profile_fit",
+            "reason": "content_evaluated",
+            "risk_taxonomy": "RISK_INFORMATIONAL",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "excellence"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "impact:impact:elem_impact_career_perspectives_skills:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "impact:elem_impact_career_perspectives_skills",
+            "reason": "missing_context:impact",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "impact"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "impact:impact:elem_impact_dissemination_exploitation_communication:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "impact:elem_impact_dissemination_exploitation_communication",
+            "reason": "missing_context:impact",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "impact"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "impact:impact:elem_impact_scientific_societal_economic_contribution:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "impact:elem_impact_scientific_societal_economic_contribution",
+            "reason": "missing_context:impact",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "impact"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "quality_efficiency_implementation:quality_efficiency_implementation:elem_implementation_work_plan_risks_effort:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "quality_efficiency_implementation:elem_implementation_work_plan_risks_effort",
+            "reason": "missing_context:quality_efficiency_implementation",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "quality_efficiency_implementation"
+            }
+          },
+          {
+            "assessment_status": "NOT_ASSESSABLE",
+            "check_id": "check.presence",
+            "finding_id": "quality_efficiency_implementation:quality_efficiency_implementation:elem_implementation_host_capacity_arrangements:check.presence",
+            "finding_kind": "PRESENT_CONTENT",
+            "primary_expectation_ref": "quality_efficiency_implementation:elem_implementation_host_capacity_arrangements",
+            "reason": "missing_context:quality_efficiency_implementation",
+            "risk_taxonomy": "RISK_CONTEXT_GAP",
+            "severity": "NOTE",
+            "subject_ref": {
+              "node_logical_id": "quality_efficiency_implementation"
+            }
+          }
+        ],
+        "pipeline_status": "SUCCESS",
+        "request_id": "wf0068_locked_batch_v1:wf0068_msca_actionability_prioritization_stress",
+        "review_cards": [
+          {
+            "expectation_id": "excellence:elem_excellence_methodology_open_science",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "excellence:elem_excellence_objectives_state_of_art",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "excellence:elem_excellence_researcher_profile_fit",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "excellence:elem_excellence_supervision_training_knowledge_transfer",
+            "feedback": "content_evaluated",
+            "node_logical_id": "excellence",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "impact:elem_impact_career_perspectives_skills",
+            "feedback": "missing_context:impact",
+            "node_logical_id": "impact",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "impact:elem_impact_dissemination_exploitation_communication",
+            "feedback": "missing_context:impact",
+            "node_logical_id": "impact",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "impact:elem_impact_scientific_societal_economic_contribution",
+            "feedback": "missing_context:impact",
+            "node_logical_id": "impact",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "quality_efficiency_implementation:elem_implementation_host_capacity_arrangements",
+            "feedback": "missing_context:quality_efficiency_implementation",
+            "node_logical_id": "quality_efficiency_implementation",
+            "rating": "NOTE"
+          },
+          {
+            "expectation_id": "quality_efficiency_implementation:elem_implementation_work_plan_risks_effort",
+            "feedback": "missing_context:quality_efficiency_implementation",
+            "node_logical_id": "quality_efficiency_implementation",
+            "rating": "NOTE"
+          }
+        ],
+        "telemetry": {
+          "counters": {
+            "assessment_status": {
+              "ASSESSED": 4,
+              "NOT_ASSESSABLE": 5
+            },
+            "finding_kind": {
+              "PRESENT_CONTENT": 9
+            },
+            "severity": {
+              "NOTE": 9
+            }
+          },
+          "redacted_nodes": {
+            "excellence": {
+              "length": 56,
+              "text_hash": "71acee0f999e2b96c0b19c47c465d7c3c76dfca247606b0f711ecf64c7dd834a"
+            }
+          },
+          "run": {
+            "engine_path": "pipeline_v1",
+            "executed_stages": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "mode": "DIAGNOSTIC",
+            "planned_stage_sequence": [
+              "structural_validation",
+              "compliance_gate",
+              "expectation_evaluation",
+              "cross_node_alignment",
+              "risk_audit",
+              "output_aggregation"
+            ],
+            "request_id": "wf0068_locked_batch_v1:wf0068_msca_actionability_prioritization_stress",
+            "stage_ref": "STEP_1",
+            "status": "success"
+          }
+        }
+      },
+      "review_stage": "STEP_1",
+      "role": "actionability_prioritization_stress",
+      "snippet_id": "wf0065_paired_boundary_msca_excellence"
+    }
+  ],
+  "manifest_ref": "../docs/walkthroughs/evidence/WF-0068/snippet-batch.json",
+  "source_path": "../docs/walkthroughs/evidence/WF-0068/raw-review-outputs.json"
+}

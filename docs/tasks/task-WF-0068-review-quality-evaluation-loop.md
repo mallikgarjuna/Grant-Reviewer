@@ -111,7 +111,7 @@ Verification Steps:
 - `cd backend && uv run python scripts/validate_wf_0068_evidence_bundle.py --mode bundle tests/fixtures/wf_0068_evidence_bundle_cases.json --case valid_bundle`
 Risks (if any): If contract validation arrives after manual scoring, the workflow can waste time populating evidence that should have been rejected immediately.
 
-### [ ] Task 4 — Record the 9 reviewed items with mission judgments and raw-output traceability
+### [x] Task 4 — Record the 9 reviewed items with mission judgments and raw-output traceability
 
 Goal:
 Execute the locked batch, preserve every raw output, and complete one evidence record per reviewed item without drifting into remediation proposals.
