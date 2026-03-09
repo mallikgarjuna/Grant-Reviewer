@@ -76,7 +76,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0069_baseline_non_regression"`
 Risks (if any): The backend seam may close actionability while still leaving prioritization weak at the review-detail output surface if assessed cards are rendered behind fail-closed context-gap cards.
 
-### [ ] Task 3 — Reorder targeted review detail output so the highest-value actionable cards surface first
+### [x] Task 3 — Reorder targeted review detail output so the highest-value actionable cards surface first
 
 Goal:
 Prove and, only if still needed after Task 2, enforce the smallest output seam needed for prioritization by ensuring targeted structured-review detail responses surface assessed submitted-node cards ahead of fail-closed missing-context cards for the locked NWO/ERC/MSCA wedge, without hiding or deleting the fail-closed cards.
