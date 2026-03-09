@@ -1,0 +1,12 @@
+{
+  "source_path": "docs/walkthroughs/evidence/WF-0068/batch-summary.json",
+  "batch_id": "wf0068_locked_batch_v1",
+  "verification_evidence_bundle_ref": "docs/walkthroughs/evidence/WF-0068/evidence-records.json",
+  "coverage_status": "locked",
+  "baseline_consistency_status": "consistent",
+  "pattern_summary": "Validated records show repeated categorized failure patterns, including actionability_cluster across all three locked calls and traceability_cluster across NWO+ERC; one MSCA item remained evidence_gap and was preserved as insufficient_evidence.",
+  "mission_result": "fail",
+  "follow_on_decision": "proceed_to_narrow_follow_on_wf",
+  "decision_rationale": "Proceed threshold met because repeated categorized failure patterns appear in at least two reviewed snippets with replayable evidence references and a consistent baseline; the dominant repeated cluster is actionability/prioritization quality.",
+  "recommended_follow_on_boundary": "actionability_cluster"
+}

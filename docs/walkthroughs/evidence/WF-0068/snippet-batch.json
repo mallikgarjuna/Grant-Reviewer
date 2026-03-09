@@ -1,0 +1,167 @@
+{
+  "source_path": "docs/walkthroughs/evidence/WF-0068/snippet-batch.json",
+  "batch_id": "wf0068_locked_batch_v1",
+  "coverage_status": "locked",
+  "locked_call_ids": [
+    "nwo_veni_2025_preproposal",
+    "erc_stg_2026_full",
+    "MSCA-PF-2025"
+  ],
+  "baseline_id_ref": "wf0068_baseline_v1",
+  "coverage_gaps": [],
+  "items": [
+    {
+      "item_id": "wf0068_nwo_baseline_representative",
+      "call_id": "nwo_veni_2025_preproposal",
+      "role": "baseline_representative",
+      "batch_order": 1,
+      "review_stage": "STEP_1",
+      "snippet_id": "wf0065_representative_nwo_key_outputs",
+      "node_logical_id": "key_outputs",
+      "snippet_text": "Representative proof text for NWO key outputs.",
+      "inclusion_rationale": "Baseline representative item for NWO from existing representative-call matrix coverage.",
+      "risk_target": "general mission-alignment quality floor",
+      "source_snippet_ref": "backend/tests/test_api.py::_wf0065_representative_cases",
+      "official_source_artifacts_expected": [
+        "backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml",
+        "backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md"
+      ]
+    },
+    {
+      "item_id": "wf0068_nwo_traceability_specificity_stress",
+      "call_id": "nwo_veni_2025_preproposal",
+      "role": "traceability_specificity_stress",
+      "batch_order": 2,
+      "review_stage": "STEP_1",
+      "snippet_id": "wf0067_source_basis_nwo_key_outputs",
+      "node_logical_id": "key_outputs",
+      "snippet_text": "WF-0067 source-basis contract proof for nwo_veni_2025_preproposal.",
+      "inclusion_rationale": "Traceability-specificity stress item uses existing source-basis contract seam text for the same locked call.",
+      "risk_target": "weak traceability / false specificity",
+      "source_snippet_ref": "backend/tests/test_api.py::test_wf0067_backend_source_basis_contract_representative_calls_expose_card_fields",
+      "official_source_artifacts_expected": [
+        "backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml",
+        "backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md"
+      ]
+    },
+    {
+      "item_id": "wf0068_nwo_actionability_prioritization_stress",
+      "call_id": "nwo_veni_2025_preproposal",
+      "role": "actionability_prioritization_stress",
+      "batch_order": 3,
+      "review_stage": "STEP_1",
+      "snippet_id": "wf0065_paired_boundary_nwo_key_outputs",
+      "node_logical_id": "key_outputs",
+      "snippet_text": "Representative paired-boundary text for NWO key outputs.",
+      "inclusion_rationale": "Actionability-prioritization stress item from existing paired-boundary representative matrix.",
+      "risk_target": "low actionability / bad prioritization",
+      "source_snippet_ref": "backend/tests/test_api.py::_wf0065_paired_boundary_cases",
+      "official_source_artifacts_expected": [
+        "backend/data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml",
+        "backend/data/calls/sources/nwo_veni_2025_preproposal.sources.md"
+      ]
+    },
+    {
+      "item_id": "wf0068_erc_baseline_representative",
+      "call_id": "erc_stg_2026_full",
+      "role": "baseline_representative",
+      "batch_order": 4,
+      "review_stage": "STEP_1",
+      "snippet_id": "wf0065_representative_erc_proposal_summary",
+      "node_logical_id": "proposal_summary",
+      "snippet_text": "Representative proof text for ERC proposal summary.",
+      "inclusion_rationale": "Baseline representative item for ERC from existing representative-call matrix coverage.",
+      "risk_target": "general mission-alignment quality floor",
+      "source_snippet_ref": "backend/tests/test_api.py::_wf0065_representative_cases",
+      "official_source_artifacts_expected": [
+        "backend/data/calls/canonical/erc/erc_stg_2026_full.yaml",
+        "backend/data/calls/sources/erc_stg_2026_full.sources.md"
+      ]
+    },
+    {
+      "item_id": "wf0068_erc_traceability_specificity_stress",
+      "call_id": "erc_stg_2026_full",
+      "role": "traceability_specificity_stress",
+      "batch_order": 5,
+      "review_stage": "STEP_1",
+      "snippet_id": "wf0067_source_basis_erc_b1_part1_scientific_proposal",
+      "node_logical_id": "b1_part1_scientific_proposal",
+      "snippet_text": "WF-0067 source-basis contract proof for erc_stg_2026_full.",
+      "inclusion_rationale": "Traceability-specificity stress item uses existing source-basis contract seam text for ERC.",
+      "risk_target": "weak traceability / false specificity",
+      "source_snippet_ref": "backend/tests/test_api.py::test_wf0067_backend_source_basis_contract_representative_calls_expose_card_fields",
+      "official_source_artifacts_expected": [
+        "backend/data/calls/canonical/erc/erc_stg_2026_full.yaml",
+        "backend/data/calls/sources/erc_stg_2026_full.sources.md"
+      ]
+    },
+    {
+      "item_id": "wf0068_erc_actionability_prioritization_stress",
+      "call_id": "erc_stg_2026_full",
+      "role": "actionability_prioritization_stress",
+      "batch_order": 6,
+      "review_stage": "STEP_2",
+      "snippet_id": "wf0065_paired_boundary_erc_b1_part1_scientific_proposal",
+      "node_logical_id": "b1_part1_scientific_proposal",
+      "snippet_text": "Representative paired-boundary text for ERC scientific proposal.",
+      "inclusion_rationale": "Actionability-prioritization stress item from existing paired-boundary representative matrix.",
+      "risk_target": "low actionability / bad prioritization",
+      "source_snippet_ref": "backend/tests/test_api.py::_wf0065_paired_boundary_cases",
+      "official_source_artifacts_expected": [
+        "backend/data/calls/canonical/erc/erc_stg_2026_full.yaml",
+        "backend/data/calls/sources/erc_stg_2026_full.sources.md"
+      ]
+    },
+    {
+      "item_id": "wf0068_msca_baseline_representative",
+      "call_id": "MSCA-PF-2025",
+      "role": "baseline_representative",
+      "batch_order": 7,
+      "review_stage": "STEP_1",
+      "snippet_id": "wf0065_representative_msca_excellence",
+      "node_logical_id": "excellence",
+      "snippet_text": "Representative proof text for MSCA excellence.",
+      "inclusion_rationale": "Baseline representative item for MSCA from existing representative-call matrix coverage.",
+      "risk_target": "general mission-alignment quality floor",
+      "source_snippet_ref": "backend/tests/test_api.py::_wf0065_representative_cases",
+      "official_source_artifacts_expected": [
+        "backend/data/calls/canonical/msca/msca_pf_2025_full.yaml",
+        "backend/data/calls/sources/msca_pf_2025_full.sources.md"
+      ]
+    },
+    {
+      "item_id": "wf0068_msca_traceability_specificity_stress",
+      "call_id": "MSCA-PF-2025",
+      "role": "traceability_specificity_stress",
+      "batch_order": 8,
+      "review_stage": "STEP_1",
+      "snippet_id": "wf0067_source_basis_msca_excellence",
+      "node_logical_id": "excellence",
+      "snippet_text": "WF-0067 source-basis contract proof for MSCA-PF-2025.",
+      "inclusion_rationale": "Traceability-specificity stress item uses existing source-basis contract seam text for MSCA.",
+      "risk_target": "weak traceability / false specificity",
+      "source_snippet_ref": "backend/tests/test_api.py::test_wf0067_backend_source_basis_contract_representative_calls_expose_card_fields",
+      "official_source_artifacts_expected": [
+        "backend/data/calls/canonical/msca/msca_pf_2025_full.yaml",
+        "backend/data/calls/sources/msca_pf_2025_full.sources.md"
+      ]
+    },
+    {
+      "item_id": "wf0068_msca_actionability_prioritization_stress",
+      "call_id": "MSCA-PF-2025",
+      "role": "actionability_prioritization_stress",
+      "batch_order": 9,
+      "review_stage": "STEP_1",
+      "snippet_id": "wf0065_paired_boundary_msca_excellence",
+      "node_logical_id": "excellence",
+      "snippet_text": "Representative paired-boundary text for MSCA excellence.",
+      "inclusion_rationale": "Actionability-prioritization stress item from existing paired-boundary representative matrix.",
+      "risk_target": "low actionability / bad prioritization",
+      "source_snippet_ref": "backend/tests/test_api.py::_wf0065_paired_boundary_cases",
+      "official_source_artifacts_expected": [
+        "backend/data/calls/canonical/msca/msca_pf_2025_full.yaml",
+        "backend/data/calls/sources/msca_pf_2025_full.sources.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "source_path": "backend/tests/fixtures/wf_0068_review_batch.json",
+  "batch_id": "wf0068_fixture_batch_v1",
+  "coverage_status": "locked",
+  "locked_call_ids": [
+    "nwo_veni_2025_preproposal",
+    "erc_stg_2026_full",
+    "MSCA-PF-2025"
+  ],
+  "baseline_id_ref": "wf0068_baseline_v1",
+  "coverage_gaps": [],
+  "items": [
+    {
+      "item_id": "fixture_nwo_baseline",
+      "call_id": "nwo_veni_2025_preproposal",
+      "role": "baseline_representative",
+      "batch_order": 1,
+      "review_stage": "STEP_1",
+      "snippet_id": "fixture_nwo_1",
+      "node_logical_id": "key_outputs",
+      "snippet_text": "Fixture baseline representative for NWO key outputs."
+    },
+    {
+      "item_id": "fixture_nwo_traceability",
+      "call_id": "nwo_veni_2025_preproposal",
+      "role": "traceability_specificity_stress",
+      "batch_order": 2,
+      "review_stage": "STEP_1",
+      "snippet_id": "fixture_nwo_2",
+      "node_logical_id": "key_outputs",
+      "snippet_text": "Fixture traceability stress for NWO key outputs."
+    },
+    {
+      "item_id": "fixture_nwo_actionability",
+      "call_id": "nwo_veni_2025_preproposal",
+      "role": "actionability_prioritization_stress",
+      "batch_order": 3,
+      "review_stage": "STEP_1",
+      "snippet_id": "fixture_nwo_3",
+      "node_logical_id": "key_outputs",
+      "snippet_text": "Fixture actionability stress for NWO key outputs."
+    },
+    {
+      "item_id": "fixture_erc_baseline",
+      "call_id": "erc_stg_2026_full",
+      "role": "baseline_representative",
+      "batch_order": 4,
+      "review_stage": "STEP_1",
+      "snippet_id": "fixture_erc_1",
+      "node_logical_id": "proposal_summary",
+      "snippet_text": "Fixture baseline representative for ERC proposal summary."
+    },
+    {
+      "item_id": "fixture_erc_traceability",
+      "call_id": "erc_stg_2026_full",
+      "role": "traceability_specificity_stress",
+      "batch_order": 5,
+      "review_stage": "STEP_1",
+      "snippet_id": "fixture_erc_2",
+      "node_logical_id": "proposal_summary",
+      "snippet_text": "Fixture traceability stress for ERC proposal summary."
+    },
+    {
+      "item_id": "fixture_erc_actionability",
+      "call_id": "erc_stg_2026_full",
+      "role": "actionability_prioritization_stress",
+      "batch_order": 6,
+      "review_stage": "STEP_1",
+      "snippet_id": "fixture_erc_3",
+      "node_logical_id": "proposal_summary",
+      "snippet_text": "Fixture actionability stress for ERC proposal summary."
+    },
+    {
+      "item_id": "fixture_msca_baseline",
+      "call_id": "MSCA-PF-2025",
+      "role": "baseline_representative",
+      "batch_order": 7,
+      "review_stage": "STEP_1",
+      "snippet_id": "fixture_msca_1",
+      "node_logical_id": "excellence",
+      "snippet_text": "Fixture baseline representative for MSCA excellence."
+    },
+    {
+      "item_id": "fixture_msca_traceability",
+      "call_id": "MSCA-PF-2025",
+      "role": "traceability_specificity_stress",
+      "batch_order": 8,
+      "review_stage": "STEP_1",
+      "snippet_id": "fixture_msca_2",
+      "node_logical_id": "excellence",
+      "snippet_text": "Fixture traceability stress for MSCA excellence."
+    },
+    {
+      "item_id": "fixture_msca_actionability",
+      "call_id": "MSCA-PF-2025",
+      "role": "actionability_prioritization_stress",
+      "batch_order": 9,
+      "review_stage": "STEP_1",
+      "snippet_id": "fixture_msca_3",
+      "node_logical_id": "excellence",
+      "snippet_text": "Fixture actionability stress for MSCA excellence."
+    }
+  ]
+}

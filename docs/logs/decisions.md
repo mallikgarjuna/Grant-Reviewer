@@ -1,6 +1,48 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-08 (WF-0068: review quality evaluation loop)
+
+### AD 68.1: Representative proof batch is fixed at 9 snippets with a per-call role matrix
+- **WF ID**: WF-0068
+- **Context**: PRD v0.1 required representative, failure-seeking coverage across the locked NWO/ERC/MSCA wedge, but it left the minimum batch shape and per-call distribution underspecified.
+- **Decision**: Lock the minimum MVP batch to 9 snippets total: exactly 3 snippets per locked call, with one `baseline representative`, one `traceability/specificity stress`, and one `actionability/prioritization stress` snippet per call.
+- **Why**: This keeps the loop small enough to run repeatedly while making convenience sampling and silent call omission auditable and fail-closed.
+- **Tradeoff**: The evaluator must source and maintain a fuller snippet inventory up front, and one under-supplied call now blocks a proceed recommendation instead of being masked by stronger coverage elsewhere.
+- **Status**: Approved.
+
+### AD 68.2: Evaluation outcomes separate mission result from follow-on decision, and follow-on labels stay failure-pattern-based
+- **WF ID**: WF-0068
+- **Context**: PRD v0.1 described bounded follow-on classes, but solution-type labels like prompt/UI/engine candidates would bias the workflow toward remediation surfaces before the evidence proved which failure pattern actually mattered.
+- **Decision**: Use one shared 4-state dimension scale (`pass`, `weak`, `fail`, `insufficient_evidence`), separate batch-level `mission_result` from `follow_on_decision`, and constrain follow-on boundaries to repeated failure patterns or tightly related clusters rather than preselected solution types.
+- **Why**: This preserves the evaluation-first contract, prevents hidden prompt/engine/UI planning inside WF-0068, and keeps any next WF grounded in repeated evidence rather than implementation guesses.
+- **Tradeoff**: The workflow produces slightly more abstract outputs, so a later remediation WF still needs one extra translation step from failure pattern to implementation surface.
+- **Status**: Approved.
+
+### AD 68.3: Proceed recommendations require repeated snippet evidence, and single-call patterns stay call-specific
+- **WF ID**: WF-0068
+- **Context**: PRD v0.2 tightened follow-on boundaries, but it left the minimum proof for a proceed recommendation implicit enough that Phase 2 could treat a single convincing failure as sufficient evidence for a wedge-level implementation WF.
+- **Decision**: Allow `proceed_to_narrow_follow_on_wf` only when the same categorized failure pattern appears in at least 2 reviewed snippets inside the named verification evidence bundle. If that repeated pattern appears only within 1 locked call, the recommended follow-on boundary must be explicitly labeled call-specific and must not claim cross-wedge generality.
+- **Why**: This closes the fake-readiness gap between “repeated evidence” and “one persuasive example,” while preserving the narrow locked-wedge proof contract.
+- **Tradeoff**: Some plausible follow-on ideas will now resolve to `more_evidence_required` until the batch shows repetition beyond a single anecdotal item.
+- **Status**: Approved.
+
+### AD 68.4: Evidence provenance stays replayable, and per-item severity is fixed but subordinate to mission result
+- **WF ID**: WF-0068
+- **Context**: PRD v0.2 required severity and locator fields, but it did not yet fix the severity scale or make baseline/locator provenance precise enough to prevent Phase 2 from inventing inconsistent evidence semantics or relying on derived labels.
+- **Decision**: Record both `app_commit_sha` and `app_branch_ref` in the frozen baseline, require each evidence record to cite a replayable official-call locator rather than a derived label alone, and fix per-item severity to `high`, `medium`, or `low`. This item-level severity captures mission impact for that reviewed pair only and does not replace the batch-level `mission_result`.
+- **Why**: This keeps evidence replayable across runs, reduces hidden coupling to prior trust-surface metadata, and prevents task planning from improvising a severity model.
+- **Tradeoff**: Reviewers must capture slightly more provenance per record, and future artifacts must preserve the distinction between item severity and batch conclusion.
+- **Status**: Approved.
+
+### AD 68.5: WF-0068 closure is evaluation-complete with a bounded follow-on boundary
+- **WF ID**: WF-0068
+- **Context**: Phase 3 captured and validated the locked-batch evidence bundle, then finalized mission/follow-on decision closure under fail-closed checks.
+- **Decision**: Close WF-0068 as evaluation-complete (`mission_result=fail`) with `follow_on_decision=proceed_to_narrow_follow_on_wf` bounded to `actionability_cluster`, preserving the evaluation-only boundary and deferring remediation implementation to a separate WF.
+- **Why**: Repeated categorized failures met proceed threshold while staying within the locked NWO/ERC/MSCA wedge and consistent baseline evidence.
+- **Tradeoff**: WF-0068 intentionally stops before solution implementation; a follow-on WF is required to convert the boundary into concrete remediation work.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0067: review trust surface closure)
 
 ### AD 67.1: Card-level source basis is one backend-resolved official-call label with fail-closed state
