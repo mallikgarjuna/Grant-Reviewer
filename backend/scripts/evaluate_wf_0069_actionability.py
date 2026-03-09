@@ -6,11 +6,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 from uuid import UUID
 
 from sqlmodel import SQLModel, select
@@ -44,6 +46,14 @@ BASELINE_ITEM_IDS: set[str] = {
     "wf0068_msca_baseline_representative",
 }
 REQUIRED_ITEM_IDS: set[str] = STRESS_ITEM_IDS | BASELINE_ITEM_IDS
+REQUIRED_ITEM_CALL_BY_ID: dict[str, str] = {
+    "wf0068_nwo_actionability_prioritization_stress": "nwo_veni_2025_preproposal",
+    "wf0068_erc_actionability_prioritization_stress": "erc_stg_2026_full",
+    "wf0068_msca_actionability_prioritization_stress": "MSCA-PF-2025",
+    "wf0068_nwo_baseline_representative": "nwo_veni_2025_preproposal",
+    "wf0068_erc_baseline_representative": "erc_stg_2026_full",
+    "wf0068_msca_baseline_representative": "MSCA-PF-2025",
+}
 DIMENSION_STATES: tuple[str, ...] = ("fail", "weak", "pass")
 STATE_RANK: dict[str, int] = {"fail": 0, "weak": 1, "pass": 2}
 BASELINE_FLOOR_BY_ITEM: dict[str, dict[str, str]] = {
@@ -71,7 +81,21 @@ def _load_json_object(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _is_test_database_url(database_url: str) -> bool:
+    database_name = urlparse(database_url).path.strip("/").lower()
+    return "test" in database_name
+
+
+def _validate_safe_database_url_for_reset() -> None:
+    database_url = os.getenv("DATABASE_URL", "").strip()
+    if not database_url:
+        raise ValueError("DATABASE_URL_REQUIRED_FOR_RESET")
+    if not _is_test_database_url(database_url):
+        raise ValueError(f"UNSAFE_DATABASE_URL_FOR_RESET: {database_url}")
+
+
 def _reset_db() -> None:
+    _validate_safe_database_url_for_reset()
     SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
 
@@ -210,6 +234,12 @@ def _extract_required_items(batch: dict[str, Any]) -> list[dict[str, Any]]:
         if item_id in seen:
             raise ValueError(f"DUPLICATE_ITEM_ID: {item_id}")
         seen.add(item_id)
+        expected_call_id = REQUIRED_ITEM_CALL_BY_ID[item_id]
+        actual_call_id = str(raw_item.get("call_id", ""))
+        if actual_call_id != expected_call_id:
+            raise ValueError(
+                f"ITEM_CALL_ID_MISMATCH: {item_id} expected {expected_call_id} got {actual_call_id}"
+            )
         selected.append(raw_item)
 
     if seen != REQUIRED_ITEM_IDS:
