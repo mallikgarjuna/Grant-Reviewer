@@ -3,7 +3,7 @@
 
 Artifact: brainstorm
 Version: v0.2
-Status: Draft
+Status: Draft Complete
 Last Updated: 2026-03-09
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0069-review-actionability-remediation.md`
