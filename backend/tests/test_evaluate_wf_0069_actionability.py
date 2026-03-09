@@ -77,6 +77,19 @@ def test_wf0069_actionability_extract_required_items_rejects_item_call_id_mismat
         _extract_required_items(batch_payload)
 
 
+def test_wf0069_actionability_extract_required_items_rejects_item_role_mismatch() -> None:
+    batch_payload = json.loads(
+        Path("../docs/walkthroughs/evidence/WF-0068/snippet-batch.json").read_text(encoding="utf-8")
+    )
+    for item in batch_payload["items"]:
+        if item["item_id"] == "wf0068_erc_actionability_prioritization_stress":
+            item["role"] = "baseline_representative"
+            break
+
+    with pytest.raises(ValueError, match="ITEM_ROLE_MISMATCH"):
+        _extract_required_items(batch_payload)
+
+
 def test_wf0069_actionability_rejects_non_test_database_reset(monkeypatch) -> None:
     assert _is_test_database_url("postgresql://user:pass@localhost:5433/grant_reviewer_test")
     assert not _is_test_database_url("postgresql://user:pass@localhost:5432/grant_reviewer_dev")

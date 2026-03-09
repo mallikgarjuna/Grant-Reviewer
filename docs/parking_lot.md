@@ -112,7 +112,7 @@ Promotion dependency note:
 | 4 | Add error monitoring (Sentry) | ops | Zero error tracking in production; blind to LLM timeouts, BFF failures, and client crashes with real users. ([Conv: 8c803359-d2c1-4594-aaf6-78da7fd6d305](vscode://cortex-app.antigravity/conversation?id=8c803359-d2c1-4594-aaf6-78da7fd6d305)) | 2026-02-16 |
 | 5 | E2E: Critical Negative Scenarios | ops | Run automated E2E tests for missing mandatory nodes, wrong stages, and policy-blocking content to prove operational readiness. (Ref: Architect Feedback Step 6) ([Conv: 8c803359-d2c1-4594-aaf6-78da7fd6d305](vscode://cortex-app.antigravity/conversation?id=8c803359-d2c1-4594-aaf6-78da7fd6d305)) | 2026-02-26 |
 | 6 | E2E: Happy-path ERC Sample | ops | Run a full happy-path E2E with a sample ERC proposal text (submit -> process -> cards shown correctly). (Ref: Architect Feedback Step 6) ([Conv: 8c803359-d2c1-4594-aaf6-78da7fd6d305](vscode://cortex-app.antigravity/conversation?id=8c803359-d2c1-4594-aaf6-78da7fd6d305)) | 2026-02-26 |
-| 7 | Prompt quality tuning | product | Narrow this into a follow-on WF bounded to the WF-0068 repeated failure pattern (`actionability_cluster`) across the locked NWO/ERC/MSCA wedge; avoid broad prompt/engine/UI bundling. | 2026-02-16 |
+| 7 | Prompt quality tuning beyond WF-0069 | product | WF-0069 closed the bounded `actionability_cluster` remediation. Any further prompt-quality work must be a new narrowly scoped WF with fresh failure evidence, not reopen closed WF-0069 scope. | 2026-02-16 |
 | 8 | Production hardening | ops | Lock CORS, verify rate limiting beyond daily quota, add custom 404 page, tune Vercel/Render timeout alignment. | 2026-02-16 |
 | 9 | Structured review: single mega-prompt optimization | product | Replace per-node sequential LLM calls with a single mega-prompt for all nodes — fewer API calls, lower latency. Directly mitigates the 3x latency risk (15-45s) identified in WF-0029 brainstorm S6 Q4. Requires new prompt template + parser. (Ref: WF-0029 brainstorm Q4.2 option B) | 2026-02-22 |
 | 10 | Structured review: LLM-generated overall summary | product | After per-node reviews, add an additional LLM call to synthesize a holistic cross-node summary (alignment, strengths, gaps). (Ref: WF-0029 brainstorm Q4.4 option A) | 2026-02-22 |
@@ -197,6 +197,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 44 | WF-0066 | peerlens-scope-lock-nwo-erc-msca | started-directly | - | 2026-03-08 |
 | 45 | WF-0067 | review-trust-surface-closure | promoted | P1 #1 (historical; narrowed at promotion to launch-blocking review trust surfaces) | 2026-03-08 |
 | 46 | WF-0068 | review-quality-evaluation-loop | started-directly | - | 2026-03-08 |
+| 47 | WF-0069 | review-actionability-remediation | started-directly | - | 2026-03-09 |
 
 ---
 
@@ -249,3 +250,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v4.3** (2026-03-08): Post-WF-0067 parking-lot refresh: removed stale pending-WF-0067 gating language from active P1 and rewrote rationale/dependency text to reflect that trust-surface closure is now done.
 - **v4.4** (2026-03-08): Recorded direct-start `WF-0068` in the unified WF initiative log for the review-quality evaluation loop.
 - **v4.5** (2026-03-09): Post-WF-0068 refresh: updated the rationale snapshot for evaluation-loop closure and narrowed the parked prompt-quality follow-on language to the evidence-backed `actionability_cluster` boundary.
+- **v4.6** (2026-03-09): Post-WF-0069 refresh: updated the parked prompt-quality item to avoid re-opening closed WF-0069 scope and recorded direct-start `WF-0069` in the unified WF initiative log.

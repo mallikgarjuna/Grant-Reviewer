@@ -35,6 +35,14 @@
 - **Tradeoff**: Replay input is stricter and rejects malformed batches earlier, requiring item metadata discipline in fixtures/manifests.
 - **Status**: Approved.
 
+### AD 69.5: WF-0069 closure is approved with a strict no-follow-on boundary
+- **WF ID**: WF-0069
+- **Context**: Phase 3 closeout reran deterministic replay and targeted service/API selectors serially on isolated test DB after hardening evaluator invariants for `item_id -> call_id` and `item_id -> role`.
+- **Decision**: Mark WF-0069 as closure-ready and user-gated for ship, with no automatic follow-on workflow. Preserve the boundary at repeated actionability/prioritization remediation for the locked NWO/ERC/MSCA wedge only.
+- **Why**: All blocking findings were closed with reproducible pass evidence, and no unresolved trust-surface, launch-floor, assisted-extraction, broader call-coverage, or generic prompt-tuning work is required for this WF's closure contract.
+- **Tradeoff**: Adjacent quality opportunities remain intentionally deferred and must be raised as separate, explicitly scoped WFs if needed.
+- **Status**: Approved.
+
 ## Date: 2026-03-08 (WF-0068: review quality evaluation loop)
 
 ### AD 68.1: Representative proof batch is fixed at 9 snippets with a per-call role matrix

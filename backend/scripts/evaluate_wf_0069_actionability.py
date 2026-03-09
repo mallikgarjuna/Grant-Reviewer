@@ -54,6 +54,14 @@ REQUIRED_ITEM_CALL_BY_ID: dict[str, str] = {
     "wf0068_erc_baseline_representative": "erc_stg_2026_full",
     "wf0068_msca_baseline_representative": "MSCA-PF-2025",
 }
+REQUIRED_ITEM_ROLE_BY_ID: dict[str, str] = {
+    "wf0068_nwo_actionability_prioritization_stress": "actionability_prioritization_stress",
+    "wf0068_erc_actionability_prioritization_stress": "actionability_prioritization_stress",
+    "wf0068_msca_actionability_prioritization_stress": "actionability_prioritization_stress",
+    "wf0068_nwo_baseline_representative": "baseline_representative",
+    "wf0068_erc_baseline_representative": "baseline_representative",
+    "wf0068_msca_baseline_representative": "baseline_representative",
+}
 DIMENSION_STATES: tuple[str, ...] = ("fail", "weak", "pass")
 STATE_RANK: dict[str, int] = {"fail": 0, "weak": 1, "pass": 2}
 BASELINE_FLOOR_BY_ITEM: dict[str, dict[str, str]] = {
@@ -239,6 +247,12 @@ def _extract_required_items(batch: dict[str, Any]) -> list[dict[str, Any]]:
         if actual_call_id != expected_call_id:
             raise ValueError(
                 f"ITEM_CALL_ID_MISMATCH: {item_id} expected {expected_call_id} got {actual_call_id}"
+            )
+        expected_role = REQUIRED_ITEM_ROLE_BY_ID[item_id]
+        actual_role = str(raw_item.get("role", ""))
+        if actual_role != expected_role:
+            raise ValueError(
+                f"ITEM_ROLE_MISMATCH: {item_id} expected {expected_role} got {actual_role}"
             )
         selected.append(raw_item)
 
