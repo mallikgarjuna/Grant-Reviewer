@@ -11,6 +11,14 @@
 - **Tradeoff**: The component rendering the breadcrumb must be rendered within the appropriate React context provider.
 - **Status**: Approved.
 
+### AD 71.2: Close WF-0071 with 1-level hierarchy UI; defer deep recursion and backend expansion
+- **WF ID**: WF-0071
+- **Context**: Phase 3 implementation shipped 1-level node grouping in the submit form, leaf-only submit semantics, an orphan "Uncategorized" fallback, and ancestor breadcrumbs on review cards. Targeted frontend verification passes (vitest selectors for the touched test surfaces).
+- **Decision**: Close WF-0071 as complete for the MVP wedge: 1-level visual grouping + unselectable container headers + breadcrumb context derived from `callConfig` on the client.
+- **Why**: This closes the user-facing trust gap (structural context) without requiring backend schema changes or a recursive UI surface that would broaden both implementation and proof obligations.
+- **Follow-on boundary**: Any future work to support N-deep trees, multi-level submit chunking, or server-projected ancestor strings must be a new WF with an explicit contract + verification plan. Also treat the task-template mismatch (`npm test` vs repo scripts) as a workflow tooling follow-on, not part of this WF’s feature scope.
+- **Status**: Approved.
+
 ## Date: 2026-03-09 (WF-0070: erc structured review step gating)
 
 ### AD 70.1: ERC structured review stage truth is authored at the proposal-surface stage-scope contract
