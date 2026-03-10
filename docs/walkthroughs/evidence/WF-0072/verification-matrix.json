@@ -15,6 +15,13 @@
     "baseline_scope_ref": "docs/walkthroughs/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md#baseline-sha-or-commit-range",
     "audit_disposition_ref": "docs/walkthroughs/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md#audit-disposition-ledger"
   },
+  "closure_status": {
+    "matrix_result": "pass",
+    "rows_total": 11,
+    "rows_pass": 7,
+    "rows_skip_with_rationale": 4,
+    "rows_fail": 0
+  },
   "rows": [
     {
       "row_id": "wf0072-r001",

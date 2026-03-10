@@ -272,7 +272,7 @@ TDD Plan:
 Verification Steps: `cd backend && uv run pytest tests/test_wf_0072_bundle_contract.py -k "wf0072 and closure" -v`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json --require-protected-lanes --require-closure`
 Risks (if any): If final parity and closure checks stay implicit, Phase 3 can claim readiness with green scenario tests but a structurally non-closing bundle.
 
-### [ ] Task 13 — Close WF-0072 with matrix completion, baseline scope proof, and audit disposition
+### [x] Task 13 — Close WF-0072 with matrix completion, baseline scope proof, and audit disposition
 Goal: Finalize the WF-0072 closure artifact so implementation readiness depends on the completed verification matrix, a baseline-SHA or commit-range scope proof, and an audit-disposition ledger that closes all justified findings.
 Slice: closure-evidence
 User Stories: US1, US2, US3, US4
