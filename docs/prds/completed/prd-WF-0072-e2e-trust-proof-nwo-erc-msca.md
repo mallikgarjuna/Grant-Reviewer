@@ -1,4 +1,4 @@
-<!-- docs/prds/prd-WF-0072-e2e-trust-proof-nwo-erc-msca.md -->
+<!-- docs/prds/completed/prd-WF-0072-e2e-trust-proof-nwo-erc-msca.md -->
 # WF-0072 — E2E Trust Proof for Representative NWO/ERC/MSCA Flows
 
 Artifact: prd

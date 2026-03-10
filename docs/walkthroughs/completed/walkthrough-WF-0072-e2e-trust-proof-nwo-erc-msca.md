@@ -1,4 +1,4 @@
-<!-- docs/walkthroughs/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md -->
+<!-- docs/walkthroughs/completed/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md -->
 # WF-0072 — E2E Trust Proof for Representative NWO/ERC/MSCA Flows
 
 Artifact: walkthrough
