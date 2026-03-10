@@ -3,6 +3,22 @@
 
 ## Date: 2026-03-10 (WF-0072: e2e trust proof nwo erc msca)
 
+### AD 72.3: Policy-blocking closure requires the user-facing block on the exercised seam, not API evidence alone
+- **WF ID**: WF-0072
+- **Context**: The approved brainstorm requires policy-blocking proof to pair researcher-visible blocking semantics with zero downstream side-effect evidence, but the stabilized PRD risked reducing that requirement to API/runtime evidence only.
+- **Decision**: Treat policy-blocking proof as incomplete unless it includes the visible block on the exercised user-facing seam for that proof item, or narrows the claim explicitly to a lower-level seam instead of presenting it as end-to-end proof.
+- **Why**: This prevents Phase 2 from overclaiming end-to-end trust proof from backend-only evidence when the user-facing boundary is part of the launch claim.
+- **Tradeoff**: Some strongest no-side-effect checks will need paired browser/app or BFF evidence instead of a single API-only row.
+- **Status**: Approved.
+
+### AD 72.4: Evidence references must be replayable, not just attributable
+- **WF ID**: WF-0072
+- **Context**: The brainstorm locks exact commands/selectors/results as part of the MVP verification output, but the PRD matrix contract had only required an `evidence_ref`, which left room for opaque screenshots/logs that another maintainer could not rerun deterministically.
+- **Decision**: Require every trust-proof evidence reference to resolve to deterministic replay metadata: the exact command or test ID, the exact selector/assertion or manual checklist step, and the expected outcome/result for that proof item.
+- **Why**: This keeps the verification matrix auditable and rerunnable instead of turning evidence into detached artifacts with hidden operational knowledge.
+- **Tradeoff**: Evidence artifacts and walkthrough rows become slightly heavier, but they stay reproducible and reviewable.
+- **Status**: Approved.
+
 ### AD 72.1: Verification rows are the authoritative trust-proof object
 - **WF ID**: WF-0072
 - **Context**: The brainstorm locked a one-row-per-proof-item verification matrix, but the initial PRD draft still left room for Phase 2 to treat seam labeling and same-family versus alternate-family negative-case coverage as informal notes instead of required row data.

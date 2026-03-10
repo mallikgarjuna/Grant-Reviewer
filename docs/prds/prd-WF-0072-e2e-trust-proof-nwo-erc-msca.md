@@ -2,7 +2,7 @@
 # WF-0072 — E2E Trust Proof for Representative NWO/ERC/MSCA Flows
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-10
 
@@ -27,7 +27,7 @@ Type: feature
 - Lock the representative proof set to `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, and `MSCA-PF-2025`, with same-family substitution allowed only if a documented blocker proves one representative cannot honestly support the trust claim. (US1, US3)
 - Define one truly end-to-end happy-path proof per representative family through the real user path, with paired backend evidence where needed to prove the claim honestly. (US1, US2, US3)
 - Require explicit fail-closed proof for the three mandatory failure classes: ERC stage mismatch, missing mandatory input, and policy-blocking with zero downstream side effects. (US2, US3)
-- Require a verification matrix where each proof item is one row with representative call, scenario, proof surface, exercised boundary, auth lane, side-effect assertion, pass/fail result, and `evidence_ref`. (US3, US4)
+- Require a verification matrix where each proof item is one row with representative call, scenario, proof surface, exercised boundary, auth lane, side-effect assertion, pass/fail result, and `evidence_ref`, where that evidence resolves to deterministic replay metadata such as the exact command or test ID plus the exact selector/assertion or manual checklist step and expected outcome. (US3, US4)
 - Require conditional dual auth-lane verification when protected `/app` or `/api/bff/*` surfaces are exercised, and require explicit skip reasons if a lane is not run. (US3, US4)
 - Require proceed/ship gating artifacts to include a baseline-SHA or commit-range scope proof and an audit-disposition ledger in addition to passing verification rows. (US1, US3)
 
@@ -46,7 +46,7 @@ Type: feature
 1. A maintainer starts the bounded verification bundle against one of the locked representative calls and records the exact command, environment, and baseline scope being exercised. (US1, US3)
 2. The proof enters through the real user path for that representative family, using protected app or BFF seams when they are part of the claim rather than substituting a lower-level shortcut silently. (US1, US4)
 3. The exercised entrypoint and downstream trust boundary are captured in the matching verification-matrix row, including whether the proof is browser, API, or paired evidence. (US1, US3)
-4. The representative flow completes successfully for `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, or `MSCA-PF-2025`, and the result is recorded with concrete artifacts such as command output, network assertions, screenshots, or logs. (US1, US3)
+4. The representative flow completes successfully for `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, or `MSCA-PF-2025`, and the result is recorded with concrete artifacts such as command output, network assertions, screenshots, or logs, plus exact replay instructions naming the command or test ID, selector/assertion or manual checklist step, and expected outcome. (US1, US3)
 5. When the proof uses protected `/app` or `/api/bff/*` surfaces, the run covers `AUTH_MODE=test_bypass` and `AUTH_MODE=clerk`, or the skipped lane is explicitly documented with a concrete reason in the same evidence set. (US3, US4)
 6. The final evidence bundle maps each happy-path and negative-case claim to a matrix row, plus the baseline scope proof and audit-disposition ledger required for any proceed recommendation. (US1, US3)
 
@@ -74,9 +74,9 @@ Type: feature
 - FR2 (US1, US3): The final verification bundle must contain at least one truly end-to-end happy-path proof per representative family, and each proof must exercise the real user path for that family rather than a lower-level substitute presented as equivalent.
 - FR3 (US2, US3): The negative-case matrix must include ERC stage mismatch and must prove both researcher-visible blocking and zero downstream side effects for the exact exercised seam.
 - FR4 (US2, US3): The negative-case matrix must include missing mandatory input and must prove submit is blocked before crossing the review-creation boundary when browser or protected submit proof is used.
-- FR5 (US2, US3): The negative-case matrix must include policy-blocking behavior such as `QUOTA_EXCEEDED` or `REVIEWS_DISABLED` and must prove no review creation, no pipeline execution, and no partial persistence.
+- FR5 (US2, US3): The negative-case matrix must include policy-blocking behavior such as `QUOTA_EXCEEDED` or `REVIEWS_DISABLED`, must prove visible blocking on any exercised user-facing surface for that proof item, and must prove no review creation, no pipeline execution, and no partial persistence.
 - FR6 (US3): Every proof item must map one-to-one to a verification-matrix row containing representative call, scenario, proof surface, auth lane, exercised entrypoint/boundary, side-effect assertion, pass/fail result, `evidence_ref`, and a note stating whether the scenario is proven on the same representative family or intentionally on a different representative for the strongest fail-closed evidence.
-- FR7 (US3): No proof row may be marked `pass` or `fail` without a deterministic evidence reference such as command output, API response artifact, recorded network assertion, screenshot, or log.
+- FR7 (US3): No proof row may be marked `pass` or `fail` without a deterministic evidence reference such as command output, API response artifact, recorded network assertion, screenshot, or log, and that evidence reference must resolve to exact replay metadata naming the command or test ID, selector/assertion or manual checklist step, and expected outcome.
 - FR8 (US4): If any proof item exercises protected `/app` or `/api/bff/*` surfaces, the verification bundle must include both `AUTH_MODE=test_bypass` and `AUTH_MODE=clerk` lanes for that surface, or must mark the skipped lane explicitly with a concrete reason.
 - FR9 (US1, US3): The verification bundle must distinguish automated proof from manual confirmation and keep any manual/live lane explicitly separate from the local/test-fixture primary lane.
 - FR10 (US1, US3): Any proceed, phase-advance, or ship recommendation for this WF must include a baseline-SHA or explicit commit-range scope proof covering the exact implementation and evidence surface being claimed.
@@ -86,7 +86,7 @@ Type: feature
 ## 5. Data & API Contracts
 
 - Contract C1 (US2, US3, FR3-FR5): The trust-proof matrix must model negative-case outcomes as paired contracts: the user-facing blocking result and the backend side-effect assertion are one claim, not separate optional checks.
-- Contract C2 (US3, FR6, FR7): Each matrix row must carry these fields at minimum: `representative_call`, `scenario`, `proof_surface`, `auth_lane`, `entrypoint_boundary`, `side_effect_assertion`, `result`, `evidence_ref`, and `scenario_scope_note`.
+- Contract C2 (US3, FR6, FR7): Each matrix row must carry these fields at minimum: `representative_call`, `scenario`, `proof_surface`, `auth_lane`, `entrypoint_boundary`, `side_effect_assertion`, `result`, `evidence_ref`, and `scenario_scope_note`. The referenced evidence must resolve to deterministic replay metadata: the exact command or test ID, the exact selector/assertion or manual checklist step used for that proof item, and the expected outcome/result.
 - Contract C3 (US1, US3, FR2, FR9): The proof-surface contract is limited to `browser`, `API`, or `paired`, where `paired` is required whenever browser-visible behavior alone cannot prove the zero-side-effect invariant honestly.
 - Contract C4 (US4, FR8): Auth-lane state is conditional metadata, not a hidden assumption. Rows that touch protected app/BFF surfaces must name either `test_bypass`, `clerk`, or an explicit skipped-lane note tied to the same proof item.
 - Contract C5 (US1, US3, FR10, FR11): Closure contracts for this WF require two non-test artifacts in addition to matrix results: scope proof (`baseline_sha` or `commit_range`) and audit disposition (`finding_id`, `severity`, `status`, `rationale`).
@@ -95,9 +95,9 @@ Type: feature
 Validation and state transitions:
 
 - `entrypoint_boundary` must use exact seam labels such as `/app`, `/api/bff/structured-review`, `/api/structured-review`, or another exact repo seam if the proof targets a narrower boundary. (US3, FR6, FR7)
-- A verification item transitions from `planned` to `pass` or `fail` only when its matrix row contains a concrete `evidence_ref`. (US3, FR6, FR7)
+- A verification item transitions from `planned` to `pass` or `fail` only when its matrix row contains a concrete `evidence_ref` whose linked artifact includes deterministic replay metadata. (US3, FR6, FR7)
 - A skipped auth lane or skipped representative row is blocking unless the recorded reason preserves the locked-wedge trust claim honestly. (US3, US4, FR8, FR12)
-- A negative-case run is invalid if it proves only returned semantics without proving the matched no-side-effect assertion. (US2, FR3-FR5)
+- A negative-case run is invalid if it proves only returned semantics without proving the matched no-side-effect assertion, and policy-blocking proof is invalid if it omits the paired visible block on the exercised user-facing seam while still claiming end-to-end coverage. (US2, FR3-FR5)
 
 ## 6. Components / Modules
 
@@ -122,6 +122,7 @@ Deep module guidance:
 
 - Keep the trust proof evidence-first: if a claim cannot be proven with deterministic artifacts, Phase 2 should narrow or block rather than infer.
 - Do not let browser proof and backend proof drift into separate unpaired narratives; one matrix row should represent one claim.
+- Do not let deterministic evidence drift away from deterministic replay instructions; a row is not auditable if another maintainer cannot reproduce the exact step that produced the artifact.
 - Reuse existing protected app, BFF, and API boundaries rather than designing a new verification-only path.
 - Preserve the locked wedge; representative coverage is breadth enough for MVP.
 
@@ -139,6 +140,7 @@ Suggested file-path clusters (coarse only):
 - Missing mandatory input is shown as a client-side validation error, but network traces or backend state still show the submit boundary fired; this fails the contract. (US2, FR4)
 - Policy-blocking is proven only on an API surface even though the claimed user path exercises a protected app/BFF seam; Phase 2 must either pair the browser-visible proof or narrow the claim. (US2, US4, FR5, FR8)
 - A verification row claims cross-family coverage by saying a failure case is “covered elsewhere” without naming the representative call and seam used for that row; this is untraceable and blocking. (US3, FR6, FR7)
+- A verification row links to a screenshot or log without the exact command/test ID or selector/manual step that produced it; this is unrerunnable and blocking. (US3, FR7)
 - Closure evidence relies on passing tests alone without baseline scope proof or audit-disposition closure; proceed remains blocked even if all current tests are green. (US1, US3, FR10-FR12)
 
 ## 8. Testing Decisions (TDD)
@@ -154,7 +156,7 @@ Suggested file-path clusters (coarse only):
   - one ERC stage-mismatch proof showing visible blocking plus zero-side-effect evidence. (US2, FR3, FR6, FR7)
   - one missing-mandatory-input proof showing submit never crossed the review-creation boundary. (US2, FR4, FR6, FR7)
   - one policy-blocking proof showing visible blocking on any exercised user-facing surface plus zero review creation, zero pipeline execution, and zero partial persistence. (US2, FR5, FR6, FR7)
-  - matrix validation proving every row uses an exact exercised seam label and records whether the scenario is tied to the same representative family or intentionally demonstrated elsewhere. (US3, FR6, FR7)
+  - matrix validation proving every row uses an exact exercised seam label, records whether the scenario is tied to the same representative family or intentionally demonstrated elsewhere, and links to deterministic replay metadata behind the cited evidence. (US3, FR6, FR7)
   - conditional dual auth-lane coverage for each protected app/BFF surface touched by the proof bundle, with explicit skip handling where necessary. (US4, FR8)
   - closure checks proving the final trust claim includes baseline scope proof and an audit-disposition ledger. (US1, US3, FR10, FR11)
 
@@ -162,6 +164,7 @@ Suggested file-path clusters (coarse only):
 
 - This WF is not ready for Tasks unless the planned verification matrix can cover the three representative happy paths plus the three mandatory failure classes without unlabeled scope drift or substitute seams. (US1, US2, US3)
 - Any protected `/app` or `/api/bff/*` proof item must have an explicit auth-lane plan before implementation planning is considered ready. (US3, US4)
+- This WF is not ready for Tasks unless each planned proof item names how its `evidence_ref` will be replayable without guesswork through exact commands or test IDs plus exact selectors/assertions or manual checklist steps. (US1, US3, FR7)
 - No implementation-ready, proceed, or ship recommendation is valid unless the matrix rows, baseline scope proof, and audit-disposition ledger are all planned as first-class outputs rather than post-hoc documentation. (US1, US3, FR10-FR12)
 
 ## 9. Telemetry (Minimal)
@@ -184,3 +187,4 @@ Suggested file-path clusters (coarse only):
 
 - v0.1 (2026-03-10): Initial PRD from brainstorm.
 - v0.2 (2026-03-10): Applied risk-audit edits to lock exact matrix seam labels, representative-scope labeling, and an explicit readiness gate; marked Ready for Tasks.
+- v0.3 (2026-03-10): Restored paired user-surface policy-blocking proof and deterministic replay-metadata requirements for every verification row.
