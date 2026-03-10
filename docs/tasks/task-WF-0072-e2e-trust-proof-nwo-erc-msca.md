@@ -52,7 +52,7 @@ TDD Plan:
 Verification Steps: `cd frontend && AUTH_MODE=test_bypass TEST_AUTH_SECRET=test-secret-key-32-chars-minimum-a npx playwright test e2e/wf-0072-nwo-happy-path.spec.ts --project=chromium`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json --require-row nwo_veni_2025_preproposal:happy_path:test_bypass --require-real-user-path`
 Risks (if any): If this proof quietly uses a lower-level seam than `/app` -> `/api/bff/structured-review`, the whole WF will overstate launch trust.
 
-### [ ] Task 3 — Add the second auth lane for the protected NWO happy path or fail closed with an explicit skip reason
+### [x] Task 3 — Add the second auth lane for the protected NWO happy path or fail closed with an explicit skip reason
 Goal: Satisfy the auth-lane parity requirement for the protected NWO happy-path proof by running the same `/app` -> `/api/bff/structured-review` scenario under Clerk-backed auth or by recording a concrete blocked-lane reason if Clerk cannot be exercised honestly in local verification.
 Slice: protected-surface auth-lane parity
 User Stories: US3, US4
