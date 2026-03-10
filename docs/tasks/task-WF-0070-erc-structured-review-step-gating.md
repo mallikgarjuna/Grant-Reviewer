@@ -2,9 +2,9 @@
 # WF-0070 — ERC Structured Review: Enforce Step 1 vs Step 2 Evaluation Gating — Tasks
 
 Artifact: task
-Version: v0.2
-Status: Ready for Implementation
-Last Updated: 2026-03-09
+Version: v0.3
+Status: Approved for Implementation
+Last Updated: 2026-03-10
 
 ---
 
@@ -140,11 +140,12 @@ Session boundary after: yes
 Acceptance Criteria:
   - Valid `review_stage` + in-scope leaf ids → passes validation, proceeds to execution.
   - `review_stage: STEP_1` + a `STEP_2` leaf id → rejected before execution with an explicit error listing offending leaf id(s); no side effects.
+  - Missing or malformed `review_stage` → explicitly rejected with 422 error; no backend defaulting to a valid stage.
   - No silent dropping, no fallback rerouting, no post-persistence failure mode.
   - Existing `Idempotency-Key` replay and payload-hash conflict behavior for valid requests is unchanged.
   - A request with valid `review_stage` but empty `submitted_leaf_ids: []` is handled deterministically — either accepted as a zero-node run or rejected with an explicit validation error; no silent undefined behaviour. (SF2: edge-case from FR5)
 TDD Plan:
-  RED: Write `test_backend_stage_leaf_validation.py` cases: (a) valid Step 1 → passes, (b) Step 1 + Step 2 leaf id → 422 with offending ids, (c) valid Step 2 → passes, (d) invalid stage → 422. Run → (b) fails (currently accepted or silently dropped).
+  RED: Write `test_backend_stage_leaf_validation.py` cases: (a) valid Step 1 → passes, (b) Step 1 + Step 2 leaf id → 422 with offending ids, (c) valid Step 2 → passes, (d) invalid or missing stage → 422, (e) idempotency replay of valid request → semantics preserved. Run → (b), (d) and/or (e) fail if current code is fail-open.
   GREEN: Add/extend stage-aware leaf-id validation using Task 2 derivation helper → all cases pass.
   REFACTOR: Confirm validation runs strictly before any execution or persistence call; move if needed.
 Verification Steps:
@@ -352,3 +353,4 @@ Risks:
 
 - v0.1 (2026-03-09): Initial task breakdown from PRD v0.3.
 - v0.2 (2026-03-09): Applied Part B review findings (all non-blocking): added Task 1+2 to Task 9 Depends on (SF1); added empty-submitted_leaf_ids edge case to Task 4 AC (SF2); replaced Task 8 Must-touch glob placeholder with resolve-before-edit instruction (SF3); named concrete expectation-builder file for Task 5 May touch (SF4); annotated Task 4 as tracer-bullet (SF5).
+- v0.3 (2026-03-10): Adversarial harden pass: explicitly added backend missing `review_stage` -> 422 requirement to Task 4 AC (closing FR5 missing-stage default hole), and added idempotency parity test case to Task 4 TDD plan (closing FR13 proof gap). Status changed to Approved for Implementation.
