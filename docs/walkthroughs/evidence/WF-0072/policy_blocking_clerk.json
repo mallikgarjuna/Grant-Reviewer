@@ -1,0 +1,17 @@
+{
+  "_artifact_path": "docs/walkthroughs/evidence/WF-0072/policy_blocking_clerk.json",
+  "wf_id": "WF-0072",
+  "call_id": "nwo_veni_2025_preproposal",
+  "scenario_id": "policy_blocking",
+  "scenario_variant": "user_surface",
+  "auth_lane": "clerk",
+  "proof_surface": "paired",
+  "protected_entrypoint": "/app -> /api/bff/structured-review",
+  "result": "skip",
+  "skip_reason": "Credentialed Clerk login is not configured in local deterministic CI; lane is explicitly skipped to avoid fake parity.",
+  "deterministic_replay": {
+    "command": "cd frontend && AUTH_MODE=clerk npx playwright test e2e/wf-0072-policy-blocking.spec.ts --project=chromium",
+    "test_id": "wf0072_policy_blocking_user_surface_clerk",
+    "assertion_id": "policy_block_clerk_lane_explicit_skip_captured"
+  }
+}

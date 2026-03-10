@@ -19,6 +19,10 @@ const authMode = (process.env.AUTH_MODE ?? "clerk").trim().toLowerCase();
 const isBypassMode = authMode === "test_bypass";
 const repoRoot = path.resolve(__dirname, "..", "..");
 const policyEvidencePath = path.join(repoRoot, "docs/walkthroughs/evidence/WF-0072/policy_blocking.json");
+const policyClerkEvidencePath = path.join(
+  repoRoot,
+  "docs/walkthroughs/evidence/WF-0072/policy_blocking_clerk.json",
+);
 const matrixPath = path.join(repoRoot, "docs/walkthroughs/evidence/WF-0072/verification-matrix.json");
 
 test.describe("wf-0072 policy blocking", () => {
@@ -51,5 +55,36 @@ test.describe("wf-0072 policy blocking", () => {
     expect(row?.entrypoint).toBe("/app -> /api/bff/structured-review");
     expect(["skip", "pass"]).toContain(String(row?.result));
     expect(row?.evidence_ref).toContain("policy_blocking.json");
+  });
+
+  test("captures Clerk lane policy-blocking coverage or explicit skip", async ({ page }) => {
+    test.skip(isBypassMode, "Clerk-only WF-0072 proof.");
+
+    await page.goto("/app");
+    await expect(page).toHaveURL(/\/sign-in(?:\?|$)/);
+
+    const evidence = JSON.parse(readFileSync(policyClerkEvidencePath, "utf-8")) as Record<string, unknown>;
+    expect(evidence.call_id).toBe("nwo_veni_2025_preproposal");
+    expect(evidence.auth_lane).toBe("clerk");
+    expect(evidence.protected_entrypoint).toBe("/app -> /api/bff/structured-review");
+    expect(["pass", "skip"]).toContain(String(evidence.result));
+    if (evidence.result === "skip") {
+      expect(String(evidence.skip_reason ?? "")).not.toEqual("");
+    }
+
+    const matrixPayload = JSON.parse(readFileSync(matrixPath, "utf-8")) as { rows: MatrixRow[] };
+    const row = matrixPayload.rows.find(
+      (candidate) =>
+        candidate.call_id === "nwo_veni_2025_preproposal" &&
+        candidate.scenario_id === "policy_blocking" &&
+        candidate.scenario_variant === "user_surface" &&
+        candidate.auth_lane === "clerk",
+    );
+    expect(row).toBeTruthy();
+    expect(row?.proof_surface).toBe("paired");
+    expect(row?.protected_surface).toBe(true);
+    expect(row?.entrypoint).toBe("/app -> /api/bff/structured-review");
+    expect(["pass", "skip"]).toContain(String(row?.result));
+    expect(row?.evidence_ref).toContain("policy_blocking_clerk.json");
   });
 });
