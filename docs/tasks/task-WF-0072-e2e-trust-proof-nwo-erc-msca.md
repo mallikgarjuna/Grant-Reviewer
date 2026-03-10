@@ -30,7 +30,7 @@ TDD Plan:
 Verification Steps: `cd backend && uv run pytest tests/test_wf_0072_bundle_contract.py -v`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json`
 Risks (if any): If the matrix contract is under-specified here, later proof tasks will drift into incompatible artifacts and the closure task will become manual reconciliation work.
 
-### [ ] Task 2 — Prove the representative NWO happy path on the protected submit path in `AUTH_MODE=test_bypass`
+### [x] Task 2 — Prove the representative NWO happy path on the protected submit path in `AUTH_MODE=test_bypass`
 Goal: Land one deterministic happy-path proof for `nwo_veni_2025_preproposal` through its actual protected user path (`/app` -> `/api/bff/structured-review`) in `AUTH_MODE=test_bypass`, paired with exact backend-side effect evidence, and record the result as one matrix row with exact replay metadata.
 Slice: tracer-bullet / representative-happy-path
 User Stories: US1, US3

@@ -36,6 +36,27 @@
       "side_effect_assertion": "Structured-review payload returns a successful representative response contract.",
       "evidence_ref": "docs/walkthroughs/evidence/WF-0072/verification-matrix.json#wf0072-r001",
       "result": "pass"
+    },
+    {
+      "row_id": "wf0072-r002",
+      "proof_item_id": "nwo_veni_2025_preproposal:happy_path",
+      "call_id": "nwo_veni_2025_preproposal",
+      "scenario_id": "happy_path",
+      "scenario_type": "positive",
+      "proof_surface": "paired",
+      "entrypoint": "/app -> /api/bff/structured-review",
+      "protected_surface": true,
+      "auth_lane": "test_bypass",
+      "lane_status": "executed",
+      "scenario_scope_note": "Representative protected user path for NWO happy-path in deterministic test_bypass lane.",
+      "deterministic_replay": {
+        "command": "cd frontend && AUTH_MODE=test_bypass TEST_AUTH_SECRET=test-secret-key-32-chars-minimum-a npx playwright test e2e/wf-0072-nwo-happy-path.spec.ts --project=chromium",
+        "test_id": "wf0072_nwo_happy_path_test_bypass",
+        "assertion_id": "protected_submit_returns_review_payload"
+      },
+      "side_effect_assertion": "Protected submit seam remains live and returns a representative review payload.",
+      "evidence_ref": "docs/walkthroughs/evidence/WF-0072/nwo_veni_2025_preproposal_happy_path_test_bypass.json",
+      "result": "pass"
     }
   ]
 }
