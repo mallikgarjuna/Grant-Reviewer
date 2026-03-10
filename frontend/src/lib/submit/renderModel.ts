@@ -244,8 +244,10 @@ export function classifyReviewDetailNodes(
 ): ReviewDetailNodeClassification {
   const stageEligibleVisibleNonContainerNodeLogicalIds = renderModel.nodes
     .filter((node) => isNodeEligibleForStage(node, reviewStage))
+    .filter((node) => !node.isContainer)
     .map((node) => node.nodeLogicalId);
   const visibleSupportingNodeLogicalIds = renderModel.nodes
+    .filter((node) => !node.isContainer)
     .filter((node) => node.nodeRole === "SUPPORTING")
     .map((node) => node.nodeLogicalId);
   return {

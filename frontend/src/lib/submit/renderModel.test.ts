@@ -476,4 +476,48 @@ describe("buildRenderModel", () => {
       structuralContainerNodeLogicalIds: ["part_b"],
     });
   });
+
+  it("excludes hierarchical container nodes from review detail coverage", () => {
+    const result = buildRenderModel({
+      nodes: [
+        {
+          id: "node-part-b1",
+          logical_id: "part_b1",
+          title: "Part B1",
+          parent_node_id: null,
+          node_type: "SECTION",
+          order_index: 1,
+          has_expectations: true,
+          node_role: "PRIMARY",
+        },
+        {
+          id: "node-summary",
+          logical_id: "proposal_summary",
+          title: "Proposal summary",
+          parent_node_id: "node-part-b1",
+          node_type: "SUBSECTION",
+          order_index: 2,
+          has_expectations: true,
+          node_role: "PRIMARY",
+        },
+      ],
+      metadataByLogicalId: {},
+      splitVisibilityReviewabilityEnabled: true,
+    });
+
+    expect(result.state).toBe("ready");
+    if (result.state !== "ready") {
+      return;
+    }
+
+    expect(result.nodes.map((node) => [node.nodeLogicalId, node.isContainer])).toEqual([
+      ["part_b1", true],
+      ["proposal_summary", false],
+    ]);
+    expect(classifyReviewDetailNodes(result, "STEP_1")).toEqual({
+      stageEligibleVisibleNonContainerNodeLogicalIds: ["proposal_summary"],
+      visibleSupportingNodeLogicalIds: [],
+      structuralContainerNodeLogicalIds: [],
+    });
+  });
 });
