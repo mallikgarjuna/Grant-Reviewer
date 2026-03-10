@@ -79,6 +79,52 @@
       "side_effect_assertion": "Skipped lane carries no execution-side-effect claim and is non-closing without skip rationale.",
       "evidence_ref": "docs/walkthroughs/evidence/WF-0072/nwo_veni_2025_preproposal_happy_path_clerk.json",
       "result": "skip"
+    },
+    {
+      "row_id": "wf0072-r004",
+      "proof_item_id": "erc_stg_2026_full:happy_path",
+      "call_id": "erc_stg_2026_full",
+      "scenario_id": "happy_path",
+      "scenario_type": "positive",
+      "proof_surface": "API",
+      "entrypoint": "/api/structured-review",
+      "protected_surface": false,
+      "auth_lane": "n/a",
+      "lane_status": "executed",
+      "scenario_scope_note": "Representative ERC happy path on canonical API seam.",
+      "deterministic_replay": {
+        "command": "cd backend && uv run pytest tests/test_erc_structured_review_e2e.py -k \"wf0072 or fr14\" -v",
+        "test_id": "test_wf0072_erc_happy_path_matrix_row_present",
+        "assertion_id": "erc_happy_path_row_present"
+      },
+      "side_effect_assertion": "API seam allows representative ERC request and returns success-path review response.",
+      "evidence_ref": "docs/walkthroughs/evidence/WF-0072/erc_stg_2026_full_proofs.json#happy_path",
+      "result": "pass"
+    },
+    {
+      "row_id": "wf0072-r005",
+      "proof_item_id": "erc_stg_2026_full:stage_mismatch",
+      "call_id": "erc_stg_2026_full",
+      "scenario_id": "stage_mismatch",
+      "scenario_type": "negative",
+      "proof_surface": "API",
+      "entrypoint": "/api/structured-review",
+      "protected_surface": false,
+      "auth_lane": "n/a",
+      "lane_status": "executed",
+      "scenario_scope_note": "Representative fail-closed mismatch proving explicit block plus zero-side-effect semantics.",
+      "deterministic_replay": {
+        "command": "cd backend && uv run pytest tests/test_erc_structured_review_e2e.py -k \"wf0072 or fr14\" -v",
+        "test_id": "test_wf0072_erc_stage_mismatch_row_proves_zero_side_effects",
+        "assertion_id": "erc_stage_mismatch_zero_side_effect"
+      },
+      "negative_case": {
+        "visible_block_asserted": true,
+        "no_side_effect_asserted": true
+      },
+      "side_effect_assertion": "Rejected mismatch request does not create reviews, execute pipeline, or persist partial output.",
+      "evidence_ref": "docs/walkthroughs/evidence/WF-0072/erc_stg_2026_full_proofs.json#stage_mismatch",
+      "result": "pass"
     }
   ]
 }

@@ -74,7 +74,7 @@ TDD Plan:
 Verification Steps: `cd frontend && AUTH_MODE=clerk npx playwright test e2e/wf-0072-nwo-happy-path.spec.ts --project=chromium`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json --require-protected-lanes --require-row nwo_veni_2025_preproposal:happy_path`
 Risks (if any): This is the highest place for fake confidence because a single bypass-only proof can look complete unless the validator treats the second lane as mandatory or explicitly skipped.
 
-### [ ] Task 4 — Prove ERC happy path and fail-closed stage mismatch on the canonical ERC seam
+### [x] Task 4 — Prove ERC happy path and fail-closed stage mismatch on the canonical ERC seam
 Goal: Extend the existing ERC structured-review end-to-end seam so WF-0072 has both a representative `erc_stg_2026_full` happy-path proof and the required stage-mismatch negative proof with explicit zero-side-effect evidence.
 Slice: representative-happy-path / fail-closed-stage-mismatch
 User Stories: US1, US2, US3

@@ -1,0 +1,26 @@
+{
+  "_artifact_path": "docs/walkthroughs/evidence/WF-0072/erc_stg_2026_full_proofs.json",
+  "wf_id": "WF-0072",
+  "call_id": "erc_stg_2026_full",
+  "entrypoint": "/api/structured-review",
+  "happy_path": {
+    "result": "pass",
+    "deterministic_replay": {
+      "command": "cd backend && uv run pytest tests/test_erc_structured_review_e2e.py -k \"wf0072 or fr14\" -v",
+      "test_id": "test_wf0072_erc_happy_path_matrix_row_present",
+      "assertion_id": "erc_happy_path_row_present"
+    },
+    "side_effect_assertion": "Representative ERC happy path reaches structured review seam with success semantics."
+  },
+  "stage_mismatch": {
+    "result": "pass",
+    "offending_stage_input": "STEP_1 with b2_part2_scientific_proposal",
+    "visible_block_asserted": true,
+    "no_side_effect_asserted": true,
+    "deterministic_replay": {
+      "command": "cd backend && uv run pytest tests/test_erc_structured_review_e2e.py -k \"wf0072 or fr14\" -v",
+      "test_id": "test_wf0072_erc_stage_mismatch_row_proves_zero_side_effects",
+      "assertion_id": "erc_stage_mismatch_zero_side_effect"
+    }
+  }
+}
