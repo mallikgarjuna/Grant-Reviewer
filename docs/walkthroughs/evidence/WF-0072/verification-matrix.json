@@ -219,6 +219,28 @@
       "side_effect_assertion": "Skipped lane carries no execution-side-effect claim and is non-closing without skip rationale.",
       "evidence_ref": "docs/walkthroughs/evidence/WF-0072/protected-submit-missing-key-outputs-clerk.json",
       "result": "skip"
+    },
+    {
+      "row_id": "wf0072-r010",
+      "proof_item_id": "nwo_veni_2025_preproposal:policy_blocking:user_surface",
+      "call_id": "nwo_veni_2025_preproposal",
+      "scenario_id": "policy_blocking",
+      "scenario_variant": "user_surface",
+      "scenario_type": "positive",
+      "proof_surface": "paired",
+      "entrypoint": "/app -> /api/bff/structured-review",
+      "protected_surface": true,
+      "auth_lane": "test_bypass",
+      "lane_status": "executed",
+      "scenario_scope_note": "Representative user-surface policy blocking proof for protected NWO path; backend zero-side-effect half pending.",
+      "deterministic_replay": {
+        "command": "cd frontend && AUTH_MODE=test_bypass TEST_AUTH_SECRET=test-secret-key-32-chars-minimum-a npx playwright test e2e/wf-0072-policy-blocking.spec.ts --project=chromium",
+        "test_id": "wf0072_policy_blocking_user_surface_test_bypass",
+        "assertion_id": "policy_block_visible_on_protected_path"
+      },
+      "side_effect_assertion": "User-surface block is captured; backend zero-side-effect evidence is pending before closure.",
+      "evidence_ref": "docs/walkthroughs/evidence/WF-0072/policy_blocking.json#user_surface",
+      "result": "skip"
     }
   ]
 }

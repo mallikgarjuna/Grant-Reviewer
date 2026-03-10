@@ -184,7 +184,7 @@ TDD Plan:
 Verification Steps: `cd frontend && AUTH_MODE=clerk npx playwright test e2e/wf-0072-protected-submit.spec.ts --project=chromium`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json --require-protected-lanes --require-row nwo_veni_2025_preproposal:missing_key_outputs`
 Risks (if any): A single bypass-only negative proof can look complete unless the validator treats the second lane as mandatory or explicitly skipped.
 
-### [ ] Task 9 — Prove policy-blocking is visibly blocked on the representative NWO protected path
+### [x] Task 9 — Prove policy-blocking is visibly blocked on the representative NWO protected path
 Goal: Add the required user-surface half of the policy-blocking proof for the locked wedge on the representative NWO protected path, showing that `QUOTA_EXCEEDED` or `REVIEWS_DISABLED` is researcher-visible on `/app` -> `/api/bff/structured-review` rather than only asserted at a lower-level API seam.
 Slice: fail-closed-policy-block / user-surface
 User Stories: US2, US3

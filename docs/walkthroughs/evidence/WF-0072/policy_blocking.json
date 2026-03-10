@@ -1,0 +1,20 @@
+{
+  "_artifact_path": "docs/walkthroughs/evidence/WF-0072/policy_blocking.json",
+  "wf_id": "WF-0072",
+  "call_id": "nwo_veni_2025_preproposal",
+  "scenario_id": "policy_blocking",
+  "user_surface": {
+    "auth_lane": "test_bypass",
+    "proof_surface": "paired",
+    "protected_entrypoint": "/app -> /api/bff/structured-review",
+    "policy_code": "QUOTA_EXCEEDED",
+    "visible_block_asserted": true,
+    "result": "skip",
+    "non_closing_reason": "Awaiting backend zero-side-effect proof in Task 11.",
+    "deterministic_replay": {
+      "command": "cd frontend && AUTH_MODE=test_bypass TEST_AUTH_SECRET=test-secret-key-32-chars-minimum-a npx playwright test e2e/wf-0072-policy-blocking.spec.ts --project=chromium",
+      "test_id": "wf0072_policy_blocking_user_surface_test_bypass",
+      "assertion_id": "policy_block_visible_on_protected_path"
+    }
+  }
+}
