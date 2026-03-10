@@ -156,7 +156,7 @@ Risks:
 
 ---
 
-### [ ] Task 5 — Stage-scoped runtime activation: derive activated expectation set from authoritative contract before execution
+### [x] Task 5 — Stage-scoped runtime activation: derive activated expectation set from authoritative contract before execution
 
 Goal: Before pipeline execution, the structured-review service must derive a stage-scoped runtime snapshot (activated expectation set) from the Task 1 authoritative contract and the validated submitted ERC leaves, rather than trusting repository expectations on submitted nodes alone. Step 1 execution must not activate Step 2-only ERC expectations.
 Slice: runtime-activation
