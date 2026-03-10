@@ -28,7 +28,7 @@ TDD Plan:
 - REFACTOR: skip
 Verification Steps: Run tests with `cd frontend && npm test -- renderModel.test.ts`.
 
-### [ ] Task 2 — Submit Form Visual Grouping
+### [x] Task 2 — Submit Form Visual Grouping
 Goal: Ensure the submit form renders 1-level visual grouping for nested nodes and that grouping headers are unselectable.
 Slice: Submit Form Grouping
 User Stories: US1

@@ -265,6 +265,9 @@ export function UniversalSubmitForm() {
             const next: Record<string, string> = {};
             if (nextRenderModel.state === "ready") {
               for (const node of nextRenderModel.nodes) {
+                if (node.isContainer) {
+                  continue;
+                }
                 if (isWf0064ProofPathCall && node.nodeRole === "SUPPORTING") {
                   continue;
                 }
@@ -337,7 +340,7 @@ export function UniversalSubmitForm() {
       if (isWf0064ProofPathCall && renderModel.state === "ready") {
         const allowedKeys = new Set(
           renderModel.nodes
-            .filter((node) => node.nodeRole === "PRIMARY")
+            .filter((node) => node.nodeRole === "PRIMARY" && !node.isContainer)
             .map((node) => node.nodeLogicalId),
         );
         if (effectiveDomain) {
@@ -357,6 +360,7 @@ export function UniversalSubmitForm() {
     }
     return renderModel.nodes
       .filter((node) => isNodeEligibleForStage(node, selectedReviewStage))
+      .filter((node) => !node.isContainer)
       .filter((node) => node.nodeRole === "PRIMARY")
       .map((node) => {
         return {
@@ -436,6 +440,7 @@ export function UniversalSubmitForm() {
     try {
       const draftNodesForStage = renderModel.nodes
         .filter((node) => isNodeEligibleForStage(node, selectedReviewStage))
+        .filter((node) => !node.isContainer)
         .filter((node) => node.nodeRole === "PRIMARY")
         .map((node) => ({
           node_logical_id: node.nodeLogicalId,
@@ -579,8 +584,23 @@ export function UniversalSubmitForm() {
                     const inputId = `node-${logicalId.replace(/_/g, "-")}`;
                     const isReadOnlySupportingNode =
                       isWf0064ProofPathCall && node.nodeRole === "SUPPORTING";
+                    if (node.isContainer) {
+                      return (
+                        <div
+                          className="rounded-[var(--radius-md)] border border-[var(--color-border)]/40 bg-[var(--color-background)] px-3 py-2"
+                          key={logicalId}
+                        >
+                          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
+                            Group
+                          </p>
+                          <p className="text-sm font-medium text-[var(--color-foreground)]">
+                            {node.label}
+                          </p>
+                        </div>
+                      );
+                    }
                     return (
-                      <div className="space-y-2" key={logicalId}>
+                      <div className="space-y-2 pl-4" key={logicalId}>
                         <label
                           className="text-sm font-medium text-[var(--color-foreground)]"
                           htmlFor={inputId}
@@ -590,7 +610,7 @@ export function UniversalSubmitForm() {
                         <p className="text-xs text-[var(--color-muted-foreground)]">
                           {node.nodeRole === "PRIMARY"
                             ? "Primary evaluated"
-                            : "Supporting context (visible, not submitted in this review path)"}
+                            : "Supporting context (draft-only for this review path)"}
                         </p>
                         <textarea
                           id={inputId}
@@ -624,7 +644,7 @@ export function UniversalSubmitForm() {
                     if (isWf0064ProofPathCall && renderModel.state === "ready") {
                       const allowedKeys = new Set(
                         renderModel.nodes
-                          .filter((node) => node.nodeRole === "PRIMARY")
+                          .filter((node) => node.nodeRole === "PRIMARY" && !node.isContainer)
                           .map((node) => node.nodeLogicalId),
                       );
                       if (nextDomain) {
@@ -652,11 +672,6 @@ export function UniversalSubmitForm() {
             </div>
           ) : null}
 
-          {renderModel.state === "unsupported" ? (
-            <div className="rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              {renderModel.message}
-            </div>
-          ) : null}
           {renderModel.state === "contract_error" ? (
             <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               {renderModel.message}
