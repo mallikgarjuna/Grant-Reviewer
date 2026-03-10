@@ -264,7 +264,7 @@ Risks:
 
 ---
 
-### [ ] Task 8 — Frontend: enforce stage-eligible ERC leaf display and carry explicit `review_stage` in submission
+### [x] Task 8 — Frontend: enforce stage-eligible ERC leaf display and carry explicit `review_stage` in submission
 
 Goal: Update the ERC structured-review submit surface to (a) show only stage-eligible ERC proposal leaves from the Task 2 derived metadata, (b) carry explicit `review_stage` selection in the submission payload, and (c) display stage-aware boundary information from the Task 7 review-detail projection.
 Slice: frontend-surface
