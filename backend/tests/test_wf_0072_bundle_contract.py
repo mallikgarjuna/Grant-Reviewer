@@ -88,8 +88,10 @@ def test_wf0072_bundle_requires_paired_negative_semantics() -> None:
 def test_wf0072_bundle_requires_protected_lane_parity_or_explicit_skip() -> None:
     matrix = _seed_matrix()
     matrix = deepcopy(matrix)
+    matrix["rows"] = [matrix["rows"][0]]
     matrix["rows"][0]["proof_item_id"] = "nwo_veni_2025_preproposal:happy_path"
     matrix["rows"][0]["protected_surface"] = True
+    matrix["rows"][0]["entrypoint"] = "/app -> /api/bff/structured-review"
     matrix["rows"][0]["auth_lane"] = "test_bypass"
     matrix["rows"][0]["lane_status"] = "executed"
 
