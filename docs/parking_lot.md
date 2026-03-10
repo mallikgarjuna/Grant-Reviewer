@@ -93,12 +93,12 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 - WF-0066 removed stale live-planning language that implied broader-program expansion was still planned or launch-critical; active P1 should stay anchored to the locked NWO/ERC/MSCA wedge.
 - WF-0067 is now complete and closed the launch-blocking review trust-surface gap in the active wedge.
 - WF-0068 is now complete and closed the evaluation loop with a bounded proceed decision; follow-on work should stay narrowly scoped to the evidence-backed actionability/prioritization failure pattern.
-- Active P1 sequencing is now: remaining launch-baseline legal work first, then assisted-extraction work, while `WF-0072` carries the locked-wedge end-to-end trust proof separately on its WF branch.
+- Active P1 sequencing is now: remaining launch-baseline legal work first, then assisted-extraction work; `WF-0072` has closed the locked-wedge end-to-end trust proof.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 - Do not promote new convenience or expansion work ahead of the remaining launch-baseline legal and assisted-extraction items unless the user explicitly accepts weakening the launch trust bar.
 
 Promotion dependency note:
-- `WF-0072` must carry both UX selection and backend execution gating in the same WF; a frontend-only stage picker is not acceptable.
+- `WF-0072` carried both UX selection and backend execution gating in the same WF (satisfied).
 - If promoting current P1 #1, first verify WF-0035 remains done and no new trust-contract blockers have been introduced since WF-0067 closure.
 
 ---
