@@ -36,8 +36,9 @@ def _compute_stage_scope_leaf_ids(
     review_stage: str,
 ) -> list[str]:
     """Compute which leaf ids are eligible for a given stage from authoritative contract."""
-    from app.services.reviewer_policy import infer_review_stage
     from unittest.mock import MagicMock
+
+    from app.services.reviewer_policy import infer_review_stage
 
     mock_call_def = MagicMock()
     mock_call_def.canonical_json = canonical_json
@@ -83,8 +84,9 @@ def test_structured_payload_includes_stage_scope_leaf_ids() -> None:
     DB access. The key is that the field exists in the structured_payload dict.
     """
     # Build a payload similar to what generate_structured_review_pipeline_v1 does
-    from app.services.reviewer_policy import infer_review_stage
     from unittest.mock import MagicMock
+
+    from app.services.reviewer_policy import infer_review_stage
 
     canonical_path = _ERC_STG_CALL_YAML
     canonical_json = yaml.safe_load(canonical_path.read_text(encoding="utf-8"))

@@ -38,7 +38,6 @@ def test_out_of_scope_defaults_to_empty() -> None:
 
 def test_stage_scope_leaf_ids_extraction_helper() -> None:
     """The structured_payload parser must extract stage_scope_leaf_ids."""
-    from app.repositories.review_repository import ReviewRepository
 
     # Test the parsing logic directly
     payload = {

@@ -98,6 +98,7 @@ def test_valid_step_2_nodes_pass(mock_call_definition: Any) -> None:
 def test_schema_rejects_invalid_stage() -> None:
     """StructuredReviewRequest rejects non-STEP_1/STEP_2 values."""
     from pydantic import ValidationError
+
     from app.schemas.structured_review import StructuredReviewRequest
 
     with pytest.raises(ValidationError):
@@ -111,6 +112,7 @@ def test_schema_rejects_invalid_stage() -> None:
 def test_schema_rejects_missing_stage() -> None:
     """StructuredReviewRequest requires review_stage."""
     from pydantic import ValidationError
+
     from app.schemas.structured_review import StructuredReviewRequest
 
     with pytest.raises(ValidationError):

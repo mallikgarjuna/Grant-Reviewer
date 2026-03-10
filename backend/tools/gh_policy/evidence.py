@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 from typing import Any
 
-
 _STABLE_ERROR_KIND_MAP = {
     "permission_denied": "permission_denied",
     "plan_gated": "plan_gated",

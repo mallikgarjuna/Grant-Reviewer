@@ -4,15 +4,19 @@ API tests for public node metadata contract.
 
 from pathlib import Path
 
-import main as main_module
 from fastapi.testclient import TestClient
 from sqlmodel import select
 
+import main as main_module
 from app.db import get_session
 from app.models.domain import FundingCall
 from main import app
 from scripts.ingest_call import ingest_call
-from tests.test_api import TEST_BFF_SHARED_SECRET, create_client_with_seed, reset_database
+from tests.test_api import (
+    TEST_BFF_SHARED_SECRET,
+    create_client_with_seed,
+    reset_database,
+)
 
 
 def _create_client_with_erc_stg_seed(monkeypatch) -> TestClient:

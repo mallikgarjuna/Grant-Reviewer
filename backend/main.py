@@ -66,8 +66,8 @@ from app.services.node_tree_service import (
 )
 from app.services.reviewer_policy import matches_review_stage
 from app.services.reviewer_service import ReviewerService
-from app.services.structured_reviewer_service import StructuredReviewerService
 from app.services.structured_reviewer_service import (
+    StructuredReviewerService,
     resolve_supporting_node_logical_ids_for_primary_path,
 )
 
