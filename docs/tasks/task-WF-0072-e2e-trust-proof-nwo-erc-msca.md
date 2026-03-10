@@ -228,7 +228,7 @@ TDD Plan:
 Verification Steps: `cd frontend && AUTH_MODE=clerk npx playwright test e2e/wf-0072-policy-blocking.spec.ts --project=chromium`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json --require-protected-lanes --require-row nwo_veni_2025_preproposal:policy_blocking:user_surface`
 Risks (if any): A single bypass-only protected policy row can look complete unless the validator treats the second lane as mandatory or explicitly skipped.
 
-### [ ] Task 11 — Prove policy-blocking remains zero-side-effect on the representative NWO backend path
+### [x] Task 11 — Prove policy-blocking remains zero-side-effect on the representative NWO backend path
 Goal: Add the backend half of the representative NWO policy-blocking proof, anchored to the existing API-boundary gates (`QUOTA_EXCEEDED` / `REVIEWS_DISABLED`), and prove explicit downstream non-invocation with zero side effects so the paired policy claim can close honestly.
 Slice: fail-closed-policy-block / backend-zero-side-effect
 User Stories: US2, US3

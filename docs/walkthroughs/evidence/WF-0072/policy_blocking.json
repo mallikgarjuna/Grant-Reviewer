@@ -9,12 +9,26 @@
     "protected_entrypoint": "/app -> /api/bff/structured-review",
     "policy_code": "QUOTA_EXCEEDED",
     "visible_block_asserted": true,
-    "result": "skip",
-    "non_closing_reason": "Awaiting backend zero-side-effect proof in Task 11.",
+    "result": "pass",
     "deterministic_replay": {
       "command": "cd frontend && AUTH_MODE=test_bypass TEST_AUTH_SECRET=test-secret-key-32-chars-minimum-a npx playwright test e2e/wf-0072-policy-blocking.spec.ts --project=chromium",
       "test_id": "wf0072_policy_blocking_user_surface_test_bypass",
       "assertion_id": "policy_block_visible_on_protected_path"
+    }
+  },
+  "backend_zero_side_effect": {
+    "auth_lane": "test_bypass",
+    "proof_surface": "API",
+    "entrypoint": "/api/structured-review",
+    "policy_code": "QUOTA_EXCEEDED",
+    "no_review_creation_asserted": true,
+    "no_pipeline_execution_asserted": true,
+    "no_partial_persistence_asserted": true,
+    "result": "pass",
+    "deterministic_replay": {
+      "command": "cd backend && DATABASE_URL=postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable uv run pytest tests/test_api.py -k \"wf0072 and (quota or reviews_disabled)\" -v",
+      "test_id": "test_wf0072_policy_blocking_quota_zero_side_effect_pairing",
+      "assertion_id": "policy_block_backend_no_side_effect"
     }
   }
 }
