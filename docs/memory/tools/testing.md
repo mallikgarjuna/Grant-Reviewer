@@ -41,3 +41,5 @@
 - **2026-03-09 — DB-backed selector orchestration:** Do not run multiple DB-mutating pytest commands in parallel in the same automation step; serialize them and reset test DB first. Why: concurrent `drop_all/create_all` paths trigger Postgres enum/table deadlocks or undefined-table races that look like code regressions.
 
 - **2026-03-09 — WF-0069 replay role invariants:** In `backend/scripts/evaluate_wf_0069_actionability.py`, validate exact `item_id -> role` (stress vs baseline) in addition to `item_id -> call_id` before scoring. Why: role drift can silently bypass the stress gate and produce false closure.
+
+- **2026-03-10 — Zsh globbing on Next.js `[param]` paths:** When running `npx vitest run` against test files under `src/**/[routeParam]/...`, quote the path (or escape `[`/`]`) or zsh will treat it as a glob and fail before tests execute.
