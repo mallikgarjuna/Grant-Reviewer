@@ -140,7 +140,7 @@ TDD Plan:
 Verification Steps: `cd frontend && AUTH_MODE=clerk npx playwright test e2e/wf-0072-msca-happy-path.spec.ts --project=chromium`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json --require-protected-lanes --require-row MSCA-PF-2025:happy_path`
 Risks (if any): A single bypass-only MSCA proof can look complete unless the validator treats the second lane as mandatory or explicitly skipped.
 
-### [ ] Task 7 — Prove missing `key_outputs` blocks on the representative NWO protected submit path in `AUTH_MODE=test_bypass`
+### [x] Task 7 — Prove missing `key_outputs` blocks on the representative NWO protected submit path in `AUTH_MODE=test_bypass`
 Goal: Exercise the real protected NWO submit path through `/app` and `/api/bff/structured-review` and prove that omitting the representative mandatory NWO primary input `key_outputs` blocks before the review-creation boundary in the local deterministic auth lane.
 Slice: protected-surface fail-closed
 User Stories: US2, US3, US4

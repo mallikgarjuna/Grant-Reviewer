@@ -168,6 +168,31 @@
       "side_effect_assertion": "Skipped lane carries no execution-side-effect claim and is non-closing without skip rationale.",
       "evidence_ref": "docs/walkthroughs/evidence/WF-0072/msca_pf_2025_happy_path_clerk.json",
       "result": "skip"
+    },
+    {
+      "row_id": "wf0072-r008",
+      "proof_item_id": "nwo_veni_2025_preproposal:missing_key_outputs",
+      "call_id": "nwo_veni_2025_preproposal",
+      "scenario_id": "missing_key_outputs",
+      "scenario_type": "negative",
+      "proof_surface": "paired",
+      "entrypoint": "/app -> /api/bff/structured-review",
+      "protected_surface": true,
+      "auth_lane": "test_bypass",
+      "lane_status": "executed",
+      "scenario_scope_note": "Protected submit fail-closed proof for omitted NWO key_outputs in deterministic test_bypass lane.",
+      "deterministic_replay": {
+        "command": "cd frontend && AUTH_MODE=test_bypass TEST_AUTH_SECRET=test-secret-key-32-chars-minimum-a npx playwright test e2e/wf-0072-protected-submit.spec.ts --project=chromium",
+        "test_id": "wf0072_protected_submit_missing_key_outputs_test_bypass",
+        "assertion_id": "missing_key_outputs_blocked_before_review_creation"
+      },
+      "negative_case": {
+        "visible_block_asserted": true,
+        "no_side_effect_asserted": true
+      },
+      "side_effect_assertion": "Missing key_outputs is blocked before protected submit can create or execute a review.",
+      "evidence_ref": "docs/walkthroughs/evidence/WF-0072/protected-submit-missing-key-outputs-test-bypass.json",
+      "result": "pass"
     }
   ]
 }
