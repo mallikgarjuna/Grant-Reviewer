@@ -125,6 +125,27 @@
       "side_effect_assertion": "Rejected mismatch request does not create reviews, execute pipeline, or persist partial output.",
       "evidence_ref": "docs/walkthroughs/evidence/WF-0072/erc_stg_2026_full_proofs.json#stage_mismatch",
       "result": "pass"
+    },
+    {
+      "row_id": "wf0072-r006",
+      "proof_item_id": "MSCA-PF-2025:happy_path",
+      "call_id": "MSCA-PF-2025",
+      "scenario_id": "happy_path",
+      "scenario_type": "positive",
+      "proof_surface": "paired",
+      "entrypoint": "/app -> /api/bff/structured-review",
+      "protected_surface": true,
+      "auth_lane": "test_bypass",
+      "lane_status": "executed",
+      "scenario_scope_note": "Representative MSCA protected happy path in deterministic test_bypass lane.",
+      "deterministic_replay": {
+        "command": "cd frontend && AUTH_MODE=test_bypass TEST_AUTH_SECRET=test-secret-key-32-chars-minimum-a npx playwright test e2e/wf-0072-msca-happy-path.spec.ts --project=chromium",
+        "test_id": "wf0072_msca_happy_path_test_bypass",
+        "assertion_id": "msca_protected_submit_returns_review_payload"
+      },
+      "side_effect_assertion": "Protected submit seam remains reachable and returns representative MSCA review payload.",
+      "evidence_ref": "docs/walkthroughs/evidence/WF-0072/msca_pf_2025_happy_path_test_bypass.json",
+      "result": "pass"
     }
   ]
 }

@@ -96,7 +96,7 @@ TDD Plan:
 Verification Steps: `cd backend && uv run pytest tests/test_erc_structured_review_e2e.py -k "wf0072 or fr14" -v`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json --require-row erc_stg_2026_full:happy_path --require-row erc_stg_2026_full:stage_mismatch`
 Risks (if any): ERC already carries hidden trust debt around stage scope, so a weak proof here can regress into “error seen later” rather than true fail-closed enforcement.
 
-### [ ] Task 5 — Prove the representative MSCA happy path on the protected submit path in `AUTH_MODE=test_bypass`
+### [x] Task 5 — Prove the representative MSCA happy path on the protected submit path in `AUTH_MODE=test_bypass`
 Goal: Add one deterministic happy-path proof for `MSCA-PF-2025` through its actual protected user path (`/app` -> `/api/bff/structured-review`) in `AUTH_MODE=test_bypass`, while preserving the already-closed hierarchical scope boundaries from earlier WFs and pairing the browser/BFF proof with exact backend-side effect evidence.
 Slice: representative-happy-path
 User Stories: US1, US3
