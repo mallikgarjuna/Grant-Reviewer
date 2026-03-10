@@ -96,6 +96,7 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF-0068 | review-quality-evaluation-loop | [Brainstorm](brainstorms/completed/brainstorm-WF-0068-review-quality-evaluation-loop.md) | [PRD](prds/completed/prd-WF-0068-review-quality-evaluation-loop.md) | [Tasks](tasks/completed/task-WF-0068-review-quality-evaluation-loop.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0068-review-quality-evaluation-loop.md) | Done |
 | WF-0069 | review-actionability-remediation | [Brainstorm](brainstorms/completed/brainstorm-WF-0069-review-actionability-remediation.md) | [PRD](prds/completed/prd-WF-0069-review-actionability-remediation.md) | [Tasks](tasks/completed/task-WF-0069-review-actionability-remediation.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0069-review-actionability-remediation.md) | Done |
 | WF-0070 | erc-structured-review-step-gating | [Brainstorm](brainstorms/completed/brainstorm-WF-0070-erc-structured-review-step-gating.md) | [PRD](prds/completed/prd-WF-0070-erc-structured-review-step-gating.md) | [Tasks](tasks/completed/task-WF-0070-erc-structured-review-step-gating.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0070-erc-structured-review-step-gating.md) | Done |
+| WF-0071 | node-hierarchy-selector | [Brainstorm](brainstorms/brainstorm-WF-0071-node-hierarchy-selector.md) | [PRD](prds/prd-WF-0071-node-hierarchy-selector.md) | [Tasks](tasks/task-WF-0071-node-hierarchy-selector.md) | [Walkthrough](walkthroughs/walkthrough-WF-0071-node-hierarchy-selector.md) | Phase 0 |
 
 ---
 
