@@ -193,6 +193,32 @@
       "side_effect_assertion": "Missing key_outputs is blocked before protected submit can create or execute a review.",
       "evidence_ref": "docs/walkthroughs/evidence/WF-0072/protected-submit-missing-key-outputs-test-bypass.json",
       "result": "pass"
+    },
+    {
+      "row_id": "wf0072-r009",
+      "proof_item_id": "nwo_veni_2025_preproposal:missing_key_outputs",
+      "call_id": "nwo_veni_2025_preproposal",
+      "scenario_id": "missing_key_outputs",
+      "scenario_type": "negative",
+      "proof_surface": "paired",
+      "entrypoint": "/app -> /api/bff/structured-review",
+      "protected_surface": true,
+      "auth_lane": "clerk",
+      "lane_status": "skipped",
+      "skip_reason": "Credentialed Clerk login is not configured in local deterministic CI; lane is explicitly skipped to avoid fake parity.",
+      "scenario_scope_note": "Protected auth-lane parity row for missing key_outputs fail-closed proof; explicit skip to avoid credential fabrication.",
+      "deterministic_replay": {
+        "command": "cd frontend && AUTH_MODE=clerk npx playwright test e2e/wf-0072-protected-submit.spec.ts --project=chromium",
+        "test_id": "wf0072_protected_submit_missing_key_outputs_clerk",
+        "assertion_id": "missing_key_outputs_clerk_lane_explicit_skip_captured"
+      },
+      "negative_case": {
+        "visible_block_asserted": true,
+        "no_side_effect_asserted": true
+      },
+      "side_effect_assertion": "Skipped lane carries no execution-side-effect claim and is non-closing without skip rationale.",
+      "evidence_ref": "docs/walkthroughs/evidence/WF-0072/protected-submit-missing-key-outputs-clerk.json",
+      "result": "skip"
     }
   ]
 }

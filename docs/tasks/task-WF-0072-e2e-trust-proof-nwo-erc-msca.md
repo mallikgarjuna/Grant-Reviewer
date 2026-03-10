@@ -162,7 +162,7 @@ TDD Plan:
 Verification Steps: `cd frontend && AUTH_MODE=test_bypass TEST_AUTH_SECRET=test-secret-key-32-chars-minimum-a npx playwright test e2e/wf-0072-protected-submit.spec.ts --project=chromium`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json --require-row nwo_veni_2025_preproposal:missing_key_outputs:test_bypass`
 Risks (if any): Browser-visible validation can still be dishonest if the submit request fires underneath; this task must treat hidden network invocation as a failure.
 
-### [ ] Task 8 — Add the second auth lane for the protected missing-`key_outputs` proof or fail closed with an explicit skip reason
+### [x] Task 8 — Add the second auth lane for the protected missing-`key_outputs` proof or fail closed with an explicit skip reason
 Goal: Satisfy the auth-lane parity requirement for the protected NWO missing-`key_outputs` fail-closed proof by running the same `/app` -> `/api/bff/structured-review` scenario under Clerk-backed auth or by recording a concrete blocked-lane reason if Clerk cannot be exercised honestly in local verification.
 Slice: protected-surface auth-lane parity
 User Stories: US3, US4
