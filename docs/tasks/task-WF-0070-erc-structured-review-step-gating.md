@@ -12,7 +12,7 @@ Last Updated: 2026-03-10
 
 ---
 
-### [ ] Task 1 — Author proposal-surface stage-scope contract in canonical ERC call YAML
+### [x] Task 1 — Author proposal-surface stage-scope contract in canonical ERC call YAML
 
 Goal: Make the canonical ERC call definition the sole authored proposal-surface stage-truth source for structured review. Resolve the `b2_part2_scientific_proposal` drift (currently `BOTH`) to the correct `STEP_2`-only contract. All downstream tasks derive from this source.
 Slice: stage-truth-source
