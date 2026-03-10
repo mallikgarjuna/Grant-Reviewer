@@ -118,7 +118,7 @@ TDD Plan:
 Verification Steps: `cd frontend && AUTH_MODE=test_bypass TEST_AUTH_SECRET=test-secret-key-32-chars-minimum-a npx playwright test e2e/wf-0072-msca-happy-path.spec.ts --project=chromium`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json --require-row MSCA-PF-2025:happy_path:test_bypass --require-real-user-path`
 Risks (if any): MSCA is the easiest place to accidentally smuggle in prior compatibility assumptions as proof; this task must stay anchored to the exact protected seam actually exercised.
 
-### [ ] Task 6 — Add the second auth lane for the protected MSCA happy path or fail closed with an explicit skip reason
+### [x] Task 6 — Add the second auth lane for the protected MSCA happy path or fail closed with an explicit skip reason
 Goal: Satisfy the auth-lane parity requirement for the protected MSCA happy-path proof by running the same `/app` -> `/api/bff/structured-review` scenario under Clerk-backed auth or by recording a concrete blocked-lane reason if Clerk cannot be exercised honestly in local verification.
 Slice: protected-surface auth-lane parity
 User Stories: US3, US4

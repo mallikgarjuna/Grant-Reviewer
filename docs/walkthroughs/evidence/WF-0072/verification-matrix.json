@@ -146,6 +146,28 @@
       "side_effect_assertion": "Protected submit seam remains reachable and returns representative MSCA review payload.",
       "evidence_ref": "docs/walkthroughs/evidence/WF-0072/msca_pf_2025_happy_path_test_bypass.json",
       "result": "pass"
+    },
+    {
+      "row_id": "wf0072-r007",
+      "proof_item_id": "MSCA-PF-2025:happy_path",
+      "call_id": "MSCA-PF-2025",
+      "scenario_id": "happy_path",
+      "scenario_type": "positive",
+      "proof_surface": "paired",
+      "entrypoint": "/app -> /api/bff/structured-review",
+      "protected_surface": true,
+      "auth_lane": "clerk",
+      "lane_status": "skipped",
+      "skip_reason": "Credentialed Clerk login is not configured in local deterministic CI; lane is explicitly skipped to avoid fake parity.",
+      "scenario_scope_note": "Protected auth-lane parity row for MSCA happy path; explicit skip to avoid credential fabrication.",
+      "deterministic_replay": {
+        "command": "cd frontend && AUTH_MODE=clerk npx playwright test e2e/wf-0072-msca-happy-path.spec.ts --project=chromium",
+        "test_id": "wf0072_msca_happy_path_clerk",
+        "assertion_id": "msca_clerk_lane_explicit_skip_captured"
+      },
+      "side_effect_assertion": "Skipped lane carries no execution-side-effect claim and is non-closing without skip rationale.",
+      "evidence_ref": "docs/walkthroughs/evidence/WF-0072/msca_pf_2025_happy_path_clerk.json",
+      "result": "skip"
     }
   ]
 }

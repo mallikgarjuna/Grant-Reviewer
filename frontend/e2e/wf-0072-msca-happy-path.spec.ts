@@ -21,6 +21,10 @@ const evidencePath = path.join(
   repoRoot,
   "docs/walkthroughs/evidence/WF-0072/msca_pf_2025_happy_path_test_bypass.json",
 );
+const clerkEvidencePath = path.join(
+  repoRoot,
+  "docs/walkthroughs/evidence/WF-0072/msca_pf_2025_happy_path_clerk.json",
+);
 const matrixPath = path.join(repoRoot, "docs/walkthroughs/evidence/WF-0072/verification-matrix.json");
 
 test.describe("wf-0072 msca protected happy path", () => {
@@ -49,5 +53,35 @@ test.describe("wf-0072 msca protected happy path", () => {
     expect(row?.entrypoint).toBe("/app -> /api/bff/structured-review");
     expect(row?.result).toBe("pass");
     expect(row?.evidence_ref).toContain("msca_pf_2025_happy_path_test_bypass.json");
+  });
+
+  test("records deterministic clerk lane coverage or explicit skip", async ({ page }) => {
+    test.skip(isBypassMode, "Clerk-only WF-0072 proof.");
+
+    await page.goto("/app");
+    await expect(page).toHaveURL(/\/sign-in(?:\?|$)/);
+
+    const evidence = JSON.parse(readFileSync(clerkEvidencePath, "utf-8")) as Record<string, unknown>;
+    expect(evidence.call_id).toBe("MSCA-PF-2025");
+    expect(evidence.auth_lane).toBe("clerk");
+    expect(evidence.protected_entrypoint).toBe("/app -> /api/bff/structured-review");
+    expect(["pass", "skip"]).toContain(String(evidence.result));
+    if (evidence.result === "skip") {
+      expect(String(evidence.skip_reason ?? "")).not.toEqual("");
+    }
+
+    const matrixPayload = JSON.parse(readFileSync(matrixPath, "utf-8")) as { rows: MatrixRow[] };
+    const row = matrixPayload.rows.find(
+      (candidate) =>
+        candidate.call_id === "MSCA-PF-2025" &&
+        candidate.scenario_id === "happy_path" &&
+        candidate.auth_lane === "clerk",
+    );
+    expect(row).toBeTruthy();
+    expect(row?.proof_surface).toBe("paired");
+    expect(row?.protected_surface).toBe(true);
+    expect(row?.entrypoint).toBe("/app -> /api/bff/structured-review");
+    expect(["pass", "skip"]).toContain(String(row?.result));
+    expect(row?.evidence_ref).toContain("msca_pf_2025_happy_path_clerk.json");
   });
 });
