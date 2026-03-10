@@ -1,12 +1,13 @@
 # WF-0071 — Node Hierarchy Selector
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-10
 
 ## 0. User Stories (MVP)
 - US1: As a researcher applying to complex nested grants (ERC, MSCA), I want to see a hierarchical grouping of evaluable nodes (e.g., "Part B1 / Section a") in the submission form, so that I can easily find and select the specific section I need to review or submit.
+- US2: As a reviewer or applicant, I want to see the ancestor breadcrumb path for a node (e.g., in the ReviewCard), so I understand the structural context of the section I am reading or evaluating.
 
 ## Deferred Stories (Not in MVP)
 - Multi-node chunk submissions (submitting an entire parent node at once).
@@ -26,9 +27,9 @@ Last Updated: 2026-03-10
 - Failure path 1 (US1): Orphan nodes (missing `parent_logical_id` resolution) -> Fallback to a generic "Uncategorized" group.
 
 ## 4. Functional Requirements
-- FR1 (US1): `frontend/src/lib/submit/renderModel.ts` MUST transform `NodeSummary[]` to build out groups and nodes arrays supporting an `isContainer` check.
-- FR2 (US1): `UniversalSubmitForm.tsx` MUST display a flat list with visual indentation or grouping headers for elements identified as children.
-- FR3 (US1): `ReviewCard.tsx` (or its parent wrapper) MUST construct and display breadcrumbs by looking up the `node_id` in the `callConfig` fetched from the BFF.
+- FR1 (US1): `frontend/src/lib/submit/renderModel.ts` MUST transform `NodeSummary[]` to build out groups and nodes arrays supporting an `isContainer` check. It MUST remove the legacy exception that throws `"nested_nodes"` when `parent_node_id !== null`.
+- FR2 (US1): `UniversalSubmitForm.tsx` MUST display a flat list with visual indentation or grouping headers for elements identified as children. It MUST remove the "not yet supported" fallback message.
+- FR3 (US2): `ReviewCard.tsx` (or its parent wrapper) MUST construct and display breadcrumbs by looking up the `node_id` in the `callConfig` fetched from the BFF.
 - FR4 (US1): The frontend MUST NOT submit a structural container ID; it MUST only submit the evaluable child node's ID.
 
 ## 5. Data & API Contracts
@@ -36,8 +37,8 @@ Last Updated: 2026-03-10
 - The frontend relies on `parent_node_id` (on the node instance) and `parent_logical_id` (from call definition metadata) provided by existing BFF payloads. (US1, FR1)
 
 ## 6. Components / Modules
-- `frontend/src/lib/submit/renderModel.ts`: Updated to support `isContainer` detection and synthetic ancestor group labels.
-- `frontend/src/components/submit/UniversalSubmitForm.tsx`: Updated to render 1-level grouped items.
+- `frontend/src/lib/submit/renderModel.ts`: Updated to support `isContainer` detection and synthetic ancestor group labels. Logic blocking `parent_node_id !== null` MUST be removed.
+- `frontend/src/components/submit/UniversalSubmitForm.tsx`: Updated to render 1-level grouped items. The unsupported state message ("This call uses nested sections...") MUST be removed.
 - `frontend/src/components/review/ReviewCard.tsx` (or equivalent context wrapper): Updated to build and show the ancestor breadcrumb dynamically. (Note: `callConfig` will be accessed via existing React context rather than prop drilling).
 
 ## 7. Edge Cases
@@ -46,7 +47,7 @@ Last Updated: 2026-03-10
 
 ## 8. Testing Decisions (TDD)
 - Unit test in `renderModel.ts` for flat-to-grouped parsing logic.
-- React Testing Library integration test for `UniversalSubmitForm.tsx` to verify the exact `node_id` submitted matches the leaf node, preventing the regression of submitting a parent container's ID.
+- React Testing Library integration test for `UniversalSubmitForm.tsx` to verify the exact `node_id` submitted matches the leaf node, preventing the regression of submitting a parent container's ID. MUST explicitly assert that grouping headers are not selectable.
 - Unit/integration test for the breadcrumb construction in `ReviewCard.tsx` (or its equivalent container) to ensure `node_id` correctly resolves to its ancestor path using provided context.
 
 ## 9. Telemetry (Minimal)
@@ -61,3 +62,4 @@ Last Updated: 2026-03-10
 ## 12. Changelog
 - v0.1 (2026-03-10): Initial PRD from brainstorm
 - v0.2 (2026-03-10): Applied risk audit edits (added breadcrumb test and clarified context usage for callConfig)
+- v0.3 (2026-03-10): Addressed Phase 1.2 risk audit findings (added US2, explicit task to remove `nested_nodes` exception, explicit test for unselectable grouping headers, removed fallback UI message).
