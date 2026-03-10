@@ -2,7 +2,7 @@
 # WF-0072 — E2E Trust Proof for Representative NWO/ERC/MSCA Flows
 
 Artifact: brainstorm
-Version: v0.3
+Version: v0.4
 Status: Draft Complete
 Last Updated: 2026-03-10
 
@@ -154,11 +154,13 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0072-e2e-trust-proo
 - AC1: The WF locks the representative proof set to `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, and `MSCA-PF-2025` unless a documented blocker forces a same-family substitution.
 - AC2: At least one truly end-to-end happy-path flow exists per representative call family and is recorded in a deterministic verification ledger.
 - AC3: ERC stage mismatch is proven fail-closed with researcher-visible blocking and zero downstream side effects.
-- AC4: Missing mandatory input is proven fail-closed with submit blocked before execution or persistence.
+- AC4: Missing mandatory input is proven fail-closed with submit blocked before execution or persistence, including explicit proof that the protected submit path did not invoke the review-creation boundary when browser proof is used.
 - AC5: Policy-blocking behavior is proven fail-closed with visible blocking semantics on any user-facing surface exercised by the proof item, plus explicit zero-side-effect evidence even when the strongest proof lane is API-first.
 - AC6: The verification bundle records exact commands/selectors/results and distinguishes automated evidence from manual confirmation.
 - AC7: If protected app/BFF surfaces are exercised, both auth lanes are run or explicitly marked skipped with concrete reason.
 - AC8: No ship or proceed recommendation is allowed while any blocking verification item is failing or unverified.
+- AC9: No proof item may be marked passing or failing without a concrete evidence reference tied to command output, recorded network assertion, API response artifact, screenshot, or equivalent deterministic evidence.
+- AC10: No proceed or ship recommendation is allowed without both a baseline-SHA or explicit commit-range scope proof and an audit-disposition ledger that closes every blocking finding and closes or explicitly rejects each justified non-blocking finding with rationale.
 
 ## Verification Bundle Shape
 
@@ -171,6 +173,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0072-e2e-trust-proo
 ## Verification Matrix Requirement
 
 - Every proof item in the later walkthrough must map one-to-one to a matrix row containing: representative call, scenario (`happy-path`, `stage-mismatch`, `missing-mandatory-input`, `policy-blocking`), proof surface (`browser`, `API`, or paired), auth lane, side-effect assertion, and pass/fail result.
+- Every matrix row must also record the exercised entrypoint/boundary (`/app`, `/api/bff/structured-review`, `/api/structured-review`, or equivalent exact seam) plus an `evidence_ref` pointing to the concrete command output, artifact, screenshot, or log that justifies the row result.
 - The matrix must make clear whether a negative case is tied to one representative family only (for example ERC stage mismatch) or is intentionally demonstrated on a different representative call for the strongest fail-closed evidence.
 - No final trust claim may rely on an unlabeled proof item or on a “covered elsewhere” assumption that is not traceable to a matrix row.
 
@@ -178,9 +181,22 @@ Contract Notes / Non-obvious constraints:
 
 - “One E2E flow per family” must mean the real user path, not isolated component or service tests.
 - Negative-case proof can pair browser and backend evidence, but both must map to the same fail-closed claim.
+- For missing mandatory input on a browser-driven path, “fail closed” means the submit action never crosses the review-creation boundary; a later server rejection is not equivalent evidence.
 - Verification must stop and fix on failure; Phase progression cannot paper over red evidence.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0072-e2e-trust-proof-nwo-erc-msca.md` (Section 7)
+
+## Proceed / Ship Gate
+
+- Any later proceed, phase-advance, or ship recommendation must attach a baseline-SHA or explicit commit-range scope proof covering the exact implementation/evidence surface being claimed.
+- Any later proceed, phase-advance, or ship recommendation must attach an audit-disposition ledger listing every blocking and non-blocking finding raised during review, with status `closed` or `rejected` and rationale for any rejection.
+- A verification matrix row marked `pass` without a valid `evidence_ref` is unverified and therefore blocking.
+- A skipped auth lane, representative call, or negative-case row is blocking unless the artifact explicitly records the skip reason and the reason preserves the locked-wedge trust claim honestly.
+
+Contract Notes / Non-obvious constraints:
+
+- This WF cannot close on prose-only confidence; scope proof and finding-disposition proof are separate required artifacts.
+- “No remaining blockers” is not credible unless the disposition ledger shows how each justified finding was closed or why a non-blocking item was rejected safely.
 
 ## 8. Explicit Non-Goals
 

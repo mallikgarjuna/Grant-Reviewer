@@ -2,7 +2,7 @@
 # WF-0072 — E2E Trust Proof for Representative NWO/ERC/MSCA Flows
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-10
 
@@ -312,3 +312,6 @@ This file captures the full Phase 0.1 interactive Q&A transcript.
 
 - Audit finding 1 (`non-blocking`): the original AC5 wording could be read as requiring browser-visible proof even when the strongest honest proof lane for a policy block is API-first. Applied edit: refined AC5 so user-facing blocking is required on any exercised UI surface, while API-first proof is still allowed when paired with explicit zero-side-effect evidence.
 - Audit finding 2 (`non-blocking`): the brainstorm required deterministic evidence but did not explicitly force a one-row-per-proof-item matrix, which could let later phases overstate coverage. Applied edit: added `## Verification Matrix Requirement` to force each proof item to declare representative call, scenario, proof surface, auth lane, side-effect assertion, and pass/fail result.
+- Audit finding 3 (`blocking`): the matrix still allowed unlabeled pass/fail claims because it did not require the exact exercised entrypoint or a concrete evidence reference. Applied edit: tightened the matrix contract so every row must record the exact boundary exercised and an `evidence_ref`.
+- Audit finding 4 (`blocking`): the brainstorm barred proceed while blocking verification items remained red, but it did not require scope-proof provenance or a finding-disposition ledger before proceed/ship. Applied edit: added acceptance criteria plus a dedicated `Proceed / Ship Gate` section requiring baseline-SHA or commit-range scope proof and an audit-disposition ledger closing or explicitly rejecting all justified findings.
+- Audit finding 5 (`non-blocking`): the missing-mandatory-input case could still be misread as a server-side rejection after submit rather than a true pre-submit block. Applied edit: tightened AC4 and the matrix notes to require explicit proof that browser-path missing-mandatory-input cases never invoke the review-creation boundary.
