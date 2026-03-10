@@ -118,7 +118,7 @@ Risks:
 
 ---
 
-### [ ] Task 4 — Backend: validate submitted ERC leaf ids against authoritative stage-truth before execution
+### [x] Task 4 — Backend: validate submitted ERC leaf ids against authoritative stage-truth before execution
 
 Goal: Harden `POST /api/structured-review` to validate, fail-closed, that every submitted ERC leaf id is eligible under the chosen `review_stage` (from the Task 1 authoritative contract) before any runtime execution or persistence side effect. Errors must identify offending node ids explicitly.
 Slice: tracer-bullet / fail-closed-validation
