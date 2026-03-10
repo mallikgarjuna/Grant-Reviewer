@@ -5188,3 +5188,33 @@ def test_create_structured_review_non_idempotency_integrity_error_returns_500(
     assert second_response.status_code == 500
     payload = second_response.json()["error"]
     assert payload["code"] == "INTERNAL_ERROR"
+
+
+def test_wf0072_policy_blocking_quota_zero_side_effect_pairing() -> None:
+    """WF-0072 policy blocking closes only with backend zero-side-effect proof."""
+    policy_path = Path("../docs/walkthroughs/evidence/WF-0072/policy_blocking.json")
+    matrix_path = Path("../docs/walkthroughs/evidence/WF-0072/verification-matrix.json")
+
+    policy_payload = json.loads(policy_path.read_text(encoding="utf-8"))
+    backend_half = policy_payload["backend_zero_side_effect"]
+    assert backend_half["policy_code"] in {"QUOTA_EXCEEDED", "REVIEWS_DISABLED"}
+    assert backend_half["no_review_creation_asserted"] is True
+    assert backend_half["no_pipeline_execution_asserted"] is True
+    assert backend_half["no_partial_persistence_asserted"] is True
+    assert backend_half["result"] == "pass"
+
+    matrix_payload = json.loads(matrix_path.read_text(encoding="utf-8"))
+    row = next(
+        (
+            item
+            for item in matrix_payload["rows"]
+            if item["call_id"] == "nwo_veni_2025_preproposal"
+            and item["scenario_id"] == "policy_blocking"
+            and item.get("scenario_variant") == "user_surface"
+            and item["auth_lane"] == "test_bypass"
+        ),
+        None,
+    )
+    assert row is not None
+    assert row["result"] == "pass"
+    assert "zero-side-effect" in row["side_effect_assertion"]

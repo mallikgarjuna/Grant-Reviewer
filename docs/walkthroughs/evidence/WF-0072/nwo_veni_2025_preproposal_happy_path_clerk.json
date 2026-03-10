@@ -1,0 +1,17 @@
+{
+  "_artifact_path": "docs/walkthroughs/evidence/WF-0072/nwo_veni_2025_preproposal_happy_path_clerk.json",
+  "wf_id": "WF-0072",
+  "proof_item_id": "nwo_veni_2025_preproposal:happy_path",
+  "call_id": "nwo_veni_2025_preproposal",
+  "scenario_id": "happy_path",
+  "auth_lane": "clerk",
+  "proof_surface": "paired",
+  "protected_entrypoint": "/app -> /api/bff/structured-review",
+  "result": "skip",
+  "skip_reason": "Credentialed Clerk login is not configured in local deterministic CI; lane is explicitly skipped to avoid fake parity.",
+  "deterministic_replay": {
+    "command": "cd frontend && AUTH_MODE=clerk npx playwright test e2e/wf-0072-nwo-happy-path.spec.ts --project=chromium",
+    "test_id": "wf0072_nwo_happy_path_clerk",
+    "assertion_id": "clerk_lane_explicit_skip_captured"
+  }
+}

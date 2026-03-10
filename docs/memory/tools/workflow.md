@@ -80,3 +80,5 @@
 - **2026-03-08 — Tracer-bullet proof realism:** A tracer-bullet task cannot claim raw-output persistence if its verification uses `--dry-run`; require one real persisted-output assertion on the named seam before downstream evidence-capture tasks depend on it. Why: dry-run checks parse/validation only and do not prove the execution seam.
 
 - **2026-03-09 — Phase 2 remediation seam proof:** When a PRD names primary suspected seams and conditional downstream seams, Task 1 must prove the narrowest primary seam first and fail closed before planning service/API reroutes or ordering work. Why: otherwise the task plan bakes in hidden coupling and scope drift before repo evidence justifies it.
+
+- **2026-03-10 — Protected-row parity sequencing:** If a Phase 2 task plan adds protected `/app` or `/api/bff/*` negative scenarios after happy-path auth tasks, add explicit later parity tasks or a final protected-row parity sweep plus closure validator checks. Why: otherwise FR8/FR12 can fail only at closure even though the plan looked implementation-ready.

@@ -97,6 +97,7 @@ WF IDs start after the legacy Task IDs (first WF is `WF-0009`).
 | WF-0069 | review-actionability-remediation | [Brainstorm](brainstorms/completed/brainstorm-WF-0069-review-actionability-remediation.md) | [PRD](prds/completed/prd-WF-0069-review-actionability-remediation.md) | [Tasks](tasks/completed/task-WF-0069-review-actionability-remediation.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0069-review-actionability-remediation.md) | Done |
 | WF-0070 | erc-structured-review-step-gating | [Brainstorm](brainstorms/completed/brainstorm-WF-0070-erc-structured-review-step-gating.md) | [PRD](prds/completed/prd-WF-0070-erc-structured-review-step-gating.md) | [Tasks](tasks/completed/task-WF-0070-erc-structured-review-step-gating.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0070-erc-structured-review-step-gating.md) | Done |
 | WF-0071 | node-hierarchy-selector | [Brainstorm](brainstorms/completed/brainstorm-WF-0071-node-hierarchy-selector.md) | [PRD](prds/completed/prd-WF-0071-node-hierarchy-selector.md) | [Tasks](tasks/completed/task-WF-0071-node-hierarchy-selector.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0071-node-hierarchy-selector.md) | Done |
+| WF-0072 | e2e-trust-proof-nwo-erc-msca | [Brainstorm](brainstorms/completed/brainstorm-WF-0072-e2e-trust-proof-nwo-erc-msca.md) | [PRD](prds/completed/prd-WF-0072-e2e-trust-proof-nwo-erc-msca.md) | [Tasks](tasks/completed/task-WF-0072-e2e-trust-proof-nwo-erc-msca.md) | [Walkthrough](walkthroughs/completed/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md) | Done |
 
 ---
 

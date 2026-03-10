@@ -1,0 +1,18 @@
+{
+  "_artifact_path": "docs/walkthroughs/evidence/WF-0072/msca_pf_2025_happy_path_test_bypass.json",
+  "wf_id": "WF-0072",
+  "proof_item_id": "MSCA-PF-2025:happy_path",
+  "call_id": "MSCA-PF-2025",
+  "scenario_id": "happy_path",
+  "auth_lane": "test_bypass",
+  "proof_surface": "paired",
+  "protected_entrypoint": "/app -> /api/bff/structured-review",
+  "network_boundary": "/api/bff/structured-review",
+  "deterministic_replay": {
+    "command": "cd frontend && AUTH_MODE=test_bypass TEST_AUTH_SECRET=test-secret-key-32-chars-minimum-a npx playwright test e2e/wf-0072-msca-happy-path.spec.ts --project=chromium",
+    "test_id": "wf0072_msca_happy_path_test_bypass",
+    "assertion_id": "msca_protected_submit_returns_review_payload"
+  },
+  "side_effect_assertion": "Protected submit seam for representative MSCA call returns success-path review payload.",
+  "result": "pass"
+}

@@ -1,6 +1,40 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-10 (WF-0072: e2e trust proof nwo erc msca)
+
+### AD 72.3: Policy-blocking closure requires the user-facing block on the exercised seam, not API evidence alone
+- **WF ID**: WF-0072
+- **Context**: The approved brainstorm requires policy-blocking proof to pair researcher-visible blocking semantics with zero downstream side-effect evidence, but the stabilized PRD risked reducing that requirement to API/runtime evidence only.
+- **Decision**: Treat policy-blocking proof as incomplete unless it includes the visible block on the exercised user-facing seam for that proof item, or narrows the claim explicitly to a lower-level seam instead of presenting it as end-to-end proof.
+- **Why**: This prevents Phase 2 from overclaiming end-to-end trust proof from backend-only evidence when the user-facing boundary is part of the launch claim.
+- **Tradeoff**: Some strongest no-side-effect checks will need paired browser/app or BFF evidence instead of a single API-only row.
+- **Status**: Approved.
+
+### AD 72.4: Evidence references must be replayable, not just attributable
+- **WF ID**: WF-0072
+- **Context**: The brainstorm locks exact commands/selectors/results as part of the MVP verification output, but the PRD matrix contract had only required an `evidence_ref`, which left room for opaque screenshots/logs that another maintainer could not rerun deterministically.
+- **Decision**: Require every trust-proof evidence reference to resolve to deterministic replay metadata: the exact command or test ID, the exact selector/assertion or manual checklist step, and the expected outcome/result for that proof item.
+- **Why**: This keeps the verification matrix auditable and rerunnable instead of turning evidence into detached artifacts with hidden operational knowledge.
+- **Tradeoff**: Evidence artifacts and walkthrough rows become slightly heavier, but they stay reproducible and reviewable.
+- **Status**: Approved.
+
+### AD 72.1: Verification rows are the authoritative trust-proof object
+- **WF ID**: WF-0072
+- **Context**: The brainstorm locked a one-row-per-proof-item verification matrix, but the initial PRD draft still left room for Phase 2 to treat seam labeling and same-family versus alternate-family negative-case coverage as informal notes instead of required row data.
+- **Decision**: Treat each verification-matrix row as the authoritative proof object for WF-0072. Every row must include the exact exercised entrypoint/boundary, deterministic `evidence_ref`, and a scope note stating whether the scenario is proven on the same representative family or intentionally on a different representative.
+- **Why**: This prevents traceability drift across browser, BFF, and API evidence and keeps negative-case claims auditable without hidden assumptions.
+- **Tradeoff**: Phase 2 and later walkthrough artifacts must carry slightly more structured metadata for every proof item.
+- **Status**: Approved.
+
+### AD 72.2: Fail-closed negative proof is one paired claim, not separate UX and backend checks
+- **WF ID**: WF-0072
+- **Context**: The bounded WF scope requires visible fail-closed behavior plus zero side effects for ERC stage mismatch, missing mandatory input, and policy-blocking. Without an explicit pairing rule, Phase 2 could overclaim closure from a visible block or an API assertion alone.
+- **Decision**: Treat each negative-case proof item as one paired claim: the user-facing blocking result and the matched no-side-effect assertion must pass together, and protected app/BFF proofs must also carry an explicit auth-lane plan.
+- **Why**: This keeps the trust claim honest across user-visible and backend-invariant layers and preserves the fail-closed bar defined in the brainstorm.
+- **Tradeoff**: Some proof items will require paired browser and backend evidence rather than a single-lane shortcut.
+- **Status**: Approved.
+
 ## Date: 2026-03-10 (WF-0071: node hierarchy selector)
 
 ### AD 71.1: Breadcrumb context derives from existing React context, not prop drilling or backend expansion

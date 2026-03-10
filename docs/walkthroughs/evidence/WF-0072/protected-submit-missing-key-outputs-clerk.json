@@ -1,0 +1,17 @@
+{
+  "_artifact_path": "docs/walkthroughs/evidence/WF-0072/protected-submit-missing-key-outputs-clerk.json",
+  "wf_id": "WF-0072",
+  "proof_item_id": "nwo_veni_2025_preproposal:missing_key_outputs",
+  "call_id": "nwo_veni_2025_preproposal",
+  "scenario_id": "missing_key_outputs",
+  "auth_lane": "clerk",
+  "proof_surface": "paired",
+  "protected_entrypoint": "/app -> /api/bff/structured-review",
+  "result": "skip",
+  "skip_reason": "Credentialed Clerk login is not configured in local deterministic CI; lane is explicitly skipped to avoid fake parity.",
+  "deterministic_replay": {
+    "command": "cd frontend && AUTH_MODE=clerk npx playwright test e2e/wf-0072-protected-submit.spec.ts --project=chromium",
+    "test_id": "wf0072_protected_submit_missing_key_outputs_clerk",
+    "assertion_id": "missing_key_outputs_clerk_lane_explicit_skip_captured"
+  }
+}

@@ -290,3 +290,56 @@ def test_fr14_7_stage_scope_leaf_ids_evidence(
     scope = canonical_json.get("proposal_surface_stage_scope")
     assert scope is not None, "proposal_surface_stage_scope must exist"
     assert scope["b2_part2_scientific_proposal"] == "STEP_2"
+
+
+def test_wf0072_erc_happy_path_matrix_row_present() -> None:
+    """WF-0072 requires one representative ERC happy-path proof row."""
+    import json
+
+    evidence_path = Path(__file__).resolve().parents[2] / "docs" / "walkthroughs" / "evidence" / "WF-0072" / "erc_stg_2026_full_proofs.json"
+    matrix_path = Path(__file__).resolve().parents[2] / "docs" / "walkthroughs" / "evidence" / "WF-0072" / "verification-matrix.json"
+
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert evidence["call_id"] == "erc_stg_2026_full"
+    assert evidence["happy_path"]["result"] == "pass"
+
+    matrix = json.loads(matrix_path.read_text(encoding="utf-8"))
+    row = next(
+        (
+            item
+            for item in matrix["rows"]
+            if item["call_id"] == "erc_stg_2026_full" and item["scenario_id"] == "happy_path"
+        ),
+        None,
+    )
+    assert row is not None
+    assert row["result"] == "pass"
+    assert row["proof_surface"] == "API"
+
+
+def test_wf0072_erc_stage_mismatch_row_proves_zero_side_effects() -> None:
+    """WF-0072 requires fail-closed mismatch with non-invocation evidence."""
+    import json
+
+    evidence_path = Path(__file__).resolve().parents[2] / "docs" / "walkthroughs" / "evidence" / "WF-0072" / "erc_stg_2026_full_proofs.json"
+    matrix_path = Path(__file__).resolve().parents[2] / "docs" / "walkthroughs" / "evidence" / "WF-0072" / "verification-matrix.json"
+
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    mismatch = evidence["stage_mismatch"]
+    assert mismatch["result"] == "pass"
+    assert mismatch["visible_block_asserted"] is True
+    assert mismatch["no_side_effect_asserted"] is True
+
+    matrix = json.loads(matrix_path.read_text(encoding="utf-8"))
+    row = next(
+        (
+            item
+            for item in matrix["rows"]
+            if item["call_id"] == "erc_stg_2026_full" and item["scenario_id"] == "stage_mismatch"
+        ),
+        None,
+    )
+    assert row is not None
+    assert row["scenario_type"] == "negative"
+    assert row["negative_case"]["visible_block_asserted"] is True
+    assert row["negative_case"]["no_side_effect_asserted"] is True
