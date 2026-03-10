@@ -60,11 +60,19 @@ describe("buildRenderModel", () => {
       metadataByLogicalId: {},
     });
 
-    expect(proofTargetResult.state).toBe("unsupported");
-    if (proofTargetResult.state !== "unsupported") {
+    expect(proofTargetResult.state).toBe("ready");
+    if (proofTargetResult.state !== "ready") {
       return;
     }
-    expect(proofTargetResult.reason).toBe("nested_nodes");
+    expect(proofTargetResult.nodes.map((node) => node.nodeLogicalId)).toEqual([
+      "b1",
+      "b1_part1_scientific_proposal",
+    ]);
+    expect(proofTargetResult.nodes.map((node) => node.isContainer)).toEqual([true, false]);
+    expect(proofTargetResult.groups.map((group) => group.groupLabel)).toEqual([
+      null,
+      "Part B1",
+    ]);
 
     const veniControlResult = buildRenderModel({
       nodes: wf0059VeniControlNodes(),
@@ -81,7 +89,7 @@ describe("buildRenderModel", () => {
     ]);
   });
 
-  it("returns unsupported for nested node structures", () => {
+  it("groups orphan nested nodes under Uncategorized fallback", () => {
     const result = buildRenderModel({
       nodes: [
         {
@@ -102,15 +110,34 @@ describe("buildRenderModel", () => {
           order_index: 2,
           has_expectations: true,
         },
+        {
+          id: "node-3",
+          logical_id: "orphan_child",
+          title: "Orphan Child",
+          parent_node_id: "missing-parent",
+          node_type: "SUBSECTION",
+          order_index: 3,
+          has_expectations: true,
+        },
       ],
       metadataByLogicalId: {},
     });
 
-    expect(result.state).toBe("unsupported");
-    if (result.state !== "unsupported") {
+    expect(result.state).toBe("ready");
+    if (result.state !== "ready") {
       return;
     }
-    expect(result.reason).toBe("nested_nodes");
+    expect(result.nodes.map((node) => node.nodeLogicalId)).toEqual([
+      "section_1",
+      "section_1_child",
+      "orphan_child",
+    ]);
+    expect(result.nodes.map((node) => node.isContainer)).toEqual([true, false, false]);
+    expect(result.groups.map((group) => group.groupLabel)).toEqual([
+      null,
+      "Section 1",
+      "Uncategorized",
+    ]);
   });
 
   it("returns contract_error when any node logical_id is missing", () => {
@@ -447,6 +474,50 @@ describe("buildRenderModel", () => {
       stageEligibleVisibleNonContainerNodeLogicalIds: ["abstract", "excellence"],
       visibleSupportingNodeLogicalIds: ["abstract"],
       structuralContainerNodeLogicalIds: ["part_b"],
+    });
+  });
+
+  it("excludes hierarchical container nodes from review detail coverage", () => {
+    const result = buildRenderModel({
+      nodes: [
+        {
+          id: "node-part-b1",
+          logical_id: "part_b1",
+          title: "Part B1",
+          parent_node_id: null,
+          node_type: "SECTION",
+          order_index: 1,
+          has_expectations: true,
+          node_role: "PRIMARY",
+        },
+        {
+          id: "node-summary",
+          logical_id: "proposal_summary",
+          title: "Proposal summary",
+          parent_node_id: "node-part-b1",
+          node_type: "SUBSECTION",
+          order_index: 2,
+          has_expectations: true,
+          node_role: "PRIMARY",
+        },
+      ],
+      metadataByLogicalId: {},
+      splitVisibilityReviewabilityEnabled: true,
+    });
+
+    expect(result.state).toBe("ready");
+    if (result.state !== "ready") {
+      return;
+    }
+
+    expect(result.nodes.map((node) => [node.nodeLogicalId, node.isContainer])).toEqual([
+      ["part_b1", true],
+      ["proposal_summary", false],
+    ]);
+    expect(classifyReviewDetailNodes(result, "STEP_1")).toEqual({
+      stageEligibleVisibleNonContainerNodeLogicalIds: ["proposal_summary"],
+      visibleSupportingNodeLogicalIds: [],
+      structuralContainerNodeLogicalIds: [],
     });
   });
 });

@@ -1,6 +1,24 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-10 (WF-0071: node hierarchy selector)
+
+### AD 71.1: Breadcrumb context derives from existing React context, not prop drilling or backend expansion
+- **WF ID**: WF-0071
+- **Context**: PRD v0.1 required `ReviewCard.tsx` (or its equivalent wrapper) to display ancestor breadcrumbs by looking up `node_id` in `callConfig`. The Phase 1.2 risk audit flagged this as a potential hidden coupling or prop-drilling risk if `callConfig` availability wasn't explicitly routed.
+- **Decision**: Rely on existing React context (e.g., `CallContext` or similar) to supply `callConfig` to the breadcrumb renderer. Do not expand the backend review payload to include ancestor strings, and do not introduce deep prop drilling to pass `callConfig` down to every leaf card.
+- **Why**: Keeps the backend payload flat and decoupled from UI display concerns while avoiding brittle frontend prop drilling.
+- **Tradeoff**: The component rendering the breadcrumb must be rendered within the appropriate React context provider.
+- **Status**: Approved.
+
+### AD 71.2: Close WF-0071 with 1-level hierarchy UI; defer deep recursion and backend expansion
+- **WF ID**: WF-0071
+- **Context**: Phase 3 implementation shipped 1-level node grouping in the submit form, leaf-only submit semantics, an orphan "Uncategorized" fallback, and ancestor breadcrumbs on review cards. Targeted frontend verification passes (vitest selectors for the touched test surfaces).
+- **Decision**: Close WF-0071 as complete for the MVP wedge: 1-level visual grouping + unselectable container headers + breadcrumb context derived from `callConfig` on the client.
+- **Why**: This closes the user-facing trust gap (structural context) without requiring backend schema changes or a recursive UI surface that would broaden both implementation and proof obligations.
+- **Follow-on boundary**: Any future work to support N-deep trees, multi-level submit chunking, or server-projected ancestor strings must be a new WF with an explicit contract + verification plan. Also treat the task-template mismatch (`npm test` vs repo scripts) as a workflow tooling follow-on, not part of this WF’s feature scope.
+- **Status**: Approved.
+
 ## Date: 2026-03-09 (WF-0070: erc structured review step gating)
 
 ### AD 70.1: ERC structured review stage truth is authored at the proposal-surface stage-scope contract

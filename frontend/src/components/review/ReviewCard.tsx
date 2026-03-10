@@ -30,6 +30,20 @@ function sourceBasisLine(
   return "Official source basis: unavailable.";
 }
 
+function buildBreadcrumbPath(reviewedSectionLabel?: string | null): string | null {
+  if (!reviewedSectionLabel) {
+    return null;
+  }
+  const parts = reviewedSectionLabel
+    .split(/[/>]/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+  if (parts.length <= 1) {
+    return null;
+  }
+  return parts.join(" > ");
+}
+
 export function ReviewCard({
   index,
   criterion,
@@ -44,6 +58,7 @@ export function ReviewCard({
   sourceBasisLabel,
   sourceBasisState,
 }: ReviewCardProps) {
+  const breadcrumbPath = buildBreadcrumbPath(reviewedSectionLabel);
   return (
     <article className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm transition-all hover:shadow-md">
       <header className="flex flex-col gap-4 border-b border-[var(--color-border)] bg-[var(--color-background)] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -65,6 +80,11 @@ export function ReviewCard({
           {reviewedSectionLabel ? (
             <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
               Reviewed section context: {reviewedSectionLabel}
+            </p>
+          ) : null}
+          {breadcrumbPath ? (
+            <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
+              Section breadcrumb: {breadcrumbPath}
             </p>
           ) : null}
           {expectationGuidanceNote ? (

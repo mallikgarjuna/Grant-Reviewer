@@ -18,3 +18,5 @@
 - **2026-03-08:** New Playwright auth E2E lane uses `playwright.config.ts` with port `3000` default and `reuseExistingServer` outside CI. Why: local runs should reuse the active `npm run dev` server to avoid Next.js `.next/dev/lock` conflicts.
 
 - **2026-03-08:** Review-detail boundary arrays (`visible_not_reviewed_node_logical_ids`, `no_generated_cards_node_logical_ids`) must be treated as authoritative when present, even if empty; empty arrays are explicit "none", not a signal to fall back to WF-0064 inference. Why: fallback-on-empty reintroduces hidden coupling and violates fail-closed trust-surface behavior.
+
+- **2026-03-10:** `classifyReviewDetailNodes` must filter out `isContainer` nodes before computing coverage/supporting arrays. Why: hierarchical nodes with `has_expectations=true` can be visual containers, and including them leaks container IDs into coverage summaries.

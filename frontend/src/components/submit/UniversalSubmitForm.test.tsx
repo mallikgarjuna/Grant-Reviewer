@@ -440,8 +440,8 @@ describe("UniversalSubmitForm", () => {
     expect(reviewStageSelect).not.toHaveTextContent("Step 2");
   });
 
-  it("shows unsupported state for nested node calls", async () => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+  it("renders one-level grouping and submits only leaf node payloads", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url === "/api/bff/calls") {
         return new Response(
@@ -497,15 +497,49 @@ describe("UniversalSubmitForm", () => {
           { status: 200 },
         );
       }
+      if (url === "/api/bff/calls/call_1/metadata") {
+        return new Response(
+          JSON.stringify({
+            call_logical_id: "call_1",
+            nodes: [],
+            unknown_node_logical_ids: null,
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/bff/check-compliance") {
+        return new Response(JSON.stringify({ is_compliant: true, errors: [], warnings: [] }), {
+          status: 200,
+        });
+      }
+      if (url === "/api/bff/structured-review") {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          nodes?: Array<{ node_logical_id: string; text: string }>;
+        };
+        expect(body.nodes).toEqual([{ node_logical_id: "child", text: "Leaf content" }]);
+        return new Response(JSON.stringify({ review_id: "review-1" }), { status: 200 });
+      }
       return new Response(JSON.stringify({ ok: true }), { status: 200 });
     });
     vi.stubGlobal("fetch", fetchMock);
     render(<UniversalSubmitForm />);
 
-    expect(
-      await screen.findByText("This call uses nested sections and is not yet supported in this form."),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
+    expect((await screen.findAllByText("Root")).length).toBe(1);
+    expect(screen.queryByText("This call uses nested sections and is not yet supported in this form.")).toBeNull();
+    expect(screen.queryByLabelText("Root")).toBeNull();
+    expect(screen.getByLabelText("Child")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Child"), {
+      target: { value: "Leaf content" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/bff/structured-review",
+        expect.objectContaining({ method: "POST" }),
+      );
+    });
   });
 
   it("wf0059_submit_tracer_erc_proof_call_reaches_structured_review", async () => {

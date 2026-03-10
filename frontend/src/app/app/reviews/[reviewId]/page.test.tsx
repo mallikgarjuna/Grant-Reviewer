@@ -1230,8 +1230,8 @@ describe("ReviewDetailPage", () => {
       "Supporting context: None",
     );
     expect(
-      screen.getByText(/Visible but not part of this review:/),
-    ).toHaveTextContent("Visible but not part of this review: Abstract, Impact");
+      screen.getByText(/Visible but not reviewed sections:/),
+    ).toHaveTextContent("Visible but not reviewed sections: Abstract");
   });
 
   it("wf0064_review_detail_shows_visible_supporting_nodes_with_empty_supporting_context_ids", async () => {
@@ -1321,9 +1321,9 @@ describe("ReviewDetailPage", () => {
       "Supporting context: None",
     );
     expect(
-      screen.getByText(/Visible but not part of this review:/),
+      screen.getByText(/Visible but not reviewed sections:/),
     ).toHaveTextContent(
-      /^Visible but not part of this review: Part B \/ Abstract$/,
+      /^Visible but not reviewed sections: Part B \/ Abstract$/,
     );
   });
 
@@ -1533,9 +1533,9 @@ describe("ReviewDetailPage", () => {
       "Not reviewed sections: Part B / Abstract, Part B / Implementation",
     );
     expect(
-      screen.getByText(/Visible but not part of this review:/),
+      screen.getByText(/Visible but not reviewed sections:/),
     ).toHaveTextContent(
-      /^Visible but not part of this review: Part B \/ Abstract$/,
+      /^Visible but not reviewed sections: Part B \/ Abstract$/,
     );
   });
 
@@ -1660,7 +1660,7 @@ describe("ReviewDetailPage", () => {
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
     expect(
-      screen.queryByText(/Visible but not part of this review:/),
+      screen.queryByText(/Visible but not reviewed sections:/),
     ).not.toBeInTheDocument();
   });
 
@@ -1724,7 +1724,7 @@ describe("ReviewDetailPage", () => {
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
     expect(
-      screen.queryByText(/Visible but not part of this review:/),
+      screen.queryByText(/Visible but not reviewed sections:/),
     ).not.toBeInTheDocument();
   });
 
