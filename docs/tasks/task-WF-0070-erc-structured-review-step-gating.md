@@ -82,7 +82,7 @@ Risks:
 
 ---
 
-### [ ] Task 3 — Fail-closed BFF: reject invalid/missing `review_stage` instead of coercing to STEP_1
+### [x] Task 3 — Fail-closed BFF: reject invalid/missing `review_stage` instead of coercing to STEP_1
 
 Goal: Harden the BFF structured-review route (`frontend/src/app/api/bff/structured-review/route.ts` or equivalent) to fail closed on invalid or absent `review_stage` values instead of normalizing them to `STEP_1`. This preserves explicit request meaning at the earliest trust boundary.
 Slice: fail-closed-validation
