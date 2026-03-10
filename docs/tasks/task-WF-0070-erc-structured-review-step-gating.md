@@ -228,7 +228,7 @@ Risks:
 
 ---
 
-### [ ] Task 7 — Review-detail projection: stage-aware boundary buckets distinguishing out-of-scope from not-reviewed
+### [x] Task 7 — Review-detail projection: stage-aware boundary buckets distinguishing out-of-scope from not-reviewed
 
 Goal: Update backend review-detail response assembly (and BFF normalization if needed) so that ERC Step 1 review detail projects Step 2-only surfaces as explicitly `out_of_scope` rather than `not_reviewed`, using persisted `stage_scope_leaf_ids` from Task 6. Projection must not require live recomputation from current call config.
 Slice: persisted-evidence

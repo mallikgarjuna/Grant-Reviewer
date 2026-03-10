@@ -1435,6 +1435,23 @@ def get_review(
         submitted_leaf_ids=submitted_leaf_ids,
         reviewed_card_node_logical_ids=reviewed_card_node_logical_ids,
     )
+    # WF-0070 Task 7: Derive out-of-scope nodes from persisted stage_scope_leaf_ids.
+    out_of_scope_node_logical_ids: list[str] = []
+    _payload = review.structured_payload if isinstance(review.structured_payload, dict) else {}
+    _persisted_scope = _payload.get("stage_scope_leaf_ids")
+    if isinstance(_persisted_scope, list) and _persisted_scope:
+        scope_set = {s for s in _persisted_scope if isinstance(s, str) and s.strip()}
+        # Move visible-not-reviewed nodes that are OUT of stage scope to out_of_scope bucket
+        out_of_scope_node_logical_ids = sorted(
+            node_id
+            for node_id in visible_not_reviewed_node_logical_ids
+            if node_id not in scope_set
+        )
+        visible_not_reviewed_node_logical_ids = sorted(
+            node_id
+            for node_id in visible_not_reviewed_node_logical_ids
+            if node_id in scope_set
+        )
     compatibility_notes: list[ReviewCompatibilityNote] = []
     if legacy_ambiguous_container_ids:
         compatibility_notes.append(
@@ -1474,6 +1491,7 @@ def get_review(
         primary_evaluated_node_logical_ids=primary_evaluated_node_logical_ids,
         supporting_context_node_logical_ids=supporting_context_node_logical_ids,
         visible_not_reviewed_node_logical_ids=visible_not_reviewed_node_logical_ids,
+        out_of_scope_node_logical_ids=out_of_scope_node_logical_ids,
         no_generated_cards_node_logical_ids=no_generated_cards_node_logical_ids,
         legacy_ambiguous_container_ids=legacy_ambiguous_container_ids,
         moved_legacy_node_references=moved_legacy_node_references,
