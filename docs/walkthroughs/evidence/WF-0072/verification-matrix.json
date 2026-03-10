@@ -12,8 +12,8 @@
     "paired"
   ],
   "closure_artifacts": {
-    "baseline_scope_ref": "docs/walkthroughs/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md#baseline-sha-or-commit-range",
-    "audit_disposition_ref": "docs/walkthroughs/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md#audit-disposition-ledger"
+    "baseline_scope_ref": "docs/walkthroughs/completed/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md#baseline-sha-or-commit-range",
+    "audit_disposition_ref": "docs/walkthroughs/completed/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md#audit-disposition-ledger"
   },
   "closure_status": {
     "matrix_result": "pass",
@@ -233,7 +233,7 @@
       "call_id": "nwo_veni_2025_preproposal",
       "scenario_id": "policy_blocking",
       "scenario_variant": "user_surface",
-      "scenario_type": "positive",
+      "scenario_type": "negative",
       "proof_surface": "paired",
       "entrypoint": "/app -> /api/bff/structured-review",
       "protected_surface": true,
@@ -246,6 +246,10 @@
         "assertion_id": "policy_block_visible_on_protected_path"
       },
       "side_effect_assertion": "Paired policy-blocking claim is closed with backend zero-side-effect evidence (no review creation, no pipeline execution, no partial persistence).",
+      "negative_case": {
+        "visible_block_asserted": true,
+        "no_side_effect_asserted": true
+      },
       "evidence_ref": "docs/walkthroughs/evidence/WF-0072/policy_blocking.json#user_surface",
       "result": "pass"
     },
@@ -255,7 +259,7 @@
       "call_id": "nwo_veni_2025_preproposal",
       "scenario_id": "policy_blocking",
       "scenario_variant": "user_surface",
-      "scenario_type": "positive",
+      "scenario_type": "negative",
       "proof_surface": "paired",
       "entrypoint": "/app -> /api/bff/structured-review",
       "protected_surface": true,
@@ -269,6 +273,10 @@
         "assertion_id": "policy_block_clerk_lane_explicit_skip_captured"
       },
       "side_effect_assertion": "Skipped lane carries no execution-side-effect claim and is non-closing without skip rationale.",
+      "negative_case": {
+        "visible_block_asserted": true,
+        "no_side_effect_asserted": true
+      },
       "evidence_ref": "docs/walkthroughs/evidence/WF-0072/policy_blocking_clerk.json",
       "result": "skip"
     }

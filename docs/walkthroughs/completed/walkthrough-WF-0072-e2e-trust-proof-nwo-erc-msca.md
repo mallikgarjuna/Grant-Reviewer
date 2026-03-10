@@ -2,7 +2,7 @@
 # WF-0072 — E2E Trust Proof for Representative NWO/ERC/MSCA Flows
 
 Artifact: walkthrough
-Version: v1.0
+Version: v1.1
 Status: Completed
 Last Updated: 2026-03-10
 
@@ -18,7 +18,7 @@ Coverage includes protected happy paths, protected fail-closed negatives, policy
 ## Baseline SHA Or Commit Range
 
 - baseline sha for Phase 3 implementation: `2e089df`
-- commit range for the WF-0072 implementation claim: `2e089df..af45a1f`
+- commit range for the WF-0072 implementation claim: `2e089df..b441bfa`
 - branch: `wf/WF-0072-e2e-trust-proof-nwo-erc-msca`
 - matrix closure source: `docs/walkthroughs/evidence/WF-0072/verification-matrix.json`
 
@@ -55,6 +55,12 @@ Coverage includes protected happy paths, protected fail-closed negatives, policy
   - Disposition: Closed by validator enforcement of replayable closure refs and `--require-closure` gate.
 - Finding: Negative-case semantics could drift from visible block to hidden side effects.
   - Disposition: Closed by matrix contract requiring explicit `visible_block_asserted` + `no_side_effect_asserted` pairing for negative scenarios.
+- Finding: Walkthrough baseline scope drifted from actual WF-0072 closure commit.
+  - Disposition: Closed by extending the implementation claim range from `2e089df..af45a1f` to `2e089df..b441bfa`.
+- Finding: Matrix closure references could pass while pointing at non-canonical artifact paths/anchors.
+  - Disposition: Closed by fixing closure refs to `docs/walkthroughs/completed/...` and adding validator checks that referenced files and heading anchors exist.
+- Finding: Closure status metadata could become stale while row-level results changed.
+  - Disposition: Closed by validator enforcement that `closure_status` counts match computed row totals (`rows_total`, `rows_pass`, `rows_skip_with_rationale`, `rows_fail`).
 
 ## Remaining Risks
 
