@@ -192,7 +192,7 @@ Risks:
 
 ---
 
-### [ ] Task 6 — Persist stage-scope snapshot: add `stage_scope_leaf_ids` to structured-review payload
+### [x] Task 6 — Persist `stage_scope_leaf_ids` to structured-review payload
 
 Goal: Extend the persisted structured-review payload with one derived `stage_scope_leaf_ids` field capturing the in-scope ERC leaf set used for the completed review. This makes executed scope reconstructable without live recomputation from current call config.
 Slice: persisted-evidence
