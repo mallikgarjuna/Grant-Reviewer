@@ -358,3 +358,11 @@ runtime_notes:
     description: "CoG Principal Investigators are expected to show evidence of research independence and to be consolidating their own independent research team or programme."
   - id: note_cog_time_commitment
     description: "CoG host-commitment framing requires at least 40% of the PI working time on the ERC-funded project and at least 50% in an EU Member State or Associated Country."
+
+# WF-0070 Authoritative stage-truth contract for structured review visibility and execution
+proposal_surface_stage_scope:
+  proposal_summary: BOTH
+  b1_part1_scientific_proposal: BOTH
+  b1_cv_track_record: BOTH
+  b2_part2_scientific_proposal: STEP_2
+  resources_time_commitment: STEP_2

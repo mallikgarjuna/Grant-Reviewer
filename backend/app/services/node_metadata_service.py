@@ -9,6 +9,7 @@ from typing import Any, cast
 from app.models.domain import CallDefinition, FundingCall
 from app.repositories.review_repository import ReviewRepository
 from app.schemas.api import NodeMetadataDTO, NodeMetadataResponse
+from app.services.reviewer_policy import infer_review_stage
 
 
 class NodeMetadataService:
@@ -26,7 +27,6 @@ class NodeMetadataService:
         proposal_nodes = definition.canonical_json.get("proposal_nodes")
         if not isinstance(proposal_nodes, list):
             proposal_nodes = []
-        element_stage_by_id = self._build_element_stage_map(definition.canonical_json)
 
         active_nodes = repository.get_nodes_for_call(call.id)
         node_id_by_logical_id = {
@@ -68,7 +68,7 @@ class NodeMetadataService:
                     ),
                     review_stage=self._resolve_node_review_stage(
                         node_item=item,
-                        element_stage_by_id=element_stage_by_id,
+                        definition=definition,
                     ),
                     content_constraints=(
                         cast(dict[str, Any], item.get("content_constraints"))
@@ -119,56 +119,19 @@ class NodeMetadataService:
             unknown_node_logical_ids=unknown_node_logical_ids,
         )
 
-    def _build_element_stage_map(self, canonical_json: dict[str, Any]) -> dict[str, str]:
-        """Index evaluation element stage by logical id."""
-        raw_criteria = canonical_json.get("evaluation_criteria")
-        if not isinstance(raw_criteria, list):
-            return {}
-
-        stage_by_id: dict[str, str] = {}
-        for criterion in raw_criteria:
-            if not isinstance(criterion, dict):
-                continue
-            raw_elements = criterion.get("evaluation_elements")
-            if not isinstance(raw_elements, list):
-                continue
-            for element in raw_elements:
-                if not isinstance(element, dict):
-                    continue
-                element_id = element.get("id")
-                if not isinstance(element_id, str) or not element_id.strip():
-                    continue
-                stage = element.get("stage")
-                if stage in {"STEP_1", "STEP_2", "BOTH"}:
-                    stage_by_id[element_id] = stage
-                else:
-                    stage_by_id[element_id] = "BOTH"
-        return stage_by_id
-
     def _resolve_node_review_stage(
         self,
         *,
         node_item: dict[str, Any],
-        element_stage_by_id: dict[str, str],
+        definition: CallDefinition,
     ) -> str | None:
-        """Resolve node review-stage from linked expectation element stages."""
+        """Resolve node review-stage from authoritative contract."""
+        logical_id = node_item.get("id")
+        if not isinstance(logical_id, str) or not logical_id:
+            return None
+
         raw_expectations = node_item.get("node_expectations")
         if not isinstance(raw_expectations, list) or len(raw_expectations) == 0:
             return None
 
-        stages: set[str] = set()
-        for expectation in raw_expectations:
-            if not isinstance(expectation, dict):
-                continue
-            element_id = expectation.get("evaluation_element_id")
-            if not isinstance(element_id, str) or not element_id.strip():
-                continue
-            stages.add(element_stage_by_id.get(element_id, "BOTH"))
-
-        if not stages:
-            return None
-        if stages == {"STEP_2"}:
-            return "STEP_2"
-        if stages == {"STEP_1"}:
-            return "STEP_1"
-        return "BOTH"
+        return infer_review_stage(logical_id, call_definition=definition)
