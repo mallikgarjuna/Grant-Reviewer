@@ -4,15 +4,19 @@ API tests for public node metadata contract.
 
 from pathlib import Path
 
-import main as main_module
 from fastapi.testclient import TestClient
 from sqlmodel import select
 
+import main as main_module
 from app.db import get_session
 from app.models.domain import FundingCall
 from main import app
 from scripts.ingest_call import ingest_call
-from tests.test_api import TEST_BFF_SHARED_SECRET, create_client_with_seed, reset_database
+from tests.test_api import (
+    TEST_BFF_SHARED_SECRET,
+    create_client_with_seed,
+    reset_database,
+)
 
 
 def _create_client_with_erc_stg_seed(monkeypatch) -> TestClient:
@@ -168,7 +172,7 @@ def test_wf0060_erc_metadata_moves_resources_under_budget_without_changing_leaf_
     assert nodes_by_logical_id["proposal_summary"]["review_stage"] == "BOTH"
     assert nodes_by_logical_id["b1_part1_scientific_proposal"]["review_stage"] == "BOTH"
     assert nodes_by_logical_id["b1_cv_track_record"]["review_stage"] == "BOTH"
-    assert nodes_by_logical_id["b2_part2_scientific_proposal"]["review_stage"] == "BOTH"
+    assert nodes_by_logical_id["b2_part2_scientific_proposal"]["review_stage"] == "STEP_2"
     assert nodes_by_logical_id["resources_time_commitment"]["review_stage"] == "STEP_2"
     assert nodes_by_logical_id["part_a"]["review_stage"] is None
 
@@ -202,6 +206,6 @@ def test_wf0062_erc_cog_metadata_exposes_corrected_hierarchy_and_leaf_review_sta
     assert nodes_by_logical_id["proposal_summary"]["review_stage"] == "BOTH"
     assert nodes_by_logical_id["b1_part1_scientific_proposal"]["review_stage"] == "BOTH"
     assert nodes_by_logical_id["b1_cv_track_record"]["review_stage"] == "BOTH"
-    assert nodes_by_logical_id["b2_part2_scientific_proposal"]["review_stage"] == "BOTH"
+    assert nodes_by_logical_id["b2_part2_scientific_proposal"]["review_stage"] == "STEP_2"
     assert nodes_by_logical_id["resources_time_commitment"]["review_stage"] == "STEP_2"
     assert nodes_by_logical_id["part_a"]["review_stage"] is None

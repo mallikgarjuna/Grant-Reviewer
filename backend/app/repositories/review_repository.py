@@ -215,7 +215,7 @@ class ReviewRepository:
         if isinstance(nodes, dict):
             return [
                 node_id
-                for node_id in nodes.keys()
+                for node_id in nodes
                 if isinstance(node_id, str) and node_id.strip()
             ]
 
@@ -453,7 +453,7 @@ class ReviewRepository:
 
         nodes = payload.get("nodes")
         submitted_node_ids = (
-            [key for key in nodes.keys() if isinstance(key, str) and key.strip()]
+            [key for key in nodes if isinstance(key, str) and key.strip()]
             if isinstance(nodes, dict)
             else []
         )

@@ -11,7 +11,10 @@ from typing import Any
 
 import pytest
 
-from scripts.validate_wf_0068_evidence_bundle import validate_bundle_payload, validate_records_payload
+from scripts.validate_wf_0068_evidence_bundle import (
+    validate_bundle_payload,
+    validate_records_payload,
+)
 
 pytestmark = [pytest.mark.no_db]
 

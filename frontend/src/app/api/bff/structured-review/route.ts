@@ -50,10 +50,18 @@ export async function POST(request: Request) {
   let bodyText = "{}";
   try {
     const parsed = (await request.json()) as Record<string, unknown>;
-    const reviewStage =
-      parsed.review_stage === "STEP_1" || parsed.review_stage === "STEP_2"
-        ? parsed.review_stage
-        : "STEP_1";
+
+    // WF-0070 Task 3: fail-closed — reject invalid or missing review_stage.
+    const reviewStage = parsed.review_stage;
+    if (reviewStage !== "STEP_1" && reviewStage !== "STEP_2") {
+      return apiErrorResponse({
+        code: "VALIDATION_ERROR",
+        message: "Invalid or missing review_stage. Must be STEP_1 or STEP_2.",
+        details: { received: reviewStage ?? null },
+        status: 400,
+      });
+    }
+
     bodyText = JSON.stringify({
       ...parsed,
       review_stage: reviewStage,

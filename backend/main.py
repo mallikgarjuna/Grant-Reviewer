@@ -66,8 +66,8 @@ from app.services.node_tree_service import (
 )
 from app.services.reviewer_policy import matches_review_stage
 from app.services.reviewer_service import ReviewerService
-from app.services.structured_reviewer_service import StructuredReviewerService
 from app.services.structured_reviewer_service import (
+    StructuredReviewerService,
     resolve_supporting_node_logical_ids_for_primary_path,
 )
 
@@ -373,6 +373,32 @@ def _infer_review_detail_state(
     if call_code == "erc_stg_2026_full" and unmapped_node_logical_ids:
         return "proof_path_unmapped"
     return "call_linked"
+
+
+def _partition_visible_by_stage_scope(
+    *,
+    visible_not_reviewed: list[str],
+    structured_payload: dict[str, Any] | None,
+) -> tuple[list[str], list[str]]:
+    """Split visible-not-reviewed nodes into in-scope and out-of-scope buckets.
+
+    Returns (visible_not_reviewed, out_of_scope).  When no persisted
+    ``stage_scope_leaf_ids`` exists (legacy reviews), returns the original
+    list unchanged with an empty out-of-scope bucket.
+    """
+    payload = structured_payload if isinstance(structured_payload, dict) else {}
+    persisted_scope = payload.get("stage_scope_leaf_ids")
+    if not isinstance(persisted_scope, list) or not persisted_scope:
+        return visible_not_reviewed, []
+
+    scope_set = {s for s in persisted_scope if isinstance(s, str) and s.strip()}
+    out_of_scope = sorted(
+        node_id for node_id in visible_not_reviewed if node_id not in scope_set
+    )
+    remaining = sorted(
+        node_id for node_id in visible_not_reviewed if node_id in scope_set
+    )
+    return remaining, out_of_scope
 
 
 def _build_call_order_index_map(
@@ -1435,6 +1461,13 @@ def get_review(
         submitted_leaf_ids=submitted_leaf_ids,
         reviewed_card_node_logical_ids=reviewed_card_node_logical_ids,
     )
+    # WF-0070 Task 7: Derive out-of-scope nodes from persisted stage_scope_leaf_ids.
+    visible_not_reviewed_node_logical_ids, out_of_scope_node_logical_ids = (
+        _partition_visible_by_stage_scope(
+            visible_not_reviewed=visible_not_reviewed_node_logical_ids,
+            structured_payload=review.structured_payload,
+        )
+    )
     compatibility_notes: list[ReviewCompatibilityNote] = []
     if legacy_ambiguous_container_ids:
         compatibility_notes.append(
@@ -1474,6 +1507,7 @@ def get_review(
         primary_evaluated_node_logical_ids=primary_evaluated_node_logical_ids,
         supporting_context_node_logical_ids=supporting_context_node_logical_ids,
         visible_not_reviewed_node_logical_ids=visible_not_reviewed_node_logical_ids,
+        out_of_scope_node_logical_ids=out_of_scope_node_logical_ids,
         no_generated_cards_node_logical_ids=no_generated_cards_node_logical_ids,
         legacy_ambiguous_container_ids=legacy_ambiguous_container_ids,
         moved_legacy_node_references=moved_legacy_node_references,

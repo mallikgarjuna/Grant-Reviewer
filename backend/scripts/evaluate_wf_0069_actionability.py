@@ -168,9 +168,7 @@ def _classify_dimensions(cards: list[dict[str, Any]]) -> tuple[dict[str, str], C
 
     if signals.actionable_assessed_indices and not signals.flat_status_assessed_indices:
         revision_actionability = "pass"
-    elif signals.actionable_assessed_indices:
-        revision_actionability = "weak"
-    elif signals.assessed_indices:
+    elif signals.actionable_assessed_indices or signals.assessed_indices:
         revision_actionability = "weak"
     else:
         revision_actionability = "fail"

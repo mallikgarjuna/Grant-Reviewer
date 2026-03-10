@@ -33,7 +33,15 @@ def infer_review_stage(
     *,
     call_definition: CallDefinition | None = None,
 ) -> Literal["STEP_1", "STEP_2", "BOTH"]:
-    """Infer review stage from canonical call-definition metadata when available."""
+    """Infer review stage from canonical call-definition metadata when available.
+
+    .. warning::
+        When *call_definition* is ``None`` or *node_logical_id* is not found
+        in the stage map, this function returns ``"STEP_1"`` — a **fail-open**
+        default.  Callers in trusted validation contexts (structured-review
+        submit, stage-leaf validation) **must** always supply a non-None
+        *call_definition* so the authoritative contract is consulted.
+    """
     if call_definition is not None:
         stage_map = _build_node_stage_map(call_definition)
         inferred = stage_map.get(node_logical_id)
@@ -41,6 +49,25 @@ def infer_review_stage(
             return inferred
 
     return "STEP_1"
+
+
+def compute_stage_scope_leaf_ids(
+    *,
+    call_definition: CallDefinition | None,
+    review_stage: ReviewStage,
+    nodes_with_expectations: set[str],
+) -> list[str]:
+    """Return sorted leaf IDs eligible for *review_stage* from the authoritative contract.
+
+    Only node IDs present in *nodes_with_expectations* are considered,
+    ensuring container nodes without expectations are excluded.
+    """
+    return sorted(
+        node_id
+        for node_id in nodes_with_expectations
+        if infer_review_stage(node_id, call_definition=call_definition)
+        in {"BOTH", review_stage}
+    )
 
 
 def matches_review_stage(
@@ -60,22 +87,40 @@ def matches_review_stage(
 def _build_node_stage_map(
     call_definition: CallDefinition,
 ) -> dict[str, Literal["STEP_1", "STEP_2", "BOTH"]]:
-    """Resolve per-node stage from canonical evaluation-element mappings."""
+    """Resolve per-node stage from canonical call-definition metadata.
+
+    WF-0070: When the authoritative ``proposal_surface_stage_scope``
+    contract is present, those entries take precedence over the legacy
+    element-based inference.  Surfaces not listed in the contract still
+    fall back to the element-mapping heuristic.
+    """
     canonical_json = call_definition.canonical_json
     if not isinstance(canonical_json, dict):
         return {}
 
+    # WF-0070: Authoritative contract takes precedence when present.
+    authored_scope = canonical_json.get("proposal_surface_stage_scope")
+    node_stage_by_id: dict[str, Literal["STEP_1", "STEP_2", "BOTH"]] = {}
+    if isinstance(authored_scope, dict):
+        for surface_id, stage in authored_scope.items():
+            if isinstance(surface_id, str) and stage in {"STEP_1", "STEP_2", "BOTH"}:
+                node_stage_by_id[surface_id] = stage
+
+    # Fallback: derive from evaluation-element stage for surfaces not
+    # covered by the authoritative contract.
     element_stage_by_id = _build_element_stage_map(canonical_json)
     proposal_nodes = canonical_json.get("proposal_nodes")
     if not isinstance(proposal_nodes, list):
-        return {}
+        return node_stage_by_id
 
-    node_stage_by_id: dict[str, Literal["STEP_1", "STEP_2", "BOTH"]] = {}
     for node in proposal_nodes:
         if not isinstance(node, dict):
             continue
         node_id = node.get("id")
         if not isinstance(node_id, str) or not node_id.strip():
+            continue
+        # Skip if already set by authoritative contract
+        if node_id in node_stage_by_id:
             continue
         expectations = node.get("node_expectations")
         if not isinstance(expectations, list) or len(expectations) == 0:

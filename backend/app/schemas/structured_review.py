@@ -27,7 +27,7 @@ class StructuredReviewHierarchicalNodeInput(BaseModel):
 
     node_logical_id: str = Field(min_length=1)
     text: str
-    children: list["StructuredReviewHierarchicalNodeInput"] = Field(default_factory=list)
+    children: list[StructuredReviewHierarchicalNodeInput] = Field(default_factory=list)
 
 
 StructuredReviewHierarchicalNodeInput.model_rebuild()

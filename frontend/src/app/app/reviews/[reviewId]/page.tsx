@@ -685,13 +685,13 @@ export default function ReviewDetailPage() {
     reviewDetail.visible_not_reviewed_node_logical_ids,
   );
   const explicitVisibleNotReviewedNodeIds = hasExplicitVisibleNotReviewedNodeIds
-    ? reviewDetail.visible_not_reviewed_node_logical_ids
+    ? (reviewDetail.visible_not_reviewed_node_logical_ids ?? [])
     : [];
   const hasExplicitNoGeneratedCardsNodeIds = Array.isArray(
     reviewDetail.no_generated_cards_node_logical_ids,
   );
   const explicitNoGeneratedCardsNodeIds = hasExplicitNoGeneratedCardsNodeIds
-    ? reviewDetail.no_generated_cards_node_logical_ids
+    ? (reviewDetail.no_generated_cards_node_logical_ids ?? [])
     : [];
   const reviewedNodeLabels = [...primaryEvaluatedNodeIds]
     .sort((left, right) => {

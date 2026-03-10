@@ -1,6 +1,48 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-09 (WF-0070: erc structured review step gating)
+
+### AD 70.1: ERC structured review stage truth is authored at the proposal-surface stage-scope contract
+- **WF ID**: WF-0070
+- **Context**: The brainstorm and Phase 1 audit identified the current split-brain defect: evaluation-element stage metadata can still collapse `b2_part2_scientific_proposal` into an effective `BOTH` surface, while UI visibility, validation, and runtime activation need one authority for official ERC Step 1 vs Step 2 surface truth.
+- **Decision**: Treat the authored proposal-surface stage-scope contract in canonical ERC call configuration as the sole authoritative stage-truth source for ERC structured review. Any node metadata, validation snapshot, runtime activation input, or evidence projection must be derived from that contract rather than authored as a peer authority.
+- **Why**: This resolves the current surface-truth drift at the level researchers actually submit and review, keeps Phase 2 localized to one coherent contract, and avoids evaluator-wide ERC specialization.
+- **Tradeoff**: Existing generated node metadata and mixed element-stage assumptions must be updated to become derived outputs, which may invalidate tests or fixtures that currently rely on `BOTH` drift.
+- **Status**: Approved.
+
+### AD 70.2: Inspectable ERC stage evidence persists a review-time scope snapshot
+- **WF ID**: WF-0070
+- **Context**: The brainstorm required Phase 1 to resolve whether existing persisted `review_stage` plus `submitted_leaf_ids` and stage-aware review-detail buckets were sufficient, or whether one additional evidence field was necessary to prove what actually ran for a completed ERC structured review.
+- **Decision**: Extend the existing structured payload evidence seam with one derived review-time stage-scope snapshot field capturing the in-scope ERC leaf set for the completed review, and require review-detail stage-aware boundary buckets to be projected from that persisted evidence.
+- **Why**: This keeps the evidence inspectable and replayable even if authored call configuration changes later, and it prevents review detail from silently recomputing scope from a newer config state.
+- **Tradeoff**: Adds one persisted derived field to maintain, but avoids a disconnected provenance system and keeps the proof path honest.
+- **Status**: Approved.
+
+### AD 70.3: WF-0070 proceed claims require baseline-anchored scope proof and audit disposition
+- **WF ID**: WF-0070
+- **Context**: The finalized PRD still required concrete verification evidence, but it left room for a future proceed or implementation-ready claim to rely on passing tests alone without an explicit scope proof or explicit closure of justified review findings.
+- **Decision**: Require every proceed, implementation-ready, or ship recommendation for WF-0070 to include both a baseline-SHA or explicit commit-range-anchored scope proof and an audit-disposition ledger that closes every blocking finding while closing or explicitly rejecting each justified non-blocking finding with rationale.
+- **Why**: This keeps the trust-closure claim fail-closed and prevents false readiness based on partial evidence or unresolved review debt.
+- **Tradeoff**: Closure evidence is heavier, and later phases must preserve explicit bookkeeping for scope and finding disposition.
+- **Status**: Approved.
+
+### AD 70.4: Single-node `/api/reviews` stays deferred unless structured-path honesty proves otherwise
+- **WF ID**: WF-0070
+- **Context**: The brainstorm required Phase 1 to decide whether deferring single-node review would undermine the structured ERC trust claim. Repo reality shows `POST /api/reviews` runs through `ReviewerService.generate_review`, while the WF target is the structured path through `POST /api/structured-review`, `StructuredReviewerService.generate_structured_review_pipeline_v1`, and structured review-detail evidence.
+- **Decision**: Keep `/api/reviews` out of MVP scope for WF-0070 and treat it as a blocker or follow-on only if a later phase proves that the structured ERC trust claim cannot remain honest while the single-node path stays untouched.
+- **Why**: This preserves the locked structured-review scope and avoids widening implementation into a separate service path without repo-grounded necessity.
+- **Tradeoff**: The repo may temporarily carry different stage-hardening maturity across the two review entrypoints, so later phases must watch for contradictory semantics instead of assuming parity.
+- **Status**: Approved.
+
+### AD 70.5: WF-0070 closure is approved and relies on authoritative stage-truth contract
+- **WF ID**: WF-0070
+- **Context**: Verification in Phase 3 passes cleanly with explicit test coverage for stage validation.
+- **Decision**: Close WF-0070 with no immediate follow-on workflow bounds. The trust-closure constraints are met using the proposal-surface contract.
+- **Why**: All blockers are addressed, the boundary stays cleanly separated, and deterministic scope proofs are preserved.
+- **Tradeoff**: Single-node logic remains disjointed and may require separate hardening if future workflows rely on it.
+- **Status**: Approved.
+
 ## Date: 2026-03-09 (WF-0069: review actionability remediation)
 
 ### AD 69.1: WF-0069 closes a coupled actionability-plus-priority contract, not wording polish alone

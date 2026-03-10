@@ -11,7 +11,13 @@ import pytest
 from sqlmodel import SQLModel, select
 
 from app.db import engine, get_session
-from app.models.domain import FundingCall, PromptTemplate, ProposalNode, ReviewCard, ReviewStatus
+from app.models.domain import (
+    FundingCall,
+    PromptTemplate,
+    ProposalNode,
+    ReviewCard,
+    ReviewStatus,
+)
 from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import StubLLMClient
 from app.services.reviewer_service import ReviewerService

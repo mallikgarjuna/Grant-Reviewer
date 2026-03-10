@@ -5048,8 +5048,8 @@ def test_wf0059_contract_hierarchical_submit_validation_and_idempotency(
 
 
 def test_wf0059_contract_persisted_submitted_node_coverage(monkeypatch) -> None:
-    from app.engine.contracts import PipelineResult
     import app.services.structured_reviewer_service as structured_service_module
+    from app.engine.contracts import PipelineResult
 
     client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
     assert call_code == "erc_stg_2026_full"
@@ -5100,8 +5100,8 @@ def test_wf0059_contract_persisted_submitted_node_coverage(monkeypatch) -> None:
 def test_wf0059_zero_card_node_remains_reviewed_from_persisted_coverage(
     monkeypatch,
 ) -> None:
-    from app.engine.contracts import PipelineResult
     import app.services.structured_reviewer_service as structured_service_module
+    from app.engine.contracts import PipelineResult
 
     client, call_id, call_code = create_client_with_erc_stg_seed(monkeypatch)
     assert call_code == "erc_stg_2026_full"

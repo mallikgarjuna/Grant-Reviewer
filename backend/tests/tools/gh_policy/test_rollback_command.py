@@ -6,8 +6,8 @@ from typing import Any
 
 import pytest
 
-from tools.gh_policy.rollback import run_rollback
 from tools.gh_policy.cli import main
+from tools.gh_policy.rollback import run_rollback
 
 pytestmark = [pytest.mark.no_db]
 

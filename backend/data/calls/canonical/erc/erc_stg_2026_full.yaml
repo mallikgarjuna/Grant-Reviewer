@@ -28,6 +28,23 @@ funding_call:
   stage: full
   language: en
 
+# WF-0070: Authoritative per-surface stage-scope contract.
+# This is the sole authored source-of-truth for which proposal surfaces
+# are eligible at each evaluation step.  Downstream derivation (node
+# metadata, activation, validation) MUST trace to this section.
+#
+# Source: Application Form 2026 + Work Programme 2026 step-scope rules.
+# - Part B1 (proposal_summary, b1_part1_scientific_proposal, b1_cv_track_record)
+#   is evaluated at Step 1 *and* Step 2 → BOTH.
+# - Part B2 (b2_part2_scientific_proposal) is evaluated at Step 2 only → STEP_2.
+# - Resources (resources_time_commitment) is assessed at Step 2 only → STEP_2.
+proposal_surface_stage_scope:
+  proposal_summary: BOTH
+  b1_part1_scientific_proposal: BOTH
+  b1_cv_track_record: BOTH
+  b2_part2_scientific_proposal: STEP_2
+  resources_time_commitment: STEP_2
+
 evaluation_criteria:
   - id: crit_excellence
     name: Excellence

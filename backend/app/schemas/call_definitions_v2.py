@@ -179,6 +179,7 @@ class CallDefinitionV2(StrictBaseModel):
 
     funding_agency: FundingAgencyDefinitionV2
     funding_call: FundingCallDefinitionV2
+    proposal_surface_stage_scope: dict[str, EvaluationStage] | None = None
     evaluation_criteria: list[EvaluationCriterionDefinitionV2] = Field(
         default_factory=list
     )
