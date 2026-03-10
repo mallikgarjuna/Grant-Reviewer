@@ -524,7 +524,7 @@ describe("UniversalSubmitForm", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<UniversalSubmitForm />);
 
-    expect((await screen.findAllByText("Root")).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText("Root")).length).toBe(1);
     expect(screen.queryByText("This call uses nested sections and is not yet supported in this form.")).toBeNull();
     expect(screen.queryByLabelText("Root")).toBeNull();
     expect(screen.getByLabelText("Child")).toBeInTheDocument();

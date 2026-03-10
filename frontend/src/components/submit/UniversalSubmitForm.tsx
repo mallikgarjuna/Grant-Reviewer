@@ -499,6 +499,23 @@ export function UniversalSubmitForm() {
     }
   }
 
+  const stagedRenderGroups =
+    renderModel.state === "ready"
+      ? renderModel.groups
+          .map((group) => ({
+            ...group,
+            nodes: group.nodes.filter((node) =>
+              isNodeEligibleForStage(node, selectedReviewStage),
+            ),
+          }))
+          .filter((group) => group.nodes.length > 0)
+      : [];
+  const stagedGroupLabelSet = new Set(
+    stagedRenderGroups
+      .map((group) => group.groupLabel)
+      .filter((groupLabel): groupLabel is string => Boolean(groupLabel)),
+  );
+
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col px-6 py-12 md:px-10">
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-sm">
@@ -561,15 +578,7 @@ export function UniversalSubmitForm() {
           </div>
 
           {renderModel.state === "ready"
-            ? renderModel.groups
-                .map((group) => ({
-                  ...group,
-                  nodes: group.nodes.filter((node) =>
-                    isNodeEligibleForStage(node, selectedReviewStage),
-                  ),
-                }))
-                .filter((group) => group.nodes.length > 0)
-                .map((group) => (
+            ? stagedRenderGroups.map((group) => (
                 <section
                   className="space-y-4 rounded-[var(--radius-md)] border border-[var(--color-border)]/60 p-4"
                   key={group.groupKey}
@@ -579,7 +588,15 @@ export function UniversalSubmitForm() {
                       {group.groupLabel}
                     </h2>
                   ) : null}
-                  {group.nodes.map((node) => {
+                  {group.nodes
+                    .filter(
+                      (node) =>
+                        !(
+                          node.isContainer &&
+                          stagedGroupLabelSet.has(node.label)
+                        ),
+                    )
+                    .map((node) => {
                     const logicalId = node.nodeLogicalId;
                     const inputId = `node-${logicalId.replace(/_/g, "-")}`;
                     const isReadOnlySupportingNode =
@@ -621,9 +638,9 @@ export function UniversalSubmitForm() {
                         />
                       </div>
                     );
-                  })}
+                    })}
                 </section>
-                ))
+              ))
             : null}
 
           {domainOptions.length > 0 ? (
