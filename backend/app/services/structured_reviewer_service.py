@@ -35,9 +35,9 @@ from app.services.review_execution_core import ReviewExecutionCore
 from app.services.reviewer_policy import (
     ReviewerPolicyRule,
     ReviewStage,
+    compute_stage_scope_leaf_ids,
     find_policy_violations,
     get_applicable_reviewer_policy_rules,
-    infer_review_stage,
 )
 
 logger = logging.getLogger(__name__)
@@ -165,14 +165,16 @@ class StructuredReviewerService:
         submitted_leaf_ids = [node_logical_id for node_logical_id, _ in nodes]
         # WF-0070 Task 6: Compute stage-eligible leaf IDs from the authoritative
         # contract snapshot at review-run time (not recomputed at read time).
-
-        stage_scope_leaf_ids = sorted(
-            node_logical_id
-            for node_logical_id in node_by_logical_id
-            if infer_review_stage(
-                node_logical_id, call_definition=call_definition
-            )
-            in {"BOTH", review_stage}
+        # Phase 3.3 PB-1: Only include nodes that have expectations (true leaves).
+        nodes_with_expectations = {
+            node.logical_id
+            for node, has_expectations in call_nodes
+            if has_expectations and isinstance(node.logical_id, str)
+        }
+        stage_scope_leaf_ids = compute_stage_scope_leaf_ids(
+            call_definition=call_definition,
+            review_stage=review_stage,
+            nodes_with_expectations=nodes_with_expectations,
         )
         structured_payload = {
             "call_id": str(call_id),

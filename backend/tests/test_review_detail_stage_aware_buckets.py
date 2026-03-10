@@ -105,3 +105,43 @@ def test_out_of_scope_computation_logic() -> None:
     # b2 and resources should NOT be in visible_not_reviewed
     assert "b2_part2_scientific_proposal" not in visible_not_reviewed
     assert "resources_time_commitment" not in visible_not_reviewed
+
+
+def test_legacy_review_without_stage_scope_leaf_ids() -> None:
+    """Legacy reviews (pre-WF-0070) have no stage_scope_leaf_ids.
+
+    Phase 3.3 MT-2: When stage_scope_leaf_ids is absent or empty,
+    all visible-not-reviewed nodes remain unchanged and out_of_scope is empty.
+    This confirms backward compatibility for reviews persisted before WF-0070.
+    """
+    from main import _partition_visible_by_stage_scope
+
+    visible_not_reviewed = [
+        "b1_cv_track_record",
+        "b2_part2_scientific_proposal",
+        "resources_time_commitment",
+    ]
+
+    # Case 1: No structured_payload at all (None)
+    remaining, out_of_scope = _partition_visible_by_stage_scope(
+        visible_not_reviewed=visible_not_reviewed,
+        structured_payload=None,
+    )
+    assert remaining == visible_not_reviewed
+    assert out_of_scope == []
+
+    # Case 2: structured_payload exists but stage_scope_leaf_ids absent
+    remaining, out_of_scope = _partition_visible_by_stage_scope(
+        visible_not_reviewed=visible_not_reviewed,
+        structured_payload={"review_stage": "STEP_1", "submitted_leaf_ids": []},
+    )
+    assert remaining == visible_not_reviewed
+    assert out_of_scope == []
+
+    # Case 3: structured_payload has empty stage_scope_leaf_ids
+    remaining, out_of_scope = _partition_visible_by_stage_scope(
+        visible_not_reviewed=visible_not_reviewed,
+        structured_payload={"stage_scope_leaf_ids": []},
+    )
+    assert remaining == visible_not_reviewed
+    assert out_of_scope == []

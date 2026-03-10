@@ -33,7 +33,15 @@ def infer_review_stage(
     *,
     call_definition: CallDefinition | None = None,
 ) -> Literal["STEP_1", "STEP_2", "BOTH"]:
-    """Infer review stage from canonical call-definition metadata when available."""
+    """Infer review stage from canonical call-definition metadata when available.
+
+    .. warning::
+        When *call_definition* is ``None`` or *node_logical_id* is not found
+        in the stage map, this function returns ``"STEP_1"`` — a **fail-open**
+        default.  Callers in trusted validation contexts (structured-review
+        submit, stage-leaf validation) **must** always supply a non-None
+        *call_definition* so the authoritative contract is consulted.
+    """
     if call_definition is not None:
         stage_map = _build_node_stage_map(call_definition)
         inferred = stage_map.get(node_logical_id)
@@ -41,6 +49,25 @@ def infer_review_stage(
             return inferred
 
     return "STEP_1"
+
+
+def compute_stage_scope_leaf_ids(
+    *,
+    call_definition: CallDefinition | None,
+    review_stage: ReviewStage,
+    nodes_with_expectations: set[str],
+) -> list[str]:
+    """Return sorted leaf IDs eligible for *review_stage* from the authoritative contract.
+
+    Only node IDs present in *nodes_with_expectations* are considered,
+    ensuring container nodes without expectations are excluded.
+    """
+    return sorted(
+        node_id
+        for node_id in nodes_with_expectations
+        if infer_review_stage(node_id, call_definition=call_definition)
+        in {"BOTH", review_stage}
+    )
 
 
 def matches_review_stage(
