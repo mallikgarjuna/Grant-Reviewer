@@ -1,0 +1,41 @@
+{
+  "_artifact_path": "docs/walkthroughs/evidence/WF-0072/verification-matrix.json",
+  "wf_id": "WF-0072",
+  "representative_call_lock": [
+    "nwo_veni_2025_preproposal",
+    "erc_stg_2026_full",
+    "MSCA-PF-2025"
+  ],
+  "proof_surface_enum": [
+    "browser",
+    "API",
+    "paired"
+  ],
+  "closure_artifacts": {
+    "baseline_scope_ref": "TBD_BASELINE_SCOPE_REF",
+    "audit_disposition_ref": "TBD_AUDIT_DISPOSITION_REF"
+  },
+  "rows": [
+    {
+      "row_id": "wf0072-r001",
+      "proof_item_id": "nwo_veni_2025_preproposal:happy_path",
+      "call_id": "nwo_veni_2025_preproposal",
+      "scenario_id": "happy_path",
+      "scenario_type": "positive",
+      "proof_surface": "API",
+      "entrypoint": "/api/structured-review",
+      "protected_surface": false,
+      "auth_lane": "n/a",
+      "lane_status": "executed",
+      "scenario_scope_note": "Tracer-bullet seed row for WF-0072 contract hardening.",
+      "deterministic_replay": {
+        "command": "cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json",
+        "test_id": "wf0072_seed_nwo_happy_path",
+        "assertion_id": "matrix_contract_row_valid"
+      },
+      "side_effect_assertion": "Structured-review payload returns a successful representative response contract.",
+      "evidence_ref": "docs/walkthroughs/evidence/WF-0072/verification-matrix.json#wf0072-r001",
+      "result": "pass"
+    }
+  ]
+}

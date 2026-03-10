@@ -1,0 +1,97 @@
+"""backend/tests/test_wf_0072_bundle_contract.py
+WF-0072 verification-matrix contract tests.
+"""
+
+from __future__ import annotations
+
+import json
+from copy import deepcopy
+from pathlib import Path
+
+import pytest
+
+from scripts.validate_wf_0072_bundle import validate_matrix_payload
+
+pytestmark = [pytest.mark.no_db]
+
+_MATRIX_PATH = Path("../docs/walkthroughs/evidence/WF-0072/verification-matrix.json")
+
+
+def _seed_matrix() -> dict[str, object]:
+    return json.loads(_MATRIX_PATH.read_text(encoding="utf-8"))
+
+
+def test_wf0072_bundle_seed_matrix_contract_passes() -> None:
+    matrix = _seed_matrix()
+    validate_matrix_payload(matrix=matrix)
+
+
+def test_wf0072_bundle_rejects_unlocked_representative_call() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["rows"][0]["call_id"] = "not_locked_call"
+
+    with pytest.raises(ValueError, match="LOCKED_REPRESENTATIVE_SET_VIOLATION"):
+        validate_matrix_payload(matrix=matrix)
+
+
+def test_wf0072_bundle_requires_row_fields_and_evidence_ref() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["rows"][0]["scenario_scope_note"] = ""
+    matrix["rows"][0]["evidence_ref"] = ""
+
+    with pytest.raises(ValueError, match="REQUIRED_ROW_FIELD_MISSING|EVIDENCE_REF_REQUIRED"):
+        validate_matrix_payload(matrix=matrix)
+
+
+def test_wf0072_bundle_rejects_invalid_proof_surface() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["rows"][0]["proof_surface"] = "ui"
+
+    with pytest.raises(ValueError, match="PROOF_SURFACE_INVALID"):
+        validate_matrix_payload(matrix=matrix)
+
+
+def test_wf0072_bundle_requires_replay_metadata() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["rows"][0]["deterministic_replay"]["command"] = ""
+
+    with pytest.raises(ValueError, match="REPLAY_METADATA_INCOMPLETE"):
+        validate_matrix_payload(matrix=matrix)
+
+
+def test_wf0072_bundle_requires_explicit_lane_labeling() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    del matrix["rows"][0]["auth_lane"]
+
+    with pytest.raises(ValueError, match="AUTH_LANE_LABEL_REQUIRED"):
+        validate_matrix_payload(matrix=matrix)
+
+
+def test_wf0072_bundle_requires_paired_negative_semantics() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["rows"][0]["scenario_type"] = "negative"
+    matrix["rows"][0]["negative_case"] = {
+        "visible_block_asserted": False,
+        "no_side_effect_asserted": False,
+    }
+
+    with pytest.raises(ValueError, match="NEGATIVE_PAIRING_REQUIRED"):
+        validate_matrix_payload(matrix=matrix)
+
+
+def test_wf0072_bundle_requires_protected_lane_parity_or_explicit_skip() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["rows"][0]["proof_item_id"] = "nwo_veni_2025_preproposal:happy_path"
+    matrix["rows"][0]["protected_surface"] = True
+    matrix["rows"][0]["auth_lane"] = "test_bypass"
+    matrix["rows"][0]["lane_status"] = "executed"
+
+    with pytest.raises(ValueError, match="PROTECTED_LANE_PARITY_MISSING"):
+        validate_matrix_payload(matrix=matrix, require_protected_lanes=True)
