@@ -81,11 +81,10 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 
 | # | Task | Type | Recommendation | Date |
 |---|------|------|----------------|------|
-| 1 | E2E trust proof for representative NWO/ERC/MSCA flows | ops | Promote next. With ERC stage gating (WF-0070) and hierarchy clarity (WF-0071) closed, prove the real user path end to end across the locked wedge: happy path, stage mismatch, missing mandatory input, and policy-blocking behavior. Do not substitute selector-level coverage for launch evidence. (Ref: `docs/mission.md`; WF-0066.) | 2026-03-09 |
-| 2 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
-| 3 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Useful, but not before the core trust gaps above are closed. Keep explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 4 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
-| 5 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
+| 1 | Add Terms of Service + upgrade Privacy | legal | Add `/terms` page; expand `/privacy` beyond 3 bullets; add inline retention reminder near submit button. | 2026-02-16 |
+| 2 | NWO Veni 2025 preproposal — WF-7: Assisted extraction (paste-only) preview+confidence+confirm | product | Useful, but not before the core trust gaps above are closed. Keep explicit confirmation before evaluation; avoid silent misrouting. (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 3 | Assisted extraction: add `.docx`/`.pdf` support | idea | Defer file parsing to a dedicated WF (new deps + file handling/security considerations). (Ref: `docs/reference/nwo_veni_2025_preproposal_north_star.md`) | 2026-02-21 |
+| 4 | Design optional competitive-analysis extension boundary (out-of-core) | tech-debt | Define extension contract for optional competitive analysis as a separate module with no dependency edge into base review pipeline v1.0 core stages. (Ref: WF-0045 non-goals/deferred, 2026-03-03.) | 2026-03-03 |
 
 ### P1 Rationale Snapshot (2026-03-10)
 
@@ -94,14 +93,13 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 - WF-0066 removed stale live-planning language that implied broader-program expansion was still planned or launch-critical; active P1 should stay anchored to the locked NWO/ERC/MSCA wedge.
 - WF-0067 is now complete and closed the launch-blocking review trust-surface gap in the active wedge.
 - WF-0068 is now complete and closed the evaluation loop with a bounded proceed decision; follow-on work should stay narrowly scoped to the evidence-backed actionability/prioritization failure pattern.
-- Active P1 sequencing is now: prove the end-to-end trust path across the locked wedge, then proceed to remaining launch-baseline legal and assisted-extraction work.
+- Active P1 sequencing is now: remaining launch-baseline legal work first, then assisted-extraction work, while `WF-0072` carries the locked-wedge end-to-end trust proof separately on its WF branch.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
-- Do not promote new convenience or expansion work ahead of these three items unless the user explicitly accepts weakening the launch trust bar.
+- Do not promote new convenience or expansion work ahead of the remaining launch-baseline legal and assisted-extraction items unless the user explicitly accepts weakening the launch trust bar.
 
 Promotion dependency note:
-- If promoting P1 #1, carry both UX selection and backend execution gating in the same WF; a frontend-only stage picker is not acceptable.
-- If promoting P1 #2, first verify WF-0035 remains done and no new trust-contract blockers have been introduced since WF-0067 closure.
-- If promoting P1 #3, treat the historical E2E items in P2 as provenance only and consolidate them into one representative trust-proof WF rather than two fragmented test-only promotions.
+- `WF-0072` must carry both UX selection and backend execution gating in the same WF; a frontend-only stage picker is not acceptable.
+- If promoting current P1 #1, first verify WF-0035 remains done and no new trust-contract blockers have been introduced since WF-0067 closure.
 
 ---
 
@@ -200,6 +198,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 47 | WF-0069 | review-actionability-remediation | started-directly | - | 2026-03-09 |
 | 48 | WF-0070 | erc-structured-review-step-gating | promoted | P1 #1 (historical; ERC Step 1 vs Step 2 trust gating) | 2026-03-09 |
 | 49 | WF-0071 | node-hierarchy-selector | promoted | P1 #1 (historical; nested-call navigation clarity) | 2026-03-10 |
+| 50 | WF-0072 | e2e-trust-proof-nwo-erc-msca | promoted | P1 #1 (historical; representative locked-wedge end-to-end trust proof) | 2026-03-10 |
 
 ---
 
@@ -257,3 +256,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v4.7** (2026-03-09): Re-prioritized active P1 into a concrete next-action sequence aligned to the mission trust bar: ERC Step gating first, nested-call hierarchy selector second, representative end-to-end trust proof third; demoted convenience work behind those items and clarified promotion dependencies.
 - **v4.8** (2026-03-10): Post-WF-0070 refresh: updated P1 rationale to reflect ERC stage-truthfulness closure and advanced nested-call navigation to next active priority.
 - **v4.9** (2026-03-10): Post-WF-0071 refresh: removed the completed node-hierarchy P1 item, renumbered active P1, and recorded WF-0071 promotion provenance in the WF log.
+- **v5.0** (2026-03-10): Promoted P1 #1 to `WF-0072`, renumbered active P1, and recorded the promotion provenance in the unified WF log.
