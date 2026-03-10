@@ -1,8 +1,8 @@
 # WF-0071 — Node Hierarchy Selector
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-10
 
 ## 0. User Stories (MVP)
@@ -38,7 +38,7 @@ Last Updated: 2026-03-10
 ## 6. Components / Modules
 - `frontend/src/lib/submit/renderModel.ts`: Updated to support `isContainer` detection and synthetic ancestor group labels.
 - `frontend/src/components/submit/UniversalSubmitForm.tsx`: Updated to render 1-level grouped items.
-- `frontend/src/components/review/ReviewCard.tsx` (or equivalent context wrapper): Updated to build and show the ancestor breadcrumb dynamically.
+- `frontend/src/components/review/ReviewCard.tsx` (or equivalent context wrapper): Updated to build and show the ancestor breadcrumb dynamically. (Note: `callConfig` will be accessed via existing React context rather than prop drilling).
 
 ## 7. Edge Cases
 - Missing `parent_logical_id` (US1): Uncategorized fallback.
@@ -47,6 +47,7 @@ Last Updated: 2026-03-10
 ## 8. Testing Decisions (TDD)
 - Unit test in `renderModel.ts` for flat-to-grouped parsing logic.
 - React Testing Library integration test for `UniversalSubmitForm.tsx` to verify the exact `node_id` submitted matches the leaf node, preventing the regression of submitting a parent container's ID.
+- Unit/integration test for the breadcrumb construction in `ReviewCard.tsx` (or its equivalent container) to ensure `node_id` correctly resolves to its ancestor path using provided context.
 
 ## 9. Telemetry (Minimal)
 - No new telemetry strictly required for MVP.
@@ -59,3 +60,4 @@ Last Updated: 2026-03-10
 
 ## 12. Changelog
 - v0.1 (2026-03-10): Initial PRD from brainstorm
+- v0.2 (2026-03-10): Applied risk audit edits (added breadcrumb test and clarified context usage for callConfig)
