@@ -35,6 +35,14 @@
 - **Tradeoff**: The repo may temporarily carry different stage-hardening maturity across the two review entrypoints, so later phases must watch for contradictory semantics instead of assuming parity.
 - **Status**: Approved.
 
+### AD 70.5: WF-0070 closure is approved and relies on authoritative stage-truth contract
+- **WF ID**: WF-0070
+- **Context**: Verification in Phase 3 passes cleanly with explicit test coverage for stage validation.
+- **Decision**: Close WF-0070 with no immediate follow-on workflow bounds. The trust-closure constraints are met using the proposal-surface contract.
+- **Why**: All blockers are addressed, the boundary stays cleanly separated, and deterministic scope proofs are preserved.
+- **Tradeoff**: Single-node logic remains disjointed and may require separate hardening if future workflows rely on it.
+- **Status**: Approved.
+
 ## Date: 2026-03-09 (WF-0069: review actionability remediation)
 
 ### AD 69.1: WF-0069 closes a coupled actionability-plus-priority contract, not wording polish alone

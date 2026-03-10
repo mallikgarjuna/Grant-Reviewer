@@ -1,38 +1,72 @@
 <!-- docs/memory/domain/project_docs.md -->
 # Project Documentation
 
-- **2026-03-08**: Product mission statement SSOT lives in `docs/mission.md`. Preserve this wording as the default anchor for landing-page copy, internal docs, and product-positioning decisions unless a deliberate mission update is made.
-- **2026-03-08**: `docs/mission.md` now distinguishes `Mission`, `Vision`, `MVP Goal`, `Product Goals`, and `MVP Success Criteria`; do not introduce a separate "MVP mission statement". Why: phase-specific intent should live under goals/success criteria while the mission remains stable.
-- **2026-03-08**: Canonical code phrase for `docs/mission.md` drift review is `mission check`; it should classify requested changes as mission-level, goals-level, or no change, and prefer minimal edits. Why: avoids prompt drift and inconsistent trigger naming.
-- **2026-03-01**: All new code phrases and agent chat triggers must be added to `docs/reference/code_phrases.md` (the SSOT), not directly to `AGENTS.md`. `AGENTS.md` should remain as tiny as possible.
-- **2026-03-02**: WF interactive Q&A decisions must be written into `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`; the main brainstorm remains the SSOT for contracts/decisions and must link to the Q&A section(s) used.
 - **Traceability in outputs**: Workflow runner completion summaries must always include explicit provenance: which files were considered/edited and which skills/instructions were used.
+
 - **Traceability in commits**: Every WF commit message must include both the WF ID and the relevant slug so history is self-describing (e.g., `WF-0012: alembic-migration-baseline - <change>`). (Do not rewrite history; enforce going forward).
+
 - **Push Docs Rule**: Always update `docs/` with all relevant branch work (status/index, decisions, Q&A, prompt history, workflow artifacts) *before* pushing a branch to remote. After every successful push, explicitly confirm that docs/WF artifacts were updated (or state that none were required).
+
 - **WF Boundary Hygiene**: Use a separate branch from `main` (e.g. `task/8.1-lint-baseline-cleanup`) to keep WF phase boundaries clean.
+
 - **Next Actions Formatting**: Before Phase 4 completion, provide end-to-end runner options (e.g. `phase-1-run-spec`). After Phase 4 completion, replace that section with "Next 2 WF ideas/features" from the parking lot.
+
 - **Commit Granularity**: Commits must happen per runner part (Part A output, Part C revision, and Part B only if it has edits) and per phase gate. During Phase 3/4 execution, commit after *each* completed subtask with a short message including the subtask ID.
+
 - **Ignore files rule**: Before any commit, check `.gitignore` behavior via `git status --ignored --short` and prefer narrow unignore rules (`!pattern`) over force-adding files.
+
+- **2026-03-01**: All new code phrases and agent chat triggers must be added to `docs/reference/code_phrases.md` (the SSOT), not directly to `AGENTS.md`. `AGENTS.md` should remain as tiny as possible.
+
+- **2026-03-02**: WF interactive Q&A decisions must be written into `docs/brainstorms/qna/brainstorm-QnA-WF-XXXX-<slug>.md`; the main brainstorm remains the SSOT for contracts/decisions and must link to the Q&A section(s) used.
+
 - **2026-03-06**: Docs sanitization should roll out in phases: first enforce tool/model neutrality on SSOT + a small set of sanitized workflow files, then expand guard coverage only after targeted file cleanup. Why: avoids CI churn from legacy wording while tightening policy incrementally.
+
 - **2026-03-06**: Sanitization guard now covers workflow phase docs 0.x/1.x/2.x used for planning (`phase-0-0`..`phase-2-3`). Keep expansion to remaining workflow docs as dedicated small batches. Why: preserves 3-file discipline and keeps CI transitions low-risk.
+
 - **2026-03-06**: Sanitization guard now enforces all `docs/workflow/*.md` plus `AGENTS.md`; workflow docs are clean of tool/model names. Why: full-folder enforcement prevents regressions while keeping adapters/history as the only place tool names appear.
+
 - **2026-03-06**: New traceability rule: every file should encode its project-relative path at top (comment/docstring/header) so copied sources preserve provenance in external chat tools.
+
 - **2026-03-06**: Commit-msg hook must allow non-WF maintenance commits using `fix: <short title>` or `chore: <short title>` because workflow docs already permit `fix/<slug>` and `chore/<slug>` branches. Why: forcing WF-prefixed commits on maintenance branches creates false traceability.
+
 - **2026-03-06**: Review-detail API contract tasks must include the HTTP response assembly seam (currently `backend/main.py`) in allowed file boundaries when response fields change. Why: repository/schema changes alone cannot expose new review-detail fields.
+
 - **2026-03-06**: Reusable post-phase "stress test and fix" chat prompt now lives at `docs/workflow/review-and-harden-prompt.md`. Use it with a single artifact path instead of rewriting phase-specific review/revise prompts each time.
+
 - **2026-03-07**: Version-label policy: keep `vN` only for stable contracts/schemas (for example `Call Definition V2`, `DiagnosticFinding v1`, `Observation v1`, `ReviewRequest v1`). For historical implementation eras with no active `v2`, prefer `legacy`/`current` wording over `pipeline v1`. Why: reduces fake optionality and planning confusion.
+
 - **2026-03-07**: Naming boundary policy: do not mix WF IDs, roadmap/phase numbers (`5.0`, `8.0A`), and contract/schema versions (`v1`, `V2`) in the same label or shorthand. Why: they answer different questions: history, delivery slice, and compatibility boundary.
+
+- **2026-03-08**: Product mission statement SSOT lives in `docs/mission.md`. Preserve this wording as the default anchor for landing-page copy, internal docs, and product-positioning decisions unless a deliberate mission update is made.
+
+- **2026-03-08**: `docs/mission.md` now distinguishes `Mission`, `Vision`, `MVP Goal`, `Product Goals`, and `MVP Success Criteria`; do not introduce a separate "MVP mission statement". Why: phase-specific intent should live under goals/success criteria while the mission remains stable.
+
+- **2026-03-08**: Canonical code phrase for `docs/mission.md` drift review is `mission check`; it should classify requested changes as mission-level, goals-level, or no change, and prefer minimal edits. Why: avoids prompt drift and inconsistent trigger naming.
+
 - **2026-03-08**: Parking-lot hygiene rule: when a WF or maintenance item lands, remove or rewrite any backlog row that still describes that solved work, and merge symptom-only duplicates into one live item. Why: stale backlog rows cause fake future planning and hide the real remaining bottlenecks.
+
 - **2026-03-08**: WF initiative-log backlog refs are provenance snapshots only; label them as historical at promotion time rather than implying they still map to the current numbered backlog. Why: parking-lot renumbering is expected, so unlabeled refs create false traceability.
+
 - **2026-03-08**: Docs-only planning PRDs must distinguish live correction targets from workflow bookkeeping surfaces (for example `docs/index.md`) and require per-target pass/fail evidence before any proceed recommendation. Why: otherwise Phase 2 can widen scope by accident or claim closure from generic doc-scan language.
+
 - **2026-03-08**: Docs-only task verification must anchor changed-file proof to an explicit implementation baseline SHA or commit range, not raw `git diff` worktree state. Why: prior-phase branch diffs and per-task commits make worktree-only evidence nondeterministic for closure.
+
 - **2026-03-08**: When a WF is closed and marked `Done` in `docs/index.md`, any standard WF artifacts still living outside `docs/*/completed/` should be archived and all registry/cross-doc links updated in the same closure pass. Why: partial closure leaves the dashboard and artifact paths out of sync and causes repeated cleanup churn.
+
 - **2026-03-08**: Trust-surface planning inside the locked NWO/ERC/MSCA wedge should reuse the exact representative proof set `nwo_veni_2025_preproposal`, `erc_stg_2026_full`, and `MSCA-PF-2025`, and treat `source basis` as fail-closed official-call metadata only, not generic model provenance. Why: prevents Phase 1 drift from re-broadening scope or inventing unverifiable explainability claims.
+
 - **2026-03-08**: Review-detail trust-surface planning must include both the backend response seam and `frontend/src/app/api/bff/reviews/[reviewId]/route.ts` normalization seam, and must not assume live `supporting_context_node_logical_ids` coverage beyond explicit proof because the current repository path still resolves that list to empty. Why: schema-only planning overstates what the UI can actually render today.
+
 - **2026-03-08**: If a WF brainstorm marks itself as the SSOT for scope/contracts, any PRD resolution of a deferred contract question must be promoted back into that brainstorm, and review-detail trust planning must keep `visible but not reviewed` separate from `no generated cards`. Why: otherwise Phase 1 can leave the SSOT stale and silently weaken boundary-honesty requirements.
+
 - **2026-03-08**: Review-quality evaluation planning for the locked NWO/ERC/MSCA wedge must treat the primary proof object as the `snippet -> review output` pair, require a frozen evaluation baseline per batch (same commit + prompt/model config + reviewer instructions), and keep remediation in a separate follow-on WF. Why: trust-surface closure and polished demos can otherwise be mistaken for real usefulness proof.
+
 - **2026-03-08**: Evaluation-loop planning must explicitly ban convenience sampling, require auditable per-snippet selection rationale, and block any proceed recommendation unless a named verification evidence bundle is present. Why: otherwise Phase 1 can cherry-pick easy examples and convert weak evidence into fake readiness.
+
 - **2026-03-08**: If a Phase 1 PRD for an SSOT-marked brainstorm adds a new proceed threshold, severity scale, or provenance requirement, promote it into the brainstorm and `docs/logs/decisions.md` in the same revise pass. Why: leaving those only in the PRD creates hallucinated contract drift and false readiness for Tasks.
+
 - **2026-03-09**: New composed code phrase `phase 3 closeout` is SSOT in `docs/reference/code_phrases.md`; execute its seven-step closure sequence in strict order and stop for explicit user approval before `ship it`. Why: reduces phase-end checklist drift and keeps shipping user-gated.
+
 - **2026-03-09**: Remediation/closure PRDs that gate `ship`, `proceed`, or phase advance must require two explicit proofs: a baseline-SHA or commit-range-anchored scope proof and an audit-disposition ledger closing all blocking findings while closing or rejecting justified non-blocking findings with rationale. Why: replay-only evidence is not enough if diff provenance and review-findings closure stay implicit.
+
 - **2026-03-09**: WF planning for ERC structured-review stage gating must treat existing `structured_payload.review_stage`/`submitted_leaf_ids` plus review-detail boundary fields as the first provenance seam to extend, and must explicitly audit stage-aware review-detail buckets because the current repo can still present Step 2-only ERC surfaces as merely `not reviewed` on a Step 1 review. Why: this is a hidden trust leak and a likely planning blind spot if runtime-only fixes dominate the discussion.

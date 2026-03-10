@@ -95,7 +95,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 - WF-0066 removed stale live-planning language that implied broader-program expansion was still planned or launch-critical; active P1 should stay anchored to the locked NWO/ERC/MSCA wedge.
 - WF-0067 is now complete and closed the launch-blocking review trust-surface gap in the active wedge.
 - WF-0068 is now complete and closed the evaluation loop with a bounded proceed decision; follow-on work should stay narrowly scoped to the evidence-backed actionability/prioritization failure pattern.
-- Active P1 sequencing should now be explicit: WF-0070 closes ERC stage-truthfulness first, then make nested-call navigation legible, then prove the end-to-end trust path across the locked wedge.
+- Active P1 sequencing should now be explicit: make nested-call navigation legible, then prove the end-to-end trust path across the locked wedge.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 - Do not promote new convenience or expansion work ahead of these three items unless the user explicitly accepts weakening the launch trust bar.
 
@@ -255,3 +255,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v4.5** (2026-03-09): Post-WF-0068 refresh: updated the rationale snapshot for evaluation-loop closure and narrowed the parked prompt-quality follow-on language to the evidence-backed `actionability_cluster` boundary.
 - **v4.6** (2026-03-09): Post-WF-0069 refresh: updated the parked prompt-quality item to avoid re-opening closed WF-0069 scope and recorded direct-start `WF-0069` in the unified WF initiative log.
 - **v4.7** (2026-03-09): Re-prioritized active P1 into a concrete next-action sequence aligned to the mission trust bar: ERC Step gating first, nested-call hierarchy selector second, representative end-to-end trust proof third; demoted convenience work behind those items and clarified promotion dependencies.
+- **v4.8** (2026-03-10): Post-WF-0070 refresh: updated P1 rationale to reflect ERC stage-truthfulness closure and advanced nested-call navigation to next active priority.

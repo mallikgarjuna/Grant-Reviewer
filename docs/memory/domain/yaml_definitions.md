@@ -1,24 +1,45 @@
 # YAML Definitions
 
 - **Naming context:** Call YAML naming: `{agency}_{program}_{year}_{stage}.yaml`.
+
 - **Source gating:** Author call YAML only from official funder documents provided in-workflow; if missing, stop and request them.
-- **2026-03-02 — Per-call upload gate:** For re-authoring `erc_cog_2026_full`, `nwo_vidi_2025_full_proposal`, and `erc_stg_2026_full`, stop before each call and request that call's application-form + assessment-criteria PDFs separately (do not batch-author without uploads).
-- **2026-03-02 — Upload gate timing:** Enforce the per-call upload gate immediately before substantive authoring/re-authoring of that call YAML. Baseline preflight validation (dry-run + local DB ingest of existing canonical YAMLs) can run before uploads.
+
 - **Scoping limits:** Encode only evaluable proposal structure, evaluation criteria/elements, and enforceable content constraints.
+
+- **2026-03-02 — Per-call upload gate:** For re-authoring `erc_cog_2026_full`, `nwo_vidi_2025_full_proposal`, and `erc_stg_2026_full`, stop before each call and request that call's application-form + assessment-criteria PDFs separately (do not batch-author without uploads).
+
+- **2026-03-02 — Upload gate timing:** Enforce the per-call upload gate immediately before substantive authoring/re-authoring of that call YAML. Baseline preflight validation (dry-run + local DB ingest of existing canonical YAMLs) can run before uploads.
+
 - **2026-03-02 — Runtime utilization reminder:** Call-specific `reviewer_policy` rules from v2 call YAML are currently applied in the single-snippet reviewer flow (prompt injection + deterministic forbidden-term post-checks). The structured pipeline_v1 path is primarily driven by DB expectations and does not automatically enforce reviewer_policy unless explicitly wired into the engine pipeline.
+
 - **2026-03-02 — WF-0044 traceability hardening:** Keep local source copies under `backend/data/calls/source_files/WF-0044/...` only as temporary workflow artifacts; durable traceability anchor is manifest provenance + SHA256.
-- **2026-03-03 — Source-file repo policy:** Do not store call source binaries in git; keep `backend/data/calls/source_files/` local-only and gitignored. Manifests + SHA256 remain the durable traceability layer.
+
 - **2026-03-02 — WF-0044 ID governance:** Baseline call re-authoring keeps `proposal_nodes[*].id` stable by default; if an ID must change, require explicit old→new mapping and WF decision-log reference.
+
 - **2026-03-02 — ERC SSOT override:** When user declares `wp_horizon-erc-2026_en.pdf` as ERC SSOT, treat it as primary source for criteria/elements and step-scope; retain ERC rules/guide/applicant docs as supplemental cross-check sources in manifests.
+
 - **2026-03-02 — UI section numbering:** `proposal_nodes[*].source_section` should carry display-ready numbering tokens when available (e.g., `1.b`, `2.a`, `B1`, `B1.I`) so structured form labels can render as `Title (section)`.
+
 - **2026-03-02 — Stage naming convention:** Machine-facing stage tokens use `pre_proposal` and `full_proposal`; human-facing copy uses `Pre-proposal` and `Full-proposal`. Existing legacy `preproposal` call codes remain supported for compatibility.
+
+- **2026-03-03 — Source-file repo policy:** Do not store call source binaries in git; keep `backend/data/calls/source_files/` local-only and gitignored. Manifests + SHA256 remain the durable traceability layer.
+
 - **2026-03-06 — ERC StG container semantics:** Treat `Part B1`, `Part B2`, `Part A`, and `Budget` as structural containers only in `erc_stg_2026_full`; real applicant/review surfaces are `proposal_summary`, `Part I`, `CV and Track Record`, `Part II`, and `Resources and Time Commitment`. Keep `resources_time_commitment` under `Part A -> Budget`, not under `Part B2` or as a root sibling. Why: matches official application-form/work-programme structure and avoids container-as-surface review bugs.
-- **2026-03-07 — ERC CoG mirrors corrected StG structure:** Apply the same container-only semantics to `erc_cog_2026_full` because the 2026 CoG application form shares the same Part A/B, B1/B2, and Resources placement. Keep CoG-specific nuance in guidance/runtime notes for PI independence and 40% project time commitment rather than inventing a different structure. Why: same form family, different evaluative context.
-- **2026-03-07 — ERC CoG legacy-ID boundary:** `erc_cog_2026_full` submissions stay strict on corrected leaf IDs, but review-detail compatibility must normalize pre-correction CoG leaf IDs (`b1_part1_state_of_knowledge`, `b1_part1_objectives`, `b1_part1_strategy`, `b2_methodology`, `b2_work_plan`, `b2_risks`) onto the corrected aggregate leaves and preserve the original IDs as compatibility metadata. Why: avoid false reviewed-leaf coverage while keeping old persisted CoG reviews readable.
+
 - **2026-03-06 — WF-0060 Phase 3 upload stop:** Before any substantive re-authoring of `erc_stg_2026_full.yaml` for WF-0060 implementation, stop and ask whether the user needs to upload/refresh the ERC StG 2026 application-form and assessment-criteria PDFs first. Planning can proceed without the upload, but canonical YAML edits stay upload-gated.
+
+- **2026-03-07 — ERC CoG mirrors corrected StG structure:** Apply the same container-only semantics to `erc_cog_2026_full` because the 2026 CoG application form shares the same Part A/B, B1/B2, and Resources placement. Keep CoG-specific nuance in guidance/runtime notes for PI independence and 40% project time commitment rather than inventing a different structure. Why: same form family, different evaluative context.
+
+- **2026-03-07 — ERC CoG legacy-ID boundary:** `erc_cog_2026_full` submissions stay strict on corrected leaf IDs, but review-detail compatibility must normalize pre-correction CoG leaf IDs (`b1_part1_state_of_knowledge`, `b1_part1_objectives`, `b1_part1_strategy`, `b2_methodology`, `b2_work_plan`, `b2_risks`) onto the corrected aggregate leaves and preserve the original IDs as compatibility metadata. Why: avoid false reviewed-leaf coverage while keeping old persisted CoG reviews readable.
+
 - **2026-03-07 — Real expansion scope discipline:** After WF-0044 closed the earlier multi-call re-authoring bundle, future "real call data expansion" WFs should scope to one new official-source call at a time, preferably from a new agency, and treat old bundled backlog wording as stale unless explicitly refreshed. Why: prevents fake progress via more framework or repeated re-authoring of already-grounded calls.
+
 - **2026-03-07 — WF-0061 coverage claim discipline:** For single-call expansion WFs like `WF-0061`, describe success as landing one new promised canonical call (for example `MSCA-PF-2025`) rather than relying on ambiguous agency/program-family taxonomy labels. Why: keeps scope/evidence claims precise and avoids fake “coverage expansion” arguments based on naming semantics.
+
 - **2026-03-07 — WF-0061 fail-closed ingest gate:** `MSCA-PF-2025` dry-run/ingest must fail closed until `backend/data/calls/sources/msca_pf_2025_full.sources.md` exists and proves two required official source classes (proposal/application structure + evaluation criteria/elements) with durable `SHA256` metadata and explicit `Used for` traceability. Why: blocks speculative authoring from being counted as ingest/runtime progress.
+
 - **2026-03-07 — WF-0061 MSCA canonical baseline:** `backend/data/calls/canonical/msca/msca_pf_2025_full.yaml` is grounded to uploaded sources (`af_he-msca-pf_en.pdf`, `ef_he-msca_en.pdf`, `wp-2-msca-actions_horizon-2023-2024_en.pdf`, supplemental applicant guide) with criteria weights `50/30/20` and Part B1 `max_pages: 10` encoded. Why: keeps call onboarding deterministic and traceable to real source evidence.
+
 - **2026-03-07 — WF-0061 gate path anchoring:** Resolve `MSCA-PF-2025` manifest gate path from `backend/scripts/ingest_call.py` location (backend-root anchored), not process cwd. Why: avoids false gate failures when ingest is launched outside `backend/`.
+
 - **2026-03-08 — WF-0063 authoring policy:** Treat split visibility/reviewability as proof-call-first. `proposal_nodes[*].node_role` encodes primary/supporting intent, but runtime split behavior activates only when `runtime_config.split_visibility_reviewability_enabled` is explicitly true for an approved call. Why: preserves rollback safety and avoids accidental universal behavior flips.
