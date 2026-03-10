@@ -125,3 +125,31 @@ def test_wf0072_bundle_closure_rejects_non_replayable_closure_refs() -> None:
 
     with pytest.raises(ValueError, match="CLOSURE_ARTIFACT_REF_INVALID"):
         validate_matrix_payload(matrix=matrix, require_closure=True)
+
+
+def test_wf0072_bundle_rejects_non_object_rows() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["rows"].append("not-a-row-object")
+
+    with pytest.raises(ValueError, match="ROW_OBJECT_REQUIRED"):
+        validate_matrix_payload(matrix=matrix)
+
+
+def test_wf0072_bundle_closure_requires_existing_artifact_refs_and_anchor() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["closure_artifacts"]["baseline_scope_ref"] = "docs/walkthroughs/completed/does-not-exist.md#baseline-sha-or-commit-range"
+    matrix["closure_artifacts"]["audit_disposition_ref"] = "docs/walkthroughs/completed/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md#not-a-real-anchor"
+
+    with pytest.raises(ValueError, match="CLOSURE_ARTIFACT_REF_MISSING|CLOSURE_ARTIFACT_ANCHOR_INVALID"):
+        validate_matrix_payload(matrix=matrix, require_closure=True)
+
+
+def test_wf0072_bundle_closure_rejects_mismatched_closure_status_counts() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["closure_status"]["rows_pass"] = 999
+
+    with pytest.raises(ValueError, match="CLOSURE_STATUS_MISMATCH"):
+        validate_matrix_payload(matrix=matrix, require_closure=True)

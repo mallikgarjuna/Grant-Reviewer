@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -148,7 +149,32 @@ def _validate_top_level(matrix: dict[str, Any]) -> list[dict[str, Any]]:
     rows = matrix.get("rows")
     if not isinstance(rows, list):
         raise ValueError("ROWS_LIST_REQUIRED")
-    return [row for row in rows if isinstance(row, dict)]
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise ValueError(f"ROW_OBJECT_REQUIRED: index={index}")
+    return rows
+
+
+def _markdown_heading_to_anchor(line: str) -> str:
+    heading = re.sub(r"^#+\s*", "", line.strip())
+    heading = re.sub(r"[^\w\s-]", "", heading, flags=re.UNICODE).strip().lower()
+    return re.sub(r"\s+", "-", heading)
+
+
+def _validate_closure_ref_exists(ref: str, *, context: str) -> None:
+    doc_path_text, anchor = ref.split("#", maxsplit=1)
+    repo_root = Path(__file__).resolve().parents[2]
+    doc_path = repo_root / doc_path_text
+    if not doc_path.exists():
+        raise ValueError(f"CLOSURE_ARTIFACT_REF_MISSING: {context}")
+    text = doc_path.read_text(encoding="utf-8")
+    anchor_candidates = {
+        _markdown_heading_to_anchor(line)
+        for line in text.splitlines()
+        if line.lstrip().startswith("#")
+    }
+    if anchor not in anchor_candidates:
+        raise ValueError(f"CLOSURE_ARTIFACT_ANCHOR_INVALID: {context}")
 
 
 def _row_matches_required_item(row: dict[str, Any], required_row: str) -> bool:
@@ -229,6 +255,7 @@ def _validate_closure(matrix: dict[str, Any], rows: list[dict[str, Any]]) -> Non
             raise ValueError(f"CLOSURE_ARTIFACTS_REQUIRED: {field_name}")
         if "/" not in value or "#" not in value:
             raise ValueError(f"CLOSURE_ARTIFACT_REF_INVALID: {field_name}")
+        _validate_closure_ref_exists(value, context=field_name)
 
     for row in rows:
         if row.get("result") == "fail":
@@ -239,6 +266,24 @@ def _validate_closure(matrix: dict[str, Any], rows: list[dict[str, Any]]) -> Non
                 code="CLOSURE_ROWS_BLOCKED",
                 context=f"{row.get('row_id')}:skip_reason",
             )
+    closure_status = matrix.get("closure_status")
+    if not isinstance(closure_status, dict):
+        raise ValueError("CLOSURE_STATUS_REQUIRED")
+    rows_total = len(rows)
+    rows_pass = sum(1 for row in rows if row.get("result") == "pass")
+    rows_skip = sum(1 for row in rows if row.get("result") == "skip")
+    rows_fail = sum(1 for row in rows if row.get("result") == "fail")
+    if closure_status.get("matrix_result") != "pass":
+        raise ValueError("CLOSURE_STATUS_INVALID: matrix_result")
+    expected_counts = {
+        "rows_total": rows_total,
+        "rows_pass": rows_pass,
+        "rows_skip_with_rationale": rows_skip,
+        "rows_fail": rows_fail,
+    }
+    for field_name, expected_value in expected_counts.items():
+        if closure_status.get(field_name) != expected_value:
+            raise ValueError(f"CLOSURE_STATUS_MISMATCH: {field_name}")
 
 
 def validate_matrix_payload(
