@@ -60,22 +60,40 @@ def matches_review_stage(
 def _build_node_stage_map(
     call_definition: CallDefinition,
 ) -> dict[str, Literal["STEP_1", "STEP_2", "BOTH"]]:
-    """Resolve per-node stage from canonical evaluation-element mappings."""
+    """Resolve per-node stage from canonical call-definition metadata.
+
+    WF-0070: When the authoritative ``proposal_surface_stage_scope``
+    contract is present, those entries take precedence over the legacy
+    element-based inference.  Surfaces not listed in the contract still
+    fall back to the element-mapping heuristic.
+    """
     canonical_json = call_definition.canonical_json
     if not isinstance(canonical_json, dict):
         return {}
 
+    # WF-0070: Authoritative contract takes precedence when present.
+    authored_scope = canonical_json.get("proposal_surface_stage_scope")
+    node_stage_by_id: dict[str, Literal["STEP_1", "STEP_2", "BOTH"]] = {}
+    if isinstance(authored_scope, dict):
+        for surface_id, stage in authored_scope.items():
+            if isinstance(surface_id, str) and stage in {"STEP_1", "STEP_2", "BOTH"}:
+                node_stage_by_id[surface_id] = stage
+
+    # Fallback: derive from evaluation-element stage for surfaces not
+    # covered by the authoritative contract.
     element_stage_by_id = _build_element_stage_map(canonical_json)
     proposal_nodes = canonical_json.get("proposal_nodes")
     if not isinstance(proposal_nodes, list):
-        return {}
+        return node_stage_by_id
 
-    node_stage_by_id: dict[str, Literal["STEP_1", "STEP_2", "BOTH"]] = {}
     for node in proposal_nodes:
         if not isinstance(node, dict):
             continue
         node_id = node.get("id")
         if not isinstance(node_id, str) or not node_id.strip():
+            continue
+        # Skip if already set by authoritative contract
+        if node_id in node_stage_by_id:
             continue
         expectations = node.get("node_expectations")
         if not isinstance(expectations, list) or len(expectations) == 0:

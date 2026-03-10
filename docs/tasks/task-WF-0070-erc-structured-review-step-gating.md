@@ -48,7 +48,7 @@ Risks:
 
 ---
 
-### [ ] Task 2 — Derive node-level stage-eligibility metadata from the authoritative contract
+### [x] Task 2 — Derive node-level stage-eligibility metadata from the authoritative contract
 
 Goal: Replace or regenerate the existing `review_stage` node metadata used by the frontend `isNodeEligibleForStage()` helper so it is produced from (derived from) the Task 1 authoritative contract rather than being a peer-authored truth source. Add a derivation-parity test confirming UI eligibility metadata and runtime activation inputs both trace to the same source.
 Slice: stage-truth-source
