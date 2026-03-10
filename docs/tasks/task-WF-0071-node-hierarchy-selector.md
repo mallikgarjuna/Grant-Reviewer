@@ -49,7 +49,7 @@ TDD Plan:
 - REFACTOR: skip
 Verification Steps: Run tests with `cd frontend && npm test -- UniversalSubmitForm.test.tsx`.
 
-### [ ] Task 3 — Review Card Breadcrumb Context
+### [x] Task 3 — Review Card Breadcrumb Context
 Goal: Construct and display an ancestor breadcrumb path for a node to show its structural context.
 Slice: Review Card Context
 User Stories: US2
