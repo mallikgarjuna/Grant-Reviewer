@@ -289,16 +289,14 @@ def _wf0056_live_rehearsal_verify_tracer_violations(workflow: dict[str, Any]) ->
         if not isinstance(step, dict):
             continue
         run_command = step.get("run")
-        if isinstance(run_command, str) and "python -m tools.gh_policy.cli verify" in run_command:
-            if "--branch main" in run_command:
-                verify_command_found = True
+        if isinstance(run_command, str) and "python -m tools.gh_policy.cli verify" in run_command and "--branch main" in run_command:
+            verify_command_found = True
         uses = step.get("uses")
         with_config = step.get("with")
-        if isinstance(uses, str) and uses.startswith("actions/upload-artifact@"):
-            if isinstance(with_config, dict) and with_config.get(
-                "path"
-            ) == "docs/walkthroughs/evidence/WF-0056/":
-                evidence_upload_found = True
+        if isinstance(uses, str) and uses.startswith("actions/upload-artifact@") and isinstance(with_config, dict) and with_config.get(
+            "path"
+        ) == "docs/walkthroughs/evidence/WF-0056/":
+            evidence_upload_found = True
 
     if not verify_command_found:
         violations.append("verify-main job must run verify CLI against --branch main")
@@ -331,9 +329,8 @@ def _wf0056_live_rehearsal_apply_violations(workflow: dict[str, Any]) -> list[st
         if not isinstance(step, dict):
             continue
         run_command = step.get("run")
-        if isinstance(run_command, str) and "python -m tools.gh_policy.cli apply" in run_command:
-            if "--branch policy-rehearsal" in run_command and "--apply-intent" in run_command:
-                apply_command_found = True
+        if isinstance(run_command, str) and "python -m tools.gh_policy.cli apply" in run_command and "--branch policy-rehearsal" in run_command and "--apply-intent" in run_command:
+            apply_command_found = True
         uses = step.get("uses")
         with_config = step.get("with")
         if isinstance(uses, str) and uses.startswith("actions/upload-artifact@"):
