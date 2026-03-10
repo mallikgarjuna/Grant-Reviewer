@@ -39,4 +39,23 @@ describe("ReviewCard", () => {
 
     expect(screen.queryByText(/Section breadcrumb:/)).toBeNull();
   });
+
+  it("normalizes legacy greater-than breadcrumb delimiters", () => {
+    render(
+      <ReviewCard
+        index={3}
+        criterion="Impact"
+        reviewedSectionLabel="Part B > Part B1 > Proposal Summary"
+        evaluationElementName="Impact potential"
+        rating="NOTE"
+        feedback="Path should normalize for legacy separators."
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "Section breadcrumb: Part B > Part B1 > Proposal Summary",
+      ),
+    ).toBeInTheDocument();
+  });
 });

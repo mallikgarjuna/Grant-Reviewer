@@ -35,7 +35,7 @@ function buildBreadcrumbPath(reviewedSectionLabel?: string | null): string | nul
     return null;
   }
   const parts = reviewedSectionLabel
-    .split("/")
+    .split(/[/>]/)
     .map((part) => part.trim())
     .filter((part) => part.length > 0);
   if (parts.length <= 1) {
