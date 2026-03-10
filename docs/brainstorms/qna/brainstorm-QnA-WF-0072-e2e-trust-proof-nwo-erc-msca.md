@@ -2,7 +2,7 @@
 # WF-0072 — E2E Trust Proof for Representative NWO/ERC/MSCA Flows
 
 Artifact: brainstorm-qna
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-10
 
@@ -307,3 +307,8 @@ This file captures the full Phase 0.1 interactive Q&A transcript.
 - C) A tiny deterministic manual checklist after automation.
 > Recommendation: A. This follows the user’s verification discipline guardrail.
 > **Selected: A**
+
+## Addendum — Phase 0.3 Risk-Audit Application
+
+- Audit finding 1 (`non-blocking`): the original AC5 wording could be read as requiring browser-visible proof even when the strongest honest proof lane for a policy block is API-first. Applied edit: refined AC5 so user-facing blocking is required on any exercised UI surface, while API-first proof is still allowed when paired with explicit zero-side-effect evidence.
+- Audit finding 2 (`non-blocking`): the brainstorm required deterministic evidence but did not explicitly force a one-row-per-proof-item matrix, which could let later phases overstate coverage. Applied edit: added `## Verification Matrix Requirement` to force each proof item to declare representative call, scenario, proof surface, auth lane, side-effect assertion, and pass/fail result.

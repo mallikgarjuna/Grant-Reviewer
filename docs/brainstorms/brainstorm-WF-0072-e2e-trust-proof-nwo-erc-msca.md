@@ -2,7 +2,7 @@
 # WF-0072 — E2E Trust Proof for Representative NWO/ERC/MSCA Flows
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-10
 
@@ -155,7 +155,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0072-e2e-trust-proo
 - AC2: At least one truly end-to-end happy-path flow exists per representative call family and is recorded in a deterministic verification ledger.
 - AC3: ERC stage mismatch is proven fail-closed with researcher-visible blocking and zero downstream side effects.
 - AC4: Missing mandatory input is proven fail-closed with submit blocked before execution or persistence.
-- AC5: Policy-blocking behavior is proven fail-closed with visible blocking semantics and explicit zero-side-effect evidence.
+- AC5: Policy-blocking behavior is proven fail-closed with visible blocking semantics on any user-facing surface exercised by the proof item, plus explicit zero-side-effect evidence even when the strongest proof lane is API-first.
 - AC6: The verification bundle records exact commands/selectors/results and distinguishes automated evidence from manual confirmation.
 - AC7: If protected app/BFF surfaces are exercised, both auth lanes are run or explicitly marked skipped with concrete reason.
 - AC8: No ship or proceed recommendation is allowed while any blocking verification item is failing or unverified.
@@ -167,6 +167,12 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0072-e2e-trust-proo
 - Auth lane: `AUTH_MODE=test_bypass` smoke plus `AUTH_MODE=clerk` lane when credentials are available; skipped Clerk coverage must be stated explicitly.
 - Manual lane: only the smallest deterministic checklist still needed after automation, with exact prerequisites and pass/fail outcomes.
 - Walkthrough/evidence output: exact commands, exact results, and a concise checklist that another maintainer can rerun without guesswork.
+
+## Verification Matrix Requirement
+
+- Every proof item in the later walkthrough must map one-to-one to a matrix row containing: representative call, scenario (`happy-path`, `stage-mismatch`, `missing-mandatory-input`, `policy-blocking`), proof surface (`browser`, `API`, or paired), auth lane, side-effect assertion, and pass/fail result.
+- The matrix must make clear whether a negative case is tied to one representative family only (for example ERC stage mismatch) or is intentionally demonstrated on a different representative call for the strongest fail-closed evidence.
+- No final trust claim may rely on an unlabeled proof item or on a “covered elsewhere” assumption that is not traceable to a matrix row.
 
 Contract Notes / Non-obvious constraints:
 
