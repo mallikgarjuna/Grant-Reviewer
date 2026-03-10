@@ -250,7 +250,7 @@ TDD Plan:
 Verification Steps: `cd backend && ./scripts/reset_test_db.sh && DATABASE_URL=postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable uv run pytest tests/test_api.py -k "wf0072 and (quota or reviews_disabled)" -v`; `cd backend && uv run python scripts/validate_wf_0072_bundle.py --matrix ../docs/walkthroughs/evidence/WF-0072/verification-matrix.json --require-row nwo_veni_2025_preproposal:policy_blocking`
 Risks (if any): Existing policy tests already risk over-claiming through synthetic fixtures, so this task must stay on the representative NWO backend path or explicitly mark scope narrower.
 
-### [ ] Task 12 — Extend the WF-0072 closure validator for final protected-row parity and closure artifacts
+### [x] Task 12 — Extend the WF-0072 closure validator for final protected-row parity and closure artifacts
 Goal: Tighten the WF-0072 bundle validator so final closure fails if any protected proof row lacks required auth-lane parity or explicit skip rationale, or if baseline-scope / audit-disposition artifacts are missing from the final bundle.
 Slice: closure-contract
 User Stories: US1, US3, US4

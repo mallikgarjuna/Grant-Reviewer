@@ -12,8 +12,8 @@
     "paired"
   ],
   "closure_artifacts": {
-    "baseline_scope_ref": "TBD_BASELINE_SCOPE_REF",
-    "audit_disposition_ref": "TBD_AUDIT_DISPOSITION_REF"
+    "baseline_scope_ref": "docs/walkthroughs/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md#baseline-sha-or-commit-range",
+    "audit_disposition_ref": "docs/walkthroughs/walkthrough-WF-0072-e2e-trust-proof-nwo-erc-msca.md#audit-disposition-ledger"
   },
   "rows": [
     {

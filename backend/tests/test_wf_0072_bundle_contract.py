@@ -95,3 +95,31 @@ def test_wf0072_bundle_requires_protected_lane_parity_or_explicit_skip() -> None
 
     with pytest.raises(ValueError, match="PROTECTED_LANE_PARITY_MISSING"):
         validate_matrix_payload(matrix=matrix, require_protected_lanes=True)
+
+
+def test_wf0072_bundle_closure_requires_protected_parity() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["closure_artifacts"]["baseline_scope_ref"] = "docs/walkthroughs/evidence/WF-0072/baseline_scope.json#baseline"
+    matrix["closure_artifacts"]["audit_disposition_ref"] = "docs/walkthroughs/evidence/WF-0072/audit_disposition.md#audit"
+    matrix["rows"] = [
+        row
+        for row in matrix["rows"]
+        if not (
+            row["proof_item_id"] == "MSCA-PF-2025:happy_path"
+            and row["auth_lane"] == "clerk"
+        )
+    ]
+
+    with pytest.raises(ValueError, match="PROTECTED_LANE_PARITY_MISSING"):
+        validate_matrix_payload(matrix=matrix, require_closure=True)
+
+
+def test_wf0072_bundle_closure_rejects_non_replayable_closure_refs() -> None:
+    matrix = _seed_matrix()
+    matrix = deepcopy(matrix)
+    matrix["closure_artifacts"]["baseline_scope_ref"] = "baseline"
+    matrix["closure_artifacts"]["audit_disposition_ref"] = "audit"
+
+    with pytest.raises(ValueError, match="CLOSURE_ARTIFACT_REF_INVALID"):
+        validate_matrix_payload(matrix=matrix, require_closure=True)

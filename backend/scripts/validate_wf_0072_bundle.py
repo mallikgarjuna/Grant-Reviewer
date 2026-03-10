@@ -227,6 +227,8 @@ def _validate_closure(matrix: dict[str, Any], rows: list[dict[str, Any]]) -> Non
         )
         if value.startswith("TBD"):
             raise ValueError(f"CLOSURE_ARTIFACTS_REQUIRED: {field_name}")
+        if "/" not in value or "#" not in value:
+            raise ValueError(f"CLOSURE_ARTIFACT_REF_INVALID: {field_name}")
 
     for row in rows:
         if row.get("result") == "fail":
