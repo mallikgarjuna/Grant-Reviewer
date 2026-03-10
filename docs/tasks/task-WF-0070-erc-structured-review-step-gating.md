@@ -302,7 +302,7 @@ Risks:
 
 ---
 
-### [ ] Task 9 — Verification matrix: end-to-end proof, all FR14 blocking tests, and audit-disposition ledger
+### [x] Task 9 — Verification matrix: end-to-end proof, all FR14 blocking tests, and audit-disposition ledger
 
 Goal: Implement all blocking automated test coverage from FR14, add at least one representative end-to-end proof spanning submit → validation → activation → persistence → review-detail for ERC structured review, and produce the audit-disposition ledger and baseline-SHA scope proof required by FR15/FR16 before any readiness or ship recommendation.
 Slice: verification

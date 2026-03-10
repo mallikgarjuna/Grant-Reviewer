@@ -8,11 +8,11 @@ import { isNodeEligibleForStage, type RenderNode } from "@/lib/submit/renderMode
 
 function makeNode(overrides: Partial<RenderNode>): RenderNode {
   return {
-    id: "node-1",
     nodeLogicalId: "test_node",
     label: "Test Node",
     reviewStage: "BOTH",
     nodeRole: "PRIMARY",
+    isContainer: false,
     ...overrides,
   };
 }
