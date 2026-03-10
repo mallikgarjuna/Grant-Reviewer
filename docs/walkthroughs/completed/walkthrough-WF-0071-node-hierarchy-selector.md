@@ -1,3 +1,4 @@
+<!-- docs/walkthroughs/completed/walkthrough-WF-0071-node-hierarchy-selector.md -->
 # Walkthrough — WF-0071 Node Hierarchy Selector
 
 ## Overview
@@ -11,20 +12,21 @@ This walkthrough demonstrates the completion of WF-0071, which introduced hierar
 ## Verification Results
 
 ### Automated Tests
-- `renderModel.test.ts`: PASS (verified parsing and "Uncategorized" fallback).
-- `UniversalSubmitForm.test.tsx`: PASS (verified unselectable group headers).
-- `ReviewCard.test.tsx`: PASS (verified breadcrumb construction).
+- `vitest`: PASS (76 tests) across:
+  - `src/lib/submit/renderModel.test.ts` (parsing + "Uncategorized" fallback)
+  - `src/components/submit/UniversalSubmitForm.test.tsx` (unselectable group headers + leaf submission)
+  - `src/components/review/ReviewCard.test.tsx` (breadcrumb construction)
+  - `src/app/app/reviews/[reviewId]/page.test.tsx` (review page integration expectations)
 
 ### Visual Verification
-Visual verification was performed via browser subagent on `localhost:3000`.
+Visual verification was performed on `localhost:3000`.
 
 #### Submission Form Hierarchy
-The form now correctly groups sections under parent headers (e.g., Part A, Part B1).
-![Submission Form Hierarchy](file:///home/mgurram/.gemini/antigravity/brain/9676d70f-d91e-43d4-81c0-855a4b28a2d1/submission_form_hierarchy_msca_1773125976428.png)
+- The submit form groups leaf nodes under 1-level parent headers (for example, `Part A`, `Part B1`).
+- Parent headers are informational only (cannot be selected/submitted).
 
 #### Review Card Breadcrumbs
-Review cards display the full ancestor path (e.g., `Part A > Budget > Resources and Time Commitment`).
-![Review Card Breadcrumbs](file:///home/mgurram/.gemini/antigravity/brain/9676d70f-d91e-43d4-81c0-855a4b28a2d1/review_card_breadcrumbs_1773126025392.png)
+- Review cards display the full ancestor path (for example, `Part A > Budget > Resources and Time Commitment`).
 
 ## Remaining Risks
 - None identified. The 1-level flat grouping handles existing complex calls (ERC, MSCA) as intended for the MVP.

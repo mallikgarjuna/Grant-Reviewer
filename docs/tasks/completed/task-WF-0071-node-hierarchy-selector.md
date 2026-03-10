@@ -1,8 +1,9 @@
+<!-- docs/tasks/completed/task-WF-0071-node-hierarchy-selector.md -->
 # WF-0071 — Node Hierarchy Selector Tasks
 
 Artifact: task
 Version: v0.3
-Status: Ready for Implementation
+Status: Done
 Last Updated: 2026-03-10
 
 ## Task Breakdown (Sequential Order)
