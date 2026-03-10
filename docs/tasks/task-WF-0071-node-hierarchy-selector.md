@@ -1,14 +1,14 @@
 # WF-0071 — Node Hierarchy Selector Tasks
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-10
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Node Hierarchy Parsing Logic
-Goal: Transform flat NodeSummary[] into a structured format supporting `isContainer`, and remove the legacy exception `nested_nodes`.
+### [x] Task 1 — Node Hierarchy Parsing Logic
+Goal: Transform flat NodeSummary[] into a structured format supporting `isContainer`, handling orphan nodes with an "Uncategorized" fallback, and remove the legacy exception `nested_nodes`.
 Slice: Node Hierarchy Parsing
 User Stories: US1
 PRD Requirements: FR1
@@ -21,9 +21,9 @@ May touch files: none
 Out of scope: Recursive N-deep tree structures; changing backend schemas.
 Stop if: Parsing logic cannot handle existing flat structures or breaks other form types.
 Session boundary after: no
-Acceptance Criteria: `isContainer` correctly identifies nodes with children; `parent_node_id !== null` no longer throws an error.
+Acceptance Criteria: `isContainer` correctly identifies nodes with children; orphan nodes missing a parent are grouped under "Uncategorized"; `parent_node_id !== null` no longer throws an error.
 TDD Plan:
-- RED: Add unit test in `renderModel.test.ts` for flat-to-grouped parsing logic and container identification.
+- RED: Add unit test in `renderModel.test.ts` for flat-to-grouped parsing logic, container identification, and the "Uncategorized" fallback for orphans.
 - GREEN: Update `renderModel.ts` to implement grouping logic and remove the `nested_nodes` exception.
 - REFACTOR: skip
 Verification Steps: Run tests with `cd frontend && npm test -- renderModel.test.ts`.
@@ -75,3 +75,4 @@ Risks (if any): None identified.
 
 - v0.1 (2026-03-10): Initial tasks from PRD
 - v0.2 (2026-03-10): Applied Phase 2.2 review (no blocking issues found) and marked Ready for Implementation
+- v0.3 (2026-03-10): Addressed Phase 2 Part B adversarial review: Added "Uncategorized fallback" edge case to Task 1.

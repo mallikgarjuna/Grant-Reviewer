@@ -31,12 +31,6 @@ export type RenderModelReady = {
   structuralContainerNodeLogicalIds?: string[];
 };
 
-export type RenderModelUnsupported = {
-  state: "unsupported";
-  reason: "nested_nodes";
-  message: string;
-};
-
 export type RenderModelContractError = {
   state: "contract_error";
   reason: "missing_logical_id";
@@ -44,10 +38,7 @@ export type RenderModelContractError = {
   nodeIds: string[];
 };
 
-export type RenderModelResult =
-  | RenderModelReady
-  | RenderModelUnsupported
-  | RenderModelContractError;
+export type RenderModelResult = RenderModelReady | RenderModelContractError;
 
 export type ReviewStage = "STEP_1" | "STEP_2";
 
@@ -111,19 +102,6 @@ function normalizeSectionNumber(raw: string): string | null {
 export function buildRenderModel(input: BuildRenderModelInput): RenderModelResult {
   const splitVisibilityReviewabilityEnabled =
     input.splitVisibilityReviewabilityEnabled === true;
-  const nestedNodes = input.nodes.filter((node) => node.parent_node_id !== null);
-  const hasStructuralContainers = input.nodes.some((node) => !node.has_expectations);
-  if (
-    !splitVisibilityReviewabilityEnabled &&
-    nestedNodes.length > 0 &&
-    !hasStructuralContainers
-  ) {
-    return {
-      state: "unsupported",
-      reason: "nested_nodes",
-      message: "This call uses nested sections and is not yet supported in this form.",
-    };
-  }
 
   const missingLogicalIdNodeIds = input.nodes
     .filter((node) => typeof node.logical_id !== "string" || node.logical_id.trim().length === 0)
@@ -138,6 +116,11 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
   }
 
   const nodeById = new Map(input.nodes.map((node) => [node.id, node]));
+  const parentNodeIdSet = new Set(
+    input.nodes
+      .map((node) => node.parent_node_id)
+      .filter((nodeId): nodeId is string => typeof nodeId === "string" && nodeId.length > 0),
+  );
   const roleSummary = classifyCallNodeRoles(input.nodes, {
     splitVisibilityReviewabilityEnabled,
   });
@@ -163,7 +146,7 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
       label: sectionNumber ? `${baseLabel} (${sectionNumber})` : baseLabel,
       reviewStage,
       nodeRole: role.role,
-      isContainer: role.isContainer,
+      isContainer: role.isContainer || parentNodeIdSet.has(node.id),
     });
   }
 
@@ -186,10 +169,12 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
       continue;
     }
     const ancestorLabels: string[] = [];
+    let missingAncestor = false;
     let currentParentNodeId = leafNode.parent_node_id;
     while (currentParentNodeId) {
       const parentNode = nodeById.get(currentParentNodeId);
       if (!parentNode) {
+        missingAncestor = true;
         break;
       }
       if (parentNode.logical_id) {
@@ -207,7 +192,10 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
     }
 
     const parentLogicalId = input.metadataByLogicalId[leafLogicalId]?.parentLogicalId ?? null;
-    const groupKey = ancestorLabels.join(" / ") || parentLogicalId || "__ungrouped__";
+    const fallbackGroupLabel =
+      missingAncestor && ancestorLabels.length === 0 ? "Uncategorized" : null;
+    const groupLabel = ancestorLabels.join(" / ") || fallbackGroupLabel;
+    const groupKey = groupLabel || parentLogicalId || "__ungrouped__";
     const existingGroup = groupsByKey.get(groupKey);
     if (existingGroup) {
       existingGroup.nodes.push(renderLeaf);
@@ -215,7 +203,7 @@ export function buildRenderModel(input: BuildRenderModelInput): RenderModelResul
     }
     groupsByKey.set(groupKey, {
       groupKey,
-      groupLabel: ancestorLabels.length > 0 ? ancestorLabels.join(" / ") : null,
+      groupLabel,
       nodes: [renderLeaf],
     });
   }
