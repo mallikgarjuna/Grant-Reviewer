@@ -1,6 +1,16 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening)
+
+### AD 74.1: WF-0074 is authoring-contract hardening first, with explicit checklist and proof-call seams
+- **WF ID**: WF-0074
+- **Context**: The brainstorm required a narrow slice across schema, template, authoring docs/checklist, tests, and one proof-call example, while also requiring explicit inspection of the activated snapshot / engine contract seam before making runtime-impact claims.
+- **Decision**: Keep WF-0074 scoped to authoring-contract hardening in MVP. Use `docs/call-yaml/onboarding-checklist.md` as the checklist seam, default the proof-call surface to `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml`, and require compatibility proof against at least one existing real flat canonical YAML. Treat the current `structured_reviewer_service.py` snapshot seam as a claim boundary: no runtime-consumption claim in this WF unless a later task adds and proves the narrowest necessary snapshot change.
+- **Why**: This preserves the smallest defensible cross-call slice, keeps the contract concrete on real repo surfaces, and avoids overclaiming review-quality impact while the runtime snapshot still carries only `schema_version` plus `expectations`.
+- **Tradeoff**: The MVP improves representability, defaults, and governance now, but a later WF is still required if the product needs subordinate prompt fidelity to flow into the structured-review engine itself.
+- **Status**: Approved.
+
 ## Date: 2026-03-11 (WF-0073: erc-poc-2026-call-onboarding closeout)
 
 ### AD 73.2: Close WF-0073 with backend-only proof and call-local manifest-gate hardening

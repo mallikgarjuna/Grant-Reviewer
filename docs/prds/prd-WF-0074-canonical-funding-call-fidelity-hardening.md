@@ -2,8 +2,8 @@
 # WF-0074 — Canonical Funding Call Fidelity Hardening
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-11
 
 ## 0. User Stories (MVP)
@@ -63,12 +63,12 @@ Last Updated: 2026-03-11
 - FR2 (US1): The new subordinate-prompt structure must be additive enough that existing flat canonical YAMLs can remain temporarily ingest-valid during MVP unless later tasks explicitly choose a narrower rejection policy with proof.
 - FR3 (US1, US2): The starter template must show at least one evaluation element encoded with subordinate prompt structure so copied examples no longer normalize flattening.
 - FR4 (US2): The authoring workflow docs must define when subordinate prompt encoding is required: if official source material contains review-relevant prompts/questions beneath an evaluation element, authors must preserve them explicitly instead of collapsing them into summary prose.
-- FR5 (US2): The onboarding checklist must include a fail-closed fidelity check that asks whether the official source contains subordinate prompts and whether each prompt has been preserved or explicitly justified as absent by source.
+- FR5 (US2): `docs/call-yaml/onboarding-checklist.md` must include a fail-closed fidelity check that asks whether the official source contains subordinate prompts and whether each prompt has been preserved or explicitly justified as absent by source.
 - FR6 (US3): The PRD and later tasks must treat compatibility posture as an explicit contract with tests: existing flat YAMLs are temporarily tolerated for backward compatibility, while new or re-authored calls that expose subordinate official prompts must use the new structure.
 - FR7 (US3): The workflow must inspect the runtime seam at `backend/app/services/structured_reviewer_service.py` before claiming review-quality impact and must treat `backend/app/engine/contracts.py` as insufficient evidence by itself.
 - FR8 (US3): Because the inspected snapshot seam currently builds `call_config_snapshot` from only `schema_version` and `expectations`, MVP implementation must not claim that subordinate prompt fidelity is consumed by the structured-review engine in this WF unless a later task adds and proves the narrowest necessary snapshot seam.
 - FR9 (US3): One proof-call example must exercise the new structure concretely, preferring one real canonical YAML surface by default; fixture fallback is allowed only with an explicit scope-control rationale.
-- FR10 (US1, US2, US3): Targeted tests must fail closed for malformed subordinate-prompt structures, authoring-contract regressions, and ambiguity in the compatibility posture.
+- FR10 (US1, US2, US3): Targeted tests must fail closed for malformed subordinate-prompt structures, authoring-contract regressions, and ambiguity in the compatibility posture, including at least one regression check against an existing real flat canonical YAML.
 - FR11 (US1, US2, US3): Phase 2 planning must keep implementation bounded to schema, template, authoring docs/checklist, targeted tests, and one proof-call example unless the runtime seam inspection yields a separately justified narrow snapshot update.
 
 ## 5. Data & API Contracts
@@ -87,7 +87,7 @@ Last Updated: 2026-03-11
   - Validation rule: template shape must remain valid under the updated schema.
 
 - Contract C (US2, FR4, FR5): Authoring workflow and checklist contract
-  - Target seams: authoring docs plus onboarding checklist surfaces selected in Phase 2.
+  - Target seams: `docs/call-yaml/authoring-workflow.md` and `docs/call-yaml/onboarding-checklist.md`.
   - Required behavior:
     - docs define when subordinate prompts are required by source;
     - checklist includes an explicit fidelity-preservation gate;
@@ -96,7 +96,7 @@ Last Updated: 2026-03-11
 
 - Contract D (US3, FR6, FR10): Compatibility posture contract
   - Required rule: existing flat canonical YAMLs are tolerated temporarily for backward compatibility, but the new fidelity structure is mandatory for new or re-authored calls when official subordinate prompts exist.
-  - Required proof: tests or verification artifacts must show both sides of that posture.
+  - Required proof: tests or verification artifacts must show both sides of that posture, including at least one existing real flat canonical YAML regression target.
 
 - Contract E (US3, FR7, FR8): Runtime seam inspection contract
   - Inspection targets: `backend/app/services/structured_reviewer_service.py`, `backend/app/engine/contracts.py`, and any directly adjacent validator/projection seam needed to support the claim.
@@ -104,7 +104,7 @@ Last Updated: 2026-03-11
   - MVP claim boundary: authoring-contract hardening is in scope; runtime consumption is deferred unless a later narrow task proves an added snapshot seam.
 
 - Contract F (US3, FR9): Proof-call contract
-  - Preferred artifact: one real canonical YAML updated or authored to exercise subordinate prompt fidelity.
+  - Preferred artifact: `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml` as the default real canonical YAML proof-call surface because it exposed the motivating fidelity defect.
   - Fallback: one dedicated fixture or equivalent proof artifact only if a real canonical YAML would widen scope disproportionately, with rationale captured in-task.
   - Required proof: schema validation plus evidence that the example demonstrates subordinate prompt encoding clearly enough to guide future authors.
 
@@ -120,11 +120,11 @@ Last Updated: 2026-03-11
 
 - Authoring governance layer
   - Responsibility: define fail-closed authoring workflow steps and checklist gates for preserving subordinate official prompts.
-  - Suggested paths: `docs/call-yaml/authoring-workflow.md` plus the narrowest onboarding checklist surface identified in Phase 2.
+  - Suggested paths: `docs/call-yaml/authoring-workflow.md` and `docs/call-yaml/onboarding-checklist.md`.
 
 - Test layer
   - Responsibility: prove representability, malformed-shape rejection, compatibility posture, and proof-call validity.
-  - Suggested paths: schema tests, template validation tests, and proof-call validation tests only.
+  - Suggested paths: schema tests, template validation tests, one existing-flat-call compatibility regression test, and proof-call validation tests only.
 
 - Proof-call layer
   - Responsibility: make the contract concrete on one representative authored surface.
@@ -164,7 +164,7 @@ Last Updated: 2026-03-11
 - Minimum test types:
   - US1: unit or model-validation tests for the new subordinate-prompt schema contract.
   - US2: targeted validation or contract tests for template/docs/checklist fail-closed behavior.
-  - US3: backward-compat validation test(s) for existing flat YAML posture plus proof-call validation test(s).
+  - US3: backward-compat validation test(s) for at least one existing real flat canonical YAML posture plus proof-call validation test(s).
 - Required negative checks:
   - malformed subordinate-prompt structures are rejected;
   - flattening remains visibly disallowed by the updated docs/checklist when subordinate prompts exist;
@@ -185,9 +185,9 @@ Last Updated: 2026-03-11
 
 ## 11. Open Questions (if any)
 
-- Which exact existing canonical YAML should serve as the proof-call example if a real call is used: the motivating ERC PoC 2026 call by default, or another narrower representative artifact?
-- Whether the onboarding checklist update can stay inside an existing checklist surface already used in call onboarding, or needs a new narrow checklist artifact.
+- none
 
 ## 12. Changelog
 
 - v0.1 (2026-03-11): Initial PRD from brainstorm.
+- v0.2 (2026-03-11): Applied risk-audit fixes by pinning the checklist seam, defaulting the proof-call to `erc_poc_2026_full.yaml`, requiring a real flat-call compatibility regression target, and marking the PRD ready for tasks.
