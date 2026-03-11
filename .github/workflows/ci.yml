@@ -59,7 +59,10 @@ jobs:
           git diff --name-only "$diff_range" > /tmp/wf0053_changed_paths.txt
           cat /tmp/wf0053_changed_paths.txt
           uv run python scripts/check_contract_boundary_governance.py \
-            --changed-path-file /tmp/wf0053_changed_paths.txt
+            --changed-path-file /tmp/wf0053_changed_paths.txt \
+            --evidence-bundle contract_gate_evidence \
+            --evidence-bundle artifact_traceability_evidence \
+            --evidence-bundle negative_smoke_evidence
 
       - name: WF-0053 Negative Smoke (Expected Fail-Closed)
         if: github.event_name == 'pull_request'
