@@ -268,3 +268,29 @@ def test_wf0074_schema_rejects_malformed_subordinate_prompt_items() -> None:
     ]
     with pytest.raises(ValueError, match="source_locator"):
         CallDefinitionV2.model_validate(payload)
+
+
+def test_wf0074_template_demonstrates_subordinate_prompt_default() -> None:
+    template_path = Path("data/calls/templates/call_definition_v2_template.yaml")
+    loaded = yaml.safe_load(template_path.read_text(encoding="utf-8"))
+    assert isinstance(loaded, dict)
+
+    criteria = loaded["evaluation_criteria"]
+    assert isinstance(criteria, list)
+    first_criterion = criteria[0]
+    assert isinstance(first_criterion, dict)
+    elements = first_criterion["evaluation_elements"]
+    assert isinstance(elements, list)
+    first_element = elements[0]
+    assert isinstance(first_element, dict)
+
+    subordinate_prompts = first_element.get("subordinate_prompts")
+    assert isinstance(subordinate_prompts, list)
+    assert subordinate_prompts
+
+    model = CallDefinitionV2.model_validate(loaded)
+    modeled_prompts = (
+        model.evaluation_criteria[0].evaluation_elements[0].subordinate_prompts
+    )
+    assert modeled_prompts is not None
+    assert modeled_prompts[0].id == "prompt_objective_specificity"

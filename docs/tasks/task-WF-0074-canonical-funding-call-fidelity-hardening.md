@@ -73,7 +73,7 @@ Verification Steps:
 - `cd backend && rg -n "call_config_snapshot =|schema_version|expectations" app/services/structured_reviewer_service.py app/engine/contracts.py app/engine/review_request_validator.py`
 Risks (if any): A proof-call can falsely imply end-to-end review impact unless the task records that representability is proven while runtime consumption remains unchanged.
 
-### [ ] Task 3 — Template default for subordinate-prompt fidelity
+### [x] Task 3 — Template default for subordinate-prompt fidelity
 
 Goal:
 Make the starter YAML teach subordinate-prompt preservation by default and prove the example shape remains valid under the updated schema.
