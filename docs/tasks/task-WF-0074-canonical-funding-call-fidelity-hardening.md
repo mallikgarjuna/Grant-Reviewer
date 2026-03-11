@@ -138,7 +138,7 @@ Verification Steps:
 - `rg -n "subordinate|flatten|compatibility|schema_version|expectations" docs/call-yaml/authoring-workflow.md docs/call-yaml/onboarding-checklist.md`
 Risks (if any): Guidance can quietly reintroduce flattening or overclaim runtime impact even when the schema and proof-call are correct.
 
-### [ ] Task 5 — Durable governance evidence and closure gate
+### [x] Task 5 — Durable governance evidence and closure gate
 
 Goal:
 Preserve the fidelity rule, compatibility posture, proof-call policy, and fail-closed closure contract in the repo's durable governance surfaces so WF-0074 cannot close through transient task-only wording.

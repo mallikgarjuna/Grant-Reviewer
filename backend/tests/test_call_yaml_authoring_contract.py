@@ -40,3 +40,22 @@ def test_wf0074_authoring_docs_fail_closed_on_subordinate_prompt_flattening() ->
         "activated snapshot / engine contract seam remains limited to `schema_version` plus `expectations`"
         in checklist_text_lower
     )
+
+
+def test_wf0074_durable_governance_records_fidelity_policy_and_closure_gate() -> None:
+    decisions_text = Path("../docs/logs/decisions.md").read_text(encoding="utf-8")
+    project_docs_text = Path("../docs/memory/domain/project_docs.md").read_text(
+        encoding="utf-8"
+    )
+    decisions_text_lower = decisions_text.lower()
+    project_docs_text_lower = project_docs_text.lower()
+
+    assert "subordinate-prompt fidelity rule" in decisions_text_lower
+    assert "existing flat canonical yamls remain temporarily compatible" in decisions_text_lower
+    assert "erc_poc_2026_full.yaml" in decisions_text
+    assert "no runtime-consumption claim" in decisions_text_lower
+
+    assert "wf-0074 planning/execution must preserve durable decision/memory guidance" in project_docs_text_lower
+    assert "`pass`/`fail`/`skipped` evidence" in project_docs_text
+    assert "audit-disposition closure" in project_docs_text_lower
+    assert "no proceed or ship recommendation" in project_docs_text_lower

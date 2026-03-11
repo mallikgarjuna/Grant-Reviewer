@@ -3,6 +3,16 @@
 
 ## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening)
 
+### AD 74.3: WF-0074 subordinate-prompt fidelity rule and closure gate are durable governance
+- **WF ID**: WF-0074
+- **Context**: Phase 3 implementation adds a typed subordinate-prompt authoring contract, one real proof-call in `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml`, and fail-closed workflow/checklist wording, but those rules would remain too transient if they lived only in the task artifact or chat log.
+- **Decision**: Preserve the subordinate-prompt fidelity rule as durable governance: official subordinate prompts/questions must be preserved explicitly for new or re-authored calls when the source includes them; existing flat canonical YAMLs remain temporarily compatible only as a bounded MVP compatibility posture; `erc_poc_2026_full.yaml` remains the real proof-call example for this WF; and no runtime-consumption claim is allowed while the activated snapshot seam remains expectations-only.
+- **Why**: This keeps the fidelity hardening policy, compatibility posture, proof-call policy, and seam-boundary honesty stable beyond one implementation session.
+- **Tradeoff**: Governance text is slightly more explicit, but it prevents later closeout from overstating what the runtime currently consumes.
+- **Status**: Approved.
+
+## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening)
+
 ### AD 74.2: WF-0074 must preserve durable governance surfaces and fail-closed evidence gates in the PRD
 - **WF ID**: WF-0074
 - **Context**: The approved brainstorm made `decision/memory guidance` and a row-level fail-closed verification matrix part of the MVP contract, but the PRD draft initially compressed those into softer prose and testing notes.
