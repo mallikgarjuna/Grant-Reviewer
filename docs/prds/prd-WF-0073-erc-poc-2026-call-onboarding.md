@@ -2,8 +2,8 @@
 # WF-0073 — ERC PoC 2026 Call Onboarding PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-11
 
 ## 0. User Stories (MVP)
@@ -71,6 +71,7 @@ Last Updated: 2026-03-11
 - FR11 (US2): Any compatibility code change discovered during onboarding must be localized to the smallest activation/exposure seam required for this one call.
 - FR12 (US3): The implementation plan must include one backend `POST /api/structured-review` smoke verification for `ERC-2026-PoC` with replayable evidence metadata.
 - FR13 (US1, US2, US3): No proceed, readiness, or ship recommendation is valid unless manifest, dry-run, ingest, exposure, and structured-review smoke evidence each resolve to explicit pass/fail status.
+- FR14 (US1, US2, US3): Phase 2/3 artifacts must maintain one verification matrix for manifest, dry-run, ingest, exposure, and structured-review smoke; every row must name the exact seam, command or test ID, expected outcome, result, and evidence reference.
 
 ## 5. Data & API Contracts
 
@@ -94,12 +95,18 @@ Last Updated: 2026-03-11
   - DB ingest seam: existing backend ingest path.
   - Exposure seam: existing calls listing API and node metadata API.
   - State transition: `not present` -> `validated` -> `ingested` -> `exposed`.
+  - Evidence rule: exposure proof must record the exact endpoint or command used for calls listing and node metadata, plus expected call identity in the response.
 
 - Contract D (US3, FR12, FR13): Structured-review smoke contract
   - Entry point: existing backend `POST /api/structured-review`.
   - Minimum request shape: one valid `ERC-2026-PoC` submission payload aligned to authored node IDs.
   - Expected result: successful structured-review response without call-contract errors.
   - Evidence rule: command/test ID, payload fixture reference, and expected outcome must be recorded.
+
+- Contract E (US1, US2, US3, FR13, FR14): Verification matrix contract
+  - Required proof items: source manifest gate, dry-run ingest, DB ingest, call exposure, node metadata exposure, structured-review smoke.
+  - Required row fields: proof item, exercised seam, command or test ID, expected outcome, result, evidence reference, notes.
+  - Gate rule: no readiness claim is valid while any required row is missing or unresolved.
 
 ## 6. Components / Modules
 
@@ -114,10 +121,12 @@ Last Updated: 2026-03-11
 - Canonical call-definition layer
   - Responsibility: express PoC proposal structure, evaluation criteria/elements, and enforceable constraints.
   - Suggested paths: `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml`.
+  - Boundary rule: Host Institution Support Letter and Ethics Issues Table stay as submission dependencies expressed through guidance/compliance metadata, not reviewable proposal nodes.
 
 - Ingest/activation layer
   - Responsibility: validate and ingest the call through existing backend seams.
   - Suggested paths: existing ingest script/config paths only if needed for this call.
+  - Change policy: attempt call-local config/activation fixes first; only widen to broader ERC runtime seams if narrower fixes fail.
 
 - Exposure/runtime verification layer
   - Responsibility: confirm call listing, node metadata availability, and backend structured-review smoke behavior.
@@ -155,6 +164,9 @@ Last Updated: 2026-03-11
   - US1: authoring/validation checks for manifest and call-definition integrity.
   - US2: integration-ish ingest and exposure verification.
   - US3: integration-ish backend structured-review smoke request.
+- Required negative checks:
+  - source-manifest gate fails closed when a mandatory source class, `SHA256`, or `Used for` traceability field is missing;
+  - `ERC-2026-PoC` does not accidentally inherit multi-step ERC stage behavior.
 - If a narrow compatibility fix is required, add regression coverage exactly at the touched seam before broadening verification.
 
 ## 9. Telemetry (Minimal)
@@ -172,8 +184,8 @@ Last Updated: 2026-03-11
 ## 11. Open Questions (if any)
 
 - Whether existing backend exposure/runtime seams accept `ERC-2026-PoC` without any call-specific compatibility fix.
-- Whether the authored proposal-node tree should represent support-letter and ethics artifacts as explicit non-reviewable metadata hooks or rely entirely on guidance/compliance notes.
 
 ## 12. Changelog
 
 - v0.1 (2026-03-11): Initial PRD from brainstorm.
+- v0.2 (2026-03-11): Applied risk-audit fixes by adding a verification matrix contract, locking support-letter and ethics handling as non-reviewable submission dependencies, requiring fail-closed negative checks, and preferring call-local compatibility seams.

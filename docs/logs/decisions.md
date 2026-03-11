@@ -1,6 +1,16 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-11 (WF-0073: erc-poc-2026-call-onboarding)
+
+### AD 73.1: ERC PoC onboarding prefers call-local activation seams and keeps submission dependencies non-reviewable
+- **WF ID**: WF-0073
+- **Context**: PRD v0.1 locked `ERC-2026-PoC` to one-call onboarding with backend structured-review proof, but the audit found two remaining drift risks: Phase 2 could widen compatibility work into broader ERC runtime edits too early, and it could model the Host Institution Support Letter or Ethics Issues Table as reviewable proposal nodes.
+- **Decision**: For `ERC-2026-PoC`, prefer call-local config or activation fixes before any broader ERC runtime changes. Treat the Host Institution Support Letter and Ethics Issues Table as submission dependencies represented through guidance or compliance metadata, not as reviewable proposal nodes.
+- **Why**: This keeps the least-risk path aligned to the 2026-03-17 deadline, avoids unnecessary cross-call regression surface, and preserves the authoring boundary that proposal nodes should model evaluable narrative content only.
+- **Tradeoff**: If the repo cannot support the call through narrow seams, a later task may still need a broader ERC runtime fix, but only after the narrower path is disproven.
+- **Status**: Approved.
+
 ## Date: 2026-03-10 (WF-0072: e2e trust proof nwo erc msca)
 
 ### AD 72.3: Policy-blocking closure requires the user-facing block on the exercised seam, not API evidence alone
