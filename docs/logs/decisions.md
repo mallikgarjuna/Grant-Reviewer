@@ -1,6 +1,16 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-11 (WF-0073: erc-poc-2026-call-onboarding closeout)
+
+### AD 73.2: Close WF-0073 with backend-only proof and call-local manifest-gate hardening
+- **WF ID**: WF-0073
+- **Context**: Phase 3 technical audit found one blocking fail-closed defect in the ERC PoC source-manifest gate: one manifest entry could satisfy both required source classes.
+- **Decision**: Close WF-0073 using the existing backend seams only (manifest gate, dry-run, DB ingest, `/calls`, node metadata, structured-review smoke) and accept only a call-local compatibility fix in `backend/scripts/ingest_call.py` requiring distinct compliant source entries for structure vs evaluation criteria/elements.
+- **Why**: Preserves one-call scope, prevents source-traceability false passes, and avoids broad ERC runtime changes without evidence of need.
+- **Follow-on boundary rationale**: No automatic follow-on WF is required for launch readiness; any future work must be separately scoped for non-WF-0073 surfaces (full-suite regression expansion, frontend/BFF/browser proof, or broader ERC generalization).
+- **Status**: Approved.
+
 ## Date: 2026-03-11 (WF-0073: erc-poc-2026-call-onboarding)
 
 ### AD 73.1: ERC PoC onboarding prefers call-local activation seams and keeps submission dependencies non-reviewable

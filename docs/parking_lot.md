@@ -199,6 +199,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 48 | WF-0070 | erc-structured-review-step-gating | promoted | P1 #1 (historical; ERC Step 1 vs Step 2 trust gating) | 2026-03-09 |
 | 49 | WF-0071 | node-hierarchy-selector | promoted | P1 #1 (historical; nested-call navigation clarity) | 2026-03-10 |
 | 50 | WF-0072 | e2e-trust-proof-nwo-erc-msca | promoted | P1 #1 (historical; representative locked-wedge end-to-end trust proof) | 2026-03-10 |
+| 51 | WF-0073 | erc-poc-2026-call-onboarding | started-directly | - | 2026-03-11 |
 
 ---
 
@@ -257,3 +258,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v4.8** (2026-03-10): Post-WF-0070 refresh: updated P1 rationale to reflect ERC stage-truthfulness closure and advanced nested-call navigation to next active priority.
 - **v4.9** (2026-03-10): Post-WF-0071 refresh: removed the completed node-hierarchy P1 item, renumbered active P1, and recorded WF-0071 promotion provenance in the WF log.
 - **v5.0** (2026-03-10): Promoted P1 #1 to `WF-0072`, renumbered active P1, and recorded the promotion provenance in the unified WF log.
+- **v5.1** (2026-03-11): Post-WF-0073 refresh: appended direct-start `WF-0073` to the unified WF initiative log (no active P1/P2 reprioritization required).
