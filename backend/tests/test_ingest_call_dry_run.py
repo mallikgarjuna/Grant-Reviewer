@@ -268,25 +268,45 @@ def test_wf0073_contract_erc_poc_2026_manifest_gate_fails_closed_on_missing_requ
         (
             "missing_sha256",
             """# temp manifest
-## Source 1
+1) **Application Form (PoC)**
 - Used for:
   - proposal structure
-## Source 2
+2) **ERC Work Programme 2026 (Primary for evaluation criteria/elements)**
+- SHA256: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`
 - Used for:
   - evaluation criteria/elements
+3) **Information for Applicants (PoC)**
+- SHA256: `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`
+- Used for:
+  - cross-check only
 """,
         ),
         (
             "missing_required_source_class",
             """# temp manifest
-## Source 1
+1) **Application Form (PoC)**
 - SHA256: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
 - Used for:
   - proposal structure
-## Source 2
+2) **Information for Applicants (PoC)**
 - SHA256: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`
 - Used for:
   - proposal structure cross-check
+""",
+        ),
+        (
+            "missing_used_for_in_required_evaluation_block_with_optional_present",
+            """# temp manifest
+1) **Application Form (PoC)**
+- SHA256: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+- Used for:
+  - proposal structure
+2) **ERC Work Programme 2026 (Primary for evaluation criteria/elements)**
+- SHA256: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`
+3) **Information for Applicants (PoC)**
+- SHA256: `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`
+- Used for:
+  - cross-check only
 """,
         ),
     )

@@ -183,40 +183,57 @@ def _enforce_wf0061_msca_source_upload_gate(
 def _manifest_has_required_wf0073_erc_poc_evidence(manifest_text: str) -> bool:
     """Check whether manifest text proves required ERC PoC source classes."""
     lowered_text = manifest_text.lower()
-    has_two_hashes = (
-        len(
-            list(
-                re.finditer(
-                    r"sha256:\s*`[0-9a-f]{64}`",
-                    lowered_text,
-                )
-            )
+
+    block_matches = list(
+        re.finditer(
+            r"(?m)^\d+\)\s+\*\*.*\*\*",
+            lowered_text,
         )
-        >= 2
     )
-    has_two_usage_blocks = lowered_text.count("used for:") >= 2
-    has_structure_source = any(
-        marker in lowered_text
-        for marker in (
+    if not block_matches:
+        return False
+
+    blocks: list[str] = []
+    for index, match in enumerate(block_matches):
+        block_start = match.start()
+        block_end = (
+            block_matches[index + 1].start()
+            if index + 1 < len(block_matches)
+            else len(lowered_text)
+        )
+        blocks.append(lowered_text[block_start:block_end])
+
+    def _find_block(markers: tuple[str, ...]) -> str | None:
+        for block in blocks:
+            if any(marker in block for marker in markers):
+                return block
+        return None
+
+    structure_block = _find_block(
+        (
             "proposal structure",
             "application structure",
             "proposal/application structure",
         )
     )
-    has_evaluation_source = any(
-        marker in lowered_text
-        for marker in (
+    evaluation_block = _find_block(
+        (
             "evaluation criteria",
             "evaluation elements",
             "evaluation criteria/elements",
         )
     )
-    return (
-        has_two_hashes
-        and has_two_usage_blocks
-        and has_structure_source
-        and has_evaluation_source
-    )
+
+    required_blocks = [structure_block, evaluation_block]
+    for block in required_blocks:
+        if block is None:
+            return False
+        if not re.search(r"sha256:\s*`[0-9a-f]{64}`", block):
+            return False
+        if "used for:" not in block:
+            return False
+
+    return True
 
 
 def _enforce_wf0073_erc_poc_source_manifest_gate(
