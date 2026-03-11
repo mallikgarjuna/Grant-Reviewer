@@ -3,7 +3,7 @@
 
 Artifact: task
 Version: v0.3
-Status: Ready for Implementation
+Status: Completed (Awaiting Ship Approval)
 Last Updated: 2026-03-11
 
 Type: feature
@@ -151,7 +151,7 @@ Verification Steps:
 - `cd backend && rg -n "ERC-2026-PoC|erc_poc_2026|structured-review" tests/test_api.py tests/test_structured_reviewer_service.py tests/fixtures`
 Risks (if any): A smoke proof can pass syntactically while still hiding call-resolution drift unless the payload uses the real authored node IDs and ingested call code.
 
-### [ ] Task 5 — Call-local compatibility closure and verification matrix evidence
+### [x] Task 5 — Call-local compatibility closure and verification matrix evidence
 
 Goal:
 Close the workflow with a single evidence bundle that records manifest, dry-run, ingest, exposure, and structured-review proof results, while constraining any discovered fix to a narrow PoC-specific seam.
