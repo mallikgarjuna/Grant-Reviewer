@@ -734,6 +734,32 @@ def create_client_with_nwo_veni_seed(monkeypatch) -> tuple[TestClient, UUID, str
         session.close()
 
 
+def create_client_with_erc_poc_seed(monkeypatch) -> tuple[TestClient, UUID, str]:
+    """Create test client with ERC PoC call ingested from canonical YAML."""
+    monkeypatch.setenv("LLM_MODE", "stub")
+    monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    reset_database()
+    ingest_call(Path("data/calls/canonical/erc/erc_poc_2026_full.yaml"), dry_run=False)
+
+    session = get_session()
+    try:
+        template = PromptTemplate(
+            name="ERC PoC structured template",
+            template_text="Template",
+            is_active=True,
+        )
+        session.add(template)
+        session.commit()
+
+        call = session.exec(
+            select(FundingCall).where(FundingCall.code == "ERC-2026-PoC")
+        ).first()
+        assert call is not None
+        return TestClient(app), call.id, call.code
+    finally:
+        session.close()
+
+
 def _set_call_definition_reviewer_policy_rules(
     *,
     call_id: UUID,
@@ -1007,6 +1033,44 @@ def test_wf0061_contract_runtime_proof_requires_upload_validate_ingest_order(
     )
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "CALL_NOT_FOUND"
+
+
+def test_wf0073_contract_structured_api_accepts_erc_poc_2026_payload(
+    monkeypatch,
+) -> None:
+    """WF-0073: structured API accepts fixture-backed ERC PoC payload."""
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    assert call_code == fixture["call_code"]
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0073-erc-poc-api-{time.time_ns()}",
+    )
+    assert response.status_code in {200, 201}
+
+    payload = response.json()
+    assert payload["status"] in {"PENDING", "COMPLETED"}
+    assert isinstance(payload.get("review_id"), str)
+
+    session = get_session()
+    try:
+        definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        assert definition.source_path == "data/calls/canonical/erc/erc_poc_2026_full.yaml"
+    finally:
+        session.close()
 
 
 def test_wf0065_nwo_structured_api_tracer_uses_real_canonical_call(monkeypatch) -> None:
@@ -1607,6 +1671,18 @@ def test_list_calls_returns_active_calls(monkeypatch) -> None:
         "ERC-2026-STG",
         "nwo_veni_2025_preproposal",
     }.issubset(codes)
+
+
+def test_wf0073_contract_erc_poc_2026_ingest_exposes_call_listing(monkeypatch) -> None:
+    """WF-0073: /calls should expose ERC PoC after canonical ingest."""
+    client, _, _ = create_client_with_erc_poc_seed(monkeypatch)
+
+    response = client.get("/calls")
+    assert response.status_code == 200
+
+    payload = response.json()
+    codes = {call["code"] for call in payload["calls"]}
+    assert "ERC-2026-PoC" in codes
 
 
 def test_list_nodes_includes_has_expectations(monkeypatch) -> None:

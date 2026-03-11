@@ -343,6 +343,30 @@ def _build_msca_pf_service(monkeypatch):
     return service, call.id
 
 
+def _build_erc_poc_service(monkeypatch):
+    monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
+    _reset_database()
+    ingest_call(Path("data/calls/canonical/erc/erc_poc_2026_full.yaml"), dry_run=False)
+    session = get_session()
+    template = PromptTemplate(
+        name="ERC PoC structured template",
+        template_text="Template",
+        is_active=True,
+    )
+    session.add(template)
+    session.commit()
+
+    call = session.exec(select(FundingCall).where(FundingCall.code == "ERC-2026-PoC")).first()
+    assert call is not None
+
+    repository = ReviewRepository(session)
+    service = StructuredReviewerService(
+        repository=repository,
+        llm_client=EchoExpectationLLMClient(),
+    )
+    return service, call.id
+
+
 def _build_nwo_veni_service(monkeypatch):
     monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
     _reset_database()
@@ -1070,6 +1094,68 @@ def test_wf0061_contract_multisurface_proof_candidate_stops_for_rescope(
         assert review.overall_summary is not None
         assert "MALFORMED_REVIEW_REQUEST" in review.overall_summary
         assert "Unknown node_logical_id" in review.overall_summary
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0073_contract_structured_service_resolves_erc_poc_2026_snapshot(
+    monkeypatch,
+) -> None:
+    """WF-0073: structured service resolves real ERC PoC snapshot."""
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "WF-0073 service tracer for PoC idea and innovation.",
+                )
+            ],
+            external_user_id="wf0073-erc-poc-service",
+            idempotency_key="wf0073-erc-poc-service",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) >= 1
+
+        definition = service.repository.session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        assert definition.source_path == "data/calls/canonical/erc/erc_poc_2026_full.yaml"
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0073_contract_structured_service_keeps_erc_poc_2026_single_step_activation(
+    monkeypatch,
+) -> None:
+    """WF-0073: PoC service path should not require staged ERC semantics."""
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_pi_strategic_leadership",
+                    "Single-step activation proof for PI strategic leadership/project management.",
+                )
+            ],
+            external_user_id="wf0073-erc-poc-single-step",
+            idempotency_key="wf0073-erc-poc-single-step",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) >= 1
+        assert review.overall_summary is not None
+        assert "MALFORMED_REVIEW_REQUEST" not in review.overall_summary
+
+        definition = service.repository.session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        assert definition.canonical_json["funding_call"]["stage"] == "single-step"
     finally:
         service.repository.session.close()
 

@@ -43,3 +43,7 @@
 - **2026-03-07 — WF-0061 gate path anchoring:** Resolve `MSCA-PF-2025` manifest gate path from `backend/scripts/ingest_call.py` location (backend-root anchored), not process cwd. Why: avoids false gate failures when ingest is launched outside `backend/`.
 
 - **2026-03-08 — WF-0063 authoring policy:** Treat split visibility/reviewability as proof-call-first. `proposal_nodes[*].node_role` encodes primary/supporting intent, but runtime split behavior activates only when `runtime_config.split_visibility_reviewability_enabled` is explicitly true for an approved call. Why: preserves rollback safety and avoids accidental universal behavior flips.
+
+- **2026-03-11 — ERC PoC 2026 onboarding default:** Treat `ERC-2026-PoC` as a one-call, single-step onboarding workflow by default. Do not inherit StG/CoG stage semantics or split-role opt-in unless official PoC sources prove a narrow config/activation seam is required; proceed claims also require manifest + dry-run + ingest + exposure + `POST /api/structured-review` evidence. Why: prevents hallucinated ERC reuse and keeps PoC readiness claims fail-closed.
+
+- **2026-03-11 — WF-0073 manifest distinct-source invariant:** `ERC-2026-PoC` manifest gating must require two distinct source entries (one for proposal/application structure, one for evaluation criteria/elements) each with `SHA256` and `Used for`; a single combined entry is insufficient. Why: prevents false-pass traceability that violates fail-closed source grounding.

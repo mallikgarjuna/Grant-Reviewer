@@ -45,3 +45,5 @@
 - **2026-03-10 — Zsh globbing on Next.js `[param]` paths:** When running `npx vitest run` against test files under `src/**/[routeParam]/...`, quote the path (or escape `[`/`]`) or zsh will treat it as a glob and fail before tests execute.
 
 - **2026-03-10 — Playwright WF spec parallelism:** Do not launch multiple `npx playwright test e2e/wf-0072-*.spec.ts` commands in parallel locally; each command starts a web server on `:3000` and parallel starts can fail with `EADDRINUSE`. Run WF-scoped specs serially (or override `PLAYWRIGHT_APP_PORT` per process).
+
+- **2026-03-11 — WF-0073 DB verify sequencing:** When running multiple DB-backed pytest selectors that each call `reset_database()` (drop/create all), execute them sequentially against the same PostgreSQL test DB to avoid lock-order deadlocks (`DROP TABLE ... deadlock detected`). Why: parallel DB test invocations can contend on DDL locks and produce false-negative verification failures.

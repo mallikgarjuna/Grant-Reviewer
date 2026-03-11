@@ -1,4 +1,6 @@
-"""Regression checks for V1/V2 dry-run ingestion without DB configuration."""
+"""backend/tests/test_ingest_call_dry_run.py
+Regression checks for V1/V2 dry-run ingestion without DB configuration.
+"""
 
 from __future__ import annotations
 
@@ -234,3 +236,123 @@ def test_wf0061_contract_non_dry_run_ingest_stops_before_db_when_manifest_missin
 
     with pytest.raises(ValueError, match="source-upload gate"):
         ingest_call(msca_yaml, dry_run=False)
+
+
+@pytest.mark.no_db
+def test_wf0073_contract_erc_poc_2026_manifest_gate_fails_closed_on_missing_required_traceability(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """WF-0073 gate should fail closed when PoC source traceability is incomplete."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    source_yaml = Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml")
+    yaml_text = source_yaml.read_text(encoding="utf-8").replace(
+        "code: nwo_veni_2025_preproposal",
+        "code: ERC-2026-PoC",
+        1,
+    )
+    poc_yaml = tmp_path / "erc_poc_2026_full.yaml"
+    poc_yaml.write_text(yaml_text, encoding="utf-8")
+
+    invalid_manifest_cases = (
+        (
+            "missing_used_for",
+            """# temp manifest
+## Source 1
+- SHA256: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+- Used for:
+  - proposal structure
+## Source 2
+- SHA256: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`
+""",
+        ),
+        (
+            "missing_sha256",
+            """# temp manifest
+1) **Application Form (PoC)**
+- Used for:
+  - proposal structure
+2) **ERC Work Programme 2026 (Primary for evaluation criteria/elements)**
+- SHA256: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`
+- Used for:
+  - evaluation criteria/elements
+3) **Information for Applicants (PoC)**
+- SHA256: `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`
+- Used for:
+  - cross-check only
+""",
+        ),
+        (
+            "missing_required_source_class",
+            """# temp manifest
+1) **Application Form (PoC)**
+- SHA256: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+- Used for:
+  - proposal structure
+2) **Information for Applicants (PoC)**
+- SHA256: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`
+- Used for:
+  - proposal structure cross-check
+""",
+        ),
+        (
+            "single_entry_claims_both_required_classes",
+            """# temp manifest
+1) **Combined source**
+- SHA256: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+- Used for:
+  - proposal/application structure and evaluation criteria/elements
+""",
+        ),
+        (
+            "missing_used_for_in_required_evaluation_block_with_optional_present",
+            """# temp manifest
+1) **Application Form (PoC)**
+- SHA256: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+- Used for:
+  - proposal structure
+2) **ERC Work Programme 2026 (Primary for evaluation criteria/elements)**
+- SHA256: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`
+3) **Information for Applicants (PoC)**
+- SHA256: `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`
+- Used for:
+  - cross-check only
+""",
+        ),
+    )
+
+    for case_name, manifest_text in invalid_manifest_cases:
+        manifest_path = tmp_path / f"{case_name}.sources.md"
+        manifest_path.write_text(manifest_text, encoding="utf-8")
+        monkeypatch.setattr(
+            ingest_call_module,
+            "WF0073_ERC_POC_2026_MANIFEST_PATH",
+            manifest_path,
+            raising=False,
+        )
+        with pytest.raises(ValueError, match="ERC-2026-PoC source-manifest gate"):
+            ingest_call(poc_yaml, dry_run=True)
+
+
+@pytest.mark.no_db
+def test_wf0073_contract_erc_poc_2026_dry_run_passes_with_single_step_source_grounded_yaml(
+    monkeypatch,
+) -> None:
+    """WF-0073 should dry-run the PoC canonical YAML with single-step semantics."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    result = ingest_call(
+        Path("data/calls/canonical/erc/erc_poc_2026_full.yaml"),
+        dry_run=True,
+    )
+
+    assert result["dry_run"] is True
+    assert result["schema_version"] == "v2"
+    assert result["source_path"] == "data/calls/canonical/erc/erc_poc_2026_full.yaml"
+    assert result["funding_call"]["code"] == "ERC-2026-PoC"
+    assert result["funding_call"]["stage"] == "single-step"
+    assert (
+        result["canonical_json"]["runtime_config"]["split_visibility_reviewability_enabled"]
+        is False
+    )
