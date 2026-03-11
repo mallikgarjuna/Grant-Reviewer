@@ -2,8 +2,8 @@
 # WF-0074 — Canonical Funding Call Fidelity Hardening
 
 Artifact: brainstorm-qna
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-11
 
 ## Preflight Step 1 — Long-Form Problem Intake
@@ -290,3 +290,9 @@ The goal of this workflow is to harden the canonical authoring contract so futur
 - C) A generic ontology layer.
   > Recommendation: A — this is the only conditional runtime piece that directly supports the workflow’s success claim. B and C are clearly out of scope.
   > **Selected: A**
+
+## Part B Audit Follow-up Incorporated in Part C
+
+- Tightened proof-call language so one real canonical YAML is the default evidence object; fixture fallback now requires explicit scope-control rationale.
+- Added explicit compatibility-proof expectations for existing flat YAMLs to the verification matrix.
+- Named the activated snapshot / engine contract seam as the first runtime-consumption boundary to inspect in Phase 1.

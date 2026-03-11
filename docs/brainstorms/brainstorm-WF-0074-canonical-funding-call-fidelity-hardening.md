@@ -2,8 +2,8 @@
 # WF-0074 — Canonical Funding Call Fidelity Hardening
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-11
 
 Type: feature
@@ -48,6 +48,7 @@ Contract Notes / Non-obvious constraints:
 - `docs/call-yaml/authoring-workflow.md` says to break criteria into atomic evaluation elements, but it does not require preservation of detailed official prompts when the source includes them.
 - `docs/tasks/task-WF-0073-erc-poc-2026-call-onboarding.md` and adjacent workflow language explicitly rewarded the "smallest" and "minimal" source-grounded YAML needed to pass dry-run, which is consistent with the lossy ERC PoC result.
 - Existing canonical call YAMLs across ERC, NWO, and MSCA consistently encode evaluation elements as flat objects, so any fidelity hardening must address compatibility and migration risk explicitly rather than pretending this is an isolated PoC mistake.
+- `backend/app/engine/contracts.py` already exposes activated evaluation-element contracts, so Phase 1 must inspect that snapshot/engine seam first before assuming stored prompt-level fidelity will influence review behavior.
 
 ## 1. Problem Statement
 
@@ -143,7 +144,7 @@ Contract Notes / Non-obvious constraints:
 ## Open Questions / Deferred
 
 - Should proof-call runtime consumption in this WF stop at one narrow backend/snapshot seam, or must it extend into full structured-review behavior?
-- Which existing canonical call should be the proof-call example if ERC PoC is used only as the motivating defect case?
+- Which existing canonical call should be the proof-call example if ERC PoC is used only as the motivating defect case? Default expectation: use one real canonical YAML proof-call; use a fixture only if a real call would widen scope, and document the rationale explicitly.
 - Should migration of already-flat canonical YAMLs be represented as explicit deferred stories in Phase 1?
 
 ## 7. MVP Definition
@@ -154,7 +155,7 @@ Contract Notes / Non-obvious constraints:
   - authoring workflow docs/checklists hardened to require prompt-level fidelity when official sources provide it,
   - decision/memory policy updated so future sessions inherit the rule,
   - targeted tests that fail closed on unsupported or missing structured prompt encoding for proof-call scenarios,
-  - one proof-call example showing the new contract in a real canonical YAML or equivalent fixture.
+  - one proof-call example showing the new contract in a real canonical YAML by default; fixture fallback requires explicit scope-control rationale.
 - Migration of the whole existing corpus is explicitly out of the MVP.
 - Broad runtime redesign is explicitly out of the MVP, but one narrow consumption/proof seam may be required if Phase 1 determines that otherwise the new structure is stored but unused.
 
@@ -165,8 +166,9 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0074-canonical-fund
 - No proceed recommendation is valid if the workflow hardens docs without making fidelity representable in the schema and visible in the template.
 - No proceed recommendation is valid if the workflow adds schema surface but leaves authoring guidance and tests permissive enough that flattening remains an acceptable default.
 - At least one proof-call artifact must exercise the new shape; theoretical contract text alone is insufficient.
+- Proof should prefer one real canonical YAML authoring surface; fixture-only proof is acceptable only with explicit rationale that a real call would widen scope disproportionately.
 - Compatibility posture for existing flat YAMLs must be explicit: either tolerated temporarily with boundaries, migrated in-scope, or deferred with rationale.
-- If runtime consumption is left unchanged, the workflow must justify why the chosen proof seam is still sufficient to improve or constrain review quality.
+- If runtime consumption is left unchanged, the workflow must justify why the chosen proof seam is still sufficient to improve or constrain review quality; the activated snapshot/engine contract seam is the first required inspection boundary.
 
 ### Verification Evidence Matrix (Fail-Closed)
 
@@ -176,6 +178,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0074-canonical-fund
 | Template fidelity default | template diff / lint / doc check | `fail` (default until executed) | required | must show new starter template teaches prompt-level fidelity |
 | Authoring contract hardening | docs/checklist diff + any contract tests | `fail` (default until executed) | required | must show flattening is no longer the documented default |
 | Proof-call example | real YAML or equivalent fixture validation | `fail` (default until executed) | required | must exercise subordinate evaluative prompt encoding |
+| Compatibility posture | backward-compat test(s) or explicit deferred-migration proof | `fail` (default until executed) | required | must show how existing flat YAMLs are tolerated, rejected, or deferred |
 | Consumption/proof seam | targeted runtime/snapshot/test proof if required | `fail` (default until executed) | required | must avoid stored-but-unused ambiguity |
 
 - Proceed recommendation remains blocked unless every required row above is `pass`, or explicitly `skipped` with a documented rationale accepted during review.
@@ -191,3 +194,4 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0074-canonical-fund
 ## Changelog
 
 - v0.1 (2026-03-11): Captured long-form defect framing, repo reality snapshot, and initial recommended contracts for high-fidelity canonical call authoring.
+- v0.2 (2026-03-11): Tightened proof-call requirements toward real canonical YAML by default, added explicit compatibility-proof expectations, and named the activated snapshot/engine contract seam as the first runtime-consumption boundary to inspect.
