@@ -1035,6 +1035,44 @@ def test_wf0061_contract_runtime_proof_requires_upload_validate_ingest_order(
     assert response.json()["error"]["code"] == "CALL_NOT_FOUND"
 
 
+def test_wf0073_contract_structured_api_accepts_erc_poc_2026_payload(
+    monkeypatch,
+) -> None:
+    """WF-0073: structured API accepts fixture-backed ERC PoC payload."""
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    assert call_code == fixture["call_code"]
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0073-erc-poc-api-{time.time_ns()}",
+    )
+    assert response.status_code in {200, 201}
+
+    payload = response.json()
+    assert payload["status"] in {"PENDING", "COMPLETED"}
+    assert isinstance(payload.get("review_id"), str)
+
+    session = get_session()
+    try:
+        definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        assert definition.source_path == "data/calls/canonical/erc/erc_poc_2026_full.yaml"
+    finally:
+        session.close()
+
+
 def test_wf0065_nwo_structured_api_tracer_uses_real_canonical_call(monkeypatch) -> None:
     """WF-0065 tracer: structured API uses real NWO canonical call artifact."""
     client, call_id, call_code = create_client_with_nwo_veni_seed(monkeypatch)

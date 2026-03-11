@@ -1,0 +1,19 @@
+{
+  "source_path": "backend/tests/fixtures/wf_0073_erc_poc_2026_structured_review.json",
+  "call_code": "ERC-2026-PoC",
+  "review_stage": "STEP_1",
+  "nodes": [
+    {
+      "node_logical_id": "poc_idea_innovation",
+      "text": "The PoC proposes a breakthrough innovation potential by translating prior frontier research into a concrete validation plan."
+    },
+    {
+      "node_logical_id": "poc_approach_methodology",
+      "text": "The approach and methodology define milestones, feasibility checks, risk mitigation, and measurable proof-of-concept outcomes."
+    },
+    {
+      "node_logical_id": "poc_pi_strategic_leadership",
+      "text": "PI strategic leadership/project management is demonstrated through governance, delivery ownership, and host-support coordination."
+    }
+  ]
+}

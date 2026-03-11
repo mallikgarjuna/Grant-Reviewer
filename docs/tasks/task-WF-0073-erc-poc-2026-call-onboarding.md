@@ -113,7 +113,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_call_nodes_metadata_api.py -k "wf0073_contract_erc_poc_2026_node_metadata_exposes_authored_nodes"`
 Risks (if any): Exposure can fail even when dry-run passes because the DB projection and API surfaces read ingested state, not raw YAML.
 
-### [ ] Task 4 — Backend structured-review smoke for PoC
+### [x] Task 4 — Backend structured-review smoke for PoC
 
 Goal:
 Prove the MVP runtime seam by exercising `POST /api/structured-review` with a valid `ERC-2026-PoC` payload and capturing deterministic pass/fail evidence.
