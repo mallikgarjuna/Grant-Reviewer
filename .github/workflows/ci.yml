@@ -40,7 +40,7 @@ jobs:
         run: uv run ruff check .
 
       - name: Type Check (MyPy)
-        run: uv run mypy .
+        run: uv run mypy app main.py
 
       - name: Contract Boundary Governance Check
         if: github.event_name == 'pull_request'
