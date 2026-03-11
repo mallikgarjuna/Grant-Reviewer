@@ -2,8 +2,8 @@
 # WF-0074 — Canonical Funding Call Fidelity Hardening
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-11
 
 ## Task Breakdown (Sequential Order)
@@ -123,12 +123,13 @@ Must touch files:
 May touch files:
 - `none`
 Out of scope: decision-log or memory-surface expansion, review-engine implementation changes, repo-wide canonical call migration
-Stop if: the docs/checklist changes would need a new governance surface beyond these two authoring documents to explain the MVP compatibility posture or seam boundary honestly
+Stop if: honest closure for this narrow, user-scoped plan would still require `docs/logs/decisions.md` or `docs/memory/domain/project_docs.md`, or if the docs/checklist cannot explain the MVP compatibility posture and seam boundary without widening beyond these two authoring documents
 Session boundary after: yes
 Acceptance Criteria:
 - The workflow states that subordinate official prompts/questions under an evaluation element must be preserved explicitly rather than flattened into summary prose.
 - The checklist adds a fail-closed fidelity gate covering prompt presence/absence by source and preserves the temporary compatibility posture for existing flat YAMLs.
 - The docs/checklist explicitly state that this WF does not widen the activated snapshot / engine contract seam beyond its current `schema_version` plus `expectations` boundary.
+- The task records that decision/memory guidance remains intentionally out of this narrow Phase 2 implementation slice and must trigger a stop/re-plan rather than being silently absorbed.
 TDD Plan:
 - RED: add `test_wf0074_authoring_docs_fail_closed_on_subordinate_prompt_flattening` in `backend/tests/test_call_yaml_authoring_contract.py`.
 - GREEN: update the workflow and checklist with the minimal wording needed to make prompt preservation, compatibility posture, and seam-boundary claims explicit.
@@ -144,6 +145,7 @@ Risks (if any): Guidance can quietly reintroduce flattening or overclaim runtime
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | Schema representability | `CallDefinitionV2` model validation | `test_wf0074_schema_accepts_typed_subordinate_prompts_and_legacy_flat_yaml` | typed subordinate prompts validate and one legacy flat YAML still passes | planned | pytest output in `backend/tests/test_call_definitions_v2_schema.py` | compatibility posture must stay explicit |
 | Malformed-shape rejection | `CallDefinitionV2` model validation | `test_wf0074_schema_rejects_malformed_subordinate_prompt_items` | malformed subordinate prompt items fail closed | planned | pytest output in `backend/tests/test_call_definitions_v2_schema.py` | duplicate IDs, empty text, and missing traceability must fail |
+| Compatibility posture | schema validation regression | `test_wf0074_schema_accepts_typed_subordinate_prompts_and_legacy_flat_yaml` | one legacy flat YAML still validates while the proof-call uses subordinate prompts | planned | pytest output in `backend/tests/test_call_definitions_v2_schema.py` + proof-call dry-run stdout | separates backward compatibility from new-authoring fidelity proof |
 | Proof-call example | dry-run ingest | `test_wf0074_contract_erc_poc_2026_subordinate_prompt_proof_call_dry_run` | `erc_poc_2026_full.yaml` validates with subordinate prompts | planned | pytest output in `backend/tests/test_ingest_call_dry_run.py` + dry-run stdout | one real call only |
 | Template fidelity default | starter template | `test_wf0074_template_demonstrates_subordinate_prompt_default` | template teaches subordinate prompts and stays valid when minimally concretized | planned | pytest output in `backend/tests/test_call_definitions_v2_schema.py` | copy-forward default must be lossless |
 | Authoring contract hardening | workflow + checklist docs | `test_wf0074_authoring_docs_fail_closed_on_subordinate_prompt_flattening` | docs/checklist fail closed on flattening and preserve compatibility + seam boundary wording | planned | pytest output in `backend/tests/test_call_yaml_authoring_contract.py` | docs remain the runtime-claim boundary SSOT for this WF |
@@ -153,8 +155,10 @@ Risks (if any): Guidance can quietly reintroduce flattening or overclaim runtime
 
 | Review source | Finding | Severity | Planned closure | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Phase 2.2 task review | pending | pending | revise task file in Part C if non-blocking or stop for user input if blocking | planned | to be updated after review |
+| Phase 2.2 task review | Make the user-requested exclusion of decision/memory guidance explicit so Phase 3 does not silently drift from the narrow plan | non-blocking | Tighten Task 4 stop boundary and acceptance criteria | closed | closed in v0.2 |
+| Phase 2.2 task review | Add a standalone compatibility-posture proof row so backward compatibility remains auditable separately from representability | non-blocking | Extend the verification matrix with a dedicated compatibility row | closed | closed in v0.2 |
 
 ## Changelog
 
 - v0.1 (2026-03-11): Initial task breakdown from PRD.
+- v0.2 (2026-03-11): Applied review edits by making the narrow governance-scope boundary explicit, adding a standalone compatibility-proof row, and closing the Part B audit ledger findings.
