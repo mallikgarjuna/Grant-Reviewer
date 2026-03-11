@@ -2,7 +2,7 @@
 # WF-0075 — ERC PoC Proof-Call Fidelity Completion
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-11
 
@@ -25,7 +25,7 @@ WF-0074 successfully solved the mechanism and governance layer for subordinate-p
 
 The remaining defect is narrower and more concrete: the real proof-call `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml` still encodes subordinate prompts only for ERC PoC evaluation element `1.a Breakthrough Innovation Potential`. The same canonical call still does not encode the detailed official subordinate prompts for `1.b Approach and Methodology` and `1.c Principal Investigator - Strategic Leadership and Project Management`, even though page 43 of `wp_horizon-erc-2026_en.pdf` includes them.
 
-That means the repo currently has a mechanism for high-fidelity subordinate-prompt authoring, but the flagship proof-call used to demonstrate that fidelity is still only partially encoded. As long as that partial state can still be treated as "fidelity complete," the canonical-fidelity claim is not fail-closed. A real proof-call should not pass as complete when it preserves only one-third of the relevant subordinate-prompt structure.
+That means the repo currently has a mechanism for high-fidelity subordinate-prompt authoring, but the flagship proof-call used to demonstrate that fidelity is still only partially encoded. As long as that partial state can still be treated as "fidelity complete," the canonical-fidelity claim is not fail-closed. A real proof-call should not pass as complete when it preserves only a subset of the official page-43 subordinate prompts.
 
 This matters because the ERC PoC proof-call is the concrete repository artifact that should prove PeerLens can preserve official evaluation criteria/elements faithfully at the level required for source-grounded review authoring. If `1.a` is fully encoded but `1.b` and `1.c` remain flattened, the mechanism exists but the canonical proof is still incomplete.
 
@@ -80,7 +80,7 @@ Contract Notes / Non-obvious constraints:
 ## 3. Target User / Actor
 
 - Primary actor: the maintainer or coding agent updating and verifying canonical funding call YAMLs and their closure evidence.
-- Primary beneficiary: the repository itself as a truth surface for source-grounded canonical call authoring, which in turn protects researchers from overclaimed fidelity.
+- Primary beneficiary: researchers and future maintainers who need the ERC PoC proof-call fidelity claim to be honest, source-grounded, and fail closed.
 - Secondary actor: future maintainers and agents who need an unambiguous closure rule for when a real proof-call is truly fidelity-complete versus only partially encoded.
 - The actor model is repository-governance-first, not researcher-UI-first; the work happens in canonical YAML plus verification surfaces.
 - Tradeoff priority: truthfulness of canonical proof and fail-closed closure logic comes before minimizing incremental authoring effort.
@@ -131,7 +131,7 @@ Contract Notes / Non-obvious constraints:
 ## Open Questions / Deferred
 
 - What is the smallest fail-closed proof seam: source-grounded tests only, tests plus checklist language, or another narrowly scoped contract surface?
-- Does any WF-0074 governance text need a corrective clarification so "partial subordinate-prompt encoding" is explicitly called out as insufficient for a real proof-call?
+- Does any WF-0074 governance text need a narrow corrective clarification so "partial subordinate-prompt encoding" is explicitly insufficient for a real proof-call, without reopening the broader mechanism/governance scope?
 - What exact verification artifact should become the closure anchor for page-43 completeness in later phases?
 
 ## 7. MVP Definition
@@ -140,6 +140,7 @@ Contract Notes / Non-obvious constraints:
   - complete `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml` so all official page-43 subordinate prompts are encoded across `1.a`, `1.b`, and `1.c`,
   - add fail-closed proof that partial subordinate-prompt encoding in a real proof-call does not qualify as fidelity complete,
   - apply only the narrowest test/doc/checklist/governance tightening required to distinguish absent-by-source, fully encoded, and partially encoded states.
+- MVP proof must include at least one negative case where an official `1.b` or `1.c` subordinate prompt is intentionally omitted and closure fails.
 - Reusing the existing typed subordinate-prompt structure is mandatory; inventing a new mechanism is out of scope.
 - Runtime-consumption work is explicitly not part of MVP.
 - Multi-call retrofit work is explicitly not part of MVP.
@@ -163,6 +164,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0075-erc-poc-proof-
 | Verification item | Command/test/artifact | Result (`pass`/`fail`/`skipped`) | Evidence pointer | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | ERC PoC proof-call completion | targeted call validation against `erc_poc_2026_full.yaml` | `fail` (default until executed) | required | must prove all official page-43 subordinate prompts are encoded across `1.a`, `1.b`, and `1.c` |
+| Source-to-YAML prompt coverage | replayable source ledger or equivalent targeted proof | `fail` (default until executed) | required | must map every official page-43 subordinate prompt for `1.a`, `1.b`, and `1.c` to an exact YAML prompt ID/path |
 | Partial-vs-complete coverage proof | targeted fail-closed test or equivalent contract check | `fail` (default until executed) | required | must fail if a real proof-call encodes only a subset of official subordinate prompts |
 | Absent/complete/partial distinction | test and/or doc-check evidence | `fail` (default until executed) | required | must distinguish no subordinate prompts by source from incomplete encoding |
 | Runtime-boundary honesty | targeted seam proof or contract citation | `fail` (default until executed) | required | must preserve expectations-only runtime boundary unless separately re-approved |
@@ -181,3 +183,4 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0075-erc-poc-proof-
 ## Changelog
 
 - v0.1 (2026-03-11): Captured the exact WF-0075 defect as ERC PoC proof-call incompleteness relative to page 43, locked runtime consumption out of scope, and required fail-closed proof that partial subordinate-prompt encoding cannot pass as fidelity complete.
+- v0.2 (2026-03-11): Tightened source-rigorous completeness wording, restored researcher-facing trust as the primary beneficiary, added an explicit negative proof requirement, and added a replayable source-to-YAML coverage row to the verification matrix.
