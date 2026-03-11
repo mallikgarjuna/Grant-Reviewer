@@ -3,6 +3,16 @@
 
 ## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening)
 
+### AD 74.2: WF-0074 must preserve durable governance surfaces and fail-closed evidence gates in the PRD
+- **WF ID**: WF-0074
+- **Context**: The approved brainstorm made `decision/memory guidance` and a row-level fail-closed verification matrix part of the MVP contract, but the PRD draft initially compressed those into softer prose and testing notes.
+- **Decision**: Keep decision-log/memory guidance as an explicit MVP surface in the PRD, require typed subordinate-prompt items with stable identity plus source traceability, and require a verification evidence matrix plus audit-disposition ledger before any proceed or ship recommendation.
+- **Why**: This prevents Phase 2/3 from satisfying WF-0074 with only schema/template/docs changes, blocks anonymous-string prompt shapes that would weaken traceability, and preserves explicit pass/fail evidence discipline for closure.
+- **Tradeoff**: The planning artifact and final walkthrough carry a bit more structure, but the closure contract stays replayable and cannot silently drift from the approved brainstorm.
+- **Status**: Approved.
+
+## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening)
+
 ### AD 74.1: WF-0074 is authoring-contract hardening first, with explicit checklist and proof-call seams
 - **WF ID**: WF-0074
 - **Context**: The brainstorm required a narrow slice across schema, template, authoring docs/checklist, tests, and one proof-call example, while also requiring explicit inspection of the activated snapshot / engine contract seam before making runtime-impact claims.
