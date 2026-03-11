@@ -2,7 +2,7 @@
 # WF-0073 — ERC PoC 2026 Call Onboarding
 
 Artifact: brainstorm-qna
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-11
 
@@ -19,12 +19,13 @@ Last Updated: 2026-03-11
 
 - Application form template:
   - `/home/mgurram/Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/af_he-erc-poc_en.pdf`
-  - Part B template and drafting instructions are on pages 20-23 of 24.
+  - Part B template and drafting instructions are in this file.
 - Evaluation criteria and elements:
   - `/home/mgurram/Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/wp_horizon-erc-2026_en.pdf`
-  - Target sections are `2.1.6.1 Evaluation Criterion` on pages 42-43 of 72, with broader semantic support on pages 38-44 of 72.
+  - The relevant PoC evaluation material is anchored in section `2.1.6.1 Evaluation Criterion`.
 - Applicant guidance:
   - `/home/mgurram/Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/information-for-applicants_he-erc-poc_en.pdf`
+  - This guidance states there is one evaluation step for PoC, so stage-specific reuse from other ERC calls must not be assumed.
 
 ## Section 3 — Phase 0 Decisions Promoted To Brainstorm
 
@@ -32,4 +33,5 @@ Last Updated: 2026-03-11
 - Slug: `erc-poc-2026-call-onboarding`
 - Phase 0 gate recommendation before source upload: no-go for implementation until clean workflow boundary and official sources existed.
 - After source upload, official-source blocker is cleared for planning and later YAML authoring.
-- Recommended execution order: docs-only planning first, then call YAML onboarding, then ingest and smoke verification, then optional product copy updates.
+- Recommended execution order: docs-only planning, then call YAML plus source-manifest onboarding, then ingest/exposure/structured-review verification.
+- Proceed remains blocked unless every required verification item has explicit pass/fail evidence and every review finding has a closure or explicit rejection rationale.
