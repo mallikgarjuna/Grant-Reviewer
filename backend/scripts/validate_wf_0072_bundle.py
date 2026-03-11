@@ -202,11 +202,12 @@ def _validate_required_rows(rows: list[dict[str, Any]], required_rows: list[str]
 def _validate_real_user_path(rows: list[dict[str, Any]]) -> None:
     expected_entrypoint = "/app -> /api/bff/structured-review"
     for row in rows:
-        if bool(row.get("protected_surface")):
-            if _require_non_empty_string(row.get("entrypoint"), code="ENTRYPOINT_REQUIRED", context="entrypoint") != (
-                expected_entrypoint
-            ):
-                raise ValueError("REAL_USER_PATH_REQUIRED")
+        if bool(row.get("protected_surface")) and _require_non_empty_string(
+            row.get("entrypoint"),
+            code="ENTRYPOINT_REQUIRED",
+            context="entrypoint",
+        ) != expected_entrypoint:
+            raise ValueError("REAL_USER_PATH_REQUIRED")
 
 
 def _validate_protected_lane_parity(rows: list[dict[str, Any]]) -> None:

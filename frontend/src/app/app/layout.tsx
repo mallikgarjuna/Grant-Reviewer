@@ -1,3 +1,4 @@
+// frontend/src/app/app/layout.tsx
 "use client";
 
 import Image from "next/image";
@@ -40,26 +41,30 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() ?? "";
+  const publishableKey =
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() ?? "";
   const isClerkConfigured =
     publishableKey.length > 0 && !publishableKey.includes("REPLACE_ME");
 
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-background)]/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6 md:px-10">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6 md:px-10">
           <div className="flex items-center gap-5">
-            <Link className="flex items-center" href={PUBLIC_ENTRY_ROUTE}>
+            <Link className="flex items-center gap-2" href={PUBLIC_ENTRY_ROUTE}>
               <Image
                 alt="PeerLens"
-                className="h-7 w-auto object-contain"
-                height={28}
+                className="h-10 w-auto object-contain"
+                height={371}
                 priority
-                src="/logo.png"
-                width={100}
+                src="/logo.svg"
+                width={1632}
               />
             </Link>
-            <nav aria-label="App navigation" className="flex items-center gap-1">
+            <nav
+              aria-label="App navigation"
+              className="flex items-center gap-1"
+            >
               <NavLink href={APP_CREATE_REVIEW_ROUTE}>New Review</NavLink>
               <NavLink href={APP_REVIEWS_ROUTE}>My Reviews</NavLink>
             </nav>

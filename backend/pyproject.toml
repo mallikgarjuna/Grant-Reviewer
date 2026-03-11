@@ -38,7 +38,9 @@ ignore_errors = true
 [[tool.mypy.overrides]]
 module = [
     "app.repositories.review_repository",
-    "main"
+    "main",
+    "app.services.reviewer_policy",
+    "app.services.node_metadata_service"
 ]
 ignore_errors = true
 

@@ -96,6 +96,10 @@ def run_verify(
             },
             output_path=evidence_path,
         )
+        # Repos without rulesets access cannot perform live drift verify.
+        # Record evidence, but do not fail the CI gate for this plan limitation.
+        if err.kind == "plan_gated":
+            return 0
         return 1
 
     mechanism = str(live_read["mechanism"])

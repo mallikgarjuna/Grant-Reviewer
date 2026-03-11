@@ -1,3 +1,4 @@
+// frontend/src/app/layout.tsx
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter, Lora } from "next/font/google";
@@ -19,7 +20,11 @@ export const metadata: Metadata = {
   title: "PeerLens",
   description: "Review-criteria-aligned feedback for stronger grant drafts.",
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
   },
 };
 
