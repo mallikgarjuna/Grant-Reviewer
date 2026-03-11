@@ -4,6 +4,7 @@ Schema-level tests for CallDefinitionV2 WF-0032 fields and validators.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -168,3 +169,102 @@ def test_wf0063_split_opt_in_calls_are_explicitly_allowlisted() -> None:
                     assert len(node.node_expectations) == 0
 
     assert split_enabled_call_codes == allowed_call_codes
+
+
+def test_wf0074_schema_accepts_typed_subordinate_prompts_and_legacy_flat_yaml() -> None:
+    payload = _load_nwo_v2_yaml()
+    typed_payload = deepcopy(payload)
+
+    criteria = typed_payload["evaluation_criteria"]
+    assert isinstance(criteria, list)
+    first_criterion = criteria[0]
+    assert isinstance(first_criterion, dict)
+    elements = first_criterion["evaluation_elements"]
+    assert isinstance(elements, list)
+    first_element = elements[0]
+    assert isinstance(first_element, dict)
+    first_element["subordinate_prompts"] = [
+        {
+            "id": "prompt_research_question_fit",
+            "prompt": "To what extent does the proposed research address the research question from the call effectively?",
+            "source_locator": "Guide for applicants section 4.2",
+            "source_hint": "Official evaluation form",
+        },
+        {
+            "id": "prompt_feasibility",
+            "prompt": "To what extent is the proposed approach feasible within the proposed period and resources?",
+            "source_locator": "Guide for applicants section 4.2",
+            "source_hint": "Official evaluation form",
+        },
+    ]
+
+    typed_model = CallDefinitionV2.model_validate(typed_payload)
+    subordinate_prompts = (
+        typed_model.evaluation_criteria[0].evaluation_elements[0].subordinate_prompts
+    )
+    assert subordinate_prompts is not None
+    assert [item.id for item in subordinate_prompts] == [
+        "prompt_research_question_fit",
+        "prompt_feasibility",
+    ]
+
+    legacy_model = CallDefinitionV2.model_validate(payload)
+    assert (
+        legacy_model.evaluation_criteria[0].evaluation_elements[0].subordinate_prompts
+        is None
+    )
+
+
+def test_wf0074_schema_rejects_malformed_subordinate_prompt_items() -> None:
+    payload = _load_nwo_v2_yaml()
+
+    criteria = payload["evaluation_criteria"]
+    assert isinstance(criteria, list)
+    first_criterion = criteria[0]
+    assert isinstance(first_criterion, dict)
+    elements = first_criterion["evaluation_elements"]
+    assert isinstance(elements, list)
+    first_element = elements[0]
+    assert isinstance(first_element, dict)
+
+    first_element["subordinate_prompts"] = ["anonymous prompt"]
+    with pytest.raises(ValueError, match="subordinate_prompts.0"):
+        CallDefinitionV2.model_validate(payload)
+
+    first_element["subordinate_prompts"] = [
+        {
+            "id": "duplicate_prompt",
+            "prompt": "Question one",
+            "source_locator": "Section 4.2",
+            "source_hint": "Official evaluation form",
+        },
+        {
+            "id": "duplicate_prompt",
+            "prompt": "Question two",
+            "source_locator": "Section 4.2",
+            "source_hint": "Official evaluation form",
+        },
+    ]
+    with pytest.raises(ValueError, match="Duplicate subordinate prompt id"):
+        CallDefinitionV2.model_validate(payload)
+
+    first_element["subordinate_prompts"] = [
+        {
+            "id": "empty_prompt",
+            "prompt": "",
+            "source_locator": "Section 4.2",
+            "source_hint": "Official evaluation form",
+        }
+    ]
+    with pytest.raises(ValueError, match="prompt"):
+        CallDefinitionV2.model_validate(payload)
+
+    first_element["subordinate_prompts"] = [
+        {
+            "id": "missing_traceability",
+            "prompt": "Question without traceability",
+            "source_hint": "Official evaluation form",
+        }
+    ]
+    with pytest.raises(ValueError, match="source_locator"):
+        CallDefinitionV2.model_validate(payload)

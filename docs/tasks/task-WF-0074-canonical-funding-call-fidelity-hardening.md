@@ -8,7 +8,7 @@ Last Updated: 2026-03-11
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Schema contract and legacy-flat compatibility
+### [x] Task 1 — Schema contract and legacy-flat compatibility
 
 Goal:
 Add the typed subordinate-prompt schema surface under evaluation elements while preserving the explicit compatibility posture for existing flat canonical YAMLs.
