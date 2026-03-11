@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test:ui": "vitest run src/app/app/page.test.tsx src/components/submit/UniversalSubmitForm.test.tsx src/app/app/reviews/[reviewId]/page.test.tsx",
