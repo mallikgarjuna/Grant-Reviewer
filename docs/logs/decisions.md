@@ -1,6 +1,17 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening closeout)
+
+### AD 74.4: WF-0074 closes at authoring-fidelity hardening with no automatic runtime follow-on
+- **WF ID**: WF-0074
+- **Context**: Phase 3.2 found that the initial Part C1 fix incorrectly blocked non-dry-run ingest of `erc_poc_2026_full.yaml`, even though V2 persistence already preserves the full canonical JSON including `subordinate_prompts`. The repaired closeout re-proved DB persistence and separately proved that the structured-review runtime snapshot remains expectations-only.
+- **Decision**: Close WF-0074 as complete once schema/template/docs/governance hardening and the narrowed persistence/runtime-boundary proofs pass. Do not create an automatic follow-on WF from this closeout. Any future work to make subordinate-prompt fidelity influence structured-review runtime behavior must be a separately scoped WF with an explicit runtime contract, proof surface, and launch-value rationale.
+- **Why**: This preserves the actual achievement of WF-0074 without overclaiming runtime impact, and it avoids turning a narrow authoring/governance workflow into implicit runtime roadmap debt.
+- **Tradeoff**: Canonical call fidelity is now preserved durably and truthfully, but the structured-review engine still consumes only the existing expectations snapshot unless a later WF widens that seam on purpose.
+- **Follow-on boundary rationale**: No immediate backlog promotion is required for launch readiness. Only promote a follow-on if product needs clearly justify subordinate-prompt-aware runtime behavior beyond the current expectations-only boundary.
+- **Status**: Approved.
+
 ## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening)
 
 ### AD 74.3: WF-0074 subordinate-prompt fidelity rule and closure gate are durable governance

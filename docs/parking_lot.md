@@ -93,6 +93,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 - WF-0066 removed stale live-planning language that implied broader-program expansion was still planned or launch-critical; active P1 should stay anchored to the locked NWO/ERC/MSCA wedge.
 - WF-0067 is now complete and closed the launch-blocking review trust-surface gap in the active wedge.
 - WF-0068 is now complete and closed the evaluation loop with a bounded proceed decision; follow-on work should stay narrowly scoped to the evidence-backed actionability/prioritization failure pattern.
+- WF-0074 is now complete; it hardened canonical call authoring fidelity and durable governance for subordinate official prompts without widening structured-review runtime consumption. No active backlog reprioritization is required from that closure.
 - Active P1 sequencing is now: remaining launch-baseline legal work first, then assisted-extraction work; `WF-0072` has closed the locked-wedge end-to-end trust proof.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 - Do not promote new convenience or expansion work ahead of the remaining launch-baseline legal and assisted-extraction items unless the user explicitly accepts weakening the launch trust bar.
@@ -200,6 +201,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 49 | WF-0071 | node-hierarchy-selector | promoted | P1 #1 (historical; nested-call navigation clarity) | 2026-03-10 |
 | 50 | WF-0072 | e2e-trust-proof-nwo-erc-msca | promoted | P1 #1 (historical; representative locked-wedge end-to-end trust proof) | 2026-03-10 |
 | 51 | WF-0073 | erc-poc-2026-call-onboarding | started-directly | - | 2026-03-11 |
+| 52 | WF-0074 | canonical-funding-call-fidelity-hardening | started-directly | - | 2026-03-11 |
 
 ---
 
@@ -259,3 +261,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v4.9** (2026-03-10): Post-WF-0071 refresh: removed the completed node-hierarchy P1 item, renumbered active P1, and recorded WF-0071 promotion provenance in the WF log.
 - **v5.0** (2026-03-10): Promoted P1 #1 to `WF-0072`, renumbered active P1, and recorded the promotion provenance in the unified WF log.
 - **v5.1** (2026-03-11): Post-WF-0073 refresh: appended direct-start `WF-0073` to the unified WF initiative log (no active P1/P2 reprioritization required).
+- **v5.2** (2026-03-11): Post-WF-0074 refresh: appended direct-start `WF-0074` to the unified WF initiative log and updated the P1 rationale snapshot to reflect that canonical subordinate-prompt fidelity hardening is closed with no immediate backlog reprioritization.
