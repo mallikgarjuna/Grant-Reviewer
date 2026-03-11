@@ -41,7 +41,8 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() ?? "";
+  const publishableKey =
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() ?? "";
   const isClerkConfigured =
     publishableKey.length > 0 && !publishableKey.includes("REPLACE_ME");
 
@@ -53,17 +54,17 @@ export default function AppLayout({
             <Link className="flex items-center gap-2" href={PUBLIC_ENTRY_ROUTE}>
               <Image
                 alt="PeerLens"
-                className="h-10 w-auto object-contain"
-                height={40}
+                className="h-11 w-[190px] object-cover object-center"
+                height={640}
                 priority
                 src="/logo.png"
-                width={180}
+                width={640}
               />
-              <span className="text-lg font-semibold tracking-tight text-[var(--color-foreground)]">
-                PeerLens
-              </span>
             </Link>
-            <nav aria-label="App navigation" className="flex items-center gap-1">
+            <nav
+              aria-label="App navigation"
+              className="flex items-center gap-1"
+            >
               <NavLink href={APP_CREATE_REVIEW_ROUTE}>New Review</NavLink>
               <NavLink href={APP_REVIEWS_ROUTE}>My Reviews</NavLink>
             </nav>

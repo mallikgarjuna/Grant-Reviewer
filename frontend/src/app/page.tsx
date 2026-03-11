@@ -1,3 +1,4 @@
+// frontend/src/app/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 
@@ -71,11 +72,11 @@ export default function Home() {
         <Link className="flex items-center gap-2" href="/">
           <Image
             alt="PeerLens"
-            className="h-8 w-auto object-contain"
-            height={40}
+            className="h-10 w-[180px] object-cover object-center"
+            height={640}
             priority
             src="/logo.png"
-            width={120}
+            width={640}
           />
         </Link>
         <nav
