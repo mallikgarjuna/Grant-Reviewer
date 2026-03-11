@@ -82,3 +82,5 @@
 - **2026-03-09 — Phase 2 remediation seam proof:** When a PRD names primary suspected seams and conditional downstream seams, Task 1 must prove the narrowest primary seam first and fail closed before planning service/API reroutes or ordering work. Why: otherwise the task plan bakes in hidden coupling and scope drift before repo evidence justifies it.
 
 - **2026-03-10 — Protected-row parity sequencing:** If a Phase 2 task plan adds protected `/app` or `/api/bff/*` negative scenarios after happy-path auth tasks, add explicit later parity tasks or a final protected-row parity sweep plus closure validator checks. Why: otherwise FR8/FR12 can fail only at closure even though the plan looked implementation-ready.
+
+- **2026-03-11 — Brainstorm hardening closure contract:** During Phase 0 Part C hardening, ensure brainstorm revisions include both a fail-closed verification evidence matrix (default `fail` until executed) and a changelog entry when version is bumped. Why: this prevents premature proceed claims and keeps artifact version history compliant with workflow rules.

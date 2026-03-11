@@ -2,7 +2,7 @@
 # WF-0073 — ERC PoC 2026 Call Onboarding
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-11
 
@@ -36,8 +36,9 @@ Contract notes / non-obvious constraints:
   - canonical YAML at `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml`
   - source traceability manifest at `backend/data/calls/sources/erc_poc_2026_full.sources.md`
 - The source manifest records the official proposal-structure source and official evaluation-criteria/elements source with durable `SHA256` metadata and explicit `Used for` traceability.
-- The call validates cleanly, ingests cleanly, appears through the current call exposure path, and passes at least one `POST /api/structured-review` smoke verification through the intended product path.
+- The call validates cleanly, ingests cleanly, appears through the current call exposure path, and passes at least one `POST /api/structured-review` smoke verification through the backend runtime seam.
 - Any code change made during implementation is the smallest compatibility fix required to expose this call safely.
+- Default proof seam for this WF remains backend `POST /api/structured-review`; do not relabel API-only proof as end-to-end app/BFF proof.
 
 Contract notes / non-obvious constraints:
 - Docs-only planning is allowed before implementation; YAML authoring is not.
@@ -116,6 +117,18 @@ Contract notes / non-obvious constraints:
 - Any non-blocking finding must be either closed or explicitly rejected with rationale before a proceed recommendation.
 - If any required verification item is missing, skipped without rationale, or failing, the workflow remains blocked.
 
+### Verification Evidence Matrix (Fail-Closed)
+
+| Verification item | Command/endpoint/artifact | Result (`pass`/`fail`/`skipped`) | Evidence pointer | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| Source manifest gate | exact manifest check command + manifest path | `fail` (default until executed) | required | must prove both official source classes + `SHA256` + `Used for` |
+| Dry-run ingest | exact dry-run command | `fail` (default until executed) | required | |
+| DB ingest | exact DB ingest command | `fail` (default until executed) | required | |
+| Call exposure | exact calls listing + node metadata endpoints/commands | `fail` (default until executed) | required | |
+| Structured-review smoke | exact `POST /api/structured-review` request seam and command/test | `fail` (default until executed) | required | |
+
+- Proceed recommendation remains blocked unless every required row above is `pass`, or explicitly `skipped` with a documented rationale approved in-review.
+
 ## 8. Explicit Non-Goals
 
 - New agencies or program families.
@@ -124,3 +137,7 @@ Contract notes / non-obvious constraints:
 - Major frontend redesign.
 - Cross-call representative-proof work from other WFs.
 - Re-authoring existing canonical calls unless a direct compatibility fix is strictly required for this one call.
+
+## Changelog
+
+- v0.3 (2026-03-11): Hardened fail-closed review contract by pinning default structured-review proof seam to backend `/api/structured-review`, adding an explicit verification evidence matrix with default-fail posture, and preserving one-call onboarding scope boundaries.
