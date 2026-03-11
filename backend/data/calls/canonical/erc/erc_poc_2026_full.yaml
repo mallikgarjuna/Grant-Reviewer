@@ -1,0 +1,109 @@
+# backend/data/calls/canonical/erc/erc_poc_2026_full.yaml
+# ERC Proof of Concept 2026 — single-step canonical call definition
+#
+# Traceability manifest:
+# - backend/data/calls/sources/erc_poc_2026_full.sources.md
+# Primary source authority for evaluation criteria/elements:
+# - wp_horizon-erc-2026_en.pdf (section 2.1.6.1)
+
+funding_agency:
+  id: erc
+  name: European Research Council
+  country: EU
+
+funding_call:
+  id: erc_poc_2026_full
+  code: ERC-2026-PoC
+  title: ERC Proof of Concept 2026
+  year: 2026
+  stage: single-step
+  language: en
+  deadlines:
+    cutoff_2026_03_17:
+      datetime_local: "2026-03-17T17:00:00"
+      timezone: "Europe/Brussels"
+    cutoff_2026_09_18:
+      datetime_local: "2026-09-18T17:00:00"
+      timezone: "Europe/Brussels"
+
+evaluation_criteria:
+  - id: crit_excellence
+    name: Excellence
+    stage: single_step
+    weight_percent: 100
+    evaluation_elements:
+      - id: elem_breakthrough_innovation_potential
+        name: breakthrough innovation potential
+        description: Assess the breakthrough innovation potential of the idea and its expected value beyond the current state of the art.
+        source_hint: "Work Programme 2026 section 2.1.6.1"
+        stage: BOTH
+      - id: elem_approach_methodology
+        name: approach and methodology
+        description: Assess whether the proposed approach and methodology are appropriate, coherent, and feasible for the PoC objectives.
+        source_hint: "Work Programme 2026 section 2.1.6.1"
+        stage: BOTH
+      - id: elem_pi_strategic_leadership
+        name: strategic leadership/project management
+        description: Assess the PI strategic leadership/project management capacity for delivery of PoC outcomes within scope and timeline.
+        source_hint: "Work Programme 2026 section 2.1.6.1"
+        stage: BOTH
+
+proposal_nodes:
+  - id: poc_idea_innovation
+    label: PoC idea and innovation
+    node_type: section
+    source_section: "Application Form Part B"
+    content_constraints:
+      max_pages: 10
+      note: "Part B must not exceed 10 pages."
+    guidance_text: "Describe the PoC idea, its novelty, and the specific breakthrough innovation potential."
+    compliance_rules:
+      - id: comp_part_b_page_limit
+        severity: WARNING
+        rule_type: formatting
+        description: "Part B should not exceed 10 pages."
+    node_expectations:
+      - evaluation_element_id: elem_breakthrough_innovation_potential
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: poc_approach_methodology
+    label: Approach and methodology
+    node_type: section
+    source_section: "Application Form Part B"
+    guidance_text: "Describe the approach and methodology, key work packages, risk handling, and feasibility evidence."
+    compliance_rules:
+      - id: comp_single_step_scope
+        severity: WARNING
+        rule_type: stage_scope
+        description: "ERC-2026-PoC uses a single-step evaluation path only."
+    node_expectations:
+      - evaluation_element_id: elem_approach_methodology
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+  - id: poc_pi_strategic_leadership
+    label: PI strategic leadership and project management
+    node_type: section
+    source_section: "Application Form Part B"
+    guidance_text: "Describe PI strategic leadership/project management plan, governance, and delivery responsibilities."
+    compliance_rules:
+      - id: comp_support_letter_dependency
+        severity: WARNING
+        rule_type: dependency
+        description: "Host Institution Support Letter is required as a submission dependency."
+      - id: comp_ethics_dependency
+        severity: WARNING
+        rule_type: dependency
+        description: "Ethics issues table must be completed when applicable."
+    node_expectations:
+      - evaluation_element_id: elem_pi_strategic_leadership
+        expectation_strength: MANDATORY
+        evaluation_intent: QUALITY
+
+runtime_notes:
+  - id: note_single_step_only
+    description: "This call is single-step and must not inherit staged ERC activation semantics."
+
+runtime_config:
+  split_visibility_reviewability_enabled: false

@@ -8,6 +8,7 @@ Last Updated: 2026-03-11
 ## Purpose
 Traceability manifest for `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml`.
 One-call scope only: `ERC-2026-PoC`.
+Activation target: `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml`.
 
 ## Source Files
 

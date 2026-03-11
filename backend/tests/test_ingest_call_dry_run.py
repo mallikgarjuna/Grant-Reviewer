@@ -302,3 +302,26 @@ def test_wf0073_contract_erc_poc_2026_manifest_gate_fails_closed_on_missing_requ
         )
         with pytest.raises(ValueError, match="ERC-2026-PoC source-manifest gate"):
             ingest_call(poc_yaml, dry_run=True)
+
+
+@pytest.mark.no_db
+def test_wf0073_contract_erc_poc_2026_dry_run_passes_with_single_step_source_grounded_yaml(
+    monkeypatch,
+) -> None:
+    """WF-0073 should dry-run the PoC canonical YAML with single-step semantics."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    result = ingest_call(
+        Path("data/calls/canonical/erc/erc_poc_2026_full.yaml"),
+        dry_run=True,
+    )
+
+    assert result["dry_run"] is True
+    assert result["schema_version"] == "v2"
+    assert result["source_path"] == "data/calls/canonical/erc/erc_poc_2026_full.yaml"
+    assert result["funding_call"]["code"] == "ERC-2026-PoC"
+    assert result["funding_call"]["stage"] == "single-step"
+    assert (
+        result["canonical_json"]["runtime_config"]["split_visibility_reviewability_enabled"]
+        is False
+    )

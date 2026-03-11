@@ -44,7 +44,7 @@ Verification Steps:
 - `cd backend && rg -n "SHA256|Used for|ERC-2026-PoC|evaluation criteria|proposal structure" data/calls/sources/erc_poc_2026_full.sources.md`
 Risks (if any): A weak manifest can create fake progress by allowing speculative YAML authoring to look source-grounded.
 
-### [ ] Task 2 — Tracer bullet: canonical YAML plus dry-run validation
+### [x] Task 2 — Tracer bullet: canonical YAML plus dry-run validation
 
 Goal:
 Author the smallest source-grounded canonical `ERC-2026-PoC` call definition and prove it survives existing dry-run validation before any DB ingest or runtime proof is attempted.
