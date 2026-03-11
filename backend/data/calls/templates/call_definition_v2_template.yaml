@@ -32,15 +32,17 @@ evaluation_criteria:
         description: Objectives are specific, coherent, and testable.
         source_hint: "Official reviewer guide section X.Y"
         stage: BOTH
+        # Copy this structure forward whenever official source prompts/questions exist.
+        # If the source has no subordinate prompts, omit this field with source-grounded rationale.
         subordinate_prompts:
           - id: prompt_objective_specificity
             prompt: Are the stated objectives specific and concrete?
             source_locator: "Official reviewer guide section X.Y, question 1"
-            source_hint: "Copy forward this structure whenever official source prompts exist."
+            source_hint: "Official reviewer guide section X.Y"
           - id: prompt_objective_coherence
             prompt: Do the objectives form a coherent and testable set?
             source_locator: "Official reviewer guide section X.Y, question 2"
-            source_hint: "If no subordinate prompts exist in source, omit this field with source-grounded rationale."
+            source_hint: "Official reviewer guide section X.Y"
 
 proposal_nodes:
   - id: scientific_proposal

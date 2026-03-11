@@ -399,3 +399,17 @@ def test_wf0074_contract_erc_poc_2026_subordinate_prompt_proof_call_dry_run(
     assert set(canonical_json["runtime_config"]) == {
         "split_visibility_reviewability_enabled"
     }
+
+
+@pytest.mark.no_db
+def test_wf0074_contract_non_dry_run_ingest_fails_closed_when_subordinate_prompts_would_be_dropped(
+    monkeypatch,
+) -> None:
+    """WF-0074 must block non-dry-run ingest until subordinate prompts have persistence support."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    with pytest.raises(ValueError, match="WF-0074 ingest boundary"):
+        ingest_call(
+            Path("data/calls/canonical/erc/erc_poc_2026_full.yaml"),
+            dry_run=False,
+        )

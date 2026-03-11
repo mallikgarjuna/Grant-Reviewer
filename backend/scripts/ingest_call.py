@@ -269,6 +269,34 @@ def _enforce_wf0073_erc_poc_source_manifest_gate(
         )
 
 
+def _v2_has_subordinate_prompts(call_def: CallDefinitionV2) -> bool:
+    """Return True when any evaluation element carries subordinate prompts."""
+    return any(
+        element.subordinate_prompts
+        for criterion in call_def.evaluation_criteria
+        for element in criterion.evaluation_elements
+    )
+
+
+def _enforce_wf0074_subordinate_prompt_ingest_boundary(
+    call_def: CallDefinitionV1 | CallDefinitionV2,
+    *,
+    dry_run: bool,
+) -> None:
+    """Fail closed until non-dry-run persistence explicitly supports subordinate prompts."""
+    if dry_run or not isinstance(call_def, CallDefinitionV2):
+        return
+
+    if not _v2_has_subordinate_prompts(call_def):
+        return
+
+    raise ValueError(
+        "WF-0074 ingest boundary: subordinate_prompts are currently validated for "
+        "schema/dry-run fidelity only. Non-dry-run ingest is blocked until the "
+        "persistence seam is explicitly widened."
+    )
+
+
 # ============================================================================
 # Load & Parse
 # ============================================================================
@@ -1166,6 +1194,7 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
     schema_version, call_def, raw_yaml = load_yaml(yaml_path)
     _enforce_wf0061_msca_source_upload_gate(call_def)
     _enforce_wf0073_erc_poc_source_manifest_gate(call_def)
+    _enforce_wf0074_subordinate_prompt_ingest_boundary(call_def, dry_run=dry_run)
 
     if dry_run:
         logger.info("=== DRY RUN MODE - No database changes will be made ===")

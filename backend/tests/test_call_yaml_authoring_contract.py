@@ -10,12 +10,14 @@ import pytest
 
 pytestmark = pytest.mark.no_db
 
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
 
 def test_wf0074_authoring_docs_fail_closed_on_subordinate_prompt_flattening() -> None:
-    workflow_text = Path("../docs/call-yaml/authoring-workflow.md").read_text(
+    workflow_text = (_REPO_ROOT / "docs/call-yaml/authoring-workflow.md").read_text(
         encoding="utf-8"
     )
-    checklist_text = Path("../docs/call-yaml/onboarding-checklist.md").read_text(
+    checklist_text = (_REPO_ROOT / "docs/call-yaml/onboarding-checklist.md").read_text(
         encoding="utf-8"
     )
     workflow_text_lower = workflow_text.lower()
@@ -43,8 +45,8 @@ def test_wf0074_authoring_docs_fail_closed_on_subordinate_prompt_flattening() ->
 
 
 def test_wf0074_durable_governance_records_fidelity_policy_and_closure_gate() -> None:
-    decisions_text = Path("../docs/logs/decisions.md").read_text(encoding="utf-8")
-    project_docs_text = Path("../docs/memory/domain/project_docs.md").read_text(
+    decisions_text = (_REPO_ROOT / "docs/logs/decisions.md").read_text(encoding="utf-8")
+    project_docs_text = (_REPO_ROOT / "docs/memory/domain/project_docs.md").read_text(
         encoding="utf-8"
     )
     decisions_text_lower = decisions_text.lower()
