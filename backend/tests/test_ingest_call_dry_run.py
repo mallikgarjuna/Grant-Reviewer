@@ -1,4 +1,6 @@
-"""Regression checks for V1/V2 dry-run ingestion without DB configuration."""
+"""backend/tests/test_ingest_call_dry_run.py
+Regression checks for V1/V2 dry-run ingestion without DB configuration.
+"""
 
 from __future__ import annotations
 
@@ -292,6 +294,15 @@ def test_wf0073_contract_erc_poc_2026_manifest_gate_fails_closed_on_missing_requ
 - SHA256: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`
 - Used for:
   - proposal structure cross-check
+""",
+        ),
+        (
+            "single_entry_claims_both_required_classes",
+            """# temp manifest
+1) **Combined source**
+- SHA256: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+- Used for:
+  - proposal/application structure and evaluation criteria/elements
 """,
         ),
         (

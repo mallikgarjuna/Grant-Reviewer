@@ -1,4 +1,4 @@
-"""
+"""backend/scripts/ingest_call.py
 Ingestion script for Admin Call Definition as Code.
 
 Reads a YAML file conforming to CallDefinition schema and performs
@@ -203,37 +203,44 @@ def _manifest_has_required_wf0073_erc_poc_evidence(manifest_text: str) -> bool:
         )
         blocks.append(lowered_text[block_start:block_end])
 
-    def _find_block(markers: tuple[str, ...]) -> str | None:
-        for block in blocks:
-            if any(marker in block for marker in markers):
-                return block
-        return None
-
-    structure_block = _find_block(
-        (
-            "proposal structure",
-            "application structure",
-            "proposal/application structure",
-        )
-    )
-    evaluation_block = _find_block(
-        (
-            "evaluation criteria",
-            "evaluation elements",
-            "evaluation criteria/elements",
-        )
-    )
-
-    required_blocks = [structure_block, evaluation_block]
-    for block in required_blocks:
-        if block is None:
-            return False
+    def _block_has_required_fields(block: str) -> bool:
         if not re.search(r"sha256:\s*`[0-9a-f]{64}`", block):
             return False
         if "used for:" not in block:
             return False
+        return True
 
-    return True
+    structure_markers = (
+        "proposal structure",
+        "application structure",
+        "proposal/application structure",
+    )
+    evaluation_markers = (
+        "evaluation criteria",
+        "evaluation elements",
+        "evaluation criteria/elements",
+    )
+
+    structure_candidates = [
+        (index, block)
+        for index, block in enumerate(blocks)
+        if any(marker in block for marker in structure_markers)
+        and _block_has_required_fields(block)
+    ]
+    evaluation_candidates = [
+        (index, block)
+        for index, block in enumerate(blocks)
+        if any(marker in block for marker in evaluation_markers)
+        and _block_has_required_fields(block)
+    ]
+
+    # Enforce distinct-source evidence: one source cannot satisfy both classes.
+    for structure_index, _ in structure_candidates:
+        for evaluation_index, _ in evaluation_candidates:
+            if structure_index != evaluation_index:
+                return True
+
+    return False
 
 
 def _enforce_wf0073_erc_poc_source_manifest_gate(
