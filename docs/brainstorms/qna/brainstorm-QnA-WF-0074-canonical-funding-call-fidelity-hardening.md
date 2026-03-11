@@ -2,7 +2,7 @@
 # WF-0074 — Canonical Funding Call Fidelity Hardening
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-11
 
@@ -295,4 +295,6 @@ The goal of this workflow is to harden the canonical authoring contract so futur
 
 - Tightened proof-call language so one real canonical YAML is the default evidence object; fixture fallback now requires explicit scope-control rationale.
 - Added explicit compatibility-proof expectations for existing flat YAMLs to the verification matrix.
-- Named the activated snapshot / engine contract seam as the first runtime-consumption boundary to inspect in Phase 1.
+- Corrected the runtime-consumption seam statement: `backend/app/engine/contracts.py` defines optional fields, but `backend/app/services/structured_reviewer_service.py` currently builds an expectations-only snapshot, so that service seam is the first required Phase 1 inspection boundary.
+- Added a fail-closed Phase 1 rule: if runtime remains expectations-only, the PRD must either add the narrowest seam that makes structured prompts reachable to runtime behavior or explicitly narrow WF-0074 to authoring-contract hardening only.
+- Restored decision/memory guidance as an explicit verification row so later phases cannot silently drop the promised governance update.

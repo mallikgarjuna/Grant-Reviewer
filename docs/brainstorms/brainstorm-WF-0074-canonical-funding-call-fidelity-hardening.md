@@ -2,7 +2,7 @@
 # WF-0074 — Canonical Funding Call Fidelity Hardening
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-11
 
@@ -48,7 +48,7 @@ Contract Notes / Non-obvious constraints:
 - `docs/call-yaml/authoring-workflow.md` says to break criteria into atomic evaluation elements, but it does not require preservation of detailed official prompts when the source includes them.
 - `docs/tasks/task-WF-0073-erc-poc-2026-call-onboarding.md` and adjacent workflow language explicitly rewarded the "smallest" and "minimal" source-grounded YAML needed to pass dry-run, which is consistent with the lossy ERC PoC result.
 - Existing canonical call YAMLs across ERC, NWO, and MSCA consistently encode evaluation elements as flat objects, so any fidelity hardening must address compatibility and migration risk explicitly rather than pretending this is an isolated PoC mistake.
-- `backend/app/engine/contracts.py` already exposes activated evaluation-element contracts, so Phase 1 must inspect that snapshot/engine seam first before assuming stored prompt-level fidelity will influence review behavior.
+- `backend/app/engine/contracts.py` defines optional activated evaluation-criteria/elements fields, but `backend/app/services/structured_reviewer_service.py` currently builds a `call_config_snapshot` containing only `schema_version` plus `expectations`; Phase 1 must inspect that snapshot-construction seam first before assuming stored prompt-level fidelity will influence runtime review behavior.
 
 ## 1. Problem Statement
 
@@ -168,7 +168,8 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0074-canonical-fund
 - At least one proof-call artifact must exercise the new shape; theoretical contract text alone is insufficient.
 - Proof should prefer one real canonical YAML authoring surface; fixture-only proof is acceptable only with explicit rationale that a real call would widen scope disproportionately.
 - Compatibility posture for existing flat YAMLs must be explicit: either tolerated temporarily with boundaries, migrated in-scope, or deferred with rationale.
-- If runtime consumption is left unchanged, the workflow must justify why the chosen proof seam is still sufficient to improve or constrain review quality; the activated snapshot/engine contract seam is the first required inspection boundary.
+- If Phase 1 finds the runtime snapshot still carries only `expectations`, the PRD must either add the narrowest snapshot/activation seam that makes structured prompt fidelity reachable to runtime behavior, or explicitly narrow WF-0074 to authoring-contract hardening only and remove any claim of immediate review-quality improvement in this slice.
+- If runtime consumption is left unchanged, the workflow must justify why the chosen proof seam is still sufficient to improve or constrain review quality; `backend/app/services/structured_reviewer_service.py` is the first required inspection boundary, and `backend/app/engine/contracts.py` alone is not sufficient evidence.
 
 ### Verification Evidence Matrix (Fail-Closed)
 
@@ -177,6 +178,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0074-canonical-fund
 | Schema representability | targeted schema/model test(s) | `fail` (default until executed) | required | must prove structured prompt field validates and rejects malformed shapes |
 | Template fidelity default | template diff / lint / doc check | `fail` (default until executed) | required | must show new starter template teaches prompt-level fidelity |
 | Authoring contract hardening | docs/checklist diff + any contract tests | `fail` (default until executed) | required | must show flattening is no longer the documented default |
+| Decision/memory guidance | decision log + memory/doc diff | `fail` (default until executed) | required | must preserve the new fidelity rule outside transient chat context and record any compatibility posture or proof-call policy |
 | Proof-call example | real YAML or equivalent fixture validation | `fail` (default until executed) | required | must exercise subordinate evaluative prompt encoding |
 | Compatibility posture | backward-compat test(s) or explicit deferred-migration proof | `fail` (default until executed) | required | must show how existing flat YAMLs are tolerated, rejected, or deferred |
 | Consumption/proof seam | targeted runtime/snapshot/test proof if required | `fail` (default until executed) | required | must avoid stored-but-unused ambiguity |
@@ -195,3 +197,4 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0074-canonical-fund
 
 - v0.1 (2026-03-11): Captured long-form defect framing, repo reality snapshot, and initial recommended contracts for high-fidelity canonical call authoring.
 - v0.2 (2026-03-11): Tightened proof-call requirements toward real canonical YAML by default, added explicit compatibility-proof expectations, and named the activated snapshot/engine contract seam as the first runtime-consumption boundary to inspect.
+- v0.3 (2026-03-11): Replaced an overstated runtime-contract claim with the verified `structured_reviewer_service.py` snapshot seam, added a fail-closed authoring-only vs runtime-impact decision rule, and restored decision/memory guidance as an explicit verification row.
