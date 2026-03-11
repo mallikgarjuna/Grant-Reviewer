@@ -1,4 +1,4 @@
-"""
+"""backend/app/schemas/call_definitions_v2.py
 V2 YAML ingestion schemas for call definitions.
 
 These models validate the richer NWO-style call definition payload used for
@@ -68,6 +68,34 @@ class EvaluationElementDefinitionV2(StrictBaseModel):
     description: str = Field(min_length=1)
     source_hint: str | None = None
     stage: EvaluationStage | None = "BOTH"
+    subordinate_prompts: list["SubordinatePromptDefinitionV2"] | None = None
+
+    @model_validator(mode="after")
+    def validate_subordinate_prompt_ids(self) -> EvaluationElementDefinitionV2:
+        if not self.subordinate_prompts:
+            return self
+
+        seen_prompt_ids: set[str] = set()
+        duplicate_prompt_ids: set[str] = set()
+        for prompt in self.subordinate_prompts:
+            if prompt.id in seen_prompt_ids:
+                duplicate_prompt_ids.add(prompt.id)
+            seen_prompt_ids.add(prompt.id)
+
+        if duplicate_prompt_ids:
+            duplicate_label = ", ".join(sorted(duplicate_prompt_ids))
+            raise ValueError(f"Duplicate subordinate prompt id: {duplicate_label}")
+
+        return self
+
+
+class SubordinatePromptDefinitionV2(StrictBaseModel):
+    """Structured official prompt nested under an evaluation element."""
+
+    id: str = Field(min_length=1)
+    prompt: str = Field(min_length=1)
+    source_locator: str = Field(min_length=1)
+    source_hint: str = Field(min_length=1)
 
 
 class EvaluationCriterionDefinitionV2(StrictBaseModel):

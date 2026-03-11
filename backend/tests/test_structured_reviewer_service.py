@@ -1160,6 +1160,62 @@ def test_wf0073_contract_structured_service_keeps_erc_poc_2026_single_step_activ
         service.repository.session.close()
 
 
+def test_wf0074_contract_erc_poc_runtime_snapshot_remains_expectations_only(
+    monkeypatch,
+) -> None:
+    """WF-0074: ERC PoC subordinate prompts persist in canonical JSON but not runtime snapshot."""
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    captured_snapshot: dict[str, object] = {}
+
+    def capture_run_review_pipeline(review_request):
+        captured_snapshot.update(review_request.call_config_snapshot.to_canonical_payload())
+        from app.engine.pipeline_v1 import run_review_pipeline as original_pipeline
+
+        return original_pipeline(review_request)
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        capture_run_review_pipeline,
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "Proof text for ERC PoC innovation and breakthrough potential.",
+                )
+            ],
+            external_user_id="wf0074-erc-poc-runtime-boundary",
+            idempotency_key="wf0074-erc-poc-runtime-boundary",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) >= 1
+
+        definition = service.repository.session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        subordinate_prompts = definition.canonical_json["evaluation_criteria"][0][
+            "evaluation_elements"
+        ][0]["subordinate_prompts"]
+        assert [prompt["id"] for prompt in subordinate_prompts] == [
+            "prompt_innovation_business_or_societal_impact",
+            "prompt_expected_outcomes_distinctiveness",
+            "prompt_high_risk_high_gain",
+            "prompt_breakthrough_innovation_outcome",
+            "prompt_overcome_difficult_aspects",
+        ]
+        assert set(captured_snapshot) == {"schema_version", "expectations"}
+        assert captured_snapshot["schema_version"] == "v1"
+        assert isinstance(captured_snapshot["expectations"], list)
+        assert captured_snapshot["expectations"]
+    finally:
+        service.repository.session.close()
+
+
 def test_wf0065_nwo_structured_service_tracer_uses_real_canonical_call(
     monkeypatch,
 ) -> None:

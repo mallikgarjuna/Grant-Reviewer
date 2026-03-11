@@ -1,6 +1,47 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening closeout)
+
+### AD 74.4: WF-0074 closes at authoring-fidelity hardening with no automatic runtime follow-on
+- **WF ID**: WF-0074
+- **Context**: Phase 3.2 found that the initial Part C1 fix incorrectly blocked non-dry-run ingest of `erc_poc_2026_full.yaml`, even though V2 persistence already preserves the full canonical JSON including `subordinate_prompts`. The repaired closeout re-proved DB persistence and separately proved that the structured-review runtime snapshot remains expectations-only.
+- **Decision**: Close WF-0074 as complete once schema/template/docs/governance hardening and the narrowed persistence/runtime-boundary proofs pass. Do not create an automatic follow-on WF from this closeout. Any future work to make subordinate-prompt fidelity influence structured-review runtime behavior must be a separately scoped WF with an explicit runtime contract, proof surface, and launch-value rationale.
+- **Why**: This preserves the actual achievement of WF-0074 without overclaiming runtime impact, and it avoids turning a narrow authoring/governance workflow into implicit runtime roadmap debt.
+- **Tradeoff**: Canonical call fidelity is now preserved durably and truthfully, but the structured-review engine still consumes only the existing expectations snapshot unless a later WF widens that seam on purpose.
+- **Follow-on boundary rationale**: No immediate backlog promotion is required for launch readiness. Only promote a follow-on if product needs clearly justify subordinate-prompt-aware runtime behavior beyond the current expectations-only boundary.
+- **Status**: Approved.
+
+## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening)
+
+### AD 74.3: WF-0074 subordinate-prompt fidelity rule and closure gate are durable governance
+- **WF ID**: WF-0074
+- **Context**: Phase 3 implementation adds a typed subordinate-prompt authoring contract, one real proof-call in `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml`, and fail-closed workflow/checklist wording, but those rules would remain too transient if they lived only in the task artifact or chat log.
+- **Decision**: Preserve the subordinate-prompt fidelity rule as durable governance: official subordinate prompts/questions must be preserved explicitly for new or re-authored calls when the source includes them; existing flat canonical YAMLs remain temporarily compatible only as a bounded MVP compatibility posture; `erc_poc_2026_full.yaml` remains the real proof-call example for this WF; and no runtime-consumption claim is allowed while the activated snapshot seam remains expectations-only.
+- **Why**: This keeps the fidelity hardening policy, compatibility posture, proof-call policy, and seam-boundary honesty stable beyond one implementation session.
+- **Tradeoff**: Governance text is slightly more explicit, but it prevents later closeout from overstating what the runtime currently consumes.
+- **Status**: Approved.
+
+## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening)
+
+### AD 74.2: WF-0074 must preserve durable governance surfaces and fail-closed evidence gates in the PRD
+- **WF ID**: WF-0074
+- **Context**: The approved brainstorm made `decision/memory guidance` and a row-level fail-closed verification matrix part of the MVP contract, but the PRD draft initially compressed those into softer prose and testing notes.
+- **Decision**: Keep decision-log/memory guidance as an explicit MVP surface in the PRD, require typed subordinate-prompt items with stable identity plus source traceability, and require a verification evidence matrix plus audit-disposition ledger before any proceed or ship recommendation.
+- **Why**: This prevents Phase 2/3 from satisfying WF-0074 with only schema/template/docs changes, blocks anonymous-string prompt shapes that would weaken traceability, and preserves explicit pass/fail evidence discipline for closure.
+- **Tradeoff**: The planning artifact and final walkthrough carry a bit more structure, but the closure contract stays replayable and cannot silently drift from the approved brainstorm.
+- **Status**: Approved.
+
+## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening)
+
+### AD 74.1: WF-0074 is authoring-contract hardening first, with explicit checklist and proof-call seams
+- **WF ID**: WF-0074
+- **Context**: The brainstorm required a narrow slice across schema, template, authoring docs/checklist, tests, and one proof-call example, while also requiring explicit inspection of the activated snapshot / engine contract seam before making runtime-impact claims.
+- **Decision**: Keep WF-0074 scoped to authoring-contract hardening in MVP. Use `docs/call-yaml/onboarding-checklist.md` as the checklist seam, default the proof-call surface to `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml`, and require compatibility proof against at least one existing real flat canonical YAML. Treat the current `structured_reviewer_service.py` snapshot seam as a claim boundary: no runtime-consumption claim in this WF unless a later task adds and proves the narrowest necessary snapshot change.
+- **Why**: This preserves the smallest defensible cross-call slice, keeps the contract concrete on real repo surfaces, and avoids overclaiming review-quality impact while the runtime snapshot still carries only `schema_version` plus `expectations`.
+- **Tradeoff**: The MVP improves representability, defaults, and governance now, but a later WF is still required if the product needs subordinate prompt fidelity to flow into the structured-review engine itself.
+- **Status**: Approved.
+
 ## Date: 2026-03-11 (WF-0073: erc-poc-2026-call-onboarding closeout)
 
 ### AD 73.2: Close WF-0073 with backend-only proof and call-local manifest-gate hardening

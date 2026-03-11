@@ -37,6 +37,27 @@ evaluation_criteria:
         description: Assess the breakthrough innovation potential of the idea and its expected value beyond the current state of the art.
         source_hint: "Work Programme 2026 section 2.1.6.1"
         stage: BOTH
+        subordinate_prompts:
+          - id: prompt_innovation_business_or_societal_impact
+            prompt: Does the idea have the potential to drive innovation and business inventiveness or tackle societal challenges?
+            source_locator: "Work Programme 2026 section 2.1.6.1, element 1.a"
+            source_hint: "wp_horizon-erc-2026_en.pdf page 43"
+          - id: prompt_expected_outcomes_distinctiveness
+            prompt: Are the expected outcomes innovative or distinctive compared to existing solutions?
+            source_locator: "Work Programme 2026 section 2.1.6.1, element 1.a"
+            source_hint: "wp_horizon-erc-2026_en.pdf page 43"
+          - id: prompt_high_risk_high_gain
+            prompt: Is the idea high risk and with a potential high gain?
+            source_locator: "Work Programme 2026 section 2.1.6.1, element 1.a"
+            source_hint: "wp_horizon-erc-2026_en.pdf page 43"
+          - id: prompt_breakthrough_innovation_outcome
+            prompt: If successful, will the outcome result in a breakthrough innovation?
+            source_locator: "Work Programme 2026 section 2.1.6.1, element 1.a"
+            source_hint: "wp_horizon-erc-2026_en.pdf page 43"
+          - id: prompt_overcome_difficult_aspects
+            prompt: Is there a risk that some aspects are difficult to overcome?
+            source_locator: "Work Programme 2026 section 2.1.6.1, element 1.a"
+            source_hint: "wp_horizon-erc-2026_en.pdf page 43"
       - id: elem_approach_methodology
         name: approach and methodology
         description: Assess whether the proposed approach and methodology are appropriate, coherent, and feasible for the PoC objectives.

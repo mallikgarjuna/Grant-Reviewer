@@ -693,3 +693,13 @@
 ### 09:55 - Pick P1 #5 → WF-0021 Kickoff (NWO Veni 2025 preproposal WF-2)
 > User requested `pick P1 #5` to start "NWO Veni 2025 preproposal — WF-2" with strict scope: add stable `logical_id` fields/columns for traceability, ingest CallDefinition V2 YAML into DB, and keep V1 compatibility (no structured-config endpoint, no frontend changes, no compliance engine).
 > Outcome: Minted `WF-0021`, created baseline WF artifacts, promoted the parking lot item, and created branch `wf/WF-0021-nwo-veni-2025-preproposal-wf2` in preparation for Phase 0.1 brainstorm.
+
+## 2026-03-11
+
+### 20:15 - WF-0074 Phase 3.2 Audit Remediation Completed
+> User requested all Phase 3 audit findings for `WF-0074` be addressed safely.
+> Outcome: Removed the false non-dry-run ingest blocker for `erc_poc_2026_full.yaml`, added DB-backed proof that subordinate prompts persist in canonical JSON, added a structured-review regression proving the runtime snapshot remains `schema_version` + `expectations` only, softened docs-contract tests from exact prose coupling to semantic anchors, updated workflow status surfaces, and committed `20223cf`.
+
+### 21:20 - WF-0074 Phase 3.3 Closeout Completed
+> User requested remaining WF-0074 closeout work be completed safely.
+> Outcome: Ran final verification (`pre-commit`, targeted WF-0074 selectors, DB-backed ERC PoC persistence/runtime selectors), finalized the walkthrough/audit ledger/commit trail, archived active WF-0074 artifacts into `completed/`, marked the WF `Done` in `docs/index.md`, and committed the closeout as `8e037da`. Shipping remains user-gated.
