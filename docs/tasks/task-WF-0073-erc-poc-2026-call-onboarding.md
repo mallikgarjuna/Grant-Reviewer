@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Source-grounded PoC manifest
+### [x] Task 1 — Source-grounded PoC manifest
 
 Goal:
 Author the fail-closed source manifest for `ERC-2026-PoC` from the approved official files so later YAML authoring cannot drift from the accepted structure and evaluation criteria/elements sources.

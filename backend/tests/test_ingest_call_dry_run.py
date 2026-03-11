@@ -234,3 +234,71 @@ def test_wf0061_contract_non_dry_run_ingest_stops_before_db_when_manifest_missin
 
     with pytest.raises(ValueError, match="source-upload gate"):
         ingest_call(msca_yaml, dry_run=False)
+
+
+@pytest.mark.no_db
+def test_wf0073_contract_erc_poc_2026_manifest_gate_fails_closed_on_missing_required_traceability(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """WF-0073 gate should fail closed when PoC source traceability is incomplete."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    source_yaml = Path("data/calls/canonical/nwo/nwo_veni_2025_preproposal.yaml")
+    yaml_text = source_yaml.read_text(encoding="utf-8").replace(
+        "code: nwo_veni_2025_preproposal",
+        "code: ERC-2026-PoC",
+        1,
+    )
+    poc_yaml = tmp_path / "erc_poc_2026_full.yaml"
+    poc_yaml.write_text(yaml_text, encoding="utf-8")
+
+    invalid_manifest_cases = (
+        (
+            "missing_used_for",
+            """# temp manifest
+## Source 1
+- SHA256: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+- Used for:
+  - proposal structure
+## Source 2
+- SHA256: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`
+""",
+        ),
+        (
+            "missing_sha256",
+            """# temp manifest
+## Source 1
+- Used for:
+  - proposal structure
+## Source 2
+- Used for:
+  - evaluation criteria/elements
+""",
+        ),
+        (
+            "missing_required_source_class",
+            """# temp manifest
+## Source 1
+- SHA256: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+- Used for:
+  - proposal structure
+## Source 2
+- SHA256: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`
+- Used for:
+  - proposal structure cross-check
+""",
+        ),
+    )
+
+    for case_name, manifest_text in invalid_manifest_cases:
+        manifest_path = tmp_path / f"{case_name}.sources.md"
+        manifest_path.write_text(manifest_text, encoding="utf-8")
+        monkeypatch.setattr(
+            ingest_call_module,
+            "WF0073_ERC_POC_2026_MANIFEST_PATH",
+            manifest_path,
+            raising=False,
+        )
+        with pytest.raises(ValueError, match="ERC-2026-PoC source-manifest gate"):
+            ingest_call(poc_yaml, dry_run=True)

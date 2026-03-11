@@ -65,9 +65,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 WF0061_MSCA_PF_2025_CODE = "MSCA-PF-2025"
+WF0073_ERC_POC_2026_CODE = "ERC-2026-PoC"
 _BACKEND_ROOT = Path(__file__).resolve().parent.parent
 WF0061_MSCA_PF_2025_MANIFEST_PATH = Path(
     _BACKEND_ROOT / "data/calls/sources/msca_pf_2025_full.sources.md"
+)
+WF0073_ERC_POC_2026_MANIFEST_PATH = Path(
+    _BACKEND_ROOT / "data/calls/sources/erc_poc_2026_full.sources.md"
 )
 
 
@@ -170,6 +174,71 @@ def _enforce_wf0061_msca_source_upload_gate(
     if not _manifest_has_required_wf0061_msca_evidence(manifest_text):
         raise ValueError(
             "MSCA-PF-2025 source-upload gate: manifest is incomplete. "
+            "Require two source entries with `Used for:` sections, SHA256 hashes, "
+            "and explicit coverage of proposal/application structure and "
+            "evaluation criteria/elements before dry-run or ingest."
+        )
+
+
+def _manifest_has_required_wf0073_erc_poc_evidence(manifest_text: str) -> bool:
+    """Check whether manifest text proves required ERC PoC source classes."""
+    lowered_text = manifest_text.lower()
+    has_two_hashes = (
+        len(
+            list(
+                re.finditer(
+                    r"sha256:\s*`[0-9a-f]{64}`",
+                    lowered_text,
+                )
+            )
+        )
+        >= 2
+    )
+    has_two_usage_blocks = lowered_text.count("used for:") >= 2
+    has_structure_source = any(
+        marker in lowered_text
+        for marker in (
+            "proposal structure",
+            "application structure",
+            "proposal/application structure",
+        )
+    )
+    has_evaluation_source = any(
+        marker in lowered_text
+        for marker in (
+            "evaluation criteria",
+            "evaluation elements",
+            "evaluation criteria/elements",
+        )
+    )
+    return (
+        has_two_hashes
+        and has_two_usage_blocks
+        and has_structure_source
+        and has_evaluation_source
+    )
+
+
+def _enforce_wf0073_erc_poc_source_manifest_gate(
+    call_def: CallDefinitionV1 | CallDefinitionV2,
+) -> None:
+    """Fail closed for ERC-2026-PoC unless manifest proves required traceability."""
+    if call_def.funding_call.code != WF0073_ERC_POC_2026_CODE:
+        return
+
+    manifest_path = WF0073_ERC_POC_2026_MANIFEST_PATH
+    if not manifest_path.exists():
+        raise ValueError(
+            "ERC-2026-PoC source-manifest gate: missing required manifest "
+            f"`{manifest_path}`. Require proposal/application structure and "
+            "evaluation criteria/elements sources with SHA256 and `Used for:` "
+            "traceability before dry-run or ingest."
+        )
+
+    manifest_text = manifest_path.read_text(encoding="utf-8")
+    if not _manifest_has_required_wf0073_erc_poc_evidence(manifest_text):
+        raise ValueError(
+            "ERC-2026-PoC source-manifest gate: manifest is incomplete. "
             "Require two source entries with `Used for:` sections, SHA256 hashes, "
             "and explicit coverage of proposal/application structure and "
             "evaluation criteria/elements before dry-run or ingest."
@@ -1072,6 +1141,7 @@ def ingest_call(yaml_path: Path, dry_run: bool = False) -> dict[str, Any]:
     # Load and validate
     schema_version, call_def, raw_yaml = load_yaml(yaml_path)
     _enforce_wf0061_msca_source_upload_gate(call_def)
+    _enforce_wf0073_erc_poc_source_manifest_gate(call_def)
 
     if dry_run:
         logger.info("=== DRY RUN MODE - No database changes will be made ===")
