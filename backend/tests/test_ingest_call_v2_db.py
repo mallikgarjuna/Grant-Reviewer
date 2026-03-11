@@ -279,6 +279,16 @@ def test_wf0073_contract_erc_poc_2026_db_ingest_persists_single_step_call() -> N
             ]
             is False
         )
+        criteria = call_definition.canonical_json["evaluation_criteria"]
+        first_element = criteria[0]["evaluation_elements"][0]
+        subordinate_prompts = first_element["subordinate_prompts"]
+        assert [prompt["id"] for prompt in subordinate_prompts] == [
+            "prompt_innovation_business_or_societal_impact",
+            "prompt_expected_outcomes_distinctiveness",
+            "prompt_high_risk_high_gain",
+            "prompt_breakthrough_innovation_outcome",
+            "prompt_overcome_difficult_aspects",
+        ]
         assert len(call_definition.canonical_json["proposal_nodes"]) == 3
     finally:
         session.close()
