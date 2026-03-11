@@ -40,7 +40,7 @@ Verification Steps:
 - `cd backend && rg -n "subordinate|prompt|traceability|legacy flat" tests/test_call_definitions_v2_schema.py app/schemas/call_definitions_v2.py`
 Risks (if any): A loose schema can normalize anonymous nested prose and make future authoring look structured without actually preserving source-grounded fidelity.
 
-### [ ] Task 2 — Tracer bullet: one real proof-call with dry-run validation
+### [x] Task 2 — Tracer bullet: one real proof-call with dry-run validation
 
 Goal:
 Re-author one real canonical YAML proof-call to use the new subordinate-prompt structure and prove it validates through the existing dry-run seam without widening into runtime-consumption work.

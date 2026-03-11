@@ -356,3 +356,46 @@ def test_wf0073_contract_erc_poc_2026_dry_run_passes_with_single_step_source_gro
         result["canonical_json"]["runtime_config"]["split_visibility_reviewability_enabled"]
         is False
     )
+
+
+@pytest.mark.no_db
+def test_wf0074_contract_erc_poc_2026_subordinate_prompt_proof_call_dry_run(
+    monkeypatch,
+) -> None:
+    """WF-0074 proof-call should dry-run with subordinate prompt fidelity intact."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    result = ingest_call(
+        Path("data/calls/canonical/erc/erc_poc_2026_full.yaml"),
+        dry_run=True,
+    )
+
+    assert result["dry_run"] is True
+    assert result["schema_version"] == "v2"
+    assert result["source_path"] == "data/calls/canonical/erc/erc_poc_2026_full.yaml"
+
+    funding_call = result["funding_call"]
+    assert funding_call["code"] == "ERC-2026-PoC"
+
+    canonical_json = result["canonical_json"]
+    criteria = canonical_json["evaluation_criteria"]
+    assert isinstance(criteria, list)
+    first_criterion = criteria[0]
+    assert isinstance(first_criterion, dict)
+    elements = first_criterion["evaluation_elements"]
+    assert isinstance(elements, list)
+    first_element = elements[0]
+    assert isinstance(first_element, dict)
+    subordinate_prompts = first_element["subordinate_prompts"]
+    assert isinstance(subordinate_prompts, list)
+    assert [prompt["id"] for prompt in subordinate_prompts] == [
+        "prompt_innovation_business_or_societal_impact",
+        "prompt_expected_outcomes_distinctiveness",
+        "prompt_high_risk_high_gain",
+        "prompt_breakthrough_innovation_outcome",
+        "prompt_overcome_difficult_aspects",
+    ]
+
+    assert set(canonical_json["runtime_config"]) == {
+        "split_visibility_reviewability_enabled"
+    }
