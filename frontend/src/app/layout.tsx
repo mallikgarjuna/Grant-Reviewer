@@ -20,7 +20,11 @@ export const metadata: Metadata = {
   title: "PeerLens",
   description: "Review-criteria-aligned feedback for stronger grant drafts.",
   icons: {
-    icon: "/icon.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
   },
 };
 

@@ -72,11 +72,11 @@ export default function Home() {
         <Link className="flex items-center gap-2" href="/">
           <Image
             alt="PeerLens"
-            className="h-10 w-[180px] object-cover object-center"
-            height={640}
+            className="h-9 w-auto object-contain sm:h-10"
+            height={371}
             priority
-            src="/logo.png"
-            width={640}
+            src="/logo.svg"
+            width={1632}
           />
         </Link>
         <nav

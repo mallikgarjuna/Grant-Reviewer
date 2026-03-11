@@ -54,11 +54,11 @@ export default function AppLayout({
             <Link className="flex items-center gap-2" href={PUBLIC_ENTRY_ROUTE}>
               <Image
                 alt="PeerLens"
-                className="h-11 w-[190px] object-cover object-center"
-                height={640}
+                className="h-10 w-auto object-contain"
+                height={371}
                 priority
-                src="/logo.png"
-                width={640}
+                src="/logo.svg"
+                width={1632}
               />
             </Link>
             <nav
