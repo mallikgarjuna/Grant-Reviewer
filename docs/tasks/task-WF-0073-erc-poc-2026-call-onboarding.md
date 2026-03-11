@@ -2,8 +2,8 @@
 # WF-0073 — ERC PoC 2026 Call Onboarding
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-11
 
 Type: feature
@@ -34,7 +34,7 @@ Acceptance Criteria:
 - The manifest preserves one-call scope and names only `ERC-2026-PoC` authoring targets.
 TDD Plan: N/A
 Verification Steps:
-- `cd backend && sha256sum ../Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/af_he-erc-poc_en.pdf ../Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/wp_horizon-erc-2026_en.pdf ../Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/information-for-applicants_he-erc-poc_en.pdf`
+- `sha256sum /home/mgurram/Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/af_he-erc-poc_en.pdf /home/mgurram/Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/wp_horizon-erc-2026_en.pdf /home/mgurram/Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/information-for-applicants_he-erc-poc_en.pdf`
 - `cd backend && rg -n "SHA256|Used for|ERC-2026-PoC|evaluation criteria|proposal structure" data/calls/sources/erc_poc_2026_full.sources.md`
 Risks (if any): A weak manifest can create fake progress by allowing speculative YAML authoring to look source-grounded.
 
@@ -99,7 +99,7 @@ Acceptance Criteria:
 - If any activation/exposure fix is needed, it stays localized to the smallest backend seam required for this one call.
 TDD Plan:
 - RED: add `wf0073_contract_erc_poc_2026_ingest_exposes_call_listing` in `backend/tests/test_api.py`, `wf0073_contract_erc_poc_2026_node_metadata_exposes_authored_nodes` in `backend/tests/test_call_nodes_metadata_api.py`, and `wf0073_contract_erc_poc_2026_db_ingest_persists_single_step_call` in `backend/tests/test_ingest_call_v2_db.py`.
-- GREEN: implement only the minimum ingest or exposure seam change required for the ingested PoC call to appear through the existing backend APIs.
+- GREEN: implement only the minimum ingest or exposure seam change required for the ingested PoC call to appear through the existing backend APIs, while asserting the ingested PoC call does not inherit unsupported multi-step ERC stage behavior.
 - REFACTOR: extract a tiny call-seeding helper only if PoC setup is duplicated across the three backend test files.
 Verification Steps:
 - `cd backend && uv run pytest tests/test_ingest_call_v2_db.py -k "wf0073_contract_erc_poc_2026_db_ingest_persists_single_step_call"`
@@ -121,7 +121,7 @@ Files to modify:
 Must touch files:
 - `backend/tests/test_api.py`
 - `backend/tests/test_structured_reviewer_service.py`
-- `backend/tests/fixtures/`
+- `backend/tests/fixtures/wf_0073_erc_poc_2026_structured_review.json`
 May touch files:
 - `backend/main.py`
 - `backend/app/services/structured_reviewer_service.py`
@@ -130,15 +130,18 @@ Stop if: a passing PoC smoke request would require widening the runtime proof su
 Session boundary after: yes
 Acceptance Criteria:
 - One valid PoC submission payload aligned to authored node IDs produces a successful structured-review response with no call-contract errors.
+- Runtime proof explicitly demonstrates the PoC path remains single-step and does not require staged ERC activation semantics.
 - Replayable evidence records the request seam, payload fixture reference, and deterministic outcome for the PoC smoke proof.
 - The proof remains explicitly backend-only and does not overclaim browser or BFF coverage.
 TDD Plan:
 - RED: add `wf0073_contract_structured_api_accepts_erc_poc_2026_payload` in `backend/tests/test_api.py` and `wf0073_contract_structured_service_resolves_erc_poc_2026_snapshot` in `backend/tests/test_structured_reviewer_service.py`.
+- RED: add `wf0073_contract_structured_service_keeps_erc_poc_2026_single_step_activation` in `backend/tests/test_structured_reviewer_service.py`.
 - GREEN: implement only the minimum backend change required for the real ingested PoC call to pass the structured-review seam, or wire the smoke fixture if no production change is needed.
 - REFACTOR: extract a small PoC payload builder or fixture loader only if structured-review setup becomes noisy.
 Verification Steps:
 - `cd backend && uv run pytest tests/test_api.py -k "wf0073_contract_structured_api_accepts_erc_poc_2026_payload"`
 - `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0073_contract_structured_service_resolves_erc_poc_2026_snapshot"`
+- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0073_contract_structured_service_keeps_erc_poc_2026_single_step_activation"`
 - `cd backend && rg -n "ERC-2026-PoC|erc_poc_2026|structured-review" tests/test_api.py tests/test_structured_reviewer_service.py tests/fixtures`
 Risks (if any): A smoke proof can pass syntactically while still hiding call-resolution drift unless the payload uses the real authored node IDs and ingested call code.
 
@@ -158,11 +161,9 @@ Must touch files:
 - `docs/index.md`
 - `docs/logs/decisions.md`
 May touch files:
-- `backend/main.py`
-- `backend/app/services/node_metadata_service.py`
-- `backend/app/services/structured_reviewer_service.py`
+- `none`
 Out of scope: new product claims beyond one-call onboarding, cross-call hardening, shipping a broader ERC support statement
-Stop if: the smallest justified compatibility fix spans more than one backend seam or the evidence bundle would need to claim unsupported product surfaces
+Stop if: Task 4 still leaves an unresolved compatibility question or the evidence bundle would need to claim unsupported product surfaces
 Session boundary after: yes
 Acceptance Criteria:
 - The walkthrough contains one verification matrix covering manifest, dry-run, DB ingest, `/calls`, `/api/public/calls/{call_logical_id}/nodes/metadata`, and `POST /api/structured-review`, with exact commands/tests, outcomes, and evidence pointers.
@@ -188,3 +189,4 @@ Risks (if any): Without a single fail-closed evidence bundle, the WF can overcla
 ## Changelog
 
 - v0.1 (2026-03-11): Initial task breakdown from PRD.
+- v0.2 (2026-03-11): Applied review fixes by anchoring source-hash commands to exact file paths, narrowing the structured-review fixture target to one file, removing code spillover from the evidence-close task, and adding an explicit single-step runtime guard for PoC.
