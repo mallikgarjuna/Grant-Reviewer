@@ -249,6 +249,41 @@ def test_v2_ingest_supports_erc_cog_2026_full() -> None:
         session.close()
 
 
+def test_wf0073_contract_erc_poc_2026_db_ingest_persists_single_step_call() -> None:
+    """WF-0073: DB ingest should persist ERC PoC as a single-step v2 call."""
+    reset_database()
+
+    result = ingest_call(
+        Path("data/calls/canonical/erc/erc_poc_2026_full.yaml"),
+        dry_run=False,
+    )
+    assert result["schema_version"] == "v2"
+    assert result["skipped"] is False
+
+    session = get_session()
+    try:
+        funding_call = session.exec(
+            select(FundingCall).where(FundingCall.code == "ERC-2026-PoC")
+        ).first()
+        assert funding_call is not None
+
+        call_definition = session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == funding_call.id)
+        ).first()
+        assert call_definition is not None
+        assert call_definition.schema_version == "v2"
+        assert call_definition.canonical_json["funding_call"]["stage"] == "single-step"
+        assert (
+            call_definition.canonical_json["runtime_config"][
+                "split_visibility_reviewability_enabled"
+            ]
+            is False
+        )
+        assert len(call_definition.canonical_json["proposal_nodes"]) == 3
+    finally:
+        session.close()
+
+
 def test_v2_ingest_handles_concurrent_idempotency_collision() -> None:
     """Concurrent ingest of the same v2 payload should not duplicate persisted state."""
     reset_database()

@@ -78,7 +78,7 @@ Verification Steps:
 - `cd backend && rg -n "ERC-2026-PoC|single-step|breakthrough innovation potential|approach and methodology|strategic leadership" data/calls/canonical/erc/erc_poc_2026_full.yaml`
 Risks (if any): PoC source details can be subtly overfit to existing ERC StG/CoG patterns unless the task explicitly fails closed on unsupported stage reuse.
 
-### [ ] Task 3 — Activate the call and prove exposure seams
+### [x] Task 3 — Activate the call and prove exposure seams
 
 Goal:
 Ingest the real PoC call into the target DB and prove it appears through the existing listing and node-metadata seams without widening scope beyond one call.

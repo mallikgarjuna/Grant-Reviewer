@@ -14,6 +14,7 @@ from main import app
 from scripts.ingest_call import ingest_call
 from tests.test_api import (
     TEST_BFF_SHARED_SECRET,
+    create_client_with_erc_poc_seed,
     create_client_with_seed,
     reset_database,
 )
@@ -209,3 +210,22 @@ def test_wf0062_erc_cog_metadata_exposes_corrected_hierarchy_and_leaf_review_sta
     assert nodes_by_logical_id["b2_part2_scientific_proposal"]["review_stage"] == "STEP_2"
     assert nodes_by_logical_id["resources_time_commitment"]["review_stage"] == "STEP_2"
     assert nodes_by_logical_id["part_a"]["review_stage"] is None
+
+
+def test_wf0073_contract_erc_poc_2026_node_metadata_exposes_authored_nodes(
+    monkeypatch,
+) -> None:
+    """WF-0073: node metadata endpoint should expose authored ERC PoC nodes."""
+    client, _, call_code = create_client_with_erc_poc_seed(monkeypatch)
+
+    response = client.get(f"/api/public/calls/{call_code}/nodes/metadata")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["call_logical_id"] == "ERC-2026-PoC"
+    nodes_by_logical_id = {node["logical_id"]: node for node in payload["nodes"]}
+    assert {
+        "poc_idea_innovation",
+        "poc_approach_methodology",
+        "poc_pi_strategic_leadership",
+    }.issubset(nodes_by_logical_id.keys())
