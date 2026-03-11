@@ -2,7 +2,7 @@
 # WF-0073 — ERC PoC 2026 Call Onboarding
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-11
 
@@ -23,6 +23,7 @@ Parallelizable: no
 Files to modify:
 Must touch files:
 - `backend/data/calls/sources/erc_poc_2026_full.sources.md`
+- `backend/tests/test_ingest_call_dry_run.py`
 May touch files:
 - `docs/logs/decisions.md`
 Out of scope: canonical YAML authoring, ingest/runtime code, generic manifest enforcement for all calls
@@ -32,9 +33,14 @@ Acceptance Criteria:
 - The manifest records the PoC proposal/application-structure source and the PoC evaluation criteria/elements source with explicit `Used for` traceability and `SHA256` metadata.
 - The manifest notes the applicant guidance as a cross-check source without replacing the ERC work programme as the primary evaluation criteria/elements authority.
 - The manifest preserves one-call scope and names only `ERC-2026-PoC` authoring targets.
-TDD Plan: N/A
+- Regression coverage proves the manifest gate fails closed when a required source class, `SHA256`, or `Used for` field is missing for `ERC-2026-PoC`.
+TDD Plan:
+- RED: add `wf0073_contract_erc_poc_2026_manifest_gate_fails_closed_on_missing_required_traceability` in `backend/tests/test_ingest_call_dry_run.py`.
+- GREEN: author the minimal manifest content and manifest-gate assertions needed for dry-run validation to reject incomplete PoC source traceability.
+- REFACTOR: keep manifest fixtures inline unless a second PoC traceability case makes extraction materially clearer.
 Verification Steps:
 - `sha256sum /home/mgurram/Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/af_he-erc-poc_en.pdf /home/mgurram/Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/wp_horizon-erc-2026_en.pdf /home/mgurram/Projects/Non-Github/PeerLens_proj/ERC-PoC-2026/information-for-applicants_he-erc-poc_en.pdf`
+- `cd backend && uv run pytest tests/test_ingest_call_dry_run.py -k "wf0073_contract_erc_poc_2026_manifest_gate_fails_closed_on_missing_required_traceability"`
 - `cd backend && rg -n "SHA256|Used for|ERC-2026-PoC|evaluation criteria|proposal structure" data/calls/sources/erc_poc_2026_full.sources.md`
 Risks (if any): A weak manifest can create fake progress by allowing speculative YAML authoring to look source-grounded.
 
@@ -169,24 +175,27 @@ Acceptance Criteria:
 - The walkthrough contains one verification matrix covering manifest, dry-run, DB ingest, `/calls`, `/api/public/calls/{call_logical_id}/nodes/metadata`, and `POST /api/structured-review`, with exact commands/tests, outcomes, and evidence pointers.
 - Any compatibility fix is documented as either unnecessary or confined to one narrow backend seam for `ERC-2026-PoC`.
 - Completion language stays bounded to getting `ERC-2026-PoC` live through the approved backend seams before the 2026-03-17 cut-off.
+- Every walkthrough matrix row resolves from `planned` to explicit `pass`, `fail`, or `skipped` with a replayable evidence reference before any ship recommendation.
 TDD Plan: N/A
 Verification Steps:
 - `rg -n "ERC-2026-PoC|/calls|nodes/metadata|/api/structured-review|verification matrix" docs/walkthroughs/walkthrough-WF-0073-erc-poc-2026-call-onboarding.md`
-- `git diff -- docs/walkthroughs/walkthrough-WF-0073-erc-poc-2026-call-onboarding.md docs/logs/decisions.md docs/index.md`
+- `rg -n "Source manifest gate|Dry-run ingest|DB ingest|Call exposure|Node metadata exposure|Structured-review smoke" docs/walkthroughs/walkthrough-WF-0073-erc-poc-2026-call-onboarding.md`
+- `rg -n "pass|fail|skipped|wf0073_contract_|erc_poc_2026_full|/api/structured-review|/api/public/calls/.*/nodes/metadata|/calls" docs/walkthroughs/walkthrough-WF-0073-erc-poc-2026-call-onboarding.md`
 Risks (if any): Without a single fail-closed evidence bundle, the WF can overclaim readiness from partial proof.
 
 ## Verification Matrix
 
 | Proof item | Exercised seam | Command or test ID | Expected outcome | Result | Evidence reference | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Source manifest gate | source manifest | `rg -n "SHA256|Used for|ERC-2026-PoC" backend/data/calls/sources/erc_poc_2026_full.sources.md` | manifest proves structure and evaluation criteria/elements sources | planned | Task 1 | |
-| Dry-run ingest | `backend/scripts/ingest_call.py --dry-run` | `uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_poc_2026_full.yaml --dry-run` | dry-run exits 0 with clean summary | planned | Task 2 | |
-| DB ingest | ingest script | `wf0073_contract_erc_poc_2026_db_ingest_persists_single_step_call` | call persists cleanly | planned | Task 3 | |
-| Call exposure | `GET /calls` | `wf0073_contract_erc_poc_2026_ingest_exposes_call_listing` | `/calls` includes `ERC-2026-PoC` | planned | Task 3 | |
-| Node metadata exposure | `GET /api/public/calls/{call_logical_id}/nodes/metadata` | `wf0073_contract_erc_poc_2026_node_metadata_exposes_authored_nodes` | metadata endpoint resolves PoC nodes | planned | Task 3 | |
-| Structured-review smoke | `POST /api/structured-review` | `wf0073_contract_structured_api_accepts_erc_poc_2026_payload` | smoke request succeeds without call-contract errors | planned | Task 4 | |
+| Source manifest gate | source manifest | `wf0073_contract_erc_poc_2026_manifest_gate_fails_closed_on_missing_required_traceability` | manifest rejects missing source class / `SHA256` / `Used for`, and authored manifest satisfies the gate | planned | pytest output for `wf0073_contract_erc_poc_2026_manifest_gate_fails_closed_on_missing_required_traceability` + `sha256sum` output | |
+| Dry-run ingest | `backend/scripts/ingest_call.py --dry-run` | `uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_poc_2026_full.yaml --dry-run` | dry-run exits 0 with clean summary | planned | pytest output for `wf0073_contract_erc_poc_2026_dry_run_passes_with_single_step_source_grounded_yaml` + ingest dry-run stdout | |
+| DB ingest | ingest script | `wf0073_contract_erc_poc_2026_db_ingest_persists_single_step_call` | call persists cleanly | planned | pytest output for `wf0073_contract_erc_poc_2026_db_ingest_persists_single_step_call` | |
+| Call exposure | `GET /calls` | `wf0073_contract_erc_poc_2026_ingest_exposes_call_listing` | `/calls` includes `ERC-2026-PoC` | planned | pytest output for `wf0073_contract_erc_poc_2026_ingest_exposes_call_listing` | |
+| Node metadata exposure | `GET /api/public/calls/{call_logical_id}/nodes/metadata` | `wf0073_contract_erc_poc_2026_node_metadata_exposes_authored_nodes` | metadata endpoint resolves PoC nodes | planned | pytest output for `wf0073_contract_erc_poc_2026_node_metadata_exposes_authored_nodes` | |
+| Structured-review smoke | `POST /api/structured-review` | `wf0073_contract_structured_api_accepts_erc_poc_2026_payload` | smoke request succeeds without call-contract errors | planned | pytest output for `wf0073_contract_structured_api_accepts_erc_poc_2026_payload` + fixture `backend/tests/fixtures/wf_0073_erc_poc_2026_structured_review.json` | |
 
 ## Changelog
 
 - v0.1 (2026-03-11): Initial task breakdown from PRD.
 - v0.2 (2026-03-11): Applied review fixes by anchoring source-hash commands to exact file paths, narrowing the structured-review fixture target to one file, removing code spillover from the evidence-close task, and adding an explicit single-step runtime guard for PoC.
+- v0.3 (2026-03-11): Added an explicit fail-closed manifest regression seam to Task 1 and tightened Task 5/matrix evidence requirements to require replayable row-level proof instead of doc-diff closure.
