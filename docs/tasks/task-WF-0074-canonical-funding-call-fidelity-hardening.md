@@ -105,7 +105,7 @@ Verification Steps:
 - `cd backend && rg -n "subordinate|prompt|source_hint|evaluation_elements" data/calls/templates/call_definition_v2_template.yaml`
 Risks (if any): If the template stays flatter than the schema allows, future authors will keep copying the lossy pattern even after the contract is hardened.
 
-### [ ] Task 4 — Authoring workflow and checklist fail closed
+### [x] Task 4 — Authoring workflow and checklist fail closed
 
 Goal:
 Update authoring guidance so subordinate official prompts must be preserved when present in source material, while keeping compatibility posture and runtime seam boundary explicit in the docs/checklist contract.

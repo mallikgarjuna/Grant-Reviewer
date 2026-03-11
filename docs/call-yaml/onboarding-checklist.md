@@ -1,9 +1,9 @@
 ---
 path: "docs/call-yaml/onboarding-checklist.md"
 title: "Call YAML Onboarding Checklist"
-version: "1.0"
+version: "1.1"
 status: "Active"
-updated: "2026-03-08"
+updated: "2026-03-11"
 ---
 
 # Call YAML Onboarding Checklist
@@ -21,6 +21,9 @@ Use this checklist when onboarding any new funding call YAML.
 - YAML is authored using `CallDefinitionV2` shape.
 - Source traceability manifest exists under `backend/data/calls/sources/`.
 - Scope includes only evaluable narrative structure, evaluation criteria/elements, and enforceable constraints.
+- If official source material contains subordinate evaluative prompts/questions, subordinate prompts were preserved or explicitly justified as absent by source.
+- Existing flat canonical YAMLs remain temporarily compatible during WF-0074 MVP, but this exception does not apply to new or re-authored calls with official subordinate prompts.
+- Activated snapshot / engine contract seam remains limited to `schema_version` plus `expectations`; do not claim runtime-consumption impact from canonical fidelity changes alone.
 
 ## 3. Validation
 

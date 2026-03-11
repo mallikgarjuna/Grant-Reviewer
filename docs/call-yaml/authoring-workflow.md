@@ -1,9 +1,9 @@
 ---
 path: "docs/call-yaml/authoring-workflow.md"
 title: "Spec: Call Authoring Workflow"
-version: "1.1"
+version: "1.2"
 status: "Living Specification"
-updated: "2026-03-08"
+updated: "2026-03-11"
 applies_to: "All funding agencies (NWO, ERC, MSCA, Horizon Europe, etc.)"
 ---
 
@@ -182,11 +182,14 @@ Stop for approval.
 
 - Extract criteria from official evaluation section
 - Break into atomic evaluation elements
+- If official source material includes subordinate evaluative prompts/questions under an evaluation element, subordinate official prompts/questions under an evaluation element must be preserved explicitly in `subordinate_prompts`; flattening them into summary prose is a contract violation.
+- If the source genuinely has no subordinate prompts for an element, omission of `subordinate_prompts` is allowed only with source-grounded rationale during authoring review.
 - Ensure elements are:
   - Independently evaluable
   - Promptable
   - Non-overlapping
 - IDs must be globally unique within YAML
+- Existing flat canonical YAMLs remain temporarily compatible during WF-0074 MVP, but any new or re-authored call with official subordinate prompts must use the typed structure.
 
 Stop for approval.
 
@@ -250,6 +253,11 @@ Generate rich YAML including:
 - runtime_notes (if needed)
 
 Run validation before ingestion.
+
+WF-0074 runtime boundary:
+
+- This WF does not widen the activated snapshot / engine contract seam beyond `schema_version` plus `expectations`.
+- Representability in canonical YAML and dry-run proof do not, by themselves, prove structured-review runtime consumption.
 
 ---
 
