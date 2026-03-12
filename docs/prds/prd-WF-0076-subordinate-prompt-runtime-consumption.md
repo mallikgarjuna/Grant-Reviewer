@@ -2,8 +2,8 @@
 # WF-0076 — Subordinate Prompt Runtime Consumption
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-12
 
 ## 0. User Stories (MVP)
@@ -23,6 +23,7 @@ Last Updated: 2026-03-12
 - Preserve prior truth that WF-0074 already solved subordinate-prompt authoring/governance and WF-0075 already solved ERC PoC proof-call completeness. `(US3)`
 - Add the smallest activated runtime contract change needed to carry subordinate prompts from `structured_reviewer_service.py` into the live structured-review path instead of discarding them at snapshot build time. `(US1)`
 - Prefer a narrow child `subordinate_prompts` payload on activated expectations when that remains sufficient to drive deterministic runtime effect in `pipeline_v1`. `(US1) (US2)`
+- Start with one ERC PoC expectation path under `poc_idea_innovation` as the first implementation slice, then preserve broader page-43 completeness through regression coverage rather than a broader first runtime rewrite. `(US2) (US3)`
 - Update the active structured-review execution path only as far as needed for deterministic proof that subordinate prompts influence runtime behavior on ERC PoC. `(US2)`
 - Add targeted deterministic tests that prove the discard seam, the widened contract, the active runtime effect, and ERC PoC proof-call preservation. `(US2) (US3)`
 - Preserve WF-0074 compatibility posture for existing flat canonical YAMLs unless a narrower rule is separately justified and re-approved. `(US3)`
@@ -56,12 +57,14 @@ Last Updated: 2026-03-12
 - FR3 (US1): Each activated subordinate prompt item must preserve a stable prompt ID and prompt text, and may include source locator metadata when needed for deterministic proof.
 - FR4 (US1) (US2): `backend/app/engine/contracts.py` and `backend/app/engine/review_request_validator.py` must accept the widened activated expectation contract without making unrelated snapshot sections mandatory.
 - FR5 (US2): The active `pipeline_v1` execution path must consume subordinate-prompt detail at the narrowest live seam that can change deterministic runtime behavior.
-- FR6 (US2): MVP proof of runtime effect must be stronger than “the snapshot has more fields”; it must show changed evaluator input, observation/finding detail, or an equivalently narrow runtime artifact that the live pipeline actually uses.
-- FR7 (US2): If review-card assertions are used as part of proof, they must be deterministic and source-grounded, not subjective prose-quality judgments.
-- FR8 (US3): ERC PoC remains the first and only required proof-call for MVP, and no requirement in this WF may claim equal benefit for all calls.
-- FR9 (US3): WF-0074 compatibility posture for existing flat canonical YAMLs must remain preserved unless a later phase produces explicit proof and re-approval for narrowing it.
-- FR10 (US3): Closure evidence must include a baseline-anchored `main...HEAD` scope proof plus approved-artifact citations that preserve the distinction between solved fidelity work and newly solved runtime consumption.
-- FR11 (US3): Closure evidence must remain fail-closed with row-based verification results and a findings-disposition artifact before any proceed or ship recommendation.
+- FR6 (US2): The first MVP runtime-effect proof must target one ERC PoC expectation path under `poc_idea_innovation`, preferring evaluator-produced finding reason/detail as the first live artifact unless Phase 2 proves another `pipeline_v1` artifact is narrower.
+- FR7 (US2): MVP proof of runtime effect must be stronger than “the snapshot has more fields”; it must show changed evaluator input, observation/finding detail, or an equivalently narrow runtime artifact that the live pipeline actually uses.
+- FR8 (US2): Phase 2 must include one negative live-path proof showing that when subordinate-prompt carriage is absent from an otherwise valid activated expectation payload, the chosen runtime artifact loses the official subordinate-prompt signal.
+- FR9 (US2): If review-card assertions are used as part of proof, they must be deterministic and source-grounded, not subjective prose-quality judgments.
+- FR10 (US3): ERC PoC remains the first and only required proof-call for MVP, and no requirement in this WF may claim equal benefit for all calls.
+- FR11 (US3): WF-0074 compatibility posture for existing flat canonical YAMLs must remain preserved unless a later phase produces explicit proof and re-approval for narrowing it.
+- FR12 (US3): Closure evidence must include a baseline-anchored `main...HEAD` scope proof plus approved-artifact citations that preserve the distinction between solved fidelity work and newly solved runtime consumption.
+- FR13 (US3): Closure evidence must remain fail-closed with row-based verification results and a findings-disposition artifact before any proceed or ship recommendation.
 
 ## 5. Data & API Contracts
 
@@ -83,18 +86,20 @@ Last Updated: 2026-03-12
     - the activated snapshot must serialize subordinate prompts deterministically when present;
     - canonical digest calculation must continue to cover the widened payload;
     - calls without subordinate prompts or legacy flat call definitions must remain valid without synthetic filler fields.
-- Active runtime-consumption contract `(US2) (FR5) (FR6) (FR7)`
+- Active runtime-consumption contract `(US2) (FR5) (FR6) (FR7) (FR8) (FR9)`
   - Target seam: `backend/app/engine/pipeline_v1.py` and the narrowest directly-adjacent evaluator/observation surface it exercises.
   - Required behavior:
     - the live pipeline must read the widened expectation payload and incorporate subordinate prompt data into a deterministic runtime artifact it actually uses;
-    - acceptable first proof targets are evaluator inputs, finding reasons/details, observation detail, or another equivalently narrow live execution artifact;
+    - the preferred first proof artifact is evaluator-produced finding reason/detail for one activated ERC PoC expectation under `poc_idea_innovation`;
+    - acceptable fallback proof targets are observation detail or another equivalently narrow live execution artifact only if Phase 2 shows they are narrower than reviewer-card assertions;
     - a non-active prompt-building surface is insufficient unless Phase 2 first proves the active runtime routes through it for the tested seam.
-- Proof-call contract `(US2) (US3) (FR8)`
+- Proof-call contract `(US2) (US3) (FR10)`
   - Proof surface: `ERC-2026-PoC` only for MVP.
   - Required behavior:
     - the proof-call must preserve the existing page-43 subordinate prompts already verified in WF-0075;
+    - the first runtime slice should anchor to `poc_idea_innovation` before broader ERC PoC preservation is proven through regression coverage;
     - deterministic proof must show those official concerns now reach the active runtime path rather than stopping at canonical storage.
-- Boundary and closure contract `(US3) (FR9) (FR10) (FR11)`
+- Boundary and closure contract `(US3) (FR11) (FR12) (FR13)`
   - Required behavior:
     - approved WF-0074 and WF-0075 artifacts remain cited as prior truth;
     - compatibility posture for legacy flat canonical YAMLs remains unchanged unless separately re-approved;
@@ -131,6 +136,7 @@ Last Updated: 2026-03-12
 - If an activated expectation has no canonical subordinate prompts by source, the runtime payload must remain absent or empty for that expectation rather than fabricating prompts. `(US1)`
 - If a call definition stays on the temporary flat compatibility posture, runtime activation must remain valid without requiring subordinate-prompt fields everywhere. `(US3)`
 - If multiple subordinate prompts exist under one expectation, proof cannot collapse them into one indistinguishable summary string if that would prevent deterministic source-grounded assertions. `(US2)`
+- If the first runtime slice tries to cover all ERC PoC page-43 expectations at once, the task plan is too broad and must be split back to one expectation path plus regressions. `(US2) (US3)`
 - If a chosen proof seam changes only telemetry while all live runtime artifacts remain unchanged, that proof is insufficient because it does not show subordinate prompts influence structured-review behavior. `(US2)`
 - If ERC PoC proof passes but other calls remain unproven, closure language must state that boundary explicitly. `(US3)`
 
@@ -139,7 +145,8 @@ Last Updated: 2026-03-12
 - Public seam first
   - Write a failing targeted test proving the current ERC PoC structured-review request still drops subordinate prompts from the activated runtime snapshot. `(US1) (FR1)`
   - Write a failing contract/validator test proving the minimal widened expectation payload shape is required to accept deterministic subordinate-prompt carriage. `(US1) (FR2) (FR4)`
-  - Write a failing live-pipeline test proving subordinate prompts are still absent from the chosen runtime artifact before implementation. `(US2) (FR5) (FR6)`
+  - Write a failing live-pipeline test proving subordinate prompts are still absent from the preferred evaluator-produced finding reason/detail artifact before implementation. `(US2) (FR5) (FR6)`
+  - Write a failing negative live-path test proving that an otherwise valid payload without subordinate-prompt carriage cannot produce the new official-concern signal. `(US2) (FR8)`
 - Test seams
   - `StructuredReviewerService.generate_structured_review_pipeline_v1`
   - `validate_review_request_payload`
@@ -150,9 +157,10 @@ Last Updated: 2026-03-12
 - Minimal test types
   - Service-level regression proving the current discard seam and the new activated payload. `(US1) (FR1) (FR2)`
   - Contract/validator regression for digest-safe widened payload acceptance and malformed subordinate-prompt rejection. `(US1) (FR3) (FR4)`
-  - Live-pipeline regression proving subordinate prompts influence a deterministic runtime artifact. `(US2) (FR5) (FR6)`
-  - ERC PoC regression preserving page-43 proof-call completeness while the runtime seam changes. `(US3) (FR8)`
-  - Compatibility regression or approved-artifact citation preserving WF-0074 flat-call posture. `(US3) (FR9)`
+  - Live-pipeline regression proving subordinate prompts influence the preferred evaluator-produced finding reason/detail artifact for one ERC PoC expectation path. `(US2) (FR5) (FR6) (FR7) (FR9)`
+  - Negative live-pipeline regression proving the signal disappears when subordinate-prompt carriage is absent from an otherwise valid request. `(US2) (FR8)`
+  - ERC PoC regression preserving page-43 proof-call completeness while the runtime seam changes. `(US3) (FR10)`
+  - Compatibility regression or approved-artifact citation preserving WF-0074 flat-call posture. `(US3) (FR11)`
 
 ## 9. Telemetry (Minimal)
 
@@ -168,8 +176,7 @@ Last Updated: 2026-03-12
 
 ## 11. Open Questions (if any)
 
-- Does the narrowest live proof surface land best in evaluator-produced finding reason/detail or another `pipeline_v1` artifact that remains closer to downstream review-card behavior?
-- Is prompt-level `source_locator` required in the activated runtime payload for MVP proof, or can proof stay deterministic with prompt IDs plus canonical ERC PoC source citations?
+- none
 
 ## 12. Verification Evidence Matrix (Fail-Closed)
 
@@ -189,3 +196,4 @@ Last Updated: 2026-03-12
 ## 13. Changelog
 
 - v0.1 (2026-03-12): Initial PRD from brainstorm.
+- v0.2 (2026-03-12): Narrowed the first runtime slice to one ERC PoC expectation path, preferred evaluator-produced finding detail as the first proof artifact, added a required negative live-path proof, and marked the PRD ready for Tasks.

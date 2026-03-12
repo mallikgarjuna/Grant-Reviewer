@@ -1,6 +1,16 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-12 (WF-0076: subordinate-prompt-runtime-consumption)
+
+### AD 76.1: WF-0076 must land through one activated-expectation seam and one ERC PoC proof path first
+- **WF ID**: WF-0076
+- **Context**: The approved brainstorm locks this workflow to runtime consumption, not authoring/governance or proof-call completeness. Repo inspection shows the active discard seam in `backend/app/services/structured_reviewer_service.py`, while the live execution path is `backend/app/engine/pipeline_v1.py`.
+- **Decision**: Plan WF-0076 around one additive activated-expectation `subordinate_prompts` payload and one first proof path under ERC PoC `poc_idea_innovation`, preferring evaluator-produced finding detail as the first deterministic runtime-effect artifact. Broader ERC PoC coverage remains a regression obligation, not the first implementation slice.
+- **Why**: This is the smallest seam that can honestly move subordinate prompts from canonical storage into active runtime behavior without reopening WF-0074/WF-0075 scope or forcing broad engine redesign.
+- **Tradeoff**: The first implementation will prove runtime consumption narrowly before any broader call or artifact expansion, so universal benefit claims remain explicitly deferred.
+- **Status**: Approved.
+
 ## Date: 2026-03-12 (WF-0075: erc-poc-proof-call-fidelity-completion)
 
 ### AD 75.2: WF-0075 closes at proof-call fidelity completion with no immediate follow-on backlog promotion
