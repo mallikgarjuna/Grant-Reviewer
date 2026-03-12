@@ -1,9 +1,9 @@
-<!-- docs/tasks/task-WF-0076-subordinate-prompt-runtime-consumption.md -->
+<!-- docs/tasks/completed/task-WF-0076-subordinate-prompt-runtime-consumption.md -->
 # WF-0076 — Subordinate Prompt Runtime Consumption
 
 Artifact: task
 Version: v0.3
-Status: Ready for Implementation
+Status: Done
 Last Updated: 2026-03-12
 
 ## Task Breakdown (Sequential Order)

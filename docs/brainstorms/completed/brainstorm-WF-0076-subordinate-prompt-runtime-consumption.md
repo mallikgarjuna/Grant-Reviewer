@@ -1,8 +1,8 @@
-<!-- docs/brainstorms/brainstorm-WF-0076-subordinate-prompt-runtime-consumption.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0076-subordinate-prompt-runtime-consumption.md -->
 # WF-0076 — Subordinate Prompt Runtime Consumption
 
 Artifact: brainstorm
-Version: v0.3
+Version: v0.4
 Status: Draft Complete
 Last Updated: 2026-03-12
 
@@ -166,6 +166,8 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0076-subordinate-pr
 
 - No proceed recommendation is valid if the planned change only preserves subordinate prompts in canonical storage or dry-run output without making them reachable to structured-review execution.
 - No proceed recommendation is valid if the activated runtime contract changes but deterministic tests still cannot prove subordinate prompts influence runtime behavior.
+- No proceed recommendation is valid if closure evidence does not prove the active runtime lookup reads subordinate prompts from `CallDefinition.canonical_json` for the tested call rather than from a hardcoded or parallel proof seam.
+- No proceed recommendation is valid if runtime-effect proof is positive-only and lacks a negative case showing the official subordinate-prompt signal disappears when carriage is absent from an otherwise valid activated payload.
 - No proceed recommendation is valid if the proof relies on a non-active or parallel prompt path without first proving that the active structured-review runtime for this WF actually exercises that path.
 - No proceed recommendation is valid if the workflow blurs together:
   - authoring/governance solved in WF-0074,
@@ -179,8 +181,10 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0076-subordinate-pr
 | Verification item | Command/test/artifact | Result (`pass`/`fail`/`skipped`) | Evidence pointer | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | Runtime discard seam proof | targeted activation/snapshot test | `fail` (default until executed) | required | must prove exactly where subordinate prompts are dropped today |
-| Minimal contract widening | contract/snapshot validator test | `fail` (default until executed) | required | must prove the smallest new runtime shape is accepted and serialized deterministically |
-| Runtime consumption proof | structured reviewer service test and at least one `pipeline_v1`/evaluator/observation live-path test | `fail` (default until executed) | required | must prove subordinate prompts influence active structured-review runtime behavior, not just storage |
+| Minimal contract widening | contract/snapshot validator test | `fail` (default until executed) | required | must prove the smallest new runtime shape is accepted deterministically and malformed subordinate-prompt payloads fail closed |
+| Canonical source lookup proof | targeted structured-review service test against the active call definition | `fail` (default until executed) | required | must prove subordinate prompts come from `CallDefinition.canonical_json` through existing expectation/evaluation-element identity rather than a hardcoded or parallel seam |
+| Runtime consumption proof | structured reviewer service test and at least one `pipeline_v1`/evaluator live-path test | `fail` (default until executed) | required | must prove subordinate prompts influence active structured-review runtime behavior, not just storage |
+| Negative live-path proof | targeted live-path test with subordinate-prompt carriage removed from an otherwise valid activated payload | `fail` (default until executed) | required | must prove the official subordinate-prompt signal disappears without carriage so positive-only proof cannot pass |
 | Output-level improvement proof | deterministic live execution-surface and/or review-card coverage assertion | `fail` (default until executed) | required | must prove better official-concern coverage, specificity, or omission reduction in an operationalized way |
 | ERC PoC proof-call preservation | targeted ERC PoC regression | `fail` (default until executed) | required | must preserve WF-0075 completeness while using ERC PoC as first proof surface |
 | WF-0074 compatibility-posture preservation | regression and/or approved-artifact citation | `fail` (default until executed) | required | must preserve temporary compatibility for existing flat canonical YAMLs unless re-approved |
@@ -202,3 +206,4 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0076-subordinate-pr
 - v0.1 (2026-03-12): Captured prior truth from WF-0074/WF-0075, verified the live runtime discard seam in `structured_reviewer_service.py`, and framed WF-0076 around the smallest honest runtime-consumption change plus deterministic product-effect proof.
 - v0.2 (2026-03-12): Tightened the recommended representation bias, made the first deterministic proof surface explicit, and named concrete test categories for runtime-consumption and output-level proof.
 - v0.3 (2026-03-12): Re-anchored proof surfaces to the active `pipeline_v1` structured-review path, removed prompt-builder drift from default runtime claims, and restored `main...HEAD` scope-proof rigor to the verification gate.
+- v0.4 (2026-03-12): Closed review-gate gaps by requiring explicit proof of canonical source lookup, malformed-payload rejection, and a negative live-path case before any proceed recommendation.

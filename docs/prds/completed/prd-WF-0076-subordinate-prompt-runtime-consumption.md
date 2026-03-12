@@ -1,8 +1,8 @@
-<!-- docs/prds/prd-WF-0076-subordinate-prompt-runtime-consumption.md -->
+<!-- docs/prds/completed/prd-WF-0076-subordinate-prompt-runtime-consumption.md -->
 # WF-0076 — Subordinate Prompt Runtime Consumption
 
 Artifact: prd
-Version: v0.3
+Version: v0.4
 Status: Ready for Tasks
 Last Updated: 2026-03-12
 
@@ -194,8 +194,10 @@ Last Updated: 2026-03-12
 | Verification item | Evidence shape | Result (`pass`/`fail`/`skipped`) | Evidence ref | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | Runtime discard seam proof | targeted structured-review service snapshot test | `fail` (default until executed) | required | must prove exactly where subordinate prompts are dropped today |
-| Minimal contract widening | contract/validator test for widened expectation payload | `fail` (default until executed) | required | must prove the smallest additive runtime shape is accepted and serialized deterministically |
+| Minimal contract widening | contract/validator test for widened expectation payload | `fail` (default until executed) | required | must prove the smallest additive runtime shape is accepted deterministically and malformed subordinate-prompt payloads fail closed |
+| Canonical source lookup proof | targeted structured-review service test against the active call definition | `fail` (default until executed) | required | must prove subordinate prompts come from `CallDefinition.canonical_json` through existing expectation/evaluation-element identity rather than a hardcoded or parallel seam |
 | Runtime consumption proof | service test plus one active `pipeline_v1` or adjacent live-path test | `fail` (default until executed) | required | must prove subordinate prompts influence active structured-review runtime behavior, not just storage |
+| Negative live-path proof | targeted live-path test with subordinate-prompt carriage removed from an otherwise valid activated payload | `fail` (default until executed) | required | must prove the official subordinate-prompt signal disappears without carriage so positive-only proof cannot pass |
 | Output-level improvement proof | deterministic live execution-surface and/or review-card assertion | `fail` (default until executed) | required | must prove more complete official-concern carry-through or omission reduction in operationalized terms |
 | ERC PoC proof-call preservation | targeted ERC PoC regression | `fail` (default until executed) | required | must preserve WF-0075 completeness while using ERC PoC as the first proof surface |
 | WF-0074 compatibility-posture preservation | regression and/or approved-artifact citation | `fail` (default until executed) | required | must preserve temporary compatibility for existing flat canonical YAMLs unless re-approved |
@@ -209,3 +211,4 @@ Last Updated: 2026-03-12
 - v0.1 (2026-03-12): Initial PRD from brainstorm.
 - v0.2 (2026-03-12): Narrowed the first runtime slice to one ERC PoC expectation path, preferred evaluator-produced finding detail as the first proof artifact, added a required negative live-path proof, and marked the PRD ready for Tasks.
 - v0.3 (2026-03-12): Locked the MVP source seam to existing canonical call-definition JSON, fixed the first proof artifact to evaluator-produced finding `reason`, and ruled observation/prompt-builder-first proof out of MVP unless a later workflow proves those paths are active.
+- v0.4 (2026-03-12): Closed review-gate gaps by requiring explicit proof of canonical source lookup, malformed-payload rejection, and a negative live-path case before any proceed recommendation.
