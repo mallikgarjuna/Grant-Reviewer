@@ -40,7 +40,7 @@ Verification Steps:
 - `cd backend && rg -n "partially_encoded|fully_encoded|absent_by_source|page 43|1.a|1.b|1.c" tests/test_call_subordinate_prompt_coverage.py`
 Risks (if any): A count-only or fixture-only proof would still allow the real proof-call to look complete without source-grounded identity checks.
 
-### [ ] Task 2 — Complete the ERC PoC canonical YAML and prove proof-call closure
+### [x] Task 2 — Complete the ERC PoC canonical YAML and prove proof-call closure
 
 Goal:
 Finish the real proof-call by encoding the official page-43 subordinate prompts under `1.b` and `1.c`, then prove the real call reaches full page-43 coverage and still passes dry-run ingest without claiming runtime consumption.

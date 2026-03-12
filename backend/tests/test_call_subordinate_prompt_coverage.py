@@ -192,7 +192,7 @@ def _classify_element_coverage(
     )
 
 
-def test_wf0075_real_erc_poc_page_43_proof_call_is_partially_encoded() -> None:
+def test_wf0075_real_erc_poc_page_43_proof_call_is_fully_encoded() -> None:
     payload = _load_erc_poc_payload()
 
     results = {
@@ -201,13 +201,14 @@ def test_wf0075_real_erc_poc_page_43_proof_call_is_partially_encoded() -> None:
     }
 
     assert results["elem_breakthrough_innovation_potential"].state == "fully_encoded"
-    assert results["elem_approach_methodology"].state == "partially_encoded"
-    assert results["elem_pi_strategic_leadership"].state == "partially_encoded"
+    assert results["elem_approach_methodology"].state == "fully_encoded"
+    assert results["elem_pi_strategic_leadership"].state == "fully_encoded"
+    assert results["elem_approach_methodology"].missing_source_labels == ()
+    assert results["elem_pi_strategic_leadership"].missing_source_labels == ()
     assert (
-        results["elem_approach_methodology"].missing_source_labels
-        == ("1.b.1", "1.b.2")
+        results["elem_approach_methodology"].matched_prompt_ids["1.b.1"]
+        == "prompt_activities_and_planning_path_to_innovation"
     )
-    assert results["elem_pi_strategic_leadership"].missing_source_labels == ("1.c.1",)
     assert (
         results["elem_breakthrough_innovation_potential"].matched_prompt_ids["1.a.1"]
         == "prompt_innovation_business_or_societal_impact"
@@ -215,6 +216,14 @@ def test_wf0075_real_erc_poc_page_43_proof_call_is_partially_encoded() -> None:
     assert (
         results["elem_breakthrough_innovation_potential"].matched_prompt_paths["1.a.5"]
         == "evaluation_criteria[0].evaluation_elements[0].subordinate_prompts[4]"
+    )
+    assert (
+        results["elem_approach_methodology"].matched_prompt_paths["1.b.2"]
+        == "evaluation_criteria[0].evaluation_elements[1].subordinate_prompts[1]"
+    )
+    assert (
+        results["elem_pi_strategic_leadership"].matched_prompt_ids["1.c.1"]
+        == "prompt_pi_clear_vision_strategic_decisions_risk_contingency"
     )
 
 

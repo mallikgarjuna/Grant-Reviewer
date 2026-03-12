@@ -385,15 +385,30 @@ def test_wf0074_contract_erc_poc_2026_subordinate_prompt_proof_call_dry_run(
     elements = first_criterion["evaluation_elements"]
     assert isinstance(elements, list)
     first_element = elements[0]
+    second_element = elements[1]
+    third_element = elements[2]
     assert isinstance(first_element, dict)
-    subordinate_prompts = first_element["subordinate_prompts"]
-    assert isinstance(subordinate_prompts, list)
-    assert [prompt["id"] for prompt in subordinate_prompts] == [
+    assert isinstance(second_element, dict)
+    assert isinstance(third_element, dict)
+    first_subordinate_prompts = first_element["subordinate_prompts"]
+    second_subordinate_prompts = second_element["subordinate_prompts"]
+    third_subordinate_prompts = third_element["subordinate_prompts"]
+    assert isinstance(first_subordinate_prompts, list)
+    assert isinstance(second_subordinate_prompts, list)
+    assert isinstance(third_subordinate_prompts, list)
+    assert [prompt["id"] for prompt in first_subordinate_prompts] == [
         "prompt_innovation_business_or_societal_impact",
         "prompt_expected_outcomes_distinctiveness",
         "prompt_high_risk_high_gain",
         "prompt_breakthrough_innovation_outcome",
         "prompt_overcome_difficult_aspects",
+    ]
+    assert [prompt["id"] for prompt in second_subordinate_prompts] == [
+        "prompt_activities_and_planning_path_to_innovation",
+        "prompt_timescales_resources_qualified_personnel",
+    ]
+    assert [prompt["id"] for prompt in third_subordinate_prompts] == [
+        "prompt_pi_clear_vision_strategic_decisions_risk_contingency"
     ]
 
     assert set(canonical_json["runtime_config"]) == {
