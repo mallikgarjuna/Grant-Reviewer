@@ -2,8 +2,8 @@
 # WF-0075 — ERC PoC Proof-Call Fidelity Completion
 
 Artifact: task
-Version: v0.3
-Status: Ready for Implementation
+Version: v0.4
+Status: Completed (Awaiting Ship Approval)
 Last Updated: 2026-03-12
 
 ## Task Breakdown (Sequential Order)
@@ -208,3 +208,4 @@ Risks (if any): If the closure gate stays only in the PRD or task plan, later im
 - v0.1 (2026-03-12): Initial task breakdown from PRD.
 - v0.2 (2026-03-12): Applied Part B feedback by making the absent-by-source proof explicit, fixing the Task 2 file boundary, tightening `main...HEAD` scope proof with WF-0074 boundary citations, and replacing the audit-ledger placeholder with closed findings.
 - v0.3 (2026-03-12): Removed unsupported persistence scope from Task 2, split runtime-boundary reproof into its own atomic slice to satisfy the 3-file limit, and made doc/governance follow-ons conditional so WF-0074 is only reopened if executable proof leaves a real ambiguity.
+- v0.4 (2026-03-12): Marked Phase 3 tasks complete after targeted verification and walkthrough closeout evidence were recorded.
