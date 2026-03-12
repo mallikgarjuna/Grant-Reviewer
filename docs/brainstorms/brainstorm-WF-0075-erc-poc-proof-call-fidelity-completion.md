@@ -2,9 +2,9 @@
 # WF-0075 — ERC PoC Proof-Call Fidelity Completion
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
-Last Updated: 2026-03-11
+Last Updated: 2026-03-12
 
 Type: feature
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0075-erc-poc-proof-call-fidelity-completion.md`
@@ -16,6 +16,7 @@ Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0075-erc-poc-
 - This brainstorm is the SSOT for contracts and decisions for WF-0075.
 - The Q&A transcript is rationale only; it must not become the only place where scope, closure rules, or fidelity claims live.
 - WF-0074 is prior truth for this workflow: subordinate-prompt authoring mechanism, template default, docs/checklist hardening, governance updates, and compatibility posture are already implemented.
+- WF-0075 must preserve WF-0074's approved bounded compatibility posture unless a later phase explicitly narrows it with proof and re-approval: existing flat canonical YAMLs remain temporarily compatible, while the real ERC PoC proof-call must become fidelity-complete.
 - WF-0075 exists because the real ERC PoC proof-call is still only partially encoded against the official page-43 subordinate prompts.
 - This workflow must not broaden into structured-review runtime consumption, multi-call migration, or generic schema/ontology redesign unless explicitly re-approved.
 
@@ -103,6 +104,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0075-erc-poc-proof-
 ## 5. Constraints
 
 - Preserve WF-0074 as prior truth; do not reopen the subordinate-prompt mechanism, template-default posture, or general governance work unless a narrow correction is required.
+- Preserve WF-0074's approved compatibility posture unless a later phase explicitly proves and re-approves a narrower rule: existing flat canonical YAMLs remain temporarily compatible, while this WF completes one real proof-call.
 - Preserve traceability to `wp_horizon-erc-2026_en.pdf` page 43 for every fidelity-completion claim.
 - Keep runtime review consumption out of scope unless explicitly re-approved.
 - Do not widen into multi-call migration, generic ontology redesign, or broader structured-review engine work.
@@ -148,15 +150,17 @@ Contract Notes / Non-obvious constraints:
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0075-erc-poc-proof-call-fidelity-completion.md` (Section 7)
 
-## Verification / Proceed Gate
+## Verification / Proceed-or-Ship Gate
 
-- No proceed recommendation is valid if `erc_poc_2026_full.yaml` still lacks the official subordinate prompts for either `1.b` or `1.c`.
-- No proceed recommendation is valid if closure evidence can prove schema validity but cannot prove page-43 completeness versus partiality.
-- No proceed recommendation is valid if the workflow blurs together the three required states:
+- No proceed or ship recommendation is valid if `erc_poc_2026_full.yaml` still lacks the official subordinate prompts for either `1.b` or `1.c`.
+- No proceed or ship recommendation is valid if closure evidence can prove schema validity but cannot prove page-43 completeness versus partiality.
+- No proceed or ship recommendation is valid if the workflow blurs together the three required states:
   - no subordinate prompts by source,
   - subordinate prompts present and fully encoded,
   - subordinate prompts present but only partially encoded.
-- No proceed recommendation is valid if the workflow overclaims runtime review consumption or review-quality improvement beyond the expectations-only boundary already documented by WF-0074.
+- No proceed or ship recommendation is valid if WF-0075 silently narrows WF-0074's approved temporary compatibility posture for existing flat canonical YAMLs without explicit proof and re-approval.
+- No proceed or ship recommendation is valid if the review range and closure evidence are not anchored to `main...HEAD` plus explicit citations to the approved WF-0074 artifacts that define the preserved boundary (compatibility posture, proof-call policy, and expectations-only runtime seam).
+- No proceed or ship recommendation is valid if the workflow overclaims runtime review consumption or review-quality improvement beyond the expectations-only boundary already documented by WF-0074.
 - Any narrow correction to docs/checklist/governance must preserve the exact prior truth that WF-0074 already landed the mechanism/governance layer successfully.
 
 ### Verification Evidence Matrix (Fail-Closed)
@@ -167,10 +171,12 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0075-erc-poc-proof-
 | Source-to-YAML prompt coverage | replayable source ledger or equivalent targeted proof | `fail` (default until executed) | required | must map every official page-43 subordinate prompt for `1.a`, `1.b`, and `1.c` to an exact YAML prompt ID/path |
 | Partial-vs-complete coverage proof | targeted fail-closed test or equivalent contract check | `fail` (default until executed) | required | must fail if a real proof-call encodes only a subset of official subordinate prompts |
 | Absent/complete/partial distinction | test and/or doc-check evidence | `fail` (default until executed) | required | must distinguish no subordinate prompts by source from incomplete encoding |
+| WF-0074 compatibility-posture preservation | targeted compatibility regression and/or contract citation | `fail` (default until executed) | required | must prove existing flat canonical YAMLs remain within WF-0074's approved temporary compatibility posture unless a narrower rule is explicitly re-approved |
+| Baseline-anchored scope proof | review range `main...HEAD` plus approved-artifact citation ledger | `fail` (default until executed) | required | must prove the closure claim did not drift beyond the approved WF-0074 boundary for compatibility posture, proof-call policy, and runtime-boundary honesty |
 | Runtime-boundary honesty | targeted seam proof or contract citation | `fail` (default until executed) | required | must preserve expectations-only runtime boundary unless separately re-approved |
 | Audit disposition | finding-closure ledger | `fail` (default until executed) | required | must close every blocking finding and close or reject justified non-blocking findings with rationale |
 
-- Proceed recommendation remains blocked unless every required row above is `pass`, or explicitly `skipped` with accepted rationale during review.
+- Proceed or ship recommendation remains blocked unless every required row above is `pass`, or explicitly `skipped` with accepted rationale during review.
 
 ## 8. Explicit Non-Goals
 
@@ -184,3 +190,4 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0075-erc-poc-proof-
 
 - v0.1 (2026-03-11): Captured the exact WF-0075 defect as ERC PoC proof-call incompleteness relative to page 43, locked runtime consumption out of scope, and required fail-closed proof that partial subordinate-prompt encoding cannot pass as fidelity complete.
 - v0.2 (2026-03-11): Tightened source-rigorous completeness wording, restored researcher-facing trust as the primary beneficiary, added an explicit negative proof requirement, and added a replayable source-to-YAML coverage row to the verification matrix.
+- v0.3 (2026-03-12): Restored WF-0074 boundary-preservation rigor by requiring temporary compatibility-posture proof, `main...HEAD` scope-proof evidence against approved prior artifacts, and explicit proceed-or-ship gating instead of proceed-only language.

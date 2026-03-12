@@ -2,9 +2,9 @@
 # WF-0075 — ERC PoC Proof-Call Fidelity Completion
 
 Artifact: brainstorm-qna
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
-Last Updated: 2026-03-11
+Last Updated: 2026-03-12
 
 ## Preflight Step 1 — Long-Form Problem Intake
 
@@ -24,6 +24,7 @@ WF-0075 should therefore focus on completing the ERC PoC proof-call and adding f
 - `1.b` and `1.c` remain flat evaluation elements even though page 43 includes official subordinate prompts for them.
 - `backend/app/schemas/call_definitions_v2.py` already supports typed `subordinate_prompts`; representability is not the main blocker anymore.
 - `docs/call-yaml/authoring-workflow.md`, `docs/call-yaml/onboarding-checklist.md`, `docs/logs/decisions.md`, and `docs/memory/domain/project_docs.md` already preserve the WF-0074 governance and runtime-boundary posture.
+- WF-0074's approved bounded compatibility posture remains prior truth: existing flat canonical YAMLs stay temporarily compatible unless a later phase explicitly narrows that policy with proof and re-approval.
 - The remaining gap is closure proof: the repo still needs a fail-closed way to distinguish absent-by-source, fully encoded, and partially encoded subordinate-prompt coverage for a real proof-call.
 
 ## Section 1 — Problem Statement
@@ -211,6 +212,13 @@ WF-0075 should therefore focus on completing the ERC PoC proof-call and adding f
   > Recommendation: A — the missing closure proof is half the defect. B and C are part of the intended narrow solution.
   > **Selected: A**
 
+**Q6: What compatibility rule from WF-0074 must this workflow preserve unless it is explicitly re-approved later?**
+- A) Existing flat canonical YAMLs remain temporarily compatible, while WF-0075 completes one real proof-call and must not silently turn that into a repo-wide rejection rule.
+- B) WF-0075 should tighten the schema immediately so all remaining flat canonical YAMLs fail by default.
+- C) Compatibility posture no longer matters because the proof-call is real.
+  > Recommendation: A — this carries forward the approved WF-0074 boundary and prevents scope drift from one proof-call completion into unapproved repo-wide migration or rejection work.
+  > **Selected: A**
+
 ## Section 6 — Risks / Unknowns
 
 **Q1: What is the highest closure risk?**
@@ -283,6 +291,13 @@ WF-0075 should therefore focus on completing the ERC PoC proof-call and adding f
 - B) The repo can represent subordinate prompts in some situations.
 - C) Runtime reviews are now subordinate-prompt-aware.
   > Recommendation: A — that is the honest claim this WF can close. B understates the intended outcome. C overclaims beyond scope.
+  > **Selected: A**
+
+**Q6: What additional closure proof must exist before any proceed or ship recommendation?**
+- A) A `main...HEAD`-anchored scope proof that cites the approved WF-0074 artifacts and shows compatibility posture, proof-call policy, and runtime-boundary honesty were preserved without hallucinated scope drift.
+- B) Only a note that the latest files were reviewed manually.
+- C) A runtime demo showing no obvious errors.
+  > Recommendation: A — the workflow now depends on approved prior-phase truth, so closure must prove it stayed inside that boundary instead of assuming it.
   > **Selected: A**
 
 ## Section 8 — Explicit Non-Goals
