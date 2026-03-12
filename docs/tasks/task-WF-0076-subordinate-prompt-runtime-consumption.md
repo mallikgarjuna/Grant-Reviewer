@@ -2,8 +2,8 @@
 # WF-0076 — Subordinate Prompt Runtime Consumption
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-12
 
 ## Task Breakdown (Sequential Order)
@@ -33,12 +33,13 @@ Acceptance Criteria:
 - Each carried subordinate prompt preserves stable official prompt ID and prompt text, with source locator metadata included only if needed for deterministic proof.
 - The proof remains sourced from the active call definition already ingested in `CallDefinition.canonical_json`, not from a hardcoded test-only table or parallel persistence seam.
 - Existing calls that do not surface canonical subordinate prompts through this seam remain valid without making `subordinate_prompts` mandatory everywhere.
+- The tracer verification hook is renamed away from the old expectations-only WF-0074 selector so Task 1 cannot accidentally pass by exercising the superseded boundary proof.
 TDD Plan:
 - RED: extend `backend/tests/test_structured_reviewer_service.py` so the existing ERC PoC runtime-boundary test fails once it expects canonical subordinate prompts to appear on the activated expectation payload for `poc_idea_innovation`.
 - GREEN: implement the smallest service-to-contract projection needed to attach canonical subordinate prompts to activated expectations and keep non-ERC or flat-compat paths valid without fabricated data.
 - REFACTOR: extract one tiny helper inside `structured_reviewer_service.py` only if the canonical lookup logic becomes unreadable inline.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0076 or wf0074_contract_erc_poc_runtime_snapshot_remains_expectations_only"`
+- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0076"`
 - `cd backend && rg -n "subordinate_prompts|call_config_snapshot|expectations" app/services/structured_reviewer_service.py app/engine/contracts.py tests/test_structured_reviewer_service.py`
 Risks (if any): If the service carries prompts by a new parallel map instead of existing evaluation-element identity, the proof would look green while bypassing the approved canonical source seam.
 
@@ -98,10 +99,11 @@ Session boundary after: yes
 Acceptance Criteria:
 - One deterministic ERC PoC live-path test shows evaluator-produced finding `reason` now carries official subordinate-prompt signal for the chosen `poc_idea_innovation` expectation path.
 - A paired negative live-path test proves the signal disappears when `subordinate_prompts` carriage is removed from an otherwise valid activated payload.
+- Where multiple official subordinate prompts exist for the chosen expectation path, the proof keeps their stable prompt IDs distinguishable in the evaluator signal instead of collapsing them into one indistinguishable summary string.
 - The service-level ERC PoC runtime test proves the live structured-review path reaches the new evaluator proof without reopening broader runtime scope.
 - Verification continues to cite the existing ERC PoC page-43 coverage proof so WF-0075 proof-call completeness remains preserved rather than redefined here.
 TDD Plan:
-- RED: add a targeted `backend/tests/test_review_engine_pipeline_v1.py` expectation-evaluation test and a paired no-carriage negative case, then tighten `backend/tests/test_structured_reviewer_service.py` so ERC PoC runtime execution must expose the new signal.
+- RED: add a targeted `backend/tests/test_review_engine_pipeline_v1.py` expectation-evaluation test, a paired no-carriage negative case, and one assertion that multiple carried prompt IDs stay distinguishable for the chosen ERC PoC expectation path; then tighten `backend/tests/test_structured_reviewer_service.py` so ERC PoC runtime execution must expose the new signal.
 - GREEN: implement the smallest evaluator change that derives a deterministic `reason` signal from activated expectation-level subordinate prompts on the live path.
 - REFACTOR: keep the signal format terse and source-grounded; extract a helper only if the evaluator would otherwise duplicate prompt-formatting logic.
 Verification Steps:
@@ -139,7 +141,7 @@ TDD Plan:
 - GREEN: update only the minimum durable-governance surfaces needed to close that specific ambiguity.
 - REFACTOR: skip unless a residual ambiguity exists.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_call_yaml_authoring_contract.py -k "wf0076"`
+- If executed: `cd backend && uv run pytest tests/test_call_yaml_authoring_contract.py -k "wf0076"`
 - `rg -n "WF-0074|WF-0075|WF-0076|runtime consumption|prior truth|compatibility" docs/logs/decisions.md docs/memory/domain/project_docs.md`
 Risks (if any): Making this unconditional would reopen prior-truth governance scope and violate the PRD's narrow runtime-only boundary.
 
@@ -162,8 +164,11 @@ Risks (if any): Making this unconditional would reopen prior-truth governance sc
 
 | Review source | Finding | Severity | Planned closure | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Phase 2.2 task review | placeholder until Part B completes | non-blocking | replace with concrete findings and dispositions from Part B | open | update in v0.2 |
+| Phase 2.2 task review | Task 1 verification still referenced the superseded expectations-only WF-0074 selector, which could let the tracer step pass against the wrong proof seam | non-blocking | narrow Task 1 acceptance and verification to WF-0076-specific selectors only | closed | closed in v0.2 |
+| Phase 2.2 task review | Task 3 did not explicitly require multiple carried subordinate prompts to remain distinguishable in the evaluator proof signal | non-blocking | add a specific acceptance and RED assertion for stable prompt-ID distinguishability | closed | closed in v0.2 |
+| Phase 2.2 task review | Task 4's verification command looked unconditional even though the task is intentionally conditional | non-blocking | mark the pytest command as conditional execution only | closed | closed in v0.2 |
 
 ## Changelog
 
 - v0.1 (2026-03-12): Initial task breakdown from PRD.
+- v0.2 (2026-03-12): Applied Part B feedback by tightening the Task 1 verification hook, making Task 3 preserve distinguishable prompt identity in the live proof, and making Task 4's conditional verification explicit before marking the plan ready for implementation.
