@@ -2,7 +2,7 @@
 # WF-0076 — Subordinate Prompt Runtime Consumption
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-12
 
@@ -22,6 +22,7 @@ Last Updated: 2026-03-12
 
 - Preserve prior truth that WF-0074 already solved subordinate-prompt authoring/governance and WF-0075 already solved ERC PoC proof-call completeness. `(US3)`
 - Add the smallest activated runtime contract change needed to carry subordinate prompts from `structured_reviewer_service.py` into the live structured-review path instead of discarding them at snapshot build time. `(US1)`
+- Source subordinate prompts for MVP from the existing `CallDefinition.canonical_json` fidelity already landed in WF-0074/WF-0075, using current expectation/evaluation-element links rather than new persistence or authoring surfaces. `(US1) (US3)`
 - Prefer a narrow child `subordinate_prompts` payload on activated expectations when that remains sufficient to drive deterministic runtime effect in `pipeline_v1`. `(US1) (US2)`
 - Start with one ERC PoC expectation path under `poc_idea_innovation` as the first implementation slice, then preserve broader page-43 completeness through regression coverage rather than a broader first runtime rewrite. `(US2) (US3)`
 - Update the active structured-review execution path only as far as needed for deterministic proof that subordinate prompts influence runtime behavior on ERC PoC. `(US2)`
@@ -39,9 +40,10 @@ Last Updated: 2026-03-12
 
 - Happy path
   - The maintainer confirms the current `structured_reviewer_service.py` activation seam still emits `call_config_snapshot` with only `schema_version` and `expectations`, so subordinate prompts are dropped before validator and `pipeline_v1` execution. `(US1)`
+  - The maintainer derives official subordinate prompts from the existing canonical call definition for the activated ERC PoC expectation path, avoiding new DB/model authoring work. `(US1) (US3)`
   - The maintainer widens the activated expectation payload minimally so each relevant activated expectation can carry its official subordinate prompts with stable prompt IDs and prompt text from the canonical call definition. `(US1) (US2)`
   - The validator accepts the widened snapshot deterministically, canonical digesting still succeeds, and no unrelated snapshot sections become required. `(US1) (US2)`
-  - `pipeline_v1` consumes the new expectation-level subordinate-prompt payload at the narrowest live seam that can change runtime artifacts, such as evaluator inputs, finding reasons, or another equivalent execution surface. `(US2)`
+  - `pipeline_v1` consumes the new expectation-level subordinate-prompt payload through the live evaluator path, with subordinate-prompt influence surfacing first in deterministic finding `reason` output before any broader artifact expansion. `(US2)`
   - Targeted ERC PoC tests prove the active runtime artifact now includes official subordinate-prompt influence that was previously absent, while preserving proof-call fidelity and compatibility posture honesty. `(US2) (US3)`
 - Failure path 1
   - The snapshot now serializes extra subordinate-prompt data, but `pipeline_v1` still behaves identically and no deterministic runtime artifact changes, so the workflow remains blocked as stored-but-unused one layer later. `(US2)`
@@ -55,10 +57,11 @@ Last Updated: 2026-03-12
 - FR1 (US1): `backend/app/services/structured_reviewer_service.py` must stop emitting an expectations-only runtime snapshot for activated expectations that have canonical subordinate prompts available.
 - FR2 (US1): The preferred MVP contract shape is an additive `subordinate_prompts` child payload on each activated expectation, with fallback to another equivalently narrow active-runtime field only if expectation-level carriage proves insufficient during Phase 2.
 - FR3 (US1): Each activated subordinate prompt item must preserve a stable prompt ID and prompt text, and may include source locator metadata when needed for deterministic proof.
+- FR3A (US1) (US3): MVP subordinate-prompt lookup must come from the already-ingested canonical call-definition payload for the active call, joined through existing expectation/evaluation-element identity, without introducing new DB fields, migrations, or authoring workflows.
 - FR4 (US1) (US2): `backend/app/engine/contracts.py` and `backend/app/engine/review_request_validator.py` must accept the widened activated expectation contract without making unrelated snapshot sections mandatory.
 - FR5 (US2): The active `pipeline_v1` execution path must consume subordinate-prompt detail at the narrowest live seam that can change deterministic runtime behavior.
-- FR6 (US2): The first MVP runtime-effect proof must target one ERC PoC expectation path under `poc_idea_innovation`, preferring evaluator-produced finding reason/detail as the first live artifact unless Phase 2 proves another `pipeline_v1` artifact is narrower.
-- FR7 (US2): MVP proof of runtime effect must be stronger than “the snapshot has more fields”; it must show changed evaluator input, observation/finding detail, or an equivalently narrow runtime artifact that the live pipeline actually uses.
+- FR6 (US2): The first MVP runtime-effect proof must target one ERC PoC expectation path under `poc_idea_innovation` and use evaluator-produced finding `reason` as the first live artifact.
+- FR7 (US2): MVP proof of runtime effect must be stronger than “the snapshot has more fields”; it must show changed evaluator-produced finding `reason` content on the active pipeline path before any review-card-level assertion is used.
 - FR8 (US2): Phase 2 must include one negative live-path proof showing that when subordinate-prompt carriage is absent from an otherwise valid activated expectation payload, the chosen runtime artifact loses the official subordinate-prompt signal.
 - FR9 (US2): If review-card assertions are used as part of proof, they must be deterministic and source-grounded, not subjective prose-quality judgments.
 - FR10 (US3): ERC PoC remains the first and only required proof-call for MVP, and no requirement in this WF may claim equal benefit for all calls.
@@ -80,6 +83,12 @@ Last Updated: 2026-03-12
     - each subordinate prompt item must be a typed object, not a free-form string;
     - prompt item `id` and `prompt` must be non-empty;
     - prompt item IDs must be unique within the parent expectation when present.
+- Canonical subordinate-prompt source contract `(US1) (US3) (FR3A)`
+  - Target seam: `backend/app/services/structured_reviewer_service.py`
+  - Required behavior:
+    - MVP lookup must read subordinate prompts from the existing `CallDefinition.canonical_json` already ingested for the active call;
+    - mapping must reuse existing expectation/evaluation-element identity instead of adding new persistence or schema layers;
+    - missing canonical subordinate prompts must fail closed at the targeted expectation path rather than silently fabricating prompts.
 - Snapshot serialization and digest contract `(US1) (FR4)`
   - Target seams: `backend/app/services/structured_reviewer_service.py`, `backend/app/engine/review_request_validator.py`
   - Required behavior:
@@ -87,12 +96,12 @@ Last Updated: 2026-03-12
     - canonical digest calculation must continue to cover the widened payload;
     - calls without subordinate prompts or legacy flat call definitions must remain valid without synthetic filler fields.
 - Active runtime-consumption contract `(US2) (FR5) (FR6) (FR7) (FR8) (FR9)`
-  - Target seam: `backend/app/engine/pipeline_v1.py` and the narrowest directly-adjacent evaluator/observation surface it exercises.
+  - Target seam: `backend/app/engine/pipeline_v1.py` and `backend/app/engine/findings/evaluator.py`
   - Required behavior:
-    - the live pipeline must read the widened expectation payload and incorporate subordinate prompt data into a deterministic runtime artifact it actually uses;
-    - the preferred first proof artifact is evaluator-produced finding reason/detail for one activated ERC PoC expectation under `poc_idea_innovation`;
-    - acceptable fallback proof targets are observation detail or another equivalently narrow live execution artifact only if Phase 2 shows they are narrower than reviewer-card assertions;
-    - a non-active prompt-building surface is insufficient unless Phase 2 first proves the active runtime routes through it for the tested seam.
+    - the live pipeline must read the widened expectation payload and incorporate subordinate prompt data into evaluator-produced finding `reason` content that it actually uses;
+    - the first proof artifact is evaluator-produced finding `reason` for one activated ERC PoC expectation under `poc_idea_innovation`;
+    - review-card assertions are secondary proof only after the evaluator `reason` seam is covered;
+    - observation-detail or prompt-builder-first proof is out of MVP scope unless a later workflow proves the active runtime path for this seam actually routes through those surfaces.
 - Proof-call contract `(US2) (US3) (FR10)`
   - Proof surface: `ERC-2026-PoC` only for MVP.
   - Required behavior:
@@ -116,7 +125,7 @@ Last Updated: 2026-03-12
   - Responsibility: define and validate the minimal additive expectation payload and digest behavior.
 - Active runtime seam
   - `backend/app/engine/pipeline_v1.py`
-  - Directly adjacent evaluator/observation modules only if required by the chosen live proof seam.
+  - `backend/app/engine/findings/evaluator.py`
   - Responsibility: consume subordinate prompts on the live structured-review path and emit deterministic runtime-effect evidence.
 - Proof seam
   - `backend/tests/test_structured_reviewer_service.py`
@@ -136,6 +145,7 @@ Last Updated: 2026-03-12
 - If an activated expectation has no canonical subordinate prompts by source, the runtime payload must remain absent or empty for that expectation rather than fabricating prompts. `(US1)`
 - If a call definition stays on the temporary flat compatibility posture, runtime activation must remain valid without requiring subordinate-prompt fields everywhere. `(US3)`
 - If multiple subordinate prompts exist under one expectation, proof cannot collapse them into one indistinguishable summary string if that would prevent deterministic source-grounded assertions. `(US2)`
+- If a proposed proof seam depends on `extract_observations` inputs such as snapshot `proposal_nodes`, that seam is out of MVP unless Phase 2 first proves the structured-review activation path already populates it without widening scope. `(US2) (US3)`
 - If the first runtime slice tries to cover all ERC PoC page-43 expectations at once, the task plan is too broad and must be split back to one expectation path plus regressions. `(US2) (US3)`
 - If a chosen proof seam changes only telemetry while all live runtime artifacts remain unchanged, that proof is insufficient because it does not show subordinate prompts influence structured-review behavior. `(US2)`
 - If ERC PoC proof passes but other calls remain unproven, closure language must state that boundary explicitly. `(US3)`
@@ -144,20 +154,21 @@ Last Updated: 2026-03-12
 
 - Public seam first
   - Write a failing targeted test proving the current ERC PoC structured-review request still drops subordinate prompts from the activated runtime snapshot. `(US1) (FR1)`
+  - Write a failing targeted test proving subordinate prompts are sourced from existing canonical call-definition JSON rather than a new persistence seam. `(US1) (FR3A)`
   - Write a failing contract/validator test proving the minimal widened expectation payload shape is required to accept deterministic subordinate-prompt carriage. `(US1) (FR2) (FR4)`
-  - Write a failing live-pipeline test proving subordinate prompts are still absent from the preferred evaluator-produced finding reason/detail artifact before implementation. `(US2) (FR5) (FR6)`
+  - Write a failing live-pipeline test proving subordinate prompts are still absent from evaluator-produced finding `reason` output before implementation. `(US2) (FR5) (FR6)`
   - Write a failing negative live-path test proving that an otherwise valid payload without subordinate-prompt carriage cannot produce the new official-concern signal. `(US2) (FR8)`
 - Test seams
   - `StructuredReviewerService.generate_structured_review_pipeline_v1`
   - `validate_review_request_payload`
-  - `run_review_pipeline` and the narrowest adjacent evaluator/observation seam actually used for proof
+  - `run_review_pipeline` and `evaluate_expectations`
   - ERC PoC real-call coverage proof in `backend/tests/test_call_subordinate_prompt_coverage.py`
 - What to mock
   - Mock only outer boundaries needed to capture runtime artifacts deterministically; do not mock the activated snapshot projection, validator behavior, or the live pipeline seam being proven.
 - Minimal test types
   - Service-level regression proving the current discard seam and the new activated payload. `(US1) (FR1) (FR2)`
   - Contract/validator regression for digest-safe widened payload acceptance and malformed subordinate-prompt rejection. `(US1) (FR3) (FR4)`
-  - Live-pipeline regression proving subordinate prompts influence the preferred evaluator-produced finding reason/detail artifact for one ERC PoC expectation path. `(US2) (FR5) (FR6) (FR7) (FR9)`
+  - Live-pipeline regression proving subordinate prompts influence evaluator-produced finding `reason` output for one ERC PoC expectation path. `(US2) (FR5) (FR6) (FR7) (FR9)`
   - Negative live-pipeline regression proving the signal disappears when subordinate-prompt carriage is absent from an otherwise valid request. `(US2) (FR8)`
   - ERC PoC regression preserving page-43 proof-call completeness while the runtime seam changes. `(US3) (FR10)`
   - Compatibility regression or approved-artifact citation preserving WF-0074 flat-call posture. `(US3) (FR11)`
@@ -197,3 +208,4 @@ Last Updated: 2026-03-12
 
 - v0.1 (2026-03-12): Initial PRD from brainstorm.
 - v0.2 (2026-03-12): Narrowed the first runtime slice to one ERC PoC expectation path, preferred evaluator-produced finding detail as the first proof artifact, added a required negative live-path proof, and marked the PRD ready for Tasks.
+- v0.3 (2026-03-12): Locked the MVP source seam to existing canonical call-definition JSON, fixed the first proof artifact to evaluator-produced finding `reason`, and ruled observation/prompt-builder-first proof out of MVP unless a later workflow proves those paths are active.
