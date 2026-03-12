@@ -673,3 +673,91 @@ def test_wf0049_contract_scope_pipeline_semantics_stable() -> None:
     assert [card.rating for card in base_result.review_cards] == [
         card.rating for card in strict_result.review_cards
     ]
+
+
+def test_wf0076_pipeline_reason_and_review_card_feedback_include_subordinate_prompt_signal() -> None:
+    payload = {
+        "request_id": "req-wf0076-positive",
+        "mode": "DIAGNOSTIC",
+        "stage_ref": "STEP_1",
+        "call_config_snapshot": {
+            "schema_version": "v1",
+            "expectations": [
+                {
+                    "expectation_id": "exp-wf0076-innovation",
+                    "node_logical_id": "poc_idea_innovation",
+                    "check_id": "check.presence",
+                    "required": True,
+                    "subordinate_prompts": [
+                        {
+                            "id": "prompt_wf0076_a",
+                            "prompt": "Prompt A",
+                        },
+                        {
+                            "id": "prompt_wf0076_b",
+                            "prompt": "Prompt B",
+                        },
+                    ],
+                }
+            ],
+        },
+        "proposal_nodes": {"poc_idea_innovation": "Innovation narrative"},
+    }
+    payload["call_config_digest"] = "sha256:" + hashlib.sha256(
+        canonicalize_for_digest(
+            ActivatedCallConfigSnapshotV1.model_validate(
+                payload["call_config_snapshot"]
+            ).to_canonical_payload()
+        ).encode("utf-8")
+    ).hexdigest()
+
+    result = run_review_pipeline(validate_review_request_payload(payload))
+
+    assert result.pipeline_status == "SUCCESS"
+    assert result.failure_code is None
+    assert len(result.findings) == 1
+    finding_reason = result.findings[0].reason
+    assert finding_reason.startswith("content_evaluated")
+    assert "subordinate_prompt_ids=prompt_wf0076_a,prompt_wf0076_b" in finding_reason
+    assert "prompt_wf0076_a" in finding_reason
+    assert "prompt_wf0076_b" in finding_reason
+
+    assert len(result.review_cards) == 1
+    assert "prompt_wf0076_a" in result.review_cards[0].feedback
+    assert "prompt_wf0076_b" in result.review_cards[0].feedback
+
+
+def test_wf0076_pipeline_subordinate_prompt_signal_disappears_without_carriage() -> None:
+    payload = {
+        "request_id": "req-wf0076-negative",
+        "mode": "DIAGNOSTIC",
+        "stage_ref": "STEP_1",
+        "call_config_snapshot": {
+            "schema_version": "v1",
+            "expectations": [
+                {
+                    "expectation_id": "exp-wf0076-innovation",
+                    "node_logical_id": "poc_idea_innovation",
+                    "check_id": "check.presence",
+                    "required": True,
+                }
+            ],
+        },
+        "proposal_nodes": {"poc_idea_innovation": "Innovation narrative"},
+    }
+    payload["call_config_digest"] = "sha256:" + hashlib.sha256(
+        canonicalize_for_digest(
+            ActivatedCallConfigSnapshotV1.model_validate(
+                payload["call_config_snapshot"]
+            ).to_canonical_payload()
+        ).encode("utf-8")
+    ).hexdigest()
+
+    result = run_review_pipeline(validate_review_request_payload(payload))
+
+    assert result.pipeline_status == "SUCCESS"
+    assert result.failure_code is None
+    assert len(result.findings) == 1
+    assert result.findings[0].reason == "content_evaluated"
+    assert len(result.review_cards) == 1
+    assert result.review_cards[0].feedback == "content_evaluated"

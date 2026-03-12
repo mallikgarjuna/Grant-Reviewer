@@ -27,3 +27,5 @@
 - **Structured Snapshot Reality (2026-03-11)**: `backend/app/engine/contracts.py` allows optional `evaluation_criteria` / `evaluation_elements` in `ActivatedCallConfigSnapshotV1`, but `backend/app/services/structured_reviewer_service.py` currently sends an expectations-only `call_config_snapshot` into runtime validation/execution. Do not treat contract type surface alone as proof that richer canonical call fidelity reaches runtime behavior.
 
 - **WF-0076 Runtime Lookup Seam (2026-03-12)**: For ERC PoC runtime subordinate-prompt carriage, map by existing identity `NodeExpectation.element.logical_id -> canonical_json.evaluation_criteria[*].evaluation_elements[*].id` and project onto expectation-level `subordinate_prompts`. Why: keeps the seam additive and sourced from active `CallDefinition.canonical_json` without new persistence.
+
+- **WF-0076 Runtime Consumption Signal (2026-03-12)**: `evaluate_expectations` now emits deterministic reason suffix `subordinate_prompt_ids=<id1,id2,...>` when expectation-level subordinate prompts are carried. Why: provides an active-path runtime proof surface consumed by both findings and compatibility review-card feedback.

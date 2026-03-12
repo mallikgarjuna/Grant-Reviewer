@@ -1212,6 +1212,10 @@ def test_wf0076_contract_erc_poc_runtime_snapshot_carries_live_canonical_subordi
         )
         assert review.status == ReviewStatus.COMPLETED
         assert len(cards) >= 1
+        assert any(
+            "prompt_wf0076_source_mutation" in card.feedback_text
+            for card in cards
+        )
 
         assert set(captured_snapshot) == {"schema_version", "expectations"}
         assert captured_snapshot["schema_version"] == "v1"

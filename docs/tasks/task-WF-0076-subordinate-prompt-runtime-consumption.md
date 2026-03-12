@@ -78,7 +78,7 @@ Verification Steps:
 - `cd backend && rg -n "subordinate_prompts|digest|Duplicate" app/engine/review_request_validator.py app/engine/contracts.py tests/engine/test_review_request_contracts.py`
 Risks (if any): If the negative case becomes a schema-invalid payload instead of a valid no-carriage payload, WF-0076 would overclaim runtime proof while only proving schema rejection.
 
-### [ ] Task 3 — Prove subordinate prompts change live evaluator output and disappear without carriage
+### [x] Task 3 — Prove subordinate prompts change live evaluator output and disappear without carriage
 
 Goal:
 Use the smallest active execution seam to prove subordinate prompts influence structured-review behavior on the ERC PoC `poc_idea_innovation` path by changing evaluator-produced finding `reason`, then prove that signal disappears when carriage is removed from an otherwise valid request.
