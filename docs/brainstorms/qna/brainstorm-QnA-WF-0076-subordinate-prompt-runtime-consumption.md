@@ -2,7 +2,7 @@
 # WF-0076 — Subordinate Prompt Runtime Consumption
 
 Artifact: brainstorm-qna
-Version: v0.1
+Version: v0.2
 Status: Draft
 Last Updated: 2026-03-12
 
@@ -20,7 +20,8 @@ Source: user-provided workflow brief in chat on 2026-03-12.
 
 - `backend/app/services/structured_reviewer_service.py` currently emits `call_config_snapshot` with only `schema_version` plus `expectations`.
 - `backend/app/engine/contracts.py` can represent richer activated snapshot fields, but the live structured-review path does not populate them today.
-- `backend/app/services/prompt_builder.py` currently formats prompts from flat expectation and element description data only.
+- `backend/app/engine/pipeline_v1.py` is the active structured-review execution path for this seam; today it consumes the expectations-only snapshot emitted by the service.
+- `backend/app/services/prompt_builder.py` currently formats prompts from flat expectation and element description data only, but it is not the default proof seam for WF-0076 unless a later phase proves the active runtime actually routes through it.
 - `backend/tests/test_structured_reviewer_service.py` explicitly proves the runtime snapshot remains expectations-only after WF-0075.
 - `backend/tests/test_call_subordinate_prompt_coverage.py` explicitly proves the ERC PoC proof-call is already fully encoded, so runtime consumption is the remaining gap.
 
@@ -138,10 +139,10 @@ Source: user-provided workflow brief in chat on 2026-03-12.
 ## Section 4 — Rough Idea Exploration
 
 **Q1: What is the preferred implementation direction to explore in Phase 1?**
-- A) Carry subordinate prompts through the activated runtime representation and consume them at the nearest prompt-building or expectation-expansion seam that can change behavior.
+- A) Carry subordinate prompts through the activated runtime representation and consume them at the nearest live `pipeline_v1` seam that can change behavior.
 - B) Build a new parallel subordinate-prompt engine path beside the current structured-review path.
 - C) Keep the snapshot unchanged and hope existing element descriptions are enough.
-> Recommendation: A — it is the narrowest plausible path from stored fidelity to runtime effect. B creates duplicated architecture. C ignores the proven discard seam.
+> Recommendation: A — it is the narrowest plausible path from stored fidelity to runtime effect on the active structured-review path. B creates duplicated architecture. C ignores the proven discard seam.
 > **Selected: A**
 
 **Q2: What representation bias should the workflow prefer?**
@@ -152,10 +153,10 @@ Source: user-provided workflow brief in chat on 2026-03-12.
 > **Selected: A**
 
 **Q3: Which runtime surface should be treated as acceptable first proof target?**
-- A) Prompt construction, expectation expansion, or another equivalently narrow runtime surface that demonstrably changes review behavior.
+- A) A `pipeline_v1`-consumed execution surface, such as evaluator input, observation input, or another equivalently narrow live runtime surface that demonstrably changes review behavior.
 - B) Only final review-card prose quality judged manually.
 - C) Only DB persistence and request validation.
-> Recommendation: A — it stays close to execution and can still be deterministic. B is subjective. C is not runtime effect.
+> Recommendation: A — it stays close to the active execution path and can still be deterministic. B is subjective. C is not runtime effect.
 > **Selected: A**
 
 **Q4: How should Phase 1 treat internal design freedom?**
@@ -203,7 +204,7 @@ Source: user-provided workflow brief in chat on 2026-03-12.
 > **Selected: A**
 
 **Q5: What technical constraint should the brainstorm acknowledge?**
-- A) Hidden coupling across activation, validator, pipeline, and prompt builder may limit how small the seam can be.
+- A) Hidden coupling across activation, validator, and the live pipeline may limit how small the seam can be.
 - B) The runtime path is isolated, so only one file is likely involved.
 - C) The runtime contract can widen freely because tests already cover everything.
 > Recommendation: A — this is the realistic code-level constraint surfaced by repo inspection. B and C are unsafe assumptions.
@@ -256,7 +257,7 @@ Source: user-provided workflow brief in chat on 2026-03-12.
 > **Selected: A**
 
 **Q2: What should the first deterministic proof object emphasize?**
-- A) Runtime artifact change tied to official subordinate concerns, such as prompt content, expanded expectation units, or equivalent execution-surface coverage.
+- A) Runtime artifact change tied to official subordinate concerns, such as `pipeline_v1` evaluator/observation inputs or equivalent live execution-surface coverage.
 - B) Manual comparison of final review prose only.
 - C) Ingest and persistence snapshots only.
 > Recommendation: A — it is the tightest proof of runtime consumption. B is too subjective. C stops before runtime effect.
@@ -302,7 +303,7 @@ Source: user-provided workflow brief in chat on 2026-03-12.
 **Q3: Which architecture direction is a non-goal?**
 - A) Broad engine redesign or generic ontology work.
 - B) Minimal explicit contract widening.
-- C) Narrow prompt-building or expectation-expansion consumption.
+- C) Narrow live-pipeline consumption.
 > Recommendation: A — that is exactly what this WF should avoid by default. B and C are viable means, not non-goals.
 > **Selected: A**
 
