@@ -1,6 +1,16 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-12 (WF-0075: erc-poc-proof-call-fidelity-completion)
+
+### AD 75.1: WF-0075 PRD must preserve the fail-closed closure matrix as a first-class contract
+- **WF ID**: WF-0075
+- **Context**: PRD v0.1 captured the need for page-43-complete ERC PoC subordinate-prompt coverage and three-state proof semantics, but the Part B audit found that it had compressed the brainstorm's explicit verification matrix and audit-disposition closure gate into prose requirements.
+- **Decision**: Keep the PRD closure contract explicit: Phase 2 and later phases must inherit a row-based verification matrix with `pass`/`fail`/`skipped` results, explicit evidence references, and a named audit-disposition artifact covering proof-call completion, source-to-YAML coverage, partial-vs-complete failure, absent/complete/partial distinction, compatibility-posture preservation, baseline-anchored scope proof, and runtime-boundary honesty.
+- **Why**: WF-0075 is an SSOT-bound fidelity-closure workflow. If the matrix is softened into prose at PRD time, later phases can appear complete while silently dropping the fail-closed proof object that distinguishes honest completion from partial encoding.
+- **Tradeoff**: The PRD carries a slightly heavier closure section, but Tasks and implementation inherit a deterministic, reviewable gate instead of reconstructing it ad hoc.
+- **Status**: Approved.
+
 ## Date: 2026-03-11 (WF-0074: canonical-funding-call-fidelity-hardening closeout)
 
 ### AD 74.4: WF-0074 closes at authoring-fidelity hardening with no automatic runtime follow-on

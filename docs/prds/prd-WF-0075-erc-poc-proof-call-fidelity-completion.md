@@ -2,8 +2,8 @@
 # WF-0075 — ERC PoC Proof-Call Fidelity Completion
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-12
 
 ## 0. User Stories (MVP)
@@ -58,6 +58,7 @@ Last Updated: 2026-03-12
 - FR7 (US3): Any supporting doc/checklist/governance edit must be narrowly corrective, preserve WF-0074 as prior truth, and must not reopen the already-landed subordinate-prompt mechanism or bounded compatibility posture.
 - FR8 (US3): No PRD, implementation, or verification step may claim runtime review-generation impact while the activated snapshot seam remains limited to `schema_version` plus `expectations`.
 - FR9 (US3): Closure evidence must include a baseline-anchored scope proof using `main...HEAD` and cite the approved WF-0074 boundary artifacts for compatibility posture, proof-call policy, and runtime-boundary honesty.
+- FR10 (US3): Closure evidence must remain an explicit fail-closed verification matrix with row-level `pass`/`fail`/`skipped` results plus a named audit-disposition artifact before any proceed or ship recommendation.
 
 ## 5. Data & API Contracts
 
@@ -135,11 +136,27 @@ Last Updated: 2026-03-12
 - Any UI or API changes that surface subordinate prompts to researchers.
 - Generic authoring-contract redesign beyond the minimal corrective clarification, if any.
 
-## 11. Open Questions (if any)
+## 11. Verification Evidence Matrix (Fail-Closed)
+
+| Verification item | Evidence shape | Result (`pass`/`fail`/`skipped`) | Evidence ref | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| ERC PoC proof-call completion | targeted validation against `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml` | `fail` (default until executed) | required | must prove all official page-43 subordinate prompts are encoded across `1.a`, `1.b`, and `1.c` |
+| Source-to-YAML prompt coverage | replayable coverage proof mapping each official page-43 prompt to an exact YAML prompt ID/path | `fail` (default until executed) | required | executable or deterministic artifact required; count-only proof is insufficient |
+| Partial-vs-complete coverage proof | targeted negative test or equivalent fail-closed proof | `fail` (default until executed) | required | must fail if a real proof-call omits any official `1.b` or `1.c` subordinate prompt |
+| Absent/complete/partial distinction | targeted classification proof and, if needed, narrow contract citation | `fail` (default until executed) | required | must distinguish absent-by-source from partial encoding |
+| WF-0074 compatibility-posture preservation | executable compatibility regression and/or approved-artifact citation | `fail` (default until executed) | required | must prove unrelated flat canonical YAMLs remain within WF-0074's temporary compatibility posture unless a narrower rule is explicitly re-approved |
+| Baseline-anchored scope proof | `main...HEAD` review-range ledger plus approved-artifact citation set | `fail` (default until executed) | required | must show the workflow stayed inside the approved WF-0074 boundary |
+| Runtime-boundary honesty | targeted seam proof and/or approved-artifact citation | `fail` (default until executed) | required | must preserve the expectations-only runtime boundary |
+| Audit disposition | findings-closure ledger | `fail` (default until executed) | required | must close every blocking finding and close or reject justified non-blocking findings with rationale |
+
+- Proceed or ship recommendation remains blocked unless every required row above is `pass`, or explicitly `skipped` with accepted rationale during review.
+
+## 12. Open Questions (if any)
 
 - Can the existing validation or ingestion test seam be reused directly for source-to-YAML completeness proof, or is one new targeted coverage checker required?
 - Is a narrow checklist/authoring wording clarification still needed after the proof seam lands, or will executable coverage proof alone make the absent/complete/partial distinction explicit enough?
 
-## 12. Changelog
+## 13. Changelog
 
 - v0.1 (2026-03-12): Initial PRD from brainstorm.
+- v0.2 (2026-03-12): Restored the explicit fail-closed verification matrix and audit-disposition closure artifact, clarified evidence shapes for compatibility/runtime-boundary preservation, and marked the PRD ready for Tasks.
