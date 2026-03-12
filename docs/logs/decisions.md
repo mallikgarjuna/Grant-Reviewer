@@ -3,6 +3,14 @@
 
 ## Date: 2026-03-12 (WF-0075: erc-poc-proof-call-fidelity-completion)
 
+### AD 75.2: WF-0075 closes at proof-call fidelity completion with no immediate follow-on backlog promotion
+- **WF ID**: WF-0075
+- **Context**: Phase 3 verification re-proved page-43-complete subordinate-prompt coverage for the real ERC PoC proof-call, preserved the expectations-only runtime boundary, and closed the stale workflow-state audit gap in active status surfaces.
+- **Decision**: Close WF-0075 once the targeted coverage, dry-run, and runtime-boundary proofs pass and the active workflow artifacts are aligned. Do not promote an immediate follow-on backlog item from this closeout. Any future work must be separately scoped and justified either as broader canonical-call migration or as explicit runtime-consumption widening beyond the current expectations-only seam.
+- **Why**: WF-0075 exists to finish one real proof-call honestly and fail closed, not to reopen WF-0074 governance or imply a broader runtime/product commitment.
+- **Tradeoff**: The repo now has one fidelity-complete ERC PoC proof-call with executable closure evidence, but broader subordinate-prompt rollout and runtime use remain intentionally deferred.
+- **Status**: Approved.
+
 ### AD 75.1: WF-0075 PRD must preserve the fail-closed closure matrix as a first-class contract
 - **WF ID**: WF-0075
 - **Context**: PRD v0.1 captured the need for page-43-complete ERC PoC subordinate-prompt coverage and three-state proof semantics, but the Part B audit found that it had compressed the brainstorm's explicit verification matrix and audit-disposition closure gate into prose requirements.
