@@ -2,8 +2,8 @@
 # WF-0075 — ERC PoC Proof-Call Fidelity Completion
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-12
 
 ## Task Breakdown (Sequential Order)
@@ -29,9 +29,10 @@ Session boundary after: no
 Acceptance Criteria:
 - A targeted executable proof derives or encodes the official page-43 expectation set for `1.a`, `1.b`, and `1.c` and maps each expected prompt to an exact YAML prompt ID or path in the real ERC PoC call.
 - The proof reports `partially_encoded` for the current real proof-call state and does not allow `absent_by_source` for `1.a`, `1.b`, or `1.c`.
+- The proof also includes one explicit positive `absent_by_source` example for an element outside the page-43 subordinate-prompt scope so all three states are demonstrated, not inferred.
 - At least one negative case proves that omitting an official `1.b` or `1.c` prompt from an otherwise valid payload fails closed.
 TDD Plan:
-- RED: add `backend/tests/test_call_subordinate_prompt_coverage.py` with a failing classification test against `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml` plus a negative omitted-prompt case.
+- RED: add `backend/tests/test_call_subordinate_prompt_coverage.py` with a failing classification test against `backend/data/calls/canonical/erc/erc_poc_2026_full.yaml`, one positive `absent_by_source` case, and a negative omitted-prompt case.
 - GREEN: keep the proof seam test-local unless one tiny helper is strictly required to avoid duplicated classification logic.
 - REFACTOR: extract a small expectation-ledger helper only if the coverage assertions become unreadable inside one test module.
 Verification Steps:
@@ -55,7 +56,7 @@ Must touch files:
 - `backend/tests/test_ingest_call_dry_run.py`
 - `backend/tests/test_structured_reviewer_service.py`
 May touch files:
-- `none`
+- `backend/tests/test_call_subordinate_prompt_coverage.py`
 Out of scope: broad ERC runtime redesign, changing the activated snapshot beyond `schema_version` plus `expectations`, flat-call compatibility policy changes
 Stop if: completing `1.b` and `1.c` would require widening the runtime snapshot seam or changing non-ERC proof-call artifacts
 Session boundary after: yes
@@ -130,6 +131,7 @@ Session boundary after: yes
 Acceptance Criteria:
 - `docs/logs/decisions.md` records that WF-0075 completes the ERC PoC proof-call without reopening WF-0074, and that partial page-43 coverage must fail closed for the real proof-call.
 - `docs/memory/domain/project_docs.md` records that WF-0075 closure must include `main...HEAD` scope proof plus a named audit-disposition artifact before any proceed or ship recommendation.
+- `main...HEAD` scope proof is paired with explicit citations to the approved WF-0074 boundary artifacts for compatibility posture, proof-call policy, and runtime-boundary honesty.
 - Contract tests prove the durable-governance wording preserves temporary flat-call compatibility, the expectations-only runtime seam, and the three-state fail-closed closure rule.
 TDD Plan:
 - RED: extend `backend/tests/test_call_yaml_authoring_contract.py` with WF-0075 durable-governance assertions covering partial-coverage failure, baseline-anchored scope proof, and audit-disposition closure.
@@ -139,6 +141,7 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_call_yaml_authoring_contract.py -k "wf0075"`
 - `rg -n "WF-0075|partial|main...HEAD|audit-disposition|temporarily compatible|expectations-only" docs/logs/decisions.md docs/memory/domain/project_docs.md`
 - `git diff --name-only main...HEAD`
+- `cd backend && rg -n "AD 74.3|AD 74.4|WF-0074 planning/execution must preserve durable decision/memory guidance" docs/logs/decisions.md docs/memory/domain/project_docs.md`
 Risks (if any): If the closure gate stays only in the PRD or task plan, later implementation can appear complete while silently dropping the required scope-proof and audit-disposition evidence.
 
 ## Verification Matrix
@@ -147,20 +150,24 @@ Risks (if any): If the closure gate stays only in the PRD or task plan, later im
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | Page-43 source-to-YAML coverage | fail-closed coverage proof | `tests/test_call_subordinate_prompt_coverage.py` | every official page-43 subordinate prompt for `1.a`, `1.b`, and `1.c` maps to an exact YAML prompt ID/path | `fail` (default until executed) | pytest output in `backend/tests/test_call_subordinate_prompt_coverage.py` | count-only proof is insufficient |
 | Partial-vs-complete negative proof | fail-closed coverage proof | `tests/test_call_subordinate_prompt_coverage.py` omitted-prompt case | omission of an official `1.b` or `1.c` prompt yields `partially_encoded` and fails closure | `fail` (default until executed) | pytest output in `backend/tests/test_call_subordinate_prompt_coverage.py` | required negative MVP case |
-| Absent/complete/partial distinction | classification contract | `tests/test_call_subordinate_prompt_coverage.py` | elements with no source prompts may be `absent_by_source`; page-43 ERC PoC elements may not | `fail` (default until executed) | pytest output + expectation ledger in `backend/tests/test_call_subordinate_prompt_coverage.py` | three-state seam must be explicit |
+| Absent/complete/partial distinction | classification contract | `tests/test_call_subordinate_prompt_coverage.py` | elements with no source prompts may be `absent_by_source`; page-43 ERC PoC elements may not, and all three states are proven explicitly | `fail` (default until executed) | pytest output + expectation ledger in `backend/tests/test_call_subordinate_prompt_coverage.py` | three-state seam must be explicit |
 | ERC PoC proof-call completion | dry-run ingest | `uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_poc_2026_full.yaml --dry-run` | completed ERC PoC call ingests successfully with page-43 subordinate prompts across `1.a`, `1.b`, and `1.c` | `fail` (default until executed) | dry-run stdout + pytest output in `backend/tests/test_ingest_call_dry_run.py` | real proof-call only |
 | Runtime-boundary honesty | structured-review snapshot inspection | `test_wf0074_contract_erc_poc_runtime_snapshot_remains_expectations_only` | canonical JSON preserves subordinate prompts while runtime snapshot remains limited to `schema_version` plus `expectations` | `fail` (default until executed) | pytest output in `backend/tests/test_structured_reviewer_service.py` | no runtime-consumption claim allowed |
 | Authoring/checklist three-state guard | docs contract test | `backend/tests/test_call_yaml_authoring_contract.py -k "wf0075"` | authoring docs distinguish absent vs partial vs complete and preserve temporary compatibility posture | `fail` (default until executed) | pytest output + doc diff | corrective wording only if needed |
 | WF-0074 boundary preservation | durable governance docs | `backend/tests/test_call_yaml_authoring_contract.py -k "wf0075"` | WF-0075 records a narrow corrective clarification without reopening WF-0074 mechanism/governance or tightening flat-call compatibility globally | `fail` (default until executed) | pytest output + doc diff in `docs/logs/decisions.md` and `docs/memory/domain/project_docs.md` | prior truth must remain explicit |
-| Baseline-anchored scope proof | branch diff ledger | `git diff --name-only main...HEAD` | changed-file surface stays inside the approved WF-0075 boundary | `fail` (default until executed) | `main...HEAD` diff output cited in closeout artifact | required before proceed/ship |
+| Baseline-anchored scope proof | branch diff ledger | `git diff --name-only main...HEAD` + WF-0074 boundary citations | changed-file surface stays inside the approved WF-0075 boundary and cites the preserved WF-0074 compatibility/runtime boundary artifacts | `fail` (default until executed) | `main...HEAD` diff output + cited `docs/logs/decisions.md` / `docs/memory/domain/project_docs.md` refs in closeout artifact | required before proceed/ship |
 | Audit disposition | named findings ledger | closure artifact ledger | every blocking finding is closed and every justified non-blocking finding is closed or rejected with rationale before any proceed/ship recommendation | `fail` (default until executed) | named audit-disposition artifact | fail-closed ship gate |
 
 ## Audit Disposition Ledger
 
 | Review source | Finding | Severity | Planned closure | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Phase 2.2 task review | none yet | none | complete Part B review before revising to ready state | open | placeholder until Part B |
+| Phase 2.2 task review | Task 2 file boundary omitted the coverage-proof test file even though Task 2 verification depends on that proof moving from RED to GREEN | non-blocking | add `backend/tests/test_call_subordinate_prompt_coverage.py` under Task 2 `May touch files` | closed | closed in v0.2 |
+| Phase 2.2 task review | Task 1 did not require an explicit positive `absent_by_source` proof, leaving the third state too implicit | non-blocking | add one positive absent-by-source acceptance/TDD obligation and tighten the verification-matrix row | closed | closed in v0.2 |
+| Phase 2.2 task review | Task 4 scope proof relied on raw `main...HEAD` diff text without explicit WF-0074 boundary citations | non-blocking | require boundary-artifact citations in Task 4 acceptance, verification, and matrix wording | closed | closed in v0.2 |
+| Phase 2.2 task review | Audit-disposition section was a placeholder instead of a concrete closure ledger | non-blocking | replace the placeholder row with the actual Part B findings and planned closures | closed | closed in v0.2 |
 
 ## Changelog
 
 - v0.1 (2026-03-12): Initial task breakdown from PRD.
+- v0.2 (2026-03-12): Applied Part B feedback by making the absent-by-source proof explicit, fixing the Task 2 file boundary, tightening `main...HEAD` scope proof with WF-0074 boundary citations, and replacing the audit-ledger placeholder with closed findings.
