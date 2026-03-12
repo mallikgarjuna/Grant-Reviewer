@@ -11,6 +11,7 @@ Last Updated: 2026-03-12
 - Preserved prior truth boundaries: WF-0074 remains authoring/governance closure; WF-0075 remains ERC PoC proof-call completeness closure.
 - Added the narrow runtime seam for WF-0076: expectation-level `subordinate_prompts` carriage from active `CallDefinition.canonical_json` into `call_config_snapshot.expectations`.
 - Hardened the request contract and validator for additive subordinate-prompt payloads (including duplicate ID fail-closed checks).
+- Hardened subordinate-prompt contract strictness so whitespace-only IDs/prompts and trim-colliding duplicate IDs fail closed.
 - Added live runtime-consumption proof in evaluator output (`reason`) and output-level proof via surfaced review-card feedback.
 - Skipped conditional Task 4 clarification because executable proof from Tasks 1-3 was unambiguous.
 
@@ -22,6 +23,8 @@ Last Updated: 2026-03-12
 - `backend/app/engine/contracts.py`
   - Added additive `ActivatedSubordinatePromptV1`.
   - Extended `ActivatedExpectationV1` with optional `subordinate_prompts`.
+- `backend/tests/engine/test_review_request_contracts.py`
+  - Added fail-closed regressions for whitespace-only subordinate prompt values and duplicate IDs that collide after trim normalization.
 - `backend/app/engine/review_request_validator.py`
   - Added fail-closed duplicate subordinate-prompt ID detection per expectation.
 - `backend/app/engine/findings/evaluator.py`
@@ -42,10 +45,13 @@ Last Updated: 2026-03-12
 ### Part B (Technical Audit Gate)
 - Diff range audited: `main...HEAD`
 - Profile: `execution`
-- Findings: none (no blocking/non-blocking fixes required before Part C2)
+- Findings:
+  - Blocking: subordinate prompt contract accepted whitespace-only `id`/`prompt` values and allowed duplicate IDs that differed only by leading/trailing whitespace, violating fail-closed malformed-payload rejection expectations for WF-0076.
 
 ### Part C (Revise + Verify + Ship Gate)
-- Part C1: no revisions required (Part B had no findings).
+- Part C1 revisions applied:
+  - `backend/app/engine/contracts.py`: subordinate prompt `id` and `prompt` now use trimmed non-empty string constraints.
+  - `backend/tests/engine/test_review_request_contracts.py`: added two regressions proving whitespace-only rejection and trim-collision duplicate-ID rejection.
 - Part C2 verification (all pass):
   - `pre-commit run --all-files`
   - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "subordinate_prompt or activated_expectation"`

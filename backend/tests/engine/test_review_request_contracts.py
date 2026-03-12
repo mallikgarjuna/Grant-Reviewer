@@ -1177,6 +1177,64 @@ def test_wf0076_contract_subordinate_prompt_duplicate_ids_fail_closed() -> None:
     }
 
 
+def test_wf0076_contract_subordinate_prompt_whitespace_only_values_rejected() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["expectations"][0]["subordinate_prompts"] = [
+        {
+            "id": "   ",
+            "prompt": "   ",
+        }
+    ]
+    payload["call_config_digest"] = "sha256:deadbeef"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/expectations/0/subordinate_prompts/0/id",
+        kind="value_error",
+        message="Invalid field value.",
+    )
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/expectations/0/subordinate_prompts/0/prompt",
+        kind="value_error",
+        message="Invalid field value.",
+    )
+
+
+def test_wf0076_contract_subordinate_prompt_duplicate_ids_after_trim_fail_closed() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["expectations"][0]["subordinate_prompts"] = [
+        {
+            "id": "prompt_wf0076_duplicate",
+            "prompt": "First duplicate subordinate prompt.",
+        },
+        {
+            "id": " prompt_wf0076_duplicate ",
+            "prompt": "Second duplicate subordinate prompt.",
+        },
+    ]
+    payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        payload["call_config_snapshot"]
+    )
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
+    assert err_info.value.message == (
+        "Duplicate subordinate_prompt id at expectations[0].subordinate_prompts[1]"
+    )
+    assert err_info.value.details == {
+        "expectation_id": "exp-1",
+        "subordinate_prompt_id": "prompt_wf0076_duplicate",
+        "expectation_index": 0,
+        "subordinate_prompt_index": 1,
+    }
+
+
 def test_wf0076_contract_subordinate_prompt_absent_remains_valid() -> None:
     payload = _build_payload()
 

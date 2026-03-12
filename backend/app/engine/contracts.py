@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+
+NonEmptyTrimmedStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 EngineMode = Literal["DIAGNOSTIC", "STRICT"]
 FindingKind = Literal["MISSING_CONTENT", "PRESENT_CONTENT"]
@@ -21,8 +23,8 @@ class _StrictContractModel(BaseModel):
 
 
 class ActivatedSubordinatePromptV1(_StrictContractModel):
-    id: str = Field(min_length=1)
-    prompt: str = Field(min_length=1)
+    id: NonEmptyTrimmedStr
+    prompt: NonEmptyTrimmedStr
     source_locator: str | None = None
 
 
