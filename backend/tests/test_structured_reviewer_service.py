@@ -1164,10 +1164,10 @@ def test_wf0073_contract_structured_service_keeps_erc_poc_2026_single_step_activ
         service.repository.session.close()
 
 
-def test_wf0074_contract_erc_poc_runtime_snapshot_remains_expectations_only(
+def test_wf0076_contract_erc_poc_runtime_snapshot_carries_live_canonical_subordinate_prompts(
     monkeypatch,
 ) -> None:
-    """WF-0074: ERC PoC subordinate prompts persist in canonical JSON but not runtime snapshot."""
+    """WF-0076: ERC PoC runtime snapshot carries expectation-level subordinate prompts."""
     service, call_id = _build_erc_poc_service(monkeypatch)
     captured_snapshot: dict[str, object] = {}
 
@@ -1183,6 +1183,21 @@ def test_wf0074_contract_erc_poc_runtime_snapshot_remains_expectations_only(
     )
 
     try:
+        definition = service.repository.session.exec(
+            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+        ).first()
+        assert definition is not None
+        canonical_json = json.loads(json.dumps(definition.canonical_json))
+        evaluation_elements = canonical_json["evaluation_criteria"][0]["evaluation_elements"]
+        assert evaluation_elements[0]["id"] == "elem_breakthrough_innovation_potential"
+        evaluation_elements[0]["subordinate_prompts"][0]["id"] = "prompt_wf0076_source_mutation"
+        evaluation_elements[0]["subordinate_prompts"][0][
+            "prompt"
+        ] = "WF-0076 source perturbation: runtime must follow active call definition."
+        definition.canonical_json = canonical_json
+        service.repository.session.add(definition)
+        service.repository.session.commit()
+
         review, cards = service.generate_structured_review_pipeline_v1(
             review_stage="STEP_1",
             call_id=call_id,
@@ -1198,40 +1213,35 @@ def test_wf0074_contract_erc_poc_runtime_snapshot_remains_expectations_only(
         assert review.status == ReviewStatus.COMPLETED
         assert len(cards) >= 1
 
-        definition = service.repository.session.exec(
-            select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
-        ).first()
-        assert definition is not None
-        evaluation_elements = definition.canonical_json["evaluation_criteria"][0][
-            "evaluation_elements"
-        ]
-        first_subordinate_prompts = evaluation_elements[0]["subordinate_prompts"]
-        second_subordinate_prompts = evaluation_elements[1]["subordinate_prompts"]
-        third_subordinate_prompts = evaluation_elements[2]["subordinate_prompts"]
-        assert [prompt["id"] for prompt in first_subordinate_prompts] == [
-            "prompt_innovation_business_or_societal_impact",
-            "prompt_expected_outcomes_distinctiveness",
-            "prompt_high_risk_high_gain",
-            "prompt_breakthrough_innovation_outcome",
-            "prompt_overcome_difficult_aspects",
-        ]
-        assert [prompt["id"] for prompt in second_subordinate_prompts] == [
-            "prompt_activities_and_planning_path_to_innovation",
-            "prompt_timescales_resources_qualified_personnel",
-        ]
-        assert [prompt["id"] for prompt in third_subordinate_prompts] == [
-            "prompt_pi_clear_vision_strategic_decisions_risk_contingency"
-        ]
         assert set(captured_snapshot) == {"schema_version", "expectations"}
         assert captured_snapshot["schema_version"] == "v1"
         assert isinstance(captured_snapshot["expectations"], list)
         assert captured_snapshot["expectations"]
-        serialized_snapshot = _serialize_snapshot_for_assertions(captured_snapshot)
-        assert "subordinate_prompts" not in serialized_snapshot
-        assert "prompt_activities_and_planning_path_to_innovation" not in serialized_snapshot
+
+        innovation_expectations = [
+            expectation
+            for expectation in captured_snapshot["expectations"]
+            if isinstance(expectation, dict)
+            and expectation.get("node_logical_id") == "poc_idea_innovation"
+        ]
+        assert innovation_expectations
+
+        expectations_with_subordinate_prompts = [
+            expectation
+            for expectation in innovation_expectations
+            if isinstance(expectation.get("subordinate_prompts"), list)
+            and expectation["subordinate_prompts"]
+        ]
+        assert expectations_with_subordinate_prompts
+
+        serialized_snapshot = _serialize_snapshot_for_assertions(
+            {"expectations": expectations_with_subordinate_prompts}
+        )
+        assert "subordinate_prompts" in serialized_snapshot
+        assert "prompt_wf0076_source_mutation" in serialized_snapshot
         assert (
-            "prompt_pi_clear_vision_strategic_decisions_risk_contingency"
-            not in serialized_snapshot
+            "WF-0076 source perturbation: runtime must follow active call definition."
+            in serialized_snapshot
         )
     finally:
         service.repository.session.close()

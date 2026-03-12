@@ -20,11 +20,18 @@ class _StrictContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class ActivatedSubordinatePromptV1(_StrictContractModel):
+    id: str = Field(min_length=1)
+    prompt: str = Field(min_length=1)
+    source_locator: str | None = None
+
+
 class ActivatedExpectationV1(_StrictContractModel):
     expectation_id: str = Field(min_length=1)
     node_logical_id: str = Field(min_length=1)
     check_id: str = Field(default="check.presence", min_length=1)
     required: bool = False
+    subordinate_prompts: list[ActivatedSubordinatePromptV1] | None = None
 
 
 class ActivatedEvaluationCriterionV1(_StrictContractModel):

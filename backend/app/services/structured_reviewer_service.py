@@ -8,6 +8,7 @@ import hashlib
 import logging
 import os
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from app.engine.contracts import PipelineResult
@@ -207,6 +208,9 @@ class StructuredReviewerService:
         ] = []
         request_expectations: list[dict[str, object]] = []
         applicable_policy_by_node: dict[str, list[ReviewerPolicyRule]] = {}
+        subordinate_prompts_by_element_id = self._build_subordinate_prompts_by_element_id(
+            call_definition
+        )
         for node_logical_id, _ in nodes:
             node = node_by_logical_id.get(node_logical_id)
             if node is None:
@@ -257,6 +261,15 @@ class StructuredReviewerService:
                 }
                 if expectation.expectation_strength.value == "MANDATORY":
                     expectation_payload["required"] = True
+                element_logical_id = expectation.element.logical_id if expectation.element else None
+                if isinstance(element_logical_id, str):
+                    subordinate_prompts = subordinate_prompts_by_element_id.get(
+                        element_logical_id
+                    )
+                    if subordinate_prompts:
+                        expectation_payload["subordinate_prompts"] = [
+                            dict(prompt) for prompt in subordinate_prompts
+                        ]
                 request_expectations.append(
                     expectation_payload
                 )
@@ -473,3 +486,59 @@ class StructuredReviewerService:
         if expectation.element.logical_id:
             return expectation.element.logical_id.replace("_", " ").strip().lower()
         return "this evaluation element"
+
+    @staticmethod
+    def _build_subordinate_prompts_by_element_id(
+        call_definition: Any,
+    ) -> dict[str, list[dict[str, str]]]:
+        if call_definition is None:
+            return {}
+        canonical_json = getattr(call_definition, "canonical_json", None)
+        if not isinstance(canonical_json, dict):
+            return {}
+
+        criteria = canonical_json.get("evaluation_criteria")
+        if not isinstance(criteria, list):
+            return {}
+
+        prompts_by_element_id: dict[str, list[dict[str, str]]] = {}
+        for criterion in criteria:
+            if not isinstance(criterion, dict):
+                continue
+            elements = criterion.get("evaluation_elements")
+            if not isinstance(elements, list):
+                continue
+            for element in elements:
+                if not isinstance(element, dict):
+                    continue
+                element_id = element.get("id")
+                if not isinstance(element_id, str) or not element_id.strip():
+                    continue
+                raw_prompts = element.get("subordinate_prompts")
+                if not isinstance(raw_prompts, list):
+                    continue
+
+                normalized_prompts: list[dict[str, str]] = []
+                for prompt in raw_prompts:
+                    if not isinstance(prompt, dict):
+                        continue
+                    prompt_id = prompt.get("id")
+                    prompt_text = prompt.get("prompt")
+                    if not isinstance(prompt_id, str) or not isinstance(prompt_text, str):
+                        continue
+                    normalized_prompt_id = prompt_id.strip()
+                    normalized_prompt_text = prompt_text.strip()
+                    if not normalized_prompt_id or not normalized_prompt_text:
+                        continue
+                    normalized_prompt = {
+                        "id": normalized_prompt_id,
+                        "prompt": normalized_prompt_text,
+                    }
+                    source_locator = prompt.get("source_locator")
+                    if isinstance(source_locator, str) and source_locator.strip():
+                        normalized_prompt["source_locator"] = source_locator.strip()
+                    normalized_prompts.append(normalized_prompt)
+
+                if normalized_prompts:
+                    prompts_by_element_id[element_id] = normalized_prompts
+        return prompts_by_element_id
