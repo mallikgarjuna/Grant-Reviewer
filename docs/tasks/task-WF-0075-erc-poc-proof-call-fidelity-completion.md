@@ -8,7 +8,7 @@ Last Updated: 2026-03-12
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: fail-closed page-43 coverage proof
+### [x] Task 1 — Tracer bullet: fail-closed page-43 coverage proof
 
 Goal:
 Add a replayable proof seam that classifies ERC PoC subordinate-prompt coverage as `absent_by_source`, `fully_encoded`, or `partially_encoded`, and proves the current real proof-call fails closed while `1.b` and `1.c` remain incomplete.
