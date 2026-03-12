@@ -115,10 +115,11 @@ Verification Steps:
 - `cd backend && uv run pytest tests/test_call_subordinate_prompt_coverage.py -k "wf0075_real_erc_poc_page_43_proof_call_is_fully_encoded"`
 Risks (if any): If the new signal is only asserted at review-card prose level, the proof can pass despite evaluator behavior remaining generic and non-source-grounded.
 
-### [ ] Task 4 — Conditional boundary/governance clarification only if executable proof leaves ambiguity
+### [x] Task 4 — Conditional boundary/governance clarification only if executable proof leaves ambiguity
 
 Goal:
 Apply a minimal durable-governance clarification only if Tasks 1-3 still leave unresolved ambiguity about WF-0074/WF-0075 prior truth, compatibility posture, or WF-0076 runtime-proof boundaries.
+Execution note (2026-03-12): Skipped by condition; executable proof from Tasks 1-3 was sufficient and unambiguous.
 Slice: conditional-closure
 User Stories: US3
 PRD Requirements: FR10, FR11, FR12
