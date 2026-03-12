@@ -63,11 +63,25 @@ evaluation_criteria:
         description: Assess whether the proposed approach and methodology are appropriate, coherent, and feasible for the PoC objectives.
         source_hint: "Work Programme 2026 section 2.1.6.1"
         stage: BOTH
+        subordinate_prompts:
+          - id: prompt_activities_and_planning_path_to_innovation
+            prompt: Are the activities and planning appropriate and effective to explore the path from ground-breaking research towards innovation?
+            source_locator: "Work Programme 2026 section 2.1.6.1, element 1.b"
+            source_hint: "wp_horizon-erc-2026_en.pdf page 43"
+          - id: prompt_timescales_resources_qualified_personnel
+            prompt: Are the timescales and resources properly justified and adequate for the implementation and feasibility of the project, and properly justified? Will the activities be conducted by persons qualified for the purpose?
+            source_locator: "Work Programme 2026 section 2.1.6.1, element 1.b"
+            source_hint: "wp_horizon-erc-2026_en.pdf page 43"
       - id: elem_pi_strategic_leadership
         name: strategic leadership/project management
         description: Assess the PI strategic leadership/project management capacity for delivery of PoC outcomes within scope and timeline.
         source_hint: "Work Programme 2026 section 2.1.6.1"
         stage: BOTH
+        subordinate_prompts:
+          - id: prompt_pi_clear_vision_strategic_decisions_risk_contingency
+            prompt: Does the PI demonstrate a clear vision on how to manage the project, the consolidation of information and data needed to take strategic decisions and implement the proposed plan, including risk and contingency measures?
+            source_locator: "Work Programme 2026 section 2.1.6.1, element 1.c"
+            source_hint: "wp_horizon-erc-2026_en.pdf page 43"
 
 proposal_nodes:
   - id: poc_idea_innovation

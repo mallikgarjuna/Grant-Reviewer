@@ -202,6 +202,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 50 | WF-0072 | e2e-trust-proof-nwo-erc-msca | promoted | P1 #1 (historical; representative locked-wedge end-to-end trust proof) | 2026-03-10 |
 | 51 | WF-0073 | erc-poc-2026-call-onboarding | started-directly | - | 2026-03-11 |
 | 52 | WF-0074 | canonical-funding-call-fidelity-hardening | started-directly | - | 2026-03-11 |
+| 53 | WF-0075 | erc-poc-proof-call-fidelity-completion | started-directly | - | 2026-03-12 |
 
 ---
 
@@ -262,3 +263,4 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v5.0** (2026-03-10): Promoted P1 #1 to `WF-0072`, renumbered active P1, and recorded the promotion provenance in the unified WF log.
 - **v5.1** (2026-03-11): Post-WF-0073 refresh: appended direct-start `WF-0073` to the unified WF initiative log (no active P1/P2 reprioritization required).
 - **v5.2** (2026-03-11): Post-WF-0074 refresh: appended direct-start `WF-0074` to the unified WF initiative log and updated the P1 rationale snapshot to reflect that canonical subordinate-prompt fidelity hardening is closed with no immediate backlog reprioritization.
+- **v5.3** (2026-03-12): Post-WF-0075 refresh: appended direct-start `WF-0075` to the unified WF initiative log; no active P1/P2 reprioritization was required because the workflow completed the ERC PoC proof-call without widening runtime scope.

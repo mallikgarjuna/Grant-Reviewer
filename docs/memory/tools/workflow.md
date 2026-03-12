@@ -86,3 +86,5 @@
 - **2026-03-11 — Brainstorm hardening closure contract:** During Phase 0 Part C hardening, ensure brainstorm revisions include both a fail-closed verification evidence matrix (default `fail` until executed) and a changelog entry when version is bumped. Why: this prevents premature proceed claims and keeps artifact version history compliant with workflow rules.
 
 - **2026-03-11 — Phase 2 fail-closed proof must be executable, not grep-only:** If a task plan claims fail-closed manifest or closure gates, require at least one deterministic regression/test selector for the gate and replayable row-level evidence refs in the matrix; `rg`/`git diff` alone is not enough. Why: otherwise the artifact looks strict while still allowing false-positive readiness.
+
+- **2026-03-12 — Phase 3 closeout status alignment:** Before any ship recommendation, ensure the task artifact, walkthrough, index row, and parking-lot WF initiative log all reflect the same post-implementation state for the active WF. Why: executable proof can be correct while closure still remains non-auditable if status surfaces lag behind reality.
