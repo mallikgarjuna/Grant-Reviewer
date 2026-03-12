@@ -39,6 +39,10 @@ def _reset_database() -> None:
     SQLModel.metadata.create_all(engine)
 
 
+def _serialize_snapshot_for_assertions(snapshot: dict[str, object]) -> str:
+    return json.dumps(snapshot, sort_keys=True, default=str)
+
+
 def _seed_structured_service_graph() -> UUID:
     session = get_session()
     try:
@@ -1198,20 +1202,37 @@ def test_wf0074_contract_erc_poc_runtime_snapshot_remains_expectations_only(
             select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
         ).first()
         assert definition is not None
-        subordinate_prompts = definition.canonical_json["evaluation_criteria"][0][
+        evaluation_elements = definition.canonical_json["evaluation_criteria"][0][
             "evaluation_elements"
-        ][0]["subordinate_prompts"]
-        assert [prompt["id"] for prompt in subordinate_prompts] == [
+        ]
+        first_subordinate_prompts = evaluation_elements[0]["subordinate_prompts"]
+        second_subordinate_prompts = evaluation_elements[1]["subordinate_prompts"]
+        third_subordinate_prompts = evaluation_elements[2]["subordinate_prompts"]
+        assert [prompt["id"] for prompt in first_subordinate_prompts] == [
             "prompt_innovation_business_or_societal_impact",
             "prompt_expected_outcomes_distinctiveness",
             "prompt_high_risk_high_gain",
             "prompt_breakthrough_innovation_outcome",
             "prompt_overcome_difficult_aspects",
         ]
+        assert [prompt["id"] for prompt in second_subordinate_prompts] == [
+            "prompt_activities_and_planning_path_to_innovation",
+            "prompt_timescales_resources_qualified_personnel",
+        ]
+        assert [prompt["id"] for prompt in third_subordinate_prompts] == [
+            "prompt_pi_clear_vision_strategic_decisions_risk_contingency"
+        ]
         assert set(captured_snapshot) == {"schema_version", "expectations"}
         assert captured_snapshot["schema_version"] == "v1"
         assert isinstance(captured_snapshot["expectations"], list)
         assert captured_snapshot["expectations"]
+        serialized_snapshot = _serialize_snapshot_for_assertions(captured_snapshot)
+        assert "subordinate_prompts" not in serialized_snapshot
+        assert "prompt_activities_and_planning_path_to_innovation" not in serialized_snapshot
+        assert (
+            "prompt_pi_clear_vision_strategic_decisions_risk_contingency"
+            not in serialized_snapshot
+        )
     finally:
         service.repository.session.close()
 

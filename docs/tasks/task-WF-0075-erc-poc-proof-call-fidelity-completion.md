@@ -74,7 +74,7 @@ Verification Steps:
 - `cd backend && uv run python scripts/ingest_call.py data/calls/canonical/erc/erc_poc_2026_full.yaml --dry-run`
 Risks (if any): Reusing dry-run alone as completeness evidence would fail closed incorrectly; source-to-YAML coverage proof must remain the primary completion seam.
 
-### [ ] Task 3 — Re-prove runtime-boundary honesty after proof-call completion
+### [x] Task 3 — Re-prove runtime-boundary honesty after proof-call completion
 
 Goal:
 Re-run the existing runtime-boundary seam after Task 2 so WF-0075 explicitly preserves WF-0074 honesty that structured-review runtime activation still exposes only `schema_version` plus `expectations`.
@@ -104,7 +104,9 @@ Verification Steps:
 - `cd backend && rg -n "call_config_snapshot =|schema_version|expectations" app/services/structured_reviewer_service.py app/engine/contracts.py app/engine/review_request_validator.py`
 Risks (if any): If runtime-boundary proof is skipped after YAML completion, later closeout could overclaim review-generation impact from authoring-only fidelity work.
 
-### [ ] Task 4 — Conditional authoring/checklist clarification for three-state semantics
+### [x] Task 4 — Conditional authoring/checklist clarification for three-state semantics
+
+Execution outcome: skipped on 2026-03-12 because Tasks 1-3 already provide unambiguous executable proof for `absent_by_source`, `partially_encoded`, and `fully_encoded` without reopening WF-0074 governance surfaces.
 
 Goal:
 Apply only if Tasks 1-3 show executable proof still leaves ambiguity between `absent_by_source`, `partially_encoded`, and `fully_encoded` for proof-call closure.
@@ -137,7 +139,9 @@ Verification Steps:
 - `rg -n "absent|partial|complete|subordinate prompts|runtime-consumption impact|temporarily compatible" docs/call-yaml/authoring-workflow.md docs/call-yaml/onboarding-checklist.md`
 Risks (if any): Making this task unconditional would reopen WF-0074 governance even when executable proof already closes the ambiguity.
 
-### [ ] Task 5 — Conditional durable governance and baseline-anchored closure evidence
+### [x] Task 5 — Conditional durable governance and baseline-anchored closure evidence
+
+Execution outcome: skipped on 2026-03-12 because Task 4 was not needed, so no residual governance gap remained that required changes to `docs/logs/decisions.md` or `docs/memory/domain/project_docs.md`.
 
 Goal:
 Apply only if Task 4 proves a real governance gap remains; record WF-0075's narrow corrective boundary and fail-closed closure contract in durable governance surfaces so future closure cannot drop the three-state proof, `main...HEAD` scope proof, or audit-disposition gate.
