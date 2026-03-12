@@ -2,8 +2,8 @@
 # WF-0076 — Subordinate Prompt Runtime Consumption
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-12
 
 Type: feature
@@ -46,7 +46,7 @@ Contract Notes / Non-obvious constraints:
 
 ## Open Questions / Deferred
 
-- Should the smallest runtime seam be an activated snapshot addition, prompt-building input enrichment, expectation expansion, or another narrower representation?
+- Preferred default to validate in Phase 1: subordinate prompts should travel as a narrow child payload attached to existing activated expectation or evaluation-element context; if that seam proves too coupled, the fallback is the smallest equivalent runtime representation that still produces deterministic runtime-effect proof.
 - What exact operational definition of "improved output" is tight enough to verify deterministically without overclaiming researcher-facing impact?
 - Can the initial proof stay bounded to the ERC PoC proof-call without forcing multi-call runtime redesign?
 
@@ -150,6 +150,16 @@ Contract Notes / Non-obvious constraints:
 - If no tight deterministic proof of runtime effect is available, the MVP must narrow to the strongest honest intermediate seam and explicitly reject broader product-effect claims.
 - MVP closure requires a row-based fail-closed verification matrix, not prose-only verification.
 
+### Recommended First Proof Surface
+
+- Start with ERC PoC and prove runtime consumption at the nearest deterministic artifact, in this order of preference:
+  - activated snapshot / contract payload,
+  - prompt-construction artifact,
+  - expectation-expansion artifact,
+  - review-card content or coverage assertions only if the earlier artifacts are insufficient to prove real runtime influence.
+- The first proof should prefer exact carry-through of official subordinate concerns over subjective final-prose evaluation.
+- If review-card assertions are used, they must remain deterministic and source-grounded rather than style-judgment-based.
+
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0076-subordinate-prompt-runtime-consumption.md` (Section 7)
 
 ## Verification / Proceed Gate
@@ -169,8 +179,8 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0076-subordinate-pr
 | :--- | :--- | :--- | :--- | :--- |
 | Runtime discard seam proof | targeted activation/snapshot test | `fail` (default until executed) | required | must prove exactly where subordinate prompts are dropped today |
 | Minimal contract widening | contract/snapshot validator test | `fail` (default until executed) | required | must prove the smallest new runtime shape is accepted and serialized deterministically |
-| Runtime consumption proof | structured reviewer / prompt-construction / expectation-expansion test | `fail` (default until executed) | required | must prove subordinate prompts influence runtime behavior, not just storage |
-| Output-level improvement proof | deterministic runtime artifact assertion | `fail` (default until executed) | required | must prove better official-concern coverage, specificity, or omission reduction in an operationalized way |
+| Runtime consumption proof | structured reviewer service test and at least one prompt-construction or expectation-expansion test | `fail` (default until executed) | required | must prove subordinate prompts influence runtime behavior, not just storage |
+| Output-level improvement proof | deterministic prompt, expanded-expectation, and/or review-card coverage assertion | `fail` (default until executed) | required | must prove better official-concern coverage, specificity, or omission reduction in an operationalized way |
 | ERC PoC proof-call preservation | targeted ERC PoC regression | `fail` (default until executed) | required | must preserve WF-0075 completeness while using ERC PoC as first proof surface |
 | WF-0074 compatibility-posture preservation | regression and/or approved-artifact citation | `fail` (default until executed) | required | must preserve temporary compatibility for existing flat canonical YAMLs unless re-approved |
 | Boundary honesty | review-range ledger plus artifact citations | `fail` (default until executed) | required | must preserve the distinction between solved fidelity and newly solved runtime consumption |
@@ -189,3 +199,4 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0076-subordinate-pr
 ## Changelog
 
 - v0.1 (2026-03-12): Captured prior truth from WF-0074/WF-0075, verified the live runtime discard seam in `structured_reviewer_service.py`, and framed WF-0076 around the smallest honest runtime-consumption change plus deterministic product-effect proof.
+- v0.2 (2026-03-12): Tightened the recommended representation bias, made the first deterministic proof surface explicit, and named concrete test categories for runtime-consumption and output-level proof.
