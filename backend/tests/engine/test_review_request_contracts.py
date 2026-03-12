@@ -1101,3 +1101,85 @@ def test_wf0053_contract_compat_omitted_vs_explicit_default_three_surface() -> N
     assert validated.call_config_snapshot.stage_gating is not None
     assert validated.call_config_snapshot.prompt_knobs is not None
     assert validated.call_config_snapshot.reviewer_policy is not None
+
+
+def test_wf0076_contract_subordinate_prompt_additive_carriage_is_valid() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["expectations"][0]["subordinate_prompts"] = [
+        {
+            "id": "prompt_wf0076_valid_1",
+            "prompt": "Official subordinate prompt text for runtime carriage.",
+            "source_locator": "wp_horizon-erc-2026_en.pdf page 43 / 1.a",
+        }
+    ]
+    payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        payload["call_config_snapshot"]
+    )
+
+    validated = validate_review_request_payload(payload)
+
+    assert validated.call_config_snapshot.expectations[0].subordinate_prompts is not None
+    assert (
+        validated.call_config_snapshot.expectations[0].subordinate_prompts[0].id
+        == "prompt_wf0076_valid_1"
+    )
+
+
+def test_wf0076_contract_subordinate_prompt_malformed_item_rejected() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["expectations"][0]["subordinate_prompts"] = [
+        {
+            "id": "prompt_wf0076_missing_text",
+            "source_locator": "wp_horizon-erc-2026_en.pdf page 43 / 1.a",
+        }
+    ]
+    payload["call_config_digest"] = "sha256:deadbeef"
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    _assert_malformed_request_with_field_error(
+        err_info.value,
+        path="/call_config_snapshot/expectations/0/subordinate_prompts/0/prompt",
+        kind="missing_field",
+        message="Field is required.",
+    )
+
+
+def test_wf0076_contract_subordinate_prompt_duplicate_ids_fail_closed() -> None:
+    payload = _build_payload()
+    payload["call_config_snapshot"]["expectations"][0]["subordinate_prompts"] = [
+        {
+            "id": "prompt_wf0076_duplicate",
+            "prompt": "First duplicate subordinate prompt.",
+        },
+        {
+            "id": "prompt_wf0076_duplicate",
+            "prompt": "Second duplicate subordinate prompt.",
+        },
+    ]
+    payload["call_config_digest"] = _canonical_digest_for_snapshot(
+        payload["call_config_snapshot"]
+    )
+
+    with pytest.raises(ReviewRequestValidationError) as err_info:
+        validate_review_request_payload(payload)
+
+    assert err_info.value.code == "MALFORMED_REVIEW_REQUEST"
+    assert err_info.value.message == (
+        "Duplicate subordinate_prompt id at expectations[0].subordinate_prompts[1]"
+    )
+    assert err_info.value.details == {
+        "expectation_id": "exp-1",
+        "subordinate_prompt_id": "prompt_wf0076_duplicate",
+        "expectation_index": 0,
+        "subordinate_prompt_index": 1,
+    }
+
+
+def test_wf0076_contract_subordinate_prompt_absent_remains_valid() -> None:
+    payload = _build_payload()
+
+    validated = validate_review_request_payload(payload)
+
+    assert validated.call_config_snapshot.expectations[0].subordinate_prompts is None

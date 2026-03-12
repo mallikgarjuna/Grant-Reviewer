@@ -44,7 +44,7 @@ Verification Steps:
 - `cd backend && rg -n "subordinate_prompts|call_config_snapshot|expectations" app/services/structured_reviewer_service.py app/engine/contracts.py tests/test_structured_reviewer_service.py`
 Risks (if any): If the service carries prompts by a new parallel map instead of existing evaluation-element identity, the proof would look green while bypassing the approved canonical source seam.
 
-### [ ] Task 2 — Harden the request contract and validator for the additive payload
+### [x] Task 2 — Harden the request contract and validator for the additive payload
 
 Goal:
 Fail closed on malformed expectation-level subordinate prompts while keeping the widened runtime contract digest-safe and additive.
