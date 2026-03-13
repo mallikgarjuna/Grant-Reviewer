@@ -23,6 +23,24 @@ def _expectation_reason(*, is_missing_context: bool) -> str:
     return "content_evaluated"
 
 
+def _expectation_subordinate_prompt_ids(expectation: dict) -> tuple[str, ...]:
+    subordinate_prompts = expectation.get("subordinate_prompts")
+    if not isinstance(subordinate_prompts, list):
+        return ()
+
+    prompt_ids: list[str] = []
+    for prompt in subordinate_prompts:
+        if not isinstance(prompt, dict):
+            continue
+        prompt_id = prompt.get("id")
+        if not isinstance(prompt_id, str):
+            continue
+        normalized_prompt_id = prompt_id.strip()
+        if normalized_prompt_id:
+            prompt_ids.append(normalized_prompt_id)
+    return tuple(prompt_ids)
+
+
 def evaluate_observations(
     *,
     observations: list[ObservationV1],
@@ -87,6 +105,13 @@ def evaluate_expectations(
 
         node_text = proposal_nodes.get(node_logical_id, "")
         is_missing = not node_text.strip() and bool(expectation.get("required", False))
+        subordinate_prompt_ids = _expectation_subordinate_prompt_ids(expectation)
+        reason = _expectation_reason(is_missing_context=False)
+        if subordinate_prompt_ids:
+            reason = (
+                f"{reason};subordinate_prompt_ids="
+                + ",".join(subordinate_prompt_ids)
+            )
         findings.append(
             DiagnosticFindingV1(
                 finding_id=f"{node_logical_id}:{expectation_id}:{check_id}",
@@ -96,7 +121,7 @@ def evaluate_expectations(
                 finding_kind="MISSING_CONTENT" if is_missing else "PRESENT_CONTENT",
                 severity="ERROR" if is_missing else "NOTE",
                 assessment_status="ASSESSED",
-                reason=_expectation_reason(is_missing_context=False),
+                reason=reason,
             )
         )
     return findings

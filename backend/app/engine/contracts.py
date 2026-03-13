@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+
+NonEmptyTrimmedStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 EngineMode = Literal["DIAGNOSTIC", "STRICT"]
 FindingKind = Literal["MISSING_CONTENT", "PRESENT_CONTENT"]
@@ -20,11 +22,18 @@ class _StrictContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class ActivatedSubordinatePromptV1(_StrictContractModel):
+    id: NonEmptyTrimmedStr
+    prompt: NonEmptyTrimmedStr
+    source_locator: str | None = None
+
+
 class ActivatedExpectationV1(_StrictContractModel):
     expectation_id: str = Field(min_length=1)
     node_logical_id: str = Field(min_length=1)
     check_id: str = Field(default="check.presence", min_length=1)
     required: bool = False
+    subordinate_prompts: list[ActivatedSubordinatePromptV1] | None = None
 
 
 class ActivatedEvaluationCriterionV1(_StrictContractModel):

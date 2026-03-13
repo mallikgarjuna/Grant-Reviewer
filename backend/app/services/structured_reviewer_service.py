@@ -8,6 +8,7 @@ import hashlib
 import logging
 import os
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from app.engine.contracts import PipelineResult
@@ -56,6 +57,8 @@ WF0069_ACTIONABILITY_CALL_CODES = {
     "erc_stg_2026_full",
     "MSCA-PF-2025",
 }
+WF0076_SUBORDINATE_PROMPT_PRESENTATION_CALL_CODES = {"ERC-2026-PoC"}
+WF0076_SUBORDINATE_PROMPT_REASON_PREFIX = "content_evaluated;subordinate_prompt_ids="
 
 
 class StructuredReviewerService:
@@ -207,6 +210,9 @@ class StructuredReviewerService:
         ] = []
         request_expectations: list[dict[str, object]] = []
         applicable_policy_by_node: dict[str, list[ReviewerPolicyRule]] = {}
+        subordinate_prompts_by_element_id = self._build_subordinate_prompts_by_element_id(
+            call_definition
+        )
         for node_logical_id, _ in nodes:
             node = node_by_logical_id.get(node_logical_id)
             if node is None:
@@ -257,6 +263,15 @@ class StructuredReviewerService:
                 }
                 if expectation.expectation_strength.value == "MANDATORY":
                     expectation_payload["required"] = True
+                element_logical_id = expectation.element.logical_id if expectation.element else None
+                if isinstance(element_logical_id, str):
+                    subordinate_prompts = subordinate_prompts_by_element_id.get(
+                        element_logical_id
+                    )
+                    if subordinate_prompts:
+                        expectation_payload["subordinate_prompts"] = [
+                            dict(prompt) for prompt in subordinate_prompts
+                        ]
                 request_expectations.append(
                     expectation_payload
                 )
@@ -361,6 +376,7 @@ class StructuredReviewerService:
                 node_logical_id=card.node_logical_id,
                 expectation=expectation,
                 feedback_text=card.feedback,
+                subordinate_prompts_by_element_id=subordinate_prompts_by_element_id,
             )
             card_payloads.append(
                 (
@@ -449,7 +465,17 @@ class StructuredReviewerService:
         node_logical_id: str,
         expectation: NodeExpectation,
         feedback_text: str,
+        subordinate_prompts_by_element_id: dict[str, list[dict[str, str]]],
     ) -> str:
+        subordinate_prompt_feedback = self._resolve_subordinate_prompt_feedback_for_card(
+            call_code=call_code,
+            expectation=expectation,
+            feedback_text=feedback_text,
+            subordinate_prompts_by_element_id=subordinate_prompts_by_element_id,
+        )
+        if subordinate_prompt_feedback is not None:
+            return subordinate_prompt_feedback
+
         if (
             feedback_text != "content_evaluated"
             or call_code not in WF0069_ACTIONABILITY_CALL_CODES
@@ -464,6 +490,58 @@ class StructuredReviewerService:
             "with concrete evidence and outcomes."
         )
 
+    def _resolve_subordinate_prompt_feedback_for_card(
+        self,
+        *,
+        call_code: str,
+        expectation: NodeExpectation,
+        feedback_text: str,
+        subordinate_prompts_by_element_id: dict[str, list[dict[str, str]]],
+    ) -> str | None:
+        if call_code not in WF0076_SUBORDINATE_PROMPT_PRESENTATION_CALL_CODES:
+            return None
+        if not feedback_text.startswith(WF0076_SUBORDINATE_PROMPT_REASON_PREFIX):
+            return None
+
+        ordered_prompt_ids = self._parse_subordinate_prompt_ids(feedback_text)
+        if not ordered_prompt_ids:
+            return None
+
+        element_logical_id = expectation.element.logical_id if expectation.element else None
+        prompt_text_by_id: dict[str, str] = {}
+        if isinstance(element_logical_id, str):
+            for prompt in subordinate_prompts_by_element_id.get(element_logical_id, []):
+                prompt_id = prompt.get("id")
+                prompt_text = prompt.get("prompt")
+                if isinstance(prompt_id, str) and isinstance(prompt_text, str):
+                    prompt_text_by_id[prompt_id] = prompt_text
+
+        feedback_lines = [
+            "Address the following evaluation element prompts:"
+        ]
+        for prompt_id in ordered_prompt_ids:
+            prompt_text = prompt_text_by_id.get(prompt_id)
+            if prompt_text is None:
+                feedback_lines.append(f"- Unresolved subordinate prompt ID: {prompt_id}.")
+                continue
+            feedback_lines.append(f"- {prompt_text}")
+        return "\n".join(feedback_lines)
+
+    @staticmethod
+    def _parse_subordinate_prompt_ids(feedback_text: str) -> list[str]:
+        if not feedback_text.startswith(WF0076_SUBORDINATE_PROMPT_REASON_PREFIX):
+            return []
+        raw_prompt_ids = feedback_text.removeprefix(WF0076_SUBORDINATE_PROMPT_REASON_PREFIX)
+        seen_prompt_ids: set[str] = set()
+        ordered_prompt_ids: list[str] = []
+        for raw_prompt_id in raw_prompt_ids.split(","):
+            prompt_id = raw_prompt_id.strip()
+            if not prompt_id or prompt_id in seen_prompt_ids:
+                continue
+            seen_prompt_ids.add(prompt_id)
+            ordered_prompt_ids.append(prompt_id)
+        return ordered_prompt_ids
+
     @staticmethod
     def _normalize_expectation_element_label(expectation: NodeExpectation) -> str:
         if expectation.element is None:
@@ -473,3 +551,59 @@ class StructuredReviewerService:
         if expectation.element.logical_id:
             return expectation.element.logical_id.replace("_", " ").strip().lower()
         return "this evaluation element"
+
+    @staticmethod
+    def _build_subordinate_prompts_by_element_id(
+        call_definition: Any,
+    ) -> dict[str, list[dict[str, str]]]:
+        if call_definition is None:
+            return {}
+        canonical_json = getattr(call_definition, "canonical_json", None)
+        if not isinstance(canonical_json, dict):
+            return {}
+
+        criteria = canonical_json.get("evaluation_criteria")
+        if not isinstance(criteria, list):
+            return {}
+
+        prompts_by_element_id: dict[str, list[dict[str, str]]] = {}
+        for criterion in criteria:
+            if not isinstance(criterion, dict):
+                continue
+            elements = criterion.get("evaluation_elements")
+            if not isinstance(elements, list):
+                continue
+            for element in elements:
+                if not isinstance(element, dict):
+                    continue
+                element_id = element.get("id")
+                if not isinstance(element_id, str) or not element_id.strip():
+                    continue
+                raw_prompts = element.get("subordinate_prompts")
+                if not isinstance(raw_prompts, list):
+                    continue
+
+                normalized_prompts: list[dict[str, str]] = []
+                for prompt in raw_prompts:
+                    if not isinstance(prompt, dict):
+                        continue
+                    prompt_id = prompt.get("id")
+                    prompt_text = prompt.get("prompt")
+                    if not isinstance(prompt_id, str) or not isinstance(prompt_text, str):
+                        continue
+                    normalized_prompt_id = prompt_id.strip()
+                    normalized_prompt_text = prompt_text.strip()
+                    if not normalized_prompt_id or not normalized_prompt_text:
+                        continue
+                    normalized_prompt = {
+                        "id": normalized_prompt_id,
+                        "prompt": normalized_prompt_text,
+                    }
+                    source_locator = prompt.get("source_locator")
+                    if isinstance(source_locator, str) and source_locator.strip():
+                        normalized_prompt["source_locator"] = source_locator.strip()
+                    normalized_prompts.append(normalized_prompt)
+
+                if normalized_prompts:
+                    prompts_by_element_id[element_id] = normalized_prompts
+        return prompts_by_element_id

@@ -152,6 +152,24 @@ def _validate_snapshot_shape(call_config_snapshot: ActivatedCallConfigSnapshotV1
             )
         seen_expectation_ids.add(expectation_id)
 
+        seen_subordinate_prompt_ids: set[str] = set()
+        for subordinate_index, subordinate_prompt in enumerate(
+            expectation.subordinate_prompts or []
+        ):
+            subordinate_prompt_id = subordinate_prompt.id
+            if subordinate_prompt_id in seen_subordinate_prompt_ids:
+                _raise_malformed_request(
+                    "Duplicate subordinate_prompt id at "
+                    f"expectations[{index}].subordinate_prompts[{subordinate_index}]",
+                    details={
+                        "expectation_id": expectation_id,
+                        "subordinate_prompt_id": subordinate_prompt_id,
+                        "expectation_index": index,
+                        "subordinate_prompt_index": subordinate_index,
+                    },
+                )
+            seen_subordinate_prompt_ids.add(subordinate_prompt_id)
+
 
 def _build_canonical_snapshot_projection(
     call_config_snapshot: ActivatedCallConfigSnapshotV1,

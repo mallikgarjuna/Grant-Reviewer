@@ -94,6 +94,7 @@ Maintain a single sequential WF log table in this file (all `WF-xxxx` IDs known 
 - WF-0067 is now complete and closed the launch-blocking review trust-surface gap in the active wedge.
 - WF-0068 is now complete and closed the evaluation loop with a bounded proceed decision; follow-on work should stay narrowly scoped to the evidence-backed actionability/prioritization failure pattern.
 - WF-0074 is now complete; it hardened canonical call authoring fidelity and durable governance for subordinate official prompts without widening structured-review runtime consumption. No active backlog reprioritization is required from that closure.
+- WF-0076 is now complete; it closed the narrow ERC PoC runtime-consumption seam for subordinate prompts without changing the current launch-priority ordering or implying broader multi-call/runtime rollout.
 - Active P1 sequencing is now: remaining launch-baseline legal work first, then assisted-extraction work; `WF-0072` has closed the locked-wedge end-to-end trust proof.
 - Assisted extraction remains valuable but non-blocking for launch baseline; `.docx`/`.pdf` remains deferred due dependency/security scope.
 - Do not promote new convenience or expansion work ahead of the remaining launch-baseline legal and assisted-extraction items unless the user explicitly accepts weakening the launch trust bar.
@@ -203,6 +204,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 51 | WF-0073 | erc-poc-2026-call-onboarding | started-directly | - | 2026-03-11 |
 | 52 | WF-0074 | canonical-funding-call-fidelity-hardening | started-directly | - | 2026-03-11 |
 | 53 | WF-0075 | erc-poc-proof-call-fidelity-completion | started-directly | - | 2026-03-12 |
+| 54 | WF-0076 | subordinate-prompt-runtime-consumption | started-directly | - | 2026-03-12 |
 
 ---
 
@@ -258,6 +260,7 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v4.5** (2026-03-09): Post-WF-0068 refresh: updated the rationale snapshot for evaluation-loop closure and narrowed the parked prompt-quality follow-on language to the evidence-backed `actionability_cluster` boundary.
 - **v4.6** (2026-03-09): Post-WF-0069 refresh: updated the parked prompt-quality item to avoid re-opening closed WF-0069 scope and recorded direct-start `WF-0069` in the unified WF initiative log.
 - **v4.7** (2026-03-09): Re-prioritized active P1 into a concrete next-action sequence aligned to the mission trust bar: ERC Step gating first, nested-call hierarchy selector second, representative end-to-end trust proof third; demoted convenience work behind those items and clarified promotion dependencies.
+- **v5.4** (2026-03-13): Post-WF-0076 refresh: appended direct-start `WF-0076` to the unified WF initiative log and updated the P1 rationale snapshot to record that subordinate-prompt runtime consumption is now closed with no backlog reprioritization required.
 - **v4.8** (2026-03-10): Post-WF-0070 refresh: updated P1 rationale to reflect ERC stage-truthfulness closure and advanced nested-call navigation to next active priority.
 - **v4.9** (2026-03-10): Post-WF-0071 refresh: removed the completed node-hierarchy P1 item, renumbered active P1, and recorded WF-0071 promotion provenance in the WF log.
 - **v5.0** (2026-03-10): Promoted P1 #1 to `WF-0072`, renumbered active P1, and recorded the promotion provenance in the unified WF log.
