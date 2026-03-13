@@ -1,9 +1,9 @@
-<!-- docs/prds/prd-WF-0073-erc-poc-2026-call-onboarding.md -->
+<!-- docs/prds/completed/prd-WF-0073-erc-poc-2026-call-onboarding.md -->
 # WF-0073 — ERC PoC 2026 Call Onboarding PRD
 
 Artifact: prd
 Version: v0.2
-Status: Ready for Tasks
+Status: Done
 Last Updated: 2026-03-11
 
 ## 0. User Stories (MVP)

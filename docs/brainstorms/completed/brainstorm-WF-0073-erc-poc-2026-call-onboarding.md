@@ -1,9 +1,9 @@
-<!-- docs/brainstorms/brainstorm-WF-0073-erc-poc-2026-call-onboarding.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0073-erc-poc-2026-call-onboarding.md -->
 # WF-0073 — ERC PoC 2026 Call Onboarding
 
 Artifact: brainstorm
 Version: v0.3
-Status: Draft Complete
+Status: Done
 Last Updated: 2026-03-11
 
 Type: feature
