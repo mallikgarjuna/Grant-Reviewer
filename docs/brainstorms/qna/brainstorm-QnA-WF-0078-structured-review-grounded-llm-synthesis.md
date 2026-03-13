@@ -2,8 +2,8 @@
 # WF-0078 — Structured Review Grounded LLM Synthesis
 
 Artifact: brainstorm-qna
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-13
 
 Type: feature
@@ -288,3 +288,11 @@ Source: user-provided initiative brief in chat on 2026-03-13.
 - C) Audit/debug traceability.
 > Recommendation: A — it preserves the bounded WF promise. B and C are rejected because they are essential, not optional.
 > **Selected: A**
+
+## Part B Audit Resolution Notes
+
+- Recommended resolution applied: the MVP synthesis unit is per-card, not per-node and not whole-review, so degradation can fail closed card-by-card.
+- Recommended resolution applied: the MVP output contract is additive, preserving deterministic `feedback_text` as fallback and introducing an optional synthesized companion surface plus provenance/source signaling.
+- Recommended resolution applied: raw machine `reason` remains audit-only and is explicitly excluded from the approved LLM prompt boundary.
+- Recommended resolution applied: timeout, client error, malformed output, and grounding rejection all degrade to deterministic WF-0077 guidance for the affected card without failing the whole review.
+- Recommended resolution applied: the first implementation slice is explicitly backend-first and must remain within a three-file boundary before any API/frontend follow-on is opened.

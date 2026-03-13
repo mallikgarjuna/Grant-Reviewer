@@ -2,8 +2,8 @@
 # WF-0078 — Structured Review Grounded LLM Synthesis
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-13
 
 Type: feature
@@ -44,11 +44,9 @@ Contract Notes / Non-obvious constraints:
 
 ## Open Questions / Deferred
 
-- Whether the first MVP should synthesize per-card `feedback_text`, an additional optional synthesized field, or a review-level explanation layer that leaves current card text visible beside it.
-- Whether deterministic guidance from WF-0077 should remain visible by default whenever LLM synthesis is unavailable, or only as a debug/audit fallback.
-- Whether malformed or ungrounded LLM output should fail closed to WF-0077 deterministic guidance silently or surface an explicit degraded-mode indicator.
-- Whether this workflow can stay backend-only for MVP or needs a minimal frontend affordance to distinguish deterministic guidance from synthesized explanation.
-- How much canonical context is safe to provide to the LLM without encouraging advice that outruns the deterministic findings.
+- Whether the first user-facing rollout needs a minimal UI/provenance affordance once the additive synthesis response field exists, or whether backend/API contract proof will show the current rendering path can expose it honestly without extra design work.
+- Whether broader call rollout beyond `ERC-2026-PoC` should happen by call-family wedges or only after a generic synthesis contract is proven on the first slice.
+- Whether later phases should add internal telemetry for synthesis rejection categories beyond the minimum fail-closed runtime handling required for MVP.
 
 ## 1. Problem Statement
 
@@ -98,12 +96,13 @@ Contract Notes / Non-obvious constraints:
 ## 4. Rough Idea Exploration
 
 - The leading direction is a bounded synthesis collaborator invoked by the structured-review service after `pipeline_v1` produces deterministic findings/cards and before the final response is assembled.
-- The LLM input should be tightly scoped to deterministic findings, evaluation element metadata, canonical subordinate-prompt or guidance context, and the relevant node text or excerpt boundaries already present in the structured flow.
-- The LLM output contract should be structured and narrow: a bounded synthesized explanation tied to existing card or finding identities, plus explicit grounding references or a boolean/enum that allows malformed or ungrounded output to be rejected.
+- The synthesis unit for MVP should be per-card, not whole-review and not whole-node, so fallback can degrade one card at a time without converting LLM availability into whole-review availability.
+- The LLM input should be tightly scoped to deterministic findings, evaluation element metadata, canonical subordinate-prompt or guidance context, and a bounded excerpt from the same node text already present in the structured flow; this WF should explicitly exclude full-submission and full-call-definition prompting.
+- The LLM output contract should be structured and narrow: a validated optional synthesized companion payload tied to the existing card/finding identity, plus a small provenance/source enum that allows malformed or ungrounded output to be rejected before user exposure.
 - The safest first task split is likely:
-  1. define the synthesis contract and deterministic fallback behavior at the structured-review service seam,
-  2. add the narrow backend synthesis collaborator and tests at that seam,
-  3. add any minimal API/frontend exposure only if the existing `feedback_text` surface cannot carry the honest result without ambiguity.
+  1. define the backend synthesis contract, input boundary, and deterministic fallback behavior at the structured-review service seam,
+  2. add the narrow backend synthesis collaborator and tests at that seam within a three-file slice,
+  3. add any minimal API/frontend exposure only if the additive synthesis field or provenance indicator is required for honest user-facing exposure.
 - This WF should prefer adding a new additive synthesis layer over replacing current deterministic guidance logic, because replacement would collapse the rollback boundary and weaken fail-closed safety.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0078-structured-review-grounded-llm-synthesis.md` (Section 4)
@@ -112,6 +111,7 @@ Contract Notes / Non-obvious constraints:
 - `StructuredReviewerService` is the recommended orchestration seam; `pipeline_v1` remains unchanged as SSOT.
 - `ReviewExecutionCore` is too deep and semantically wrong for the first slice because it is an execution seam, not a post-finding synthesis seam.
 - Frontend-only rewriting is too late to enforce grounding or fail-closed output validation.
+- The recommended MVP contract is additive: preserve deterministic `feedback_text` as the stable fallback surface and introduce an optional synthesized companion surface rather than silently overwriting provenance.
 
 ## 5. Constraints
 
@@ -127,6 +127,52 @@ Contract Notes / Non-obvious constraints:
 - The LLM layer may be new, but the user-visible degraded mode must stay deterministic and truthful.
 - Any first task that needs more than three files should be split before implementation starts.
 - The workflow must not quietly widen into the legacy `/reviews` path.
+
+## Approved LLM Input Boundary
+
+- Allowed inputs for MVP per-card synthesis are:
+  - deterministic card/finding identity already produced by the structured path,
+  - node logical/title context for the same card,
+  - evaluation criterion/element labels relevant to that card,
+  - deterministic WF-0077-style guidance for that card,
+  - approved canonical subordinate-prompt/guidance context already attached to the same evaluation element,
+  - a bounded excerpt from the same submitted node text under review.
+- Explicit exclusions for MVP are:
+  - full proposal text outside the current card/node scope,
+  - full call definitions or unrelated evaluation elements,
+  - raw machine `reason` strings as prompt material,
+  - unrelated node findings,
+  - legacy-path prompts or reviewer-service execution artifacts.
+
+Contract Notes / Non-obvious constraints:
+- The model should receive enough basis to explain a finding, but not enough scope to invent a new review.
+- Raw machine `reason` stays audit-only unless a later artifact explicitly proves a need to expose or transform it, which is not approved here.
+
+## Approved Output Contract
+
+- MVP should prefer a per-card additive output contract with:
+  - the existing deterministic card identity unchanged,
+  - the existing deterministic `feedback_text` preserved as the stable fallback/user-visible deterministic guidance surface,
+  - an optional synthesized companion field for grounded LLM explanation,
+  - a small synthesis source/provenance enum indicating `synthesized` or `deterministic_fallback`,
+  - rejection semantics that drop the synthesized companion field if validation or grounding checks fail.
+- The workflow should not assume this additive field is immediately exposed in the UI; Phase 1 must decide whether API/frontend exposure is necessary for honest researcher-facing rollout or whether the current response/rendering path can consume it safely.
+
+Contract Notes / Non-obvious constraints:
+- Per-card synthesis keeps degradation granular and avoids whole-review availability coupling.
+- Additive output is safer than overloading `feedback_text` because it preserves backward-compatible deterministic meaning until later phases explicitly change presentation.
+
+## Fail-Closed Runtime Contract
+
+- Synthesis is attempted per card after deterministic findings/guidance already exist.
+- If the LLM client times out, errors, returns malformed output, or returns schema-valid output that fails grounding checks, the affected card must drop synthesis and remain on deterministic WF-0077 guidance.
+- A synthesis failure for one card must not fail the entire review if deterministic card output remains available.
+- The overall structured review may still complete successfully in deterministic mode even when all synthesis attempts are rejected, because the deterministic path remains the authoritative product baseline.
+- Later phases may choose whether degraded-mode provenance is surfaced to researchers, but they may not expose rejected synthesis content.
+
+Contract Notes / Non-obvious constraints:
+- “Fail closed” here means rejected synthesis never outranks deterministic truth.
+- Grounding rejection must cover unsupported evaluation elements, advice not supported by provided basis, and any output shape that cannot be unambiguously attached to the originating card.
 
 ## 6. Risks / Unknowns
 
@@ -147,7 +193,7 @@ Contract Notes / Non-obvious constraints:
 
 - The smallest safe WF is: add a bounded LLM synthesis layer to the structured-review backend path for `ERC-2026-PoC`, downstream of `pipeline_v1`, with deterministic findings remaining SSOT and WF-0077 deterministic guidance preserved as fallback.
 - The narrowest recommended architecture seam is `StructuredReviewerService`, potentially with a dedicated helper/collaborator that receives deterministic findings plus approved context and returns a validated synthesis payload or a fallback signal.
-- The smallest safe implementation split should likely begin with backend-only contract and service tests, then a narrow synthesis collaborator, and only then any API/frontend change if the chosen response shape demands a distinct field or provenance indicator.
+- The smallest safe implementation split should begin with a backend-only contract slice that touches no more than three files: the structured-review service seam, one synthesis helper/collaborator seam if needed, and backend tests. Any API/frontend exposure should become a dependent follow-on slice if the additive output field is required for honest rollout.
 - A safe MVP can close backend-only if the existing structured response contract can carry honest synthesized text plus deterministic fallback without hiding raw traceability from audit/debug surfaces.
 - MVP explicitly excludes replacing `pipeline_v1`, moving synthesis into the execution core, broadening beyond `ERC-2026-PoC`, or refactoring the legacy `ReviewerService` path.
 
@@ -175,6 +221,8 @@ Contract Notes / Non-obvious constraints:
 | Raw machine reason preservation | targeted backend test/assertion | `fail` (default until executed) | required | must prove audit/debug surfaces still preserve raw machine `reason` |
 | Grounding contract proof | synthesis input/output contract tests | `fail` (default until executed) | required | must prove LLM inputs are bounded to deterministic findings plus approved canonical context |
 | Malformed/failure fallback proof | targeted backend tests for timeout, client error, malformed output | `fail` (default until executed) | required | must prove deterministic fallback behavior remains user-visible and truthful |
+| Partial-card degradation proof | targeted backend tests | `fail` (default until executed) | required | must prove one rejected synthesis payload does not fail the whole review and only degrades the affected card to deterministic guidance |
+| Whole-review deterministic success proof | targeted backend tests | `fail` (default until executed) | required | must prove the review still completes truthfully when all synthesis attempts are rejected and deterministic guidance remains available |
 | Honest non-determinism test strategy | Phase 1/2 task plan + verification selectors | `fail` (default until executed) | required | must prove live-model brittleness is avoided while still testing grounded behavior honestly |
 | Scope-boundary proof | `main...HEAD` review + artifact citations | `fail` (default until executed) | required | must prove no widening into legacy `/reviews`, LLM-first pipeline design, or reopened WF-0075/76/77 scope |
 | Optional frontend necessity check | artifact decision or targeted UI proof | `fail` (default until executed) | required | acceptable closure is an explicit backend-only rationale if no new user-visible field/provenance surface is needed |
@@ -191,3 +239,4 @@ Contract Notes / Non-obvious constraints:
 ## Changelog
 
 - v0.1 (2026-03-13): Captured the long-form problem intake, read-only repo snapshot, recommended bounded scope (`ERC-2026-PoC` structured path), and the narrowest candidate architecture seam (`StructuredReviewerService` post-pipeline synthesis layer) while preserving deterministic SSOT and fail-closed fallback requirements.
+- v0.2 (2026-03-13): Applied the Part B audit by locking the per-card additive synthesis contract, specifying the approved LLM input boundary and fail-closed runtime behavior, and tightening the smallest-safe backend-first task split so later phases cannot widen the seam implicitly.
