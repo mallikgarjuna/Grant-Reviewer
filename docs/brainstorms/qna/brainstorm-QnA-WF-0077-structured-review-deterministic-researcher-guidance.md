@@ -2,7 +2,7 @@
 # WF-0077 — Structured Review Deterministic Researcher Guidance
 
 Artifact: brainstorm-qna
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-13
 
@@ -101,6 +101,13 @@ Last Updated: 2026-03-13
 > Recommendation: A. It preserves a tight task boundary and keeps the first slice testable.
 > Selected: A
 
+### Q4: What should happen if subordinate-prompt text is missing or too weak to support honest imperative guidance?
+- A) Fabricate the most likely researcher guidance anyway so every card sounds equally actionable.
+- B) Preserve the existing WF-0076 prompt rendering and unresolved-ID fallback for that card, and only emit stronger guidance where the source text supports it.
+- C) Fail the whole review request.
+> Recommendation: B. A would invent semantics and break traceability honesty, while C widens a presentation issue into a runtime failure. The bounded deterministic rule is to improve guidance only where the canonical prompt surface can support it honestly.
+> Selected: B
+
 ## Section 5 — Constraints
 
 ### Q1: Which constraints are mandatory?
@@ -134,6 +141,13 @@ Last Updated: 2026-03-13
 - C) Add LLM synthesis for one call.
 > Recommendation: A. B and C expand beyond the bounded deterministic objective.
 > Selected: A
+
+### Q1b: How should Phase 1 treat reuse beyond ERC-2026-PoC?
+- A) Treat multi-call reuse as already approved because the service seam is shared.
+- B) Keep ERC-2026-PoC as the only approved MVP slice; any widening requires explicit later-phase approval and regression proof.
+- C) Decide during implementation based on convenience.
+> Recommendation: B. The current artifact approves a bounded proof slice, not silent widening. Shared seam location is not approval to broaden call scope.
+> Selected: B
 
 ### Q2: Why is this a separate WF from future LLM synthesis?
 - A) Because the code owners are different.

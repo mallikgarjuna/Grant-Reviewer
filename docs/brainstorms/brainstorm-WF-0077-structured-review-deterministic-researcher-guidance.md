@@ -2,7 +2,7 @@
 # WF-0077 — Structured Review Deterministic Researcher Guidance
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-13
 
@@ -43,7 +43,7 @@ Contract Notes / Non-obvious constraints:
 
 ## Open Questions / Deferred
 
-- Whether the final deterministic guidance should remain fully call-scoped for ERC-2026-PoC in MVP, or whether Phase 1 can justify a reusable transform for all calls that carry subordinate prompts without broadening risk.
+- Approved default for MVP remains ERC-2026-PoC only; any reusable transform beyond that call requires explicit re-approval in a later phase artifact and must not be assumed by current tasks.
 - Whether any frontend copy or grouping change is needed after backend guidance text improves, or whether improved `feedback_text` alone is sufficient for MVP.
 - Whether later LLM-backed synthesis should consume these deterministic guidance primitives as inputs, which is explicitly deferred to a separate WF.
 
@@ -103,6 +103,7 @@ Contract Notes / Non-obvious constraints:
 - Keep the initial implementation bounded to no more than three touched files in a task slice.
 - Prefer backend-only MVP unless a frontend mismatch is proven.
 - The deterministic guidance builder should be additive to existing seam logic, not a rewrite of pipeline semantics.
+- If canonical subordinate-prompt text is missing, unresolved, duplicated into an unusable surface, or otherwise too weak to support an imperative rewrite without invention, the service must preserve the existing WF-0076 prompt rendering/fallback behavior instead of fabricating stronger guidance.
 
 ## 5. Constraints
 
@@ -131,6 +132,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0077-structured-rev
 - The first safe TDD seam is `backend/tests/test_structured_reviewer_service.py`, with implementation in `backend/app/services/structured_reviewer_service.py`, targeting ERC-2026-PoC first.
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx` should stay out of MVP unless a verified formatting or wording issue remains after the backend contract improves.
 - MVP must also prove that non-targeted calls keep their current deterministic behavior, so this WF does not silently widen beyond the approved ERC-2026-PoC slice.
+- MVP must prove deterministic fallback behavior for unresolved or unusable subordinate-prompt surfaces so the service never replaces known WF-0076 traceability output with invented researcher guidance.
 - This should be a separate WF from future LLM synthesis because deterministic guidance transformation and synthesized coaching have different dependencies, risk, verification methods, and rollback boundaries.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0077-structured-review-deterministic-researcher-guidance.md` (Section 7)
@@ -152,8 +154,9 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0077-structured-rev
 | Raw machine reason preservation | targeted service/assertion test | `fail` (default until executed) | required | must prove raw `reason` remains available for audit/traceability |
 | Deterministic guidance proof | targeted service test for researcher-facing `feedback_text` | `fail` (default until executed) | required | must prove cards emit concise deterministic revision guidance |
 | Non-targeted call regression proof | targeted service regression for unaffected calls | `fail` (default until executed) | required | must prove the new guidance transform stays bounded to the approved ERC-2026-PoC slice unless Phase 1 re-approves widening |
+| Fallback honesty proof | targeted service regression for unresolved/missing subordinate-prompt surfaces | `fail` (default until executed) | required | must prove the service keeps WF-0076-style prompt/fallback output when deterministic guidance would otherwise require invention |
 | Boundary preservation | `main...HEAD` review plus artifact citations | `fail` (default until executed) | required | must prove no widening into legacy review path, OpenAI calls, or WF-0074/75/76 contract changes |
-| Optional frontend necessity check | targeted UI assertion or explicit skip rationale | `fail` (default until executed) | required | must prove whether frontend work is actually needed or safely deferred |
+| Optional frontend necessity check | targeted UI assertion or explicit skip rationale | `fail` (default until executed) | required | default acceptable closure is an explicit skip rationale if backend `feedback_text` proof is sufficient and `frontend/src/app/app/reviews/[reviewId]/page.tsx` still renders `card.feedback_text` directly without extra transform |
 | Audit disposition | findings-closure ledger | `fail` (default until executed) | required | must close all blocking findings and either close or justify non-blocking findings |
 
 ## 8. Explicit Non-Goals
@@ -168,3 +171,4 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0077-structured-rev
 
 - v0.1 (2026-03-13): Minted WF-0077, anchored the problem to the active structured-review path, completed an adversarial seam review, selected `StructuredReviewerService` as the narrowest deterministic guidance seam, and separated this deterministic guidance contract from any later LLM-synthesis workflow.
 - v0.2 (2026-03-13): Tightened MVP proof to ERC-2026-PoC as the first approved slice and added an explicit non-targeted-call regression requirement so the seam cannot silently widen.
+- v0.3 (2026-03-13): Closed review-gate gaps by making ERC-2026-PoC-only MVP scope explicit, requiring deterministic fallback-honesty proof for unresolved subordinate prompts, and clarifying when frontend work may be skipped.
