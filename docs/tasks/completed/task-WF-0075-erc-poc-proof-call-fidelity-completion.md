@@ -1,9 +1,9 @@
-<!-- docs/tasks/task-WF-0075-erc-poc-proof-call-fidelity-completion.md -->
+<!-- docs/tasks/completed/task-WF-0075-erc-poc-proof-call-fidelity-completion.md -->
 # WF-0075 — ERC PoC Proof-Call Fidelity Completion
 
 Artifact: task
 Version: v0.4
-Status: Completed (Awaiting Ship Approval)
+Status: Done
 Last Updated: 2026-03-12
 
 ## Task Breakdown (Sequential Order)

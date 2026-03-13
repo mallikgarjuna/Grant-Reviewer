@@ -1,9 +1,9 @@
-<!-- docs/prds/prd-WF-0075-erc-poc-proof-call-fidelity-completion.md -->
+<!-- docs/prds/completed/prd-WF-0075-erc-poc-proof-call-fidelity-completion.md -->
 # WF-0075 — ERC PoC Proof-Call Fidelity Completion
 
 Artifact: prd
 Version: v0.2
-Status: Ready for Tasks
+Status: Done
 Last Updated: 2026-03-12
 
 ## 0. User Stories (MVP)

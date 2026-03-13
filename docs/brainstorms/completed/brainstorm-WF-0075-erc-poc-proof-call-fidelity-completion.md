@@ -1,9 +1,9 @@
-<!-- docs/brainstorms/brainstorm-WF-0075-erc-poc-proof-call-fidelity-completion.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0075-erc-poc-proof-call-fidelity-completion.md -->
 # WF-0075 — ERC PoC Proof-Call Fidelity Completion
 
 Artifact: brainstorm
 Version: v0.3
-Status: Draft Complete
+Status: Done
 Last Updated: 2026-03-12
 
 Type: feature
