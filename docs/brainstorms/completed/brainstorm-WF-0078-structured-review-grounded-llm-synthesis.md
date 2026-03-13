@@ -1,4 +1,4 @@
-<!-- docs/brainstorms/brainstorm-WF-0078-structured-review-grounded-llm-synthesis.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0078-structured-review-grounded-llm-synthesis.md -->
 # WF-0078 — Structured Review Grounded LLM Synthesis
 
 Artifact: brainstorm

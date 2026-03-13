@@ -1,4 +1,4 @@
-<!-- docs/prds/prd-WF-0078-structured-review-grounded-llm-synthesis.md -->
+<!-- docs/prds/completed/prd-WF-0078-structured-review-grounded-llm-synthesis.md -->
 # WF-0078 — Structured Review Grounded LLM Synthesis
 
 Artifact: prd
