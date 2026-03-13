@@ -137,6 +137,7 @@ Promotion dependency note:
 | 25 | Universal Submit: split orchestration into dedicated hooks/modules | tech-debt | Defer large `UniversalSubmitForm` decomposition into focused hooks (`gating`, `render-model`, `submit orchestration`, `draft persistence`) to a new WF to reduce regression risk post-WF-0035 ship gate. (Ref: WF-0035 adversarial audit follow-up, branch `wf/WF-0035-universal-form-dynamic-ui-renderer`.) | 2026-02-28 |
 | 26 | Surface `DiagnosticFinding v1` directly in UI/API (deprecate `ReviewCard` adapter) | idea | Follow-on to WF-0038: make `DiagnosticFinding v1` the externally consumed contract (UI/API/analytics) and retire `DiagnosticFinding v1 -> ReviewCard` compatibility mapping after a transition window. (Ref: WF-0038 PRD v0.2 + AD 38.15.) | 2026-02-28 |
 | 27 | Universal review: explicit supporting-context contract beyond WF-0063/WF-0064 MVP | product | Do not promote for launch-baseline work. Promote only after the split contract is proven beyond the MSCA proof call, after cross-call hardening is complete, and after launch-readiness evidence is stable for the NWO/ERC/MSCA wedge. This changes semantics, not just visibility. WF should explicitly define: which supporting nodes may influence primary review, whether context is opt-in or automatic, request/persistence boundaries, fail-closed validation, prompt/runtime behavior, and review-detail/user-facing labels proving when supporting content was visible vs primary-reviewed vs context-used. Trigger to promote: once current launch-critical submit/review contract work is done and we have a concrete product answer to “what exactly may supporting content influence?” If that answer is still vague, keep parked. (Ref: `docs/brainstorms/completed/brainstorm-WF-0063-universal-node-visibility-reviewability.md` §9, `docs/prds/completed/prd-WF-0063-universal-node-visibility-reviewability.md` DS1/DS3/FR9/FR11/FR12, [docs/walkthroughs/completed/walkthrough-WF-0064-opted-in-hierarchical-submit-proof-closure.md](walkthroughs/completed/walkthrough-WF-0064-opted-in-hierarchical-submit-proof-closure.md).) | 2026-03-08 |
+| 28 | Structured review: researcher-visible synthesis carry-through | product | Park as a separate follow-on to WF-0078. Additive synthesis is proven only at the backend seam today; any real rollout must explicitly carry the companion/provenance contract through persistence, repository reads, API/detail/export surfaces, and frontend rendering without overloading deterministic `feedback_text`. (Ref: [docs/walkthroughs/completed/walkthrough-WF-0078-structured-review-grounded-llm-synthesis.md](walkthroughs/completed/walkthrough-WF-0078-structured-review-grounded-llm-synthesis.md), [docs/logs/closeout-WF-0078-2026-03-13.md](logs/closeout-WF-0078-2026-03-13.md).) | 2026-03-13 |
 
 ## Rejected / Ignored
 
@@ -207,6 +208,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 53 | WF-0075 | erc-poc-proof-call-fidelity-completion | started-directly | - | 2026-03-12 |
 | 54 | WF-0076 | subordinate-prompt-runtime-consumption | started-directly | - | 2026-03-12 |
 | 55 | WF-0077 | structured-review-deterministic-researcher-guidance | started-directly | - | 2026-03-13 |
+| 56 | WF-0078 | structured-review-grounded-llm-synthesis | started-directly | - | 2026-03-13 |
 
 ---
 
@@ -238,6 +240,7 @@ Note: backlog slot references inside revision-history entries (for example `P1 #
 - **v2.1** (2026-02-28): Parked deferred WF-0035 follow-up for `UniversalSubmitForm` structural decomposition into dedicated hooks/modules.
 - **v2.2** (2026-02-28): Parked explicit follow-up to migrate `backend/data/calls/legacy/erc/erc_cog_2026_full_official.yaml` from legacy v1 shape to v2 WF-0038-native call-definition format.
 - **v3.4** (2026-03-08): Parked WF-0063 scope-creep follow-up for an explicit supporting-context contract beyond the proof-call MVP, with traceability back to the brainstorm/PRD and architect recommendation.
+- **v3.5** (2026-03-13): Refreshed post-WF-0078 backlog reality by parking the researcher-visible synthesis carry-through follow-on and logging WF-0078 in the initiative log.
 - **v2.3** (2026-03-01): Added P1 #10 for legacy structured-review engine retirement after pipeline-v1 rollout and backfilled WF initiative log with WF-0037/WF-0038 plus new WF-0039.
 - **v2.4** (2026-03-01): Promoted P1 #10 to WF-0040 (`structured-pipeline-v1-legacy-retirement`) and removed it from active P1 backlog.
 - **v2.5** (2026-03-01): Added P1 #10 follow-up to backfill WF-0040 runtime evidence after waiver-based closure.
