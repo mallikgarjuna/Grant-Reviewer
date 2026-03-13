@@ -110,7 +110,7 @@ Verification Steps:
 - `cd backend && rg -n "wf0078_contract_(emitted_payload_excludes_raw_reason|emitted_payload_uses_same_card_context_only|emitted_payload_excludes_full_call_and_legacy_artifacts|non_targeted_calls_do_not_attempt_synthesis)|raw_reason|legacy|call_definition|same-card|subordinate|ERC-2026-PoC" app/services/structured_reviewer_service.py app/services/structured_review_synthesis_service.py tests/test_structured_reviewer_service.py`
 Risks (if any): If the service-level payload boundary is not tested directly, helper-level validation can look correct while the live seam still leaks audit-only context into prompts.
 
-### [ ] Task 4 — Lock helper output validation for wrong-element, ambiguous-card, and malformed synthesis
+### [x] Task 4 — Lock helper output validation for wrong-element, ambiguous-card, and malformed synthesis
 
 Goal:
 Prove the synthesis helper rejects wrong-element, ambiguous-card, and malformed outputs before the service can classify them as accepted synthesis.
