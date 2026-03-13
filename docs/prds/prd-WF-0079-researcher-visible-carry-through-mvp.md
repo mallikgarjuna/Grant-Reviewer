@@ -2,8 +2,8 @@
 # WF-0079 — Researcher-Visible Carry-Through MVP
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-13
 
 Type: feature
@@ -28,7 +28,7 @@ Type: feature
 - Keep nullable card-level companion storage backward compatible for reviews/cards that predate WF-0079 or have no accepted synthesis. `(US1) (US2) (US3)`
 - Carry the optional companion through repository reads, review detail API contracts, and the BFF/detail consumer path for `/reviews/{review_id}`. `(US1) (US2)`
 - Render deterministic feedback as the primary baseline on `/app/reviews/[reviewId]` and render a clearly labeled additive synthesized companion only when present for that card. `(US1) (US3) (US4)`
-- Make an explicit MVP decision for the page-local copy/export action on `/app/reviews/[reviewId]`: either additive-aware or intentionally deterministic-only with aligned labeling and ship claims. `(US1) (US4)`
+- Keep the page-local copy/export action on `/app/reviews/[reviewId]` intentionally deterministic-only in MVP, with aligned labeling and ship claims. `(US1) (US4)`
 - Preserve per-card fail-closed behavior so missing/rejected/invalid companion data degrades only the affected card to deterministic-only rendering. `(US1) (US3)`
 - Keep `ERC-2026-PoC` as the only approved synthesis-eligible scope and keep `pipeline_v1` as deterministic SSOT. `(US2) (US3)`
 
@@ -47,7 +47,7 @@ Type: feature
   - A structured `ERC-2026-PoC` review is generated, `pipeline_v1` produces deterministic cards, and accepted additive synthesis is available for some cards at the post-pipeline seam. `(US1) (US2) (US3)`
   - The review-generation write path persists deterministic card fields plus the optional accepted synthesized companion on the same card row when that companion passed validation. `(US1) (US2) (US3)`
   - A researcher opens `/app/reviews/[reviewId]`, the repository/API/BFF read contract returns deterministic `feedback_text` and any optional companion field per card, and the frontend renders deterministic feedback first with the additive companion shown only where present. `(US1) (US2) (US3) (US4)`
-  - The page-local copy/export action follows the chosen MVP rule consistently with the on-page contract and product labeling. `(US1) (US4)`
+  - The page-local copy/export action remains deterministic-only and labels that scope clearly enough to avoid implying additive carry-through. `(US1) (US4)`
 - Failure path 1
   - A review or card has no accepted synthesized companion because it predates WF-0079, is out of scope, or synthesis was rejected, so the persisted/read/render path returns deterministic-only card data and the detail page shows no empty companion shell. `(US1) (US2) (US3)`
 - Failure path 2
@@ -65,7 +65,7 @@ Type: feature
 - FR6 (US1) (US2): The repository read path and review detail API/BFF contract must carry the optional companion field per card without breaking deterministic-only consumers.
 - FR7 (US1) (US3) (US4): The detail page must render deterministic feedback regardless of companion presence and render the additive companion only when the optional data is present for that card.
 - FR8 (US1) (US3): Fail-closed behavior must remain per card: invalid, rejected, or absent companion data for one card must not remove or corrupt deterministic rendering for that card or any sibling card.
-- FR9 (US1) (US4): The page-local copy/export action on `/app/reviews/[reviewId]` must either include the additive companion truthfully or remain deterministic-only with explicit UI/product wording aligned to that limitation.
+- FR9 (US1) (US4): The page-local copy/export action on `/app/reviews/[reviewId]` must remain deterministic-only in MVP, with explicit UI/product wording aligned to that limitation.
 - FR10 (US2) (US3) (US4): The narrowest public card contract must expose only what the detail page needs for accepted companion visibility and must not expose internal rejection reasons or redesign unrelated review contracts.
 - FR11 (US2) (US3): Non-targeted calls/cards must remain on the current deterministic contract and must not begin persisting or exposing additive companion fields accidentally.
 - FR12 (US2) (US4): Phase 2 must plan implementation in topological order, beginning with data-contract/write-path safety, and keep tasks atomic with a preference for no more than three touched files each.
@@ -74,7 +74,7 @@ Type: feature
 
 - Persisted card contract `(US1) (US2) (US3) (FR1) (FR3) (FR4) (FR5)`
   - Deterministic fields remain authoritative and unchanged, including `feedback_text`, rating, and assessment status.
-  - Add one nullable card-level field for accepted synthesized companion text and, only if needed for honest detail behavior, the smallest companion-presence marker that does not redefine deterministic truth.
+  - Add one nullable card-level field for accepted synthesized companion text; do not add a second public marker unless Phase 2 proves it is strictly required for implementation safety.
   - Validation rule: null companion data is a valid steady state for legacy cards, rejected synthesis, and out-of-scope cards.
 - Write-path ownership contract `(US1) (US2) (US3) (FR1) (FR8)`
   - Companion persistence happens when review cards are created during structured review generation.
@@ -82,12 +82,13 @@ Type: feature
   - Rejected synthesis remains dropped/fail-closed rather than partially persisted.
 - Detail read/API/BFF contract `(US1) (US2) (FR5) (FR6) (FR10)`
   - `/reviews/{review_id}` returns deterministic card data for all reviews.
-  - For cards with persisted accepted synthesis, the same response includes the optional additive companion field on that card.
-  - The response must treat companion data as optional per card, not per review.
+  - The detail contract may include nullable `synthesized_companion_text` on any structured review card; `null` is the safe backward-compatible value for legacy reviews, out-of-scope cards, and cards without accepted persisted synthesis.
+  - For cards with persisted accepted synthesis, the same response includes that nullable additive field with text for the originating card only.
+  - The response must treat companion data as optional per card, not per review, and the BFF/type boundary must pass the field through without semantic rewriting.
 - Frontend render contract `(US1) (US3) (US4) (FR7) (FR8) (FR9)`
   - Deterministic feedback renders first and always.
   - Additive companion text renders only when present and with labeling that marks it as additive guidance, not deterministic truth.
-  - The page-local copy/export behavior must match the chosen MVP rule and user-facing copy.
+  - The page-local copy/export behavior remains deterministic-only and must say so in user-facing copy.
 - State transitions `(US1) (US2) (US3) (FR1) (FR5) (FR8)`
   - `deterministic_only`: card has no accepted companion persisted.
   - `deterministic_plus_companion`: card has accepted companion persisted and rendered additively on the detail path.
@@ -125,15 +126,15 @@ Type: feature
 - One card in a review has accepted companion text while another card in the same review does not. `(US1) (US3)`
 - A card is eligible for synthesis but the accepted companion was not persisted due to fail-closed rejection or absence, so the read contract must still behave identically to legacy deterministic-only cards. `(US1) (US2) (US3)`
 - The frontend receives null companion data and must not render empty headings, spacing, or misleading placeholders. `(US1) (US4)`
-- The page-local copy/export action remains deterministic-only in MVP; if so, the visible label/help text must not imply that copied/exported content matches the full on-page additive display. `(US1) (US4)`
+- The page-local copy/export action remains deterministic-only in MVP, and the visible label/help text must not imply that copied/exported content matches the full on-page additive display. `(US1) (US4)`
 - History/list pages and legacy `/reviews` paths remain deterministic-only and must not accidentally consume the new field or broaden their claims. `(US4)`
 
 ## 8. Testing Decisions (TDD)
 
 - RED first
   - Add failing backend tests proving accepted companion data is not yet persisted through the structured review write path. `(US2) (US3) (FR1) (FR4)`
-  - Add failing backend/API tests proving legacy-null and mixed-card reads are not yet carried through the detail response contract. `(US1) (US2) (US3) (FR5) (FR6) (FR8)`
-  - Add failing frontend tests proving the detail page does not yet render additive companions correctly or align the page-local copy/export behavior with the chosen MVP rule. `(US1) (US4) (FR7) (FR9)`
+  - Add failing backend/API tests proving legacy-null and mixed-card reads are not yet carried through the repository -> API/BFF -> detail response contract. `(US1) (US2) (US3) (FR5) (FR6) (FR8)`
+  - Add failing frontend tests proving the detail page does not yet render additive companions correctly or align the deterministic-only page-local copy/export behavior, labels, and help text with the chosen MVP rule. `(US1) (US4) (FR7) (FR9)`
 - Test seams
   - Public review-generation service/repository seam that creates review cards.
   - Public `/reviews/{review_id}` detail response seam and its BFF typing boundary.
@@ -161,9 +162,24 @@ Type: feature
 
 ## 11. Open Questions (if any)
 
-- Should the narrow public contract expose only nullable `synthesized_companion_text`, or is a second explicit accepted-companion marker still needed to keep frontend/detail-copy behavior honest without overloading null checks?
-- If the page-local copy/export action stays deterministic-only for MVP, what exact label/help text is sufficient to keep the ship claim truthful without widening into broader export redesign?
+none
 
-## 12. Changelog
+## 12. Verification Evidence Matrix (Fail-Closed)
+
+| Verification item | Command/test/artifact | Result (`pass`/`fail`/`skipped`) | Evidence pointer | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| Deterministic SSOT boundary proof | targeted backend tests + Phase 2/3 artifacts | `fail` (default until executed) | required | must prove `pipeline_v1` remains unchanged as the source of findings, ratings, and traceability |
+| Write-path persistence proof | targeted model/repository/service tests + migration artifact | `fail` (default until executed) | required | must prove accepted companion data is persisted during review generation rather than generated on read |
+| Legacy review compatibility proof | targeted repository/API/frontend tests using null companion data | `fail` (default until executed) | required | must prove legacy reviews/cards render and deserialize cleanly with nullable companion fields |
+| Detail read/API/BFF carry-through proof | repository mapping, API schema, BFF type, and detail-page evidence | `fail` (default until executed) | required | must prove nullable `synthesized_companion_text` survives the detail read contract without semantic drift |
+| Detail-page render proof | targeted frontend tests or deterministic UI proof | `fail` (default until executed) | required | must prove deterministic feedback remains primary and additive companion text appears only when present |
+| Mixed-card fail-closed proof | targeted backend/frontend tests | `fail` (default until executed) | required | must prove one card can show companion text while another card in the same review remains deterministic-only |
+| Page-local copy/export proof | targeted frontend tests plus product copy evidence | `fail` (default until executed) | required | must prove page-local copy/export remains deterministic-only in MVP with matching user-facing wording |
+| Out-of-scope surface proof | targeted checks for history/list and legacy `/reviews` | `fail` (default until executed) | required | must prove deferred surfaces remain deterministic-only and are not overclaimed |
+| Honest non-determinism test strategy | Phase 2 task plan + verification selectors | `fail` (default until executed) | required | must avoid brittle exact-string assertions against live-model output while still proving carry-through behavior |
+| Audit disposition | findings-closure ledger | `fail` (default until executed) | required | must close all blocking findings and either close or justify non-blocking findings |
+
+## 13. Changelog
 
 - v0.1 (2026-03-13): Initial PRD from brainstorm.
+- v0.2 (2026-03-13): Applied the Phase 1 risk audit by locking the nullable public companion contract, fixing the page-local copy/export scope to deterministic-only, and carrying fail-closed verification obligations into the PRD.
