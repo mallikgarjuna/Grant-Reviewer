@@ -2,8 +2,8 @@
 # WF-0077 — Structured Review Deterministic Researcher Guidance
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-13
 
 Type: feature
@@ -64,7 +64,9 @@ Type: feature
 - FR9 (US2) (US3): Service-level regression tests must prove raw machine `reason` preservation alongside the new researcher-facing `feedback_text`.
 - FR10 (US3): Service-level regression tests must prove non-targeted calls remain unchanged by the ERC-PoC-2026-specific transform.
 - FR11 (US1) (US3): Service-level regression tests must prove fallback honesty when subordinate-prompt surfaces are unusable, preserving WF-0076-style output rather than invented guidance.
-- FR12 (US3): No proceed or implementation-ready claim is valid unless the final proof set includes an explicit fail-closed verification matrix and an audit-disposition record closing every blocking finding and closing or justifying every non-blocking finding.
+- FR12 (US2) (US3): Phase 2 task planning must keep the first implementation slice bounded to `StructuredReviewerService` plus `backend/tests/test_structured_reviewer_service.py`, with each task preferring no more than three touched files and any broader work split into dependent follow-on tasks instead of one wide slice.
+- FR13 (US3): The optional frontend necessity check may close as an explicit skip only if Phase 2 cites the current direct `card.feedback_text` render path and no backend proof shows a remaining UI truthfulness gap.
+- FR14 (US3): No proceed or implementation-ready claim is valid unless the final proof set includes an explicit fail-closed verification matrix and an audit-disposition record closing every blocking finding and closing or justifying every non-blocking finding.
 
 ## 5. Data & API Contracts
 
@@ -85,7 +87,13 @@ Type: feature
     - the primary behavior change must stay inside `StructuredReviewerService`;
     - no evaluator, mapper, legacy review, or frontend contract widening is required for MVP;
     - non-targeted calls must continue to receive their current deterministic `feedback_text`.
-- State transitions `(US3) (FR12)`
+- Planning-slice contract `(US2) (US3) (FR12) (FR13)`
+  - Required behavior:
+    - the first Phase 2 implementation slice must stay backend-only unless proof later forces a frontend follow-on;
+    - task decomposition must prefer no more than three touched files per task;
+    - the default first task should stay inside `backend/app/services/structured_reviewer_service.py` and `backend/tests/test_structured_reviewer_service.py`;
+    - any frontend work must be planned as a separate conditional task only after backend proof demonstrates necessity.
+- State transitions `(US3) (FR14)`
   - `Draft`: PRD captures the bounded deterministic-guidance contract but has not yet absorbed audit hardening.
   - `Ready for Tasks`: PRD locks the ERC-PoC-2026-only service seam, fail-closed fallback rules, TDD seams, and explicit verification matrix strongly enough for atomic task planning.
 
@@ -110,7 +118,8 @@ Type: feature
   - 2. Add the smallest deterministic guidance transform inside `StructuredReviewerService`. `(FR1) (FR2) (FR4)`
   - 3. Prove raw machine `reason` remains preserved and non-targeted calls remain unchanged. `(FR3) (FR5) (FR9) (FR10)`
   - 4. Prove fallback honesty when subordinate-prompt surfaces are unusable. `(FR6) (FR11)`
-  - 5. Check whether frontend work is still unnecessary after backend proof; if yes, skip it explicitly. `(FR5) (FR12)`
+  - 5. Keep Phase 2 tasks bounded to no more than three touched files, with backend-only service plus service-test slices first. `(FR12)`
+  - 6. Check whether frontend work is still unnecessary after backend proof; if yes, skip it explicitly with cited render-path evidence. `(FR5) (FR13) (FR14)`
 - Deep module guidance
   - Keep the public change small: one service-level presentation transform and one existing response field (`feedback_text`) carrying improved guidance.
   - Hide rewrite heuristics inside the service seam rather than introducing new cross-layer contracts for MVP.
@@ -169,6 +178,7 @@ Type: feature
 | Fallback honesty proof | targeted service regression for unresolved/missing/unusable subordinate-prompt surfaces | `fail` (default until executed) | required | must prove the service keeps WF-0076-style prompt/fallback output when stronger guidance would require invention |
 | Boundary preservation | `main...HEAD` review plus artifact citations | `fail` (default until executed) | required | must prove no widening into legacy review path, OpenAI calls, or WF-0074/75/76 contract changes |
 | Optional frontend necessity check | targeted UI assertion or explicit skip rationale | `fail` (default until executed) | required | acceptable closure is an explicit skip rationale if backend `feedback_text` proof is sufficient and the page still renders it directly |
+| Atomic task-slice proof | finalized Phase 2 task artifact review | `fail` (default until executed) | required | must prove the first implementation slice stays within the approved backend-only seam and each task prefers no more than three touched files |
 | Audit disposition | findings-closure ledger | `fail` (default until executed) | required | must close all blocking findings and either close or justify non-blocking findings |
 
 - Proceed recommendation remains blocked unless every required row above is `pass`, or explicitly `skipped` with accepted rationale during review.
@@ -176,3 +186,4 @@ Type: feature
 ## 13. Changelog
 
 - v0.1 (2026-03-13): Initial PRD from brainstorm.
+- v0.2 (2026-03-13): Applied audit hardening by making the 3-file task-slice limit explicit, locking the backend-first Phase 2 seam, and tightening the conditional frontend skip rule before marking the PRD ready for Tasks.
