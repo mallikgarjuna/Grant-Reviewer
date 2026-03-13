@@ -2,8 +2,8 @@
 # WF-0079 — Researcher-Visible Carry-Through MVP
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-13
 
 Type: feature
@@ -31,16 +31,16 @@ Out of scope: write-path orchestration, backend detail response assembly, BFF no
 Stop if: the storage seam needs more than one new public card field, requires mutating deterministic `feedback_text`, or cannot stay backward compatible with null legacy rows
 Session boundary after: no
 Acceptance Criteria:
-- A targeted failing regression such as `test_wf0079_contract_review_card_storage_allows_null_companion_text` proves the current model/schema lacks the nullable persisted companion field or does not round-trip it safely for legacy-null rows.
+- Targeted failing regressions such as `test_wf0079_contract_review_card_storage_allows_null_companion_text` and `test_wf0079_contract_migration_preserves_legacy_null_companion_text` prove the current model/schema lacks the nullable persisted companion field or does not round-trip it safely for legacy-null rows.
 - After the change, the same regression passes by proving `ReviewCard` storage supports exactly one nullable `synthesized_companion_text` field and still reads/writes cards with `null` companion data without warning or backfill.
 - Migration coverage proves existing deterministic-only rows remain valid after schema upgrade.
 - The task does not change any repository, service, API, BFF, or frontend behavior yet.
 TDD Plan:
-- RED: add `test_wf0079_contract_review_card_storage_allows_null_companion_text` in `backend/tests/test_api.py` to fail on the missing nullable persisted field and legacy-null round-trip expectation.
+- RED: add `test_wf0079_contract_review_card_storage_allows_null_companion_text` and `test_wf0079_contract_migration_preserves_legacy_null_companion_text` in `backend/tests/test_api.py` to fail on the missing nullable persisted field and legacy-null migration round-trip expectation.
 - GREEN: add the minimal `ReviewCard` field and one migration revision that introduces a nullable companion column without touching deterministic columns.
 - REFACTOR: skip unless the migration or model name needs a tiny clarity-only cleanup.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_api.py -k "wf0079_contract_review_card_storage_allows_null_companion_text"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0079_contract_review_card_storage_allows_null_companion_text or wf0079_contract_migration_preserves_legacy_null_companion_text"`
 - `cd backend && rg -n "synthesized_companion_text|ReviewCard" app/models/domain.py migrations/versions tests/test_api.py`
 Risks (if any): If the storage contract grows beyond one nullable field here, later API/frontend slices can overexpose synthesis state prematurely.
 
@@ -202,14 +202,17 @@ Acceptance Criteria:
 - Phase 3 records explicit `pass`, `fail`, or approved `skipped` evidence for each verification-matrix row below before claiming the plan is closed.
 - Verification proves non-targeted calls/cards remain deterministic-only, review history/list and legacy `/reviews` surfaces stay unchanged, and no read-time synthesis or deterministic-field overloading was introduced.
 - Verification uses deterministic structural assertions and fixture/stubbed companion values rather than brittle exact-string expectations against live-model output.
+- Out-of-scope proof names the exact deferred surfaces under review, including `frontend/src/app/app/reviews/page.tsx`, `frontend/src/app/api/bff/reviews/route.ts`, and any legacy `/reviews` contract references touched by the branch diff.
 - If any required proof fails, Phase 3 stops instead of soft-closing the workflow.
 TDD Plan:
 - N/A for the gate itself; this task consumes the RED/GREEN proofs produced by Tasks 1-5 and fails closed if they are incomplete.
 Verification Steps:
 - `git diff --name-only main...HEAD`
-- `rg -n "synthesized_companion_text|feedback_text|Copy as text|Download \\.txt|My reviews" backend/app frontend/src/app/app/reviews frontend/src/components/review`
-- `cd backend && uv run pytest tests/test_api.py -k "wf0079_contract_" && uv run pytest tests/test_structured_reviewer_service.py -k "wf0079_contract_"`
-- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' 'src/app/app/reviews/[reviewId]/page.test.tsx'`
+- `rg -n "synthesized_companion_text|feedback_text|Copy as text|Download \\.txt|My reviews" backend/app frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts frontend/src/app/app/reviews/'[reviewId]'/page.tsx frontend/src/components/review`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0079_contract_"`
+- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0079_contract_"`
+- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts'`
+- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx'`
 Risks (if any): Without an explicit closure gate, Phase 3 could overclaim researcher-visible rollout while deferred surfaces or scope-gates remain unproved.
 
 ## Verification Matrix
@@ -218,7 +221,7 @@ Risks (if any): Without an explicit closure gate, Phase 3 could overclaim resear
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | Deterministic SSOT boundary proof | 2, 5 | `wf0079_contract_erc_poc_persists_accepted_companion_text`, `wf0079_review_detail_renders_optional_companion_block` | deterministic `feedback_text` remains primary and additive text never replaces it | `fail` (default until executed) | required | must not mutate deterministic baseline |
 | Write-path persistence proof | 2 | `wf0079_contract_erc_poc_persists_accepted_companion_text` | accepted in-scope companion text persists during review generation | `fail` (default until executed) | required | no read-time synthesis |
-| Legacy review compatibility proof | 1, 3, 5 | `wf0079_contract_review_card_storage_allows_null_companion_text`, `wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells` | null legacy rows stay valid from storage through render | `fail` (default until executed) | required | no backfill requirement |
+| Legacy review compatibility proof | 1, 3, 5 | `wf0079_contract_review_card_storage_allows_null_companion_text`, `wf0079_contract_migration_preserves_legacy_null_companion_text`, `wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells` | null legacy rows stay valid from storage through render | `fail` (default until executed) | required | no backfill requirement |
 | Eligibility scope-gate proof | 2, 6 | `wf0079_contract_non_targeted_calls_do_not_persist_companion_text` | non-`ERC-2026-PoC` calls/cards do not persist or expose companion text | `fail` (default until executed) | required | protects narrow rollout |
 | Detail read/API carry-through proof | 3 | `wf0079_contract_review_detail_response_carries_optional_companion_text` | backend detail response returns the nullable per-card field without semantic drift | `fail` (default until executed) | required | per-card optionality only |
 | BFF carry-through proof | 4 | `wf0079_bff_review_detail_preserves_optional_companion_text` | BFF/type boundary passes the backend field through unchanged | `fail` (default until executed) | required | no semantic rewrite |
@@ -233,8 +236,11 @@ Risks (if any): Without an explicit closure gate, Phase 3 could overclaim resear
 
 | Review source | Finding | Severity | Planned closure | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| none yet | none | n/a | n/a | open | populated during Part B / Part C |
+| Phase 2.2 task review | Task 6 used a broad branch diff plus generic `rg` scan, which was too imprecise to prove the deferred reviews-list and legacy `/reviews` surfaces stayed out of scope | non-blocking | name the exact deferred surfaces in Task 6 acceptance/verification and separate the closure commands so evidence stays auditable | closed | keeps the out-of-scope surface proof explicit |
+| Phase 2.2 task review | Task 1 named legacy-null compatibility but did not require a distinct migration-focused selector, leaving the schema-upgrade proof too implicit | non-blocking | add a second deterministic selector for migration/legacy-null proof in Task 1 acceptance, TDD plan, verification, and matrix rows | closed | makes the storage compatibility claim replayable |
+| Phase 2.2 task review | Task 6 chained backend/frontend verification commands together, reducing row-level evidence clarity in the fail-closed matrix | non-blocking | split chained verification commands into separate backend and frontend steps | closed | improves auditability without changing scope |
 
 ## Changelog
 
 - v0.1 (2026-03-13): Initial task breakdown from PRD.
+- v0.2 (2026-03-13): Applied Part B feedback by adding an explicit migration-focused legacy-null proof, tightening the out-of-scope closure checks to exact deferred surfaces, and splitting closure verification into separate auditable commands before marking the plan ready.
