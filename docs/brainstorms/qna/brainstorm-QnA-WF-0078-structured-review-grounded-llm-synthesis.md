@@ -296,3 +296,4 @@ Source: user-provided initiative brief in chat on 2026-03-13.
 - Recommended resolution applied: raw machine `reason` remains audit-only and is explicitly excluded from the approved LLM prompt boundary.
 - Recommended resolution applied: timeout, client error, malformed output, and grounding rejection all degrade to deterministic WF-0077 guidance for the affected card without failing the whole review.
 - Recommended resolution applied: the first implementation slice is explicitly backend-first and must remain within a three-file boundary before any API/frontend follow-on is opened.
+- Recommended resolution applied: a backend-only seam proof is not automatically a ship-ready rollout because the current persisted/API review-detail contract still centers on `feedback_text`; any synthesized companion/provenance carry-through must be made explicit in planning before researcher-facing rollout is claimed.

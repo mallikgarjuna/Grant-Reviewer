@@ -41,10 +41,11 @@ Contract Notes / Non-obvious constraints:
 - `backend/app/services/review_execution_core.py` is still the legacy OpenAI-backed node-execution seam. Pulling it into the structured path would widen the change from post-finding synthesis into execution-engine substitution.
 - `backend/app/services/llm_client.py` already exposes a narrow client protocol plus stub client, which makes it a plausible dependency for a new synthesis collaborator, but its current default model/config surface is generic and not yet scoped to structured-review synthesis contracts.
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx` still renders `card.feedback_text` directly and exports it verbatim, so frontend changes are not the narrowest starting seam for this workflow.
+- `backend/app/schemas/api.py`, `backend/main.py`, persisted `ReviewCard` storage, and the review detail/export path currently expose only `feedback_text` plus existing traceability fields. An additive synthesized companion field or provenance enum would therefore require an explicit API/persistence carry-through decision rather than being assumed to appear automatically once the service seam changes.
 
 ## Open Questions / Deferred
 
-- Whether the first user-facing rollout needs a minimal UI/provenance affordance once the additive synthesis response field exists, or whether backend/API contract proof will show the current rendering path can expose it honestly without extra design work.
+- Whether the first user-facing rollout will persist and expose synthesized companion/provenance fields through the existing review detail/export contract, or whether the first slice should stay backend-only seam proof and defer researcher-facing rollout until that wider carry-through is planned explicitly.
 - Whether broader call rollout beyond `ERC-2026-PoC` should happen by call-family wedges or only after a generic synthesis contract is proven on the first slice.
 - Whether later phases should add internal telemetry for synthesis rejection categories beyond the minimum fail-closed runtime handling required for MVP.
 
@@ -112,6 +113,7 @@ Contract Notes / Non-obvious constraints:
 - `ReviewExecutionCore` is too deep and semantically wrong for the first slice because it is an execution seam, not a post-finding synthesis seam.
 - Frontend-only rewriting is too late to enforce grounding or fail-closed output validation.
 - The recommended MVP contract is additive: preserve deterministic `feedback_text` as the stable fallback surface and introduce an optional synthesized companion surface rather than silently overwriting provenance.
+- A backend-only seam proof is not the same as a ship-ready researcher-facing rollout: if synthesized companion/provenance data must survive persistence, review detail reads, or exports, that wider contract work must be planned and verified explicitly rather than implied by the service-seam change.
 
 ## 5. Constraints
 
@@ -146,6 +148,7 @@ Contract Notes / Non-obvious constraints:
 
 Contract Notes / Non-obvious constraints:
 - The model should receive enough basis to explain a finding, but not enough scope to invent a new review.
+- Any submitted-text excerpt is explanatory support only. It may help restate an already-determined deterministic finding, but it must not be treated as permission for the model to originate new critique points, new evaluation-element coverage, or cross-node claims.
 - Raw machine `reason` stays audit-only unless a later artifact explicitly proves a need to expose or transform it, which is not approved here.
 
 ## Approved Output Contract
@@ -156,11 +159,12 @@ Contract Notes / Non-obvious constraints:
   - an optional synthesized companion field for grounded LLM explanation,
   - a small synthesis source/provenance enum indicating `synthesized` or `deterministic_fallback`,
   - rejection semantics that drop the synthesized companion field if validation or grounding checks fail.
-- The workflow should not assume this additive field is immediately exposed in the UI; Phase 1 must decide whether API/frontend exposure is necessary for honest researcher-facing rollout or whether the current response/rendering path can consume it safely.
+- The workflow should not assume this additive field is immediately exposed in the UI. Phase 1 must decide whether API schema, persistence, review-detail reads, export behavior, and frontend rendering need an explicit additive-field carry-through before any researcher-facing rollout claim is honest.
 
 Contract Notes / Non-obvious constraints:
 - Per-card synthesis keeps degradation granular and avoids whole-review availability coupling.
 - Additive output is safer than overloading `feedback_text` because it preserves backward-compatible deterministic meaning until later phases explicitly change presentation.
+- Backend-only seam proof may be sufficient for architecture validation, but it is insufficient for a ship recommendation if the user-visible review detail/export path still cannot surface synthesized companion/provenance data honestly.
 
 ## Fail-Closed Runtime Contract
 
@@ -194,7 +198,7 @@ Contract Notes / Non-obvious constraints:
 - The smallest safe WF is: add a bounded LLM synthesis layer to the structured-review backend path for `ERC-2026-PoC`, downstream of `pipeline_v1`, with deterministic findings remaining SSOT and WF-0077 deterministic guidance preserved as fallback.
 - The narrowest recommended architecture seam is `StructuredReviewerService`, potentially with a dedicated helper/collaborator that receives deterministic findings plus approved context and returns a validated synthesis payload or a fallback signal.
 - The smallest safe implementation split should begin with a backend-only contract slice that touches no more than three files: the structured-review service seam, one synthesis helper/collaborator seam if needed, and backend tests. Any API/frontend exposure should become a dependent follow-on slice if the additive output field is required for honest rollout.
-- A safe MVP can close backend-only if the existing structured response contract can carry honest synthesized text plus deterministic fallback without hiding raw traceability from audit/debug surfaces.
+- A safe backend-only MVP can close only as seam proof if it validates grounding, rejection, and deterministic fallback without claiming researcher-facing rollout. Any ship-ready rollout must separately prove that the persisted/API/frontend review-detail path can carry synthesized companion/provenance data honestly without overloading `feedback_text`.
 - MVP explicitly excludes replacing `pipeline_v1`, moving synthesis into the execution core, broadening beyond `ERC-2026-PoC`, or refactoring the legacy `ReviewerService` path.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0078-structured-review-grounded-llm-synthesis.md` (Section 7)
@@ -203,6 +207,7 @@ Contract Notes / Non-obvious constraints:
 - The workflow should stop if the first bounded slice needs to touch more than three files before the task plan is split.
 - A new additive field may be safer than overloading `feedback_text`, but that remains open until Phase 1 hardens the contract.
 - The first planning artifact should force explicit decisions on input shape, output contract, and degraded-mode visibility.
+- The first planning artifact must also decide whether synthesized output is response-only proof, persisted review data, or both; skipping that decision would hide coupling to the existing review detail/export contract.
 
 ## Verification / Proceed Gate
 
@@ -211,6 +216,7 @@ Contract Notes / Non-obvious constraints:
 - No proceed recommendation is valid if the seam choice defaults to `ReviewExecutionCore`, frontend-only rewriting, or legacy-path reuse without explicit new approval.
 - No proceed recommendation is valid if malformed, timed-out, or ungrounded synthesis can reach the user without deterministic fallback.
 - No proceed recommendation is valid if the first implementation slice cannot be proven within an honest TDD contract and explicit pass/fail verification evidence.
+- No ship recommendation is valid if the artifact claims researcher-facing rollout while synthesized companion/provenance data still lacks an explicit persistence/API/frontend carry-through proof.
 
 ### Verification Evidence Matrix (Fail-Closed)
 
@@ -223,6 +229,7 @@ Contract Notes / Non-obvious constraints:
 | Malformed/failure fallback proof | targeted backend tests for timeout, client error, malformed output | `fail` (default until executed) | required | must prove deterministic fallback behavior remains user-visible and truthful |
 | Partial-card degradation proof | targeted backend tests | `fail` (default until executed) | required | must prove one rejected synthesis payload does not fail the whole review and only degrades the affected card to deterministic guidance |
 | Whole-review deterministic success proof | targeted backend tests | `fail` (default until executed) | required | must prove the review still completes truthfully when all synthesis attempts are rejected and deterministic guidance remains available |
+| Response-contract compatibility + persistence proof | targeted API/schema/repository/frontend-decision evidence | `fail` (default until executed) | required | must prove whether synthesized companion/provenance data is response-only seam proof or survives persisted review-detail/export paths without breaking existing consumers |
 | Honest non-determinism test strategy | Phase 1/2 task plan + verification selectors | `fail` (default until executed) | required | must prove live-model brittleness is avoided while still testing grounded behavior honestly |
 | Scope-boundary proof | `main...HEAD` review + artifact citations | `fail` (default until executed) | required | must prove no widening into legacy `/reviews`, LLM-first pipeline design, or reopened WF-0075/76/77 scope |
 | Optional frontend necessity check | artifact decision or targeted UI proof | `fail` (default until executed) | required | acceptable closure is an explicit backend-only rationale if no new user-visible field/provenance surface is needed |
