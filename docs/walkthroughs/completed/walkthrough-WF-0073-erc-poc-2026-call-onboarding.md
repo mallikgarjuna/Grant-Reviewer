@@ -1,9 +1,9 @@
-<!-- docs/walkthroughs/walkthrough-WF-0073-erc-poc-2026-call-onboarding.md -->
+<!-- docs/walkthroughs/completed/walkthrough-WF-0073-erc-poc-2026-call-onboarding.md -->
 # WF-0073 — ERC PoC 2026 Call Onboarding
 
 Artifact: walkthrough
 Version: v1.0
-Status: Completed (Awaiting Ship Approval)
+Status: Done
 Last Updated: 2026-03-11
 
 ## Scope Summary
