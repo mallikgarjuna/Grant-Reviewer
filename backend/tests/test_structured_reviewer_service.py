@@ -1655,6 +1655,344 @@ def test_wf0077_contract_erc_poc_reason_passthrough(monkeypatch) -> None:
         service.repository.session.close()
 
 
+def test_wf0077_contract_non_targeted_passthrough(monkeypatch) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0077: non-targeted calls keep the pre-existing deterministic behavior.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_nwo_veni_service(monkeypatch)
+    call_nodes = service.repository.get_nodes_for_call(call_id)
+    key_outputs_node = next(
+        node for node, _ in call_nodes if node.logical_id == "key_outputs"
+    )
+    expectation_id = str(
+        service.repository.get_expectations_for_node(key_outputs_node.id)[0].id
+    )
+
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids=prompt_non_erc_passthrough"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0077-non-targeted-passthrough",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0077-non-targeted-passthrough",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="key_outputs"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="key_outputs",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("key_outputs", "WF-0077 non-targeted passthrough guard.")],
+            external_user_id="wf0077-non-targeted-passthrough",
+            idempotency_key="wf0077-non-targeted-passthrough",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text == machine_feedback
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0077_contract_erc_poc_fallback_missing_source(monkeypatch) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0077: missing source prompts must fail closed to WF-0076-style rendering.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    call_nodes = service.repository.get_nodes_for_call(call_id)
+    innovation_node = next(
+        node for node, _ in call_nodes if node.logical_id == "poc_idea_innovation"
+    )
+    expectation_id = str(
+        service.repository.get_expectations_for_node(innovation_node.id)[0].id
+    )
+    definition = service.repository.session.exec(
+        select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+    ).first()
+    assert definition is not None
+    canonical_json = json.loads(json.dumps(definition.canonical_json))
+    evaluation_elements = canonical_json["evaluation_criteria"][0][
+        "evaluation_elements"
+    ]
+    evaluation_elements[0].pop("subordinate_prompts")
+    definition.canonical_json = canonical_json
+    service.repository.session.add(definition)
+    service.repository.session.commit()
+
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0077-fallback-missing-source",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0077-fallback-missing-source",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("poc_idea_innovation", "WF-0077 missing source fallback.")],
+            external_user_id="wf0077-fallback-missing-source",
+            idempotency_key="wf0077-fallback-missing-source",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith(
+            "Address the following evaluation element prompts:"
+        )
+        assert (
+            "Unresolved subordinate prompt ID: prompt_high_risk_high_gain."
+            in cards[0].feedback_text
+        )
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0077_contract_erc_poc_fallback_unresolved_prompt(monkeypatch) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0077: unresolved prompt IDs must fail closed to WF-0076-style rendering.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    call_nodes = service.repository.get_nodes_for_call(call_id)
+    innovation_node = next(
+        node for node, _ in call_nodes if node.logical_id == "poc_idea_innovation"
+    )
+    expectation_id = str(
+        service.repository.get_expectations_for_node(innovation_node.id)[0].id
+    )
+
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_wf0077_unresolved"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0077-fallback-unresolved",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0077-fallback-unresolved",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("poc_idea_innovation", "WF-0077 unresolved prompt fallback.")],
+            external_user_id="wf0077-fallback-unresolved",
+            idempotency_key="wf0077-fallback-unresolved",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith(
+            "Address the following evaluation element prompts:"
+        )
+        assert (
+            "Is the idea high risk and with a potential high gain?"
+            in cards[0].feedback_text
+        )
+        assert (
+            "Unresolved subordinate prompt ID: prompt_wf0077_unresolved."
+            in cards[0].feedback_text
+        )
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0077_contract_erc_poc_fallback_duplicate_source(monkeypatch) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0077: duplicate prompt IDs in source must fail closed to WF-0076-style rendering.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    call_nodes = service.repository.get_nodes_for_call(call_id)
+    innovation_node = next(
+        node for node, _ in call_nodes if node.logical_id == "poc_idea_innovation"
+    )
+    expectation_id = str(
+        service.repository.get_expectations_for_node(innovation_node.id)[0].id
+    )
+    definition = service.repository.session.exec(
+        select(CallDefinition).where(CallDefinition.funding_call_id == call_id)
+    ).first()
+    assert definition is not None
+    canonical_json = json.loads(json.dumps(definition.canonical_json))
+    evaluation_elements = canonical_json["evaluation_criteria"][0][
+        "evaluation_elements"
+    ]
+    evaluation_elements[0]["subordinate_prompts"] = [
+        {
+            "id": "prompt_high_risk_high_gain",
+            "prompt": "Is the idea high risk and with a potential high gain?",
+        },
+        {
+            "id": "prompt_high_risk_high_gain",
+            "prompt": "Duplicate source surface should disable deterministic guidance.",
+        },
+    ]
+    definition.canonical_json = canonical_json
+    service.repository.session.add(definition)
+    service.repository.session.commit()
+
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids=prompt_high_risk_high_gain"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0077-fallback-duplicate-source",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0077-fallback-duplicate-source",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("poc_idea_innovation", "WF-0077 duplicate source fallback.")],
+            external_user_id="wf0077-fallback-duplicate-source",
+            idempotency_key="wf0077-fallback-duplicate-source",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith(
+            "Address the following evaluation element prompts:"
+        )
+        assert (
+            "Unresolved subordinate prompt ID: prompt_high_risk_high_gain."
+            in cards[0].feedback_text
+        )
+        assert not cards[0].feedback_text.startswith("Revise ")
+    finally:
+        service.repository.session.close()
+
+
 def test_wf0065_nwo_structured_service_tracer_uses_real_canonical_call(
     monkeypatch,
 ) -> None:

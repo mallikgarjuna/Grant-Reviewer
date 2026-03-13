@@ -691,6 +691,8 @@ class StructuredReviewerService:
                     continue
 
                 normalized_prompts: list[dict[str, str]] = []
+                seen_prompt_ids: set[str] = set()
+                has_duplicate_prompt_ids = False
                 for prompt in raw_prompts:
                     if not isinstance(prompt, dict):
                         continue
@@ -704,6 +706,10 @@ class StructuredReviewerService:
                     normalized_prompt_text = prompt_text.strip()
                     if not normalized_prompt_id or not normalized_prompt_text:
                         continue
+                    if normalized_prompt_id in seen_prompt_ids:
+                        has_duplicate_prompt_ids = True
+                        continue
+                    seen_prompt_ids.add(normalized_prompt_id)
                     normalized_prompt = {
                         "id": normalized_prompt_id,
                         "prompt": normalized_prompt_text,
@@ -713,6 +719,6 @@ class StructuredReviewerService:
                         normalized_prompt["source_locator"] = source_locator.strip()
                     normalized_prompts.append(normalized_prompt)
 
-                if normalized_prompts:
+                if normalized_prompts and not has_duplicate_prompt_ids:
                     prompts_by_element_id[element_id] = normalized_prompts
         return prompts_by_element_id
