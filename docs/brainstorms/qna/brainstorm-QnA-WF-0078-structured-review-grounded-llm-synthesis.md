@@ -2,7 +2,7 @@
 # WF-0078 — Structured Review Grounded LLM Synthesis
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-13
 

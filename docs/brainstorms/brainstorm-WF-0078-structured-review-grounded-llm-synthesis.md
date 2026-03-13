@@ -2,7 +2,7 @@
 # WF-0078 — Structured Review Grounded LLM Synthesis
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-13
 
@@ -247,3 +247,4 @@ Contract Notes / Non-obvious constraints:
 
 - v0.1 (2026-03-13): Captured the long-form problem intake, read-only repo snapshot, recommended bounded scope (`ERC-2026-PoC` structured path), and the narrowest candidate architecture seam (`StructuredReviewerService` post-pipeline synthesis layer) while preserving deterministic SSOT and fail-closed fallback requirements.
 - v0.2 (2026-03-13): Applied the Part B audit by locking the per-card additive synthesis contract, specifying the approved LLM input boundary and fail-closed runtime behavior, and tightening the smallest-safe backend-first task split so later phases cannot widen the seam implicitly.
+- v0.3 (2026-03-13): Closed the response-contract carry-through gap by making persistence/API/frontend exposure an explicit planning decision, clarifying that backend-only seam proof is not a ship-ready rollout, and adding compatibility/persistence verification requirements to the fail-closed matrix.
