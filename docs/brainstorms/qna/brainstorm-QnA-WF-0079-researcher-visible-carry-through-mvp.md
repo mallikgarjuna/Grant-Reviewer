@@ -2,8 +2,8 @@
 # WF-0079 — Researcher-Visible Carry-Through MVP
 
 Artifact: brainstorm-qna
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-13
 
 Type: feature
@@ -102,6 +102,13 @@ Source: user-provided initiative brief in chat on 2026-03-13.
 > Recommendation: A — it keeps the MVP tight without compromising correctness. B and C are dismissed because they are required for any honest rollout.
 > **Selected: A**
 
+**Q6: How should the existing copy/export action on `/app/reviews/[reviewId]` be treated?**
+- A) Treat it as a conditional detail-surface seam: either carry the additive companion there too, or keep it explicitly deterministic-only with matching UI labels and ship claims.
+- B) Treat it as automatically out of scope because it is "export."
+- C) Remove it from consideration until after implementation starts.
+> Recommendation: A — the action already lives on the target detail surface, so ignoring it would create a same-page truth gap. B and C are dismissed because they hide user-visible coupling.
+> **Selected: A**
+
 ## Section 3 — Target User / Actor
 
 **Q1: Who is the primary user of this workflow?**
@@ -146,6 +153,13 @@ Source: user-provided initiative brief in chat on 2026-03-13.
 - B) Recompute synthesis on every read.
 - C) Concatenate synthesis into `feedback_text`.
 > Recommendation: A — it is stable, truthful, and backward compatible. B is dismissed because it makes reads probabilistic. C is dismissed because it collapses additive and deterministic truth.
+> **Selected: A**
+
+**Q1A: Where must persistence actually happen for that direction to be honest?**
+- A) In the review-generation write path that creates `ReviewCard` rows, with migration-backed nullable fields.
+- B) During review-detail reads after the fact.
+- C) In a lazy backfill job before the page loads.
+> Recommendation: A — it is the only durable carry-through that matches the current runtime seam and avoids read-time recomputation. B and C are dismissed because they weaken truthfulness and add hidden coupling.
 > **Selected: A**
 
 **Q2: What is the safest public card contract shape?**
@@ -249,6 +263,18 @@ Source: user-provided initiative brief in chat on 2026-03-13.
 - C) Only schema migration success.
 > Recommendation: A — it is the minimum honest evidence. B and C are dismissed because they leave real user states unproven.
 > **Selected: A**
+
+**Q6: What extra verification is required because the current detail page already has copy/export actions?**
+- A) Explicit proof that the page-local copy/export action either carries additive companion truthfully or is intentionally deterministic-only with aligned labels and ship claims.
+- B) No extra proof, because render coverage is enough.
+- C) Only verify this later if a bug report appears.
+> Recommendation: A — otherwise the same page can tell two conflicting stories about the same card. B and C are dismissed because they permit a hidden user-visible mismatch.
+> **Selected: A**
+
+## Changelog
+
+- v0.1 (2026-03-13): Initial brainstorm Q&A transcript.
+- v0.2 (2026-03-13): Added rationale for the write-path persistence requirement and the existing detail-page copy/export coupling so the finalized brainstorm edits remain traceable.
 
 ## Section 7 — MVP Definition
 

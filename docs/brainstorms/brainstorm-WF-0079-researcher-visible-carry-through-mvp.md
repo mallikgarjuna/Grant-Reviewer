@@ -2,7 +2,7 @@
 # WF-0079 — Researcher-Visible Carry-Through MVP
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-13
 
@@ -39,15 +39,16 @@ Contract Notes / Non-obvious constraints:
 
 - `backend/app/services/structured_reviewer_service.py` already attempts bounded `ERC-2026-PoC` synthesis after deterministic card generation and records seam-only proof via `last_synthesis_requests` / `last_synthesis_results`.
 - `backend/app/services/structured_review_synthesis_service.py` already defines a typed accepted-vs-rejected per-card synthesis contract, including fail-closed rejection categories.
+- `backend/app/repositories/review_repository.py#create_review_cards_batch` and the current write path still persist only deterministic `ReviewCard` fields; no migration or create-time persistence seam exists yet for accepted synthesized companion data.
 - `backend/app/models/domain.py` persists only deterministic `ReviewCard.feedback_text`, `rating`, `assessment_status`, and `not_assessable_reason`; there is no stored synthesized companion or synthesis provenance field.
 - `backend/app/repositories/review_repository.py`, `backend/app/schemas/api.py`, and `backend/main.py` read and expose only deterministic `feedback_text` on review cards for the detail response.
-- `frontend/src/app/app/reviews/[reviewId]/page.tsx` renders and exports only `card.feedback_text`, so the current review page has no additive synthesis surface or backward-compatibility branch for missing companion content.
+- `frontend/src/app/app/reviews/[reviewId]/page.tsx` renders only `card.feedback_text` and its page-local copy/export helper also serializes only `feedback_text`, so the current detail page has both a missing additive display seam and a same-page export coupling that cannot be ignored during rollout planning.
 
 ## Open Questions / Deferred
 
 - MVP prefers nullable card-level persisted companion fields on `ReviewCard`; alternative persistence shapes are out unless Phase 1 proves this is unsafe.
-- Whether MVP should include review-detail export carry-through or defer exports until after the on-page detail surface is proven.
 - Whether review history/list surfaces should remain deterministic-only in MVP even if detail view carries the additive companion.
+- Whether the page-local copy/export action on `/app/reviews/[reviewId]` should carry the additive companion in MVP or remain explicitly deterministic-only with matching product labeling and ship claims.
 
 ## 1. Problem Statement
 
@@ -77,7 +78,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0079-researcher-vis
 Contract Notes / Non-obvious constraints:
 - Absence of synthesis is a supported state, not an error state.
 - Deterministic feedback remains readable even when synthesis is present; the additive companion must not replace it.
-- MVP success does not require exports, review history, or list-page changes.
+- MVP success does not require broader export, review history, or list-page changes, but the existing page-local copy/export action still needs explicit closure because it already lives on the target detail surface.
 
 ## 3. Target User / Actor
 
@@ -96,10 +97,11 @@ Contract Notes / Non-obvious constraints:
 ## 4. Rough Idea (Unstructured Thinking)
 
 - The narrowest production-credible path is to persist a nullable additive companion alongside each deterministic review card for in-scope structured reviews that accept synthesis.
+- The persistence seam must include create-time write-path changes where accepted synthesis is attached to the saved `ReviewCard` row during review generation; recomputing or backfilling on detail read is out of scope for MVP.
 - The read path should carry that optional companion through repository mapping and review detail API response without overloading deterministic `feedback_text`.
 - The frontend should render deterministic feedback first and then, only when available, a clearly labeled synthesized companion block for the same card.
 - The safest initial public contract shape is an additive nullable card field or fields on the detail response, not recomputation on read and not merging synthesis into deterministic text.
-- Exports and review history should stay out of MVP unless planning proves they are required for the truthfulness of the review-detail ship claim.
+- Review history should stay out of MVP, while the existing page-local copy/export action requires an explicit truthfulness decision because it already lives on the review-detail surface.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0079-researcher-visible-carry-through-mvp.md` (Section 4)
 
@@ -116,6 +118,7 @@ Contract Notes / Non-obvious constraints:
 - Additive synthesis must remain clearly separated from deterministic feedback in both persisted shape and rendered UI.
 - Per-card fail-closed behavior remains mandatory: an invalid or missing companion for one card must degrade only that card to deterministic-only display.
 - The carry-through must be backward compatible for existing reviews with no synthesized companion data.
+- Accepted synthesis must be persisted at review-generation time rather than regenerated on read; otherwise the carry-through claim is not durable.
 - MVP scope stays limited to the structured review detail page; exports, history/list surfaces, and broad redesign are deferred unless Phase 1 proves a blocker.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0079-researcher-visible-carry-through-mvp.md` (Section 5)
@@ -128,6 +131,7 @@ Contract Notes / Non-obvious constraints:
 ## 6. Risks / Unknowns
 
 - The biggest hidden-coupling risk is choosing a persistence contract that looks small but forces larger repo-wide changes across repository, schema, API, and frontend surfaces.
+- Another hidden-coupling risk is forgetting that the current detail page already has a copy/export action, which can create a user-visible deterministic-only side path on the same page even after additive companion rendering ships.
 - The biggest product honesty risk is overloading `feedback_text` or rendering synthesis as if it were deterministic truth.
 - The main backward-compatibility risk is creating a response/UI path that assumes synthesis exists for all cards or all reviews.
 - The main scope-creep risk is quietly pulling exports or review-history surfaces into MVP without proving they are necessary for the detail-page ship claim.
@@ -144,17 +148,21 @@ Contract Notes / Non-obvious constraints:
 
 - This should remain one WF: researcher-visible carry-through for the structured review detail page, with internal task splitting rather than a separate carry-through WF.
 - Exact in-scope surfaces:
+  - review-generation write path that persists optional accepted synthesized companion data onto structured review cards without mutating deterministic `feedback_text`;
   - persisted storage for optional accepted synthesized companion data on structured review cards;
   - repository/read path needed to hydrate that optional companion on review detail reads;
   - review detail API contract for `/reviews/{review_id}` and its BFF consumer path;
   - frontend rendering on `/app/reviews/[reviewId]` showing deterministic feedback as baseline plus additive synthesized companion when available.
 - Exact out-of-scope surfaces:
-  - exports/download/copy text;
+  - exports/download/copy text outside the review-detail page;
   - review history/list pages;
   - legacy `/reviews` path redesign;
   - whole-review synthesis, generalized AI coach features, or cross-call expansion beyond already-approved synthesis scope.
 - Exports/history are deferred by default. They are not part of MVP unless a later planning artifact proves the review-detail ship claim would otherwise be misleading.
-- During MVP, exports and review history/list remain deterministic-only surfaces and must not claim additive companion visibility.
+- The existing page-local copy/export action on `/app/reviews/[reviewId]` is a conditional coupling seam, not an automatic deferment. Phase 1 must either:
+  - carry the additive companion through that action truthfully; or
+  - keep the action deterministic-only and explicitly align the UI label/help text and ship claim so researchers are not misled.
+- Review history/list remain deterministic-only surfaces in MVP and must not claim additive companion visibility.
 - Backward-compatibility plan:
   - existing reviews with no synthesis data must continue to deserialize, read, and render as deterministic-only cards;
   - migration/read behavior must preserve legacy reviews by treating new companion fields as nullable with no backfill requirement for MVP;
@@ -165,10 +173,12 @@ Contract Notes / Non-obvious constraints:
   - add optional additive fields scoped to the same card, likely `synthesized_companion_text` plus a minimal accepted-companion-present state marker without redefining deterministic truth;
   - do not expose internal rejection taxonomy in the user-visible contract.
 - Topological task order:
-  - decide and harden the persistence contract first, including nullable-field legacy-read behavior;
+  - decide and harden the persistence contract first, including nullable-field legacy-read behavior and create-time write-path ownership;
+  - then add the migration plus write-path persistence needed to save accepted companion data during review generation;
   - then carry it through repository and API detail reads;
   - then render it on the detail page with deterministic-first fallback behavior;
-  - then run end-to-end verification covering old reviews, accepted-companion reviews, and deterministic-only fallback reviews.
+  - then close the page-local copy/export decision in the same detail surface honestly;
+  - then run end-to-end verification covering old reviews, accepted-companion reviews, mixed-card reviews, deterministic-only fallback reviews, and the chosen page-local export/copy behavior.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0079-researcher-visible-carry-through-mvp.md` (Section 7)
 
@@ -185,7 +195,38 @@ Contract Notes / Non-obvious constraints:
 - Broadening MVP to exports, history/list, legacy path redesign, or generalized AI coaching.
 - Introducing non-additive whole-review synthesis or refactoring unrelated review contracts.
 
+## Verification / Proceed Gate
+
+- No proceed recommendation is valid unless the artifact proves a durable carry-through path from accepted synthesis at review generation through persisted review cards, detail reads, and researcher-visible rendering.
+- No ship recommendation is valid unless verification evidence is recorded explicitly as `pass`, `fail`, or approved `skipped` with rationale for every required proof item below.
+- No ship recommendation is valid if the page-local copy/export action on `/app/reviews/[reviewId]` remains ambiguous about whether it is additive-aware or intentionally deterministic-only.
+- No ship recommendation is valid if the implementation overloads deterministic `feedback_text`, re-synthesizes on read, or assumes synthesis exists for all legacy reviews/cards.
+
+### Verification Evidence Matrix (Fail-Closed)
+
+| Verification item | Command/test/artifact | Result (`pass`/`fail`/`skipped`) | Evidence pointer | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| Deterministic SSOT boundary proof | Phase 1/2 artifacts + targeted backend tests | `fail` (default until executed) | required | must prove `pipeline_v1` remains unchanged as the source of findings, ratings, and traceability |
+| Write-path persistence proof | targeted model/repository/service tests + migration artifact | `fail` (default until executed) | required | must prove accepted synthesis is saved during review generation rather than recomputed on read |
+| Legacy review compatibility proof | targeted backend tests over pre-WF-0079 review data | `fail` (default until executed) | required | must prove reviews/cards with null companion data still deserialize, read, and render cleanly |
+| Detail read/API/BFF carry-through proof | repository, schema, backend response, and BFF type evidence | `fail` (default until executed) | required | must prove the optional additive field survives the read contract without breaking existing consumers |
+| Detail-page render proof | targeted frontend tests or deterministic UI proof | `fail` (default until executed) | required | must prove deterministic feedback remains primary and additive companion renders only when present |
+| Mixed-card fail-closed proof | targeted backend/frontend tests | `fail` (default until executed) | required | must prove one card can show an accepted companion while another card in the same review remains deterministic-only |
+| Page-local copy/export proof | targeted frontend tests plus product copy evidence | `fail` (default until executed) | required | must prove the existing detail-page copy/export action is either additive-aware or explicitly deterministic-only with matching labels/ship claim |
+| Out-of-scope surface proof | targeted checks for review history/list and legacy `/reviews` | `fail` (default until executed) | required | must prove deferred surfaces remain deterministic-only and are not overclaimed |
+| Honest non-determinism test strategy | Phase 2 task plan + verification selectors | `fail` (default until executed) | required | must avoid brittle live-model exact-string assertions while still proving grounded carry-through behavior |
+| Audit disposition | findings-closure ledger | `fail` (default until executed) | required | must close all blocking findings and either close or justify non-blocking findings |
+
+## Audit Disposition Ledger
+
+| Review source | Finding | Severity | Planned closure | Status | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Continuation adversarial brainstorm review | The MVP contract treated persistence and detail reads as in scope but did not explicitly name the review-generation write path or migration seam needed to save accepted companion data durably | blocking | add the write-path persistence seam, migration ownership, and write-path verification rows to the brainstorm | closed | prevents a fake "persisted carry-through" plan that never states how data reaches storage |
+| Continuation adversarial brainstorm review | The brainstorm deferred exports too broadly even though the current detail page already includes a page-local copy/export action that serializes deterministic-only `feedback_text` | blocking | make the detail-page copy/export action an explicit conditional coupling seam with its own closure rule and verification row | closed | prevents a same-page truth gap after additive rendering ships |
+| Continuation adversarial brainstorm review | The brainstorm required explicit pass/fail ship evidence in prose but lacked a fail-closed verification matrix and audit ledger comparable to the approved WF-0078 artifacts | non-blocking | add a verification/proceed gate matrix plus an audit disposition ledger to preserve fail-closed closure semantics | closed | keeps later PRD/task phases from softening ship evidence requirements |
+
 ## Changelog
 
 - v0.1 (2026-03-13): Captured the initial Phase 0 scope for a one-WF researcher-visible carry-through MVP on structured review detail.
 - v0.2 (2026-03-13): Applied the Phase 0 risk audit by locking MVP to nullable card-level persistence, restating the `ERC-2026-PoC` scope gate, making exports/history explicitly deterministic-only deferred surfaces, and tightening legacy-read/public-contract constraints.
+- v0.3 (2026-03-13): Closed the continuation adversarial review by naming the missing write-path persistence seam, forcing an explicit decision on the existing detail-page copy/export action, and adding a fail-closed verification matrix plus audit disposition ledger before any ship claim.
