@@ -2,8 +2,8 @@
 # WF-0078 — Structured Review Grounded LLM Synthesis
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-13
 
 Type: feature
@@ -34,6 +34,7 @@ Acceptance Criteria:
 - Before the code change, a targeted failing regression such as `test_wf0078_contract_erc_poc_tracer_bullet_synthesis_acceptance` proves the current service path returns deterministic cards only and does not yet expose an accepted additive synthesis result at the service/helper seam.
 - After the change, the same regression passes by proving one representative `ERC-2026-PoC` assessed card triggers synthesis only after deterministic card generation and accepts a validated per-card synthesized companion/outcome for that card at a service-test-visible seam.
 - A paired regression such as `test_wf0078_contract_erc_poc_feedback_text_remains_deterministic` proves persisted `feedback_text` still equals the WF-0077 deterministic guidance even when accepted synthesis exists at the seam.
+- The accepted additive seam result is carried through a narrow typed helper result owned by `structured_review_synthesis_service.py`, not ad hoc dict mutation on persisted `ReviewCard` objects.
 - The tracer-bullet implementation stays confined to the approved three-file backend slice.
 TDD Plan:
 - RED: add `test_wf0078_contract_erc_poc_tracer_bullet_synthesis_acceptance` and `test_wf0078_contract_erc_poc_feedback_text_remains_deterministic` in `backend/tests/test_structured_reviewer_service.py`; run them before introducing the synthesis helper so they fail against the current deterministic-only path.
@@ -44,15 +45,15 @@ Verification Steps:
 - `cd backend && rg -n "wf0078_contract_erc_poc_(tracer_bullet_synthesis_acceptance|feedback_text_remains_deterministic)|structured_review_synthesis_service|feedback_text" app/services/structured_reviewer_service.py app/services/structured_review_synthesis_service.py tests/test_structured_reviewer_service.py`
 Risks (if any): The tracer bullet could accidentally overclaim public rollout if the additive result is not clearly labeled as seam-only proof.
 
-### [ ] Task 2 — Fail closed per card for synthesis rejection, timeout, and out-of-scope no-attempt paths
+### [ ] Task 2 — Fail closed per card for synthesis rejection and whole-review deterministic completion
 
 Goal:
-Harden the structured-review seam so invalid or unavailable synthesis degrades only the affected card to deterministic WF-0077 guidance, while non-targeted calls/cards never invoke synthesis at all.
+Harden the structured-review seam so invalid or unavailable synthesis degrades only the affected card to deterministic WF-0077 guidance and never turns a deterministic-success review into a failed review.
 Slice: fail-closed-service-hardening
 User Stories: US1, US2, US3, US4
-PRD Requirements: FR7, FR8, FR10, FR10A, FR11, FR12, FR13
+PRD Requirements: FR7, FR8, FR11, FR12, FR13
 Depends on: 1
-Enables: 4
+Enables: 3, 5
 Parallelizable: no
 Files to modify:
 Must touch files:
@@ -62,30 +63,62 @@ Must touch files:
 May touch files:
 - `none`
 Out of scope: retry queues, product telemetry expansion, schema/API/detail/export/frontend exposure, cross-call enablement beyond `ERC-2026-PoC`
-Stop if: fail-closed handling would require engine changes, batch-level review failure for single-card synthesis rejection, or a fourth file to prove non-targeted no-attempt behavior
+Stop if: fail-closed handling would require engine changes, batch-level review failure for single-card synthesis rejection, or persistence/API carry-through to prove fallback honesty
 Session boundary after: yes
 Acceptance Criteria:
 - Targeted regressions such as `test_wf0078_contract_erc_poc_card_timeout_falls_back`, `test_wf0078_contract_erc_poc_card_malformed_output_falls_back`, `test_wf0078_contract_erc_poc_card_ungrounded_output_falls_back`, and `test_wf0078_contract_all_cards_rejected_review_still_completes` prove synthesis failure degrades only the affected card and never turns a deterministic-success review into a failed review.
-- A targeted regression such as `test_wf0078_contract_non_targeted_calls_do_not_attempt_synthesis` proves non-`ERC-2026-PoC` calls/cards do not invoke the synthesis collaborator and do not emit synthesis-specific seam outcomes.
 - The service still persists deterministic `feedback_text` only, even when all synthesis attempts reject.
 TDD Plan:
-- RED: extend `backend/tests/test_structured_reviewer_service.py` with explicit per-card timeout, malformed-output, ungrounded-output, all-cards-rejected, and non-targeted no-attempt regressions; run them before the hardening change and capture failures against the initial tracer-bullet implementation.
-- GREEN: add the minimum service/helper rejection handling needed to convert these scenarios into deterministic per-card fallback or no-attempt behavior without widening the public contract.
+- RED: extend `backend/tests/test_structured_reviewer_service.py` with explicit per-card timeout, malformed-output, ungrounded-output, and all-cards-rejected regressions; run them before the hardening change and capture failures against the initial tracer-bullet implementation.
+- GREEN: add the minimum service/helper rejection handling needed to convert these scenarios into deterministic per-card fallback behavior without widening the public contract.
 - REFACTOR: consolidate repeated fallback classification logic only if Task 1 plus Task 2 create duplicated branch handling; otherwise skip.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0078_contract_erc_poc_card_timeout_falls_back or wf0078_contract_erc_poc_card_malformed_output_falls_back or wf0078_contract_erc_poc_card_ungrounded_output_falls_back or wf0078_contract_all_cards_rejected_review_still_completes or wf0078_contract_non_targeted_calls_do_not_attempt_synthesis"`
-- `cd backend && rg -n "wf0078_contract_(erc_poc_card_timeout_falls_back|erc_poc_card_malformed_output_falls_back|erc_poc_card_ungrounded_output_falls_back|all_cards_rejected_review_still_completes|non_targeted_calls_do_not_attempt_synthesis)|deterministic_fallback|accepted_synthesis" app/services/structured_reviewer_service.py app/services/structured_review_synthesis_service.py tests/test_structured_reviewer_service.py`
+- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0078_contract_erc_poc_card_timeout_falls_back or wf0078_contract_erc_poc_card_malformed_output_falls_back or wf0078_contract_erc_poc_card_ungrounded_output_falls_back or wf0078_contract_all_cards_rejected_review_still_completes"`
+- `cd backend && rg -n "wf0078_contract_(erc_poc_card_timeout_falls_back|erc_poc_card_malformed_output_falls_back|erc_poc_card_ungrounded_output_falls_back|all_cards_rejected_review_still_completes)|deterministic_fallback|accepted_synthesis" app/services/structured_reviewer_service.py app/services/structured_review_synthesis_service.py tests/test_structured_reviewer_service.py`
 Risks (if any): If rejection handling is too broad, accepted synthesis could silently stop working for valid cards; if too narrow, malformed output could leak past the seam.
 
-### [ ] Task 3 — Lock the additive synthesis input/output contract and raw-reason exclusion in helper tests
+### [ ] Task 3 — Prove the real service-emitted prompt payload stays inside the approved boundary
 
 Goal:
-Prove the synthesis helper accepts only approved same-card context, excludes raw machine `reason`, and rejects ambiguous or contract-breaking outputs before the service can treat them as accepted synthesis.
-Slice: helper-contract-hardening
-User Stories: US1, US2, US3
-PRD Requirements: FR5, FR6, FR7, FR9, FR13, FR14
+Prove `StructuredReviewerService` emits only approved same-card synthesis inputs, excludes raw machine `reason`, and never attempts synthesis for non-targeted calls/cards.
+Slice: service-payload-boundary
+User Stories: US1, US2, US3, US4
+PRD Requirements: FR5, FR9, FR10, FR10A, FR13, FR14
 Depends on: 1
-Enables: 4
+Enables: 4, 5
+Parallelizable: no
+Files to modify:
+Must touch files:
+- `backend/app/services/structured_reviewer_service.py`
+- `backend/app/services/structured_review_synthesis_service.py`
+- `backend/tests/test_structured_reviewer_service.py`
+May touch files:
+- `none`
+Out of scope: helper-only parser validation already deferred to Task 4, prompt changes that require full-call/full-submission context, frontend copy work
+Stop if: proving the emitted payload boundary would require widening persisted/API surfaces, or if honest gating needs unrelated-card context the PRD forbids
+Session boundary after: yes
+Acceptance Criteria:
+- Targeted service regressions such as `test_wf0078_contract_emitted_payload_excludes_raw_reason`, `test_wf0078_contract_emitted_payload_uses_same_card_context_only`, and `test_wf0078_contract_non_targeted_calls_do_not_attempt_synthesis` prove the real helper request emitted by `StructuredReviewerService` excludes raw machine `reason`, full-submission scope, unrelated findings, and out-of-scope call/card attempts.
+- Service tests prove the emitted helper request carries deterministic card identity, same-card node context, relevant evaluation criteria/elements, WF-0077 deterministic guidance, approved subordinate-prompt context, and only a bounded excerpt from the same submitted node text.
+- Service tests prove non-`ERC-2026-PoC` calls/cards do not invoke the helper and do not emit synthesis-specific seam outcomes.
+TDD Plan:
+- RED: extend `backend/tests/test_structured_reviewer_service.py` with explicit emitted-payload and non-targeted no-attempt regressions; run them before the service-boundary hardening so they fail on missing exclusions or missing gating.
+- GREEN: implement the smallest service/helper payload builder changes needed to pass the new boundary regressions while preserving Tasks 1-2 fallback behavior.
+- REFACTOR: extract tiny private payload-builder helpers only if the service starts duplicating same-card boundary logic; otherwise skip.
+Verification Steps:
+- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0078_contract_emitted_payload_excludes_raw_reason or wf0078_contract_emitted_payload_uses_same_card_context_only or wf0078_contract_non_targeted_calls_do_not_attempt_synthesis"`
+- `cd backend && rg -n "wf0078_contract_(emitted_payload_excludes_raw_reason|emitted_payload_uses_same_card_context_only|non_targeted_calls_do_not_attempt_synthesis)|raw_reason|same-card|subordinate|ERC-2026-PoC" app/services/structured_reviewer_service.py app/services/structured_review_synthesis_service.py tests/test_structured_reviewer_service.py`
+Risks (if any): If the service-level payload boundary is not tested directly, helper-level validation can look correct while the live seam still leaks audit-only context into prompts.
+
+### [ ] Task 4 — Lock helper output validation for wrong-element, ambiguous-card, and malformed synthesis
+
+Goal:
+Prove the synthesis helper rejects wrong-element, ambiguous-card, and malformed outputs before the service can classify them as accepted synthesis.
+Slice: helper-output-validation
+User Stories: US1, US2, US3
+PRD Requirements: FR6, FR7, FR13, FR14
+Depends on: 1, 3
+Enables: 5
 Parallelizable: yes
 Files to modify:
 Must touch files:
@@ -93,30 +126,30 @@ Must touch files:
 - `backend/tests/test_structured_review_synthesis_service.py`
 May touch files:
 - `none`
-Out of scope: service orchestration rewrites already proven in Tasks 1-2, prompt changes that require full-call/full-submission context, frontend copy work
-Stop if: the helper contract cannot be proven without introducing a fourth-file schema/API surface, or if honest grounding checks need unrelated-card context the PRD forbids
+Out of scope: service orchestration changes already covered by Tasks 1-3, persistence/API propagation, frontend copy edits
+Stop if: helper validation cannot reject wrong-element or ambiguous-card output without a fourth-file schema/API change, because that would mean the seam contract is underspecified
 Session boundary after: yes
 Acceptance Criteria:
-- Targeted helper regressions such as `test_wf0078_contract_prompt_payload_excludes_raw_reason`, `test_wf0078_contract_prompt_payload_uses_same_card_context_only`, and `test_wf0078_contract_rejects_ambiguous_or_mismatched_output` prove prompt construction stays within the approved boundary and output validation rejects ambiguous or unrelated-card synthesis.
-- Helper tests prove accepted output requires deterministic card identity, same-card node context, relevant evaluation criteria/elements, WF-0077 deterministic guidance, approved subordinate-prompt context, and a bounded excerpt from the same submitted node text.
+- Targeted helper regressions such as `test_wf0078_contract_rejects_wrong_element_output`, `test_wf0078_contract_rejects_ambiguous_or_mismatched_output`, and `test_wf0078_contract_rejects_malformed_output` prove the helper drops invalid synthesis before acceptance.
 - Helper tests prove rejected output is dropped rather than partially surfaced.
+- Helper tests keep the additive contract narrow and deterministic-card-anchored.
 TDD Plan:
-- RED: create `backend/tests/test_structured_review_synthesis_service.py` with explicit payload-boundary and output-validation regressions; run them before helper hardening so they fail on missing exclusions/validation.
-- GREEN: implement the smallest helper-level builders/validators needed to pass the new contract tests while preserving the Task 1 seam shape.
-- REFACTOR: extract tiny private validators only if the helper starts repeating field checks across prompt-build and response-parse logic; otherwise skip.
+- RED: create `backend/tests/test_structured_review_synthesis_service.py` with explicit wrong-element, ambiguous-card, and malformed-output regressions; run them before helper hardening so they fail on missing validation.
+- GREEN: implement the smallest helper-level validators needed to pass the new output-rejection tests while preserving the Task 1 typed seam contract.
+- REFACTOR: extract tiny private validators only if output validation repeats field checks across parse paths; otherwise skip.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_structured_review_synthesis_service.py -k "wf0078_contract_prompt_payload_excludes_raw_reason or wf0078_contract_prompt_payload_uses_same_card_context_only or wf0078_contract_rejects_ambiguous_or_mismatched_output"`
-- `cd backend && rg -n "wf0078_contract_(prompt_payload_excludes_raw_reason|prompt_payload_uses_same_card_context_only|rejects_ambiguous_or_mismatched_output)|raw machine|same-card|subordinate" app/services/structured_review_synthesis_service.py tests/test_structured_review_synthesis_service.py`
-Risks (if any): Prompt-boundary drift here would look harmless in service tests while still reintroducing audit-only machine traces into LLM inputs.
+- `cd backend && uv run pytest tests/test_structured_review_synthesis_service.py -k "wf0078_contract_rejects_wrong_element_output or wf0078_contract_rejects_ambiguous_or_mismatched_output or wf0078_contract_rejects_malformed_output"`
+- `cd backend && rg -n "wf0078_contract_(rejects_wrong_element_output|rejects_ambiguous_or_mismatched_output|rejects_malformed_output)|wrong_element|ambiguous|malformed" app/services/structured_review_synthesis_service.py tests/test_structured_review_synthesis_service.py`
+Risks (if any): If helper validation accepts a wrong-element payload, synthesis could present unsupported evaluation-criteria/elements advice as if it were grounded.
 
-### [ ] Task 4 — Conditional carry-through check; otherwise close as explicit backend-only seam proof
+### [ ] Task 5 — Conditional carry-through check; otherwise close as explicit backend-only seam proof
 
 Goal:
 Confirm WF-0078 can close honestly at the backend seam without implying persistence/API/review-detail/export/frontend rollout, and open a separate dependent slice only if that broader carry-through is truly required.
 Slice: carry-through-decision-gate
 User Stories: US1, US4
 PRD Requirements: FR6, FR10A, FR11, FR12
-Depends on: 2, 3
+Depends on: 2, 3, 4
 Enables: none
 Parallelizable: no
 Files to modify:
@@ -128,13 +161,13 @@ Out of scope: proactive schema/API expansion, review-detail UI edits, export cha
 Stop if: Tasks 1-3 already prove honest backend-only seam closure and no real carry-through requirement remains, because this task should then close as an explicit skip rather than create speculative implementation work
 Session boundary after: yes
 Acceptance Criteria:
-- Phase 3 cites concrete proof that accepted/rejected synthesis is currently a backend seam concern only and that persisted/API/frontend surfaces still read deterministic `feedback_text`.
+- Phase 3 cites concrete proof that accepted/rejected synthesis is currently a backend seam concern only and that persisted/API/review-detail/export/frontend surfaces still read deterministic `feedback_text` unless a new dependent slice is opened.
 - If broader researcher-visible rollout is required, Phase 3 must stop and author a new dependent follow-on task instead of widening WF-0078 implementation under this plan.
 - No implementation claim is made without an explicit audit disposition covering either the backend-only skip or the newly opened dependent slice.
 TDD Plan:
 - N/A for the default skip path; if a real carry-through need is proven, stop and author a bounded follow-on task before editing code.
 Verification Steps:
-- `rg -n "class ReviewCardSummary|feedback_text" backend/app/schemas/api.py backend/main.py frontend/src/app/app/reviews/[reviewId]/page.tsx`
+- `rg -n "ReviewCardSummary|ReviewDetailResponse|feedback_text|export" backend/app/schemas/api.py backend/main.py frontend/src/app/app/reviews/[reviewId]/page.tsx`
 - `git diff --name-only -- docs/tasks/task-WF-0078-structured-review-grounded-llm-synthesis.md docs/index.md`
 Risks (if any): Without an explicit stop/skip gate, Phase 3 could quietly smuggle API or frontend scope into a backend seam-proof WF.
 
@@ -146,19 +179,23 @@ Risks (if any): Without an explicit stop/skip gate, Phase 3 could quietly smuggl
 | Narrow seam proof | 1 | `git diff -- backend/app/services/structured_reviewer_service.py backend/app/services/structured_review_synthesis_service.py backend/tests/test_structured_reviewer_service.py` | first slice stays at the structured-review seam only | `fail` | required | no execution-core, mapper, or legacy-path widening |
 | Partial-card degradation proof | 2 | `backend/tests/test_structured_reviewer_service.py -k "wf0078_contract_erc_poc_card_timeout_falls_back or wf0078_contract_erc_poc_card_malformed_output_falls_back or wf0078_contract_erc_poc_card_ungrounded_output_falls_back"` | rejected synthesis degrades only the affected card | `fail` | required | card-level fail-closed behavior |
 | Whole-review deterministic success proof | 2 | `backend/tests/test_structured_reviewer_service.py -k "wf0078_contract_all_cards_rejected_review_still_completes"` | review still completes when all synthesis rejects | `fail` | required | deterministic fallback remains sufficient |
-| Non-targeted no-attempt proof | 2 | `backend/tests/test_structured_reviewer_service.py -k "wf0078_contract_non_targeted_calls_do_not_attempt_synthesis"` | out-of-scope calls/cards do not invoke synthesis or emit seam outcomes | `fail` | required | protects `ERC-2026-PoC`-only rollout |
-| Prompt-boundary proof | 3 | `backend/tests/test_structured_review_synthesis_service.py -k "wf0078_contract_prompt_payload_excludes_raw_reason or wf0078_contract_prompt_payload_uses_same_card_context_only"` | helper input excludes raw machine `reason`, full-submission scope, and unrelated findings | `fail` | required | approved same-card context only |
-| Output-validation proof | 3 | `backend/tests/test_structured_review_synthesis_service.py -k "wf0078_contract_rejects_ambiguous_or_mismatched_output"` | malformed or mismatched output is rejected before acceptance | `fail` | required | no partial surfacing of rejected output |
-| Backend-only seam-proof compatibility | 4 | `rg -n "class ReviewCardSummary|feedback_text" backend/app/schemas/api.py backend/main.py frontend/src/app/app/reviews/[reviewId]/page.tsx` | current user-visible surfaces still depend on deterministic `feedback_text`, so backend-only proof can close honestly if explicitly documented | `fail` | required | open a follow-on instead of widening silently |
-| Dependent carry-through trigger proof | 4 | task/audit disposition | any API/frontend/persistence carry-through is opened only as an explicit dependent slice | `fail` | required | no implied rollout |
-| Scope-boundary proof | 1, 2, 3, 4 | `git diff --name-only main...HEAD` | no widening into `pipeline_v1`, legacy `/reviews`, or unrelated call families | `fail` | required | review gate must check range before proceed |
+| Non-targeted no-attempt proof | 3 | `backend/tests/test_structured_reviewer_service.py -k "wf0078_contract_non_targeted_calls_do_not_attempt_synthesis"` | out-of-scope calls/cards do not invoke synthesis or emit seam outcomes | `fail` | required | protects `ERC-2026-PoC`-only rollout |
+| Prompt-boundary proof | 3 | `backend/tests/test_structured_reviewer_service.py -k "wf0078_contract_emitted_payload_excludes_raw_reason or wf0078_contract_emitted_payload_uses_same_card_context_only"` | service-emitted helper input excludes raw machine `reason`, full-submission scope, and unrelated findings | `fail` | required | approved same-card context only |
+| Output-validation proof | 4 | `backend/tests/test_structured_review_synthesis_service.py -k "wf0078_contract_rejects_wrong_element_output or wf0078_contract_rejects_ambiguous_or_mismatched_output or wf0078_contract_rejects_malformed_output"` | wrong-element, malformed, or mismatched output is rejected before acceptance | `fail` | required | no partial surfacing of rejected output |
+| Backend-only seam-proof compatibility | 5 | `rg -n "ReviewCardSummary|ReviewDetailResponse|feedback_text|export" backend/app/schemas/api.py backend/main.py frontend/src/app/app/reviews/[reviewId]/page.tsx` | current user-visible surfaces still depend on deterministic `feedback_text`, so backend-only proof can close honestly if explicitly documented | `fail` | required | open a follow-on instead of widening silently |
+| Dependent carry-through trigger proof | 5 | task/audit disposition | any API/frontend/persistence carry-through is opened only as an explicit dependent slice | `fail` | required | no implied rollout |
+| Scope-boundary proof | 1, 2, 3, 4, 5 | `git diff --name-only main...HEAD` | no widening into `pipeline_v1`, legacy `/reviews`, or unrelated call families | `fail` | required | review gate must check range before proceed |
 
 ## Audit Disposition Ledger
 
 | Review source | Finding | Severity | Planned closure | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Phase 2.2 task review | pending | pending | revise in Part C if required | open | placeholder until review runs |
+| Phase 2.2 task review | Task 3 proved prompt-boundary rules only at the helper layer, leaving the real service-emitted payload unverified against FR5/FR9 | blocking | split service-emitted payload proof into a dedicated three-file Task 3 and move helper-only output validation to Task 4 | closed | preserves 3-file slices while closing the hidden-coupling gap |
+| Phase 2.2 task review | Task 2 did not name the wrong-evaluation-element rejection case explicitly | non-blocking | add `test_wf0078_contract_rejects_wrong_element_output` in Task 4 and its verification-matrix row | closed | makes the PRD edge case auditable |
+| Phase 2.2 task review | Task 4 carry-through check under-described review-detail/export read-surface risk | non-blocking | strengthen Task 5 acceptance and verification to cite persistence/API/review-detail/export/frontend surfaces explicitly | closed | keeps backend-only seam closure honest |
+| Phase 2.2 task review | Task 1 did not name the intended typed seam contract for accepted additive synthesis | non-blocking | require a narrow typed helper result in Task 1 acceptance criteria | closed | reduces ad hoc dict/private-attr drift |
 
 ## Changelog
 
 - v0.1 (2026-03-13): Initial task breakdown from PRD.
+- v0.2 (2026-03-13): Applied Part B feedback by splitting service-emitted payload proof from helper output validation, adding explicit wrong-element rejection coverage, strengthening the carry-through gate to include review-detail/export read surfaces, and requiring a typed seam-owned additive result before marking the plan ready for implementation.
