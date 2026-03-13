@@ -32,6 +32,11 @@ from app.services.llm_client import LLMClientProtocol, OpenAIClient
 from app.services.node_role_resolution import (
     resolve_supporting_node_logical_ids_for_primary_path,
 )
+from app.services.structured_review_synthesis_service import (
+    StructuredReviewSynthesisRequest,
+    StructuredReviewSynthesisResult,
+    StructuredReviewSynthesisService,
+)
 from app.services.review_execution_core import ReviewExecutionCore
 from app.services.reviewer_policy import (
     ReviewerPolicyRule,
@@ -70,11 +75,15 @@ class StructuredReviewerService:
         repository: ReviewRepository,
         llm_client: LLMClientProtocol | None = None,
         execution_core: ReviewExecutionCore | None = None,
+        synthesis_service: StructuredReviewSynthesisService | None = None,
     ) -> None:
         self.repository = repository
         self._llm_client = llm_client
         self._timeout_seconds = float(os.getenv("REVIEW_TIMEOUT_SECONDS", "30"))
         self._execution_core = execution_core
+        self._synthesis_service = synthesis_service
+        self.last_synthesis_requests: tuple[StructuredReviewSynthesisRequest, ...] = ()
+        self.last_synthesis_results: tuple[StructuredReviewSynthesisResult, ...] = ()
 
     @property
     def llm_client(self) -> LLMClientProtocol:
@@ -91,6 +100,14 @@ class StructuredReviewerService:
                 timeout_seconds=self._timeout_seconds,
             )
         return self._execution_core
+
+    @property
+    def synthesis_service(self) -> StructuredReviewSynthesisService:
+        if self._synthesis_service is None:
+            self._synthesis_service = StructuredReviewSynthesisService(
+                llm_client=self.llm_client
+            )
+        return self._synthesis_service
 
     def _partition_expectations(
         self,
@@ -138,6 +155,8 @@ class StructuredReviewerService:
     ) -> tuple[Review, list[ReviewCard]]:
         if not nodes:
             raise ValueError("At least one node is required.")
+        self.last_synthesis_requests = ()
+        self.last_synthesis_results = ()
 
         template = self.repository.get_active_prompt_template()
         if template is None:
@@ -378,6 +397,8 @@ class StructuredReviewerService:
         card_payloads: list[
             tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
         ] = list(not_assessable_payloads)
+        synthesis_requests: list[StructuredReviewSynthesisRequest] = []
+        synthesis_results: list[StructuredReviewSynthesisResult] = []
         for card in result.review_cards:
             expectation = expectation_map[card.expectation_id]
             feedback_text = self._resolve_feedback_text_for_card(
@@ -396,6 +417,22 @@ class StructuredReviewerService:
                     None,
                 )
             )
+            synthesis_request = self._build_synthesis_request_for_card(
+                call_code=call.code,
+                node_logical_id=card.node_logical_id,
+                expectation=expectation,
+                feedback_text=feedback_text,
+                submitted_text_by_node=submitted_text_by_node,
+                subordinate_prompts_by_element_id=subordinate_prompts_by_element_id,
+            )
+            if synthesis_request is not None:
+                synthesis_requests.append(synthesis_request)
+                synthesis_results.append(
+                    self.synthesis_service.attempt_card_synthesis(synthesis_request)
+                )
+
+        self.last_synthesis_requests = tuple(synthesis_requests)
+        self.last_synthesis_results = tuple(synthesis_results)
 
         cards = self.repository.create_review_cards_batch(
             review_id=review.id,
@@ -554,6 +591,58 @@ class StructuredReviewerService:
                 continue
             feedback_lines.append(f"- {prompt_text}")
         return "\n".join(feedback_lines)
+
+    def _build_synthesis_request_for_card(
+        self,
+        *,
+        call_code: str,
+        node_logical_id: str,
+        expectation: NodeExpectation,
+        feedback_text: str,
+        submitted_text_by_node: dict[str, str],
+        subordinate_prompts_by_element_id: dict[str, list[dict[str, str]]],
+    ) -> StructuredReviewSynthesisRequest | None:
+        if call_code != "ERC-2026-PoC":
+            return None
+
+        element = expectation.element
+        if element is None:
+            return None
+
+        element_logical_id = element.logical_id
+        element_name = element.name
+        criterion_name = (
+            element.criterion.name
+            if element.criterion is not None and isinstance(element.criterion.name, str)
+            else ""
+        )
+        submitted_text = submitted_text_by_node.get(node_logical_id, "")
+        if (
+            not isinstance(element_logical_id, str)
+            or not element_logical_id.strip()
+            or not isinstance(element_name, str)
+            or not element_name.strip()
+            or not submitted_text.strip()
+            or not feedback_text.strip()
+        ):
+            return None
+
+        subordinate_prompt_context = tuple(
+            prompt_text
+            for prompt in subordinate_prompts_by_element_id.get(element_logical_id, [])
+            for prompt_text in [prompt.get("prompt")]
+            if isinstance(prompt_text, str) and prompt_text.strip()
+        )
+        return self.synthesis_service.build_request(
+            expectation_id=str(expectation.id),
+            node_logical_id=node_logical_id,
+            evaluation_criterion_name=criterion_name,
+            evaluation_element_logical_id=element_logical_id,
+            evaluation_element_name=element_name,
+            deterministic_feedback=feedback_text,
+            submitted_text=submitted_text,
+            subordinate_prompt_context=subordinate_prompt_context,
+        )
 
     @classmethod
     def _build_deterministic_guidance_from_prompts(

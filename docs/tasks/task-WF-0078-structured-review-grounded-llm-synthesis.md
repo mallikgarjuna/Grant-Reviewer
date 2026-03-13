@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: accept one valid ERC PoC synthesized companion at the structured-review seam
+### [x] Task 1 — Tracer bullet: accept one valid ERC PoC synthesized companion at the structured-review seam
 
 Goal:
 Prove the structured-review path can attempt bounded per-card synthesis for one `ERC-2026-PoC` assessed card after deterministic findings already exist, while keeping deterministic `feedback_text` as the persisted fallback surface.
