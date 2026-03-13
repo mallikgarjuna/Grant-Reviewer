@@ -1,9 +1,9 @@
-<!-- docs/walkthroughs/walkthrough-WF-0075-erc-poc-proof-call-fidelity-completion.md -->
+<!-- docs/walkthroughs/completed/walkthrough-WF-0075-erc-poc-proof-call-fidelity-completion.md -->
 # WF-0075 — ERC PoC Proof-Call Fidelity Completion
 
 Artifact: walkthrough
 Version: v0.1
-Status: Completed (Awaiting Ship Approval)
+Status: Done
 Last Updated: 2026-03-12
 
 ## Scope Summary
