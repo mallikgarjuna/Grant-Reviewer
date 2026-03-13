@@ -2,7 +2,7 @@
 # WF-0077 — Structured Review Deterministic Researcher Guidance
 
 Artifact: brainstorm
-Version: v0.1
+Version: v0.2
 Status: Draft Complete
 Last Updated: 2026-03-13
 
@@ -70,8 +70,8 @@ Contract Notes / Non-obvious constraints:
 
 - Researchers should receive concise deterministic guidance that reads like “Revise this section to clarify X, strengthen evidence for Y, and address Z.”
 - The guidance must stay grounded in the existing expectation, evaluation element, and canonical subordinate-prompt data already available to the structured path.
-- The first implementation should prefer a deterministic transform that turns subordinate-prompt/question surfaces into imperative revision guidance, without inventing new semantics beyond what the structured path already knows.
-- Success is defined by a behavior change at the service seam, proven with TDD, where assessed cards for the targeted structured path contain actionable revision guidance instead of raw machine text or raw question lists.
+- The first implementation should prefer a deterministic transform that turns ERC-2026-PoC subordinate-prompt/question surfaces into imperative revision guidance, without inventing new semantics beyond what the structured path already knows.
+- Success is defined by a behavior change at the service seam, proven with TDD, where assessed ERC-2026-PoC cards on the structured path contain actionable revision guidance instead of raw machine text or raw question lists.
 - Raw machine `reason` storage, fail-closed behavior, and existing engine contracts remain unchanged.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0077-structured-review-deterministic-researcher-guidance.md` (Section 2)
@@ -128,8 +128,9 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0077-structured-rev
 
 - If limited to 2–3 days, MVP is one deterministic backend guidance transform on the structured service seam for the targeted structured path, backed by seam-specific regression tests.
 - The minimum acceptable product effect is that targeted assessed cards no longer read as raw subordinate-prompt lists/questions and instead read as concise revision guidance tied to the relevant evaluation element.
-- The first safe TDD seam is `backend/tests/test_structured_reviewer_service.py`, with implementation in `backend/app/services/structured_reviewer_service.py`.
+- The first safe TDD seam is `backend/tests/test_structured_reviewer_service.py`, with implementation in `backend/app/services/structured_reviewer_service.py`, targeting ERC-2026-PoC first.
 - `frontend/src/app/app/reviews/[reviewId]/page.tsx` should stay out of MVP unless a verified formatting or wording issue remains after the backend contract improves.
+- MVP must also prove that non-targeted calls keep their current deterministic behavior, so this WF does not silently widen beyond the approved ERC-2026-PoC slice.
 - This should be a separate WF from future LLM synthesis because deterministic guidance transformation and synthesized coaching have different dependencies, risk, verification methods, and rollback boundaries.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0077-structured-review-deterministic-researcher-guidance.md` (Section 7)
@@ -150,6 +151,7 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0077-structured-rev
 | Narrow seam proof | service-level regression plus code review | `fail` (default until executed) | required | must prove the change lives in the structured-review presentation seam rather than evaluator/mapper/frontend-first |
 | Raw machine reason preservation | targeted service/assertion test | `fail` (default until executed) | required | must prove raw `reason` remains available for audit/traceability |
 | Deterministic guidance proof | targeted service test for researcher-facing `feedback_text` | `fail` (default until executed) | required | must prove cards emit concise deterministic revision guidance |
+| Non-targeted call regression proof | targeted service regression for unaffected calls | `fail` (default until executed) | required | must prove the new guidance transform stays bounded to the approved ERC-2026-PoC slice unless Phase 1 re-approves widening |
 | Boundary preservation | `main...HEAD` review plus artifact citations | `fail` (default until executed) | required | must prove no widening into legacy review path, OpenAI calls, or WF-0074/75/76 contract changes |
 | Optional frontend necessity check | targeted UI assertion or explicit skip rationale | `fail` (default until executed) | required | must prove whether frontend work is actually needed or safely deferred |
 | Audit disposition | findings-closure ledger | `fail` (default until executed) | required | must close all blocking findings and either close or justify non-blocking findings |
@@ -165,3 +167,4 @@ Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0077-structured-rev
 ## Changelog
 
 - v0.1 (2026-03-13): Minted WF-0077, anchored the problem to the active structured-review path, completed an adversarial seam review, selected `StructuredReviewerService` as the narrowest deterministic guidance seam, and separated this deterministic guidance contract from any later LLM-synthesis workflow.
+- v0.2 (2026-03-13): Tightened MVP proof to ERC-2026-PoC as the first approved slice and added an explicit non-targeted-call regression requirement so the seam cannot silently widen.
