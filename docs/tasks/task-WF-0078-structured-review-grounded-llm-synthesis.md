@@ -45,7 +45,7 @@ Verification Steps:
 - `cd backend && rg -n "wf0078_contract_erc_poc_(tracer_bullet_synthesis_acceptance|feedback_text_remains_deterministic)|structured_review_synthesis_service|feedback_text" app/services/structured_reviewer_service.py app/services/structured_review_synthesis_service.py tests/test_structured_reviewer_service.py`
 Risks (if any): The tracer bullet could accidentally overclaim public rollout if the additive result is not clearly labeled as seam-only proof.
 
-### [ ] Task 2 — Fail closed per card for synthesis rejection and whole-review deterministic completion
+### [x] Task 2 — Fail closed per card for synthesis rejection and whole-review deterministic completion
 
 Goal:
 Harden the structured-review seam so invalid or unavailable synthesis degrades only the affected card to deterministic WF-0077 guidance and never turns a deterministic-success review into a failed review.
@@ -77,7 +77,7 @@ Verification Steps:
 - `cd backend && rg -n "wf0078_contract_(erc_poc_card_timeout_falls_back|erc_poc_card_client_error_falls_back|erc_poc_card_malformed_output_falls_back|erc_poc_card_ungrounded_output_falls_back|all_cards_rejected_review_still_completes)|deterministic_fallback|accepted_synthesis" app/services/structured_reviewer_service.py app/services/structured_review_synthesis_service.py tests/test_structured_reviewer_service.py`
 Risks (if any): If rejection handling is too broad, accepted synthesis could silently stop working for valid cards; if too narrow, malformed output could leak past the seam.
 
-### [ ] Task 3 — Prove the real service-emitted prompt payload stays inside the approved boundary
+### [x] Task 3 — Prove the real service-emitted prompt payload stays inside the approved boundary
 
 Goal:
 Prove `StructuredReviewerService` emits only approved same-card synthesis inputs, excludes raw machine `reason`, and never attempts synthesis for non-targeted calls/cards.
