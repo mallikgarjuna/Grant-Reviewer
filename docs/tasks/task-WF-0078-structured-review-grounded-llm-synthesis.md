@@ -142,7 +142,7 @@ Verification Steps:
 - `cd backend && rg -n "wf0078_contract_(rejects_wrong_element_output|rejects_ambiguous_or_mismatched_output|rejects_malformed_output)|wrong_element|ambiguous|malformed" app/services/structured_review_synthesis_service.py tests/test_structured_review_synthesis_service.py`
 Risks (if any): If helper validation accepts a wrong-element payload, synthesis could present unsupported evaluation-criteria/elements advice as if it were grounded.
 
-### [ ] Task 5 — Conditional carry-through check; otherwise close as explicit backend-only seam proof
+### [x] Task 5 — Conditional carry-through check; otherwise close as explicit backend-only seam proof
 
 Goal:
 Confirm WF-0078 can close honestly at the backend seam without implying persistence/API/review-detail/export/frontend rollout, and open a separate dependent slice only if that broader carry-through is truly required.
