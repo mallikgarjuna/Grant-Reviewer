@@ -30,6 +30,11 @@ from app.models.domain import (
     ReviewStatus,
 )
 from app.repositories.review_repository import ReviewRepository
+from app.services.llm_client import LLMClientError
+from app.services.structured_review_synthesis_service import (
+    StructuredReviewSynthesisAcceptedResult,
+    StructuredReviewSynthesisRejectedResult,
+)
 from app.services.structured_reviewer_service import StructuredReviewerService
 from scripts.ingest_call import ingest_call
 
@@ -284,6 +289,74 @@ class EchoExpectationLLMClient:
         return "echo-test-model"
 
 
+class StaticJSONLLMClient:
+    """backend/tests/test_structured_reviewer_service.py
+    Deterministic JSON-returning client for synthesis seam tests.
+    """
+
+    def __init__(self, response_text: str) -> None:
+        self.response_text = response_text
+
+    def generate(self, prompt: str) -> str:
+        return self.response_text
+
+    def get_model_name(self) -> str:
+        return "static-json-test-model"
+
+
+class TimeoutJSONLLMClient:
+    """backend/tests/test_structured_reviewer_service.py
+    Deterministic timeout client for synthesis fallback tests.
+    """
+
+    def generate(self, prompt: str) -> str:
+        raise TimeoutError("WF-0078 synthesis timeout")
+
+    def get_model_name(self) -> str:
+        return "timeout-json-test-model"
+
+
+class ErrorJSONLLMClient:
+    """backend/tests/test_structured_reviewer_service.py
+    Deterministic client-error client for synthesis fallback tests.
+    """
+
+    def generate(self, prompt: str) -> str:
+        raise LLMClientError("WF-0078 synthesis client error")
+
+    def get_model_name(self) -> str:
+        return "error-json-test-model"
+
+
+class UnexpectedErrorJSONLLMClient:
+    """backend/tests/test_structured_reviewer_service.py
+    Deterministic unexpected-error client for synthesis fallback tests.
+    """
+
+    def generate(self, prompt: str) -> str:
+        raise RuntimeError("WF-0078 unexpected synthesis failure")
+
+    def get_model_name(self) -> str:
+        return "unexpected-error-json-test-model"
+
+
+class RecordingJSONLLMClient:
+    """backend/tests/test_structured_reviewer_service.py
+    Deterministic JSON client that captures prompts for seam assertions.
+    """
+
+    def __init__(self, response_text: str) -> None:
+        self.response_text = response_text
+        self.prompts: list[str] = []
+
+    def generate(self, prompt: str) -> str:
+        self.prompts.append(prompt)
+        return self.response_text
+
+    def get_model_name(self) -> str:
+        return "recording-json-test-model"
+
+
 def _build_service(monkeypatch):
     monkeypatch.setenv("REVIEW_TIMEOUT_SECONDS", "0.02")
     _reset_database()
@@ -415,6 +488,17 @@ def _build_erc_service(monkeypatch):
         llm_client=EchoExpectationLLMClient(),
     )
     return service, call_id
+
+
+def _get_expectation_id_for_node(
+    service: StructuredReviewerService,
+    *,
+    call_id: UUID,
+    node_logical_id: str,
+) -> str:
+    call_nodes = service.repository.get_nodes_for_call(call_id)
+    node = next(node for node, _ in call_nodes if node.logical_id == node_logical_id)
+    return str(service.repository.get_expectations_for_node(node.id)[0].id)
 
 
 def _set_call_definition_reviewer_policy(
@@ -1989,6 +2073,1257 @@ def test_wf0077_contract_erc_poc_fallback_duplicate_source(monkeypatch) -> None:
             in cards[0].feedback_text
         )
         assert not cards[0].feedback_text.startswith("Revise ")
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_erc_poc_tracer_bullet_synthesis_acceptance(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: accepted additive synthesis can exist at the service/helper seam.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    synthesis_payload = json.dumps(
+        {
+            "expectation_id": "placeholder-filled-by-helper-validation",
+            "node_logical_id": "poc_idea_innovation",
+            "evaluation_element_logical_id": "elem_breakthrough_innovation_potential",
+            "synthesized_feedback": "Synthesis: clarify why the proof-of-concept is high risk, high gain, and distinct from current alternatives.",
+            "evidence_quotes": [
+                "high-risk catalyst platform",
+                "distinct translational route",
+            ],
+        }
+    )
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    service._llm_client = StaticJSONLLMClient(synthesis_payload)
+    call_nodes = service.repository.get_nodes_for_call(call_id)
+    innovation_node = next(
+        node for node, _ in call_nodes if node.logical_id == "poc_idea_innovation"
+    )
+    expectation_id = str(
+        service.repository.get_expectations_for_node(innovation_node.id)[0].id
+    )
+
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-erc-poc-tracer-bullet",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-erc-poc-tracer-bullet",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+
+    service._llm_client = StaticJSONLLMClient(
+        synthesis_payload.replace(
+            '"placeholder-filled-by-helper-validation"',
+            f'"{expectation_id}"',
+        )
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-erc-poc-tracer-bullet",
+            idempotency_key="wf0078-erc-poc-tracer-bullet",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert len(service.last_synthesis_results) == 1
+        accepted_result = service.last_synthesis_results[0]
+        assert isinstance(accepted_result, StructuredReviewSynthesisAcceptedResult)
+        assert accepted_result.expectation_id == expectation_id
+        assert accepted_result.node_logical_id == "poc_idea_innovation"
+        assert (
+            accepted_result.synthesized_feedback
+            == "Synthesis: clarify why the proof-of-concept is high risk, high gain, and distinct from current alternatives."
+        )
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_erc_poc_feedback_text_remains_deterministic(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: accepted synthesis must not replace persisted deterministic guidance.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    call_nodes = service.repository.get_nodes_for_call(call_id)
+    innovation_node = next(
+        node for node, _ in call_nodes if node.logical_id == "poc_idea_innovation"
+    )
+    expectation_id = str(
+        service.repository.get_expectations_for_node(innovation_node.id)[0].id
+    )
+
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-erc-poc-feedback-surface",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-erc-poc-feedback-surface",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StaticJSONLLMClient(
+        json.dumps(
+            {
+                "expectation_id": expectation_id,
+                "node_logical_id": "poc_idea_innovation",
+                "evaluation_element_logical_id": "elem_breakthrough_innovation_potential",
+                "synthesized_feedback": "Synthesis: this should remain additive only.",
+                "evidence_quotes": [
+                    "high-risk catalyst platform",
+                    "distinct translational route",
+                ],
+            }
+        )
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-erc-poc-feedback-surface",
+            idempotency_key="wf0078-erc-poc-feedback-surface",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith(
+            "Revise poc_idea_innovation to strengthen breakthrough innovation potential by "
+        )
+        assert cards[0].feedback_text != "Synthesis: this should remain additive only."
+        assert len(service.last_synthesis_results) == 1
+        assert isinstance(
+            service.last_synthesis_results[0],
+            StructuredReviewSynthesisAcceptedResult,
+        )
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_erc_poc_card_timeout_falls_back(monkeypatch) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: one timed-out synthesis attempt falls back to deterministic guidance.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-timeout-fallback",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-timeout-fallback",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = TimeoutJSONLLMClient()
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-timeout-fallback",
+            idempotency_key="wf0078-timeout-fallback",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith("Revise poc_idea_innovation")
+        assert len(service.last_synthesis_results) == 1
+        rejected_result = service.last_synthesis_results[0]
+        assert isinstance(rejected_result, StructuredReviewSynthesisRejectedResult)
+        assert rejected_result.rejection_code == "timeout"
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_erc_poc_card_client_error_falls_back(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: client errors degrade one card back to deterministic guidance.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-client-error-fallback",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-client-error-fallback",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = ErrorJSONLLMClient()
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-client-error-fallback",
+            idempotency_key="wf0078-client-error-fallback",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith("Revise poc_idea_innovation")
+        assert len(service.last_synthesis_results) == 1
+        rejected_result = service.last_synthesis_results[0]
+        assert isinstance(rejected_result, StructuredReviewSynthesisRejectedResult)
+        assert rejected_result.rejection_code == "client_error"
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_erc_poc_card_malformed_output_falls_back(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: malformed synthesis output is dropped without affecting the card.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-malformed-fallback",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-malformed-fallback",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StaticJSONLLMClient("{not-json")
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-malformed-fallback",
+            idempotency_key="wf0078-malformed-fallback",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith("Revise poc_idea_innovation")
+        assert len(service.last_synthesis_results) == 1
+        rejected_result = service.last_synthesis_results[0]
+        assert isinstance(rejected_result, StructuredReviewSynthesisRejectedResult)
+        assert rejected_result.rejection_code == "malformed_output"
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_erc_poc_card_ungrounded_output_falls_back(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: ungrounded additive synthesis is rejected and the card stays deterministic.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-ungrounded-fallback",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-ungrounded-fallback",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StaticJSONLLMClient(
+        json.dumps(
+            {
+                "expectation_id": expectation_id,
+                "node_logical_id": "poc_idea_innovation",
+                "evaluation_element_logical_id": "elem_breakthrough_innovation_potential",
+                "synthesized_feedback": "Synthesis: this is not grounded in the submitted node.",
+                "evidence_quotes": ["quote missing from the submitted excerpt"],
+            }
+        )
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-ungrounded-fallback",
+            idempotency_key="wf0078-ungrounded-fallback",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith("Revise poc_idea_innovation")
+        assert len(service.last_synthesis_results) == 1
+        rejected_result = service.last_synthesis_results[0]
+        assert isinstance(rejected_result, StructuredReviewSynthesisRejectedResult)
+        assert rejected_result.rejection_code == "ungrounded_output"
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_all_cards_rejected_review_still_completes(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: even when every additive attempt rejects, the deterministic review completes.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    innovation_expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    leadership_expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_pi_strategic_leadership",
+    )
+    innovation_machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+    leadership_machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_pi_clear_vision_strategic_decisions_risk_contingency"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-all-cards-rejected",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-all-cards-rejected-innovation",
+                    primary_expectation_ref=innovation_expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=innovation_machine_feedback,
+                ),
+                DiagnosticFindingV1(
+                    finding_id="wf0078-all-cards-rejected-leadership",
+                    primary_expectation_ref=leadership_expectation_id,
+                    subject_ref=SubjectRef(
+                        node_logical_id="poc_pi_strategic_leadership"
+                    ),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=leadership_machine_feedback,
+                ),
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=innovation_expectation_id,
+                    rating="NOTE",
+                    feedback=innovation_machine_feedback,
+                ),
+                EngineReviewCard(
+                    node_logical_id="poc_pi_strategic_leadership",
+                    expectation_id=leadership_expectation_id,
+                    rating="NOTE",
+                    feedback=leadership_machine_feedback,
+                ),
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StaticJSONLLMClient("{not-json")
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                ),
+                (
+                    "poc_pi_strategic_leadership",
+                    "The principal investigator led translational pilots and cross-functional commercialization planning.",
+                ),
+            ],
+            external_user_id="wf0078-all-cards-rejected",
+            idempotency_key="wf0078-all-cards-rejected",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 2
+        assert all(card.feedback_text for card in cards)
+        assert cards[0].feedback_text != innovation_machine_feedback
+        assert cards[1].feedback_text != leadership_machine_feedback
+        assert len(service.last_synthesis_results) == 2
+        assert all(
+            isinstance(result, StructuredReviewSynthesisRejectedResult)
+            for result in service.last_synthesis_results
+        )
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_emitted_payload_excludes_raw_reason(monkeypatch) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: emitted synthesis request excludes audit-only raw machine reason.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+    raw_reason = "audit_only_raw_reason_should_not_enter_synthesis_payload"
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-payload-excludes-raw-reason",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-payload-excludes-raw-reason",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=raw_reason,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StaticJSONLLMClient("{not-json")
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-payload-excludes-raw-reason",
+            idempotency_key="wf0078-payload-excludes-raw-reason",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert len(service.last_synthesis_requests) == 1
+        serialized_request = _serialize_snapshot_for_assertions(
+            service.last_synthesis_requests[0].__dict__
+        )
+        assert raw_reason not in serialized_request
+        assert machine_feedback not in serialized_request
+        assert "Revise poc_idea_innovation" in serialized_request
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_emitted_payload_uses_same_card_context_only(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: each emitted request is restricted to same-card context.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    innovation_expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    leadership_expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_pi_strategic_leadership",
+    )
+    innovation_machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+    leadership_machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_pi_clear_vision_strategic_decisions_risk_contingency"
+    )
+    innovation_text = (
+        "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation."
+    )
+    leadership_text = (
+        "The principal investigator led translational pilots and cross-functional commercialization planning."
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-payload-same-card-only",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-payload-same-card-innovation",
+                    primary_expectation_ref=innovation_expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason="audit-only-innovation-reason",
+                ),
+                DiagnosticFindingV1(
+                    finding_id="wf0078-payload-same-card-leadership",
+                    primary_expectation_ref=leadership_expectation_id,
+                    subject_ref=SubjectRef(
+                        node_logical_id="poc_pi_strategic_leadership"
+                    ),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason="audit-only-leadership-reason",
+                ),
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=innovation_expectation_id,
+                    rating="NOTE",
+                    feedback=innovation_machine_feedback,
+                ),
+                EngineReviewCard(
+                    node_logical_id="poc_pi_strategic_leadership",
+                    expectation_id=leadership_expectation_id,
+                    rating="NOTE",
+                    feedback=leadership_machine_feedback,
+                ),
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StaticJSONLLMClient("{not-json")
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                ("poc_idea_innovation", innovation_text),
+                ("poc_pi_strategic_leadership", leadership_text),
+            ],
+            external_user_id="wf0078-payload-same-card-only",
+            idempotency_key="wf0078-payload-same-card-only",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 2
+        assert len(service.last_synthesis_requests) == 2
+        innovation_request = service.last_synthesis_requests[0]
+        leadership_request = service.last_synthesis_requests[1]
+        assert innovation_request.node_logical_id == "poc_idea_innovation"
+        assert innovation_request.submitted_excerpt == innovation_text[:280]
+        assert leadership_text not in innovation_request.submitted_excerpt
+        assert leadership_request.node_logical_id == "poc_pi_strategic_leadership"
+        assert leadership_request.submitted_excerpt == leadership_text[:280]
+        assert innovation_text not in leadership_request.submitted_excerpt
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_emitted_payload_includes_node_title_context(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: emitted synthesis request carries same-card node title context.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-node-title-context",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-node-title-context",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    recording_client = RecordingJSONLLMClient("{not-json")
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = recording_client
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-node-title-context",
+            idempotency_key="wf0078-node-title-context",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert len(service.last_synthesis_requests) == 1
+        assert service.last_synthesis_requests[0].node_title == "PoC idea and innovation"
+        assert len(recording_client.prompts) == 1
+        assert "node_title: PoC idea and innovation" in recording_client.prompts[0]
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_emitted_payload_excludes_full_call_and_legacy_artifacts(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: emitted synthesis request excludes full call-definition and legacy surfaces.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-payload-excludes-full-call",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-payload-excludes-full-call",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason="audit-only-full-call-exclusion",
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StaticJSONLLMClient("{not-json")
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-payload-excludes-full-call",
+            idempotency_key="wf0078-payload-excludes-full-call",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        serialized_request = _serialize_snapshot_for_assertions(
+            service.last_synthesis_requests[0].__dict__
+        )
+        assert "evaluation_criteria" not in serialized_request
+        assert "schema_version" not in serialized_request
+        assert "single-step" not in serialized_request
+        assert "structured_payload" not in serialized_request
+        assert "legacy" not in serialized_request
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_non_guidance_cards_do_not_attempt_synthesis(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: ERC PoC cards without approved WF-0077 guidance must not attempt synthesis.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    raw_machine_feedback = "content_evaluated"
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-non-guidance-no-attempt",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-non-guidance-no-attempt",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=raw_machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=raw_machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StaticJSONLLMClient(
+        json.dumps(
+            {
+                "expectation_id": expectation_id,
+                "node_logical_id": "poc_idea_innovation",
+                "evaluation_element_logical_id": "elem_breakthrough_innovation_potential",
+                "synthesized_feedback": "This should never be attempted.",
+                "evidence_quotes": ["high-risk catalyst platform"],
+            }
+        )
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-non-guidance-no-attempt",
+            idempotency_key="wf0078-non-guidance-no-attempt",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text == "content_evaluated"
+        assert service.last_synthesis_requests == ()
+        assert service.last_synthesis_results == ()
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_erc_poc_card_unexpected_error_falls_back(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: unexpected synthesis errors still fail closed with explicit classification.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-unexpected-error-fallback",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-unexpected-error-fallback",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = UnexpectedErrorJSONLLMClient()
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0078-unexpected-error-fallback",
+            idempotency_key="wf0078-unexpected-error-fallback",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith("Revise poc_idea_innovation")
+        assert len(service.last_synthesis_results) == 1
+        rejected_result = service.last_synthesis_results[0]
+        assert isinstance(rejected_result, StructuredReviewSynthesisRejectedResult)
+        assert rejected_result.rejection_code == "unexpected_error"
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0078_contract_non_targeted_calls_do_not_attempt_synthesis(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0078: non-ERC-PoC calls never emit synthesis requests or results.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_nwo_veni_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="key_outputs",
+    )
+    machine_feedback = "content_evaluated"
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0078-non-targeted-no-attempt",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0078-non-targeted-no-attempt",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="key_outputs"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason="audit-only-non-targeted-reason",
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="key_outputs",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StaticJSONLLMClient(
+        json.dumps(
+            {
+                "expectation_id": expectation_id,
+                "node_logical_id": "key_outputs",
+                "evaluation_element_logical_id": "elem_outputs_quality",
+                "synthesized_feedback": "This should never be used.",
+                "evidence_quotes": ["Representative proof text for NWO key outputs."],
+            }
+        )
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("key_outputs", "Representative proof text for NWO key outputs.")],
+            external_user_id="wf0078-non-targeted-no-attempt",
+            idempotency_key="wf0078-non-targeted-no-attempt",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert service.last_synthesis_requests == ()
+        assert service.last_synthesis_results == ()
     finally:
         service.repository.session.close()
 
