@@ -2,9 +2,9 @@
 # WF-0076 — Subordinate Prompt Runtime Consumption
 
 Artifact: walkthrough
-Version: v1.0
+Version: v1.1
 Status: Done
-Last Updated: 2026-03-12
+Last Updated: 2026-03-13
 
 ## Scope Closed
 
@@ -13,6 +13,7 @@ Last Updated: 2026-03-12
 - Hardened the request contract and validator for additive subordinate-prompt payloads (including duplicate ID fail-closed checks).
 - Hardened subordinate-prompt contract strictness so whitespace-only IDs/prompts and trim-colliding duplicate IDs fail closed.
 - Added live runtime-consumption proof in evaluator output (`reason`) and output-level proof via surfaced review-card feedback.
+- Refined researcher-facing ERC PoC card rendering so machine feedback tokens resolve back to canonical subordinate prompt text in stable order, with unresolved-ID fallback preserved as a fail-closed signal.
 - Skipped conditional Task 4 clarification because executable proof from Tasks 1-3 was unambiguous.
 
 ## Implementation Summary
@@ -29,10 +30,13 @@ Last Updated: 2026-03-12
   - Added fail-closed duplicate subordinate-prompt ID detection per expectation.
 - `backend/app/engine/findings/evaluator.py`
   - Added deterministic subordinate-prompt runtime signal in `reason` for carried prompts.
+- `backend/app/services/structured_reviewer_service.py`
+  - Added ERC PoC-only presentation mapping that translates `content_evaluated;subordinate_prompt_ids=...` machine feedback into ordered canonical subordinate-prompt text for researcher-facing review cards without mutating engine-level raw `reason`.
 - Tests
   - Service proof selector renamed to WF-0076 and strengthened with canonical source perturbation.
   - Contract tests added for valid additive carriage, malformed item rejection, duplicate-ID rejection, and no-carriage compatibility.
   - Pipeline tests added for positive/negative runtime-consumption behavior and output-level signal proof.
+  - Added service regressions proving ordered prompt-text rendering with unresolved-ID fallback and preserving machine-feedback passthrough for non-ERC calls.
 
 ## Phase Evidence
 
@@ -59,6 +63,15 @@ Last Updated: 2026-03-12
   - `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k "wf0076 or subordinate_prompt"`
   - `cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5432/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_structured_reviewer_service.py -k "wf0076"`
   - `cd backend && uv run pytest tests/test_call_subordinate_prompt_coverage.py -k "wf0075_real_erc_poc_page_43_proof_call_is_fully_encoded"`
+- Part C3 post-closeout refinement:
+  - Commit `4dbb2d8`: refined ERC PoC card presentation so subordinate-prompt IDs render as canonical prompt text in deterministic order, unresolved IDs remain visible fail-closed, and non-ERC calls keep pre-existing machine-feedback behavior.
+- Part C4 verification refresh (all pass):
+  - `pre-commit run --all-files`
+  - `cd backend && uv run pytest tests/engine/test_review_request_contracts.py -k "subordinate_prompt or activated_expectation"`
+  - `cd backend && uv run pytest tests/test_review_request_validator.py`
+  - `cd backend && uv run pytest tests/test_review_engine_pipeline_v1.py -k "wf0076 or subordinate_prompt"`
+  - `cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5432/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_structured_reviewer_service.py -k "wf0076"`
+  - `cd backend && uv run pytest tests/test_call_subordinate_prompt_coverage.py -k "wf0075_real_erc_poc_page_43_proof_call_is_fully_encoded"`
 
 ## Risks / Follow-Ups
 
@@ -70,3 +83,7 @@ Last Updated: 2026-03-12
 - WF artifacts archived to `completed/` in this phase.
 - `docs/index.md` updated to `Done` with completed artifact links.
 - Ready for explicit user `ship it` decision.
+
+## Changelog
+
+- v1.1 (2026-03-13): Recorded the post-closeout ERC PoC feedback-presentation refinement, added the new service-level regression coverage, and refreshed the full WF-0076 verification bundle after commit `4dbb2d8`.
