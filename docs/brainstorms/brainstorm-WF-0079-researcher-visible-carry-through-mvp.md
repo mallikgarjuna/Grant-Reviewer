@@ -2,8 +2,8 @@
 # WF-0079 — Researcher-Visible Carry-Through MVP
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Draft Complete
 Last Updated: 2026-03-13
 
 Type: feature
@@ -45,7 +45,7 @@ Contract Notes / Non-obvious constraints:
 
 ## Open Questions / Deferred
 
-- Whether the narrowest safe persisted contract is new nullable fields on `ReviewCard` or a review-level JSON payload carrying additive card companions by card identity.
+- MVP prefers nullable card-level persisted companion fields on `ReviewCard`; alternative persistence shapes are out unless Phase 1 proves this is unsafe.
 - Whether MVP should include review-detail export carry-through or defer exports until after the on-page detail surface is proven.
 - Whether review history/list surfaces should remain deterministic-only in MVP even if detail view carries the additive companion.
 
@@ -111,6 +111,7 @@ Contract Notes / Non-obvious constraints:
 ## 5. Constraints
 
 - `pipeline_v1` remains the deterministic SSOT for findings, ratings, and traceability; this WF must not move synthesis upstream or reopen execution-engine questions.
+- WF-0079 carries through only the already-approved additive synthesis scope from WF-0078: `ERC-2026-PoC` structured review cards that already qualify for accepted synthesis.
 - Deterministic `feedback_text` remains the fallback truth and must continue to render even when synthesis is absent, rejected, or out of scope.
 - Additive synthesis must remain clearly separated from deterministic feedback in both persisted shape and rendered UI.
 - Per-card fail-closed behavior remains mandatory: an invalid or missing companion for one card must degrade only that card to deterministic-only display.
@@ -153,16 +154,18 @@ Contract Notes / Non-obvious constraints:
   - legacy `/reviews` path redesign;
   - whole-review synthesis, generalized AI coach features, or cross-call expansion beyond already-approved synthesis scope.
 - Exports/history are deferred by default. They are not part of MVP unless a later planning artifact proves the review-detail ship claim would otherwise be misleading.
+- During MVP, exports and review history/list remain deterministic-only surfaces and must not claim additive companion visibility.
 - Backward-compatibility plan:
   - existing reviews with no synthesis data must continue to deserialize, read, and render as deterministic-only cards;
+  - migration/read behavior must preserve legacy reviews by treating new companion fields as nullable with no backfill requirement for MVP;
   - the detail response must treat synthesized companion data as optional per card;
   - the frontend must not show warnings or empty companion shells when the optional data is absent.
 - Narrowest safe public contract shape:
   - keep `feedback_text` unchanged as deterministic baseline/fallback;
-  - add optional additive fields scoped to the same card, likely `synthesized_companion_text` plus a minimal provenance/state marker indicating accepted companion availability without redefining deterministic truth;
-  - avoid exposing internal rejection taxonomy unless needed for rendering truthfully.
+  - add optional additive fields scoped to the same card, likely `synthesized_companion_text` plus a minimal accepted-companion-present state marker without redefining deterministic truth;
+  - do not expose internal rejection taxonomy in the user-visible contract.
 - Topological task order:
-  - decide and harden the persistence contract first;
+  - decide and harden the persistence contract first, including nullable-field legacy-read behavior;
   - then carry it through repository and API detail reads;
   - then render it on the detail page with deterministic-first fallback behavior;
   - then run end-to-end verification covering old reviews, accepted-companion reviews, and deterministic-only fallback reviews.
@@ -181,3 +184,8 @@ Contract Notes / Non-obvious constraints:
 - Reopening WF-0075, WF-0076, WF-0077, or WF-0078 beyond the already-approved additive synthesis carry-through required for truthful detail-page visibility.
 - Broadening MVP to exports, history/list, legacy path redesign, or generalized AI coaching.
 - Introducing non-additive whole-review synthesis or refactoring unrelated review contracts.
+
+## Changelog
+
+- v0.1 (2026-03-13): Captured the initial Phase 0 scope for a one-WF researcher-visible carry-through MVP on structured review detail.
+- v0.2 (2026-03-13): Applied the Phase 0 risk audit by locking MVP to nullable card-level persistence, restating the `ERC-2026-PoC` scope gate, making exports/history explicitly deterministic-only deferred surfaces, and tightening legacy-read/public-contract constraints.
