@@ -1,6 +1,32 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-13 (WF-0077: structured-review-deterministic-researcher-guidance)
+
+### AD 77.1: WF-0077 MVP stays at the structured-review service seam with `ERC-2026-PoC` only
+- **WF ID**: WF-0077
+- **Context**: The approved brainstorm and repo snapshot show that `backend/app/services/structured_reviewer_service.py` already owns the call-scoped presentation seam, while evaluator and compatibility-mapper layers carry machine/audit semantics that would widen behavior across calls if edited for researcher-facing guidance.
+- **Decision**: Lock MVP to an additive deterministic guidance transform in `StructuredReviewerService` for `ERC-2026-PoC` only. Preserve raw machine `reason`, keep evaluator/mapper/legacy review paths out of the primary slice, and treat frontend work as conditional-only follow-on scope.
+- **Why**: This is the smallest honest seam that can improve researcher-facing `feedback_text` without reopening WF-0074/WF-0075/WF-0076 boundaries or broadening cross-call behavior.
+- **Tradeoff**: Immediate benefit remains intentionally narrow, so broader structured-call reuse and UI polish are deferred until later artifacts prove they are needed.
+- **Status**: Approved.
+
+### AD 77.2: WF-0077 Phase 2 must stay backend-first and task-atomic
+- **WF ID**: WF-0077
+- **Context**: The brainstorm and current runner invocation both require a bounded implementation plan: `ERC-2026-PoC` first, backend-only MVP preferred, and a 3-file task limit to prevent the guidance work from silently widening into frontend or cross-layer refactors.
+- **Decision**: Require Phase 2 to decompose WF-0077 into backend-first tasks that prefer no more than three touched files each, with `backend/app/services/structured_reviewer_service.py` and `backend/tests/test_structured_reviewer_service.py` as the default first implementation slice. Any frontend work must be planned as a separate conditional follow-on only after backend proof shows a real render-truth gap.
+- **Why**: This keeps the implementation plan aligned with the approved seam and makes scope drift visible before Phase 3 starts.
+- **Tradeoff**: Planning may produce more than one small dependent task instead of one broader convenience slice, but that preserves auditability and rollback safety.
+- **Status**: Approved.
+
+### AD 77.3: WF-0077 closes at the verified backend seam with no frontend follow-on
+- **WF ID**: WF-0077
+- **Context**: Phase 3 implemented the deterministic guidance rewrite and fail-closed fallback handling entirely inside `StructuredReviewerService`, with service-level proof for actionable guidance, machine-reason passthrough, weak-source fallback, and non-targeted-call safety. The conditional Task 3 check then re-verified that `frontend/src/app/app/reviews/[reviewId]/page.tsx` still renders `card.feedback_text` directly.
+- **Decision**: Close WF-0077 as a backend-only completion. Do not open a frontend follow-on workflow from this closeout because the current review page already reflects the improved backend contract without additional UI work.
+- **Why**: This preserves the smallest honest closure claim: deterministic researcher guidance improved at the approved service seam, fail-closed behavior remains intact, and there is no remaining render-truth gap that justifies widening scope.
+- **Tradeoff**: The deterministic phrasing remains intentionally tied to the current `ERC-2026-PoC` subordinate-prompt seam; broader call rollout or richer phrasing stays deferred to a separately justified workflow.
+- **Status**: Approved.
+
 ## Date: 2026-03-12 (WF-0076: subordinate-prompt-runtime-consumption)
 
 ### AD 76.2: WF-0076 MVP must source prompts from canonical call JSON and prove effect through evaluator reason output
