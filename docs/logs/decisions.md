@@ -1,6 +1,24 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-13 (WF-0078: structured-review-grounded-llm-synthesis)
+
+### AD 78.1: WF-0078 MVP stays downstream of `pipeline_v1` and closes first as backend seam proof
+- **WF ID**: WF-0078
+- **Context**: The approved brainstorm locks `pipeline_v1` as deterministic SSOT, rejects `ReviewExecutionCore` and frontend-only rewriting as the first seam, and flags response carry-through as an explicit Phase 1 decision rather than an implied rollout.
+- **Decision**: Keep MVP synthesis per card and downstream of `pipeline_v1` in `StructuredReviewerService` or a helper owned by that seam. Close the first PRD at backend seam proof only, with persistence/API/review-detail/export/frontend carry-through deferred to a separate dependent slice if broader rollout is later required.
+- **Why**: This is the smallest honest boundary that preserves rollback to WF-0077 deterministic guidance, respects the 3-file task-slice rule, and avoids hiding wider contract work inside a backend-first proof.
+- **Tradeoff**: The first implementation may prove the synthesis contract without immediately changing every user-visible read surface, so a broader rollout claim must wait for an explicit follow-on task plan.
+- **Status**: Approved.
+
+### AD 78.2: WF-0078 keeps additive synthesis seam-scoped first and forbids non-targeted synthesis attempts
+- **WF ID**: WF-0078
+- **Context**: The brainstorm locks raw machine `reason` as audit-only, requires fail-closed fallback to WF-0077 deterministic guidance, and says additive-field/provenance carry-through must be an explicit Phase 2 decision rather than an implied first-slice rollout.
+- **Decision**: Preserve deterministic `feedback_text` as the stable fallback surface, add only an optional synthesized companion plus a seam-scoped synthesis outcome marker for targeted in-scope cards, and defer any public/API/frontend provenance carry-through to a separate dependent slice. Non-targeted calls/cards must not invoke synthesis at all and must keep their current deterministic contract unchanged.
+- **Why**: This removes the hidden contradiction between backend-only seam proof and public-contract widening while also preventing silent cost/coupling drift outside the approved `ERC-2026-PoC` slice.
+- **Tradeoff**: The first implementation may validate synthesis behavior mostly at the service seam, so broader user-visible rollout still needs explicit follow-on planning and proof.
+- **Status**: Approved.
+
 ## Date: 2026-03-13 (WF-0077: structured-review-deterministic-researcher-guidance)
 
 ### AD 77.1: WF-0077 MVP stays at the structured-review service seam with `ERC-2026-PoC` only
