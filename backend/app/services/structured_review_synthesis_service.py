@@ -24,6 +24,7 @@ class StructuredReviewSynthesisRequest:
     deterministic_feedback: str
     submitted_excerpt: str
     subordinate_prompt_context: tuple[str, ...]
+    node_title: str = ""
 
 
 @dataclass(frozen=True)
@@ -64,6 +65,7 @@ class StructuredReviewSynthesisService:
         *,
         expectation_id: str,
         node_logical_id: str,
+        node_title: str,
         evaluation_criterion_name: str,
         evaluation_element_logical_id: str,
         evaluation_element_name: str,
@@ -74,6 +76,7 @@ class StructuredReviewSynthesisService:
         return StructuredReviewSynthesisRequest(
             expectation_id=expectation_id,
             node_logical_id=node_logical_id,
+            node_title=node_title,
             evaluation_criterion_name=evaluation_criterion_name,
             evaluation_element_logical_id=evaluation_element_logical_id,
             evaluation_element_name=evaluation_element_name,
@@ -109,7 +112,7 @@ class StructuredReviewSynthesisService:
                 expectation_id=request.expectation_id,
                 node_logical_id=request.node_logical_id,
                 evaluation_element_logical_id=request.evaluation_element_logical_id,
-                rejection_code="client_error",
+                rejection_code="unexpected_error",
                 detail=str(err),
             )
 
@@ -121,6 +124,7 @@ class StructuredReviewSynthesisService:
             "Do not use any context outside this card.",
             f"expectation_id: {request.expectation_id}",
             f"node_logical_id: {request.node_logical_id}",
+            f"node_title: {request.node_title}",
             f"evaluation_criterion: {request.evaluation_criterion_name}",
             f"evaluation_element_logical_id: {request.evaluation_element_logical_id}",
             f"evaluation_element_name: {request.evaluation_element_name}",

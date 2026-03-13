@@ -420,6 +420,11 @@ class StructuredReviewerService:
             synthesis_request = self._build_synthesis_request_for_card(
                 call_code=call.code,
                 node_logical_id=card.node_logical_id,
+                node_title=(
+                    node_by_logical_id[card.node_logical_id].title
+                    if card.node_logical_id in node_by_logical_id
+                    else None
+                ),
                 expectation=expectation,
                 feedback_text=feedback_text,
                 submitted_text_by_node=submitted_text_by_node,
@@ -597,6 +602,7 @@ class StructuredReviewerService:
         *,
         call_code: str,
         node_logical_id: str,
+        node_title: str | None,
         expectation: NodeExpectation,
         feedback_text: str,
         submitted_text_by_node: dict[str, str],
@@ -617,25 +623,30 @@ class StructuredReviewerService:
             else ""
         )
         submitted_text = submitted_text_by_node.get(node_logical_id, "")
-        if (
-            not isinstance(element_logical_id, str)
-            or not element_logical_id.strip()
-            or not isinstance(element_name, str)
-            or not element_name.strip()
-            or not submitted_text.strip()
-            or not feedback_text.strip()
-        ):
-            return None
-
         subordinate_prompt_context = tuple(
             prompt_text
             for prompt in subordinate_prompts_by_element_id.get(element_logical_id, [])
             for prompt_text in [prompt.get("prompt")]
             if isinstance(prompt_text, str) and prompt_text.strip()
         )
+        if (
+            not isinstance(element_logical_id, str)
+            or not element_logical_id.strip()
+            or not isinstance(node_title, str)
+            or not node_title.strip()
+            or not isinstance(element_name, str)
+            or not element_name.strip()
+            or not submitted_text.strip()
+            or not feedback_text.strip()
+            or not subordinate_prompt_context
+            or not self._is_wf0078_guidance_feedback(feedback_text)
+        ):
+            return None
+
         return self.synthesis_service.build_request(
             expectation_id=str(expectation.id),
             node_logical_id=node_logical_id,
+            node_title=node_title.strip(),
             evaluation_criterion_name=criterion_name,
             evaluation_element_logical_id=element_logical_id,
             evaluation_element_name=element_name,
@@ -643,6 +654,10 @@ class StructuredReviewerService:
             submitted_text=submitted_text,
             subordinate_prompt_context=subordinate_prompt_context,
         )
+
+    @staticmethod
+    def _is_wf0078_guidance_feedback(feedback_text: str) -> bool:
+        return feedback_text.startswith("Revise ")
 
     @classmethod
     def _build_deterministic_guidance_from_prompts(
