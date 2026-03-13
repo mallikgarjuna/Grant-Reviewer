@@ -2,7 +2,7 @@
 # WF-0079 — Researcher-Visible Carry-Through MVP
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-13
 
@@ -89,9 +89,10 @@ Type: feature
   - Deterministic feedback renders first and always.
   - Additive companion text renders only when present and with labeling that marks it as additive guidance, not deterministic truth.
   - The page-local copy/export behavior remains deterministic-only and must say so in user-facing copy.
-- State transitions `(US1) (US2) (US3) (FR1) (FR5) (FR8)`
+- Logical state transitions `(US1) (US2) (US3) (FR1) (FR5) (FR8)`
   - `deterministic_only`: card has no accepted companion persisted.
   - `deterministic_plus_companion`: card has accepted companion persisted and rendered additively on the detail path.
+  - These are planning states only; they do not require a separate public enum/marker beyond the nullable companion field unless Phase 2 proves one is strictly required for implementation safety.
   - No public state may imply that rejected or malformed synthesis is part of the user-visible contract.
 
 ## 6. Components / Modules
@@ -134,6 +135,7 @@ Type: feature
 - RED first
   - Add failing backend tests proving accepted companion data is not yet persisted through the structured review write path. `(US2) (US3) (FR1) (FR4)`
   - Add failing backend/API tests proving legacy-null and mixed-card reads are not yet carried through the repository -> API/BFF -> detail response contract. `(US1) (US2) (US3) (FR5) (FR6) (FR8)`
+  - Add failing backend/API tests proving non-targeted calls/cards do not start persisting or exposing additive companion data outside the approved `ERC-2026-PoC` scope. `(US2) (US3) (FR10) (FR11)`
   - Add failing frontend tests proving the detail page does not yet render additive companions correctly or align the deterministic-only page-local copy/export behavior, labels, and help text with the chosen MVP rule. `(US1) (US4) (FR7) (FR9)`
 - Test seams
   - Public review-generation service/repository seam that creates review cards.
@@ -164,13 +166,22 @@ Type: feature
 
 none
 
-## 12. Verification Evidence Matrix (Fail-Closed)
+## 12. Verification / Proceed Gate
+
+- No implementation-ready recommendation is valid unless the artifact records explicit `pass`, `fail`, or approved `skipped` evidence with rationale for every required proof item below.
+- No implementation-ready recommendation is valid unless all blocking findings are closed and every justified non-blocking finding is either closed or explicitly rejected with rationale in the audit disposition ledger.
+- No implementation-ready recommendation is valid if the implementation overloads deterministic `feedback_text`, re-synthesizes on read, or assumes synthesis exists for all legacy reviews/cards.
+- No implementation-ready recommendation is valid if non-targeted calls/cards can begin persisting or exposing additive companion data without an explicit new workflow approval.
+- No implementation-ready recommendation is valid if the page-local copy/export action on `/app/reviews/[reviewId]` is still ambiguous about its deterministic-only MVP behavior and user-facing wording.
+
+## 13. Verification Evidence Matrix (Fail-Closed)
 
 | Verification item | Command/test/artifact | Result (`pass`/`fail`/`skipped`) | Evidence pointer | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | Deterministic SSOT boundary proof | targeted backend tests + Phase 2/3 artifacts | `fail` (default until executed) | required | must prove `pipeline_v1` remains unchanged as the source of findings, ratings, and traceability |
 | Write-path persistence proof | targeted model/repository/service tests + migration artifact | `fail` (default until executed) | required | must prove accepted companion data is persisted during review generation rather than generated on read |
 | Legacy review compatibility proof | targeted repository/API/frontend tests using null companion data | `fail` (default until executed) | required | must prove legacy reviews/cards render and deserialize cleanly with nullable companion fields |
+| Eligibility scope-gate proof | targeted backend/API tests for non-`ERC-2026-PoC` calls/cards | `fail` (default until executed) | required | must prove non-targeted calls/cards do not start persisting or exposing additive companion data accidentally |
 | Detail read/API/BFF carry-through proof | repository mapping, API schema, BFF type, and detail-page evidence | `fail` (default until executed) | required | must prove nullable `synthesized_companion_text` survives the detail read contract without semantic drift |
 | Detail-page render proof | targeted frontend tests or deterministic UI proof | `fail` (default until executed) | required | must prove deterministic feedback remains primary and additive companion text appears only when present |
 | Mixed-card fail-closed proof | targeted backend/frontend tests | `fail` (default until executed) | required | must prove one card can show companion text while another card in the same review remains deterministic-only |
@@ -179,7 +190,15 @@ none
 | Honest non-determinism test strategy | Phase 2 task plan + verification selectors | `fail` (default until executed) | required | must avoid brittle exact-string assertions against live-model output while still proving carry-through behavior |
 | Audit disposition | findings-closure ledger | `fail` (default until executed) | required | must close all blocking findings and either close or justify non-blocking findings |
 
-## 13. Changelog
+## 14. Audit Disposition Ledger
+
+| Review source | Finding | Severity | Planned closure | Status | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Fail-closed adversarial PRD review | The finalized PRD dropped the brainstorm's explicit verification/proceed gate prose and audit disposition ledger even though its own matrix still required audit-disposition closure evidence | blocking | restore the proceed gate and a PRD-local audit disposition ledger so readiness cannot drift into implicit approval | closed | prevents implementation-ready claims without explicit pass/fail proof and finding closure bookkeeping |
+| Fail-closed adversarial PRD review | The PRD preserved the `ERC-2026-PoC` scope lock in requirements but did not make non-targeted call/card safety a dedicated verification obligation | blocking | add explicit RED tests and a verification-matrix row proving non-targeted calls/cards do not persist or expose additive companion data | closed | prevents silent cross-call scope drift while still passing legacy-null or detail-page proofs |
+
+## 15. Changelog
 
 - v0.1 (2026-03-13): Initial PRD from brainstorm.
 - v0.2 (2026-03-13): Applied the Phase 1 risk audit by locking the nullable public companion contract, fixing the page-local copy/export scope to deterministic-only, and carrying fail-closed verification obligations into the PRD.
+- v0.3 (2026-03-13): Restored the fail-closed proceed gate and audit ledger from the approved brainstorm, clarified state transitions as planning-only, and added explicit scope-gate test/proof requirements for non-targeted calls/cards.
