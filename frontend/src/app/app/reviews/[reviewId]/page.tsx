@@ -90,7 +90,7 @@ async function parseApiError(response: Response): Promise<ApiError> {
 function buildReviewExportText(reviewDetail: ReviewDetailResponse): string {
   const lines: string[] = [
     "PeerLens deterministic review export",
-    "Additive companion guidance is not included in this export.",
+    "Action-first ranking and additive companion guidance are not included in this export.",
     "",
     `Review ID: ${reviewDetail.review.id}`,
     `Status: ${reviewDetail.review.status}`,
@@ -158,11 +158,12 @@ function sortCallNodes(nodes: NodeSummary[]): NodeSummary[] {
 }
 
 function buildOrderedCardGroups(
-  reviewDetail: ReviewDetailResponse,
+  cards: ReviewDetailResponse["cards"],
+  orderingSource: ReviewDetailResponse["ordering_source"],
   sortedCallNodes: NodeSummary[],
 ): ReviewCardGroup[] {
   const groupsByKey = new Map<string, ReviewCardGroup>();
-  reviewDetail.cards.forEach((card) => {
+  cards.forEach((card) => {
     const key = card.node_logical_id ?? `node:${card.node_title}`;
     const existing = groupsByKey.get(key);
     if (existing) {
@@ -178,7 +179,7 @@ function buildOrderedCardGroups(
   });
 
   const shouldUseCallOrdering =
-    reviewDetail.ordering_source !== "review_payload_fallback" &&
+    orderingSource !== "review_payload_fallback" &&
     sortedCallNodes.length > 0;
   if (!shouldUseCallOrdering) {
     return Array.from(groupsByKey.values());
@@ -247,6 +248,25 @@ function buildOrderedCardGroups(
     }
     return leftId.localeCompare(rightId);
   });
+}
+
+function buildProjectionOrderedCards(
+  reviewDetail: ReviewDetailResponse,
+): ReviewDetailResponse["cards"] {
+  const projection = reviewDetail.detail_projection;
+  if (!projection) {
+    return reviewDetail.cards;
+  }
+
+  const cardById = new Map(reviewDetail.cards.map((card) => [card.id, card]));
+  const projectedCards = projection.ordered_card_ids
+    .map((cardId) => cardById.get(cardId))
+    .filter((card): card is ReviewDetailResponse["cards"][number] => Boolean(card));
+  const projectedCardIds = new Set(projectedCards.map((card) => card.id));
+  const unprojectedCards = reviewDetail.cards.filter(
+    (card) => !projectedCardIds.has(card.id),
+  );
+  return [...projectedCards, ...unprojectedCards];
 }
 
 function inferDetailState(
@@ -745,7 +765,20 @@ export default function ReviewDetailPage() {
   const notReviewedBoundaryLabels = hasExplicitBoundaryBuckets
     ? [...visibleButNotReviewedNodeLabels, ...noGeneratedCardsNodeLabels]
     : notReviewedNodeLabels;
-  const orderedCardGroups = buildOrderedCardGroups(reviewDetail, sortedCallNodes);
+  const projectedOrderedCards = buildProjectionOrderedCards(reviewDetail);
+  const detailProjection = reviewDetail.detail_projection;
+  const topActionCardIds = new Set(detailProjection?.top_action_card_ids ?? []);
+  const topActionCards = projectedOrderedCards.filter((card) =>
+    topActionCardIds.has(card.id),
+  );
+  const remainingCards = projectedOrderedCards.filter(
+    (card) => !topActionCardIds.has(card.id),
+  );
+  const orderedCardGroups = buildOrderedCardGroups(
+    topActionCards.length > 0 ? remainingCards : projectedOrderedCards,
+    reviewDetail.ordering_source,
+    sortedCallNodes,
+  );
   const detailState = inferDetailState(reviewDetail);
   const fallbackToPayloadOrder =
     detailState === "legacy_fallback" ||
@@ -860,6 +893,20 @@ export default function ReviewDetailPage() {
             ) : null}
           </div>
         ) : null}
+        {reviewDetail.review.status === "COMPLETED" && detailProjection ? (
+          <div className="mt-4 rounded-[var(--radius-md)] border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
+            <p className="font-medium">
+              {detailProjection.headline_state === "no_critical_blockers"
+                ? "No critical blockers found"
+                : "Action required"}
+            </p>
+            <p className="mt-1 text-sky-900">
+              {detailProjection.headline_state === "no_critical_blockers"
+                ? "All reviewed cards are assessed and limited to note/success guidance."
+                : "Start with the prioritized cards below before reading the rest of the review."}
+            </p>
+          </div>
+        ) : null}
         {hasCompatibilityNotes ? (
           <div className="mt-3 rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             <p className="font-medium">Compatibility notes</p>
@@ -921,6 +968,9 @@ export default function ReviewDetailPage() {
             {exportFeedback.message}
           </p>
         ) : null}
+        <p className="mt-3 text-sm text-[var(--color-muted-foreground)]">
+          Copy/download include deterministic review text only. Action-first ranking and additive companion guidance are not included in this export.
+        </p>
         <div className="mt-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--color-muted-foreground)]">
             Data controls
@@ -1014,11 +1064,52 @@ export default function ReviewDetailPage() {
       {reviewDetail.cards.length > 0 ||
       visibleButNotReviewedNodeLabels.length > 0 ||
       noGeneratedCardsNodeLabels.length > 0 ? (
-        <div
-          role="region"
-          aria-label="Review Feedback Cards"
-          className="grid gap-4"
-        >
+        <div className="grid gap-4">
+          {topActionCards.length > 0 ? (
+            <section
+              role="region"
+              aria-label="Top action cards"
+              className="rounded-2xl border border-sky-200 bg-sky-50 p-4"
+            >
+              <h2 className="text-base font-semibold text-sky-950">Top actions</h2>
+              <p className="mt-1 text-sm text-sky-900">
+                These cards come directly from the backend projection order.
+              </p>
+              <div className="mt-4 grid gap-4">
+                {topActionCards.map((card, index) => (
+                  <ReviewCard
+                    key={`top-action:${card.id}`}
+                    cardId={card.id}
+                    index={index + 1}
+                    criterion={card.criterion}
+                    description={card.criterion_description}
+                    reviewedSectionLabel={
+                      nodeTitleByLogicalId.get(card.node_logical_id ?? "") ?? card.node_title
+                    }
+                    evaluationElementName={card.evaluation_element_name}
+                    expectationGuidanceNote={card.expectation_guidance_note}
+                    rating={card.rating}
+                    feedback={card.feedback_text}
+                    synthesizedCompanionText={card.synthesized_companion_text}
+                    assessmentStatus={card.assessment_status}
+                    notAssessableReason={card.not_assessable_reason}
+                    sourceBasisLabel={card.source_basis_label}
+                    sourceBasisState={card.source_basis_state}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
+          <div
+            role="region"
+            aria-label={topActionCards.length > 0 ? "Other findings" : "Review Feedback Cards"}
+            className="grid gap-4"
+          >
+            {topActionCards.length > 0 ? (
+              <h2 className="text-base font-semibold text-[var(--color-foreground)]">
+                Other findings
+              </h2>
+            ) : null}
           {orderedCardGroups.map((group) => (
             <section
               className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
@@ -1035,6 +1126,7 @@ export default function ReviewDetailPage() {
                 {group.cards.map((card, index) => (
                   <ReviewCard
                     key={`${group.key}:${card.id}`}
+                    cardId={card.id}
                     index={index + 1}
                     criterion={card.criterion}
                     description={card.criterion_description}
@@ -1091,6 +1183,7 @@ export default function ReviewDetailPage() {
                 </section>
               ))
             : null}
+          </div>
         </div>
       ) : (
         <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-sm text-[var(--color-muted-foreground)]">

@@ -144,7 +144,7 @@ Verification Steps:
 - `cd frontend && rg -n "detail_projection|top_action_card_ids|headline_state|ranking_basis" src/app/api/bff/reviews/'[reviewId]'/route.ts src/app/api/bff/reviews/'[reviewId]'/route.test.ts src/lib/bff/types.ts`
 Risks (if any): A local BFF rewrite would make Phase 3 verification ambiguous and break the PRD’s single-seam constraint.
 
-### [ ] Task 5 — Render the action-first detail page with honest pending, failure, and export truthfulness
+### [x] Task 5 — Render the action-first detail page with honest pending, failure, and export truthfulness
 
 Goal:
 Implement the one approved researcher reading flow on `/app/reviews/[reviewId]`: top 1-3 prioritized cards above the fold, expandable evidence, honest pending/timeout/failure states, and explicit copy/export truthfulness.

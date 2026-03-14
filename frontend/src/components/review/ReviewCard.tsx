@@ -3,6 +3,7 @@ import { ReviewRating } from "@/lib/bff/types";
 import { ScoreBadge } from "./ScoreBadge";
 
 interface ReviewCardProps {
+  cardId?: string;
   index: number;
   criterion: string;
   description?: string | null;
@@ -16,6 +17,7 @@ interface ReviewCardProps {
   notAssessableReason?: string | null;
   sourceBasisLabel?: string | null;
   sourceBasisState?: "available" | "unavailable" | "legacy_fallback";
+  supportingEvidenceDefaultOpen?: boolean;
 }
 
 function sourceBasisLine(
@@ -46,6 +48,7 @@ function buildBreadcrumbPath(reviewedSectionLabel?: string | null): string | nul
 }
 
 export function ReviewCard({
+  cardId,
   index,
   criterion,
   description,
@@ -59,13 +62,24 @@ export function ReviewCard({
   notAssessableReason,
   sourceBasisLabel,
   sourceBasisState,
+  supportingEvidenceDefaultOpen = false,
 }: ReviewCardProps) {
   const breadcrumbPath = buildBreadcrumbPath(reviewedSectionLabel);
   const hasSynthesizedCompanionText =
     typeof synthesizedCompanionText === "string" &&
     synthesizedCompanionText.trim().length > 0;
+  const hasSupportingEvidence =
+    Boolean(reviewedSectionLabel) ||
+    Boolean(breadcrumbPath) ||
+    Boolean(expectationGuidanceNote) ||
+    assessmentStatus === "NOT_ASSESSABLE" ||
+    Boolean(sourceBasisState);
   return (
-    <article className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm transition-all hover:shadow-md">
+    <article
+      className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm transition-all hover:shadow-md"
+      data-card-id={cardId}
+      data-testid={cardId ? `review-card-${cardId}` : undefined}
+    >
       <header className="flex flex-col gap-4 border-b border-[var(--color-border)] bg-[var(--color-background)] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-muted-foreground)]">
@@ -82,30 +96,6 @@ export function ReviewCard({
               {description}
             </p>
           )}
-          {reviewedSectionLabel ? (
-            <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
-              Reviewed section context: {reviewedSectionLabel}
-            </p>
-          ) : null}
-          {breadcrumbPath ? (
-            <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
-              Section breadcrumb: {breadcrumbPath}
-            </p>
-          ) : null}
-          {expectationGuidanceNote ? (
-            <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
-              Reviewer focus: {expectationGuidanceNote}
-            </p>
-          ) : null}
-          {assessmentStatus === "NOT_ASSESSABLE" ? (
-            <p className="mt-1 text-xs font-medium text-[var(--color-muted-foreground)]">
-              Status: Not assessable
-              {notAssessableReason ? ` (${notAssessableReason})` : ""}
-            </p>
-          ) : null}
-          <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
-            {sourceBasisLine(sourceBasisState, sourceBasisLabel)}
-          </p>
         </div>
         <div className="flex-shrink-0">
           <ScoreBadge rating={rating} />
@@ -125,6 +115,32 @@ export function ReviewCard({
               {synthesizedCompanionText}
             </p>
           </div>
+        ) : null}
+        {hasSupportingEvidence ? (
+          <details
+            className="mt-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3"
+            open={supportingEvidenceDefaultOpen}
+          >
+            <summary className="cursor-pointer text-sm font-medium text-[var(--color-foreground)]">
+              Supporting evidence
+            </summary>
+            <div className="mt-3 space-y-2 text-xs text-[var(--color-muted-foreground)]">
+              {reviewedSectionLabel ? (
+                <p>Reviewed section context: {reviewedSectionLabel}</p>
+              ) : null}
+              {breadcrumbPath ? <p>Section breadcrumb: {breadcrumbPath}</p> : null}
+              {expectationGuidanceNote ? (
+                <p>Reviewer focus: {expectationGuidanceNote}</p>
+              ) : null}
+              {assessmentStatus === "NOT_ASSESSABLE" ? (
+                <p>
+                  Status: Not assessable
+                  {notAssessableReason ? ` (${notAssessableReason})` : ""}
+                </p>
+              ) : null}
+              <p>{sourceBasisLine(sourceBasisState, sourceBasisLabel)}</p>
+            </div>
+          </details>
         ) : null}
       </div>
     </article>
