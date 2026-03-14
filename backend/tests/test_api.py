@@ -4249,6 +4249,84 @@ def _create_wf0079_structured_review_with_cards(
         session.close()
 
 
+@dataclass(frozen=True)
+class Wf0080StructuredCardSpec:
+    """Card fixture data for WF-0080 detail projection tests."""
+
+    node_logical_id: str
+    rating: ReviewRating
+    assessment_status: AssessmentStatus
+    feedback_text: str
+    not_assessable_reason: str | None = None
+
+
+def _create_wf0080_structured_review_with_cards(
+    *,
+    monkeypatch,
+    card_specs: list[Wf0080StructuredCardSpec],
+) -> tuple[TestClient, str]:
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    assert call_code == "ERC-2026-PoC"
+
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+
+        review = Review(
+            proposal_snippet_id=None,
+            prompt_template_id=template.id,
+            status=ReviewStatus.COMPLETED,
+            overall_summary="WF-0080 detail projection review",
+            overall_rating=ReviewRating.WARNING,
+            external_user_id=TEST_USER_ID,
+            review_type="structured",
+            structured_payload={
+                "call_id": str(call_id),
+                "nodes": {
+                    spec.node_logical_id: f"Submitted text for {spec.node_logical_id}"
+                    for spec in card_specs
+                },
+                "submitted_leaf_ids": [spec.node_logical_id for spec in card_specs],
+                "stage_scope_leaf_ids": [spec.node_logical_id for spec in card_specs],
+                "engine_path": "pipeline_v1",
+            },
+        )
+        session.add(review)
+        session.commit()
+        session.refresh(review)
+
+        for spec in card_specs:
+            node = session.exec(
+                select(ProposalNode).where(
+                    ProposalNode.funding_call_id == call_id,
+                    ProposalNode.logical_id == spec.node_logical_id,
+                )
+            ).first()
+            assert node is not None
+            expectation = session.exec(
+                select(NodeExpectation)
+                .where(NodeExpectation.proposal_node_id == node.id)
+                .order_by(NodeExpectation.order_index)
+            ).first()
+            assert expectation is not None
+
+            card = ReviewCard(
+                review_id=review.id,
+                node_expectation_id=expectation.id,
+                rating=spec.rating,
+                feedback_text=spec.feedback_text,
+                assessment_status=spec.assessment_status,
+                not_assessable_reason=spec.not_assessable_reason,
+            )
+            session.add(card)
+
+        session.commit()
+        return client, str(review.id)
+    finally:
+        session.close()
+
+
 def test_wf0079_contract_review_detail_response_carries_optional_companion_text(
     monkeypatch,
 ) -> None:
@@ -4312,6 +4390,129 @@ def test_wf0079_contract_review_detail_response_supports_mixed_card_companion_st
         card_by_node["poc_pi_strategic_leadership"]["synthesized_companion_text"]
         is None
     )
+
+
+def test_wf0080_review_detail_emits_bounded_detail_projection(monkeypatch) -> None:
+    client, review_id = _create_wf0080_structured_review_with_cards(
+        monkeypatch=monkeypatch,
+        card_specs=[
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_idea_innovation",
+                rating=ReviewRating.NOTE,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Innovation feedback.",
+            ),
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_approach_methodology",
+                rating=ReviewRating.SUCCESS,
+                assessment_status=AssessmentStatus.NOT_ASSESSABLE,
+                feedback_text="Methodology feedback.",
+                not_assessable_reason="Missing feasibility detail.",
+            ),
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_pi_strategic_leadership",
+                rating=ReviewRating.WARNING,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Leadership feedback.",
+            ),
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_idea_innovation",
+                rating=ReviewRating.CRITICAL,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Second innovation card.",
+            ),
+        ],
+    )
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    payload = detail_response.json()
+    projection = payload["detail_projection"]
+    assert set(projection.keys()) == {
+        "version",
+        "headline_state",
+        "ordered_card_ids",
+        "top_action_card_ids",
+        "ranking_basis",
+    }
+    assert projection["version"] == "wf0080_launch_wedge_v1"
+    assert projection["headline_state"] == "action_required"
+    assert projection["ranking_basis"] == "assessment_status_then_rating_then_existing_order"
+    assert len(projection["ordered_card_ids"]) == 4
+    assert len(projection["top_action_card_ids"]) == 3
+    assert projection["top_action_card_ids"] == projection["ordered_card_ids"][:3]
+
+
+def test_wf0080_review_detail_projection_uses_existing_order_tiebreaker(
+    monkeypatch,
+) -> None:
+    client, review_id = _create_wf0080_structured_review_with_cards(
+        monkeypatch=monkeypatch,
+        card_specs=[
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_pi_strategic_leadership",
+                rating=ReviewRating.NOTE,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Leadership feedback.",
+            ),
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_idea_innovation",
+                rating=ReviewRating.NOTE,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Innovation feedback.",
+            ),
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_approach_methodology",
+                rating=ReviewRating.NOTE,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Methodology feedback.",
+            ),
+        ],
+    )
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    payload = detail_response.json()
+    card_id_by_node = {
+        card["node_logical_id"]: card["id"] for card in payload["cards"]
+    }
+    assert payload["detail_projection"]["ordered_card_ids"] == [
+        card_id_by_node["poc_idea_innovation"],
+        card_id_by_node["poc_approach_methodology"],
+        card_id_by_node["poc_pi_strategic_leadership"],
+    ]
+
+
+def test_wf0080_invited_submit_reaches_detail_projection(monkeypatch) -> None:
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    assert call_code == "ERC-2026-PoC"
+
+    submit_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-submit-to-detail-{time.time_ns()}",
+    )
+    assert submit_response.status_code in {200, 201}
+
+    review_id = submit_response.json()["review_id"]
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    projection = detail_response.json()["detail_projection"]
+    assert projection["version"] == "wf0080_launch_wedge_v1"
+    assert projection["ranking_basis"] == "assessment_status_then_rating_then_existing_order"
+    assert len(projection["top_action_card_ids"]) <= 3
 
 
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:

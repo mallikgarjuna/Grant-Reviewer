@@ -76,7 +76,7 @@ Verification Steps:
 - `cd frontend && rg -n "COHORT_ACCESS_DENIED|structured-review|Idempotency-Key" src/app/api/bff/structured-review/route.ts src/app/api/bff/structured-review/route.test.ts src/lib/bff/route-helpers.ts`
 Risks (if any): If the BFF gate happens after proxying, blocked traffic can still create downstream cost or ambiguous audit trails.
 
-### [ ] Task 3 — Tracer bullet: prove one invited submit-to-detail wedge through backend detail projection
+### [x] Task 3 — Tracer bullet: prove one invited submit-to-detail wedge through backend detail projection
 
 Goal:
 Prove one invited `ERC-2026-PoC` researcher can complete the locked submit-to-detail happy path by keeping the backend projection seam additive at `GET /reviews/{review_id}` and fetchable after review creation.

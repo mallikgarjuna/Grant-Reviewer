@@ -182,6 +182,16 @@ class ReviewCompatibilityNote(BaseModel):
     message: str
 
 
+class ReviewDetailProjection(BaseModel):
+    """Bounded launch-wedge projection for action-first review detail UX."""
+
+    version: Literal["wf0080_launch_wedge_v1"]
+    headline_state: Literal["action_required", "no_critical_blockers"]
+    ordered_card_ids: list[UUID] = Field(default_factory=list)
+    top_action_card_ids: list[UUID] = Field(default_factory=list)
+    ranking_basis: Literal["assessment_status_then_rating_then_existing_order"]
+
+
 class ReviewDetailResponse(BaseModel):
     """Response for GET /reviews/{review_id}."""
 
@@ -204,6 +214,7 @@ class ReviewDetailResponse(BaseModel):
     legacy_ambiguous_container_ids: list[str] = Field(default_factory=list)
     moved_legacy_node_references: list[str] = Field(default_factory=list)
     compatibility_notes: list[ReviewCompatibilityNote] = Field(default_factory=list)
+    detail_projection: ReviewDetailProjection
     review: ReviewSummary
     cards: list[ReviewCardSummary]
 

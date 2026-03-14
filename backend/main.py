@@ -22,7 +22,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from app.db import create_db_and_tables, get_session, ping_database
-from app.models.domain import ProposalSnippet, ReviewStatus
+from app.models.domain import ProposalSnippet, ReviewRating, ReviewStatus
 from app.repositories.review_repository import ReviewRepository
 from app.schemas.api import (
     APIErrorBody,
@@ -42,6 +42,7 @@ from app.schemas.api import (
     ReviewCardSummary,
     ReviewCompatibilityNote,
     ReviewDetailResponse,
+    ReviewDetailProjection,
     ReviewListItem,
     ReviewsListResponse,
     ReviewSummary,
@@ -542,6 +543,41 @@ def _order_review_cards(
         return (1 if is_unmapped else 0, normalized_order, logical_id)
 
     return sorted(cards, key=sort_key), unmapped
+
+
+def _build_wf0080_detail_projection(
+    cards: list[ReviewCardSummary],
+) -> ReviewDetailProjection:
+    """Build the bounded launch-wedge projection from existing card truth."""
+    rating_priority = {
+        ReviewRating.CRITICAL: 0,
+        ReviewRating.WARNING: 1,
+        ReviewRating.NOTE: 2,
+        ReviewRating.SUCCESS: 3,
+    }
+    ranked_cards = sorted(
+        enumerate(cards),
+        key=lambda item: (
+            0 if item[1].assessment_status == "NOT_ASSESSABLE" else 1,
+            rating_priority.get(item[1].rating, 99),
+            item[0],
+        ),
+    )
+    ordered_card_ids = [card.id for _, card in ranked_cards]
+    no_critical_blockers = bool(cards) and all(
+        card.assessment_status == "ASSESSED"
+        and card.rating in {ReviewRating.NOTE, ReviewRating.SUCCESS}
+        for card in cards
+    )
+    return ReviewDetailProjection(
+        version="wf0080_launch_wedge_v1",
+        headline_state=(
+            "no_critical_blockers" if no_critical_blockers else "action_required"
+        ),
+        ordered_card_ids=ordered_card_ids,
+        top_action_card_ids=ordered_card_ids[:3],
+        ranking_basis="assessment_status_then_rating_then_existing_order",
+    )
 
 
 def _extract_known_domains(node_config: dict[str, Any]) -> set[str]:
@@ -1528,6 +1564,7 @@ def get_review(
                 message="Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage.",
             )
         )
+    detail_projection = _build_wf0080_detail_projection(cards)
 
     return ReviewDetailResponse(
         call_id=call_id,
@@ -1545,6 +1582,7 @@ def get_review(
         legacy_ambiguous_container_ids=legacy_ambiguous_container_ids,
         moved_legacy_node_references=moved_legacy_node_references,
         compatibility_notes=compatibility_notes,
+        detail_projection=detail_projection,
         review=ReviewSummary(
             id=review.id,
             status=review.status,
