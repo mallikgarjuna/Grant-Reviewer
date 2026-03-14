@@ -3,188 +3,205 @@
 
 Artifact: prd
 Version: v0.1
-Status: Draft Complete
+Status: Draft
 Last Updated: 2026-03-14
 
 Type: feature
 
 ## 0. User Stories (MVP)
 
-- US1: As a researcher reading a new structured review, I want feedback grouped by reviewed section and evaluation element, so I can see exactly which evaluation elements need revision.
-- US2: As a maintainer, I want new structured reviews to persist atomic findings without breaking legacy `ReviewCard` reads, so we can ship the new detail model safely.
-- US3: As a frontend/backend integrator, I want one explicit dual-path review-detail contract, so legacy reviews can keep using cards while new reviews use findings grouped under reviewed nodes.
-- US4: As a product owner, I want the implementation split into small sequential slices across persistence, backend generation, API, frontend, and compatibility, so the repo’s atomic-task rule stays intact.
+- US1: As a researcher reading a new structured review, I want findings grouped under the reviewed proposal nodes and labeled by evaluation criteria/elements, so I can see exactly what to revise in context.
+- US2: As a maintainer, I want new structured reviews to persist atomic findings without breaking legacy `ReviewCard` reads, so the new detail contract ships safely alongside existing reviews.
+- US3: As a backend/frontend integrator, I want one explicit review-detail API that can return either legacy cards or reviewed-node findings, so clients can support both contracts without guessing.
+- US4: As a workflow owner, I want the implementation pre-split into sequential atomic slices across persistence, backend generation, API, frontend, and compatibility, so Phase 2 tasks can stay within the repo’s 3-file discipline.
 
 ## Deferred Stories (Not in MVP)
 
-- As a maintainer, I want all historical legacy reviews backfilled into `ReviewFinding`.
-- As a researcher, I want every review-history/list/export surface redesigned around atomic findings immediately.
-- As a maintainer, I want `ReviewCard` removed entirely.
+- As a maintainer, I want historical legacy reviews backfilled into `ReviewFinding`.
+- As a researcher, I want review history, exports, and every downstream surface redesigned around findings immediately.
+- As a maintainer, I want `ReviewCard` retired entirely.
 
 ## 1. In Scope
 
-- Introduce a new persisted `ReviewFinding` contract for new atomic-flow structured reviews. `(US1) (US2)`
-- Preserve legacy review reads/renders from `ReviewCard`. `(US2) (US3)`
-- Add a review-detail response shape for `reviewed_nodes[].findings[]` on new atomic reviews. `(US1) (US3)`
-- Keep reviewed-node grouping as the primary reading model for findings-based reviews. `(US1) (US3)`
-- Plan the full stack path: persistence/model, generation/write path, API, frontend, and compatibility gating. `(US2) (US3) (US4)`
-- Explicitly define the smallest implementation slices for later phases. `(US4)`
+- Introduce a persisted `ReviewFinding` contract for new structured reviews on the atomic findings path. `(US1) (US2)`
+- Preserve legacy review reads and rendering from `ReviewCard`. `(US2) (US3)`
+- Add a dual-path review-detail response that returns `reviewed_nodes[].findings[]` for new reviews while keeping legacy card reads intact. `(US1) (US3)`
+- Keep reviewed-node grouping as the primary researcher reading model for findings-based reviews. `(US1) (US3)`
+- Plan the end-to-end path across persistence/model, backend generation/output, review-detail API, frontend rendering, and compatibility/migration. `(US2) (US3) (US4)`
+- Encode the later implementation as sequential atomic slices that prefer three files or fewer per task. `(US4)`
 
 ## 2. Out of Scope
 
-- Replacing `pipeline_v1` or redefining engine SSOT. `(US2)`
-- Breaking legacy `ReviewCard` reads/renders. `(US2) (US3)`
-- Backfilling historical reviews as part of the initial MVP. `(US2)`
-- Broad history/list/export redesign unless a later phase proves it is required for truthful review-detail rollout. `(US3)`
+- Replacing the current engine SSOT or redesigning the review engine from scratch. `(US2)`
+- Breaking or migrating legacy `ReviewCard` reviews as part of MVP rollout. `(US2) (US3)`
+- Backfilling historical reviews into `ReviewFinding` during WF-0081. `(US2)`
+- Broad history/list/export redesign beyond what is required to keep the review detail page honest. `(US1) (US3)`
+- Reopening WF-0080 launch-wedge scope or coupling WF-0081 to that shipped wedge. `(US2) (US4)`
 
 ## 3. User / System Flow
 
-- Happy path — new atomic review
-  - Structured review generation runs through the existing engine path, which already produces diagnostic findings before they are collapsed into `ReviewCard`. `(US1) (US2)`
-  - The new atomic-flow write path persists `ReviewFinding` rows for the new review, grouped logically by reviewed node and evaluation element. `(US1) (US2)`
-  - `GET /reviews/{review_id}` returns `reviewed_nodes[].findings[]` for the new review contract. `(US1) (US3)`
-  - The frontend renders findings under each reviewed node, showing evaluation element, issue summary, evidence basis, actionable feedback, and positive `REQUIREMENTS_MET` states when applicable. `(US1) (US3)`
-- Happy path — legacy review
-  - Existing legacy review reads continue to return `ReviewCard`-based detail responses and render through the existing card flow. `(US2) (US3)`
-- Failure/compatibility path
-  - If a review has only legacy card data, the API/frontend must not assume findings exist.
-  - If a review is on the new findings path, the UI must not require legacy card rollups to render the detail view.
+- Happy path — new structured review on the atomic findings path
+  - Structured review generation runs through the current engine path, which already produces diagnostic findings before collapsing them into `ReviewCard`. `(US1) (US2)`
+  - The new write path maps those diagnostic findings into persisted `ReviewFinding` rows, each anchored to one review, one reviewed node, and one evaluation element snapshot. `(US1) (US2)`
+  - `GET /reviews/{review_id}` returns a findings-based detail contract with `reviewed_nodes[]`, each containing `findings[]` grouped under the reviewed node. `(US1) (US3)`
+  - The frontend renders grouped findings with evaluation criterion/element labels, issue summary, evidence basis, actionable feedback, and explicit `REQUIREMENTS_MET` states when no issue blocks that element. `(US1) (US3)`
+- Happy path — legacy review detail
+  - Existing legacy review reads continue to return `ReviewCard`-based detail responses and render through the current card flow without requiring `ReviewFinding` data. `(US2) (US3)`
+- Failure path — mixed contract assumption
+  - If a review has only legacy cards, backend and frontend must not assume `findings[]` exist or synthesize them on read. `(US2) (US3)`
+- Failure path — incomplete findings mapping
+  - If the engine diagnostic finding lacks one of the persisted detail fields, the write path must fail closed or synthesize the missing field through one bounded mapper instead of silently dropping structure. `(US1) (US2)`
+- Failure path — page-local truthfulness
+  - If the review detail page exposes copy/export or related same-page actions, they must stay truthful to whichever detail contract is rendered, or explicitly surface a bounded limitation until widened in a later slice. `(US1) (US3)`
 
 ## 4. Functional Requirements
 
-- FR1 (US2): The current engine truth remains unchanged: diagnostic findings already exist before `ReviewCard` collapse, and WF-0081 must build on that reality rather than replacing it.
-- FR2 (US1) (US2): New atomic-flow reviews must persist one `ReviewFinding` per visible evaluation-element-level finding.
+- FR1 (US2): WF-0081 must preserve the current engine truth that diagnostic findings already exist before `ReviewCard` collapse; the workflow may re-expose and persist that structure, but must not replace the upstream engine in MVP.
+- FR2 (US1) (US2): New structured reviews on the atomic path must persist one `ReviewFinding` per visible evaluation-element-level finding.
 - FR3 (US1) (US2): Each `ReviewFinding` must anchor to one review, one reviewed proposal node, and one evaluation element snapshot sufficient for historical renderability.
-- FR4 (US1): Each `ReviewFinding` must expose severity, assessment status, issue summary, evidence basis, and actionable feedback as first-class fields.
-- FR5 (US2) (US3): Legacy reviews must continue to read/render from `ReviewCard` without backfill.
-- FR6 (US1) (US3): New review-detail responses must expose findings grouped under reviewed nodes.
-- FR7 (US1) (US3): The frontend must render the findings-based detail shape for new reviews and keep legacy card rendering for old reviews.
-- FR8 (US1) (US2): The new findings path must support explicit positive pass states via `REQUIREMENTS_MET`.
-- FR9 (US4): The implementation plan must stay split into sequential slices that prefer touching no more than three files per slice.
+- FR4 (US1): Each `ReviewFinding` must expose first-class fields for severity, assessment status, issue summary, evidence basis, and actionable feedback rather than one collapsed text blob.
+- FR5 (US1) (US2): The findings path must support an explicit positive `REQUIREMENTS_MET` state alongside existing `ASSESSED` and `NOT_ASSESSABLE` semantics.
+- FR6 (US2) (US3): Legacy reviews must continue to read and render from `ReviewCard` without mandatory backfill.
+- FR7 (US1) (US3): New review-detail responses must expose `reviewed_nodes[].findings[]` grouped under reviewed nodes rather than a flat review-level list.
+- FR8 (US1) (US3): The frontend must render the findings-based detail shape for new reviews while preserving the current legacy `ReviewCard` path for old reviews.
+- FR9 (US2) (US3): The API contract must make the legacy-vs-atomic mode explicit so backend and frontend do not infer the response shape heuristically.
+- FR10 (US1) (US3): Researcher-facing copy for the new detail path must use `evaluation criteria` / `evaluation elements` terminology and must not surface `rubric`.
+- FR11 (US2): The generation and persistence flow must name one canonical owner for `ReviewFinding` writes so findings and cards do not become competing truths.
+- FR12 (US1) (US3): Any same-page detail actions that expose rendered findings content must remain truthful to the active contract or declare a bounded limitation until widened deliberately.
+- FR13 (US4): Phase 2 planning must preserve sequential atomic slices that prefer touching no more than three files each and remain independently testable.
 
 ## 5. Data & API Contracts
 
-- Persisted finding contract `(FR2) (FR3) (FR4)`
+- Persisted finding contract `(US1) (US2) (FR2) (FR3) (FR4) (FR5)`
   - `ReviewFinding`
-  - `id`
-  - `review_id`
-  - `proposal_node_id`
-  - `proposal_node_logical_id_snapshot`
-  - `evaluation_criterion_logical_id_snapshot`
-  - `evaluation_criterion_name_snapshot`
-  - `evaluation_element_logical_id_snapshot`
-  - `evaluation_element_name_snapshot`
-  - `severity`
-  - `assessment_status`
-  - `issue_summary_text`
-  - `evidence_basis_text`
-  - `actionable_feedback_text`
-  - `created_at`
-- Legacy compatibility contract `(FR5)`
-  - Existing reviews continue to rely on `ReviewCard` for persisted/read/render behavior.
-  - No mandatory legacy backfill is required for MVP.
-- Review-detail response contract `(FR5) (FR6) (FR7)`
-  - Legacy mode: existing `ReviewCard` response shape remains valid.
-  - Atomic mode: `ReviewDetailResponse.reviewed_nodes[]` with:
-    - `proposal_node_logical_id`
-    - `proposal_node_title`
-    - `node_role`
-    - `findings[]`
-  - Each `finding` includes:
-    - `finding_id`
-    - `evaluation_criterion`
-    - `evaluation_element`
+  - Required fields:
+    - `id`
+    - `review_id`
+    - `proposal_node_id`
+    - `proposal_node_logical_id_snapshot`
+    - `proposal_node_title_snapshot`
+    - `evaluation_criterion_logical_id_snapshot`
+    - `evaluation_criterion_name_snapshot`
+    - `evaluation_element_logical_id_snapshot`
+    - `evaluation_element_name_snapshot`
     - `severity`
     - `assessment_status`
-    - `issue_summary`
-    - `evidence_basis`
-    - `actionable_feedback`
+    - `issue_summary_text`
+    - `evidence_basis_text`
+    - `actionable_feedback_text`
+    - `created_at`
+  - Validation rules:
+    - one row represents one reviewed-node plus one evaluation-element finding;
+    - snapshot fields are required for historical renderability even if upstream call definitions later change;
+    - `assessment_status` must reject unknown states and explicitly permit `REQUIREMENTS_MET`, `ASSESSED`, and `NOT_ASSESSABLE`;
+    - text fields must be trimmed non-empty for issue-bearing findings; positive findings may use bounded positive guidance text rather than empty blobs.
+- Generation/write-path contract `(US1) (US2) (FR1) (FR11)`
+  - Input: current engine diagnostic findings plus reviewed-node context.
+  - Output: persisted `ReviewFinding` rows for new atomic reviews only.
+  - Write-owner rule: one backend mapping seam owns the transformation from engine diagnostic finding to persisted `ReviewFinding`; legacy `ReviewCard` compatibility reads remain separate.
+  - Fail-closed rule: if a diagnostic finding cannot be mapped to the required persisted contract, the write path must raise/log a bounded failure rather than silently dropping the finding.
+- Review-detail response contract `(US1) (US2) (US3) (FR6) (FR7) (FR8) (FR9)`
+  - Legacy mode:
+    - existing `ReviewCard` response shape remains valid for legacy reviews;
+    - response metadata should make clear the detail mode is `legacy_cards`.
+  - Atomic mode:
+    - response metadata should make clear the detail mode is `reviewed_node_findings`;
+    - `reviewed_nodes[]` fields:
+      - `proposal_node_id`
+      - `proposal_node_logical_id`
+      - `proposal_node_title`
+      - `node_role`
+      - `findings[]`
+    - each `finding` includes:
+      - `finding_id`
+      - `evaluation_criterion`
+      - `evaluation_element`
+      - `severity`
+      - `assessment_status`
+      - `issue_summary`
+      - `evidence_basis`
+      - `actionable_feedback`
+  - Response invariants:
+    - legacy responses do not require findings;
+    - atomic responses do not require legacy card rollups to render;
+    - grouping stays under reviewed nodes, not a flat review-wide findings array.
+- State transitions `(US1) (US2) (FR5) (FR6)`
+  - legacy review: stored and read through `ReviewCard`;
+  - new atomic review: stored and read through `ReviewFinding` grouped under reviewed nodes;
+  - mixed rollout safety: existing legacy reviews are never auto-migrated at read time.
 
 ## 6. Components / Modules
 
 - Persistence/model seam
-  - `ReviewFinding` model plus migration ownership.
+  - Responsibility: define `ReviewFinding`, its migration boundary, and the minimum snapshot fields needed for durable renders.
+  - Suggested file paths: `backend/app/models/...`, migration module, repository seam for finding reads/writes.
 - Backend generation/output seam
-  - structured review generation path that maps engine findings into persisted `ReviewFinding` rows.
+  - Responsibility: map current engine diagnostic findings into `ReviewFinding` writes for new reviews only.
+  - Suggested file paths: structured review generation service, mapper/helper module, repository write seam.
 - Review-detail API seam
-  - backend response assembly that chooses legacy cards vs findings-based reviewed nodes.
+  - Responsibility: assemble legacy-card or reviewed-node-findings responses explicitly and preserve backward compatibility.
+  - Suggested file paths: review-detail schema module, repository/query seam, HTTP response assembly seam.
 - Frontend render seam
-  - review detail page/components that render legacy cards or reviewed-node findings appropriately.
-- Compatibility seam
-  - gating logic, response typing, and migration rules that keep both contracts honest during rollout.
+  - Responsibility: render the active detail mode truthfully on the review detail page using evaluation criteria/elements terminology.
+  - Suggested file paths: review detail page/container, detail view component, typed response adapter.
+- Compatibility/migration seam
+  - Responsibility: gate which reviews use cards vs findings, preserve mixed-rollout safety, and document deferred backfill/removal work.
+  - Suggested file paths: migration file, rollout discriminator/config seam, compatibility helper or response adapter.
+- Design tree / ordering
+  - 1. Persistence/model seam lands first so later slices have a durable contract.
+  - 2. Backend generation/output seam lands second so new reviews can write findings.
+  - 3. Review-detail API seam lands third so stored findings become readable.
+  - 4. Frontend render seam lands fourth so researchers can see the new contract.
+  - 5. Compatibility/migration seam closes rollout safety and same-page truthfulness edges.
+- Deep-module expectations
+  - Keep one narrow mapper boundary for diagnostic-finding-to-`ReviewFinding` transformation.
+  - Keep response assembly explicit rather than spreading legacy/new branching across multiple callers.
+  - Keep frontend branching at the review-detail boundary instead of duplicating heuristics across leaf components.
 
-## 7. Smallest Implementation Slices
+## 7. Edge Cases
 
-- Slice 1 — Persistence/model slice
-  - RED: prove the current persistence contract cannot store atomic evaluation-element findings.
-  - GREEN: add `ReviewFinding` model + migration with only the minimum snapshot fields.
-  - REFACTOR: keep legacy `ReviewCard` untouched.
-- Slice 2 — Backend generation/output slice
-  - RED: prove the current write path still collapses everything to cards.
-  - GREEN: persist `ReviewFinding` rows for new atomic reviews by reusing existing diagnostic finding inputs where possible.
-  - REFACTOR: keep mapper ownership explicit so new findings and legacy cards do not become competing truths.
-- Slice 3 — Review-detail API slice
-  - RED: prove `GET /reviews/{review_id}` cannot yet return reviewed nodes with findings.
-  - GREEN: add dual-path response assembly for legacy cards vs findings-based reviewed nodes.
-  - REFACTOR: keep response typing explicit and backward compatible.
-- Slice 4 — Frontend rendering slice
-  - RED: prove the review detail page cannot yet render grouped findings.
-  - GREEN: render reviewed nodes with findings while preserving legacy card rendering.
-  - REFACTOR: keep researcher-facing terminology aligned to evaluation criteria/elements.
-- Slice 5 — Compatibility/migration slice
-  - RED: prove legacy reviews or mixed rollout assumptions would break without explicit gating.
-  - GREEN: add rollout rules that keep old reviews on cards and new atomic reviews on findings.
-  - REFACTOR: document any deferred backfill/removal work explicitly.
+- Legacy reviews with only `ReviewCard` rows must still render without placeholder findings. `(US2) (US3)`
+- New atomic reviews with zero issue findings for a reviewed node must still be able to surface explicit positive `REQUIREMENTS_MET` guidance. `(US1)`
+- If a diagnostic finding can anchor to a node but not to a stable evaluation-element snapshot, the write path must fail closed or route through one approved synthesis seam rather than persisting partial truth. `(US1) (US2)`
+- Mixed-rollout environments must not auto-backfill or infer contract mode from missing fields alone. `(US2) (US3)`
+- Same-page copy/export actions on `/app/reviews/[reviewId]` must not show legacy-card text while the page renders findings-based detail unless that limitation is made explicit to the researcher. `(US1) (US3)`
 
-## 8. Derived vs New Behavior
+## 8. Testing Decisions (TDD)
 
-- Derived from existing pipeline findings
-  - diagnostic findings already exist before `ReviewCard` collapse;
-  - node/evaluation-element grounding already exists in the engine and call-definition path;
-  - existing `ASSESSED` / `NOT_ASSESSABLE` semantics provide a baseline for findings status;
-  - subordinate-prompt and deterministic-guidance context can ground element-level finding generation.
-- Requires new generation/persistence behavior
-  - durable `ReviewFinding` storage;
-  - explicit persisted summary/evidence/actionable fields;
-  - explicit `REQUIREMENTS_MET` handling;
-  - dual-shape review-detail API behavior;
-  - frontend dual-render behavior and compatibility gating.
+- Use TDD for each behavior change: write one RED test per slice before implementation, then make the minimal GREEN change, then refactor. `(US2) (US4)`
+- Test seams:
+  - persistence/model seam: model + migration + repository contract;
+  - backend generation/output seam: mapping/write owner for diagnostic finding to `ReviewFinding`;
+  - API seam: review-detail response assembly for legacy vs atomic mode;
+  - frontend seam: review detail rendering for both response modes and same-page truthfulness boundaries.
+- Mock only boundaries:
+  - mock external service boundaries and persistence boundaries where needed;
+  - do not mock away the mapper or response assembler being verified.
+- Minimal required proof by story:
+  - US1: deterministic backend/API/frontend assertions that findings render grouped under reviewed nodes with evaluation criteria/elements labels and positive states;
+  - US2: deterministic compatibility tests proving legacy `ReviewCard` reads still work and new reviews persist/read `ReviewFinding`;
+  - US3: deterministic contract tests for explicit detail mode and dual-path response assembly;
+  - US4: Phase 2 tasks must keep selectors/task seams atomic enough to prove each slice independently.
+- Proceed gate:
+  - no Phase 2 plan should mark Ready for Implementation unless it carries proof for both legacy and atomic paths and preserves the note that diagnostic findings already exist before `ReviewCard` collapse.
 
-## 9. Must-Ship vs Deferred
+## 9. Telemetry (Minimal)
 
-- Must ship
-  - `ReviewFinding` persistence for new atomic reviews;
-  - backend generation/write path for findings;
-  - dual-path review-detail API;
-  - frontend findings render grouped under reviewed nodes;
-  - legacy `ReviewCard` compatibility.
-- Deferred
-  - historical backfill;
-  - `ReviewCard` retirement;
-  - broader review-history/list/export redesign.
+- Record review-detail mode usage (`legacy_cards` vs `reviewed_node_findings`) to confirm rollout behavior. `(US2) (US3)`
+- Record bounded write-path failures for diagnostic-finding-to-`ReviewFinding` mapping. `(US2)`
+- Record findings render/copy limitations only if a same-page truthful fallback is temporarily needed. `(US1) (US3)`
 
-## 10. Key Risks
+## 10. Deferred / Not in MVP
 
-- Duplicate-truth risk between `ReviewFinding` and `ReviewCard`.
-- Response-shape drift risk if legacy/new review detail modes are not explicit.
-- Hidden engine-coupling risk if we assume every persisted finding field already exists in stable form.
-- Frontend regression risk if legacy reviews are not exercised alongside new findings-based reviews.
+- Historical backfill from `ReviewCard` to `ReviewFinding`.
+- Retirement of `ReviewCard` as a compatibility surface.
+- Broad review history, export, and cross-surface redesign beyond the detail page truthfulness seam.
+- Engine redesign beyond reusing the current diagnostic findings truth.
 
-## 11. Testing Decisions (TDD)
+## 11. Open Questions (if any)
 
-- Start with RED tests at each slice boundary.
-- Prove both compatibility paths explicitly: legacy `ReviewCard` reviews and new findings-based reviews.
-- Prefer targeted backend/API/frontend tests over broad end-to-end rewrites.
+- None blocking for Phase 1. If same-page copy/export behavior proves coupled during Phase 2 repo grounding, keep the smallest truthful MVP path explicit rather than widening silently.
 
-## 12. Verification / Proceed Gate
+## 12. Changelog
 
-- No later task plan is valid unless it preserves legacy `ReviewCard` compatibility explicitly.
-- No implementation-ready recommendation is valid unless each slice stays atomic and topologically ordered.
-- No ship recommendation is valid unless the implementation proves:
-  - legacy reviews still read/render from `ReviewCard`;
-  - new reviews read/render from findings grouped under reviewed nodes;
-  - the current engine diagnostic findings remain the upstream source before `ReviewCard` collapse.
-
-## 13. Changelog
-
-- v0.1 (2026-03-14): Created the canonical WF-0081 PRD draft during Phase 0 to lock the end-to-end atomic findings contract and implementation slices.
+- v0.1 (2026-03-14): Initial PRD from the approved WF-0081 brainstorm, preserving legacy `ReviewCard` compatibility and the existing diagnostic-finding engine truth.
