@@ -1,6 +1,8 @@
 // frontend/src/app/api/bff/reviews/[reviewId]/route.test.ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ReviewDetailResponse } from "@/lib/bff/types";
+
 vi.mock("server-only", () => ({}));
 
 const authMock = vi.fn();
@@ -272,4 +274,81 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
       expect(body.supporting_context_node_logical_ids).toEqual([]);
     },
   );
+
+  it("wf0079_bff_review_detail_preserves_optional_companion_text", async () => {
+    authMock.mockResolvedValue({ userId: "user-1" });
+    const backendPayload: ReviewDetailResponse = {
+      call_id: "call-erc-poc",
+      call_code: "ERC-2026-PoC",
+      detail_state: "call_linked",
+      ordering_source: "call_nodes",
+      submitted_node_logical_ids: ["poc_idea_innovation", "poc_pi_strategic_leadership"],
+      submitted_leaf_ids: ["poc_idea_innovation", "poc_pi_strategic_leadership"],
+      primary_evaluated_node_logical_ids: [
+        "poc_idea_innovation",
+        "poc_pi_strategic_leadership",
+      ],
+      supporting_context_node_logical_ids: [],
+      visible_not_reviewed_node_logical_ids: [],
+      no_generated_cards_node_logical_ids: [],
+      review: {
+        id: "review-wf0079",
+        status: "COMPLETED",
+        overall_rating: "NOTE",
+        overall_summary: "Summary",
+      },
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "expectation-1",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
+          criterion: "Excellence",
+          criterion_description: "Excellence criterion",
+          evaluation_element_name: "Breakthrough innovation potential",
+          expectation_guidance_note: null,
+          rating: "NOTE",
+          feedback_text: "Deterministic innovation feedback.",
+          synthesized_companion_text: "Additive innovation companion guidance.",
+          assessment_status: "ASSESSED",
+          not_assessable_reason: null,
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+        {
+          id: "card-2",
+          node_expectation_id: "expectation-2",
+          node_logical_id: "poc_pi_strategic_leadership",
+          node_title: "PI strategic leadership",
+          criterion: "Excellence",
+          criterion_description: "Excellence criterion",
+          evaluation_element_name: "Leadership",
+          expectation_guidance_note: null,
+          rating: "NOTE",
+          feedback_text: "Deterministic leadership feedback.",
+          synthesized_companion_text: null,
+          assessment_status: "ASSESSED",
+          not_assessable_reason: null,
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+      ],
+    };
+    getReviewMock.mockResolvedValue({
+      ok: true,
+      data: backendPayload,
+    });
+
+    const { GET } = await import("./route");
+    const response = await GET(new Request("http://localhost"), {
+      params: Promise.resolve({ reviewId: "review-wf0079" }),
+    });
+    const body = (await response.json()) as ReviewDetailResponse;
+
+    expect(response.status).toBe(200);
+    expect(body.cards[0].synthesized_companion_text).toBe(
+      "Additive innovation companion guidance.",
+    );
+    expect(body.cards[1].synthesized_companion_text).toBeNull();
+  });
 });

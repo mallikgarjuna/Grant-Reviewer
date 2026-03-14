@@ -112,7 +112,7 @@ Verification Steps:
 - `cd backend && rg -n "synthesized_companion_text|ReviewCardSummary|ReviewDetailResponse" app/schemas/api.py main.py tests/test_api.py`
 Risks (if any): If the backend invents a synthesized state beyond the nullable field, BFF and UI tasks can inherit unnecessary coupling.
 
-### [ ] Task 4 — Preserve the companion field across the BFF/type boundary
+### [x] Task 4 — Preserve the companion field across the BFF/type boundary
 
 Goal:
 Keep the review-detail BFF contract additive and truthful by passing the backend companion field through unchanged and declaring it in the frontend review-detail types.
@@ -228,7 +228,7 @@ Risks (if any): Without an explicit closure gate, Phase 3 could overclaim resear
 | Legacy review compatibility proof | 1, 3, 5 | `wf0079_contract_review_card_storage_allows_null_companion_text`, `wf0079_contract_migration_preserves_legacy_null_companion_text`, `wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells` | null legacy rows stay valid from storage through render | `fail` (default until executed) | Task 1 GREEN: storage + migration proof passed on 2026-03-14; Task 3 GREEN: detail contract now carries nullable values; Task 5 render proof still pending | no backfill requirement |
 | Eligibility scope-gate proof | 2, 6 | `wf0079_contract_non_targeted_calls_do_not_persist_companion_text` | non-`ERC-2026-PoC` calls/cards do not persist or expose companion text | `fail` (default until executed) | Task 2 GREEN: non-targeted write-path remained null on 2026-03-14; Task 6 deferred-surface proof still pending | protects narrow rollout |
 | Detail read/API carry-through proof | 3 | `wf0079_contract_review_detail_response_carries_optional_companion_text` | backend detail response returns the nullable per-card field without semantic drift | `pass` | Task 3 GREEN on 2026-03-14 via targeted PostgreSQL selector | per-card optionality only |
-| BFF carry-through proof | 4 | `wf0079_bff_review_detail_preserves_optional_companion_text` | BFF/type boundary passes the backend field through unchanged | `fail` (default until executed) | required | no semantic rewrite |
+| BFF carry-through proof | 4 | `wf0079_bff_review_detail_preserves_optional_companion_text` | BFF/type boundary passes the backend field through unchanged | `pass` | Task 4 GREEN on 2026-03-14 via scoped Vitest selector; targeted `tsc` WF-0079 errors resolved | no semantic rewrite |
 | Mixed-card fail-closed proof | 3, 5 | `wf0079_contract_review_detail_response_supports_mixed_card_companion_states`, `wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells` | one card can show companion text while another remains deterministic-only | `fail` (default until executed) | Task 3 GREEN: backend mixed-card detail proof passed on 2026-03-14; Task 5 render proof still pending | per-card degradation only |
 | Detail-page render proof | 5 | `wf0079_review_detail_renders_optional_companion_block` | page renders additive companion only when present and labeled as additive guidance | `fail` (default until executed) | required | deterministic text stays primary |
 | Page-local copy/export proof | 5 | `wf0079_review_detail_copy_and_download_remain_deterministic_only` | copy/download remain deterministic-only with aligned wording | `fail` (default until executed) | required | no implied additive export |
