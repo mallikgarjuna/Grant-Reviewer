@@ -1,6 +1,16 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-14 (WF-0080: production-mvp-launch-wedge)
+
+### AD 80.1: WF-0080 locks the launch wedge to one `ERC-2026-PoC` cohort with an action-first review-detail model
+- **WF ID**: WF-0080
+- **Context**: The approved Phase 0 brainstorm rejects architecture-first planning and requires one explicit launch wedge, one happy-path submit-to-detail flow, one review-detail reading model, and 5-10 researcher-session usefulness evidence.
+- **Decision**: Lock WF-0080 to `ERC-2026-PoC`, use an authenticated cohort allowlist at the BFF with a mirrored backend fail-closed reject, and define the review-detail reading model as at most the top 3 actionable cards above the fold ordered by existing card assessment status, then lowest rating, then existing call/node order. Capture usefulness closure in a walkthrough appendix `Usefulness Evidence Log` with attributable session rows.
+- **Why**: This turns the Phase 0 wedge into a concrete planning boundary instead of a launch-readiness theme, and it keeps Phase 1 from relitigating the exact call, cohort gate, or evidence artifact.
+- **Tradeoff**: The wedge is intentionally narrow and may require a separate follow-on WF for broader launch infrastructure, cross-call rollout, or richer export/admin surfaces.
+- **Status**: Approved.
+
 ## Date: 2026-03-13 (WF-0079: researcher-visible-carry-through-mvp)
 
 ### AD 79.1: WF-0079 exposes the narrowest safe public card contract as nullable companion text on review detail only

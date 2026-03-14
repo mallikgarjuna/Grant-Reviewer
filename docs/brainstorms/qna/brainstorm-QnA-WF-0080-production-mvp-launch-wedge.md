@@ -2,7 +2,7 @@
 # WF-0080 — Production MVP Launch Wedge
 
 Artifact: brainstorm-qna
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-14
 
@@ -323,3 +323,10 @@ Source: user kickoff prompt for WF-0080.
 - C) One explicit call wedge first.
 > Recommendation: A — B and C are the guardrails protecting the wedge. A is the mindset that causes silent scope drift.
 > **Selected: A**
+
+## Part B Clarification Resolution (Applied via Self-Directed Recommendation)
+
+- Blocking finding resolved: the detail-page reading model now locks to `top 3` actionable cards above the fold, ordered by existing card assessment status first, lowest rating next, and existing call/node order as the tie-breaker. Evidence is collapsed by default and expands on demand.
+- Blocking finding resolved: the launch-cohort gate now locks to an authenticated allowlist checked at the BFF before proxying, with a mirrored fail-closed backend rejection for direct signed API access.
+- Blocking finding resolved: the usefulness artifact now locks to a walkthrough appendix named `Usefulness Evidence Log` with 5-10 attributable researcher-session rows and explicit required columns.
+- Blocking finding resolved: the must-ship guardrail split now locks to the existing per-user quota seam as the default cost-control gate and one explicit cohort privacy/access rule for launch-session records.

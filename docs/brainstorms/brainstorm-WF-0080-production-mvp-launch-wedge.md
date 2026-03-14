@@ -2,7 +2,7 @@
 # WF-0080 — Production MVP Launch Wedge
 
 Artifact: brainstorm
-Version: v0.2
+Version: v0.3
 Status: Draft Complete
 Last Updated: 2026-03-14
 
@@ -74,8 +74,10 @@ Contract Notes / Non-obvious constraints:
 
 - Success is not “the API returns a review.” Success is that at least 5 of 10 invited researcher sessions complete the submit-to-detail flow and produce evidence that the feedback was useful enough to inform a next revision step.
 - The review-detail page should help a researcher identify the top 1-3 issues to act on next, with enough supporting evidence to understand why those issues surfaced.
-- The reading model should be action-first: prioritized feedback above the fold, explicit pass/no-critical-blocker states when applicable, and expandable evidence only when the researcher needs to inspect grounding.
-- The usefulness artifact at closure should be a small structured session log tying each researcher session to the locked call, observed outcome, usefulness rating, and the revision action the researcher said they would take next.
+- The reading model should be action-first: above the fold shows at most the top 3 actionable cards, ordered from highest concern to lowest using existing card truth in this order: assessment status first, lowest rating next, and existing call/node order as the final tie-breaker.
+- Evidence stays collapsed by default and expands per card only on demand, except for explicit failure states where the first visible card must already include enough summary context to explain why it is ranked first.
+- An explicit `no critical blockers found` state appears only when no card is in a blocking or clearly weak state; the UI may still show lower-priority improvement cards underneath that positive state.
+- The usefulness artifact at closure must be a `Usefulness Evidence Log` appendix in the walkthrough with 5-10 attributable session rows: session alias, date, researcher cohort/user, call code, snippet goal, completion outcome, top issue shown, usefulness rating (`useful` / `mixed` / `not useful`), stated next revision action, and evidence/note reference.
 - A returned review still counts as failure if the researcher cannot tell what to do next or cannot tell why the system surfaced the top feedback.
 
 Full Q&A transcript: `docs/brainstorms/qna/brainstorm-QnA-WF-0080-production-mvp-launch-wedge.md` (Section 2)
@@ -90,7 +92,7 @@ Contract Notes / Non-obvious constraints:
 ## 3. Target User / Actor
 
 - The primary user is an invited small-cohort researcher working on an `ERC-2026-PoC` proposal who needs grounded feedback on one proposal snippet before deciding the next revision step.
-- The launch cohort should be explicitly access-gated rather than open to all authenticated users. The default Phase 0 direction is an authenticated allowlist or equivalent narrow cohort gate at the existing BFF/API boundary.
+- The launch cohort is explicitly access-gated: an authenticated allowlist of approved cohort identities is checked at the existing BFF boundary before proxying review requests, with a mirrored fail-closed backend rejection for any direct signed API request that bypasses the BFF.
 - The maintainer/operator is a secondary actor only to the extent needed to diagnose one failed or disputed session using narrow logs and trace correlation; WF-0080 must not grow into a separate admin platform.
 - Out-of-cohort users should be blocked before downstream review execution starts. The launch wedge is not honest if access control happens only after cost-bearing work or partial side effects.
 - The wedge serves a focused snippet-review moment, not whole-proposal management, review-history redesign, or generic coaching across calls.
@@ -108,7 +110,7 @@ Contract Notes / Non-obvious constraints:
 
 - Keep the existing structured-review happy path as the backbone and improve launch readiness additively rather than by replacing review persistence or inventing a new review object hierarchy.
 - Improve review-detail usefulness through one bounded projection layer on top of existing review truth, with deterministic cards and approved additive companion fields remaining the baseline sources rather than reinterpreting the whole review from scratch.
-- The detail page should present prioritized issues first, then allow evidence expansion on demand, and show explicit positive states when no critical blockers are found so silence does not masquerade as success.
+- The detail page should present prioritized issues first using existing card status/rating/order truth, then allow evidence expansion on demand, and show explicit positive states when no critical blockers are found so silence does not masquerade as success.
 - Waiting, timeout, and retry behavior should be honest and legible on the current submit-to-detail journey. The goal is not generic job orchestration; it is a single trustworthy path for this wedge.
 - Support diagnosis should stay narrow: traceable session identifiers, clear failure categories, and enough replay/inspection signal to explain one problematic session without manual heroics or a new back-office product.
 
@@ -143,6 +145,7 @@ Contract Notes / Non-obvious constraints:
 - The most fragile assumption is that `ERC-2026-PoC` is already the narrowest honest launch wedge. Phase 1 must prove the chosen call does not secretly require broader cross-call or persistence work.
 - The detail-page prioritization model may drift into whole-review reinterpretation if it cannot be built from existing card truth plus bounded additive fields. That would be a stop-and-split condition, not an invitation to quietly broaden scope.
 - The minimum launch guardrails may still be underspecified: access gate, quota/rate control, timeout handling, privacy/retention enforcement, and support traceability each need a clear must-ship vs defer decision.
+- The default cost-control and privacy/retention choices must stay narrow or they will become hidden platform projects.
 - The usefulness gate could become fake evidence if the sessions are not attributable, if the success question is vague, or if “useful” is defined after the fact.
 - The biggest process risk is platform-building drift: using “launch readiness” to smuggle in multi-call support, generalized admin tooling, or cleanup of unrelated review architecture.
 
@@ -158,10 +161,9 @@ Contract Notes / Non-obvious constraints:
 ## Open Questions / Deferred
 
 - Other call wedges besides `ERC-2026-PoC` are deferred unless Phase 1 proves this launch wedge cannot ship honestly without broadening scope.
-- Exact detail-page priority rules and ranking inputs remain open until Phase 1 names the bounded projection seam precisely.
-- Exact launch-cohort access mechanism remains open until Phase 1 converts the allowlist direction into a verifiable boundary.
-- Exact usefulness-capture artifact format remains open until Phase 1 names the closure surface and row schema.
-- Exact privacy/retention obligation remains open until Phase 1 verifies what is already in place versus what must be added for launch.
+- Exact field names and response-shape details for the bounded review-detail projection remain open until Phase 1 names the seam precisely.
+- Exact implementation seam for the mirrored backend cohort rejection remains open until Phase 1 validates the safest existing boundary.
+- Exact verification commands and selectors for the walkthrough evidence rows remain open until Phase 2.
 
 ---
 
@@ -171,11 +173,11 @@ Contract Notes / Non-obvious constraints:
 - The review-detail experience must include a prioritized above-the-fold reading model, explicit pass/no-critical-blocker states, and expandable evidence. It must not require exhaustive reading of every criterion and element before the researcher can act.
 - The default must-ship guardrails for WF-0080 are:
   - launch-cohort access gate at the existing auth/BFF/API boundary;
-  - one cost-control seam such as quota or narrow abuse-rate control;
+  - retain the existing per-user quota seam as the launch cost-control gate unless Phase 1 proves a narrower call-scoped request cap is needed;
   - honest waiting, timeout, and retry states on the happy path;
   - trace correlation plus enough support inspection to explain one failed or disputed session;
   - the usefulness-capture mechanism and closure artifact for 5-10 researcher sessions;
-  - any already-required privacy/retention enforcement that is necessary for this cohort to launch legally and safely.
+  - one explicit cohort privacy/retention rule: launch-session inputs/outputs may stay only in the existing review storage and support traces, and access to those records is limited to the designated maintainers for launch support and usefulness evaluation.
 - The default deferred follow-on items are:
   - multi-call generalization;
   - review-history/list redesign;
@@ -233,7 +235,9 @@ Contract Notes / Non-obvious constraints:
 
 | Review source | Finding | Severity | Planned closure | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Phase 0 Part B risk audit | pending | pending | pending | open | populate after the no-edit brainstorm audit |
+| Phase 0 Part B risk audit | Required Phase 0 decisions still remained open for the detail ranking rule, cohort gate, usefulness artifact, and privacy obligation | blocking | lock each one in the brainstorm so Phase 1 cannot relitigate them as vague placeholders | closed | v0.3 now names exact defaults for the reading model, cohort gate, usefulness evidence log, and privacy/retention rule |
+| Phase 0 Part B risk audit | Must-ship guardrail classification was still too soft because quota and privacy were described as generic options rather than explicit MVP choices | blocking | convert quota and privacy from conditional examples into explicit default must-ship guardrails, with follow-on escape only if Phase 1 proves a narrower existing seam is required | closed | v0.3 keeps existing quota as the default cost-control seam and names the cohort privacy/access rule directly |
+| Phase 0 Part B risk audit | The brainstorm did not yet record the Phase 0 lock decisions in durable project memory/decision surfaces | non-blocking | append a narrow decision log entry and memory note summarizing the launch wedge lock | closed | prevents future Phase 1/2 drift in later chats |
 
 ---
 
@@ -249,3 +253,4 @@ Use `docs/templates/create-page-spec-prompt.md` to generate this appendix.
 
 - v0.1 (2026-03-14): Initialized the canonical Phase 0 brainstorm, captured the long-form launch-wedge problem intake, and added a read-only repo snapshot to anchor later scope decisions.
 - v0.2 (2026-03-14): Completed the Phase 0.1 brainstorm with a locked `ERC-2026-PoC` launch wedge, bounded MVP definition, must-ship vs deferred guardrail split, usefulness gate direction, and fail-closed proceed/ship evidence requirements.
+- v0.3 (2026-03-14): Applied the Part B risk audit by locking the exact detail ranking model, the BFF-plus-backend cohort gate default, the walkthrough-based usefulness evidence log, and the explicit quota/privacy must-ship guardrails.
