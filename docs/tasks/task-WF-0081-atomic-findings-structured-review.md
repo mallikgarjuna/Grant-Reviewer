@@ -80,7 +80,7 @@ Verification Steps:
 - `cd backend && rg -n "wf0081_contract_(atomic_review_persists_review_findings|legacy_review_card_path_remains_unchanged|unmappable_diagnostic_finding_(fails_closed|records_bounded_failure))|ReviewFinding|detail_mode|pipeline_v1|logger" app/services/structured_reviewer_service.py app/repositories/review_repository.py tests/test_structured_reviewer_service.py`
 Risks (if any): If the write owner is split across multiple callers, later compatibility fixes can drift between persisted findings and rendered detail responses.
 
-### [ ] Task 3 — Expose a dual-mode backend review-detail response without heuristic branching
+### [x] Task 3 — Expose a dual-mode backend review-detail response without heuristic branching
 
 Goal:
 Return one explicit review-detail API that stays backward compatible for legacy cards while exposing grouped `reviewed_nodes[].findings[]` for new atomic reviews with an explicit `detail_mode`.

@@ -44,6 +44,8 @@ from app.models.domain import (
     ProposalSnippet,
     Review,
     ReviewCard,
+    ReviewDetailMode,
+    ReviewFinding,
     ReviewRating,
     ReviewStatus,
     User,
@@ -4643,6 +4645,18 @@ class Wf0080StructuredCardSpec:
     not_assessable_reason: str | None = None
 
 
+@dataclass(frozen=True)
+class Wf0081FindingSpec:
+    """Finding fixture data for WF-0081 detail projection tests."""
+
+    node_logical_id: str
+    assessment_status: AssessmentStatus
+    severity: ReviewRating
+    issue_summary_text: str
+    evidence_basis_text: str
+    actionable_feedback_text: str
+
+
 def _create_wf0080_structured_review_with_cards(
     *,
     monkeypatch,
@@ -4703,6 +4717,88 @@ def _create_wf0080_structured_review_with_cards(
                 not_assessable_reason=spec.not_assessable_reason,
             )
             session.add(card)
+
+        session.commit()
+        return client, str(review.id)
+    finally:
+        session.close()
+
+
+def _create_wf0081_structured_review_with_findings(
+    *,
+    monkeypatch,
+    finding_specs: list[Wf0081FindingSpec],
+) -> tuple[TestClient, str]:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+
+        review = Review(
+            proposal_snippet_id=None,
+            prompt_template_id=template.id,
+            status=ReviewStatus.COMPLETED,
+            overall_summary="WF-0081 atomic detail projection review",
+            overall_rating=ReviewRating.WARNING,
+            external_user_id=TEST_USER_ID,
+            review_type="structured",
+            detail_mode=ReviewDetailMode.REVIEWED_NODE_FINDINGS,
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "nodes": {
+                    spec.node_logical_id: f"Submitted text for {spec.node_logical_id}"
+                    for spec in finding_specs
+                },
+                "submitted_leaf_ids": [spec.node_logical_id for spec in finding_specs],
+                "stage_scope_leaf_ids": [spec.node_logical_id for spec in finding_specs],
+                "engine_path": "pipeline_v1",
+            },
+        )
+        session.add(review)
+        session.commit()
+        session.refresh(review)
+
+        for spec in finding_specs:
+            node = session.exec(
+                select(ProposalNode).where(
+                    ProposalNode.funding_call_id == seeded_ids.structured_call_id,
+                    ProposalNode.logical_id == spec.node_logical_id,
+                )
+            ).first()
+            assert node is not None
+
+            if spec.node_logical_id == "academic_profile":
+                criterion_logical_id = "crit_structured_quality"
+                criterion_name = "Structured quality"
+                element_logical_id = "elem_structured_node_quality"
+                element_name = "Structured node quality"
+                node_title = "Academic profile"
+            else:
+                criterion_logical_id = "crit_structured_quality"
+                criterion_name = "Structured quality"
+                element_logical_id = "elem_structured_node_quality_2"
+                element_name = "Structured node quality 2"
+                node_title = "Scientific proposal"
+
+            session.add(
+                ReviewFinding(
+                    review_id=review.id,
+                    proposal_node_id=node.id,
+                    proposal_node_logical_id_snapshot=spec.node_logical_id,
+                    proposal_node_title_snapshot=node_title,
+                    evaluation_criterion_logical_id_snapshot=criterion_logical_id,
+                    evaluation_criterion_name_snapshot=criterion_name,
+                    evaluation_element_logical_id_snapshot=element_logical_id,
+                    evaluation_element_name_snapshot=element_name,
+                    severity=spec.severity,
+                    assessment_status=spec.assessment_status,
+                    issue_summary_text=spec.issue_summary_text,
+                    evidence_basis_text=spec.evidence_basis_text,
+                    actionable_feedback_text=spec.actionable_feedback_text,
+                )
+            )
 
         session.commit()
         return client, str(review.id)
@@ -5019,6 +5115,173 @@ def test_wf0080_non_wedge_responses_do_not_emit_launch_only_contracts(monkeypatc
     detail_payload = detail_response.json()
     assert "detail_projection" not in detail_payload
     assert "support_trace" not in detail_payload
+
+
+def test_wf0081_contract_review_detail_exposes_explicit_detail_mode(
+    monkeypatch,
+) -> None:
+    legacy_client, legacy_review_id = _create_wf0080_structured_review_with_cards(
+        monkeypatch=monkeypatch,
+        card_specs=[
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_idea_innovation",
+                rating=ReviewRating.WARNING,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Legacy review card feedback.",
+            )
+        ],
+    )
+    legacy_detail = get_review_detail(client=legacy_client, review_id=legacy_review_id)
+
+    atomic_client, atomic_review_id = _create_wf0081_structured_review_with_findings(
+        monkeypatch=monkeypatch,
+        finding_specs=[
+            Wf0081FindingSpec(
+                node_logical_id="academic_profile",
+                assessment_status=AssessmentStatus.ASSESSED,
+                severity=ReviewRating.WARNING,
+                issue_summary_text="Academic profile needs sharper evidence.",
+                evidence_basis_text="The profile text stays too general.",
+                actionable_feedback_text="Add concrete achievements tied to the call.",
+            )
+        ],
+    )
+    atomic_detail = get_review_detail(client=atomic_client, review_id=atomic_review_id)
+
+    assert legacy_detail.status_code == 200
+    assert legacy_detail.json()["detail_mode"] == "legacy_cards"
+    assert "cards" in legacy_detail.json()
+
+    assert atomic_detail.status_code == 200
+    assert atomic_detail.json()["detail_mode"] == "reviewed_node_findings"
+    assert "reviewed_nodes" in atomic_detail.json()
+
+
+def test_wf0081_contract_atomic_review_detail_groups_findings_under_reviewed_nodes(
+    monkeypatch,
+) -> None:
+    client, review_id = _create_wf0081_structured_review_with_findings(
+        monkeypatch=monkeypatch,
+        finding_specs=[
+            Wf0081FindingSpec(
+                node_logical_id="academic_profile",
+                assessment_status=AssessmentStatus.ASSESSED,
+                severity=ReviewRating.WARNING,
+                issue_summary_text="Academic profile needs sharper evidence.",
+                evidence_basis_text="The profile text stays too general.",
+                actionable_feedback_text="Add concrete achievements tied to the call.",
+            ),
+            Wf0081FindingSpec(
+                node_logical_id="scientific_proposal",
+                assessment_status=AssessmentStatus.REQUIREMENTS_MET,
+                severity=ReviewRating.SUCCESS,
+                issue_summary_text="Research idea requirements are met.",
+                evidence_basis_text="The idea text already addresses the evaluation element.",
+                actionable_feedback_text="Keep the current specificity in the final version.",
+            ),
+            Wf0081FindingSpec(
+                node_logical_id="scientific_proposal",
+                assessment_status=AssessmentStatus.NOT_ASSESSABLE,
+                severity=ReviewRating.NOTE,
+                issue_summary_text="Research idea cannot be fully assessed yet.",
+                evidence_basis_text="A required dependency section is still missing.",
+                actionable_feedback_text="Add the missing dependency detail before resubmitting.",
+            ),
+        ],
+    )
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    payload = detail_response.json()
+    reviewed_nodes = payload["reviewed_nodes"]
+    assert [node["proposal_node_logical_id"] for node in reviewed_nodes] == [
+        "academic_profile",
+        "scientific_proposal",
+    ]
+
+    academic_profile = reviewed_nodes[0]
+    assert academic_profile["proposal_node_title"] == "Academic profile"
+    assert academic_profile["findings"][0]["evaluation_criterion"] == "Structured quality"
+    assert academic_profile["findings"][0]["evaluation_element"] == "Structured node quality"
+
+    research_idea = reviewed_nodes[1]
+    assert research_idea["proposal_node_title"] == "Scientific proposal"
+    assert len(research_idea["findings"]) == 2
+    assert {
+        finding["assessment_status"] for finding in research_idea["findings"]
+    } == {
+        "REQUIREMENTS_MET",
+        "NOT_ASSESSABLE",
+    }
+
+
+def test_wf0081_contract_review_detail_modes_are_mutually_exclusive(
+    monkeypatch,
+) -> None:
+    legacy_client, legacy_review_id = _create_wf0080_structured_review_with_cards(
+        monkeypatch=monkeypatch,
+        card_specs=[
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_idea_innovation",
+                rating=ReviewRating.WARNING,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Legacy review card feedback.",
+            )
+        ],
+    )
+    legacy_payload = get_review_detail(
+        client=legacy_client, review_id=legacy_review_id
+    ).json()
+    assert legacy_payload["detail_mode"] == "legacy_cards"
+    assert "cards" in legacy_payload
+    assert "reviewed_nodes" not in legacy_payload
+
+    atomic_client, atomic_review_id = _create_wf0081_structured_review_with_findings(
+        monkeypatch=monkeypatch,
+        finding_specs=[
+            Wf0081FindingSpec(
+                node_logical_id="academic_profile",
+                assessment_status=AssessmentStatus.ASSESSED,
+                severity=ReviewRating.WARNING,
+                issue_summary_text="Academic profile needs sharper evidence.",
+                evidence_basis_text="The profile text stays too general.",
+                actionable_feedback_text="Add concrete achievements tied to the call.",
+            )
+        ],
+    )
+    atomic_payload = get_review_detail(
+        client=atomic_client, review_id=atomic_review_id
+    ).json()
+    assert atomic_payload["detail_mode"] == "reviewed_node_findings"
+    assert "reviewed_nodes" in atomic_payload
+    assert "cards" not in atomic_payload
+
+
+def test_wf0081_contract_review_detail_records_detail_mode_usage(
+    monkeypatch,
+    caplog,
+) -> None:
+    client, review_id = _create_wf0081_structured_review_with_findings(
+        monkeypatch=monkeypatch,
+        finding_specs=[
+            Wf0081FindingSpec(
+                node_logical_id="academic_profile",
+                assessment_status=AssessmentStatus.ASSESSED,
+                severity=ReviewRating.WARNING,
+                issue_summary_text="Academic profile needs sharper evidence.",
+                evidence_basis_text="The profile text stays too general.",
+                actionable_feedback_text="Add concrete achievements tied to the call.",
+            )
+        ],
+    )
+    caplog.set_level("INFO", logger="main")
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    assert "WF0081_REVIEW_DETAIL_MODE_USAGE" in caplog.text
+    assert "reviewed_node_findings" in caplog.text
 
 
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:
