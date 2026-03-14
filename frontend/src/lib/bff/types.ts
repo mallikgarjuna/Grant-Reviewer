@@ -152,6 +152,14 @@ export type ReviewCardSummary = {
   source_basis_state?: "available" | "unavailable" | "legacy_fallback";
 };
 
+export type ReviewDetailProjection = {
+  version: "wf0080_launch_wedge_v1";
+  headline_state: "action_required" | "no_critical_blockers";
+  ordered_card_ids: string[];
+  top_action_card_ids: string[];
+  ranking_basis: "assessment_status_then_rating_then_existing_order";
+};
+
 export type ReviewDetailResponse = {
   call_id?: string | null;
   call_code?: string | null;
@@ -166,6 +174,7 @@ export type ReviewDetailResponse = {
   no_generated_cards_node_logical_ids?: string[];
   legacy_ambiguous_container_ids?: string[];
   moved_legacy_node_references?: string[];
+  detail_projection?: ReviewDetailProjection;
   compatibility_notes?: Array<{
     note_type:
       | "deprecated_container_submission"

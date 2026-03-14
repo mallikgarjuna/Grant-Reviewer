@@ -16,13 +16,13 @@ from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Query, Request
+from fastapi import Depends, FastAPI, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from app.db import create_db_and_tables, get_session, ping_database
-from app.models.domain import ProposalSnippet, ReviewStatus
+from app.models.domain import ProposalSnippet, ReviewRating, ReviewStatus
 from app.repositories.review_repository import ReviewRepository
 from app.schemas.api import (
     APIErrorBody,
@@ -41,10 +41,12 @@ from app.schemas.api import (
     NodeTreeNode,
     ReviewCardSummary,
     ReviewCompatibilityNote,
+    ReviewDetailProjection,
     ReviewDetailResponse,
     ReviewListItem,
     ReviewsListResponse,
     ReviewSummary,
+    SupportTraceMetadata,
 )
 from app.schemas.compliance import ComplianceCheckRequest, ComplianceCheckResponse
 from app.schemas.structured_review import (
@@ -84,6 +86,8 @@ BFF_SIGNATURE_MAX_AGE_SECONDS = 300
 IDEMPOTENCY_TTL_HOURS = 24
 FREE_DAILY_REVIEW_LIMIT = 5
 FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT = 10_000
+WF0080_SUPPORT_TRACE_HEADER = "X-GR-Support-Trace"
+WF0080_LAUNCH_WEDGE_CALL_CODE = "ERC-2026-PoC"
 
 
 def is_idempotency_conflict_error(err: IntegrityError) -> bool:
@@ -100,6 +104,7 @@ def is_idempotency_conflict_error(err: IntegrityError) -> bool:
 
 ERROR_STATUS_BY_CODE = {
     "UNAUTHORIZED": 401,
+    "COHORT_ACCESS_DENIED": 403,
     "IDEMPOTENCY_PAYLOAD_MISMATCH": 409,
     "QUOTA_EXCEEDED": 429,
     "CALL_NOT_FOUND": 404,
@@ -127,6 +132,7 @@ ERROR_STATUS_BY_CODE = {
 
 API_ERROR_RESPONSES = {
     401: {"model": APIErrorResponse},
+    403: {"model": APIErrorResponse},
     409: {"model": APIErrorResponse},
     429: {"model": APIErrorResponse},
     400: {"model": APIErrorResponse},
@@ -148,10 +154,12 @@ class APIException(Exception):
         code: str,
         message: str,
         details: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         self.code = code
         self.message = message
         self.details = details or {}
+        self.headers = headers or {}
         super().__init__(message)
 
 
@@ -174,6 +182,7 @@ def build_error_response(
     code: str,
     message: str,
     details: dict[str, Any] | None = None,
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     """Build canonical error JSON response."""
     payload = APIErrorResponse(
@@ -181,14 +190,21 @@ def build_error_response(
     )
     status_code = ERROR_STATUS_BY_CODE.get(code, 500)
     return JSONResponse(
-        status_code=status_code, content=payload.model_dump(mode="json")
+        status_code=status_code,
+        content=payload.model_dump(mode="json"),
+        headers=headers,
     )
 
 
 @app.exception_handler(APIException)
 async def api_exception_handler(_: Request, exc: APIException) -> JSONResponse:
     """Handle known API exceptions."""
-    return build_error_response(code=exc.code, message=exc.message, details=exc.details)
+    return build_error_response(
+        code=exc.code,
+        message=exc.message,
+        details=exc.details,
+        headers=exc.headers,
+    )
 
 
 @app.exception_handler(RequestValidationError)
@@ -255,6 +271,61 @@ def _get_free_daily_review_limit() -> int:
         if app_env in {"dev", "development", "local"}:
             return FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT
         return FREE_DAILY_REVIEW_LIMIT
+
+
+def _is_wf0080_launch_wedge_call(call_code: str | None) -> bool:
+    """Return whether the call is inside the approved WF-0080 launch wedge."""
+    return call_code == WF0080_LAUNCH_WEDGE_CALL_CODE
+
+
+def _build_wf0080_support_trace_id(
+    *,
+    call_code: str | None,
+    external_user_id: str | None,
+    idempotency_key: str | None,
+) -> str | None:
+    """Build a deterministic support trace from existing request/review identifiers."""
+    if not call_code or not external_user_id or not idempotency_key:
+        return None
+
+    trace_material = "::".join((call_code, external_user_id, idempotency_key))
+    digest = hashlib.sha256(trace_material.encode("utf-8")).hexdigest()[:20]
+    return f"wf0080-{digest}"
+
+
+def _build_wf0080_support_trace_metadata(
+    *,
+    call_code: str | None,
+    external_user_id: str | None,
+    idempotency_key: str | None,
+) -> SupportTraceMetadata | None:
+    """Build bounded WF-0080 support metadata without widening storage."""
+    if not _is_wf0080_launch_wedge_call(call_code):
+        return None
+
+    trace_id = _build_wf0080_support_trace_id(
+        call_code=call_code,
+        external_user_id=external_user_id,
+        idempotency_key=idempotency_key,
+    )
+    if trace_id is None:
+        return None
+
+    return SupportTraceMetadata(
+        contract="wf0080_support_trace_v1",
+        trace_id=trace_id,
+        visibility="maintainer_support_only",
+    )
+
+
+def _set_support_trace_header(
+    response: Response,
+    support_trace: SupportTraceMetadata | None,
+) -> None:
+    """Expose the bounded support trace on response headers when available."""
+    if support_trace is None:
+        return
+    response.headers[WF0080_SUPPORT_TRACE_HEADER] = support_trace.trace_id
 
 
 async def require_bff_user_id(request: Request) -> str:
@@ -515,6 +586,41 @@ def _order_review_cards(
         return (1 if is_unmapped else 0, normalized_order, logical_id)
 
     return sorted(cards, key=sort_key), unmapped
+
+
+def _build_wf0080_detail_projection(
+    cards: list[ReviewCardSummary],
+) -> ReviewDetailProjection:
+    """Build the bounded launch-wedge projection from existing card truth."""
+    rating_priority = {
+        ReviewRating.CRITICAL: 0,
+        ReviewRating.WARNING: 1,
+        ReviewRating.NOTE: 2,
+        ReviewRating.SUCCESS: 3,
+    }
+    ranked_cards = sorted(
+        enumerate(cards),
+        key=lambda item: (
+            0 if item[1].assessment_status == "NOT_ASSESSABLE" else 1,
+            rating_priority.get(item[1].rating, 99),
+            item[0],
+        ),
+    )
+    ordered_card_ids = [card.id for _, card in ranked_cards]
+    no_critical_blockers = bool(cards) and all(
+        card.assessment_status == "ASSESSED"
+        and card.rating in {ReviewRating.NOTE, ReviewRating.SUCCESS}
+        for card in cards
+    )
+    return ReviewDetailProjection(
+        version="wf0080_launch_wedge_v1",
+        headline_state=(
+            "no_critical_blockers" if no_critical_blockers else "action_required"
+        ),
+        ordered_card_ids=ordered_card_ids,
+        top_action_card_ids=ordered_card_ids[:3],
+        ranking_basis="assessment_status_then_rating_then_existing_order",
+    )
 
 
 def _extract_known_domains(node_config: dict[str, Any]) -> set[str]:
@@ -951,6 +1057,7 @@ def check_compliance(
 @app.post(
     "/api/structured-review",
     response_model=CreateReviewResponse,
+    response_model_exclude_none=True,
     responses=API_ERROR_RESPONSES,
 )
 def create_structured_review(
@@ -958,6 +1065,7 @@ def create_structured_review(
     repository: RepositoryDep,
     external_user_id: Annotated[str, Depends(require_bff_user_id)],
     request: Request,
+    response: Response,
 ) -> CreateReviewResponse:
     """Create a structured multi-node review synchronously."""
     idempotency_key = request.headers.get("Idempotency-Key", "").strip()
@@ -966,6 +1074,16 @@ def create_structured_review(
             code="VALIDATION_ERROR",
             message="Missing required Idempotency-Key header.",
         )
+
+    call = repository.get_call_by_id(payload.call_id)
+    if call is None:
+        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+    support_trace = _build_wf0080_support_trace_metadata(
+        call_code=call.code,
+        external_user_id=external_user_id,
+        idempotency_key=idempotency_key,
+    )
+    _set_support_trace_header(response, support_trace)
 
     payload_json = json.dumps(
         payload.model_dump(mode="json"),
@@ -989,6 +1107,7 @@ def create_structured_review(
         return CreateReviewResponse(
             review_id=existing_review.id,
             status=existing_review.status,
+            support_trace=support_trace,
         )
 
     if not _is_reviews_enabled():
@@ -1016,9 +1135,6 @@ def create_structured_review(
             },
         )
 
-    call = repository.get_call_by_id(payload.call_id)
-    if call is None:
-        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
     call_definition = repository.get_call_definition_by_call_id(payload.call_id)
 
     if not payload.nodes:
@@ -1153,11 +1269,16 @@ def create_structured_review(
         return CreateReviewResponse(
             review_id=existing_on_conflict.id,
             status=existing_on_conflict.status,
+            support_trace=support_trace,
         )
     except ValueError as err:
         raise APIException(code="VALIDATION_ERROR", message=str(err)) from err
 
-    return CreateReviewResponse(review_id=review.id, status=review.status)
+    return CreateReviewResponse(
+        review_id=review.id,
+        status=review.status,
+        support_trace=support_trace,
+    )
 
 
 @app.post(
@@ -1339,6 +1460,7 @@ def list_reviews(
 @app.get(
     "/reviews/{review_id}",
     response_model=ReviewDetailResponse,
+    response_model_exclude_none=True,
     responses=API_ERROR_RESPONSES,
 )
 def get_review(
@@ -1496,6 +1618,16 @@ def get_review(
                 message="Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage.",
             )
         )
+    detail_projection = (
+        _build_wf0080_detail_projection(cards)
+        if _is_wf0080_launch_wedge_call(call.code if call is not None else None)
+        else None
+    )
+    support_trace = _build_wf0080_support_trace_metadata(
+        call_code=call.code if call is not None else None,
+        external_user_id=review.external_user_id,
+        idempotency_key=review.idempotency_key,
+    )
 
     return ReviewDetailResponse(
         call_id=call_id,
@@ -1513,6 +1645,8 @@ def get_review(
         legacy_ambiguous_container_ids=legacy_ambiguous_container_ids,
         moved_legacy_node_references=moved_legacy_node_references,
         compatibility_notes=compatibility_notes,
+        detail_projection=detail_projection,
+        support_trace=support_trace,
         review=ReviewSummary(
             id=review.id,
             status=review.status,

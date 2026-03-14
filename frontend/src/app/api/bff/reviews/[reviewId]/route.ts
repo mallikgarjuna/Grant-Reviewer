@@ -64,6 +64,24 @@ function normalizeDetailState(record: Record<string, unknown>) {
   return inferDetailState(record);
 }
 
+function normalizeDetailProjection(record: Record<string, unknown>) {
+  const projection = record.detail_projection;
+  if (!projection || typeof projection !== "object" || Array.isArray(projection)) {
+    return projection;
+  }
+
+  const candidate = projection as Record<string, unknown>;
+  return {
+    ...candidate,
+    ordered_card_ids: Array.isArray(candidate.ordered_card_ids)
+      ? candidate.ordered_card_ids.filter((item): item is string => typeof item === "string")
+      : [],
+    top_action_card_ids: Array.isArray(candidate.top_action_card_ids)
+      ? candidate.top_action_card_ids.filter((item): item is string => typeof item === "string")
+      : [],
+  };
+}
+
 function normalizeReviewDetailResponse(payload: unknown): unknown {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return payload;
@@ -73,6 +91,7 @@ function normalizeReviewDetailResponse(payload: unknown): unknown {
   return {
     ...record,
     detail_state: normalizeDetailState(record),
+    detail_projection: normalizeDetailProjection(record),
     submitted_node_logical_ids: Array.isArray(record.submitted_node_logical_ids)
       ? record.submitted_node_logical_ids.filter((item): item is string => typeof item === "string")
       : [],

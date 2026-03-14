@@ -745,6 +745,7 @@ def create_client_with_erc_poc_seed(monkeypatch) -> tuple[TestClient, UUID, str]
     """Create test client with ERC PoC call ingested from canonical YAML."""
     monkeypatch.setenv("LLM_MODE", "stub")
     monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    monkeypatch.setenv("WF0080_LAUNCH_COHORT_USER_IDS", TEST_USER_ID)
     reset_database()
     ingest_call(Path("data/calls/canonical/erc/erc_poc_2026_full.yaml"), dry_run=False)
 
@@ -1078,6 +1079,100 @@ def test_wf0073_contract_structured_api_accepts_erc_poc_2026_payload(
         assert definition.source_path == "data/calls/canonical/erc/erc_poc_2026_full.yaml"
     finally:
         session.close()
+
+
+def test_wf0080_direct_backend_submit_allows_local_erc_poc_testing(
+    monkeypatch,
+) -> None:
+    """WF-0080: backend structured submit stays open for local ERC PoC testing."""
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    assert call_code == fixture["call_code"] == "ERC-2026-PoC"
+
+    before_count = _count_reviews_in_db()
+
+    response = post_structured_review(
+        client=client,
+        user_id="local_reviewer",
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-direct-local-test-{time.time_ns()}",
+    )
+
+    assert response.status_code in {200, 201}
+    payload = response.json()
+    assert UUID(payload["review_id"])
+    assert payload["status"] == "COMPLETED"
+    assert _count_reviews_in_db() == before_count + 1
+
+
+def test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors(
+    monkeypatch,
+) -> None:
+    """WF-0080: in-cohort ERC PoC users still hit existing safety gates truthfully."""
+    from app.services.structured_reviewer_service import StructuredReviewerService
+
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    monkeypatch.setenv("WF0080_LAUNCH_COHORT_USER_IDS", TEST_USER_ID)
+    assert call_code == fixture["call_code"] == "ERC-2026-PoC"
+
+    calls = {"generate_structured": 0}
+
+    def blocked_generate_structured(self, *args, **kwargs):
+        calls["generate_structured"] += 1
+        raise AssertionError(
+            "generate_structured_review_pipeline_v1 should not execute when reviews are disabled or quota is exceeded"
+        )
+
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review_pipeline_v1",
+        blocked_generate_structured,
+    )
+
+    monkeypatch.setenv("REVIEWS_ENABLED", "0")
+    reviews_disabled_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-reviews-disabled-{time.time_ns()}",
+    )
+    assert reviews_disabled_response.status_code == 503
+    assert reviews_disabled_response.json()["error"]["code"] == "REVIEWS_DISABLED"
+
+    monkeypatch.setenv("REVIEWS_ENABLED", "1")
+    monkeypatch.setenv("FREE_DAILY_REVIEW_LIMIT", "0")
+    quota_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-quota-exceeded-{time.time_ns()}",
+    )
+    assert quota_response.status_code == 429
+    quota_payload = quota_response.json()
+    assert quota_payload["error"]["code"] == "QUOTA_EXCEEDED"
+    assert quota_payload["error"]["details"]["limit"] == 0
+    assert quota_payload["error"]["details"]["remaining"] == 0
+
+    assert calls == {"generate_structured": 0}
 
 
 def test_wf0065_nwo_structured_api_tracer_uses_real_canonical_call(monkeypatch) -> None:
@@ -4136,6 +4231,84 @@ def _create_wf0079_structured_review_with_cards(
         session.close()
 
 
+@dataclass(frozen=True)
+class Wf0080StructuredCardSpec:
+    """Card fixture data for WF-0080 detail projection tests."""
+
+    node_logical_id: str
+    rating: ReviewRating
+    assessment_status: AssessmentStatus
+    feedback_text: str
+    not_assessable_reason: str | None = None
+
+
+def _create_wf0080_structured_review_with_cards(
+    *,
+    monkeypatch,
+    card_specs: list[Wf0080StructuredCardSpec],
+) -> tuple[TestClient, str]:
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    assert call_code == "ERC-2026-PoC"
+
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+
+        review = Review(
+            proposal_snippet_id=None,
+            prompt_template_id=template.id,
+            status=ReviewStatus.COMPLETED,
+            overall_summary="WF-0080 detail projection review",
+            overall_rating=ReviewRating.WARNING,
+            external_user_id=TEST_USER_ID,
+            review_type="structured",
+            structured_payload={
+                "call_id": str(call_id),
+                "nodes": {
+                    spec.node_logical_id: f"Submitted text for {spec.node_logical_id}"
+                    for spec in card_specs
+                },
+                "submitted_leaf_ids": [spec.node_logical_id for spec in card_specs],
+                "stage_scope_leaf_ids": [spec.node_logical_id for spec in card_specs],
+                "engine_path": "pipeline_v1",
+            },
+        )
+        session.add(review)
+        session.commit()
+        session.refresh(review)
+
+        for spec in card_specs:
+            node = session.exec(
+                select(ProposalNode).where(
+                    ProposalNode.funding_call_id == call_id,
+                    ProposalNode.logical_id == spec.node_logical_id,
+                )
+            ).first()
+            assert node is not None
+            expectation = session.exec(
+                select(NodeExpectation)
+                .where(NodeExpectation.proposal_node_id == node.id)
+                .order_by(NodeExpectation.order_index)
+            ).first()
+            assert expectation is not None
+
+            card = ReviewCard(
+                review_id=review.id,
+                node_expectation_id=expectation.id,
+                rating=spec.rating,
+                feedback_text=spec.feedback_text,
+                assessment_status=spec.assessment_status,
+                not_assessable_reason=spec.not_assessable_reason,
+            )
+            session.add(card)
+
+        session.commit()
+        return client, str(review.id)
+    finally:
+        session.close()
+
+
 def test_wf0079_contract_review_detail_response_carries_optional_companion_text(
     monkeypatch,
 ) -> None:
@@ -4199,6 +4372,252 @@ def test_wf0079_contract_review_detail_response_supports_mixed_card_companion_st
         card_by_node["poc_pi_strategic_leadership"]["synthesized_companion_text"]
         is None
     )
+
+
+def test_wf0080_review_detail_emits_bounded_detail_projection(monkeypatch) -> None:
+    client, review_id = _create_wf0080_structured_review_with_cards(
+        monkeypatch=monkeypatch,
+        card_specs=[
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_idea_innovation",
+                rating=ReviewRating.NOTE,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Innovation feedback.",
+            ),
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_approach_methodology",
+                rating=ReviewRating.SUCCESS,
+                assessment_status=AssessmentStatus.NOT_ASSESSABLE,
+                feedback_text="Methodology feedback.",
+                not_assessable_reason="Missing feasibility detail.",
+            ),
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_pi_strategic_leadership",
+                rating=ReviewRating.WARNING,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Leadership feedback.",
+            ),
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_idea_innovation",
+                rating=ReviewRating.CRITICAL,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Second innovation card.",
+            ),
+        ],
+    )
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    payload = detail_response.json()
+    projection = payload["detail_projection"]
+    assert set(projection.keys()) == {
+        "version",
+        "headline_state",
+        "ordered_card_ids",
+        "top_action_card_ids",
+        "ranking_basis",
+    }
+    assert projection["version"] == "wf0080_launch_wedge_v1"
+    assert projection["headline_state"] == "action_required"
+    assert projection["ranking_basis"] == "assessment_status_then_rating_then_existing_order"
+    assert len(projection["ordered_card_ids"]) == 4
+    assert len(projection["top_action_card_ids"]) == 3
+    assert projection["top_action_card_ids"] == projection["ordered_card_ids"][:3]
+
+
+def test_wf0080_review_detail_projection_uses_existing_order_tiebreaker(
+    monkeypatch,
+) -> None:
+    client, review_id = _create_wf0080_structured_review_with_cards(
+        monkeypatch=monkeypatch,
+        card_specs=[
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_pi_strategic_leadership",
+                rating=ReviewRating.NOTE,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Leadership feedback.",
+            ),
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_idea_innovation",
+                rating=ReviewRating.NOTE,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Innovation feedback.",
+            ),
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_approach_methodology",
+                rating=ReviewRating.NOTE,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Methodology feedback.",
+            ),
+        ],
+    )
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    payload = detail_response.json()
+    card_id_by_node = {
+        card["node_logical_id"]: card["id"] for card in payload["cards"]
+    }
+    assert payload["detail_projection"]["ordered_card_ids"] == [
+        card_id_by_node["poc_idea_innovation"],
+        card_id_by_node["poc_approach_methodology"],
+        card_id_by_node["poc_pi_strategic_leadership"],
+    ]
+
+
+def test_wf0080_invited_submit_reaches_detail_projection(monkeypatch) -> None:
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    assert call_code == "ERC-2026-PoC"
+
+    submit_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-submit-to-detail-{time.time_ns()}",
+    )
+    assert submit_response.status_code in {200, 201}
+
+    review_id = submit_response.json()["review_id"]
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    projection = detail_response.json()["detail_projection"]
+    assert projection["version"] == "wf0080_launch_wedge_v1"
+    assert projection["ranking_basis"] == "assessment_status_then_rating_then_existing_order"
+    assert len(projection["top_action_card_ids"]) <= 3
+
+
+def test_wf0080_trace_correlation_is_present_on_submit_and_detail(monkeypatch) -> None:
+    """WF-0080: backend submit/detail expose one bounded support trace contract."""
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    monkeypatch.setenv("WF0080_LAUNCH_COHORT_USER_IDS", TEST_USER_ID)
+    assert call_code == fixture["call_code"] == "ERC-2026-PoC"
+
+    submit_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-support-trace-{time.time_ns()}",
+    )
+
+    assert submit_response.status_code in {200, 201}
+    submit_payload = submit_response.json()
+    submit_trace = submit_payload["support_trace"]
+    assert submit_trace == {
+        "contract": "wf0080_support_trace_v1",
+        "trace_id": submit_response.headers["X-GR-Support-Trace"],
+        "visibility": "maintainer_support_only",
+    }
+
+    review_id = submit_payload["review_id"]
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert detail_payload["support_trace"] == submit_trace
+
+
+def test_wf0080_trace_support_does_not_create_new_storage_surface(monkeypatch) -> None:
+    """WF-0080: support trace stays derived from existing review storage only."""
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    monkeypatch.setenv("WF0080_LAUNCH_COHORT_USER_IDS", TEST_USER_ID)
+    assert call_code == fixture["call_code"] == "ERC-2026-PoC"
+
+    submit_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-no-new-storage-{time.time_ns()}",
+    )
+
+    assert submit_response.status_code in {200, 201}
+    review_id = UUID(submit_response.json()["review_id"])
+    detail_response = get_review_detail(
+        client=client,
+        review_id=str(review_id),
+    )
+    assert detail_response.status_code == 200
+
+    detail_payload = detail_response.json()
+    assert set(detail_payload["support_trace"].keys()) == {
+        "contract",
+        "trace_id",
+        "visibility",
+    }
+    assert "snippet_text" not in detail_payload["support_trace"]
+    assert "nodes" not in detail_payload["support_trace"]
+
+    session = get_session()
+    try:
+        review = session.get(Review, review_id)
+        assert review is not None
+        structured_payload = (
+            review.structured_payload if isinstance(review.structured_payload, dict) else {}
+        )
+        assert "support_trace" not in structured_payload
+        assert "support_trace_id" not in structured_payload
+    finally:
+        session.close()
+
+
+def test_wf0080_non_wedge_responses_do_not_emit_launch_only_contracts(monkeypatch) -> None:
+    """WF-0080: non-launch calls must not expose launch-only projection or trace fields."""
+    client, call_id, call_code = create_client_with_nwo_veni_seed(monkeypatch)
+    assert call_code == "nwo_veni_2025_preproposal"
+
+    submit_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "academic_profile",
+                    "text": "Non-wedge review should keep the legacy response contract.",
+                }
+            ],
+        },
+        idempotency_key=f"wf0080-non-wedge-contract-{time.time_ns()}",
+    )
+
+    assert submit_response.status_code in {200, 201}
+    submit_payload = submit_response.json()
+    assert "support_trace" not in submit_payload
+    assert submit_response.headers.get("X-GR-Support-Trace") is None
+
+    detail_response = get_review_detail(
+        client=client, review_id=submit_payload["review_id"]
+    )
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert "detail_projection" not in detail_payload
+    assert "support_trace" not in detail_payload
 
 
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:
@@ -4838,6 +5257,7 @@ def test_delete_review_non_owner_returns_not_found(monkeypatch) -> None:
 def test_error_code_status_mapping_is_consistent() -> None:
     expected = {
         "UNAUTHORIZED": 401,
+        "COHORT_ACCESS_DENIED": 403,
         "IDEMPOTENCY_PAYLOAD_MISMATCH": 409,
         "QUOTA_EXCEEDED": 429,
         "CALL_NOT_FOUND": 404,
@@ -4851,6 +5271,7 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "SNIPPET_TOO_LONG": 400,
         "UNKNOWN_NODE_ID": 422,
         "DUPLICATE_NODE_ID": 422,
+        "SUPPORTING_NODE_NOT_ALLOWED": 422,
         "DOMAIN_REQUIRED": 422,
         "DOMAIN_INVALID": 422,
             "STRUCTURED_NODES_REQUIRED": 422,

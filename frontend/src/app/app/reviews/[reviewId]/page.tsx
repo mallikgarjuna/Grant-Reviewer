@@ -158,11 +158,12 @@ function sortCallNodes(nodes: NodeSummary[]): NodeSummary[] {
 }
 
 function buildOrderedCardGroups(
-  reviewDetail: ReviewDetailResponse,
+  cards: ReviewDetailResponse["cards"],
+  orderingSource: ReviewDetailResponse["ordering_source"],
   sortedCallNodes: NodeSummary[],
 ): ReviewCardGroup[] {
   const groupsByKey = new Map<string, ReviewCardGroup>();
-  reviewDetail.cards.forEach((card) => {
+  cards.forEach((card) => {
     const key = card.node_logical_id ?? `node:${card.node_title}`;
     const existing = groupsByKey.get(key);
     if (existing) {
@@ -178,7 +179,7 @@ function buildOrderedCardGroups(
   });
 
   const shouldUseCallOrdering =
-    reviewDetail.ordering_source !== "review_payload_fallback" &&
+    orderingSource !== "review_payload_fallback" &&
     sortedCallNodes.length > 0;
   if (!shouldUseCallOrdering) {
     return Array.from(groupsByKey.values());
@@ -247,6 +248,25 @@ function buildOrderedCardGroups(
     }
     return leftId.localeCompare(rightId);
   });
+}
+
+function buildProjectionOrderedCards(
+  reviewDetail: ReviewDetailResponse,
+): ReviewDetailResponse["cards"] {
+  const projection = reviewDetail.detail_projection;
+  if (!projection) {
+    return reviewDetail.cards;
+  }
+
+  const cardById = new Map(reviewDetail.cards.map((card) => [card.id, card]));
+  const projectedCards = projection.ordered_card_ids
+    .map((cardId) => cardById.get(cardId))
+    .filter((card): card is ReviewDetailResponse["cards"][number] => Boolean(card));
+  const projectedCardIds = new Set(projectedCards.map((card) => card.id));
+  const unprojectedCards = reviewDetail.cards.filter(
+    (card) => !projectedCardIds.has(card.id),
+  );
+  return [...projectedCards, ...unprojectedCards];
 }
 
 function inferDetailState(
@@ -745,7 +765,13 @@ export default function ReviewDetailPage() {
   const notReviewedBoundaryLabels = hasExplicitBoundaryBuckets
     ? [...visibleButNotReviewedNodeLabels, ...noGeneratedCardsNodeLabels]
     : notReviewedNodeLabels;
-  const orderedCardGroups = buildOrderedCardGroups(reviewDetail, sortedCallNodes);
+  const projectedOrderedCards = buildProjectionOrderedCards(reviewDetail);
+  const detailProjection = reviewDetail.detail_projection;
+  const orderedCardGroups = buildOrderedCardGroups(
+    projectedOrderedCards,
+    reviewDetail.ordering_source,
+    sortedCallNodes,
+  );
   const detailState = inferDetailState(reviewDetail);
   const fallbackToPayloadOrder =
     detailState === "legacy_fallback" ||
@@ -860,6 +886,20 @@ export default function ReviewDetailPage() {
             ) : null}
           </div>
         ) : null}
+        {reviewDetail.review.status === "COMPLETED" && detailProjection ? (
+          <div className="mt-4 rounded-[var(--radius-md)] border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
+            <p className="font-medium">
+              {detailProjection.headline_state === "no_critical_blockers"
+                ? "No critical blockers found"
+                : "Action required"}
+            </p>
+            <p className="mt-1 text-sky-900">
+              {detailProjection.headline_state === "no_critical_blockers"
+                ? "All reviewed cards are assessed and limited to note/success guidance."
+                : "Start with the prioritized cards below before reading the rest of the review."}
+            </p>
+          </div>
+        ) : null}
         {hasCompatibilityNotes ? (
           <div className="mt-3 rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             <p className="font-medium">Compatibility notes</p>
@@ -921,6 +961,9 @@ export default function ReviewDetailPage() {
             {exportFeedback.message}
           </p>
         ) : null}
+        <p className="mt-3 text-sm text-[var(--color-muted-foreground)]">
+          Copy/download include deterministic review text only. Additive companion guidance is not included in this export.
+        </p>
         <div className="mt-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--color-muted-foreground)]">
             Data controls
@@ -1014,83 +1057,80 @@ export default function ReviewDetailPage() {
       {reviewDetail.cards.length > 0 ||
       visibleButNotReviewedNodeLabels.length > 0 ||
       noGeneratedCardsNodeLabels.length > 0 ? (
-        <div
-          role="region"
-          aria-label="Review Feedback Cards"
-          className="grid gap-4"
-        >
-          {orderedCardGroups.map((group) => (
-            <section
-              className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
-              key={group.key}
-              aria-labelledby={`heading-group-${group.key}`}
-            >
-              <h2
-                id={`heading-group-${group.key}`}
-                className="text-base font-semibold text-[var(--color-foreground)]"
+        <div className="grid gap-4">
+          <div
+            role="region"
+            aria-label="Review feedback by section"
+            className="grid gap-4"
+          >
+            {orderedCardGroups.map((group) => (
+              <section
+                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                key={group.key}
+                aria-labelledby={`heading-group-${group.key}`}
               >
-                Reviewed section: {group.title}
-              </h2>
-              <div className="mt-3 grid gap-4">
-                {group.cards.map((card, index) => (
+                <h2
+                  id={`heading-group-${group.key}`}
+                  className="text-base font-semibold text-[var(--color-foreground)]"
+                >
+                  Reviewed section: {group.title}
+                </h2>
+                <div className="mt-3 grid gap-4">
+                  {group.cards.map((card, index) => (
                   <ReviewCard
                     key={`${group.key}:${card.id}`}
+                    cardId={card.id}
                     index={index + 1}
                     criterion={card.criterion}
                     description={card.criterion_description}
-                    reviewedSectionLabel={group.title}
                     evaluationElementName={card.evaluation_element_name}
-                    expectationGuidanceNote={card.expectation_guidance_note}
                     rating={card.rating}
                     feedback={card.feedback_text}
                     synthesizedCompanionText={card.synthesized_companion_text}
-                    assessmentStatus={card.assessment_status}
-                    notAssessableReason={card.not_assessable_reason}
-                    sourceBasisLabel={card.source_basis_label}
-                    sourceBasisState={card.source_basis_state}
                   />
                 ))}
               </div>
             </section>
-          ))}
-          {hasCoverageSummary
-            ? visibleButNotReviewedNodeLabels.map((nodeLabel) => (
-                <section
-                  className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
-                  key={`visible-not-reviewed-${nodeLabel}`}
-                  aria-labelledby={`heading-visible-not-reviewed-${nodeLabel}`}
-                >
-                  <h2
-                    id={`heading-visible-not-reviewed-${nodeLabel}`}
-                    className="text-base font-semibold text-[var(--color-foreground)]"
+            ))}
+            {hasCoverageSummary
+              ? visibleButNotReviewedNodeLabels.map((nodeLabel) => (
+                  <section
+                    className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                    key={`visible-not-reviewed-${nodeLabel}`}
+                    aria-labelledby={`heading-visible-not-reviewed-${nodeLabel}`}
                   >
-                    Visible but not reviewed section: {nodeLabel}
-                  </h2>
-                  <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
-                    No text was submitted for this section in this review.
-                  </div>
-                </section>
-              ))
-            : null}
-          {hasCoverageSummary
-            ? noGeneratedCardsNodeLabels.map((nodeLabel) => (
-                <section
-                  className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
-                  key={`no-generated-cards-${nodeLabel}`}
-                  aria-labelledby={`heading-no-generated-cards-${nodeLabel}`}
-                >
-                  <h2
-                    id={`heading-no-generated-cards-${nodeLabel}`}
-                    className="text-base font-semibold text-[var(--color-foreground)]"
+                    <h2
+                      id={`heading-visible-not-reviewed-${nodeLabel}`}
+                      className="text-base font-semibold text-[var(--color-foreground)]"
+                    >
+                      Visible but not reviewed section: {nodeLabel}
+                    </h2>
+                    <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
+                      No text was submitted for this section in this review.
+                    </div>
+                  </section>
+                ))
+              : null}
+            {hasCoverageSummary
+              ? noGeneratedCardsNodeLabels.map((nodeLabel) => (
+                  <section
+                    className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                    key={`no-generated-cards-${nodeLabel}`}
+                    aria-labelledby={`heading-no-generated-cards-${nodeLabel}`}
                   >
-                    No generated cards section: {nodeLabel}
-                  </h2>
-                  <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
-                    Text was submitted for this section, but no evaluation cards were generated.
-                  </div>
-                </section>
-              ))
-            : null}
+                    <h2
+                      id={`heading-no-generated-cards-${nodeLabel}`}
+                      className="text-base font-semibold text-[var(--color-foreground)]"
+                    >
+                      No generated cards section: {nodeLabel}
+                    </h2>
+                    <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
+                      Text was submitted for this section, but no evaluation cards were generated.
+                    </div>
+                  </section>
+                ))
+              : null}
+          </div>
         </div>
       ) : (
         <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-sm text-[var(--color-muted-foreground)]">

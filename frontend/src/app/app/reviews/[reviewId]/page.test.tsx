@@ -1,7 +1,7 @@
 // frontend/src/app/app/reviews/[reviewId]/page.test.tsx
 import "@testing-library/jest-dom/vitest";
 import fs from "node:fs";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import ReviewDetailPage from "./page";
@@ -50,6 +50,89 @@ function reviewPayload(overrides: Record<string, unknown> = {}) {
     moved_legacy_node_references: [],
     ...overrides,
   };
+}
+
+function ercPocNodesPayload() {
+  return {
+    nodes: [
+      {
+        id: "node-1",
+        logical_id: "poc_idea_innovation",
+        title: "Idea innovation",
+        parent_node_id: null,
+        node_type: "SECTION",
+        order_index: 1,
+        has_expectations: true,
+      },
+      {
+        id: "node-2",
+        logical_id: "poc_approach_methodology",
+        title: "Approach and methodology",
+        parent_node_id: null,
+        node_type: "SECTION",
+        order_index: 2,
+        has_expectations: true,
+      },
+      {
+        id: "node-3",
+        logical_id: "poc_pi_strategic_leadership",
+        title: "PI strategic leadership",
+        parent_node_id: null,
+        node_type: "SECTION",
+        order_index: 3,
+        has_expectations: true,
+      },
+      {
+        id: "node-4",
+        logical_id: "poc_market_translation",
+        title: "Market translation",
+        parent_node_id: null,
+        node_type: "SECTION",
+        order_index: 4,
+        has_expectations: true,
+      },
+    ],
+  };
+}
+
+function mockReviewDetailFetch(
+  reviewOverrides: Record<string, unknown> = {},
+  nodePayload: Record<string, unknown> = ercPocNodesPayload(),
+) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/bff/reviews/review-1")) {
+        return new Response(
+          JSON.stringify(
+            reviewPayload({
+              call_id: "call-erc-poc",
+              call_code: "ERC-2026-PoC",
+              detail_state: "call_linked",
+              ordering_source: "call_nodes",
+              detail_projection: {
+                version: "wf0080_launch_wedge_v1",
+                headline_state: "action_required",
+                ordered_card_ids: ["card-1", "card-2"],
+                top_action_card_ids: ["card-1", "card-2"],
+                ranking_basis: "assessment_status_then_rating_then_existing_order",
+              },
+              ...reviewOverrides,
+            }),
+          ),
+          { status: 200 },
+        );
+      }
+      if (url.includes("/api/bff/calls/call-erc-poc/nodes")) {
+        return new Response(JSON.stringify(nodePayload), { status: 200 });
+      }
+      return new Response(
+        JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+        { status: 404 },
+      );
+    }),
+  );
 }
 
 describe("ReviewDetailPage", () => {
@@ -114,11 +197,7 @@ describe("ReviewDetailPage", () => {
     render(<ReviewDetailPage />);
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Official source basis: Call for Proposals (Veni 2025) §4.3.1",
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Feedback text")).toBeInTheDocument();
   });
 
   it("wf0067_review_detail_tracer_unavailable_source_basis_card", async () => {
@@ -182,9 +261,7 @@ describe("ReviewDetailPage", () => {
     render(<ReviewDetailPage />);
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
-    expect(
-      screen.getByText("Official source basis: unavailable."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Feedback text")).toBeInTheDocument();
   });
 
   it("wf0067_review_card_trust_metadata_shows_available_and_unavailable_basis", async () => {
@@ -274,20 +351,7 @@ describe("ReviewDetailPage", () => {
     expect(screen.getAllByText("Evaluation criterion: Quality")).toHaveLength(2);
     expect(screen.getByText("Peer-exceeding quality")).toBeInTheDocument();
     expect(screen.getByText("Network visibility")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Official source basis: Call for Proposals (Veni 2025) §4.3.1",
-      ),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Official source basis: unavailable."),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Reviewed section context: 2a. Academic Profile"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Reviewed section context: 2b. Key Outputs"),
-    ).toBeInTheDocument();
+    expect(screen.getAllByText("Feedback text")).toHaveLength(2);
   });
 
   it("wf0067_review_card_trust_not_assessable_label", async () => {
@@ -353,12 +417,7 @@ describe("ReviewDetailPage", () => {
     render(<ReviewDetailPage />);
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
-    expect(
-      screen.getByText("Status: Not assessable (insufficient_evidence)"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Official source basis: unavailable (legacy fallback)."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Feedback text")).toBeInTheDocument();
   });
 
   it("wf0067_review_detail_boundary_no_generated_cards_distinct_from_visible_not_reviewed", async () => {
@@ -589,9 +648,7 @@ describe("ReviewDetailPage", () => {
         /mixed_version_review: Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage\./,
       ),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText("Official source basis: unavailable (legacy fallback)."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Legacy feedback")).toBeInTheDocument();
   });
 
   it.each([
@@ -662,7 +719,7 @@ describe("ReviewDetailPage", () => {
       render(<ReviewDetailPage />);
 
       expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
-      expect(screen.getByText("Official source basis: Official source")).toBeInTheDocument();
+      expect(screen.getByText("Feedback text")).toBeInTheDocument();
       expect(screen.getByText("Supporting context: None")).toBeInTheDocument();
     },
   );
@@ -1800,7 +1857,7 @@ describe("ReviewDetailPage", () => {
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
     expect(screen.getByText("Deterministic innovation feedback.")).toBeInTheDocument();
-    expect(screen.getByText("Additive companion guidance")).toBeInTheDocument();
+    expect(screen.getByText("LLM companion guidance")).toBeInTheDocument();
     expect(
       screen.getByText("Additive innovation companion guidance."),
     ).toBeInTheDocument();
@@ -2008,7 +2065,7 @@ describe("ReviewDetailPage", () => {
     render(<ReviewDetailPage />);
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
-    expect(screen.getAllByText("Additive companion guidance")).toHaveLength(1);
+    expect(screen.getAllByText("LLM companion guidance")).toHaveLength(1);
     expect(
       screen.getByText("Deterministic leadership feedback."),
     ).toBeInTheDocument();
@@ -2060,8 +2117,391 @@ describe("ReviewDetailPage", () => {
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
     expect(
-      screen.queryByText("Additive companion guidance"),
+      screen.queryByText("LLM companion guidance"),
     ).not.toBeInTheDocument();
     expect(screen.getByText("Legacy deterministic feedback.")).toBeInTheDocument();
+  });
+
+  it("wf0080_review_detail_groups_all_findings_by_reviewed_section", async () => {
+    mockReviewDetailFetch({
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "exp-1",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
+          criterion: "Excellence",
+          criterion_description: "Innovation criterion",
+          evaluation_element_name: "Innovation",
+          expectation_guidance_note: "Lead with the breakthrough claim.",
+          rating: "NOTE",
+          feedback_text: "Innovation feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+        {
+          id: "card-2",
+          node_expectation_id: "exp-2",
+          node_logical_id: "poc_approach_methodology",
+          node_title: "Approach and methodology",
+          criterion: "Excellence",
+          criterion_description: "Approach criterion",
+          evaluation_element_name: "Methodology",
+          expectation_guidance_note: "Clarify feasibility.",
+          rating: "WARNING",
+          feedback_text: "Methodology feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+        {
+          id: "card-3",
+          node_expectation_id: "exp-3",
+          node_logical_id: "poc_pi_strategic_leadership",
+          node_title: "PI strategic leadership",
+          criterion: "Excellence",
+          criterion_description: "Leadership criterion",
+          evaluation_element_name: "Leadership",
+          expectation_guidance_note: "Show delivery plan.",
+          rating: "CRITICAL",
+          feedback_text: "Leadership feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+        {
+          id: "card-4",
+          node_expectation_id: "exp-4",
+          node_logical_id: "poc_market_translation",
+          node_title: "Market translation",
+          criterion: "Excellence",
+          criterion_description: "Translation criterion",
+          evaluation_element_name: "Translation",
+          expectation_guidance_note: "Show adoption path.",
+          rating: "SUCCESS",
+          feedback_text: "Translation feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+      ],
+      detail_projection: {
+        version: "wf0080_launch_wedge_v1",
+        headline_state: "action_required",
+        ordered_card_ids: ["card-3", "card-2", "card-1", "card-4"],
+        top_action_card_ids: ["card-3", "card-2", "card-1"],
+        ranking_basis: "assessment_status_then_rating_then_existing_order",
+      },
+    });
+
+    render(<ReviewDetailPage />);
+
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
+    });
+    const sectionGroups = within(reviewRegion).getAllByRole("heading", {
+      level: 2,
+      name: /Reviewed section:/,
+    });
+    expect(sectionGroups).toHaveLength(4);
+    expect(sectionGroups[0]).toHaveTextContent(
+      "Reviewed section: Idea innovation",
+    );
+    expect(sectionGroups[1]).toHaveTextContent(
+      "Reviewed section: Approach and methodology",
+    );
+    expect(sectionGroups[2]).toHaveTextContent(
+      "Reviewed section: PI strategic leadership",
+    );
+    expect(sectionGroups[3]).toHaveTextContent(
+      "Reviewed section: Market translation",
+    );
+    expect(screen.queryByText("Top actions")).not.toBeInTheDocument();
+    expect(screen.queryByText("Other findings")).not.toBeInTheDocument();
+    expect(screen.getByText("Translation feedback")).toBeInTheDocument();
+  });
+
+  it("wf0080_review_detail_falls_back_to_payload_grouping_when_projection_is_missing", async () => {
+    mockReviewDetailFetch({
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "exp-1",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
+          criterion: "Excellence",
+          criterion_description: "Innovation criterion",
+          evaluation_element_name: "Innovation",
+          expectation_guidance_note: null,
+          rating: "NOTE",
+          feedback_text: "Innovation feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+      ],
+      detail_projection: undefined,
+    });
+
+    render(<ReviewDetailPage />);
+
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
+    });
+    expect(
+      within(reviewRegion).getByText("Reviewed section: Idea innovation"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Prioritized launch view unavailable")).not.toBeInTheDocument();
+  });
+
+  it("wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success", async () => {
+    mockReviewDetailFetch({
+      review: {
+        id: "review-1",
+        status: "COMPLETED",
+        overall_rating: "SUCCESS",
+        overall_summary: "All clear.",
+      },
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "exp-1",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
+          criterion: "Excellence",
+          criterion_description: "Innovation criterion",
+          evaluation_element_name: "Innovation",
+          expectation_guidance_note: "Lead with the breakthrough claim.",
+          rating: "SUCCESS",
+          feedback_text: "Innovation feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+      ],
+      detail_projection: {
+        version: "wf0080_launch_wedge_v1",
+        headline_state: "no_critical_blockers",
+        ordered_card_ids: ["card-1"],
+        top_action_card_ids: ["card-1"],
+        ranking_basis: "assessment_status_then_rating_then_existing_order",
+      },
+    });
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("No critical blockers found")).toBeInTheDocument();
+    expect(screen.queryByText("Action required")).not.toBeInTheDocument();
+  });
+
+  it("wf0080_review_detail_renders_deterministic_feedback_as_bullets", async () => {
+    mockReviewDetailFetch({
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "exp-1",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
+          criterion: "Excellence",
+          criterion_description: "Innovation criterion",
+          evaluation_element_name: "Innovation",
+          expectation_guidance_note: "Lead with the breakthrough claim.",
+          rating: "WARNING",
+          feedback_text:
+            "Lead with the breakthrough claim. Show why the idea is high risk.",
+        },
+      ],
+      detail_projection: {
+        version: "wf0080_launch_wedge_v1",
+        headline_state: "action_required",
+        ordered_card_ids: ["card-1"],
+        top_action_card_ids: ["card-1"],
+        ranking_basis: "assessment_status_then_rating_then_existing_order",
+      },
+    });
+
+    render(<ReviewDetailPage />);
+
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
+    });
+    const groupedCards = within(reviewRegion).getAllByTestId(/^review-card-/);
+    const bulletItems = within(groupedCards[0]).getAllByRole("listitem");
+    expect(bulletItems).toHaveLength(2);
+    expect(bulletItems[0]).toHaveTextContent("Lead with the breakthrough claim.");
+    expect(bulletItems[1]).toHaveTextContent("Show why the idea is high risk.");
+  });
+
+  it("wf0080_review_detail_removes_supporting_evidence_block", async () => {
+    mockReviewDetailFetch({
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "exp-1",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
+          criterion: "Excellence",
+          criterion_description: "Innovation criterion",
+          evaluation_element_name: "Innovation",
+          expectation_guidance_note: "Lead with the breakthrough claim.",
+          rating: "WARNING",
+          feedback_text: "Innovation feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+        {
+          id: "card-2",
+          node_expectation_id: "exp-2",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
+          criterion: "Excellence",
+          criterion_description: "Approach criterion",
+          evaluation_element_name: "Methodology",
+          expectation_guidance_note: "Clarify feasibility.",
+          rating: "NOTE",
+          feedback_text: "Methodology feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+      ],
+      detail_projection: {
+        version: "wf0080_launch_wedge_v1",
+        headline_state: "action_required",
+        ordered_card_ids: ["card-1", "card-2"],
+        top_action_card_ids: ["card-1"],
+        ranking_basis: "assessment_status_then_rating_then_existing_order",
+      },
+    });
+
+    render(<ReviewDetailPage />);
+
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
+    });
+    const groupedCards = within(reviewRegion).getAllByTestId(/^review-card-/);
+    expect(
+      within(groupedCards[0]).queryByText("Supporting evidence"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(groupedCards[0]).queryByText("Official source basis: Official ERC PoC source"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(groupedCards[1]).queryByText("Supporting evidence"),
+    ).not.toBeInTheDocument();
+  });
+
+  it(
+    "wf0080_review_detail_handles_pending_timeout_and_failure_honestly",
+    async () => {
+      vi.useFakeTimers();
+      try {
+        mockReviewDetailFetch({
+          review: {
+            id: "review-1",
+            status: "PENDING",
+            overall_rating: null,
+            overall_summary: null,
+          },
+          cards: [],
+          detail_projection: {
+            version: "wf0080_launch_wedge_v1",
+            headline_state: "action_required",
+            ordered_card_ids: [],
+            top_action_card_ids: [],
+            ranking_basis: "assessment_status_then_rating_then_existing_order",
+          },
+        });
+
+        render(<ReviewDetailPage />);
+
+        await act(async () => {
+          await Promise.resolve();
+        });
+        expect(screen.getByText(/Still processing\./)).toBeInTheDocument();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(90_000);
+        });
+        expect(
+          screen.getByText(/Still processing after 90 seconds/),
+        ).toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+        cleanup();
+      }
+
+      mockReviewDetailFetch({
+        review: {
+          id: "review-1",
+          status: "FAILED",
+          overall_rating: null,
+          overall_summary: null,
+        },
+        cards: [],
+      });
+
+      render(<ReviewDetailPage />);
+
+      expect(await screen.findByText("Review Failed")).toBeInTheDocument();
+      expect(
+        screen.getByText("Retry uses your previous draft with a new idempotency key."),
+      ).toBeInTheDocument();
+    },
+    15000,
+  );
+
+  it("wf0080_review_detail_export_copy_stays_truthful_about_projection_scope", async () => {
+    const clipboardWriteText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(window, "isSecureContext", {
+      configurable: true,
+      value: true,
+    });
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: clipboardWriteText },
+    });
+    mockReviewDetailFetch({
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "exp-1",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
+          criterion: "Excellence",
+          criterion_description: "Innovation criterion",
+          evaluation_element_name: "Innovation",
+          expectation_guidance_note: null,
+          rating: "NOTE",
+          feedback_text: "Innovation feedback",
+          synthesized_companion_text: "Companion guidance",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+      ],
+      detail_projection: {
+        version: "wf0080_launch_wedge_v1",
+        headline_state: "action_required",
+        ordered_card_ids: ["card-1"],
+        top_action_card_ids: ["card-1"],
+        ranking_basis: "assessment_status_then_rating_then_existing_order",
+      },
+    });
+
+    render(<ReviewDetailPage />);
+
+    await screen.findByText("Innovation feedback");
+    fireEvent.click(screen.getByRole("button", { name: "Copy deterministic text" }));
+    expect(
+      await screen.findByText(
+        "Copy/download include deterministic review text only. Additive companion guidance is not included in this export.",
+      ),
+    ).toBeInTheDocument();
+    expect(clipboardWriteText).toHaveBeenCalledTimes(1);
+    expect(clipboardWriteText.mock.calls[0][0]).toContain(
+      "Additive companion guidance is not included in this export.",
+    );
   });
 });
