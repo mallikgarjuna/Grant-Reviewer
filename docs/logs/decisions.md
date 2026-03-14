@@ -19,13 +19,21 @@
 - **Tradeoff**: Launch closure stays stricter and may require more deliberate cohort scheduling before any ship recommendation.
 - **Status**: Approved.
 
+### AD 80.4: WF-0080 review detail renders findings grouped by section with deterministic bullets, optional LLM companion, and no supporting-evidence drawer
+- **WF ID**: WF-0080
+- **Context**: Manual verification found the action-first top-3 split plus per-card “supporting evidence” drawer added scan friction and hid the most important thing: multiple findings per proposal section/node.
+- **Decision**: Render findings grouped by reviewed section/node on `/app/reviews/[reviewId]`. Keep deterministic `feedback_text` as the primary guidance, render it as a bullet list for readability, and show additive `synthesized_companion_text` only when present as optional LLM companion guidance. Remove the “Top actions” / “Other findings” buckets and remove the “Supporting evidence” drawer entirely.
+- **Why**: Improves researcher scanability and keeps the page focused on actionable deterministic guidance while still allowing additive LLM help when available.
+- **Tradeoff**: The page no longer provides a separate “top actions” prioritization bucket; prioritization remains available only as backend `detail_projection` headline context.
+- **Status**: Approved.
+
 ### AD 80.1: WF-0080 locks the launch wedge to one `ERC-2026-PoC` cohort with an action-first review-detail model
 - **WF ID**: WF-0080
 - **Context**: The approved Phase 0 brainstorm rejects architecture-first planning and requires one explicit launch wedge, one happy-path submit-to-detail flow, one review-detail reading model, and 5-10 researcher-session usefulness evidence.
 - **Decision**: Lock WF-0080 to `ERC-2026-PoC`, use an authenticated cohort allowlist at the BFF with a mirrored backend fail-closed reject, and define the review-detail reading model as at most the top 3 actionable cards above the fold ordered by existing card assessment status, then lowest rating, then existing call/node order. Capture usefulness closure in a walkthrough appendix `Usefulness Evidence Log` with attributable session rows.
 - **Why**: This turns the Phase 0 wedge into a concrete planning boundary instead of a launch-readiness theme, and it keeps Phase 1 from relitigating the exact call, cohort gate, or evidence artifact.
 - **Tradeoff**: The wedge is intentionally narrow and may require a separate follow-on WF for broader launch infrastructure, cross-call rollout, or richer export/admin surfaces.
-- **Status**: Approved.
+- **Status**: Superseded by AD 80.4.
 
 ## Date: 2026-03-13 (WF-0079: researcher-visible-carry-through-mvp)
 
