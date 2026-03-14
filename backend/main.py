@@ -100,6 +100,7 @@ def is_idempotency_conflict_error(err: IntegrityError) -> bool:
 
 ERROR_STATUS_BY_CODE = {
     "UNAUTHORIZED": 401,
+    "COHORT_ACCESS_DENIED": 403,
     "IDEMPOTENCY_PAYLOAD_MISMATCH": 409,
     "QUOTA_EXCEEDED": 429,
     "CALL_NOT_FOUND": 404,
@@ -127,6 +128,7 @@ ERROR_STATUS_BY_CODE = {
 
 API_ERROR_RESPONSES = {
     401: {"model": APIErrorResponse},
+    403: {"model": APIErrorResponse},
     409: {"model": APIErrorResponse},
     429: {"model": APIErrorResponse},
     400: {"model": APIErrorResponse},
@@ -255,6 +257,31 @@ def _get_free_daily_review_limit() -> int:
         if app_env in {"dev", "development", "local"}:
             return FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT
         return FREE_DAILY_REVIEW_LIMIT
+
+
+def _get_wf0080_launch_cohort_user_ids() -> set[str]:
+    """Parse the WF-0080 launch cohort allowlist from env."""
+    raw_ids = os.getenv("WF0080_LAUNCH_COHORT_USER_IDS", "")
+    return {user_id.strip() for user_id in raw_ids.split(",") if user_id.strip()}
+
+
+def _enforce_wf0080_launch_cohort_access(
+    *,
+    call_code: str,
+    external_user_id: str,
+) -> None:
+    """Fail closed for direct ERC-2026-PoC access outside the launch cohort."""
+    if call_code != "ERC-2026-PoC":
+        return
+
+    if external_user_id in _get_wf0080_launch_cohort_user_ids():
+        return
+
+    raise APIException(
+        code="COHORT_ACCESS_DENIED",
+        message="Launch access is limited to invited ERC-2026-PoC researchers.",
+        details={"call_code": call_code},
+    )
 
 
 async def require_bff_user_id(request: Request) -> str:
@@ -967,6 +994,14 @@ def create_structured_review(
             message="Missing required Idempotency-Key header.",
         )
 
+    call = repository.get_call_by_id(payload.call_id)
+    if call is None:
+        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
+    _enforce_wf0080_launch_cohort_access(
+        call_code=call.code,
+        external_user_id=external_user_id,
+    )
+
     payload_json = json.dumps(
         payload.model_dump(mode="json"),
         sort_keys=True,
@@ -1016,9 +1051,6 @@ def create_structured_review(
             },
         )
 
-    call = repository.get_call_by_id(payload.call_id)
-    if call is None:
-        raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
     call_definition = repository.get_call_definition_by_call_id(payload.call_id)
 
     if not payload.nodes:

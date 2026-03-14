@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: fail closed on direct backend structured-review submit before review creation
+### [x] Task 1 — Tracer bullet: fail closed on direct backend structured-review submit before review creation
 
 Goal:
 Prove the narrowest launch-wedge access guard by rejecting out-of-cohort direct signed requests at `POST /api/structured-review` before review creation or downstream execution.

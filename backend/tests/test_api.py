@@ -745,6 +745,7 @@ def create_client_with_erc_poc_seed(monkeypatch) -> tuple[TestClient, UUID, str]
     """Create test client with ERC PoC call ingested from canonical YAML."""
     monkeypatch.setenv("LLM_MODE", "stub")
     monkeypatch.setenv("BFF_SHARED_SECRET", TEST_BFF_SHARED_SECRET)
+    monkeypatch.setenv("WF0080_LAUNCH_COHORT_USER_IDS", TEST_USER_ID)
     reset_database()
     ingest_call(Path("data/calls/canonical/erc/erc_poc_2026_full.yaml"), dry_run=False)
 
@@ -1078,6 +1079,118 @@ def test_wf0073_contract_structured_api_accepts_erc_poc_2026_payload(
         assert definition.source_path == "data/calls/canonical/erc/erc_poc_2026_full.yaml"
     finally:
         session.close()
+
+
+def test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation(
+    monkeypatch,
+) -> None:
+    """WF-0080: backend structured submit rejects out-of-cohort ERC PoC traffic."""
+    from app.services.structured_reviewer_service import StructuredReviewerService
+
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    monkeypatch.setenv("WF0080_LAUNCH_COHORT_USER_IDS", "invited_user")
+    assert call_code == fixture["call_code"] == "ERC-2026-PoC"
+
+    calls = {"generate_structured": 0}
+
+    def blocked_generate_structured(self, *args, **kwargs):
+        calls["generate_structured"] += 1
+        raise AssertionError(
+            "generate_structured_review_pipeline_v1 should not execute when cohort access is denied"
+        )
+
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review_pipeline_v1",
+        blocked_generate_structured,
+    )
+
+    before_count = _count_reviews_in_db()
+
+    response = post_structured_review(
+        client=client,
+        user_id="out_of_cohort_user",
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-direct-cohort-gate-{time.time_ns()}",
+    )
+
+    assert response.status_code == 403
+    payload = response.json()
+    assert payload["error"]["code"] == "COHORT_ACCESS_DENIED"
+    assert payload["error"]["details"] == {"call_code": "ERC-2026-PoC"}
+    assert calls == {"generate_structured": 0}
+    assert _count_reviews_in_db() == before_count
+
+
+def test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors(
+    monkeypatch,
+) -> None:
+    """WF-0080: in-cohort ERC PoC users still hit existing safety gates truthfully."""
+    from app.services.structured_reviewer_service import StructuredReviewerService
+
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    monkeypatch.setenv("WF0080_LAUNCH_COHORT_USER_IDS", TEST_USER_ID)
+    assert call_code == fixture["call_code"] == "ERC-2026-PoC"
+
+    calls = {"generate_structured": 0}
+
+    def blocked_generate_structured(self, *args, **kwargs):
+        calls["generate_structured"] += 1
+        raise AssertionError(
+            "generate_structured_review_pipeline_v1 should not execute when reviews are disabled or quota is exceeded"
+        )
+
+    monkeypatch.setattr(
+        StructuredReviewerService,
+        "generate_structured_review_pipeline_v1",
+        blocked_generate_structured,
+    )
+
+    monkeypatch.setenv("REVIEWS_ENABLED", "0")
+    reviews_disabled_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-reviews-disabled-{time.time_ns()}",
+    )
+    assert reviews_disabled_response.status_code == 503
+    assert reviews_disabled_response.json()["error"]["code"] == "REVIEWS_DISABLED"
+
+    monkeypatch.setenv("REVIEWS_ENABLED", "1")
+    monkeypatch.setenv("FREE_DAILY_REVIEW_LIMIT", "0")
+    quota_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-quota-exceeded-{time.time_ns()}",
+    )
+    assert quota_response.status_code == 429
+    quota_payload = quota_response.json()
+    assert quota_payload["error"]["code"] == "QUOTA_EXCEEDED"
+    assert quota_payload["error"]["details"]["limit"] == 0
+    assert quota_payload["error"]["details"]["remaining"] == 0
+
+    assert calls == {"generate_structured": 0}
 
 
 def test_wf0065_nwo_structured_api_tracer_uses_real_canonical_call(monkeypatch) -> None:
@@ -4838,6 +4951,7 @@ def test_delete_review_non_owner_returns_not_found(monkeypatch) -> None:
 def test_error_code_status_mapping_is_consistent() -> None:
     expected = {
         "UNAUTHORIZED": 401,
+        "COHORT_ACCESS_DENIED": 403,
         "IDEMPOTENCY_PAYLOAD_MISMATCH": 409,
         "QUOTA_EXCEEDED": 429,
         "CALL_NOT_FOUND": 404,
@@ -4851,6 +4965,7 @@ def test_error_code_status_mapping_is_consistent() -> None:
         "SNIPPET_TOO_LONG": 400,
         "UNKNOWN_NODE_ID": 422,
         "DUPLICATE_NODE_ID": 422,
+        "SUPPORTING_NODE_NOT_ALLOWED": 422,
         "DOMAIN_REQUIRED": 422,
         "DOMAIN_INVALID": 422,
             "STRUCTURED_NODES_REQUIRED": 422,
