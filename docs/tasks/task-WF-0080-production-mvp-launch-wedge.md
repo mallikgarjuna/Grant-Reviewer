@@ -2,8 +2,8 @@
 # WF-0080 — Production MVP Launch Wedge
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-03-14
 
 Type: feature
@@ -45,11 +45,11 @@ Verification Steps:
 - `cd backend && rg -n "COHORT_ACCESS_DENIED|REVIEWS_DISABLED|QUOTA_EXCEEDED|structured-review" main.py tests/test_api.py`
 Risks (if any): If the reject path is not truly pre-side-effect, Phase 3 could accidentally create costly reviews for blocked users.
 
-### [ ] Task 2 — Add the bounded review-detail projection seam in backend detail assembly
+### [ ] Task 2 — Tracer bullet: prove one invited submit-to-detail wedge through backend detail projection
 
 Goal:
-Create the one approved read-model seam by computing `detail_projection` inside `GET /reviews/{review_id}` from persisted `ReviewCard` truth and existing call/node order only.
-Slice: backend-detail-projection
+Prove one invited `ERC-2026-PoC` researcher can complete the locked submit-to-detail happy path by keeping the backend projection seam additive at `GET /reviews/{review_id}` and fetchable after review creation.
+Slice: tracer-bullet-detail-projection
 User Stories: US1, US2, US3
 PRD Requirements: FR6, FR7, FR8, FR10, FR11, FR16
 Depends on: 1
@@ -67,15 +67,16 @@ Stop if: the projection cannot stay additive at `GET /reviews/{review_id}`, requ
 Session boundary after: yes
 Acceptance Criteria:
 - Targeted failing regressions such as `test_wf0080_review_detail_emits_bounded_detail_projection` and `test_wf0080_review_detail_projection_uses_existing_order_tiebreaker` prove the current response lacks the approved projection contract and ranking semantics.
+- A targeted failing regression such as `test_wf0080_invited_submit_reaches_detail_projection` proves one in-cohort `ERC-2026-PoC` submit can create a review and later fetch the approved `detail_projection` without widening beyond the existing submit/detail path.
 - After the change, `ReviewDetailResponse.detail_projection` exposes exactly `version`, `headline_state`, `ordered_card_ids`, `top_action_card_ids`, and `ranking_basis`, with `top_action_card_ids` bounded to at most 3 cards.
 - Ranking is derived only from `assessment_status`, then rating order `CRITICAL -> WARNING -> NOTE -> SUCCESS`, then existing call/node order; no BFF or frontend recomputation is required.
 - `headline_state` becomes `no_critical_blockers` only when every card is `ASSESSED` and every rating is `NOTE` or `SUCCESS`; any `NOT_ASSESSABLE`, `CRITICAL`, or `WARNING` keeps `action_required`.
 TDD Plan:
-- RED: add `test_wf0080_review_detail_emits_bounded_detail_projection` and `test_wf0080_review_detail_projection_uses_existing_order_tiebreaker` in `backend/tests/test_api.py`; run them before backend contract changes so they fail.
+- RED: add `test_wf0080_review_detail_emits_bounded_detail_projection`, `test_wf0080_review_detail_projection_uses_existing_order_tiebreaker`, and `test_wf0080_invited_submit_reaches_detail_projection` in `backend/tests/test_api.py`; run them before backend contract changes so they fail.
 - GREEN: add the minimal schema and response-assembly logic required to emit the additive `detail_projection` object directly from persisted card truth.
 - REFACTOR: extract one tiny ranking helper only if response assembly becomes hard to read; otherwise skip.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_api.py -k "wf0080_review_detail_emits_bounded_detail_projection or wf0080_review_detail_projection_uses_existing_order_tiebreaker"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0080_review_detail_emits_bounded_detail_projection or wf0080_review_detail_projection_uses_existing_order_tiebreaker or wf0080_invited_submit_reaches_detail_projection"`
 - `cd backend && rg -n "detail_projection|top_action_card_ids|ranking_basis|no_critical_blockers" app/schemas/api.py main.py tests/test_api.py`
 Risks (if any): If ranking semantics leak outside this seam, the wedge can drift into hidden coupling across backend, BFF, and UI.
 
@@ -134,15 +135,16 @@ Stop if: the page needs new persistence fields, cross-page navigation changes, o
 Session boundary after: yes
 Acceptance Criteria:
 - Targeted failing regressions such as `wf0080_review_detail_renders_top_action_cards_first`, `wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success`, `wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default`, and `wf0080_review_detail_handles_pending_timeout_and_failure_honestly` prove the current page does not yet satisfy the approved reading model.
+- A targeted failing regression such as `wf0080_review_detail_export_copy_stays_truthful_about_projection_scope` proves the current page-local copy/export behavior can overclaim what the projection framing includes.
 - After the change, only the backend-provided `top_action_card_ids` render above the fold by default, the first ranked card exposes enough summary context to justify rank, and supporting evidence stays collapsed until expanded per card.
 - The page renders `no critical blockers found` only when the backend projection indicates `no_critical_blockers`; otherwise it stays action-oriented without implying success.
 - Pending, timeout, failed, retry, and return-later states remain explicit and truthful, and page-local copy/export wording states any projection-only framing it excludes.
 TDD Plan:
-- RED: add `wf0080_review_detail_renders_top_action_cards_first`, `wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success`, `wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default`, and `wf0080_review_detail_handles_pending_timeout_and_failure_honestly` in `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`; run them before UI changes so they fail.
+- RED: add `wf0080_review_detail_renders_top_action_cards_first`, `wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success`, `wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default`, `wf0080_review_detail_handles_pending_timeout_and_failure_honestly`, and `wf0080_review_detail_export_copy_stays_truthful_about_projection_scope` in `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`; run them before UI changes so they fail.
 - GREEN: make the minimum page/component changes needed to consume `detail_projection`, render the top-action-first layout, and keep degraded states and copy/export messaging honest.
 - REFACTOR: extract a tiny ordering/headline presentational helper only if the page diff becomes repetitive; otherwise skip.
 Verification Steps:
-- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0080_review_detail_renders_top_action_cards_first|wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success|wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default|wf0080_review_detail_handles_pending_timeout_and_failure_honestly'`
+- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0080_review_detail_renders_top_action_cards_first|wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success|wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default|wf0080_review_detail_handles_pending_timeout_and_failure_honestly|wf0080_review_detail_export_copy_stays_truthful_about_projection_scope'`
 - `cd frontend && rg -n "top_action_card_ids|no critical blockers found|return later|still processing|supporting evidence" src/app/app/reviews/'[reviewId]'/page.tsx src/components/review/ReviewCard.tsx src/app/app/reviews/'[reviewId]'/page.test.tsx`
 Risks (if any): If the page overstates completion or hides degraded states, the production wedge could mislead researchers during the launch cohort.
 
@@ -168,15 +170,17 @@ Stop if: traceability requires a new data store, broad observability platform wo
 Session boundary after: yes
 Acceptance Criteria:
 - Targeted failing regressions such as `test_wf0080_trace_correlation_is_present_on_submit_and_detail` and `wf0080_bff_submit_preserves_trace_headers_for_support` prove the current wedge cannot yet explain one disputed session across BFF and backend seams.
+- A targeted failing regression such as `test_wf0080_trace_support_does_not_create_new_storage_surface` proves the support seam would widen storage/access beyond existing review storage plus bounded support traces unless the implementation stays additive only.
 - After the change, one bounded trace identifier or correlation tuple is emitted/preserved across submit rejection or creation paths and can be tied to later detail retrieval/support investigation without introducing a new storage class for researcher text.
+- The trace identifier remains additive-only and does not change the public submit/detail contract beyond bounded support metadata already approved for the wedge.
 - Verification proves the trace path does not widen access to review inputs/outputs beyond designated maintainers and existing review/support trace surfaces.
 - The task stays limited to supportability for the launch wedge and does not introduce generalized telemetry or cohort-management products.
 TDD Plan:
-- RED: add `test_wf0080_trace_correlation_is_present_on_submit_and_detail` in `backend/tests/test_api.py` and `wf0080_bff_submit_preserves_trace_headers_for_support` in `frontend/src/app/api/bff/structured-review/route.test.ts`; run them before changing trace seams so they fail.
+- RED: add `test_wf0080_trace_correlation_is_present_on_submit_and_detail` and `test_wf0080_trace_support_does_not_create_new_storage_surface` in `backend/tests/test_api.py`, plus `wf0080_bff_submit_preserves_trace_headers_for_support` in `frontend/src/app/api/bff/structured-review/route.test.ts`; run them before changing trace seams so they fail.
 - GREEN: add the minimal trace correlation plumbing needed to connect submit and detail support evidence on existing surfaces only.
 - REFACTOR: skip unless one tiny helper is needed to keep correlation-id naming consistent across the two seams.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_api.py -k "wf0080_trace_correlation_is_present_on_submit_and_detail"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0080_trace_correlation_is_present_on_submit_and_detail or wf0080_trace_support_does_not_create_new_storage_surface"`
 - `cd frontend && npm test -- --runInBand 'src/app/api/bff/structured-review/route.test.ts' -t 'wf0080_bff_submit_preserves_trace_headers_for_support'`
 - `cd backend && rg -n "trace|correlation|support" main.py tests/test_api.py`
 Risks (if any): If trace evidence is too weak, operators will have to infer failures from unrelated logs and the wedge will not be honestly supportable.
@@ -209,10 +213,12 @@ TDD Plan:
 Verification Steps:
 - `git log --oneline main...HEAD`
 - `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts frontend/src/app/app/reviews/'[reviewId]'/page.tsx frontend/src/app/api/bff/reviews/'[reviewId]'/route.ts`
-- `cd backend && uv run pytest tests/test_api.py -k "wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation or wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors or wf0080_review_detail_emits_bounded_detail_projection or wf0080_review_detail_projection_uses_existing_order_tiebreaker or wf0080_trace_correlation_is_present_on_submit_and_detail"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation or wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors or wf0080_review_detail_emits_bounded_detail_projection or wf0080_review_detail_projection_uses_existing_order_tiebreaker or wf0080_invited_submit_reaches_detail_projection"`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0080_trace_correlation_is_present_on_submit_and_detail or wf0080_trace_support_does_not_create_new_storage_surface"`
 - `cd frontend && npm test -- --runInBand 'src/app/api/bff/structured-review/route.test.ts' -t 'wf0080_bff_submit_blocks_out_of_cohort_before_proxy|wf0080_bff_submit_preserves_trace_headers_for_support'`
 - `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t 'wf0080_bff_review_detail_preserves_backend_projection'`
-- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0080_review_detail_renders_top_action_cards_first|wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success|wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default|wf0080_review_detail_handles_pending_timeout_and_failure_honestly'`
+- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0080_review_detail_renders_top_action_cards_first|wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success|wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default|wf0080_review_detail_handles_pending_timeout_and_failure_honestly|wf0080_review_detail_export_copy_stays_truthful_about_projection_scope'`
+- `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts backend/app/repositories frontend/src/app/app/history`
 - `cd docs && rg -n "Usefulness Evidence Log|Verification Matrix|Audit Disposition Ledger|must-ship|deferred|pass|fail|skipped" walkthroughs/walkthrough-WF-0080-production-mvp-launch-wedge.md`
 Risks (if any): Without an explicit closure artifact, Phase 3 could claim launch readiness while usefulness evidence, scope proof, or fail-closed verification is still aspirational.
 
@@ -220,7 +226,7 @@ Risks (if any): Without an explicit closure artifact, Phase 3 could claim launch
 
 | Proof item | Task | Command or test ID | Expected outcome | Result | Evidence reference | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Happy-path submit-to-detail wedge proof | 1, 2, 3, 4 | targeted backend/frontend selectors plus walkthrough evidence | invited in-cohort researcher can submit, wait honestly, and open the bounded detail view | `fail` (default until executed) | required | must stay locked to `ERC-2026-PoC` |
+| Happy-path submit-to-detail wedge proof | 1, 2, 3, 4 | `test_wf0080_invited_submit_reaches_detail_projection`, `wf0080_bff_review_detail_preserves_backend_projection`, `wf0080_review_detail_renders_top_action_cards_first` | invited in-cohort researcher can submit, wait honestly, and open the bounded detail view | `fail` (default until executed) | required | must stay locked to `ERC-2026-PoC` |
 | Cohort gate fail-closed proof | 1 | `test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation`, `wf0080_bff_submit_blocks_out_of_cohort_before_proxy` | out-of-cohort users are rejected before proxy/review creation on both entrypoints | `fail` (default until executed) | required | zero-side-effect rejection |
 | Quota/reviews-disabled preservation proof | 1 | `test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors` | existing quota and disable gates still behave truthfully for in-cohort users | `fail` (default until executed) | required | cost/safety guard stays intact |
 | Review-detail projection proof | 2 | `test_wf0080_review_detail_emits_bounded_detail_projection`, `test_wf0080_review_detail_projection_uses_existing_order_tiebreaker` | backend detail response exposes the exact bounded projection contract | `fail` (default until executed) | required | backend is single ranking seam |
@@ -229,18 +235,21 @@ Risks (if any): Without an explicit closure artifact, Phase 3 could claim launch
 | Positive-state proof | 4 | `wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success` | explicit positive headline appears only for the approved all-assessed note/success condition | `fail` (default until executed) | required | no false reassurance |
 | Evidence-collapse proof | 4 | `wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default` | supporting evidence stays collapsed by default with per-card expansion | `fail` (default until executed) | required | first card still explains rank |
 | Timeout/degradation honesty proof | 4 | `wf0080_review_detail_handles_pending_timeout_and_failure_honestly` | pending, timeout, failed, and retry states remain explicit and truthful | `fail` (default until executed) | required | no silent success implication |
-| Export/copy truthfulness proof | 4 | detail-page selector plus walkthrough copy evidence | page-local export/copy behavior is explicit about any excluded projection framing | `fail` (default until executed) | required | same-page truthfulness only |
+| Export/copy truthfulness proof | 4 | `wf0080_review_detail_export_copy_stays_truthful_about_projection_scope` | page-local export/copy behavior is explicit about any excluded projection framing | `fail` (default until executed) | required | same-page truthfulness only |
 | Support trace proof | 5 | `test_wf0080_trace_correlation_is_present_on_submit_and_detail`, `wf0080_bff_submit_preserves_trace_headers_for_support` | one disputed cohort session can be explained from bounded support evidence | `fail` (default until executed) | required | no new telemetry product |
-| Privacy/retention proof | 5, 6 | code/config evidence plus walkthrough privacy section | launch-session text remains only in approved review/support traces with limited access | `fail` (default until executed) | required | no new storage class |
+| Privacy/retention proof | 5, 6 | `test_wf0080_trace_support_does_not_create_new_storage_surface`, walkthrough privacy section check | launch-session text remains only in approved review/support traces with limited access | `fail` (default until executed) | required | no new storage class |
 | Usefulness gate proof | 6 | walkthrough `Usefulness Evidence Log` | at least 5 attributable sessions are completed, rated useful, and name a next revision action | `fail` (default until executed) | required | 5-10 rows total required |
-| Scope proof | 6 | branch-diff inspection plus walkthrough deferred-surface check | must-ship stays in wedge and deferred surfaces remain unchanged unless explicitly approved | `fail` (default until executed) | required | fail closed on scope drift |
+| Scope proof | 6 | `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts backend/app/repositories frontend/src/app/app/history`, walkthrough deferred-surface check | must-ship stays in wedge and deferred surfaces remain unchanged unless explicitly approved | `fail` (default until executed) | required | fail closed on scope drift |
 
 ## Audit Disposition Ledger
 
 | Review source | Finding | Severity | Planned closure | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Phase 2.2 task review | none yet | `N/A` | pending | open | to be populated in Part C if review finds issues |
+| Phase 2.2 task review | Verification-matrix rows for happy-path, export/copy, privacy, and scope proof used narrative placeholders instead of exact selectors or commands | non-blocking | replace every vague proof row with replayable test IDs or shell commands and mirror them in Task 6 verification steps | closed | keeps all must-ship rows Phase 3 executable |
+| Phase 2.2 task review | The early tracer bullet did not explicitly prove one invited submit-to-detail story on its own | non-blocking | promote Task 2 into the explicit invited submit-to-detail tracer bullet and add one targeted backend selector for it | closed | satisfies the runner's early end-to-end proof requirement |
+| Phase 2.2 task review | Task 5 mixed supportability and privacy intent without a concrete no-new-storage proof or additive-only contract statement | non-blocking | add a dedicated privacy/no-new-storage selector and state that trace metadata is additive-only to the approved public contract | closed | reduces hidden coupling between support traces and wedge scope |
 
 ## Changelog
 
 - v0.1 (2026-03-14): Initial task breakdown from PRD.
+- v0.2 (2026-03-14): Applied Part B feedback by promoting Task 2 into the explicit invited submit-to-detail tracer bullet, replacing vague verification rows with exact selectors/commands, and tightening Task 5/Task 6 fail-closed privacy and scope proof.
