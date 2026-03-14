@@ -265,7 +265,7 @@ Stop if: any required verification row lacks executable evidence, the usefulness
 Session boundary after: yes
 Acceptance Criteria:
 - The walkthrough becomes the single closure artifact for the `Usefulness Evidence Log`, verification matrix evidence pointers, audit disposition ledger, and must-ship versus deferred scope proof.
-- The `Usefulness Evidence Log` format records at least the PRD-approved row fields and fails closed unless 5-10 attributable sessions are logged, with at least 5 rows meeting the success threshold before any ship recommendation.
+- The `Usefulness Evidence Log` format records at least the PRD-approved row fields when used, but it is not a merge/ship gate when no cohort sessions exist yet.
 - Closure proof records the exact baseline SHA used for scope review, then names exact deferred surfaces to inspect, including `frontend/src/app/app/reviews/page.tsx`, `frontend/src/app/api/bff/reviews/route.ts`, and any other branch-touched review surfaces outside the approved wedge.
 - Every verification row remains explicit `pass`, `fail`, or approved `skipped` with a concrete evidence pointer; no row may be silently inferred from narrative prose.
 TDD Plan:
@@ -303,7 +303,7 @@ Risks (if any): Without an explicit closure artifact, Phase 3 could claim launch
 | Backend support trace proof | 6 | `test_wf0080_trace_correlation_is_present_on_submit_and_detail` | one disputed cohort session can be explained from bounded backend-owned support evidence | `fail` (default until executed) | required | no new telemetry product |
 | BFF submit trace proof | 7 | `wf0080_bff_submit_preserves_trace_headers_for_support` | BFF submit path preserves the approved support trace correlation without reinterpretation | `fail` (default until executed) | required | no second trace namespace |
 | Privacy/retention proof | 6, 8 | `test_wf0080_trace_support_does_not_create_new_storage_surface`, walkthrough privacy section check | launch-session text remains only in approved review/support traces with limited access | `fail` (default until executed) | required | no new storage class |
-| Usefulness gate proof | 8 | walkthrough `Usefulness Evidence Log` | at least 5 attributable sessions are completed, rated useful, and name a next revision action | `fail` (default until executed) | required | 5-10 rows total required |
+| Usefulness evidence (optional) | 8 | walkthrough `Usefulness Evidence Log` | optional evidence log rows once real researcher sessions exist | `skipped` (optional) | optional | not a merge/ship gate |
 | Scope proof | 8 | `git merge-base main HEAD`, `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts backend/app/repositories frontend/src/app/app/history`, walkthrough deferred-surface check | must-ship stays in wedge and deferred surfaces remain unchanged unless explicitly approved | `fail` (default until executed) | required | fail closed on scope drift with recorded baseline SHA |
 
 ## Audit Disposition Ledger

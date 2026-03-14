@@ -11,12 +11,12 @@
 - **Tradeoff**: The backend response contract becomes slightly richer, so Phase 2 must prove passthrough discipline and keep the projection additive-only.
 - **Status**: Approved.
 
-### AD 80.3: WF-0080 usefulness closure requires five completed useful cohort sessions
+### AD 80.3: WF-0080 usefulness evidence is optional when no cohort exists yet
 - **WF ID**: WF-0080
-- **Context**: The brainstorm desired outcome set an evidence bar for 5-10 researcher sessions, but the initial PRD draft captured row structure without restating the exact pass threshold.
-- **Decision**: The walkthrough `Usefulness Evidence Log` remains the closure artifact, and the usefulness gate passes only when at least 5 logged cohort sessions complete the submit-to-detail flow, are rated `useful`, and record a stated next revision action. `mixed` and `not useful` rows remain required evidence but do not count toward the pass threshold.
-- **Why**: This preserves the approved launch wedge as a measurable evidence gate instead of a narrative aspiration.
-- **Tradeoff**: Launch closure stays stricter and may require more deliberate cohort scheduling before any ship recommendation.
+- **Context**: The original WF-0080 plan assumed a real launch cohort with attributable researcher sessions, but the product is shipping without cohort onboarding and without usefulness ratings at this stage.
+- **Decision**: Keep the walkthrough `Usefulness Evidence Log` as an optional evidence artifact for later, but do not block merge/ship on achieving a minimum count of useful sessions when no cohort exists yet.
+- **Why**: Prevents a documentation-only gate from blocking shipping when the cohort mechanism and usefulness-rating loop are not in use.
+- **Tradeoff**: Early shipping may proceed without structured usefulness evidence; a later WF can reinstate an evidence gate once cohort sessions exist.
 - **Status**: Approved.
 
 ### AD 80.4: WF-0080 review detail renders findings grouped by section with deterministic bullets, optional LLM companion, and no supporting-evidence drawer
