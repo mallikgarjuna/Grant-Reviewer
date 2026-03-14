@@ -44,7 +44,7 @@ Verification Steps:
 - `cd backend && rg -n "ReviewFinding|detail_mode|REQUIREMENTS_MET" app/models/domain.py migrations/versions tests/test_api.py`
 Risks (if any): If the persisted discriminator is implicit instead of stored, later API and frontend slices can fall back to heuristic mode detection.
 
-### [ ] Task 2 — Tracer bullet: persist one atomic findings review from the current diagnostic engine output
+### [x] Task 2 — Tracer bullet: persist one atomic findings review from the current diagnostic engine output
 
 Goal:
 Prove the structured-review write path can map existing diagnostic findings into persisted `ReviewFinding` rows for one representative new review while preserving legacy `ReviewCard` reads as a separate compatibility path.
