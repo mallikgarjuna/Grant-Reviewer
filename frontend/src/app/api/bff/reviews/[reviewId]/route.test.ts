@@ -351,4 +351,47 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
     );
     expect(body.cards[1].synthesized_companion_text).toBeNull();
   });
+
+  it("wf0080_bff_review_detail_preserves_backend_projection", async () => {
+    authMock.mockResolvedValue({ userId: "user-1" });
+    const backendPayload: ReviewDetailResponse = {
+      call_id: "call-erc-poc",
+      call_code: "ERC-2026-PoC",
+      detail_state: "call_linked",
+      ordering_source: "call_nodes",
+      detail_projection: {
+        version: "wf0080_launch_wedge_v1",
+        headline_state: "action_required",
+        ordered_card_ids: ["card-2", "card-1", "card-3"],
+        top_action_card_ids: ["card-2", "card-1", "card-3"],
+        ranking_basis: "assessment_status_then_rating_then_existing_order",
+      },
+      submitted_node_logical_ids: ["poc_idea_innovation"],
+      submitted_leaf_ids: ["poc_idea_innovation"],
+      primary_evaluated_node_logical_ids: ["poc_idea_innovation"],
+      supporting_context_node_logical_ids: [],
+      visible_not_reviewed_node_logical_ids: [],
+      no_generated_cards_node_logical_ids: [],
+      review: {
+        id: "review-wf0080",
+        status: "COMPLETED",
+        overall_rating: "WARNING",
+        overall_summary: "Summary",
+      },
+      cards: [],
+    };
+    getReviewMock.mockResolvedValue({
+      ok: true,
+      data: backendPayload,
+    });
+
+    const { GET } = await import("./route");
+    const response = await GET(new Request("http://localhost"), {
+      params: Promise.resolve({ reviewId: "review-wf0080" }),
+    });
+    const body = (await response.json()) as ReviewDetailResponse;
+
+    expect(response.status).toBe(200);
+    expect(body.detail_projection).toEqual(backendPayload.detail_projection);
+  });
 });

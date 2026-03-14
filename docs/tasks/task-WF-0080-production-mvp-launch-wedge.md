@@ -111,7 +111,7 @@ Verification Steps:
 - `cd backend && rg -n "detail_projection|top_action_card_ids|ranking_basis|no_critical_blockers" app/schemas/api.py main.py tests/test_api.py`
 Risks (if any): If ranking semantics leak outside this seam, the wedge can drift into hidden coupling across backend, BFF, and UI.
 
-### [ ] Task 4 — Preserve `detail_projection` across the BFF detail contract without reinterpretation
+### [x] Task 4 — Preserve `detail_projection` across the BFF detail contract without reinterpretation
 
 Goal:
 Keep the backend read-model authoritative by passing `detail_projection` through the BFF detail route and frontend types unchanged.
