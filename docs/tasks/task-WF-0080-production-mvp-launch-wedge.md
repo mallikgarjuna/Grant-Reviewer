@@ -179,7 +179,7 @@ Verification Steps:
 - `cd frontend && rg -n "top_action_card_ids|no critical blockers found|return later|still processing|supporting evidence" src/app/app/reviews/'[reviewId]'/page.tsx src/components/review/ReviewCard.tsx src/app/app/reviews/'[reviewId]'/page.test.tsx`
 Risks (if any): If the page overstates completion or hides degraded states, the production wedge could mislead researchers during the launch cohort.
 
-### [ ] Task 6 — Add bounded backend trace correlation and no-new-storage proof for one disputed session
+### [x] Task 6 — Add bounded backend trace correlation and no-new-storage proof for one disputed session
 
 Goal:
 Make one failed or disputed cohort session explainable on backend-owned seams by adding narrow trace correlation across direct submit, review creation, and detail retrieval without widening storage or inventing a new public read model.

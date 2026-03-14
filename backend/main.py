@@ -16,7 +16,7 @@ from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Query, Request
+from fastapi import Depends, FastAPI, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
@@ -46,6 +46,7 @@ from app.schemas.api import (
     ReviewListItem,
     ReviewsListResponse,
     ReviewSummary,
+    SupportTraceMetadata,
 )
 from app.schemas.compliance import ComplianceCheckRequest, ComplianceCheckResponse
 from app.schemas.structured_review import (
@@ -85,6 +86,7 @@ BFF_SIGNATURE_MAX_AGE_SECONDS = 300
 IDEMPOTENCY_TTL_HOURS = 24
 FREE_DAILY_REVIEW_LIMIT = 5
 FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT = 10_000
+WF0080_SUPPORT_TRACE_HEADER = "X-GR-Support-Trace"
 
 
 def is_idempotency_conflict_error(err: IntegrityError) -> bool:
@@ -151,10 +153,12 @@ class APIException(Exception):
         code: str,
         message: str,
         details: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         self.code = code
         self.message = message
         self.details = details or {}
+        self.headers = headers or {}
         super().__init__(message)
 
 
@@ -177,6 +181,7 @@ def build_error_response(
     code: str,
     message: str,
     details: dict[str, Any] | None = None,
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     """Build canonical error JSON response."""
     payload = APIErrorResponse(
@@ -184,14 +189,21 @@ def build_error_response(
     )
     status_code = ERROR_STATUS_BY_CODE.get(code, 500)
     return JSONResponse(
-        status_code=status_code, content=payload.model_dump(mode="json")
+        status_code=status_code,
+        content=payload.model_dump(mode="json"),
+        headers=headers,
     )
 
 
 @app.exception_handler(APIException)
 async def api_exception_handler(_: Request, exc: APIException) -> JSONResponse:
     """Handle known API exceptions."""
-    return build_error_response(code=exc.code, message=exc.message, details=exc.details)
+    return build_error_response(
+        code=exc.code,
+        message=exc.message,
+        details=exc.details,
+        headers=exc.headers,
+    )
 
 
 @app.exception_handler(RequestValidationError)
@@ -270,6 +282,7 @@ def _enforce_wf0080_launch_cohort_access(
     *,
     call_code: str,
     external_user_id: str,
+    idempotency_key: str | None = None,
 ) -> None:
     """Fail closed for direct ERC-2026-PoC access outside the launch cohort."""
     if call_code != "ERC-2026-PoC":
@@ -278,11 +291,70 @@ def _enforce_wf0080_launch_cohort_access(
     if external_user_id in _get_wf0080_launch_cohort_user_ids():
         return
 
+    support_trace = _build_wf0080_support_trace_metadata(
+        call_code=call_code,
+        external_user_id=external_user_id,
+        idempotency_key=idempotency_key,
+    )
+    error_details = {"call_code": call_code}
+    error_headers: dict[str, str] = {}
+    if support_trace is not None:
+        error_details["support_trace_id"] = support_trace.trace_id
+        error_headers[WF0080_SUPPORT_TRACE_HEADER] = support_trace.trace_id
+
     raise APIException(
         code="COHORT_ACCESS_DENIED",
         message="Launch access is limited to invited ERC-2026-PoC researchers.",
-        details={"call_code": call_code},
+        details=error_details,
+        headers=error_headers,
     )
+
+
+def _build_wf0080_support_trace_id(
+    *,
+    call_code: str | None,
+    external_user_id: str | None,
+    idempotency_key: str | None,
+) -> str | None:
+    """Build a deterministic support trace from existing request/review identifiers."""
+    if not call_code or not external_user_id or not idempotency_key:
+        return None
+
+    trace_material = "::".join((call_code, external_user_id, idempotency_key))
+    digest = hashlib.sha256(trace_material.encode("utf-8")).hexdigest()[:20]
+    return f"wf0080-{digest}"
+
+
+def _build_wf0080_support_trace_metadata(
+    *,
+    call_code: str | None,
+    external_user_id: str | None,
+    idempotency_key: str | None,
+) -> SupportTraceMetadata | None:
+    """Build bounded WF-0080 support metadata without widening storage."""
+    trace_id = _build_wf0080_support_trace_id(
+        call_code=call_code,
+        external_user_id=external_user_id,
+        idempotency_key=idempotency_key,
+    )
+    if trace_id is None:
+        return None
+
+    return SupportTraceMetadata(
+        contract="wf0080_support_trace_v1",
+        trace_id=trace_id,
+        visibility="maintainer_support_only",
+    )
+
+
+def _set_support_trace_header(
+    response: Response,
+    support_trace: SupportTraceMetadata | None,
+) -> None:
+    """Expose the bounded support trace on response headers when available."""
+    if support_trace is None:
+        return
+    response.headers[WF0080_SUPPORT_TRACE_HEADER] = support_trace.trace_id
 
 
 async def require_bff_user_id(request: Request) -> str:
@@ -1021,6 +1093,7 @@ def create_structured_review(
     repository: RepositoryDep,
     external_user_id: Annotated[str, Depends(require_bff_user_id)],
     request: Request,
+    response: Response,
 ) -> CreateReviewResponse:
     """Create a structured multi-node review synchronously."""
     idempotency_key = request.headers.get("Idempotency-Key", "").strip()
@@ -1036,7 +1109,14 @@ def create_structured_review(
     _enforce_wf0080_launch_cohort_access(
         call_code=call.code,
         external_user_id=external_user_id,
+        idempotency_key=idempotency_key,
     )
+    support_trace = _build_wf0080_support_trace_metadata(
+        call_code=call.code,
+        external_user_id=external_user_id,
+        idempotency_key=idempotency_key,
+    )
+    _set_support_trace_header(response, support_trace)
 
     payload_json = json.dumps(
         payload.model_dump(mode="json"),
@@ -1060,6 +1140,7 @@ def create_structured_review(
         return CreateReviewResponse(
             review_id=existing_review.id,
             status=existing_review.status,
+            support_trace=support_trace,
         )
 
     if not _is_reviews_enabled():
@@ -1221,11 +1302,16 @@ def create_structured_review(
         return CreateReviewResponse(
             review_id=existing_on_conflict.id,
             status=existing_on_conflict.status,
+            support_trace=support_trace,
         )
     except ValueError as err:
         raise APIException(code="VALIDATION_ERROR", message=str(err)) from err
 
-    return CreateReviewResponse(review_id=review.id, status=review.status)
+    return CreateReviewResponse(
+        review_id=review.id,
+        status=review.status,
+        support_trace=support_trace,
+    )
 
 
 @app.post(
@@ -1565,6 +1651,11 @@ def get_review(
             )
         )
     detail_projection = _build_wf0080_detail_projection(cards)
+    support_trace = _build_wf0080_support_trace_metadata(
+        call_code=call.code if call is not None else None,
+        external_user_id=review.external_user_id,
+        idempotency_key=review.idempotency_key,
+    )
 
     return ReviewDetailResponse(
         call_id=call_id,
@@ -1583,6 +1674,7 @@ def get_review(
         moved_legacy_node_references=moved_legacy_node_references,
         compatibility_notes=compatibility_notes,
         detail_projection=detail_projection,
+        support_trace=support_trace,
         review=ReviewSummary(
             id=review.id,
             status=review.status,

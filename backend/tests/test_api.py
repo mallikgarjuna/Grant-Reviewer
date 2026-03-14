@@ -4515,6 +4515,95 @@ def test_wf0080_invited_submit_reaches_detail_projection(monkeypatch) -> None:
     assert len(projection["top_action_card_ids"]) <= 3
 
 
+def test_wf0080_trace_correlation_is_present_on_submit_and_detail(monkeypatch) -> None:
+    """WF-0080: backend submit/detail expose one bounded support trace contract."""
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    monkeypatch.setenv("WF0080_LAUNCH_COHORT_USER_IDS", TEST_USER_ID)
+    assert call_code == fixture["call_code"] == "ERC-2026-PoC"
+
+    submit_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-support-trace-{time.time_ns()}",
+    )
+
+    assert submit_response.status_code in {200, 201}
+    submit_payload = submit_response.json()
+    submit_trace = submit_payload["support_trace"]
+    assert submit_trace == {
+        "contract": "wf0080_support_trace_v1",
+        "trace_id": submit_response.headers["X-GR-Support-Trace"],
+        "visibility": "maintainer_support_only",
+    }
+
+    review_id = submit_payload["review_id"]
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert detail_payload["support_trace"] == submit_trace
+
+
+def test_wf0080_trace_support_does_not_create_new_storage_surface(monkeypatch) -> None:
+    """WF-0080: support trace stays derived from existing review storage only."""
+    fixture = json.loads(
+        Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
+    monkeypatch.setenv("WF0080_LAUNCH_COHORT_USER_IDS", TEST_USER_ID)
+    assert call_code == fixture["call_code"] == "ERC-2026-PoC"
+
+    submit_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": fixture["review_stage"],
+            "nodes": fixture["nodes"],
+        },
+        idempotency_key=f"wf0080-no-new-storage-{time.time_ns()}",
+    )
+
+    assert submit_response.status_code in {200, 201}
+    review_id = UUID(submit_response.json()["review_id"])
+    detail_response = get_review_detail(
+        client=client,
+        review_id=str(review_id),
+    )
+    assert detail_response.status_code == 200
+
+    detail_payload = detail_response.json()
+    assert set(detail_payload["support_trace"].keys()) == {
+        "contract",
+        "trace_id",
+        "visibility",
+    }
+    assert "snippet_text" not in detail_payload["support_trace"]
+    assert "nodes" not in detail_payload["support_trace"]
+
+    session = get_session()
+    try:
+        review = session.get(Review, review_id)
+        assert review is not None
+        structured_payload = (
+            review.structured_payload if isinstance(review.structured_payload, dict) else {}
+        )
+        assert "support_trace" not in structured_payload
+        assert "support_trace_id" not in structured_payload
+    finally:
+        session.close()
+
+
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:
     case = _get_wf0043_case(
         "post_persist_unresolvable_expectation_failed", surface="structured_api"
