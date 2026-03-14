@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Add the persisted findings contract and explicit detail-mode discriminator
+### [x] Task 1 — Add the persisted findings contract and explicit detail-mode discriminator
 
 Goal:
 Introduce the minimum durable storage contract for atomic findings reviews by adding `ReviewFinding`, extending the assessment-status enum with `REQUIREMENTS_MET`, and persisting an explicit per-review `detail_mode` so legacy `ReviewCard` reads stay distinct from the new findings path.
