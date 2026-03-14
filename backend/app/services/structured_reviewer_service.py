@@ -449,10 +449,18 @@ class StructuredReviewerService:
         self.last_synthesis_requests = tuple(synthesis_requests)
         self.last_synthesis_results = tuple(synthesis_results)
 
-        cards = self.repository.create_review_cards_batch(
-            review_id=review.id,
-            cards=card_payloads,
-        )
+        try:
+            cards = self.repository.create_review_cards_batch(
+                review_id=review.id,
+                cards=card_payloads,
+            )
+        except Exception as err:
+            self.repository.rollback()
+            return self._fail_execution_error(
+                review,
+                code=EngineErrorCode.ENGINE_EXECUTION_FAILED.value,
+                message=str(err),
+            )
 
         review.status = ReviewStatus.COMPLETED
         review.overall_summary = f"{STRUCTURED_SUMMARY_COMPLETED_PREFIX} {len(cards)} findings via pipeline_v1."

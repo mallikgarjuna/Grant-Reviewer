@@ -9,11 +9,11 @@ import os
 import re
 import subprocess
 import time
-from urllib.parse import urlparse, urlunparse
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, TypedDict
+from urllib.parse import urlparse, urlunparse
 from uuid import UUID, uuid4
 
 import psycopg
@@ -22,6 +22,7 @@ import yaml
 from fastapi.testclient import TestClient
 from psycopg import errors as psycopg_errors
 from psycopg import sql
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, select
 
@@ -5513,6 +5514,38 @@ def test_structured_review_timeout_classification_uses_stable_timeout_message(
     overall_summary = detail.json()["review"]["overall_summary"]
     assert overall_summary.startswith("TIMEOUT:")
     assert "timed out" in overall_summary.lower()
+
+
+def test_structured_review_card_persistence_failure_marks_failed_review(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    def fail_create_review_cards_batch(self, *, review_id, cards):
+        del review_id, cards
+        self.session.exec(text("SELECT * FROM wf0079_missing_review_cards_table"))
+        raise AssertionError("unreachable")
+
+    monkeypatch.setattr(
+        ReviewRepository,
+        "create_review_cards_batch",
+        fail_create_review_cards_batch,
+    )
+
+    response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(seeded_ids.structured_call_id),
+            "nodes": [{"node_logical_id": "academic_profile", "text": "profile text"}],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "FAILED"
+
+    detail = get_review_detail(client=client, review_id=response.json()["review_id"])
+    assert detail.status_code == 200
+    assert detail.json()["review"]["status"] == "FAILED"
+    assert detail.json()["cards"] == []
 
 
 def test_structured_review_validation_error_precedes_idempotency_mismatch(
