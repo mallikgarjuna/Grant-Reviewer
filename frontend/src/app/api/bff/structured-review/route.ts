@@ -30,6 +30,21 @@ function buildSignedHeaders(externalUserId: string, bodyText: string): Record<st
   };
 }
 
+function getWf0080LaunchCohortUserIds(): Set<string> {
+  const rawIds = process.env.WF0080_LAUNCH_COHORT_USER_IDS ?? "";
+  return new Set(
+    rawIds
+      .split(",")
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0),
+  );
+}
+
+function isWf0080ProtectedCall(callId: string | null): boolean {
+  const protectedCallId = process.env.WF0080_ERC_POC_CALL_ID?.trim() ?? "";
+  return protectedCallId.length > 0 && callId === protectedCallId;
+}
+
 export async function POST(request: Request) {
   const userId = await resolveExternalUserId(request);
   const contextResult = requireBffContext(userId);
@@ -48,8 +63,10 @@ export async function POST(request: Request) {
   }
 
   let bodyText = "{}";
+  let callId: string | null = null;
   try {
     const parsed = (await request.json()) as Record<string, unknown>;
+    callId = typeof parsed.call_id === "string" ? parsed.call_id : null;
 
     // WF-0070 Task 3: fail-closed — reject invalid or missing review_stage.
     const reviewStage = parsed.review_stage;
@@ -73,6 +90,18 @@ export async function POST(request: Request) {
       details: {},
       status: 400,
     });
+  }
+
+  if (isWf0080ProtectedCall(callId)) {
+    const allowlistedUserIds = getWf0080LaunchCohortUserIds();
+    if (!allowlistedUserIds.has(contextResult.data.externalUserId)) {
+      return apiErrorResponse({
+        code: "COHORT_ACCESS_DENIED",
+        message: "Launch access is limited to invited ERC-2026-PoC researchers.",
+        details: { call_id: callId },
+        status: 403,
+      });
+    }
   }
 
   try {

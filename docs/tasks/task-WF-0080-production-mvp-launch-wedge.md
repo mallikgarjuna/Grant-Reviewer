@@ -43,7 +43,7 @@ Verification Steps:
 - `cd backend && rg -n "COHORT_ACCESS_DENIED|REVIEWS_DISABLED|QUOTA_EXCEEDED|structured-review" main.py tests/test_api.py`
 Risks (if any): If the reject path is not truly pre-side-effect, Phase 3 could accidentally create costly reviews for blocked users.
 
-### [ ] Task 2 — Fail closed on BFF structured-review submit before proxying
+### [x] Task 2 — Fail closed on BFF structured-review submit before proxying
 
 Goal:
 Mirror the launch-cohort access guard at `/api/bff/structured-review` so out-of-cohort users are blocked before proxying to the backend.
