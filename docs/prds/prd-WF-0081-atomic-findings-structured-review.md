@@ -2,8 +2,8 @@
 # WF-0081 — Atomic Findings Structured Review
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-14
 
 Type: feature
@@ -103,9 +103,9 @@ Type: feature
 - Review-detail response contract `(US1) (US2) (US3) (FR6) (FR7) (FR8) (FR9)`
   - Legacy mode:
     - existing `ReviewCard` response shape remains valid for legacy reviews;
-    - response metadata should make clear the detail mode is `legacy_cards`.
+    - response metadata must include `detail_mode = legacy_cards`.
   - Atomic mode:
-    - response metadata should make clear the detail mode is `reviewed_node_findings`;
+    - response metadata must include `detail_mode = reviewed_node_findings`;
     - `reviewed_nodes[]` fields:
       - `proposal_node_id`
       - `proposal_node_logical_id`
@@ -122,12 +122,14 @@ Type: feature
       - `evidence_basis`
       - `actionable_feedback`
   - Response invariants:
+    - each review exposes exactly one primary researcher-visible detail mode;
     - legacy responses do not require findings;
     - atomic responses do not require legacy card rollups to render;
     - grouping stays under reviewed nodes, not a flat review-wide findings array.
 - State transitions `(US1) (US2) (FR5) (FR6)`
   - legacy review: stored and read through `ReviewCard`;
   - new atomic review: stored and read through `ReviewFinding` grouped under reviewed nodes;
+  - per-review detail mode is immutable for researcher-visible reads once persisted;
   - mixed rollout safety: existing legacy reviews are never auto-migrated at read time.
 
 ## 6. Components / Modules
@@ -179,8 +181,8 @@ Type: feature
   - do not mock away the mapper or response assembler being verified.
 - Minimal required proof by story:
   - US1: deterministic backend/API/frontend assertions that findings render grouped under reviewed nodes with evaluation criteria/elements labels and positive states;
-  - US2: deterministic compatibility tests proving legacy `ReviewCard` reads still work and new reviews persist/read `ReviewFinding`;
-  - US3: deterministic contract tests for explicit detail mode and dual-path response assembly;
+  - US2: deterministic compatibility tests proving legacy `ReviewCard` reads still work, new reviews persist/read `ReviewFinding`, and one review cannot expose both modes as primary read truth;
+  - US3: deterministic contract tests for explicit `detail_mode`, dual-path response assembly, and same-page truthful handling when copy/export actions are present;
   - US4: Phase 2 tasks must keep selectors/task seams atomic enough to prove each slice independently.
 - Proceed gate:
   - no Phase 2 plan should mark Ready for Implementation unless it carries proof for both legacy and atomic paths and preserves the note that diagnostic findings already exist before `ReviewCard` collapse.
@@ -205,3 +207,4 @@ Type: feature
 ## 12. Changelog
 
 - v0.1 (2026-03-14): Initial PRD from the approved WF-0081 brainstorm, preserving legacy `ReviewCard` compatibility and the existing diagnostic-finding engine truth.
+- v0.2 (2026-03-14): Applied Phase 1 risk-audit edits, locking explicit detail-mode metadata, single-mode read invariants, and task-phase proof expectations.

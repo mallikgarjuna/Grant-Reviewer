@@ -1,6 +1,24 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-14 (WF-0081: atomic-findings-structured-review)
+
+### AD 81.1: WF-0081 keeps diagnostic findings as the upstream truth and assigns one canonical `ReviewFinding` write owner
+- **WF ID**: WF-0081
+- **Context**: The approved brainstorm is explicit that the current engine already produces diagnostic findings before collapsing them into `ReviewCard`, and the main Phase 1 risk is creating competing truths between cards and findings during rollout.
+- **Decision**: Preserve the current diagnostic-finding engine as upstream truth for MVP and introduce one bounded backend mapping seam as the only canonical owner of `ReviewFinding` persistence for new atomic reviews.
+- **Why**: This keeps the workflow grounded in existing engine behavior, avoids reopening engine redesign scope, and gives Phase 2 one clear ownership seam to test and harden.
+- **Tradeoff**: The mapper becomes a critical contract boundary that later tasks must prove carefully instead of spreading transformation logic across repositories, serializers, and frontend adapters.
+- **Status**: Approved.
+
+### AD 81.2: WF-0081 review detail exposes one explicit per-review mode with truthful same-page behavior
+- **WF ID**: WF-0081
+- **Context**: The approved brainstorm requires backward-compatible legacy `ReviewCard` reads plus a new findings-based detail shape grouped under reviewed nodes, while repo memory requires same-page review-detail actions to remain truthful when visible content changes.
+- **Decision**: Require review-detail responses to declare one explicit `detail_mode` per review: `legacy_cards` for legacy reviews and `reviewed_node_findings` for new atomic reviews. Treat that mode as the sole researcher-visible read truth for that review, and require same-page actions such as copy/export to stay aligned with the rendered mode or surface a bounded limitation explicitly.
+- **Why**: This prevents heuristic client branching, avoids mixed-mode ambiguity, and keeps the researcher-visible surface honest during rollout.
+- **Tradeoff**: Later implementation must prove both render modes and any same-page action behavior explicitly rather than assuming the page-only render closes the contract by itself.
+- **Status**: Approved.
+
 ## Date: 2026-03-14 (WF-0080: production-mvp-launch-wedge)
 
 ### AD 80.2: WF-0080 keeps review-detail prioritization as one backend projection contract with explicit ranking semantics
