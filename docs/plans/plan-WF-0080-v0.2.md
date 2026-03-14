@@ -200,7 +200,6 @@ Phase 1 must include:
 - named call wedge
 - named review-detail projection seam
 - exact launch guardrails classified into must-ship vs deferred
-- explicit usefulness gate with threshold and evidence artifact
 - pass/fail ship bar with closure proofs, not aspirational language
 
 ### Phase 2 target
@@ -229,7 +228,7 @@ The likely task order should be:
 4. Narrow launch-cohort access gate
 5. Narrow quota / abuse-control gate
 6. Logging / traceability slice for support diagnosis
-7. Walkthrough closeout with end-to-end wedge proof and usefulness evidence
+7. Walkthrough closeout with end-to-end wedge proof
 
 These are candidate shapes, not mandatory tasks. Phase 2 must still prove each slice can stay atomic.
 
@@ -243,7 +242,6 @@ Minimum proof categories:
 - **Protected-surface proof:** an out-of-cohort or over-quota user is blocked clearly and without downstream review execution
 - **Timeout / degradation proof:** deterministic feedback path degrades honestly if additive synthesis fails or the request takes too long
 - **Support trace proof:** operators can identify what happened for one failed or disputed session using the chosen narrow support surface
-- **Usefulness gate proof:** the agreed 5–10 researcher-session mechanism exists and yields attributable evidence
 - **Scope proof:** deferred surfaces remain unchanged unless explicitly approved
 
 ## Ship Bar
@@ -255,7 +253,6 @@ WF-0080 is only complete when all of the following are true:
 - The review-detail page surfaces the most important feedback first and does not collapse into a dense compliance spreadsheet.
 - At least one launch guardrail blocks misuse or runaway cost without relying on manual heroics.
 - A support operator can inspect one problematic session well enough to explain what happened.
-- We have explicit usefulness evidence from the agreed researcher-session mechanism.
 - Closure includes pass/fail proof for each required verification row and names all deferred follow-on work.
 
 ## Explicit Non-Goals for WF-0080
