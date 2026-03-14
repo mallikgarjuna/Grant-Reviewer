@@ -247,7 +247,7 @@ Verification Steps:
 - `cd frontend && rg -n "trace|correlation|support" src/app/api/bff/structured-review/route.ts src/app/api/bff/structured-review/route.test.ts src/lib/bff/route-helpers.ts`
 Risks (if any): If submit-side BFF trace correlation drifts from the backend contract, support evidence will become ambiguous even when backend logging is correct.
 
-### [ ] Task 8 — Close the must-ship gate with usefulness evidence, scope proof, and fail-closed verification rows
+### [x] Task 8 — Close the must-ship gate with usefulness evidence, scope proof, and fail-closed verification rows
 
 Goal:
 Make the Phase 3 handoff executable and honest by turning the walkthrough into the required closure artifact for usefulness evidence, must-ship versus deferred proof, and row-level pass/fail verification.

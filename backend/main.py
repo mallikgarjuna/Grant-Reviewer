@@ -299,7 +299,6 @@ def _enforce_wf0080_launch_cohort_access(
     error_details = {"call_code": call_code}
     error_headers: dict[str, str] = {}
     if support_trace is not None:
-        error_details["support_trace_id"] = support_trace.trace_id
         error_headers[WF0080_SUPPORT_TRACE_HEADER] = support_trace.trace_id
 
     raise APIException(
