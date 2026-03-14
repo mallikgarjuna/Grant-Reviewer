@@ -1,8 +1,8 @@
-<!-- docs/plans/plan-WF-0080-v0.1.md -->
-# Plan — WF-0080 Atomic Finding Model for Structured Review Output
+<!-- docs/plans/plan-WF-0081-v0.1.md -->
+# Plan — WF-0081 Atomic Finding Model for Structured Review Output
 
 Status: Draft helper plan
-WF ID assumption: `WF-0080` is the next available WF after `WF-0079`
+WF ID assumption: `WF-0081` is the next available WF after `WF-0080`
 Purpose: reusable reference for future Phase 0/1/2 runners
 
 ## Important Usage Note
@@ -13,8 +13,8 @@ Use it to seed the next WF, then create the canonical brainstorm/PRD/task/walkth
 Suggested future-chat prompt:
 
 ```text
-Use @docs/plans/plan-WF-0080-v0.1.md
-Start WF-0080 using the standard phase runners.
+Use @docs/plans/plan-WF-0081-v0.1.md
+Start WF-0081 using the standard phase runners.
 Treat the plan as intent/reference only.
 Generate the canonical WF artifacts from it.
 ```
