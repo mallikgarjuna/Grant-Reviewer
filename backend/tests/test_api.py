@@ -1081,54 +1081,36 @@ def test_wf0073_contract_structured_api_accepts_erc_poc_2026_payload(
         session.close()
 
 
-def test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation(
+def test_wf0080_direct_backend_submit_allows_local_erc_poc_testing(
     monkeypatch,
 ) -> None:
-    """WF-0080: backend structured submit rejects out-of-cohort ERC PoC traffic."""
-    from app.services.structured_reviewer_service import StructuredReviewerService
-
+    """WF-0080: backend structured submit stays open for local ERC PoC testing."""
     fixture = json.loads(
         Path("tests/fixtures/wf_0073_erc_poc_2026_structured_review.json").read_text(
             encoding="utf-8"
         )
     )
     client, call_id, call_code = create_client_with_erc_poc_seed(monkeypatch)
-    monkeypatch.setenv("WF0080_LAUNCH_COHORT_USER_IDS", "invited_user")
     assert call_code == fixture["call_code"] == "ERC-2026-PoC"
-
-    calls = {"generate_structured": 0}
-
-    def blocked_generate_structured(self, *args, **kwargs):
-        calls["generate_structured"] += 1
-        raise AssertionError(
-            "generate_structured_review_pipeline_v1 should not execute when cohort access is denied"
-        )
-
-    monkeypatch.setattr(
-        StructuredReviewerService,
-        "generate_structured_review_pipeline_v1",
-        blocked_generate_structured,
-    )
 
     before_count = _count_reviews_in_db()
 
     response = post_structured_review(
         client=client,
-        user_id="out_of_cohort_user",
+        user_id="local_reviewer",
         payload={
             "call_id": str(call_id),
             "review_stage": fixture["review_stage"],
             "nodes": fixture["nodes"],
         },
-        idempotency_key=f"wf0080-direct-cohort-gate-{time.time_ns()}",
+        idempotency_key=f"wf0080-direct-local-test-{time.time_ns()}",
     )
 
-    assert response.status_code == 403
+    assert response.status_code in {200, 201}
     payload = response.json()
-    assert payload["error"]["code"] == "COHORT_ACCESS_DENIED"
-    assert payload["error"]["details"] == {"call_code": "ERC-2026-PoC"}
-    assert calls == {"generate_structured": 0}
-    assert _count_reviews_in_db() == before_count
+    assert UUID(payload["review_id"])
+    assert payload["status"] == "COMPLETED"
+    assert _count_reviews_in_db() == before_count + 1
 
 
 def test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors(
@@ -4602,6 +4584,40 @@ def test_wf0080_trace_support_does_not_create_new_storage_surface(monkeypatch) -
         assert "support_trace_id" not in structured_payload
     finally:
         session.close()
+
+
+def test_wf0080_non_wedge_responses_do_not_emit_launch_only_contracts(monkeypatch) -> None:
+    """WF-0080: non-launch calls must not expose launch-only projection or trace fields."""
+    client, call_id, call_code = create_client_with_nwo_veni_seed(monkeypatch)
+    assert call_code == "nwo_veni_2025_preproposal"
+
+    submit_response = post_structured_review(
+        client=client,
+        payload={
+            "call_id": str(call_id),
+            "review_stage": "STEP_1",
+            "nodes": [
+                {
+                    "node_logical_id": "academic_profile",
+                    "text": "Non-wedge review should keep the legacy response contract.",
+                }
+            ],
+        },
+        idempotency_key=f"wf0080-non-wedge-contract-{time.time_ns()}",
+    )
+
+    assert submit_response.status_code in {200, 201}
+    submit_payload = submit_response.json()
+    assert "support_trace" not in submit_payload
+    assert submit_response.headers.get("X-GR-Support-Trace") is None
+
+    detail_response = get_review_detail(
+        client=client, review_id=submit_payload["review_id"]
+    )
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert "detail_projection" not in detail_payload
+    assert "support_trace" not in detail_payload
 
 
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:

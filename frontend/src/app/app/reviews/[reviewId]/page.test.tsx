@@ -2313,20 +2313,102 @@ describe("ReviewDetailPage", () => {
           source_basis_label: "Official ERC PoC source",
           source_basis_state: "available",
         },
+        {
+          id: "card-2",
+          node_expectation_id: "exp-2",
+          node_logical_id: "poc_approach_methodology",
+          node_title: "Approach and methodology",
+          criterion: "Excellence",
+          criterion_description: "Approach criterion",
+          evaluation_element_name: "Methodology",
+          expectation_guidance_note: "Clarify feasibility.",
+          rating: "NOTE",
+          feedback_text: "Methodology feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
       ],
+      detail_projection: {
+        version: "wf0080_launch_wedge_v1",
+        headline_state: "action_required",
+        ordered_card_ids: ["card-1", "card-2"],
+        top_action_card_ids: ["card-1", "card-2"],
+        ranking_basis: "assessment_status_then_rating_then_existing_order",
+      },
     });
 
     render(<ReviewDetailPage />);
 
-    await screen.findByText("Innovation feedback");
-    const supportingEvidenceLine = screen.getByText(
+    const topActionsRegion = await screen.findByRole("region", {
+      name: "Top action cards",
+    });
+    const topActionCards = within(topActionsRegion).getAllByTestId(/^review-card-/);
+    const supportingEvidenceLine = within(topActionCards[1]).getByText(
       "Official source basis: Official ERC PoC source",
     );
     expect(supportingEvidenceLine).not.toBeVisible();
-    fireEvent.click(screen.getByText("Supporting evidence"));
+    fireEvent.click(within(topActionCards[1]).getByText("Supporting evidence"));
     expect(
-      await screen.findByText("Official source basis: Official ERC PoC source"),
+      within(topActionCards[1]).getByText("Official source basis: Official ERC PoC source"),
     ).toBeVisible();
+  });
+
+  it("wf0080_review_detail_opens_first_top_action_supporting_evidence_by_default", async () => {
+    mockReviewDetailFetch({
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "exp-1",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
+          criterion: "Excellence",
+          criterion_description: "Innovation criterion",
+          evaluation_element_name: "Innovation",
+          expectation_guidance_note: "Lead with the breakthrough claim.",
+          rating: "WARNING",
+          feedback_text: "Innovation feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+        {
+          id: "card-2",
+          node_expectation_id: "exp-2",
+          node_logical_id: "poc_approach_methodology",
+          node_title: "Approach and methodology",
+          criterion: "Excellence",
+          criterion_description: "Approach criterion",
+          evaluation_element_name: "Methodology",
+          expectation_guidance_note: "Clarify feasibility.",
+          rating: "NOTE",
+          feedback_text: "Methodology feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+      ],
+      detail_projection: {
+        version: "wf0080_launch_wedge_v1",
+        headline_state: "action_required",
+        ordered_card_ids: ["card-1", "card-2"],
+        top_action_card_ids: ["card-1", "card-2"],
+        ranking_basis: "assessment_status_then_rating_then_existing_order",
+      },
+    });
+
+    render(<ReviewDetailPage />);
+
+    const topActionsRegion = await screen.findByRole("region", {
+      name: "Top action cards",
+    });
+    const topActionCards = within(topActionsRegion).getAllByTestId(/^review-card-/);
+    expect(
+      within(topActionCards[0]).getByText("Official source basis: Official ERC PoC source"),
+    ).toBeVisible();
+    expect(
+      within(topActionCards[1]).getByText("Official source basis: Official ERC PoC source"),
+    ).not.toBeVisible();
   });
 
   it(

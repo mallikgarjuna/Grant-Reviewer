@@ -1111,6 +1111,7 @@ export default function ReviewDetailPage() {
                     notAssessableReason={card.not_assessable_reason}
                     sourceBasisLabel={card.source_basis_label}
                     sourceBasisState={card.source_basis_state}
+                    supportingEvidenceDefaultOpen={index === 0}
                   />
                 ))}
               </div>

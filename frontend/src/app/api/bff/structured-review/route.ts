@@ -11,7 +11,6 @@ import { getBffSharedSecret, getFastApiBaseUrl } from "@/lib/bff/server-env";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 const WF0080_SUPPORT_TRACE_HEADER = "X-GR-Support-Trace";
-const WF0080_LAUNCH_WEDGE_CALL_CODE = "ERC-2026-PoC";
 
 function buildSignedHeaders(externalUserId: string, bodyText: string): Record<string, string> {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -32,53 +31,6 @@ function buildSignedHeaders(externalUserId: string, bodyText: string): Record<st
   };
 }
 
-function getWf0080LaunchCohortUserIds(): Set<string> {
-  const rawIds = process.env.WF0080_LAUNCH_COHORT_USER_IDS ?? "";
-  return new Set(
-    rawIds
-      .split(",")
-      .map((value) => value.trim())
-      .filter((value) => value.length > 0),
-  );
-}
-
-function hasWf0080LaunchCohortConfig(): boolean {
-  return getWf0080LaunchCohortUserIds().size > 0;
-}
-
-function isWf0080ProtectedCall(callId: string | null): boolean {
-  const protectedCallId = process.env.WF0080_ERC_POC_CALL_ID?.trim() ?? "";
-  return protectedCallId.length > 0 && callId === protectedCallId;
-}
-
-async function resolveWf0080ProtectedCall(callId: string | null): Promise<boolean> {
-  if (!callId) {
-    return false;
-  }
-  if (!hasWf0080LaunchCohortConfig()) {
-    return false;
-  }
-  if (isWf0080ProtectedCall(callId)) {
-    return true;
-  }
-
-  const response = await fetch(`${getFastApiBaseUrl()}/calls`, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    throw new Error(`call lookup failed with status ${response.status}`);
-  }
-
-  const payload = (await response.json()) as {
-    calls?: Array<{ id?: unknown; code?: unknown }>;
-  };
-  return (payload.calls ?? []).some(
-    (call) => call.id === callId && call.code === WF0080_LAUNCH_WEDGE_CALL_CODE,
-  );
-}
-
 export async function POST(request: Request) {
   const userId = await resolveExternalUserId(request);
   const contextResult = requireBffContext(userId);
@@ -97,10 +49,8 @@ export async function POST(request: Request) {
   }
 
   let bodyText = "{}";
-  let callId: string | null = null;
   try {
     const parsed = (await request.json()) as Record<string, unknown>;
-    callId = typeof parsed.call_id === "string" ? parsed.call_id : null;
 
     // WF-0070 Task 3: fail-closed — reject invalid or missing review_stage.
     const reviewStage = parsed.review_stage;
@@ -124,18 +74,6 @@ export async function POST(request: Request) {
       details: {},
       status: 400,
     });
-  }
-
-  if (await resolveWf0080ProtectedCall(callId)) {
-    const allowlistedUserIds = getWf0080LaunchCohortUserIds();
-    if (!allowlistedUserIds.has(contextResult.data.externalUserId)) {
-      return apiErrorResponse({
-        code: "COHORT_ACCESS_DENIED",
-        message: "Launch access is limited to invited ERC-2026-PoC researchers.",
-        details: { call_id: callId },
-        status: 403,
-      });
-    }
   }
 
   try {

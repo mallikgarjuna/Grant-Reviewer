@@ -128,10 +128,14 @@ describe("POST /api/bff/structured-review", () => {
     expect(fetchBody.review_stage).toBe("STEP_2");
   });
 
-  it("wf0080_bff_submit_blocks_out_of_cohort_before_proxy", async () => {
-    vi.stubEnv("WF0080_ERC_POC_CALL_ID", "00000000-0000-0000-0000-000000000080");
-    vi.stubEnv("WF0080_LAUNCH_COHORT_USER_IDS", "invited-user");
-    authMock.mockResolvedValue({ userId: "blocked-user" });
+  it("wf0080_bff_submit_allows_local_erc_poc_testing", async () => {
+    authMock.mockResolvedValue({ userId: "local-reviewer" });
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ review_id: "review-local-1", status: "COMPLETED" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
 
     const { POST } = await import("./route");
     const response = await POST(
@@ -142,67 +146,12 @@ describe("POST /api/bff/structured-review", () => {
       }),
     );
 
-    expect(response.status).toBe(403);
-    expect(fetchMock).not.toHaveBeenCalled();
-    const body = (await response.json()) as {
-      error?: { code?: string; details?: { call_id?: string } };
-    };
-    expect(body.error?.code).toBe("COHORT_ACCESS_DENIED");
-    expect(body.error?.details?.call_id).toBe("00000000-0000-0000-0000-000000000080");
-  });
-
-  it("wf0080_bff_submit_blocks_out_of_cohort_before_proxy_when_call_id_env_is_missing", async () => {
-    vi.stubEnv("WF0080_LAUNCH_COHORT_USER_IDS", "invited-user");
-    authMock.mockResolvedValue({ userId: "blocked-user" });
-    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url === "http://localhost:8000/calls") {
-        return new Response(
-          JSON.stringify({
-            calls: [
-              {
-                id: "00000000-0000-0000-0000-000000000080",
-                code: "ERC-2026-PoC",
-                name: "ERC PoC 2026",
-                year: 2026,
-                agency_short_name: "ERC",
-              },
-            ],
-          }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
-      }
-      throw new Error(`unexpected fetch: ${url}`);
-    });
-
-    const { POST } = await import("./route");
-    const response = await POST(
-      buildRequest({
-        review_stage: "STEP_1",
-        call_id: "00000000-0000-0000-0000-000000000080",
-        nodes: [],
-      }),
-    );
-
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/calls",
-      expect.objectContaining({
-        cache: "no-store",
-        headers: expect.objectContaining({
-          Accept: "application/json",
-        }),
-      }),
-    );
-    const body = (await response.json()) as {
-      error?: { code?: string; details?: { call_id?: string } };
+    const fetchBody = JSON.parse(fetchMock.mock.calls[0][1].body as string) as {
+      call_id: string;
     };
-    expect(body.error?.code).toBe("COHORT_ACCESS_DENIED");
-    expect(body.error?.details?.call_id).toBe("00000000-0000-0000-0000-000000000080");
+    expect(fetchBody.call_id).toBe("00000000-0000-0000-0000-000000000080");
   });
 
   it("wf0080_bff_submit_preserves_trace_headers_for_support", async () => {

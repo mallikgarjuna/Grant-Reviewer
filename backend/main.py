@@ -87,6 +87,7 @@ IDEMPOTENCY_TTL_HOURS = 24
 FREE_DAILY_REVIEW_LIMIT = 5
 FREE_DAILY_REVIEW_LIMIT_DEV_DEFAULT = 10_000
 WF0080_SUPPORT_TRACE_HEADER = "X-GR-Support-Trace"
+WF0080_LAUNCH_WEDGE_CALL_CODE = "ERC-2026-PoC"
 
 
 def is_idempotency_conflict_error(err: IntegrityError) -> bool:
@@ -272,41 +273,9 @@ def _get_free_daily_review_limit() -> int:
         return FREE_DAILY_REVIEW_LIMIT
 
 
-def _get_wf0080_launch_cohort_user_ids() -> set[str]:
-    """Parse the WF-0080 launch cohort allowlist from env."""
-    raw_ids = os.getenv("WF0080_LAUNCH_COHORT_USER_IDS", "")
-    return {user_id.strip() for user_id in raw_ids.split(",") if user_id.strip()}
-
-
-def _enforce_wf0080_launch_cohort_access(
-    *,
-    call_code: str,
-    external_user_id: str,
-    idempotency_key: str | None = None,
-) -> None:
-    """Fail closed for direct ERC-2026-PoC access outside the launch cohort."""
-    if call_code != "ERC-2026-PoC":
-        return
-
-    if external_user_id in _get_wf0080_launch_cohort_user_ids():
-        return
-
-    support_trace = _build_wf0080_support_trace_metadata(
-        call_code=call_code,
-        external_user_id=external_user_id,
-        idempotency_key=idempotency_key,
-    )
-    error_details = {"call_code": call_code}
-    error_headers: dict[str, str] = {}
-    if support_trace is not None:
-        error_headers[WF0080_SUPPORT_TRACE_HEADER] = support_trace.trace_id
-
-    raise APIException(
-        code="COHORT_ACCESS_DENIED",
-        message="Launch access is limited to invited ERC-2026-PoC researchers.",
-        details=error_details,
-        headers=error_headers,
-    )
+def _is_wf0080_launch_wedge_call(call_code: str | None) -> bool:
+    """Return whether the call is inside the approved WF-0080 launch wedge."""
+    return call_code == WF0080_LAUNCH_WEDGE_CALL_CODE
 
 
 def _build_wf0080_support_trace_id(
@@ -331,6 +300,9 @@ def _build_wf0080_support_trace_metadata(
     idempotency_key: str | None,
 ) -> SupportTraceMetadata | None:
     """Build bounded WF-0080 support metadata without widening storage."""
+    if not _is_wf0080_launch_wedge_call(call_code):
+        return None
+
     trace_id = _build_wf0080_support_trace_id(
         call_code=call_code,
         external_user_id=external_user_id,
@@ -1085,6 +1057,7 @@ def check_compliance(
 @app.post(
     "/api/structured-review",
     response_model=CreateReviewResponse,
+    response_model_exclude_none=True,
     responses=API_ERROR_RESPONSES,
 )
 def create_structured_review(
@@ -1105,11 +1078,6 @@ def create_structured_review(
     call = repository.get_call_by_id(payload.call_id)
     if call is None:
         raise APIException(code="CALL_NOT_FOUND", message="Funding call not found.")
-    _enforce_wf0080_launch_cohort_access(
-        call_code=call.code,
-        external_user_id=external_user_id,
-        idempotency_key=idempotency_key,
-    )
     support_trace = _build_wf0080_support_trace_metadata(
         call_code=call.code,
         external_user_id=external_user_id,
@@ -1492,6 +1460,7 @@ def list_reviews(
 @app.get(
     "/reviews/{review_id}",
     response_model=ReviewDetailResponse,
+    response_model_exclude_none=True,
     responses=API_ERROR_RESPONSES,
 )
 def get_review(
@@ -1649,7 +1618,11 @@ def get_review(
                 message="Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage.",
             )
         )
-    detail_projection = _build_wf0080_detail_projection(cards)
+    detail_projection = (
+        _build_wf0080_detail_projection(cards)
+        if _is_wf0080_launch_wedge_call(call.code if call is not None else None)
+        else None
+    )
     support_trace = _build_wf0080_support_trace_metadata(
         call_code=call.code if call is not None else None,
         external_user_id=review.external_user_id,

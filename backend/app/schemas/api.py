@@ -223,7 +223,7 @@ class ReviewDetailResponse(BaseModel):
     legacy_ambiguous_container_ids: list[str] = Field(default_factory=list)
     moved_legacy_node_references: list[str] = Field(default_factory=list)
     compatibility_notes: list[ReviewCompatibilityNote] = Field(default_factory=list)
-    detail_projection: ReviewDetailProjection
+    detail_projection: ReviewDetailProjection | None = None
     support_trace: SupportTraceMetadata | None = None
     review: ReviewSummary
     cards: list[ReviewCardSummary]
