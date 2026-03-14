@@ -2,9 +2,9 @@
 # WF-0079 — Researcher-Visible Carry-Through MVP
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
-Last Updated: 2026-03-13
+Last Updated: 2026-03-14
 
 Type: feature
 
@@ -142,7 +142,7 @@ TDD Plan:
 - GREEN: make the minimum BFF normalization and type updates needed to preserve the backend field verbatim.
 - REFACTOR: skip unless a tiny card normalizer helper is needed to avoid repeated optional-field handling.
 Verification Steps:
-- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts'`
+- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t 'wf0079_bff_review_detail_preserves_optional_companion_text'`
 - `cd frontend && rg -n "synthesized_companion_text|ReviewCardSummary|ReviewDetailResponse" src/app/api/bff/reviews/'[reviewId]'/route.ts src/app/api/bff/reviews/'[reviewId]'/route.test.ts src/lib/bff/types.ts`
 Risks (if any): If the BFF rewrites semantics instead of passing the field through, the detail page can drift from backend truth.
 
@@ -176,7 +176,9 @@ TDD Plan:
 - GREEN: add the smallest detail-page and card-render changes needed to show the optional additive block, preserve deterministic-first rendering, and keep copy/download deterministic-only with aligned wording.
 - REFACTOR: extract a tiny companion-render helper or copy-label constant only if the page/component diff becomes repetitive; otherwise skip.
 Verification Steps:
-- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx'`
+- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0079_review_detail_renders_optional_companion_block'`
+- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0079_review_detail_copy_and_download_remain_deterministic_only'`
+- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells'`
 - `cd frontend && rg -n "synthesized_companion_text|deterministic-only|Copy as text|Download \\.txt|additive" src/components/review/ReviewCard.tsx src/app/app/reviews/'[reviewId]'/page.tsx src/app/app/reviews/'[reviewId]'/page.test.tsx`
 Risks (if any): If the labels are vague, researchers could assume copied/exported text contains the additive companion when it does not.
 
@@ -192,14 +194,15 @@ Enables: none
 Parallelizable: no
 Files to modify:
 Must touch files:
-- `none`
+- `docs/walkthroughs/walkthrough-WF-0079-researcher-visible-carry-through-mvp.md`
 May touch files:
-- `none`
+- `docs/index.md`
 Out of scope: opportunistic UI cleanup, reviews-list/history feature work, legacy `/reviews` redesign, extra analytics
 Stop if: any proof requires widening into history/list surfaces or a second workflow approval to close honestly
 Session boundary after: yes
 Acceptance Criteria:
 - Phase 3 records explicit `pass`, `fail`, or approved `skipped` evidence for each verification-matrix row below before claiming the plan is closed.
+- The walkthrough becomes the single closure artifact for this task and records the exact baseline commit range/SHA, row-level evidence pointers, and the audit-disposition ledger before any ship recommendation.
 - Verification proves non-targeted calls/cards remain deterministic-only, review history/list and legacy `/reviews` surfaces stay unchanged, and no read-time synthesis or deterministic-field overloading was introduced.
 - Verification uses deterministic structural assertions and fixture/stubbed companion values rather than brittle exact-string expectations against live-model output.
 - Out-of-scope proof names the exact deferred surfaces under review, including `frontend/src/app/app/reviews/page.tsx`, `frontend/src/app/api/bff/reviews/route.ts`, and any legacy `/reviews` contract references touched by the branch diff.
@@ -207,12 +210,13 @@ Acceptance Criteria:
 TDD Plan:
 - N/A for the gate itself; this task consumes the RED/GREEN proofs produced by Tasks 1-5 and fails closed if they are incomplete.
 Verification Steps:
-- `git diff --name-only main...HEAD`
-- `rg -n "synthesized_companion_text|feedback_text|Copy as text|Download \\.txt|My reviews" backend/app frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts frontend/src/app/app/reviews/'[reviewId]'/page.tsx frontend/src/components/review`
-- `cd backend && uv run pytest tests/test_api.py -k "wf0079_contract_"`
-- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0079_contract_"`
-- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts'`
-- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx'`
+- `git log --oneline main...HEAD`
+- `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0079_contract_review_card_storage_allows_null_companion_text or wf0079_contract_migration_preserves_legacy_null_companion_text or wf0079_contract_review_detail_response_carries_optional_companion_text or wf0079_contract_review_detail_response_supports_mixed_card_companion_states"`
+- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0079_contract_erc_poc_persists_accepted_companion_text or wf0079_contract_non_targeted_calls_do_not_persist_companion_text"`
+- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t 'wf0079_bff_review_detail_preserves_optional_companion_text'`
+- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0079_review_detail_renders_optional_companion_block|wf0079_review_detail_copy_and_download_remain_deterministic_only|wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells'`
+- `rg -n "Verification Matrix|Audit Disposition Ledger|baseline sha|commit range|pass|fail|skipped" docs/walkthroughs/walkthrough-WF-0079-researcher-visible-carry-through-mvp.md`
 Risks (if any): Without an explicit closure gate, Phase 3 could overclaim researcher-visible rollout while deferred surfaces or scope-gates remain unproved.
 
 ## Verification Matrix
@@ -228,9 +232,9 @@ Risks (if any): Without an explicit closure gate, Phase 3 could overclaim resear
 | Mixed-card fail-closed proof | 3, 5 | `wf0079_contract_review_detail_response_supports_mixed_card_companion_states`, `wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells` | one card can show companion text while another remains deterministic-only | `fail` (default until executed) | required | per-card degradation only |
 | Detail-page render proof | 5 | `wf0079_review_detail_renders_optional_companion_block` | page renders additive companion only when present and labeled as additive guidance | `fail` (default until executed) | required | deterministic text stays primary |
 | Page-local copy/export proof | 5 | `wf0079_review_detail_copy_and_download_remain_deterministic_only` | copy/download remain deterministic-only with aligned wording | `fail` (default until executed) | required | no implied additive export |
-| Out-of-scope surface proof | 6 | `git diff --name-only main...HEAD` plus targeted `rg` check | reviews list/history and legacy `/reviews` remain unchanged and deterministic-only | `fail` (default until executed) | required | defer widened rollout |
-| Honest non-determinism test strategy | 6 | task-level selectors plus fixture/stubbed companion values | proofs avoid brittle exact-string assertions against live-model output | `fail` (default until executed) | required | structural assertions only |
-| Audit disposition proof | 6 | task artifact + Part B/C ledger | all blocking findings closed; non-blocking findings closed or explicitly rejected with rationale | `fail` (default until executed) | required | no implicit approval |
+| Out-of-scope surface proof | 6 | `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts` plus walkthrough scope-proof section | reviews list/history and legacy `/reviews` remain unchanged and deterministic-only | `fail` (default until executed) | required | defer widened rollout |
+| Honest non-determinism test strategy | 6 | exact WF-0079 selectors from Tasks 1-5 plus fixture/stubbed companion values | proofs avoid brittle exact-string assertions against live-model output | `fail` (default until executed) | required | structural assertions only |
+| Audit disposition proof | 6 | walkthrough verification matrix + audit-disposition ledger | all blocking findings closed; non-blocking findings closed or explicitly rejected with rationale | `fail` (default until executed) | required | no implicit approval |
 
 ## Audit Disposition Ledger
 
@@ -239,8 +243,11 @@ Risks (if any): Without an explicit closure gate, Phase 3 could overclaim resear
 | Phase 2.2 task review | Task 6 used a broad branch diff plus generic `rg` scan, which was too imprecise to prove the deferred reviews-list and legacy `/reviews` surfaces stayed out of scope | non-blocking | name the exact deferred surfaces in Task 6 acceptance/verification and separate the closure commands so evidence stays auditable | closed | keeps the out-of-scope surface proof explicit |
 | Phase 2.2 task review | Task 1 named legacy-null compatibility but did not require a distinct migration-focused selector, leaving the schema-upgrade proof too implicit | non-blocking | add a second deterministic selector for migration/legacy-null proof in Task 1 acceptance, TDD plan, verification, and matrix rows | closed | makes the storage compatibility claim replayable |
 | Phase 2.2 task review | Task 6 chained backend/frontend verification commands together, reducing row-level evidence clarity in the fail-closed matrix | non-blocking | split chained verification commands into separate backend and frontend steps | closed | improves auditability without changing scope |
+| Review-and-harden task audit | Task 6 required explicit pass/fail matrix rows, baseline scope proof, and audit-disposition closure but named no artifact to carry that evidence, leaving Phase 3 to invent a closure surface | blocking | make the walkthrough the required closure artifact for Task 6 and verify its matrix/ledger sections explicitly before any ship recommendation | closed | keeps the PRD proceed gate executable under the Phase 3 walkthrough contract |
+| Review-and-harden task audit | Task 4/5/6 verification commands still relied on whole-file frontend runs or broad namespace selectors even though the referenced test files already contain unrelated WF coverage | blocking | tighten verification to exact WF-0079 selectors so each proof row maps to replayable pass/fail evidence without ambiguity | closed | prevents false readiness from unrelated passing tests |
 
 ## Changelog
 
 - v0.1 (2026-03-13): Initial task breakdown from PRD.
 - v0.2 (2026-03-13): Applied Part B feedback by adding an explicit migration-focused legacy-null proof, tightening the out-of-scope closure checks to exact deferred surfaces, and splitting closure verification into separate auditable commands before marking the plan ready.
+- v0.3 (2026-03-14): Applied review-and-harden findings by making the walkthrough the explicit Task 6 closure artifact and tightening frontend/closure verification to exact WF-0079 selectors.
