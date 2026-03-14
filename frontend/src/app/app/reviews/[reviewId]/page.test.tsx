@@ -2235,6 +2235,26 @@ describe("ReviewDetailPage", () => {
     expect(screen.getByText("Translation feedback")).toBeInTheDocument();
   });
 
+  it("wf0080_review_detail_fails_closed_when_projection_is_missing_for_completed_erc_poc", async () => {
+    mockReviewDetailFetch({
+      detail_projection: undefined,
+    });
+
+    render(<ReviewDetailPage />);
+
+    expect(
+      await screen.findByText("Prioritized launch view unavailable"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "This ERC-2026-PoC review is missing the backend detail projection, so the page cannot rank cards safely.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Top action cards" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success", async () => {
     mockReviewDetailFetch({
       review: {

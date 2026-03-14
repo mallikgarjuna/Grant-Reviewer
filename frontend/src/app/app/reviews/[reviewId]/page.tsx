@@ -767,6 +767,10 @@ export default function ReviewDetailPage() {
     : notReviewedNodeLabels;
   const projectedOrderedCards = buildProjectionOrderedCards(reviewDetail);
   const detailProjection = reviewDetail.detail_projection;
+  const isWf0080ProjectionMissing =
+    reviewDetail.review.status === "COMPLETED" &&
+    reviewDetail.call_code === "ERC-2026-PoC" &&
+    !detailProjection;
   const topActionCardIds = new Set(detailProjection?.top_action_card_ids ?? []);
   const topActionCards = projectedOrderedCards.filter((card) =>
     topActionCardIds.has(card.id),
@@ -1061,7 +1065,19 @@ export default function ReviewDetailPage() {
         ) : null}
       </header>
 
-      {reviewDetail.cards.length > 0 ||
+      {isWf0080ProjectionMissing ? (
+        <section className="rounded-2xl border border-amber-300 bg-amber-50 p-6 text-sm text-amber-950">
+          <h2 className="text-base font-semibold">Prioritized launch view unavailable</h2>
+          <p className="mt-2">
+            This ERC-2026-PoC review is missing the backend detail projection, so the page
+            cannot rank cards safely.
+          </p>
+          <p className="mt-2 text-amber-900">
+            Return to My reviews or contact maintainer support before using this review for
+            launch-wedge prioritization.
+          </p>
+        </section>
+      ) : reviewDetail.cards.length > 0 ||
       visibleButNotReviewedNodeLabels.length > 0 ||
       noGeneratedCardsNodeLabels.length > 0 ? (
         <div className="grid gap-4">
