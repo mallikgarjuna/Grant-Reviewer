@@ -8,6 +8,7 @@ Maintain a structured memory system rooted at `docs/memory/`.
 
 - [domain/architecture.md](domain/architecture.md) — Core architectural decisions and conventions
 - [domain/project_docs.md](domain/project_docs.md) — Documentation rules and code phrase SSOT
+- [domain/product_planning.md](domain/product_planning.md) — Launch-wedge planning rules for production MVP
 - [domain/yaml_definitions.md](domain/yaml_definitions.md) — Call YAML naming, source gating, and scoping rules
 - [tools/backend.md](tools/backend.md) — Backend script paths and environment requirements
 - [tools/frontend.md](tools/frontend.md) — Frontend tooling and nvm requirements
