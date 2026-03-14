@@ -1,4 +1,4 @@
-<!-- docs/plans/plan-WF-0080.md -->
+<!-- docs/plans/plan-WF-0080-v0.1.md -->
 # Plan — WF-0080 Atomic Finding Model for Structured Review Output
 
 Status: Draft helper plan
@@ -13,7 +13,7 @@ Use it to seed the next WF, then create the canonical brainstorm/PRD/task/walkth
 Suggested future-chat prompt:
 
 ```text
-Use @docs/plans/plan-WF-0080.md
+Use @docs/plans/plan-WF-0080-v0.1.md
 Start WF-0080 using the standard phase runners.
 Treat the plan as intent/reference only.
 Generate the canonical WF artifacts from it.
