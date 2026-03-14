@@ -197,11 +197,7 @@ describe("ReviewDetailPage", () => {
     render(<ReviewDetailPage />);
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Official source basis: Call for Proposals (Veni 2025) §4.3.1",
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Feedback text")).toBeInTheDocument();
   });
 
   it("wf0067_review_detail_tracer_unavailable_source_basis_card", async () => {
@@ -265,9 +261,7 @@ describe("ReviewDetailPage", () => {
     render(<ReviewDetailPage />);
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
-    expect(
-      screen.getByText("Official source basis: unavailable."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Feedback text")).toBeInTheDocument();
   });
 
   it("wf0067_review_card_trust_metadata_shows_available_and_unavailable_basis", async () => {
@@ -357,20 +351,7 @@ describe("ReviewDetailPage", () => {
     expect(screen.getAllByText("Evaluation criterion: Quality")).toHaveLength(2);
     expect(screen.getByText("Peer-exceeding quality")).toBeInTheDocument();
     expect(screen.getByText("Network visibility")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Official source basis: Call for Proposals (Veni 2025) §4.3.1",
-      ),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Official source basis: unavailable."),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Reviewed section context: 2a. Academic Profile"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Reviewed section context: 2b. Key Outputs"),
-    ).toBeInTheDocument();
+    expect(screen.getAllByText("Feedback text")).toHaveLength(2);
   });
 
   it("wf0067_review_card_trust_not_assessable_label", async () => {
@@ -436,12 +417,7 @@ describe("ReviewDetailPage", () => {
     render(<ReviewDetailPage />);
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
-    expect(
-      screen.getByText("Status: Not assessable (insufficient_evidence)"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Official source basis: unavailable (legacy fallback)."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Feedback text")).toBeInTheDocument();
   });
 
   it("wf0067_review_detail_boundary_no_generated_cards_distinct_from_visible_not_reviewed", async () => {
@@ -672,9 +648,7 @@ describe("ReviewDetailPage", () => {
         /mixed_version_review: Mixed-version review detected; corrected leaf IDs remain the only proven reviewed coverage\./,
       ),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText("Official source basis: unavailable (legacy fallback)."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Legacy feedback")).toBeInTheDocument();
   });
 
   it.each([
@@ -745,7 +719,7 @@ describe("ReviewDetailPage", () => {
       render(<ReviewDetailPage />);
 
       expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
-      expect(screen.getByText("Official source basis: Official source")).toBeInTheDocument();
+      expect(screen.getByText("Feedback text")).toBeInTheDocument();
       expect(screen.getByText("Supporting context: None")).toBeInTheDocument();
     },
   );
@@ -1883,7 +1857,7 @@ describe("ReviewDetailPage", () => {
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
     expect(screen.getByText("Deterministic innovation feedback.")).toBeInTheDocument();
-    expect(screen.getByText("Additive companion guidance")).toBeInTheDocument();
+    expect(screen.getByText("LLM companion guidance")).toBeInTheDocument();
     expect(
       screen.getByText("Additive innovation companion guidance."),
     ).toBeInTheDocument();
@@ -2091,7 +2065,7 @@ describe("ReviewDetailPage", () => {
     render(<ReviewDetailPage />);
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
-    expect(screen.getAllByText("Additive companion guidance")).toHaveLength(1);
+    expect(screen.getAllByText("LLM companion guidance")).toHaveLength(1);
     expect(
       screen.getByText("Deterministic leadership feedback."),
     ).toBeInTheDocument();
@@ -2143,12 +2117,12 @@ describe("ReviewDetailPage", () => {
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
     expect(
-      screen.queryByText("Additive companion guidance"),
+      screen.queryByText("LLM companion guidance"),
     ).not.toBeInTheDocument();
     expect(screen.getByText("Legacy deterministic feedback.")).toBeInTheDocument();
   });
 
-  it("wf0080_review_detail_renders_top_action_cards_first", async () => {
+  it("wf0080_review_detail_groups_all_findings_by_reviewed_section", async () => {
     mockReviewDetailFetch({
       cards: [
         {
@@ -2223,36 +2197,62 @@ describe("ReviewDetailPage", () => {
 
     render(<ReviewDetailPage />);
 
-    const topActionsRegion = await screen.findByRole("region", {
-      name: "Top action cards",
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
     });
-    const topActionCards = within(topActionsRegion).getAllByTestId(/^review-card-/);
-    expect(topActionCards).toHaveLength(3);
-    expect(topActionCards[0]).toHaveAttribute("data-card-id", "card-3");
-    expect(topActionCards[1]).toHaveAttribute("data-card-id", "card-2");
-    expect(topActionCards[2]).toHaveAttribute("data-card-id", "card-1");
-    expect(screen.getByText("Other findings")).toBeInTheDocument();
+    const sectionGroups = within(reviewRegion).getAllByRole("heading", {
+      level: 2,
+      name: /Reviewed section:/,
+    });
+    expect(sectionGroups).toHaveLength(4);
+    expect(sectionGroups[0]).toHaveTextContent(
+      "Reviewed section: Idea innovation",
+    );
+    expect(sectionGroups[1]).toHaveTextContent(
+      "Reviewed section: Approach and methodology",
+    );
+    expect(sectionGroups[2]).toHaveTextContent(
+      "Reviewed section: PI strategic leadership",
+    );
+    expect(sectionGroups[3]).toHaveTextContent(
+      "Reviewed section: Market translation",
+    );
+    expect(screen.queryByText("Top actions")).not.toBeInTheDocument();
+    expect(screen.queryByText("Other findings")).not.toBeInTheDocument();
     expect(screen.getByText("Translation feedback")).toBeInTheDocument();
   });
 
-  it("wf0080_review_detail_fails_closed_when_projection_is_missing_for_completed_erc_poc", async () => {
+  it("wf0080_review_detail_falls_back_to_payload_grouping_when_projection_is_missing", async () => {
     mockReviewDetailFetch({
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "exp-1",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
+          criterion: "Excellence",
+          criterion_description: "Innovation criterion",
+          evaluation_element_name: "Innovation",
+          expectation_guidance_note: null,
+          rating: "NOTE",
+          feedback_text: "Innovation feedback",
+          assessment_status: "ASSESSED",
+          source_basis_label: "Official ERC PoC source",
+          source_basis_state: "available",
+        },
+      ],
       detail_projection: undefined,
     });
 
     render(<ReviewDetailPage />);
 
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
+    });
     expect(
-      await screen.findByText("Prioritized launch view unavailable"),
+      within(reviewRegion).getByText("Reviewed section: Idea innovation"),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "This ERC-2026-PoC review is missing the backend detail projection, so the page cannot rank cards safely.",
-      ),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("region", { name: "Top action cards" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Prioritized launch view unavailable")).not.toBeInTheDocument();
   });
 
   it("wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success", async () => {
@@ -2295,7 +2295,7 @@ describe("ReviewDetailPage", () => {
     expect(screen.queryByText("Action required")).not.toBeInTheDocument();
   });
 
-  it("wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default", async () => {
+  it("wf0080_review_detail_renders_deterministic_feedback_as_bullets", async () => {
     mockReviewDetailFetch({
       cards: [
         {
@@ -2308,53 +2308,32 @@ describe("ReviewDetailPage", () => {
           evaluation_element_name: "Innovation",
           expectation_guidance_note: "Lead with the breakthrough claim.",
           rating: "WARNING",
-          feedback_text: "Innovation feedback",
-          assessment_status: "ASSESSED",
-          source_basis_label: "Official ERC PoC source",
-          source_basis_state: "available",
-        },
-        {
-          id: "card-2",
-          node_expectation_id: "exp-2",
-          node_logical_id: "poc_approach_methodology",
-          node_title: "Approach and methodology",
-          criterion: "Excellence",
-          criterion_description: "Approach criterion",
-          evaluation_element_name: "Methodology",
-          expectation_guidance_note: "Clarify feasibility.",
-          rating: "NOTE",
-          feedback_text: "Methodology feedback",
-          assessment_status: "ASSESSED",
-          source_basis_label: "Official ERC PoC source",
-          source_basis_state: "available",
+          feedback_text:
+            "Lead with the breakthrough claim. Show why the idea is high risk.",
         },
       ],
       detail_projection: {
         version: "wf0080_launch_wedge_v1",
         headline_state: "action_required",
-        ordered_card_ids: ["card-1", "card-2"],
-        top_action_card_ids: ["card-1", "card-2"],
+        ordered_card_ids: ["card-1"],
+        top_action_card_ids: ["card-1"],
         ranking_basis: "assessment_status_then_rating_then_existing_order",
       },
     });
 
     render(<ReviewDetailPage />);
 
-    const topActionsRegion = await screen.findByRole("region", {
-      name: "Top action cards",
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
     });
-    const topActionCards = within(topActionsRegion).getAllByTestId(/^review-card-/);
-    const supportingEvidenceLine = within(topActionCards[1]).getByText(
-      "Official source basis: Official ERC PoC source",
-    );
-    expect(supportingEvidenceLine).not.toBeVisible();
-    fireEvent.click(within(topActionCards[1]).getByText("Supporting evidence"));
-    expect(
-      within(topActionCards[1]).getByText("Official source basis: Official ERC PoC source"),
-    ).toBeVisible();
+    const groupedCards = within(reviewRegion).getAllByTestId(/^review-card-/);
+    const bulletItems = within(groupedCards[0]).getAllByRole("listitem");
+    expect(bulletItems).toHaveLength(2);
+    expect(bulletItems[0]).toHaveTextContent("Lead with the breakthrough claim.");
+    expect(bulletItems[1]).toHaveTextContent("Show why the idea is high risk.");
   });
 
-  it("wf0080_review_detail_opens_first_top_action_supporting_evidence_by_default", async () => {
+  it("wf0080_review_detail_removes_supporting_evidence_block", async () => {
     mockReviewDetailFetch({
       cards: [
         {
@@ -2375,8 +2354,8 @@ describe("ReviewDetailPage", () => {
         {
           id: "card-2",
           node_expectation_id: "exp-2",
-          node_logical_id: "poc_approach_methodology",
-          node_title: "Approach and methodology",
+          node_logical_id: "poc_idea_innovation",
+          node_title: "Idea innovation",
           criterion: "Excellence",
           criterion_description: "Approach criterion",
           evaluation_element_name: "Methodology",
@@ -2392,23 +2371,26 @@ describe("ReviewDetailPage", () => {
         version: "wf0080_launch_wedge_v1",
         headline_state: "action_required",
         ordered_card_ids: ["card-1", "card-2"],
-        top_action_card_ids: ["card-1", "card-2"],
+        top_action_card_ids: ["card-1"],
         ranking_basis: "assessment_status_then_rating_then_existing_order",
       },
     });
 
     render(<ReviewDetailPage />);
 
-    const topActionsRegion = await screen.findByRole("region", {
-      name: "Top action cards",
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
     });
-    const topActionCards = within(topActionsRegion).getAllByTestId(/^review-card-/);
+    const groupedCards = within(reviewRegion).getAllByTestId(/^review-card-/);
     expect(
-      within(topActionCards[0]).getByText("Official source basis: Official ERC PoC source"),
-    ).toBeVisible();
+      within(groupedCards[0]).queryByText("Supporting evidence"),
+    ).not.toBeInTheDocument();
     expect(
-      within(topActionCards[1]).getByText("Official source basis: Official ERC PoC source"),
-    ).not.toBeVisible();
+      within(groupedCards[0]).queryByText("Official source basis: Official ERC PoC source"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(groupedCards[1]).queryByText("Supporting evidence"),
+    ).not.toBeInTheDocument();
   });
 
   it(
@@ -2514,12 +2496,12 @@ describe("ReviewDetailPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Copy deterministic text" }));
     expect(
       await screen.findByText(
-        "Copy/download include deterministic review text only. Action-first ranking and additive companion guidance are not included in this export.",
+        "Copy/download include deterministic review text only. Additive companion guidance is not included in this export.",
       ),
     ).toBeInTheDocument();
     expect(clipboardWriteText).toHaveBeenCalledTimes(1);
     expect(clipboardWriteText.mock.calls[0][0]).toContain(
-      "Action-first ranking and additive companion guidance are not included in this export.",
+      "Additive companion guidance is not included in this export.",
     );
   });
 });

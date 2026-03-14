@@ -90,7 +90,7 @@ async function parseApiError(response: Response): Promise<ApiError> {
 function buildReviewExportText(reviewDetail: ReviewDetailResponse): string {
   const lines: string[] = [
     "PeerLens deterministic review export",
-    "Action-first ranking and additive companion guidance are not included in this export.",
+    "Additive companion guidance is not included in this export.",
     "",
     `Review ID: ${reviewDetail.review.id}`,
     `Status: ${reviewDetail.review.status}`,
@@ -767,19 +767,8 @@ export default function ReviewDetailPage() {
     : notReviewedNodeLabels;
   const projectedOrderedCards = buildProjectionOrderedCards(reviewDetail);
   const detailProjection = reviewDetail.detail_projection;
-  const isWf0080ProjectionMissing =
-    reviewDetail.review.status === "COMPLETED" &&
-    reviewDetail.call_code === "ERC-2026-PoC" &&
-    !detailProjection;
-  const topActionCardIds = new Set(detailProjection?.top_action_card_ids ?? []);
-  const topActionCards = projectedOrderedCards.filter((card) =>
-    topActionCardIds.has(card.id),
-  );
-  const remainingCards = projectedOrderedCards.filter(
-    (card) => !topActionCardIds.has(card.id),
-  );
   const orderedCardGroups = buildOrderedCardGroups(
-    topActionCards.length > 0 ? remainingCards : projectedOrderedCards,
+    projectedOrderedCards,
     reviewDetail.ordering_source,
     sortedCallNodes,
   );
@@ -973,7 +962,7 @@ export default function ReviewDetailPage() {
           </p>
         ) : null}
         <p className="mt-3 text-sm text-[var(--color-muted-foreground)]">
-          Copy/download include deterministic review text only. Action-first ranking and additive companion guidance are not included in this export.
+          Copy/download include deterministic review text only. Additive companion guidance is not included in this export.
         </p>
         <div className="mt-5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--color-muted-foreground)]">
@@ -1065,141 +1054,82 @@ export default function ReviewDetailPage() {
         ) : null}
       </header>
 
-      {isWf0080ProjectionMissing ? (
-        <section className="rounded-2xl border border-amber-300 bg-amber-50 p-6 text-sm text-amber-950">
-          <h2 className="text-base font-semibold">Prioritized launch view unavailable</h2>
-          <p className="mt-2">
-            This ERC-2026-PoC review is missing the backend detail projection, so the page
-            cannot rank cards safely.
-          </p>
-          <p className="mt-2 text-amber-900">
-            Return to My reviews or contact maintainer support before using this review for
-            launch-wedge prioritization.
-          </p>
-        </section>
-      ) : reviewDetail.cards.length > 0 ||
+      {reviewDetail.cards.length > 0 ||
       visibleButNotReviewedNodeLabels.length > 0 ||
       noGeneratedCardsNodeLabels.length > 0 ? (
         <div className="grid gap-4">
-          {topActionCards.length > 0 ? (
-            <section
-              role="region"
-              aria-label="Top action cards"
-              className="rounded-2xl border border-sky-200 bg-sky-50 p-4"
-            >
-              <h2 className="text-base font-semibold text-sky-950">Top actions</h2>
-              <p className="mt-1 text-sm text-sky-900">
-                These cards come directly from the backend projection order.
-              </p>
-              <div className="mt-4 grid gap-4">
-                {topActionCards.map((card, index) => (
-                  <ReviewCard
-                    key={`top-action:${card.id}`}
-                    cardId={card.id}
-                    index={index + 1}
-                    criterion={card.criterion}
-                    description={card.criterion_description}
-                    reviewedSectionLabel={
-                      nodeTitleByLogicalId.get(card.node_logical_id ?? "") ?? card.node_title
-                    }
-                    evaluationElementName={card.evaluation_element_name}
-                    expectationGuidanceNote={card.expectation_guidance_note}
-                    rating={card.rating}
-                    feedback={card.feedback_text}
-                    synthesizedCompanionText={card.synthesized_companion_text}
-                    assessmentStatus={card.assessment_status}
-                    notAssessableReason={card.not_assessable_reason}
-                    sourceBasisLabel={card.source_basis_label}
-                    sourceBasisState={card.source_basis_state}
-                    supportingEvidenceDefaultOpen={index === 0}
-                  />
-                ))}
-              </div>
-            </section>
-          ) : null}
           <div
             role="region"
-            aria-label={topActionCards.length > 0 ? "Other findings" : "Review Feedback Cards"}
+            aria-label="Review feedback by section"
             className="grid gap-4"
           >
-            {topActionCards.length > 0 ? (
-              <h2 className="text-base font-semibold text-[var(--color-foreground)]">
-                Other findings
-              </h2>
-            ) : null}
-          {orderedCardGroups.map((group) => (
-            <section
-              className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
-              key={group.key}
-              aria-labelledby={`heading-group-${group.key}`}
-            >
-              <h2
-                id={`heading-group-${group.key}`}
-                className="text-base font-semibold text-[var(--color-foreground)]"
+            {orderedCardGroups.map((group) => (
+              <section
+                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                key={group.key}
+                aria-labelledby={`heading-group-${group.key}`}
               >
-                Reviewed section: {group.title}
-              </h2>
-              <div className="mt-3 grid gap-4">
-                {group.cards.map((card, index) => (
+                <h2
+                  id={`heading-group-${group.key}`}
+                  className="text-base font-semibold text-[var(--color-foreground)]"
+                >
+                  Reviewed section: {group.title}
+                </h2>
+                <div className="mt-3 grid gap-4">
+                  {group.cards.map((card, index) => (
                   <ReviewCard
                     key={`${group.key}:${card.id}`}
                     cardId={card.id}
                     index={index + 1}
                     criterion={card.criterion}
                     description={card.criterion_description}
-                    reviewedSectionLabel={group.title}
                     evaluationElementName={card.evaluation_element_name}
-                    expectationGuidanceNote={card.expectation_guidance_note}
                     rating={card.rating}
                     feedback={card.feedback_text}
                     synthesizedCompanionText={card.synthesized_companion_text}
-                    assessmentStatus={card.assessment_status}
-                    notAssessableReason={card.not_assessable_reason}
-                    sourceBasisLabel={card.source_basis_label}
-                    sourceBasisState={card.source_basis_state}
                   />
                 ))}
               </div>
             </section>
-          ))}
-          {hasCoverageSummary
-            ? visibleButNotReviewedNodeLabels.map((nodeLabel) => (
-                <section
-                  className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
-                  key={`visible-not-reviewed-${nodeLabel}`}
-                  aria-labelledby={`heading-visible-not-reviewed-${nodeLabel}`}
-                >
-                  <h2
-                    id={`heading-visible-not-reviewed-${nodeLabel}`}
-                    className="text-base font-semibold text-[var(--color-foreground)]"
+            ))}
+            {hasCoverageSummary
+              ? visibleButNotReviewedNodeLabels.map((nodeLabel) => (
+                  <section
+                    className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                    key={`visible-not-reviewed-${nodeLabel}`}
+                    aria-labelledby={`heading-visible-not-reviewed-${nodeLabel}`}
                   >
-                    Visible but not reviewed section: {nodeLabel}
-                  </h2>
-                  <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
-                    No text was submitted for this section in this review.
-                  </div>
-                </section>
-              ))
-            : null}
-          {hasCoverageSummary
-            ? noGeneratedCardsNodeLabels.map((nodeLabel) => (
-                <section
-                  className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
-                  key={`no-generated-cards-${nodeLabel}`}
-                  aria-labelledby={`heading-no-generated-cards-${nodeLabel}`}
-                >
-                  <h2
-                    id={`heading-no-generated-cards-${nodeLabel}`}
-                    className="text-base font-semibold text-[var(--color-foreground)]"
+                    <h2
+                      id={`heading-visible-not-reviewed-${nodeLabel}`}
+                      className="text-base font-semibold text-[var(--color-foreground)]"
+                    >
+                      Visible but not reviewed section: {nodeLabel}
+                    </h2>
+                    <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
+                      No text was submitted for this section in this review.
+                    </div>
+                  </section>
+                ))
+              : null}
+            {hasCoverageSummary
+              ? noGeneratedCardsNodeLabels.map((nodeLabel) => (
+                  <section
+                    className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                    key={`no-generated-cards-${nodeLabel}`}
+                    aria-labelledby={`heading-no-generated-cards-${nodeLabel}`}
                   >
-                    No generated cards section: {nodeLabel}
-                  </h2>
-                  <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
-                    Text was submitted for this section, but no evaluation cards were generated.
-                  </div>
-                </section>
-              ))
-            : null}
+                    <h2
+                      id={`heading-no-generated-cards-${nodeLabel}`}
+                      className="text-base font-semibold text-[var(--color-foreground)]"
+                    >
+                      No generated cards section: {nodeLabel}
+                    </h2>
+                    <div className="mt-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 text-sm text-[var(--color-muted-foreground)]">
+                      Text was submitted for this section, but no evaluation cards were generated.
+                    </div>
+                  </section>
+                ))
+              : null}
           </div>
         </div>
       ) : (
