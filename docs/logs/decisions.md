@@ -19,6 +19,14 @@
 - **Tradeoff**: Researchers may see more on the page than in copied/exported output until a later workflow explicitly widens export scope.
 - **Status**: Approved.
 
+### AD 79.3: WF-0079 readiness stays fail-closed and must prove scope-gate safety explicitly
+- **WF ID**: WF-0079
+- **Context**: The approved brainstorm requires explicit pass/fail proceed evidence, closure of all justified findings, and `ERC-2026-PoC`-only carry-through. The first finalized PRD draft kept the verification matrix but softened those guarantees by omitting the proceed-gate prose, the audit ledger, and a dedicated proof row for non-targeted calls/cards.
+- **Decision**: Require the PRD, task plan, and any implementation-ready recommendation to retain explicit proceed-gate language, an audit disposition ledger, and a dedicated verification obligation proving non-targeted calls/cards do not persist or expose additive companion data.
+- **Why**: This keeps WF-0079 fail-closed against hallucinated readiness and silent cross-call scope drift.
+- **Tradeoff**: Later phases must carry slightly more closure bookkeeping and one extra deterministic proof seam before claiming readiness.
+- **Status**: Approved.
+
 ## Date: 2026-03-13 (WF-0078: structured-review-grounded-llm-synthesis)
 
 ### AD 78.1: WF-0078 MVP stays downstream of `pipeline_v1` and closes first as backend seam proof
