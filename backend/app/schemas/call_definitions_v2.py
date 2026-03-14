@@ -68,7 +68,7 @@ class EvaluationElementDefinitionV2(StrictBaseModel):
     description: str = Field(min_length=1)
     source_hint: str | None = None
     stage: EvaluationStage | None = "BOTH"
-    subordinate_prompts: list["SubordinatePromptDefinitionV2"] | None = None
+    subordinate_prompts: list[SubordinatePromptDefinitionV2] | None = None
 
     @model_validator(mode="after")
     def validate_subordinate_prompt_ids(self) -> EvaluationElementDefinitionV2:

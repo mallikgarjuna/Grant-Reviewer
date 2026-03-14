@@ -3817,13 +3817,12 @@ def test_wf0079_contract_migration_preserves_legacy_null_companion_text(
 
     try:
         try:
-            with psycopg.connect(admin_db_url, autocommit=True) as connection:
-                with connection.cursor() as cursor:
-                    cursor.execute(
-                        sql.SQL("CREATE DATABASE {}").format(
-                            sql.Identifier(temp_db_name)
-                        )
-                    )
+            with psycopg.connect(
+                admin_db_url, autocommit=True
+            ) as connection, connection.cursor() as cursor:
+                cursor.execute(
+                    sql.SQL("CREATE DATABASE {}").format(sql.Identifier(temp_db_name))
+                )
         except psycopg_errors.InsufficientPrivilege:
             pytest.skip(
                 "WF-0079 migration proof requires PostgreSQL test user that can create databases."
@@ -3846,227 +3845,226 @@ def test_wf0079_contract_migration_preserves_legacy_null_companion_text(
             "card": str(uuid4()),
         }
 
-        with psycopg.connect(database_url) as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    INSERT INTO funding_agencies (
-                        id, name, short_name, description, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s)
-                    """,
-                    (ids["agency"], "ERC", "ERC-WF0079", None, now, now),
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO funding_calls (
-                        id, funding_agency_id, name, code, aim_objectives, scope,
-                        general_guidelines, call_year, is_active, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        ids["call"],
-                        ids["agency"],
-                        "ERC Proof Call",
-                        "ERC-2026-PoC",
-                        None,
-                        None,
-                        None,
-                        2026,
-                        True,
-                        now,
-                        now,
-                    ),
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO proposal_nodes (
-                        id, funding_call_id, logical_id, parent_node_id, node_type, title,
-                        order_index, guidance_text, archived_at, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        ids["node"],
-                        ids["call"],
-                        "proposal_summary",
-                        None,
-                        "SECTION",
-                        "Proposal Summary",
-                        0,
-                        None,
-                        None,
-                        now,
-                        now,
-                    ),
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO evaluation_criteria (
-                        id, funding_call_id, logical_id, name, description,
-                        order_index, archived_at, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        ids["criterion"],
-                        ids["call"],
-                        "excellence",
-                        "Excellence",
-                        None,
-                        0,
-                        None,
-                        now,
-                        now,
-                    ),
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO evaluation_elements (
-                        id, evaluation_criterion_id, logical_id, name, description,
-                        archived_at, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        ids["element"],
-                        ids["criterion"],
-                        "clarity",
-                        "Clarity",
-                        None,
-                        None,
-                        now,
-                        now,
-                    ),
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO node_expectations (
-                        id, proposal_node_id, evaluation_element_id, expectation_strength,
-                        evaluation_intent, guidance_note, order_index, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        ids["expectation"],
-                        ids["node"],
-                        ids["element"],
-                        "IMPORTANT",
-                        "QUALITY",
-                        None,
-                        0,
-                        now,
-                        now,
-                    ),
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO users (
-                        id, email, is_anonymous, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s)
-                    """,
-                    (ids["user"], None, True, now, now),
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO proposal_snippets (
-                        id, user_id, funding_call_id, proposal_node_id, pasted_text,
-                        expires_at, created_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        ids["snippet"],
-                        ids["user"],
-                        ids["call"],
-                        ids["node"],
-                        "Legacy deterministic snippet",
-                        now,
-                        now,
-                    ),
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO prompt_templates (
-                        id, name, version, template_text, is_active, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (ids["template"], "default", 1, "Prompt body", True, now, now),
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO reviews (
-                        id, proposal_snippet_id, prompt_template_id, status, overall_summary,
-                        overall_rating, prompt_sent, raw_llm_response, llm_model,
-                        external_user_id, idempotency_key, request_payload_sha256,
-                        idempotency_expires_at, review_type, structured_payload, created_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        ids["review"],
-                        ids["snippet"],
-                        ids["template"],
-                        "COMPLETED",
-                        "Legacy review",
-                        "WARNING",
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        "single",
-                        None,
-                        now,
-                    ),
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO review_cards (
-                        id, review_id, node_expectation_id, rating, feedback_text,
-                        created_at, assessment_status, not_assessable_reason
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        ids["card"],
-                        ids["review"],
-                        ids["expectation"],
-                        "WARNING",
-                        "Legacy deterministic-only feedback",
-                        now,
-                        "ASSESSED",
-                        None,
-                    ),
-                )
+        with psycopg.connect(database_url) as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO funding_agencies (
+                    id, name, short_name, description, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (ids["agency"], "ERC", "ERC-WF0079", None, now, now),
+            )
+            cursor.execute(
+                """
+                INSERT INTO funding_calls (
+                    id, funding_agency_id, name, code, aim_objectives, scope,
+                    general_guidelines, call_year, is_active, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["call"],
+                    ids["agency"],
+                    "ERC Proof Call",
+                    "ERC-2026-PoC",
+                    None,
+                    None,
+                    None,
+                    2026,
+                    True,
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO proposal_nodes (
+                    id, funding_call_id, logical_id, parent_node_id, node_type, title,
+                    order_index, guidance_text, archived_at, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["node"],
+                    ids["call"],
+                    "proposal_summary",
+                    None,
+                    "SECTION",
+                    "Proposal Summary",
+                    0,
+                    None,
+                    None,
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO evaluation_criteria (
+                    id, funding_call_id, logical_id, name, description,
+                    order_index, archived_at, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["criterion"],
+                    ids["call"],
+                    "excellence",
+                    "Excellence",
+                    None,
+                    0,
+                    None,
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO evaluation_elements (
+                    id, evaluation_criterion_id, logical_id, name, description,
+                    archived_at, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["element"],
+                    ids["criterion"],
+                    "clarity",
+                    "Clarity",
+                    None,
+                    None,
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO node_expectations (
+                    id, proposal_node_id, evaluation_element_id, expectation_strength,
+                    evaluation_intent, guidance_note, order_index, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["expectation"],
+                    ids["node"],
+                    ids["element"],
+                    "IMPORTANT",
+                    "QUALITY",
+                    None,
+                    0,
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO users (
+                    id, email, is_anonymous, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s)
+                """,
+                (ids["user"], None, True, now, now),
+            )
+            cursor.execute(
+                """
+                INSERT INTO proposal_snippets (
+                    id, user_id, funding_call_id, proposal_node_id, pasted_text,
+                    expires_at, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["snippet"],
+                    ids["user"],
+                    ids["call"],
+                    ids["node"],
+                    "Legacy deterministic snippet",
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO prompt_templates (
+                    id, name, version, template_text, is_active, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (ids["template"], "default", 1, "Prompt body", True, now, now),
+            )
+            cursor.execute(
+                """
+                INSERT INTO reviews (
+                    id, proposal_snippet_id, prompt_template_id, status, overall_summary,
+                    overall_rating, prompt_sent, raw_llm_response, llm_model,
+                    external_user_id, idempotency_key, request_payload_sha256,
+                    idempotency_expires_at, review_type, structured_payload, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["review"],
+                    ids["snippet"],
+                    ids["template"],
+                    "COMPLETED",
+                    "Legacy review",
+                    "WARNING",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "single",
+                    None,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO review_cards (
+                    id, review_id, node_expectation_id, rating, feedback_text,
+                    created_at, assessment_status, not_assessable_reason
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["card"],
+                    ids["review"],
+                    ids["expectation"],
+                    "WARNING",
+                    "Legacy deterministic-only feedback",
+                    now,
+                    "ASSESSED",
+                    None,
+                ),
+            )
             connection.commit()
 
         run_alembic("upgrade", "head")
 
-        with psycopg.connect(database_url) as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT column_name
-                    FROM information_schema.columns
-                    WHERE table_name = 'review_cards'
-                    """
-                )
-                columns = {row[0] for row in cursor.fetchall()}
-                assert "synthesized_companion_text" in columns
+        with psycopg.connect(database_url) as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = 'review_cards'
+                """
+            )
+            columns = {row[0] for row in cursor.fetchall()}
+            assert "synthesized_companion_text" in columns
 
-                cursor.execute(
-                    """
-                    SELECT feedback_text, synthesized_companion_text
-                    FROM review_cards
-                    WHERE id = %s
-                    """,
-                    (ids["card"],),
-                )
-                stored_row = cursor.fetchone()
-                assert stored_row == ("Legacy deterministic-only feedback", None)
+            cursor.execute(
+                """
+                SELECT feedback_text, synthesized_companion_text
+                FROM review_cards
+                WHERE id = %s
+                """,
+                (ids["card"],),
+            )
+            stored_row = cursor.fetchone()
+            assert stored_row == ("Legacy deterministic-only feedback", None)
     finally:
-        with psycopg.connect(admin_db_url, autocommit=True) as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(
-                        sql.Identifier(temp_db_name)
-                    )
+        with psycopg.connect(
+            admin_db_url, autocommit=True
+        ) as connection, connection.cursor() as cursor:
+            cursor.execute(
+                sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(
+                    sql.Identifier(temp_db_name)
                 )
+            )
 
 
 def _create_wf0079_structured_review_with_cards(
