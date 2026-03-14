@@ -16,10 +16,21 @@ function normalizeReviewCards(record: Record<string, unknown>) {
   if (!Array.isArray(record.cards)) {
     return [];
   }
-  return record.cards.filter(
-    (item): item is Record<string, unknown> =>
-      Boolean(item) && typeof item === "object" && !Array.isArray(item),
-  );
+  return record.cards
+    .filter(
+      (item): item is Record<string, unknown> =>
+        Boolean(item) && typeof item === "object" && !Array.isArray(item),
+    )
+    .map((item) => {
+      const companionText = item.synthesized_companion_text;
+      if (typeof companionText === "string" || companionText === null) {
+        return {
+          ...item,
+          synthesized_companion_text: companionText,
+        };
+      }
+      return item;
+    });
 }
 
 function inferDetailState(record: Record<string, unknown>) {

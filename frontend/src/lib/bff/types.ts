@@ -145,6 +145,7 @@ export type ReviewCardSummary = {
   expectation_guidance_note?: string | null;
   rating: ReviewRating;
   feedback_text: string;
+  synthesized_companion_text?: string | null;
   assessment_status?: "ASSESSED" | "NOT_ASSESSABLE" | null;
   not_assessable_reason?: string | null;
   source_basis_label?: string | null;

@@ -1,6 +1,32 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-03-13 (WF-0079: researcher-visible-carry-through-mvp)
+
+### AD 79.1: WF-0079 exposes the narrowest safe public card contract as nullable companion text on review detail only
+- **WF ID**: WF-0079
+- **Context**: The approved brainstorm requires one end-to-end detail-page MVP, explicit backward compatibility for reviews with no companion data, and optimization for the narrowest safe public card contract.
+- **Decision**: Keep deterministic `feedback_text` unchanged and expose one nullable card-level `synthesized_companion_text` field through the review detail contract. Treat `null` as the valid value for legacy reviews, out-of-scope cards, and cards without accepted persisted synthesis. Do not expose rejection taxonomy or add extra public provenance fields unless later implementation planning proves they are strictly required.
+- **Why**: This preserves deterministic truth, keeps the public surface additive and backward compatible, and minimizes serializer/frontend coupling.
+- **Tradeoff**: The public contract carries less provenance detail, so deeper diagnostics stay internal unless a later workflow re-approves broader exposure.
+- **Status**: Approved.
+
+### AD 79.2: WF-0079 keeps page-local copy/export deterministic-only in MVP
+- **WF ID**: WF-0079
+- **Context**: The brainstorm treats `/app/reviews/[reviewId]` as the first researcher-visible seam and flags the existing page-local copy/export action as a same-page truthfulness coupling that cannot be ignored.
+- **Decision**: Keep the page-local copy/export action deterministic-only for MVP, and require user-facing wording to make that limitation explicit even when additive companion text renders on the page.
+- **Why**: This is the narrowest honest closure that avoids widening the MVP into broader export work while still closing the same-page truth gap safely.
+- **Tradeoff**: Researchers may see more on the page than in copied/exported output until a later workflow explicitly widens export scope.
+- **Status**: Approved.
+
+### AD 79.3: WF-0079 readiness stays fail-closed and must prove scope-gate safety explicitly
+- **WF ID**: WF-0079
+- **Context**: The approved brainstorm requires explicit pass/fail proceed evidence, closure of all justified findings, and `ERC-2026-PoC`-only carry-through. The first finalized PRD draft kept the verification matrix but softened those guarantees by omitting the proceed-gate prose, the audit ledger, and a dedicated proof row for non-targeted calls/cards.
+- **Decision**: Require the PRD, task plan, and any implementation-ready recommendation to retain explicit proceed-gate language, an audit disposition ledger, and a dedicated verification obligation proving non-targeted calls/cards do not persist or expose additive companion data.
+- **Why**: This keeps WF-0079 fail-closed against hallucinated readiness and silent cross-call scope drift.
+- **Tradeoff**: Later phases must carry slightly more closure bookkeeping and one extra deterministic proof seam before claiming readiness.
+- **Status**: Approved.
+
 ## Date: 2026-03-13 (WF-0078: structured-review-grounded-llm-synthesis)
 
 ### AD 78.1: WF-0078 MVP stays downstream of `pipeline_v1` and closes first as backend seam proof

@@ -163,6 +163,7 @@ class ReviewCardSummary(BaseModel):
     expectation_guidance_note: str | None
     rating: ReviewRating
     feedback_text: str
+    synthesized_companion_text: str | None = None
     assessment_status: str | None = None
     not_assessable_reason: str | None = None
     source_basis_label: str | None = None

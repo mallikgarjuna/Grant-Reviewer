@@ -206,9 +206,7 @@ def _manifest_has_required_wf0073_erc_poc_evidence(manifest_text: str) -> bool:
     def _block_has_required_fields(block: str) -> bool:
         if not re.search(r"sha256:\s*`[0-9a-f]{64}`", block):
             return False
-        if "used for:" not in block:
-            return False
-        return True
+        return "used for:" in block
 
     structure_markers = (
         "proposal structure",

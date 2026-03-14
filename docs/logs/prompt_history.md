@@ -1,6 +1,12 @@
 <!-- docs/logs/prompt_history.md -->
 # Prompt History
 
+## 2026-03-14
+
+### WF-0079 Phase 3 Closeout (Fail-Closed)
+> User requested `phase 3 closeout` for WF-0079 with careful, fail-closed verification before docs/ship steps.
+> Outcome: Ran targeted backend Postgres selectors (storage/migration/detail and write-path scope-gate), `mypy` + `ruff` on WF-touched backend files, targeted frontend Vitest selectors for BFF/detail render/copy behavior, and confirmed deferred list/history surfaces remained unchanged.
+
 ## 2026-03-13
 
 ### WF-0076 Safe Commit + Phase 3 Closeout Refresh

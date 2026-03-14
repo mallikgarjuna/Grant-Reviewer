@@ -89,7 +89,8 @@ async function parseApiError(response: Response): Promise<ApiError> {
 
 function buildReviewExportText(reviewDetail: ReviewDetailResponse): string {
   const lines: string[] = [
-    "PeerLens review export",
+    "PeerLens deterministic review export",
+    "Additive companion guidance is not included in this export.",
     "",
     `Review ID: ${reviewDetail.review.id}`,
     `Status: ${reviewDetail.review.status}`,
@@ -499,12 +500,12 @@ export default function ReviewDetailPage() {
       await copyTextWithFallback(buildReviewExportText(reviewDetail));
       setExportFeedback({
         kind: "success",
-        message: "Copied review text to clipboard.",
+        message: "Copied deterministic review text to clipboard.",
       });
     } catch {
       setExportFeedback({
         kind: "error",
-        message: "Unable to copy automatically. Use Download .txt instead.",
+        message: "Unable to copy automatically. Use Download deterministic .txt instead.",
       });
     }
   }
@@ -525,7 +526,7 @@ export default function ReviewDetailPage() {
     URL.revokeObjectURL(objectUrl);
     setExportFeedback({
       kind: "success",
-      message: "Downloaded review as .txt.",
+      message: "Downloaded deterministic review as .txt.",
     });
   }
 
@@ -886,14 +887,14 @@ export default function ReviewDetailPage() {
             onClick={copyReviewAsText}
             type="button"
           >
-            Copy as text
+            Copy deterministic text
           </button>
           <button
             className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-5 text-sm font-medium text-[var(--color-foreground)]"
             onClick={downloadReviewAsText}
             type="button"
           >
-            Download .txt
+            Download deterministic .txt
           </button>
           <button
             className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-white px-5 text-sm font-medium text-[var(--color-foreground)]"
@@ -1042,6 +1043,7 @@ export default function ReviewDetailPage() {
                     expectationGuidanceNote={card.expectation_guidance_note}
                     rating={card.rating}
                     feedback={card.feedback_text}
+                    synthesizedCompanionText={card.synthesized_companion_text}
                     assessmentStatus={card.assessment_status}
                     notAssessableReason={card.not_assessable_reason}
                     sourceBasisLabel={card.source_basis_label}

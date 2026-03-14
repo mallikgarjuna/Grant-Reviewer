@@ -2283,6 +2283,197 @@ def test_wf0078_contract_erc_poc_feedback_text_remains_deterministic(
         service.repository.session.close()
 
 
+def test_wf0079_contract_erc_poc_persists_accepted_companion_text(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0079: accepted ERC PoC additive guidance persists without mutating deterministic feedback.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    deterministic_feedback = (
+        "Revise poc_idea_innovation to strengthen breakthrough innovation potential by "
+        "showing why the proof-of-concept is high risk, high gain, and distinct from current alternatives."
+    )
+    synthesized_companion_text = (
+        "Synthesis: clarify why the proof-of-concept is high risk, high gain, and distinct from current alternatives."
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0079-erc-poc-persisted-companion",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0079-erc-poc-persisted-companion",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=deterministic_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=deterministic_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StaticJSONLLMClient(
+        json.dumps(
+            {
+                "expectation_id": expectation_id,
+                "node_logical_id": "poc_idea_innovation",
+                "evaluation_element_logical_id": "elem_breakthrough_innovation_potential",
+                "synthesized_feedback": synthesized_companion_text,
+                "evidence_quotes": [
+                    "high-risk catalyst platform",
+                    "distinct translational route",
+                ],
+            }
+        )
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0079-erc-poc-persisted-companion",
+            idempotency_key="wf0079-erc-poc-persisted-companion",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text == deterministic_feedback
+        assert cards[0].synthesized_companion_text == synthesized_companion_text
+
+        persisted_cards = list(
+            service.repository.session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == review.id)
+            ).all()
+        )
+        assert len(persisted_cards) == 1
+        assert persisted_cards[0].feedback_text == deterministic_feedback
+        assert (
+            persisted_cards[0].synthesized_companion_text
+            == synthesized_companion_text
+        )
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0079_contract_non_targeted_calls_do_not_persist_companion_text(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0079: non-targeted calls must not persist additive companion text.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    class UnexpectedSynthesisCallClient:
+        def generate(self, prompt: str) -> str:
+            raise AssertionError(f"Synthesis should not run for non-targeted calls: {prompt}")
+
+        def get_model_name(self) -> str:
+            return "unexpected-synthesis-call"
+
+    service, call_id = _build_nwo_veni_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="academic_profile",
+    )
+    deterministic_feedback = "Deterministic NWO feedback remains unchanged."
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0079-non-targeted-no-companion",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0079-non-targeted-no-companion",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="academic_profile"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=deterministic_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="academic_profile",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=deterministic_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = UnexpectedSynthesisCallClient()
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Concise academic profile text.")],
+            external_user_id="wf0079-non-targeted-no-companion",
+            idempotency_key="wf0079-non-targeted-no-companion",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text == deterministic_feedback
+        assert cards[0].synthesized_companion_text is None
+        assert service.last_synthesis_results == ()
+
+        persisted_cards = list(
+            service.repository.session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == review.id)
+            ).all()
+        )
+        assert len(persisted_cards) == 1
+        assert persisted_cards[0].feedback_text == deterministic_feedback
+        assert persisted_cards[0].synthesized_companion_text is None
+    finally:
+        service.repository.session.close()
+
+
 def test_wf0078_contract_erc_poc_card_timeout_falls_back(monkeypatch) -> None:
     """backend/tests/test_structured_reviewer_service.py
     WF-0078: one timed-out synthesis attempt falls back to deterministic guidance.

@@ -32,11 +32,6 @@ from app.services.llm_client import LLMClientProtocol, OpenAIClient
 from app.services.node_role_resolution import (
     resolve_supporting_node_logical_ids_for_primary_path,
 )
-from app.services.structured_review_synthesis_service import (
-    StructuredReviewSynthesisRequest,
-    StructuredReviewSynthesisResult,
-    StructuredReviewSynthesisService,
-)
 from app.services.review_execution_core import ReviewExecutionCore
 from app.services.reviewer_policy import (
     ReviewerPolicyRule,
@@ -44,6 +39,12 @@ from app.services.reviewer_policy import (
     compute_stage_scope_leaf_ids,
     find_policy_violations,
     get_applicable_reviewer_policy_rules,
+)
+from app.services.structured_review_synthesis_service import (
+    StructuredReviewSynthesisAcceptedResult,
+    StructuredReviewSynthesisRequest,
+    StructuredReviewSynthesisResult,
+    StructuredReviewSynthesisService,
 )
 
 logger = logging.getLogger(__name__)
@@ -232,7 +233,7 @@ class StructuredReviewerService:
 
         expectation_map: dict[str, NodeExpectation] = {}
         not_assessable_payloads: list[
-            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
+            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None, str | None]
         ] = []
         request_expectations: list[dict[str, object]] = []
         applicable_policy_by_node: dict[str, list[ReviewerPolicyRule]] = {}
@@ -278,6 +279,7 @@ class StructuredReviewerService:
                         "Not assessable due to missing cross-node context.",
                         AssessmentStatus.NOT_ASSESSABLE,
                         reason,
+                        None,
                     )
                 )
 
@@ -395,7 +397,7 @@ class StructuredReviewerService:
             return review, []
 
         card_payloads: list[
-            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
+            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None, str | None]
         ] = list(not_assessable_payloads)
         synthesis_requests: list[StructuredReviewSynthesisRequest] = []
         synthesis_results: list[StructuredReviewSynthesisResult] = []
@@ -408,15 +410,7 @@ class StructuredReviewerService:
                 feedback_text=card.feedback,
                 subordinate_prompts_by_element_id=subordinate_prompts_by_element_id,
             )
-            card_payloads.append(
-                (
-                    expectation.id,
-                    ReviewRating[card.rating],
-                    feedback_text,
-                    AssessmentStatus.ASSESSED,
-                    None,
-                )
-            )
+            synthesized_companion_text: str | None = None
             synthesis_request = self._build_synthesis_request_for_card(
                 call_code=call.code,
                 node_logical_id=card.node_logical_id,
@@ -432,17 +426,41 @@ class StructuredReviewerService:
             )
             if synthesis_request is not None:
                 synthesis_requests.append(synthesis_request)
-                synthesis_results.append(
-                    self.synthesis_service.attempt_card_synthesis(synthesis_request)
+                synthesis_result = self.synthesis_service.attempt_card_synthesis(
+                    synthesis_request
                 )
+                synthesis_results.append(synthesis_result)
+                if isinstance(synthesis_result, StructuredReviewSynthesisAcceptedResult):
+                    synthesized_companion_text = (
+                        synthesis_result.synthesized_feedback
+                    )
+
+            card_payloads.append(
+                (
+                    expectation.id,
+                    ReviewRating[card.rating],
+                    feedback_text,
+                    AssessmentStatus.ASSESSED,
+                    None,
+                    synthesized_companion_text,
+                )
+            )
 
         self.last_synthesis_requests = tuple(synthesis_requests)
         self.last_synthesis_results = tuple(synthesis_results)
 
-        cards = self.repository.create_review_cards_batch(
-            review_id=review.id,
-            cards=card_payloads,
-        )
+        try:
+            cards = self.repository.create_review_cards_batch(
+                review_id=review.id,
+                cards=card_payloads,
+            )
+        except Exception as err:
+            self.repository.rollback()
+            return self._fail_execution_error(
+                review,
+                code=EngineErrorCode.ENGINE_EXECUTION_FAILED.value,
+                message=str(err),
+            )
 
         review.status = ReviewStatus.COMPLETED
         review.overall_summary = f"{STRUCTURED_SUMMARY_COMPLETED_PREFIX} {len(cards)} findings via pipeline_v1."
@@ -622,6 +640,9 @@ class StructuredReviewerService:
             if element.criterion is not None and isinstance(element.criterion.name, str)
             else ""
         )
+        if not isinstance(element_logical_id, str) or not element_logical_id.strip():
+            return None
+
         submitted_text = submitted_text_by_node.get(node_logical_id, "")
         subordinate_prompt_context = tuple(
             prompt_text
@@ -630,9 +651,7 @@ class StructuredReviewerService:
             if isinstance(prompt_text, str) and prompt_text.strip()
         )
         if (
-            not isinstance(element_logical_id, str)
-            or not element_logical_id.strip()
-            or not isinstance(node_title, str)
+            not isinstance(node_title, str)
             or not node_title.strip()
             or not isinstance(element_name, str)
             or not element_name.strip()

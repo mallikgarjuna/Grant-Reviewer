@@ -11,6 +11,7 @@ interface ReviewCardProps {
   expectationGuidanceNote?: string | null;
   rating: ReviewRating;
   feedback: string;
+  synthesizedCompanionText?: string | null;
   assessmentStatus?: "ASSESSED" | "NOT_ASSESSABLE" | null;
   notAssessableReason?: string | null;
   sourceBasisLabel?: string | null;
@@ -53,12 +54,16 @@ export function ReviewCard({
   expectationGuidanceNote,
   rating,
   feedback,
+  synthesizedCompanionText,
   assessmentStatus,
   notAssessableReason,
   sourceBasisLabel,
   sourceBasisState,
 }: ReviewCardProps) {
   const breadcrumbPath = buildBreadcrumbPath(reviewedSectionLabel);
+  const hasSynthesizedCompanionText =
+    typeof synthesizedCompanionText === "string" &&
+    synthesizedCompanionText.trim().length > 0;
   return (
     <article className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm transition-all hover:shadow-md">
       <header className="flex flex-col gap-4 border-b border-[var(--color-border)] bg-[var(--color-background)] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -111,6 +116,16 @@ export function ReviewCard({
           {/* We treat feedback as pre-formatted text or markdown if supported later */}
           <p className="whitespace-pre-wrap">{feedback}</p>
         </div>
+        {hasSynthesizedCompanionText ? (
+          <div className="mt-4 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-sky-800">
+              Additive companion guidance
+            </p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-sky-950">
+              {synthesizedCompanionText}
+            </p>
+          </div>
+        ) : null}
       </div>
     </article>
   );
