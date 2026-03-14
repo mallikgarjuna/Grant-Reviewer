@@ -1,25 +1,29 @@
-<!-- docs/walkthroughs/walkthrough-WF-0080-production-mvp-launch-wedge.md -->
+<!-- docs/walkthroughs/completed/walkthrough-WF-0080-production-mvp-launch-wedge.md -->
 # WF-0080 — Production MVP Launch Wedge
 
 Artifact: walkthrough
-Version: v0.1
-Status: Drafted (fail-closed usefulness gate)
+Version: v0.2
+Status: Completed (ship blocked by fail-closed usefulness gate)
 Last Updated: 2026-03-14
 
 ## Summary
 
-WF-0080 Part A scope is implemented through Tasks 1-8 on branch `wf/WF-0080-production-mvp-launch-wedge`.
+WF-0080 Parts A, B, and C are complete on branch `wf/WF-0080-production-mvp-launch-wedge`.
 
 - Locked launch wedge remains `ERC-2026-PoC` only.
-- Submit fail-closed cohort gates now hold at both backend and BFF seams.
-- Review detail remains backend-ranked and BFF-passthrough, with the action-first page rendering verified by exact selectors.
+- Submit fail-closed cohort gates now hold at both backend and BFF seams, including the active-cohort fallback lookup when the BFF call-id env is missing.
+- Review detail remains backend-ranked and BFF-passthrough, with the action-first page rendering verified by exact selectors and an explicit fail-closed warning when the required launch projection is missing.
 - Backend-owned support trace correlation is present on structured submit and backend detail, and the BFF preserves the submit-side trace header without inventing a second trace model.
+- Part B adversarial review found two blocking fail-open seams; both were closed in Part C and re-verified.
 - Ship remains blocked: the `Usefulness Evidence Log` has `0` attributable cohort sessions, so FR15/FR16 are not satisfied yet.
 
 ## Baseline And Scope Proof
 
 - Baseline merge-base SHA for deferred-surface review: `363f8ce235dadecab7a6985a013adec557840e50`
-- `git log --oneline main...HEAD` confirms the WF branch contains the expected WF-0080 artifact and task commits through Task 7 plus earlier planning commits.
+- `git log --oneline main...HEAD` confirms the WF branch contains the expected WF-0080 artifact/task commits plus three Phase 3 audit-fix commits:
+  - `a60d4db` `WF-0080: audit fix — fail closed BFF wedge lookup`
+  - `04749a0` `WF-0080: audit fix — fail closed missing detail projection`
+  - `f6d8e93` `WF-0080: audit fix — scope BFF lookup to active cohort config`
 - `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/'[reviewId]'/page.tsx frontend/src/app/api/bff/reviews/'[reviewId]'/route.ts` output:
   - `frontend/src/app/app/reviews/[reviewId]/page.tsx`
   - `frontend/src/app/api/bff/reviews/[reviewId]/route.ts`
@@ -40,11 +44,11 @@ Must-ship proof:
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | Happy-path submit-to-detail wedge proof | 1, 2, 3, 4, 5 | `test_wf0080_invited_submit_reaches_detail_projection`, `wf0080_bff_review_detail_preserves_backend_projection`, `wf0080_review_detail_renders_top_action_cards_first` | invited in-cohort researcher can submit, wait honestly, and open the bounded detail view | `pass` | `E1`, `E4`, `E5` | remains locked to `ERC-2026-PoC` |
 | Backend cohort gate fail-closed proof | 1 | `test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation` | out-of-cohort direct signed users are rejected before review creation | `pass` | `E1` | reject path stayed header-additive only after Task 8 verification tightened the details payload back to Task 1 reality |
-| BFF cohort gate fail-closed proof | 2 | `wf0080_bff_submit_blocks_out_of_cohort_before_proxy` | out-of-cohort users are rejected before proxying | `pass` | `E3` | zero downstream proxy side effects |
+| BFF cohort gate fail-closed proof | 2 | `wf0080_bff_submit_blocks_out_of_cohort_before_proxy`, `wf0080_bff_submit_blocks_out_of_cohort_before_proxy_when_call_id_env_is_missing` | out-of-cohort users are rejected before proxying, including when the BFF call-id env is missing | `pass` | `E3` | zero downstream proxy side effects |
 | Quota/reviews-disabled preservation proof | 1 | `test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors` | existing quota and disable gates still behave truthfully for in-cohort users | `pass` | `E1` | cost/safety guard preserved |
 | Review-detail projection proof | 3 | `test_wf0080_review_detail_emits_bounded_detail_projection`, `test_wf0080_review_detail_projection_uses_existing_order_tiebreaker` | backend detail response exposes the exact bounded projection contract | `pass` | `E1` | backend remains the single ranking seam |
 | BFF passthrough proof | 4 | `wf0080_bff_review_detail_preserves_backend_projection` | BFF preserves `detail_projection` without semantic rewrite | `pass` | `E4` | no frontend-local ranking |
-| Top-action render proof | 5 | `wf0080_review_detail_renders_top_action_cards_first` | top 1-3 prioritized cards render above the fold in backend order | `pass` | `E5` | action-first read model holds |
+| Top-action render proof | 5 | `wf0080_review_detail_renders_top_action_cards_first`, `wf0080_review_detail_fails_closed_when_projection_is_missing_for_completed_erc_poc` | top 1-3 prioritized cards render above the fold in backend order, and completed ERC PoC reviews fail closed if the projection contract disappears | `pass` | `E5` | action-first read model holds without silent legacy fallback |
 | Positive-state proof | 5 | `wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success` | explicit positive headline appears only for the approved all-assessed note/success condition | `pass` | `E5` | no false reassurance |
 | Evidence-collapse proof | 5 | `wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default` | supporting evidence stays collapsed by default with per-card expansion | `pass` | `E5` | first ranked card still explains itself above the fold |
 | Timeout/degradation honesty proof | 5 | `wf0080_review_detail_handles_pending_timeout_and_failure_honestly` | pending, timeout, failed, and retry states remain explicit and truthful | `pass` | `E5` | no silent success implication |
@@ -59,11 +63,11 @@ Must-ship proof:
 
 | Evidence ID | Command / artifact | Outcome |
 | :--- | :--- | :--- |
-| `E1` | `cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_api.py::test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation tests/test_api.py::test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors tests/test_api.py::test_wf0080_review_detail_emits_bounded_detail_projection tests/test_api.py::test_wf0080_review_detail_projection_uses_existing_order_tiebreaker tests/test_api.py::test_wf0080_invited_submit_reaches_detail_projection` | `5 passed in 3.68s` |
-| `E2` | `cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_api.py::test_wf0080_trace_correlation_is_present_on_submit_and_detail tests/test_api.py::test_wf0080_trace_support_does_not_create_new_storage_surface` | `2 passed in 2.66s` |
-| `E3` | `cd frontend && npx vitest run 'src/app/api/bff/structured-review/route.test.ts' -t 'wf0080_bff_submit_blocks_out_of_cohort_before_proxy|wf0080_bff_submit_preserves_trace_headers_for_support'` | `2 passed | 4 skipped` |
+| `E1` | `cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_api.py::test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation tests/test_api.py::test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors tests/test_api.py::test_wf0080_review_detail_emits_bounded_detail_projection tests/test_api.py::test_wf0080_review_detail_projection_uses_existing_order_tiebreaker tests/test_api.py::test_wf0080_invited_submit_reaches_detail_projection` | `5 passed in 3.04s` |
+| `E2` | `cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_api.py::test_wf0080_trace_correlation_is_present_on_submit_and_detail tests/test_api.py::test_wf0080_trace_support_does_not_create_new_storage_surface` | `2 passed in 2.24s` |
+| `E3` | `cd frontend && npx vitest run 'src/app/api/bff/structured-review/route.test.ts' -t 'wf0080_bff_submit_blocks_out_of_cohort_before_proxy|wf0080_bff_submit_blocks_out_of_cohort_before_proxy_when_call_id_env_is_missing|wf0080_bff_submit_preserves_trace_headers_for_support'` | `3 passed | 4 skipped` |
 | `E4` | `cd frontend && npx vitest run 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t 'wf0080_bff_review_detail_preserves_backend_projection'` | `1 passed | 7 skipped` |
-| `E5` | `cd frontend && npx vitest run 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0080_review_detail_renders_top_action_cards_first|wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success|wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default|wf0080_review_detail_handles_pending_timeout_and_failure_honestly|wf0080_review_detail_export_copy_stays_truthful_about_projection_scope'` | `5 passed | 27 skipped` |
+| `E5` | `cd frontend && npx vitest run 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0080_review_detail_renders_top_action_cards_first|wf0080_review_detail_fails_closed_when_projection_is_missing_for_completed_erc_poc|wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success|wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default|wf0080_review_detail_handles_pending_timeout_and_failure_honestly|wf0080_review_detail_export_copy_stays_truthful_about_projection_scope'` | `6 passed | 27 skipped` |
 | `S1` | `git merge-base main HEAD` | `363f8ce235dadecab7a6985a013adec557840e50` |
 | `S2` | `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/'[reviewId]'/page.tsx frontend/src/app/api/bff/reviews/'[reviewId]'/route.ts` | only the approved wedge detail page and detail BFF route differ |
 | `S3` | `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts backend/app/repositories frontend/src/app/app/history` | no output |
@@ -128,6 +132,8 @@ Deferred surfaces still out of scope for WF-0080:
 | Review-and-harden adversarial audit | Backend verification commands still relied on broad `pytest -k` filters instead of replayable exact node IDs | non-blocking | replace broad backend filters with exact `pytest` node IDs in each affected task and in the closure gate | closed | `E1` and `E2` use exact node IDs |
 | Review-and-harden adversarial audit | Scope proof did not require recording an explicit baseline SHA before deferred-surface inspection | non-blocking | add a baseline-SHA capture step to Task 8 and reference it directly in the scope-proof row | closed | `S1` records the merge-base |
 | Task 8 verification sweep | Initial Task 6 trace implementation widened the Task 1 rejection `details` payload and broke the exact backend cohort-gate selector | blocking | keep rejection support trace on the submit header only and preserve the prior error `details` contract | closed | fixed before final verification; `E1` and `E2` both pass together |
+| Phase 3.2 technical audit | BFF wedge protection became configuration-sensitive because the call-id env was the only way to recognize the ERC PoC launch cohort | blocking | add an active-cohort fallback call lookup so missing/stale call-id env cannot disable the pre-proxy gate | closed | fixed in commit `a60d4db`, then scoped to active cohort config in `f6d8e93`; verified by `E3` |
+| Phase 3.2 technical audit | Completed ERC PoC detail pages silently fell back to raw card order when `detail_projection` was missing | blocking | render an explicit fail-closed integrity warning instead of pretending the ranked launch view is still valid | closed | fixed in commit `04749a0`; verified by `E5` |
 
 ## Ship Gate
 
@@ -136,5 +142,3 @@ Ship recommendation: `fail`
 Blocking reasons:
 
 - usefulness gate remains red (`0/5` minimum successful attributable sessions logged)
-- Part B technical audit review gate has not run yet
-- Part C revise/verify/ship sequence is not complete yet
