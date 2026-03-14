@@ -1,7 +1,7 @@
 // frontend/src/app/app/reviews/[reviewId]/page.test.tsx
 import "@testing-library/jest-dom/vitest";
 import fs from "node:fs";
-import { render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import ReviewDetailPage from "./page";
@@ -1734,5 +1734,334 @@ describe("ReviewDetailPage", () => {
     const legacyOrder = ["VENI", "NODE", "ORDER"].join("_");
     expect(source.includes(legacyLabels)).toBe(false);
     expect(source.includes(legacyOrder)).toBe(false);
+  });
+
+  it("wf0079_review_detail_renders_optional_companion_block", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-erc-poc",
+                call_code: "ERC-2026-PoC",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "poc_idea_innovation",
+                    node_title: "Idea innovation",
+                    criterion: "Excellence",
+                    criterion_description: "Excellence criterion",
+                    evaluation_element_name: "Breakthrough innovation potential",
+                    expectation_guidance_note: null,
+                    rating: "NOTE",
+                    feedback_text: "Deterministic innovation feedback.",
+                    synthesized_companion_text:
+                      "Additive innovation companion guidance.",
+                    source_basis_label: "Official ERC PoC source",
+                    source_basis_state: "available",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc-poc/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "poc_idea_innovation",
+                  title: "Idea innovation",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(screen.getByText("Deterministic innovation feedback.")).toBeInTheDocument();
+    expect(screen.getByText("Additive companion guidance")).toBeInTheDocument();
+    expect(
+      screen.getByText("Additive innovation companion guidance."),
+    ).toBeInTheDocument();
+  });
+
+  it("wf0079_review_detail_copy_and_download_remain_deterministic_only", async () => {
+    const clipboardWriteText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(window, "isSecureContext", {
+      configurable: true,
+      value: true,
+    });
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: clipboardWriteText },
+    });
+    let downloadedBlob: Blob | null = null;
+    vi.stubGlobal(
+      "URL",
+      Object.assign(URL, {
+        createObjectURL: vi.fn((blob: Blob) => {
+          downloadedBlob = blob;
+          return "blob:review-export";
+        }),
+        revokeObjectURL: vi.fn(),
+      }),
+    );
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-erc-poc",
+                call_code: "ERC-2026-PoC",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "poc_idea_innovation",
+                    node_title: "Idea innovation",
+                    criterion: "Excellence",
+                    criterion_description: "Excellence criterion",
+                    evaluation_element_name: "Breakthrough innovation potential",
+                    expectation_guidance_note: null,
+                    rating: "NOTE",
+                    feedback_text: "Deterministic innovation feedback.",
+                    synthesized_companion_text:
+                      "Additive innovation companion guidance.",
+                    source_basis_label: "Official ERC PoC source",
+                    source_basis_state: "available",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc-poc/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "poc_idea_innovation",
+                  title: "Idea innovation",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Copy deterministic text" }),
+    );
+    expect(
+      await screen.findByText("Copied deterministic review text to clipboard."),
+    ).toBeInTheDocument();
+    expect(clipboardWriteText).toHaveBeenCalledTimes(1);
+    expect(clipboardWriteText.mock.calls[0][0]).toContain(
+      "Deterministic innovation feedback.",
+    );
+    expect(clipboardWriteText.mock.calls[0][0]).not.toContain(
+      "Additive innovation companion guidance.",
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Download deterministic .txt" }),
+    );
+    expect(
+      await screen.findByText("Downloaded deterministic review as .txt."),
+    ).toBeInTheDocument();
+    expect(downloadedBlob).not.toBeNull();
+    expect(await downloadedBlob?.text()).toContain(
+      "Deterministic innovation feedback.",
+    );
+    expect(await downloadedBlob?.text()).not.toContain(
+      "Additive innovation companion guidance.",
+    );
+  });
+
+  it("wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-erc-poc",
+                call_code: "ERC-2026-PoC",
+                ordering_source: "call_nodes",
+                cards: [
+                  {
+                    id: "card-1",
+                    node_expectation_id: "exp-1",
+                    node_logical_id: "poc_idea_innovation",
+                    node_title: "Idea innovation",
+                    criterion: "Excellence",
+                    criterion_description: "Excellence criterion",
+                    evaluation_element_name: "Breakthrough innovation potential",
+                    expectation_guidance_note: null,
+                    rating: "NOTE",
+                    feedback_text: "Deterministic innovation feedback.",
+                    synthesized_companion_text:
+                      "Additive innovation companion guidance.",
+                    source_basis_label: "Official ERC PoC source",
+                    source_basis_state: "available",
+                  },
+                  {
+                    id: "card-2",
+                    node_expectation_id: "exp-2",
+                    node_logical_id: "poc_pi_strategic_leadership",
+                    node_title: "PI strategic leadership",
+                    criterion: "Excellence",
+                    criterion_description: "Excellence criterion",
+                    evaluation_element_name: "Leadership",
+                    expectation_guidance_note: null,
+                    rating: "NOTE",
+                    feedback_text: "Deterministic leadership feedback.",
+                    synthesized_companion_text: null,
+                    source_basis_label: "Official ERC PoC source",
+                    source_basis_state: "available",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc-poc/nodes")) {
+          return new Response(
+            JSON.stringify({
+              nodes: [
+                {
+                  id: "node-1",
+                  logical_id: "poc_idea_innovation",
+                  title: "Idea innovation",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 1,
+                  has_expectations: true,
+                },
+                {
+                  id: "node-2",
+                  logical_id: "poc_pi_strategic_leadership",
+                  title: "PI strategic leadership",
+                  parent_node_id: null,
+                  node_type: "SECTION",
+                  order_index: 2,
+                  has_expectations: true,
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(screen.getAllByText("Additive companion guidance")).toHaveLength(1);
+    expect(
+      screen.getByText("Deterministic leadership feedback."),
+    ).toBeInTheDocument();
+
+    cleanup();
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: null,
+                call_code: null,
+                detail_state: "legacy_fallback",
+                ordering_source: "review_payload_fallback",
+                cards: [
+                  {
+                    id: "legacy-card-1",
+                    node_expectation_id: "legacy-exp-1",
+                    node_logical_id: null,
+                    node_title: "Legacy section",
+                    criterion: "Excellence",
+                    criterion_description: "Excellence criterion",
+                    evaluation_element_name: "Legacy element",
+                    expectation_guidance_note: null,
+                    rating: "NOTE",
+                    feedback_text: "Legacy deterministic feedback.",
+                    synthesized_companion_text: null,
+                    source_basis_label: null,
+                    source_basis_state: "legacy_fallback",
+                  },
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Additive companion guidance"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Legacy deterministic feedback.")).toBeInTheDocument();
   });
 });
