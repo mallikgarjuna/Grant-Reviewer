@@ -115,7 +115,7 @@ Verification Steps:
 - `cd backend && rg -n "detail_mode|reviewed_nodes|findings|wf0081_contract_review_detail_(modes_are_mutually_exclusive|records_detail_mode_usage)|evaluation criteria|evaluation elements|logger" app/schemas/api.py main.py tests/test_api.py`
 Risks (if any): If the backend keeps both modes implicit, the BFF and page layers will need unsafe shape inference.
 
-### [ ] Task 4 — Preserve the backend dual-mode contract across the BFF and frontend types
+### [x] Task 4 — Preserve the backend dual-mode contract across the BFF and frontend types
 
 Goal:
 Keep the BFF review-detail boundary additive and explicit by passing `detail_mode`, legacy cards, and atomic reviewed-node findings through without semantic rewrites.

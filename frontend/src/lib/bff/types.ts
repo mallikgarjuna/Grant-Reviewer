@@ -146,10 +146,29 @@ export type ReviewCardSummary = {
   rating: ReviewRating;
   feedback_text: string;
   synthesized_companion_text?: string | null;
-  assessment_status?: "ASSESSED" | "NOT_ASSESSABLE" | null;
+  assessment_status?: "REQUIREMENTS_MET" | "ASSESSED" | "NOT_ASSESSABLE" | null;
   not_assessable_reason?: string | null;
   source_basis_label?: string | null;
   source_basis_state?: "available" | "unavailable" | "legacy_fallback";
+};
+
+export type ReviewFindingSummary = {
+  finding_id: string;
+  evaluation_criterion: string;
+  evaluation_element: string;
+  severity: ReviewRating;
+  assessment_status: "REQUIREMENTS_MET" | "ASSESSED" | "NOT_ASSESSABLE";
+  issue_summary: string;
+  evidence_basis: string;
+  actionable_feedback: string;
+};
+
+export type ReviewedNodeSummary = {
+  proposal_node_id: string;
+  proposal_node_logical_id: string;
+  proposal_node_title: string;
+  node_role?: "PRIMARY" | "SUPPORTING" | null;
+  findings: ReviewFindingSummary[];
 };
 
 export type ReviewDetailProjection = {
@@ -161,6 +180,7 @@ export type ReviewDetailProjection = {
 };
 
 export type ReviewDetailResponse = {
+  detail_mode?: "legacy_cards" | "reviewed_node_findings";
   call_id?: string | null;
   call_code?: string | null;
   detail_state?: "call_linked" | "legacy_fallback" | "proof_path_unmapped";
@@ -184,7 +204,8 @@ export type ReviewDetailResponse = {
     message: string;
   }>;
   review: ReviewSummary;
-  cards: ReviewCardSummary[];
+  cards?: ReviewCardSummary[];
+  reviewed_nodes?: ReviewedNodeSummary[];
 };
 
 export type DeleteReviewResponse = {
