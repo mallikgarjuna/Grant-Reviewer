@@ -7,16 +7,21 @@ import hmac
 import json
 import os
 import re
+import subprocess
 import time
+from urllib.parse import urlparse, urlunparse
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, TypedDict
-from uuid import UUID
+from uuid import UUID, uuid4
 
+import psycopg
 import pytest
 import yaml
 from fastapi.testclient import TestClient
+from psycopg import errors as psycopg_errors
+from psycopg import sql
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, select
 
@@ -39,6 +44,7 @@ from app.models.domain import (
     ReviewCard,
     ReviewRating,
     ReviewStatus,
+    User,
 )
 from app.repositories.review_repository import ReviewRepository
 from app.services.llm_client import StubLLMClient
@@ -3693,6 +3699,373 @@ def test_wf0044_policy_structured_api_matrix_coverage() -> None:
     assert case_ids == {"prompt_only", "post_check", "blocking"}
     for case in cases:
         assert case["surface"] == "structured_api"
+
+
+def test_wf0079_contract_review_card_storage_allows_null_companion_text(
+    monkeypatch,
+) -> None:
+    assert "synthesized_companion_text" in ReviewCard.model_fields
+
+    client, _ = create_client_with_seed(monkeypatch)
+    del client
+
+    session = get_session()
+    try:
+        snippet = session.exec(select(ProposalSnippet)).first()
+        template = session.exec(select(PromptTemplate)).first()
+        expectation = session.exec(select(NodeExpectation)).first()
+        assert template is not None
+        assert expectation is not None
+        if snippet is None:
+            node = session.get(ProposalNode, expectation.proposal_node_id)
+            assert node is not None
+            snippet = ProposalSnippet(
+                user_id=uuid4(),
+                funding_call_id=node.funding_call_id,
+                proposal_node_id=node.id,
+                pasted_text="WF-0079 storage snippet",
+            )
+            user = User(id=snippet.user_id, email=None, is_anonymous=True)
+            session.add(user)
+            session.add(snippet)
+            session.commit()
+            session.refresh(snippet)
+
+        review = Review(
+            proposal_snippet_id=snippet.id,
+            prompt_template_id=template.id,
+            status=ReviewStatus.COMPLETED,
+            overall_summary="WF-0079 storage contract review",
+            overall_rating=ReviewRating.WARNING,
+        )
+        session.add(review)
+        session.commit()
+        session.refresh(review)
+
+        stored_with_companion = ReviewCard(
+            review_id=review.id,
+            node_expectation_id=expectation.id,
+            rating=ReviewRating.WARNING,
+            feedback_text="Deterministic baseline feedback",
+            synthesized_companion_text="Accepted additive companion guidance",
+        )
+        stored_without_companion = ReviewCard(
+            review_id=review.id,
+            node_expectation_id=expectation.id,
+            rating=ReviewRating.NOTE,
+            feedback_text="Legacy-compatible deterministic feedback",
+            synthesized_companion_text=None,
+        )
+        session.add(stored_with_companion)
+        session.add(stored_without_companion)
+        session.commit()
+
+        cards = list(
+            session.exec(
+                select(ReviewCard)
+                .where(ReviewCard.review_id == review.id)
+                .order_by(ReviewCard.feedback_text)
+            ).all()
+        )
+        assert [card.feedback_text for card in cards] == [
+            "Deterministic baseline feedback",
+            "Legacy-compatible deterministic feedback",
+        ]
+        assert cards[0].synthesized_companion_text == (
+            "Accepted additive companion guidance"
+        )
+        assert cards[1].synthesized_companion_text is None
+    finally:
+        session.close()
+
+
+def test_wf0079_contract_migration_preserves_legacy_null_companion_text(
+) -> None:
+    current_db_url = os.getenv("DATABASE_URL", "").strip()
+    if not (
+        current_db_url.startswith("postgres://")
+        or current_db_url.startswith("postgresql://")
+        or current_db_url.startswith("postgresql+psycopg://")
+    ):
+        pytest.skip("WF-0079 migration proof requires PostgreSQL test DATABASE_URL.")
+
+    def replace_db_name(url: str, db_name: str) -> str:
+        parsed = urlparse(url)
+        return urlunparse(parsed._replace(path=f"/{db_name}"))
+
+    temp_db_name = f"wf0079_review_card_companion_test_{uuid4().hex[:8]}"
+    admin_db_url = replace_db_name(current_db_url, "postgres")
+    database_url = replace_db_name(current_db_url, temp_db_name)
+    env = dict(os.environ)
+    env["DATABASE_URL"] = database_url
+
+    def run_alembic(*args: str) -> None:
+        completed = subprocess.run(
+            ["uv", "run", "alembic", *args],
+            cwd=Path.cwd(),
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert completed.returncode == 0, (
+            f"Command failed: uv run alembic {' '.join(args)}\n"
+            f"stdout:\n{completed.stdout}\n"
+            f"stderr:\n{completed.stderr}"
+        )
+
+    try:
+        try:
+            with psycopg.connect(admin_db_url, autocommit=True) as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        sql.SQL("CREATE DATABASE {}").format(
+                            sql.Identifier(temp_db_name)
+                        )
+                    )
+        except psycopg_errors.InsufficientPrivilege:
+            pytest.skip(
+                "WF-0079 migration proof requires PostgreSQL test user that can create databases."
+            )
+
+        run_alembic("upgrade", "eee512ace974")
+
+        now = datetime.now(UTC).replace(tzinfo=None)
+        ids = {
+            "agency": str(uuid4()),
+            "call": str(uuid4()),
+            "node": str(uuid4()),
+            "criterion": str(uuid4()),
+            "element": str(uuid4()),
+            "expectation": str(uuid4()),
+            "user": str(uuid4()),
+            "snippet": str(uuid4()),
+            "template": str(uuid4()),
+            "review": str(uuid4()),
+            "card": str(uuid4()),
+        }
+
+        with psycopg.connect(database_url) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO funding_agencies (
+                        id, name, short_name, description, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (ids["agency"], "ERC", "ERC-WF0079", None, now, now),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO funding_calls (
+                        id, funding_agency_id, name, code, aim_objectives, scope,
+                        general_guidelines, call_year, is_active, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        ids["call"],
+                        ids["agency"],
+                        "ERC Proof Call",
+                        "ERC-2026-PoC",
+                        None,
+                        None,
+                        None,
+                        2026,
+                        True,
+                        now,
+                        now,
+                    ),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO proposal_nodes (
+                        id, funding_call_id, logical_id, parent_node_id, node_type, title,
+                        order_index, guidance_text, archived_at, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        ids["node"],
+                        ids["call"],
+                        "proposal_summary",
+                        None,
+                        "SECTION",
+                        "Proposal Summary",
+                        0,
+                        None,
+                        None,
+                        now,
+                        now,
+                    ),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO evaluation_criteria (
+                        id, funding_call_id, logical_id, name, description,
+                        order_index, archived_at, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        ids["criterion"],
+                        ids["call"],
+                        "excellence",
+                        "Excellence",
+                        None,
+                        0,
+                        None,
+                        now,
+                        now,
+                    ),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO evaluation_elements (
+                        id, evaluation_criterion_id, logical_id, name, description,
+                        archived_at, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        ids["element"],
+                        ids["criterion"],
+                        "clarity",
+                        "Clarity",
+                        None,
+                        None,
+                        now,
+                        now,
+                    ),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO node_expectations (
+                        id, proposal_node_id, evaluation_element_id, expectation_strength,
+                        evaluation_intent, guidance_note, order_index, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        ids["expectation"],
+                        ids["node"],
+                        ids["element"],
+                        "IMPORTANT",
+                        "QUALITY",
+                        None,
+                        0,
+                        now,
+                        now,
+                    ),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO users (
+                        id, email, is_anonymous, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (ids["user"], None, True, now, now),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO proposal_snippets (
+                        id, user_id, funding_call_id, proposal_node_id, pasted_text,
+                        expires_at, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        ids["snippet"],
+                        ids["user"],
+                        ids["call"],
+                        ids["node"],
+                        "Legacy deterministic snippet",
+                        now,
+                        now,
+                    ),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO prompt_templates (
+                        id, name, version, template_text, is_active, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (ids["template"], "default", 1, "Prompt body", True, now, now),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO reviews (
+                        id, proposal_snippet_id, prompt_template_id, status, overall_summary,
+                        overall_rating, prompt_sent, raw_llm_response, llm_model,
+                        external_user_id, idempotency_key, request_payload_sha256,
+                        idempotency_expires_at, review_type, structured_payload, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        ids["review"],
+                        ids["snippet"],
+                        ids["template"],
+                        "COMPLETED",
+                        "Legacy review",
+                        "WARNING",
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        "single",
+                        None,
+                        now,
+                    ),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO review_cards (
+                        id, review_id, node_expectation_id, rating, feedback_text,
+                        created_at, assessment_status, not_assessable_reason
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        ids["card"],
+                        ids["review"],
+                        ids["expectation"],
+                        "WARNING",
+                        "Legacy deterministic-only feedback",
+                        now,
+                        "ASSESSED",
+                        None,
+                    ),
+                )
+            connection.commit()
+
+        run_alembic("upgrade", "head")
+
+        with psycopg.connect(database_url) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT column_name
+                    FROM information_schema.columns
+                    WHERE table_name = 'review_cards'
+                    """
+                )
+                columns = {row[0] for row in cursor.fetchall()}
+                assert "synthesized_companion_text" in columns
+
+                cursor.execute(
+                    """
+                    SELECT feedback_text, synthesized_companion_text
+                    FROM review_cards
+                    WHERE id = %s
+                    """,
+                    (ids["card"],),
+                )
+                stored_row = cursor.fetchone()
+                assert stored_row == ("Legacy deterministic-only feedback", None)
+    finally:
+        with psycopg.connect(admin_db_url, autocommit=True) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(
+                        sql.Identifier(temp_db_name)
+                    )
+                )
 
 
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:

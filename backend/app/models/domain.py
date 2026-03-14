@@ -1,4 +1,6 @@
 """
+backend/app/models/domain.py
+
 Domain models for Grant Reviewer MVP.
 
 11 SQLModel tables following the finalized schema from Stage 1.
@@ -487,6 +489,10 @@ class ReviewCard(SQLModel, table=True):
         description="Computed severity (e.g., SUCCESS, CRITICAL)",
     )
     feedback_text: str = Field(description="Markdown content of the AI assessment")
+    synthesized_companion_text: str | None = Field(
+        default=None,
+        description="Optional additive companion guidance persisted alongside deterministic feedback",
+    )
     assessment_status: AssessmentStatus = Field(
         default=AssessmentStatus.ASSESSED,
         description="Whether this card was assessed by the LLM or marked not assessable",

@@ -10,7 +10,7 @@ Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Add nullable companion storage with legacy-null compatibility
+### [x] Task 1 — Add nullable companion storage with legacy-null compatibility
 
 Goal:
 Lock the smallest persisted card contract for WF-0079 by adding one nullable stored companion field on `ReviewCard` plus migration coverage that proves legacy reviews/cards remain valid without backfill.
@@ -225,7 +225,7 @@ Risks (if any): Without an explicit closure gate, Phase 3 could overclaim resear
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | Deterministic SSOT boundary proof | 2, 5 | `wf0079_contract_erc_poc_persists_accepted_companion_text`, `wf0079_review_detail_renders_optional_companion_block` | deterministic `feedback_text` remains primary and additive text never replaces it | `fail` (default until executed) | required | must not mutate deterministic baseline |
 | Write-path persistence proof | 2 | `wf0079_contract_erc_poc_persists_accepted_companion_text` | accepted in-scope companion text persists during review generation | `fail` (default until executed) | required | no read-time synthesis |
-| Legacy review compatibility proof | 1, 3, 5 | `wf0079_contract_review_card_storage_allows_null_companion_text`, `wf0079_contract_migration_preserves_legacy_null_companion_text`, `wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells` | null legacy rows stay valid from storage through render | `fail` (default until executed) | required | no backfill requirement |
+| Legacy review compatibility proof | 1, 3, 5 | `wf0079_contract_review_card_storage_allows_null_companion_text`, `wf0079_contract_migration_preserves_legacy_null_companion_text`, `wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells` | null legacy rows stay valid from storage through render | `fail` (default until executed) | Task 1 GREEN: storage + migration proof passed on 2026-03-14; Task 3/5 carry-through/render proof still pending | no backfill requirement |
 | Eligibility scope-gate proof | 2, 6 | `wf0079_contract_non_targeted_calls_do_not_persist_companion_text` | non-`ERC-2026-PoC` calls/cards do not persist or expose companion text | `fail` (default until executed) | required | protects narrow rollout |
 | Detail read/API carry-through proof | 3 | `wf0079_contract_review_detail_response_carries_optional_companion_text` | backend detail response returns the nullable per-card field without semantic drift | `fail` (default until executed) | required | per-card optionality only |
 | BFF carry-through proof | 4 | `wf0079_bff_review_detail_preserves_optional_companion_text` | BFF/type boundary passes the backend field through unchanged | `fail` (default until executed) | required | no semantic rewrite |
