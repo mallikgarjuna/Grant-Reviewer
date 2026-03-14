@@ -150,4 +150,43 @@ describe("POST /api/bff/structured-review", () => {
     expect(body.error?.code).toBe("COHORT_ACCESS_DENIED");
     expect(body.error?.details?.call_id).toBe("00000000-0000-0000-0000-000000000080");
   });
+
+  it("wf0080_bff_submit_preserves_trace_headers_for_support", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          review_id: "review-trace-1",
+          status: "COMPLETED",
+          support_trace: {
+            contract: "wf0080_support_trace_v1",
+            trace_id: "wf0080-trace-123",
+            visibility: "maintainer_support_only",
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "X-GR-Support-Trace": "wf0080-trace-123",
+          },
+        },
+      ),
+    );
+
+    const { POST } = await import("./route");
+    const response = await POST(
+      buildRequest({
+        review_stage: "STEP_1",
+        call_id: "00000000-0000-0000-0000-000000000080",
+        nodes: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("X-GR-Support-Trace")).toBe("wf0080-trace-123");
+    const body = (await response.json()) as {
+      support_trace?: { trace_id?: string };
+    };
+    expect(body.support_trace?.trace_id).toBe("wf0080-trace-123");
+  });
 });

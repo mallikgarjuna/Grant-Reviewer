@@ -214,7 +214,7 @@ Verification Steps:
 - `cd backend && rg -n "trace|correlation|support" app/schemas/api.py main.py tests/test_api.py`
 Risks (if any): If backend trace evidence is too weak, operators will have to infer failures from unrelated logs and the wedge will not be honestly supportable.
 
-### [ ] Task 7 — Preserve submit-side support trace correlation at the BFF boundary
+### [x] Task 7 — Preserve submit-side support trace correlation at the BFF boundary
 
 Goal:
 Keep the BFF submit seam aligned with the backend trace contract by preserving the bounded support trace identifier/header without creating a second trace model or local reinterpretation.
