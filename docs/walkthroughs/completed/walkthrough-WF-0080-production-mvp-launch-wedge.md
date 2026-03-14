@@ -12,7 +12,7 @@ WF-0080 Parts A, B, and C are complete on branch `wf/WF-0080-production-mvp-laun
 
 - Locked launch wedge remains `ERC-2026-PoC` only.
 - Submit path is now open for local `ERC-2026-PoC` testing by the maintainer while remaining locked to the named wedge only.
-- Review detail remains backend-ranked and BFF-passthrough, with the action-first page rendering verified by exact selectors and an explicit fail-closed warning when the required launch projection is missing.
+- Review detail remains backend-ranked and BFF-passthrough, with findings grouped by reviewed section/node and deterministic feedback rendered as bullets for scanability.
 - Backend-owned support trace correlation is present on structured submit and backend detail, and the BFF preserves the submit-side trace header without inventing a second trace model.
 - Part B adversarial review plus final walkthrough hardening found launch-scope and actionability seams; all implementation findings were closed in Part C and re-verified.
 - Ship remains blocked: the `Usefulness Evidence Log` has `0` attributable cohort sessions, so FR15/FR16 are not satisfied yet.
@@ -46,9 +46,10 @@ Must-ship proof:
 | Quota/reviews-disabled preservation proof | 1 | `test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors` | existing quota and disable gates still behave truthfully on the local wedge path | `pass` | `E1` | cost/safety guard preserved without a researcher allowlist |
 | Review-detail projection proof | 3 | `test_wf0080_review_detail_emits_bounded_detail_projection`, `test_wf0080_review_detail_projection_uses_existing_order_tiebreaker`, `test_wf0080_non_wedge_responses_do_not_emit_launch_only_contracts` | backend detail response exposes the exact bounded projection contract for the launch wedge without widening other calls | `pass` | `E1`, `E2` | backend remains the single ranking seam and stays wedge-scoped |
 | BFF passthrough proof | 4 | `wf0080_bff_review_detail_preserves_backend_projection` | BFF preserves `detail_projection` without semantic rewrite | `pass` | `E4` | no frontend-local ranking |
-| Top-action render proof | 5 | `wf0080_review_detail_renders_top_action_cards_first`, `wf0080_review_detail_fails_closed_when_projection_is_missing_for_completed_erc_poc` | top 1-3 prioritized cards render above the fold in backend order, and completed ERC PoC reviews fail closed if the projection contract disappears | `pass` | `E5` | action-first read model holds without silent legacy fallback |
+| Section-group render proof | 5 | `wf0080_review_detail_groups_all_findings_by_reviewed_section` | findings render grouped by reviewed section/node, with multiple findings per section when relevant | `pass` | `E5` | avoids action-first bucketing |
 | Positive-state proof | 5 | `wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success` | explicit positive headline appears only for the approved all-assessed note/success condition | `pass` | `E5` | no false reassurance |
-| Evidence-collapse proof | 5 | `wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default`, `wf0080_review_detail_opens_first_top_action_supporting_evidence_by_default` | non-top-action cards stay collapsed by default, while the first ranked top-action card still explains itself above the fold | `pass` | `E5` | FR9 now has explicit proof for both collapse and first-card context |
+| Deterministic-bullets proof | 5 | `wf0080_review_detail_renders_deterministic_feedback_as_bullets` | deterministic feedback renders as a bullet list for scanability | `pass` | `E5` | avoids prose wall |
+| No-supporting-evidence proof | 5 | `wf0080_review_detail_removes_supporting_evidence_block` | supporting-evidence drawer is not rendered | `pass` | `E5` | removes low-signal metadata |
 | Timeout/degradation honesty proof | 5 | `wf0080_review_detail_handles_pending_timeout_and_failure_honestly` | pending, timeout, failed, and retry states remain explicit and truthful | `pass` | `E5` | no silent success implication |
 | Export/copy truthfulness proof | 5 | `wf0080_review_detail_export_copy_stays_truthful_about_projection_scope` | page-local export/copy behavior is explicit about any excluded projection framing | `pass` | `E5` | same-page truthfulness only |
 | Backend support trace proof | 6 | `test_wf0080_trace_correlation_is_present_on_submit_and_detail` | one disputed cohort session can be explained from bounded backend-owned support evidence | `pass` | `E2` | trace contract is deterministic and derived from existing review/request identifiers |
@@ -109,7 +110,7 @@ Must-ship surfaces closed in this WF:
 - `frontend/src/app/api/bff/structured-review/route.ts` local wedge submit passthrough + trace-header passthrough
 - `frontend/src/app/api/bff/structured-review/route.test.ts` exact BFF submit selectors
 - `frontend/src/app/api/bff/reviews/[reviewId]/route.ts` detail projection passthrough
-- `frontend/src/app/app/reviews/[reviewId]/page.tsx` action-first detail read model
+- `frontend/src/app/app/reviews/[reviewId]/page.tsx` section-grouped findings view
 
 Deferred surfaces still out of scope for WF-0080:
 
@@ -131,7 +132,7 @@ Deferred surfaces still out of scope for WF-0080:
 | Review-and-harden adversarial audit | Scope proof did not require recording an explicit baseline SHA before deferred-surface inspection | non-blocking | add a baseline-SHA capture step to Task 8 and reference it directly in the scope-proof row | closed | `S1` records the merge-base |
 | Phase 3.2 technical audit | Completed ERC PoC detail pages silently fell back to raw card order when `detail_projection` was missing | blocking | render an explicit fail-closed integrity warning instead of pretending the ranked launch view is still valid | closed | fixed in commit `04749a0`; verified by `E5` |
 | Final walkthrough hardening audit | Launch-only `detail_projection` / `support_trace` fields widened the generic backend submit/detail contract instead of staying scoped to `ERC-2026-PoC` | blocking | gate WF-0080 projection/trace metadata to the launch wedge only and prove non-wedge responses stay unchanged | closed | fixed in Part C; verified by `test_wf0080_non_wedge_responses_do_not_emit_launch_only_contracts` in `E2` |
-| Final walkthrough hardening audit | The first ranked top-action card still hid its supporting context behind collapsed disclosure, violating FR9’s “explain why this is first” requirement | blocking | keep lower-ranked cards collapsed, but open supporting evidence on the first top-action card by default and add explicit UI proof | closed | fixed in Part C; verified by `wf0080_review_detail_opens_first_top_action_supporting_evidence_by_default` in `E5` |
+| Final walkthrough hardening audit | Card UI bundled low-signal metadata into a “supporting evidence” drawer that reviewers did not use during manual verification | non-blocking | remove the supporting evidence drawer and keep the card body focused on deterministic feedback + optional LLM companion guidance | closed | verified by `wf0080_review_detail_removes_supporting_evidence_block` in `E5` |
 
 ## Ship Gate
 

@@ -3,17 +3,17 @@
 
 Artifact: task
 Version: v0.3
-Status: Ready for Implementation
+Status: Done
 Last Updated: 2026-03-14
 
 Type: feature
 
 ## Task Breakdown (Sequential Order)
 
-### [x] Task 1 — Tracer bullet: fail closed on direct backend structured-review submit before review creation
+### [x] Task 1 — Tracer bullet: preserve direct backend structured-review submit for local ERC PoC testing
 
 Goal:
-Prove the narrowest launch-wedge access guard by rejecting out-of-cohort direct signed requests at `POST /api/structured-review` before review creation or downstream execution.
+Keep `POST /api/structured-review` usable for local ERC PoC testing without requiring the BFF proxy, while preserving the existing quota and kill-switch behavior.
 Slice: tracer-bullet-backend-gate
 User Stories: US1, US3
 PRD Requirements: FR1, FR3, FR4, FR16
@@ -30,17 +30,15 @@ Out of scope: BFF submit gating, review-detail ranking, detail-page rendering, s
 Stop if: backend cohort gating cannot be enforced before review creation, requires widening beyond `ERC-2026-PoC`, or needs a new persistence/logging system to explain rejections
 Session boundary after: yes
 Acceptance Criteria:
-- Targeted failing regressions `test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation` and `test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors` prove the current backend submit seam does not yet fail closed for launch-cohort access.
-- After the change, invited in-cohort direct signed requests still reach the existing review creation path, while out-of-cohort direct signed requests return `COHORT_ACCESS_DENIED` before backend review creation side effects begin.
-- Existing `QUOTA_EXCEEDED` and `REVIEWS_DISABLED` behavior remains intact for in-cohort users and is not shadowed by the new gate.
+- Targeted regressions `test_wf0080_direct_backend_submit_allows_local_erc_poc_testing` and `test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors` prove the direct backend seam still works for local testing while preserving existing quota and reviews-disabled gates.
 - The task remains locked to the existing submit contract, idempotency behavior, and `ERC-2026-PoC` wedge only.
 TDD Plan:
-- RED: add `test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation` and `test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors` in `backend/tests/test_api.py`; run them before changing the backend submit seam so they fail.
-- GREEN: add the minimum backend cohort gate needed to reject out-of-cohort traffic before any review creation while preserving existing quota/review-disabled behavior.
+- RED: add `test_wf0080_direct_backend_submit_allows_local_erc_poc_testing` and `test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors` in `backend/tests/test_api.py`; run them before changing the backend submit seam so they fail.
+- GREEN: keep the minimum backend behavior needed to support local ERC PoC testing without regressing quota/reviews-disabled behavior.
 - REFACTOR: extract one tiny backend gate helper only if the guard becomes unclear; otherwise skip.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_api.py::test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation tests/test_api.py::test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors`
-- `cd backend && rg -n "COHORT_ACCESS_DENIED|REVIEWS_DISABLED|QUOTA_EXCEEDED|structured-review" main.py tests/test_api.py`
+- `cd backend && uv run pytest tests/test_api.py::test_wf0080_direct_backend_submit_allows_local_erc_poc_testing tests/test_api.py::test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors`
+- `cd backend && rg -n "REVIEWS_DISABLED|QUOTA_EXCEEDED|structured-review" main.py tests/test_api.py`
 Risks (if any): If the reject path is not truly pre-side-effect, Phase 3 could accidentally create costly reviews for blocked users.
 
 ### [x] Task 2 — Fail closed on BFF structured-review submit before proxying
@@ -72,7 +70,7 @@ TDD Plan:
 - GREEN: add the minimum BFF cohort gate needed to reject out-of-cohort traffic before proxying.
 - REFACTOR: extract one tiny BFF gate helper only if the check becomes unclear; otherwise skip.
 Verification Steps:
-- `cd frontend && npm test -- --runInBand 'src/app/api/bff/structured-review/route.test.ts' -t '^wf0080_bff_submit_blocks_out_of_cohort_before_proxy$'`
+- `cd frontend && npx vitest run src/app/api/bff/structured-review/route.test.ts -t '^wf0080_bff_submit_blocks_out_of_cohort_before_proxy$'`
 - `cd frontend && rg -n "COHORT_ACCESS_DENIED|structured-review|Idempotency-Key" src/app/api/bff/structured-review/route.ts src/app/api/bff/structured-review/route.test.ts src/lib/bff/route-helpers.ts`
 Risks (if any): If the BFF gate happens after proxying, blocked traffic can still create downstream cost or ambiguous audit trails.
 
@@ -140,14 +138,14 @@ TDD Plan:
 - GREEN: make the smallest BFF normalization and type updates needed to preserve the backend projection object unchanged.
 - REFACTOR: skip unless a tiny typed normalizer is needed to avoid duplicated optional-field plumbing.
 Verification Steps:
-- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t '^wf0080_bff_review_detail_preserves_backend_projection$'`
+- `cd frontend && npx vitest run src/app/api/bff/reviews/'[reviewId]'/route.test.ts -t '^wf0080_bff_review_detail_preserves_backend_projection$'`
 - `cd frontend && rg -n "detail_projection|top_action_card_ids|headline_state|ranking_basis" src/app/api/bff/reviews/'[reviewId]'/route.ts src/app/api/bff/reviews/'[reviewId]'/route.test.ts src/lib/bff/types.ts`
 Risks (if any): A local BFF rewrite would make Phase 3 verification ambiguous and break the PRD’s single-seam constraint.
 
-### [x] Task 5 — Render the action-first detail page with honest pending, failure, and export truthfulness
+### [x] Task 5 — Render the section-grouped detail page with honest pending, failure, and export truthfulness
 
 Goal:
-Implement the one approved researcher reading flow on `/app/reviews/[reviewId]`: top 1-3 prioritized cards above the fold, expandable evidence, honest pending/timeout/failure states, and explicit copy/export truthfulness.
+Implement the researcher reading flow on `/app/reviews/[reviewId]`: findings grouped by reviewed section/node, honest pending/timeout/failure states, and explicit copy/export truthfulness.
 Slice: detail-page-flow
 User Stories: US1, US2
 PRD Requirements: FR5, FR6, FR8, FR9, FR12, FR16
@@ -165,18 +163,18 @@ Out of scope: reviews list/history redesign, generalized export redesign, backen
 Stop if: the page needs new persistence fields, cross-page navigation changes, or frontend-local ranking logic to present the approved flow honestly
 Session boundary after: yes
 Acceptance Criteria:
-- Targeted failing regressions such as `wf0080_review_detail_renders_top_action_cards_first`, `wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success`, `wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default`, and `wf0080_review_detail_handles_pending_timeout_and_failure_honestly` prove the current page does not yet satisfy the approved reading model.
+- Targeted failing regressions such as `wf0080_review_detail_groups_all_findings_by_reviewed_section`, `wf0080_review_detail_renders_deterministic_feedback_as_bullets`, `wf0080_review_detail_removes_supporting_evidence_block`, and `wf0080_review_detail_handles_pending_timeout_and_failure_honestly` prove the current page does not yet satisfy the approved reading model.
 - A targeted failing regression such as `wf0080_review_detail_export_copy_stays_truthful_about_projection_scope` proves the current page-local copy/export behavior can overclaim what the projection framing includes.
-- After the change, only the backend-provided `top_action_card_ids` render above the fold by default, the first ranked card exposes enough summary context to justify rank, and supporting evidence stays collapsed until expanded per card.
+- After the change, findings render grouped by reviewed section/node, and deterministic feedback is formatted for scanability (bullet rendering) without relying on a separate supporting-evidence drawer.
 - The page renders `no critical blockers found` only when the backend projection indicates `no_critical_blockers`; otherwise it stays action-oriented without implying success.
 - Pending, timeout, failed, retry, and return-later states remain explicit and truthful, and page-local copy/export wording states any projection-only framing it excludes.
 TDD Plan:
-- RED: add `wf0080_review_detail_renders_top_action_cards_first`, `wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success`, `wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default`, `wf0080_review_detail_handles_pending_timeout_and_failure_honestly`, and `wf0080_review_detail_export_copy_stays_truthful_about_projection_scope` in `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`; run them before UI changes so they fail.
-- GREEN: make the minimum page/component changes needed to consume `detail_projection`, render the top-action-first layout, and keep degraded states and copy/export messaging honest.
+- RED: add `wf0080_review_detail_groups_all_findings_by_reviewed_section`, `wf0080_review_detail_renders_deterministic_feedback_as_bullets`, `wf0080_review_detail_removes_supporting_evidence_block`, `wf0080_review_detail_handles_pending_timeout_and_failure_honestly`, and `wf0080_review_detail_export_copy_stays_truthful_about_projection_scope` in `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`; run them before UI changes so they fail.
+- GREEN: make the minimum page/component changes needed to consume `detail_projection` headline states, keep degraded states and copy/export messaging honest, and render grouped findings without frontend-local ranking helpers.
 - REFACTOR: extract a tiny ordering/headline presentational helper only if the page diff becomes repetitive; otherwise skip.
 Verification Steps:
-- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t '^(wf0080_review_detail_renders_top_action_cards_first|wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success|wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default|wf0080_review_detail_handles_pending_timeout_and_failure_honestly|wf0080_review_detail_export_copy_stays_truthful_about_projection_scope)$'`
-- `cd frontend && rg -n "top_action_card_ids|no critical blockers found|return later|still processing|supporting evidence" src/app/app/reviews/'[reviewId]'/page.tsx src/components/review/ReviewCard.tsx src/app/app/reviews/'[reviewId]'/page.test.tsx`
+- `cd frontend && npx vitest run src/app/app/reviews/'[reviewId]'/page.test.tsx`
+- `cd frontend && rg -n "Review feedback by section|Deterministic feedback|LLM companion guidance|no critical blockers found|return later|still processing" src/app/app/reviews/'[reviewId]'/page.tsx src/components/review/ReviewCard.tsx src/app/app/reviews/'[reviewId]'/page.test.tsx`
 Risks (if any): If the page overstates completion or hides degraded states, the production wedge could mislead researchers during the launch cohort.
 
 ### [x] Task 6 — Add bounded backend trace correlation and no-new-storage proof for one disputed session
@@ -276,11 +274,12 @@ Verification Steps:
 - `git log --oneline main...HEAD`
 - `git merge-base main HEAD`
 - `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts frontend/src/app/app/reviews/'[reviewId]'/page.tsx frontend/src/app/api/bff/reviews/'[reviewId]'/route.ts`
-- `cd backend && uv run pytest tests/test_api.py::test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation tests/test_api.py::test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors tests/test_api.py::test_wf0080_review_detail_emits_bounded_detail_projection tests/test_api.py::test_wf0080_review_detail_projection_uses_existing_order_tiebreaker tests/test_api.py::test_wf0080_invited_submit_reaches_detail_projection`
-- `cd backend && uv run pytest tests/test_api.py::test_wf0080_trace_correlation_is_present_on_submit_and_detail tests/test_api.py::test_wf0080_trace_support_does_not_create_new_storage_surface`
-- `cd frontend && npm test -- --runInBand 'src/app/api/bff/structured-review/route.test.ts' -t '^(wf0080_bff_submit_blocks_out_of_cohort_before_proxy|wf0080_bff_submit_preserves_trace_headers_for_support)$'`
-- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t '^wf0080_bff_review_detail_preserves_backend_projection$'`
-- `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t '^(wf0080_review_detail_renders_top_action_cards_first|wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success|wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default|wf0080_review_detail_handles_pending_timeout_and_failure_honestly|wf0080_review_detail_export_copy_stays_truthful_about_projection_scope)$'`
+- `cd backend && ./scripts/reset_test_db.sh`
+- `cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_api.py::test_wf0080_direct_backend_submit_allows_local_erc_poc_testing tests/test_api.py::test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors tests/test_api.py::test_wf0080_review_detail_emits_bounded_detail_projection tests/test_api.py::test_wf0080_review_detail_projection_uses_existing_order_tiebreaker tests/test_api.py::test_wf0080_invited_submit_reaches_detail_projection`
+- `cd backend && DATABASE_URL='postgresql://grant:grant@localhost:5433/grant_reviewer_test?sslmode=disable' uv run pytest tests/test_api.py::test_wf0080_trace_correlation_is_present_on_submit_and_detail tests/test_api.py::test_wf0080_trace_support_does_not_create_new_storage_surface`
+- `cd frontend && npx vitest run src/app/api/bff/structured-review/route.test.ts -t '^(wf0080_bff_submit_blocks_out_of_cohort_before_proxy|wf0080_bff_submit_preserves_trace_headers_for_support)$'`
+- `cd frontend && npx vitest run src/app/api/bff/reviews/'[reviewId]'/route.test.ts -t '^wf0080_bff_review_detail_preserves_backend_projection$'`
+- `cd frontend && npx vitest run src/app/app/reviews/'[reviewId]'/page.test.tsx -t '^(wf0080_review_detail_groups_all_findings_by_reviewed_section|wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success|wf0080_review_detail_renders_deterministic_feedback_as_bullets|wf0080_review_detail_removes_supporting_evidence_block|wf0080_review_detail_handles_pending_timeout_and_failure_honestly|wf0080_review_detail_export_copy_stays_truthful_about_projection_scope)$'`
 - `git diff --name-only main...HEAD -- frontend/src/app/app/reviews/page.tsx frontend/src/app/api/bff/reviews/route.ts backend/app/repositories frontend/src/app/app/history`
 - `cd docs && rg -n "Usefulness Evidence Log|Verification Matrix|Audit Disposition Ledger|must-ship|deferred|pass|fail|skipped" walkthroughs/walkthrough-WF-0080-production-mvp-launch-wedge.md`
 Risks (if any): Without an explicit closure artifact, Phase 3 could claim launch readiness while usefulness evidence, scope proof, or fail-closed verification is still aspirational.
@@ -290,14 +289,15 @@ Risks (if any): Without an explicit closure artifact, Phase 3 could claim launch
 | Proof item | Task | Command or test ID | Expected outcome | Result | Evidence reference | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | Happy-path submit-to-detail wedge proof | 1, 2, 3, 4, 5 | `test_wf0080_invited_submit_reaches_detail_projection`, `wf0080_bff_review_detail_preserves_backend_projection`, `wf0080_review_detail_renders_top_action_cards_first` | invited in-cohort researcher can submit, wait honestly, and open the bounded detail view | `fail` (default until executed) | required | must stay locked to `ERC-2026-PoC` |
-| Backend cohort gate fail-closed proof | 1 | `test_wf0080_cohort_gate_blocks_direct_backend_submit_before_review_creation` | out-of-cohort direct signed users are rejected before review creation | `fail` (default until executed) | required | zero-side-effect rejection on backend seam |
+| Backend direct-submit local proof | 1 | `test_wf0080_direct_backend_submit_allows_local_erc_poc_testing` | local ERC PoC testing can reach review creation without BFF proxy | `fail` (default until executed) | required | keep local-only safety rails honest |
 | BFF cohort gate fail-closed proof | 2 | `wf0080_bff_submit_blocks_out_of_cohort_before_proxy` | out-of-cohort users are rejected before proxying | `fail` (default until executed) | required | zero-side-effect rejection on BFF seam |
 | Quota/reviews-disabled preservation proof | 1 | `test_wf0080_cohort_gate_preserves_quota_and_reviews_disabled_errors` | existing quota and disable gates still behave truthfully for in-cohort users | `fail` (default until executed) | required | cost/safety guard stays intact |
 | Review-detail projection proof | 3 | `test_wf0080_review_detail_emits_bounded_detail_projection`, `test_wf0080_review_detail_projection_uses_existing_order_tiebreaker` | backend detail response exposes the exact bounded projection contract | `fail` (default until executed) | required | backend is single ranking seam |
 | BFF passthrough proof | 4 | `wf0080_bff_review_detail_preserves_backend_projection` | BFF preserves `detail_projection` without semantic rewrite | `fail` (default until executed) | required | no frontend-local ranking |
-| Top-action render proof | 5 | `wf0080_review_detail_renders_top_action_cards_first` | top 1-3 prioritized cards render above the fold in backend order | `fail` (default until executed) | required | one action-first reading model only |
+| Section-group render proof | 5 | `wf0080_review_detail_groups_all_findings_by_reviewed_section` | findings render grouped by reviewed section/node, with multiple findings per section when relevant | `fail` (default until executed) | required | avoids action-first bucketing |
 | Positive-state proof | 5 | `wf0080_review_detail_shows_no_critical_blockers_only_for_all_assessed_note_or_success` | explicit positive headline appears only for the approved all-assessed note/success condition | `fail` (default until executed) | required | no false reassurance |
-| Evidence-collapse proof | 5 | `wf0080_review_detail_keeps_supporting_evidence_collapsed_by_default` | supporting evidence stays collapsed by default with per-card expansion | `fail` (default until executed) | required | first card still explains rank |
+| Deterministic-bullets proof | 5 | `wf0080_review_detail_renders_deterministic_feedback_as_bullets` | deterministic feedback renders as a bullet list for scanability | `fail` (default until executed) | required | avoids prose wall |
+| No-supporting-evidence proof | 5 | `wf0080_review_detail_removes_supporting_evidence_block` | supporting-evidence drawer is not rendered | `fail` (default until executed) | required | removes low-signal metadata |
 | Timeout/degradation honesty proof | 5 | `wf0080_review_detail_handles_pending_timeout_and_failure_honestly` | pending, timeout, failed, and retry states remain explicit and truthful | `fail` (default until executed) | required | no silent success implication |
 | Export/copy truthfulness proof | 5 | `wf0080_review_detail_export_copy_stays_truthful_about_projection_scope` | page-local export/copy behavior is explicit about any excluded projection framing | `fail` (default until executed) | required | same-page truthfulness only |
 | Backend support trace proof | 6 | `test_wf0080_trace_correlation_is_present_on_submit_and_detail` | one disputed cohort session can be explained from bounded backend-owned support evidence | `fail` (default until executed) | required | no new telemetry product |
