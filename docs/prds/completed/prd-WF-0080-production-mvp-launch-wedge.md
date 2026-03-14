@@ -2,7 +2,7 @@
 # WF-0080 — Production MVP Launch Wedge
 
 Artifact: prd
-Version: v0.2
+Version: v0.3
 Status: Ready for Tasks
 Last Updated: 2026-03-14
 
@@ -13,7 +13,7 @@ Type: feature
 - US1: As an invited `ERC-2026-PoC` researcher, I want to submit one proposal snippet and reach one review-detail page safely, so that I can decide my next revision step without support intervention.
 - US2: As an invited `ERC-2026-PoC` researcher, I want the review-detail page to show the top 1-3 issues first with expandable supporting evidence, so that I can understand what to revise next without reading the whole review as a spreadsheet.
 - US3: As a maintainer running a 5-10 person launch cohort, I want out-of-cohort or over-limit traffic blocked before downstream review execution and one failed session traceable end to end, so that the wedge stays safe enough to operate without heroics.
-- US4: As a product owner, I want WF-0080 closure to require attributable usefulness evidence and explicit pass/fail proof rows, so that launch claims stay bounded to this wedge and are verifiable in Phase 2/3.
+- US4: As a product owner, I want WF-0080 closure to require explicit pass/fail proof rows, so that launch claims stay bounded to this wedge and are verifiable in Phase 2/3.
 
 ## Deferred Stories (Not in MVP)
 
@@ -30,8 +30,8 @@ Type: feature
 - One action-first review-detail reading model: at most 3 prioritized cards above the fold, explicit `no critical blockers found` state, and per-card evidence expansion on demand. `(US1) (US2)`
 - Honest pending, timeout, failure, quota, and retry states on the submit-to-detail journey for this wedge only. `(US1) (US3)`
 - One narrow support/trace seam sufficient to explain a failed or disputed cohort session. `(US3)`
-- One walkthrough-based `Usefulness Evidence Log` with 5-10 attributable session rows as a required closure artifact. `(US4)`
-- One explicit privacy/retention rule for the launch cohort: launch-session inputs/outputs remain only in existing review storage and support traces, with access limited to designated maintainers supporting the cohort and usefulness review. `(US3) (US4)`
+- Optional walkthrough-based `Session Notes Log` appendix to capture early researcher sessions when available. `(US4)`
+- One explicit privacy/retention rule for the launch cohort: launch-session inputs/outputs remain only in existing review storage and support traces, with access limited to designated maintainers supporting the cohort. `(US3) (US4)`
 - Truthful treatment of the existing page-local review export/copy behavior on `/app/reviews/[reviewId]`. `(US2) (US4)`
 
 ## 2. Out of Scope
@@ -51,7 +51,7 @@ Type: feature
   - The existing structured-review pipeline creates the review, applies the current quota gate, and returns a review id for the pending-or-complete review. `(US1) (US3)`
   - The researcher reaches `/app/reviews/[reviewId]`, where polling/status handling remains honest until completion and then loads the review detail response with the bounded projection metadata from `GET /reviews/{review_id}`. `(US1) (US2) (US3)`
   - The detail page shows one headline state plus at most the top 3 prioritized cards above the fold, ordered by assessment status first, lowest rating next, and existing call/node order as the final tie-breaker; supporting evidence stays collapsed until opened per card. `(US1) (US2)`
-  - The researcher uses the top issue and supporting evidence to decide one next revision step, and the session is later captured in the walkthrough `Usefulness Evidence Log`. `(US1) (US2) (US4)`
+  - The researcher uses the top issue and supporting evidence to decide one next revision step. (If session notes are captured, they remain bounded and attributable.) `(US1) (US2) (US4)`
 - Failure path 1
   - An authenticated user who is not on the launch allowlist submits to `/api/bff/structured-review`, receives a fail-closed cohort-access error before proxying, and no review is created. `(US1) (US3)`
 - Failure path 2
@@ -74,8 +74,8 @@ Type: feature
 - FR11 (US2) (US3): The bounded projection seam must reuse persisted `ReviewCardSummary` truth, existing detail response fields, and existing call-node order rather than introducing a new review persistence hierarchy or whole-review rewrite.
 - FR12 (US2) (US4): The existing page-local review export/copy behavior on `/app/reviews/[reviewId]` must remain truthful about what it includes, and any mismatch with on-page additive guidance/projection must be explicit.
 - FR13 (US3): Each wedge review/session must carry enough trace correlation across BFF, backend review creation, and review-detail retrieval to explain one failed or disputed cohort session.
-- FR14 (US3) (US4): Launch-session inputs/outputs may remain only in existing review storage and support traces, and access to those records must be limited to designated maintainers supporting launch and usefulness review.
-- FR15 (US4): Phase 2/3 closure must include a walkthrough `Usefulness Evidence Log` with 5-10 attributable session rows containing the approved fields from the brainstorm.
+- FR14 (US3) (US4): Launch-session inputs/outputs may remain only in existing review storage and support traces, and access to those records must be limited to designated maintainers supporting launch.
+- FR15 (US4): Phase 2/3 closure may include an optional walkthrough `Session Notes Log` appendix, but it is not required to ship.
 - FR16 (US4): No readiness recommendation is valid unless every required proof row remains explicit `pass`, `fail`, or approved `skipped` with evidence pointers and scope proof.
 
 ## 5. Data & API Contracts
@@ -105,10 +105,9 @@ Type: feature
   - Additional cards remain available below the fold using existing review detail truth.
   - The first visible top-action card must display enough summary context without expansion to justify its rank; deeper evidence may expand per card on demand.
   - The existing page-local export/copy behavior must state whether it excludes additive companion guidance and projection-only framing.
-- Usefulness evidence artifact contract `(US4) (FR15) (FR16)`
-  - The walkthrough for WF-0080 must include a `Usefulness Evidence Log` appendix with one row per session containing: `session alias`, `date`, `researcher cohort/user`, `call code`, `snippet goal`, `completion outcome`, `top issue shown`, `usefulness rating`, `stated next revision action`, and `evidence/note reference`.
-  - A session does not count as successful wedge evidence unless the row records both completion outcome and a stated next revision action or equivalent explicit usefulness failure.
-  - The launch usefulness bar passes only if at least 5 logged cohort sessions have `completion outcome = completed`, `usefulness rating = useful`, and a non-empty `stated next revision action`; `mixed` and `not useful` rows remain valid evidence but do not count toward the pass threshold.
+- Optional session-notes artifact contract (non-blocking)
+  - The walkthrough may include a small `Session Notes Log` appendix to capture early researcher sessions when available.
+  - This WF does not require a cohort-scoped usefulness loop or a quantitative usefulness pass threshold to ship.
 - Privacy/retention contract `(US3) (US4) (FR14)`
   - No new storage class is introduced for launch-session text.
   - Review inputs/outputs remain in the existing review storage plus narrow support traces only.
@@ -196,11 +195,10 @@ none
 
 ## 12. Verification / Proceed Gate
 
-- No proceed recommendation is valid unless Phase 2 names and preserves the exact bounded projection seam at `GET /reviews/{review_id}`, the BFF-plus-backend cohort gate, the walkthrough `Usefulness Evidence Log`, and the approved must-ship/deferred split.
+- No proceed recommendation is valid unless Phase 2 names and preserves the exact bounded projection seam at `GET /reviews/{review_id}`, the BFF-plus-backend cohort gate, and the approved must-ship/deferred split. (If the walkthrough includes session notes, keep that appendix bounded and attributable.)
 - No proceed recommendation is valid if the detail ranking model requires new review persistence tables, whole-review reinterpretation, or BFF/frontend-local ranking semantics instead of the bounded backend projection seam.
 - No proceed recommendation is valid if the launch gate happens after review creation or other downstream cost-bearing work begins.
-- No implementation-ready or ship recommendation is valid without explicit pass/fail proof for the locked `ERC-2026-PoC` happy path, protected surfaces, timeout/degradation honesty, review-detail priority behavior, support traceability, usefulness evidence, privacy/retention rule, and scope proof.
-- No implementation-ready or ship recommendation is valid if 5-10 researcher sessions are only described aspirationally rather than captured in the required evidence artifact.
+- No implementation-ready or ship recommendation is valid without explicit pass/fail proof for the locked `ERC-2026-PoC` happy path, protected surfaces, timeout/degradation honesty, review-detail priority behavior, support traceability, privacy/retention rule, and scope proof.
 
 ## 13. Verification Evidence Matrix (Fail-Closed)
 
@@ -216,7 +214,7 @@ none
 | Export/copy truthfulness proof | targeted frontend tests and copy evidence | `fail` (default until executed) | required | page-local export/copy behavior does not overclaim additive or projection content |
 | Support trace proof | trace-correlation test/evidence plus walkthrough note | `fail` (default until executed) | required | one failed or disputed session can be explained from bounded support evidence |
 | Privacy/retention proof | walkthrough/manual verification plus code/config evidence | `fail` (default until executed) | required | launch-session inputs/outputs remain only in approved storage/traces with limited access |
-| Usefulness gate proof | walkthrough `Usefulness Evidence Log` | `fail` (default until executed) | required | at least 5 logged sessions must be completed, rated `useful`, and record a next revision action |
+| Session notes log (optional) | walkthrough appendix `Session Notes Log` | `skipped` (optional) | optional | may be used later when cohort onboarding exists |
 | Scope proof | baseline-SHA/commit-range diff plus deferred-surface check | `fail` (default until executed) | required | deferred surfaces remain unchanged unless explicitly approved |
 | Audit disposition proof | findings-closure ledger | `fail` (default until executed) | required | blocking findings are closed and justified non-blocking findings are closed or rejected with rationale |
 
@@ -225,9 +223,10 @@ none
 | Review source | Finding | Severity | Planned closure | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Phase 1.2 PRD risk audit | Ranking order and positive-state threshold were not yet explicit enough to be Phase 2-verifiable because `assessment_status` precedence and rating order were implied rather than named | non-blocking | lock the exact `NOT_ASSESSABLE`/`ASSESSED` precedence, the `CRITICAL` -> `WARNING` -> `NOTE` -> `SUCCESS` order, and the exact `no_critical_blockers` rule in the PRD contract | closed | keeps the projection seam bounded and testable without inventing new review state |
-| Phase 1.2 PRD risk audit | The usefulness artifact captured rows but did not yet encode the quantitative launch pass threshold from the brainstorm desired outcome | non-blocking | require at least 5 completed `useful` sessions with a stated next revision action for the usefulness gate to pass | closed | preserves the approved wedge closure bar as a Phase 2/3 verification target |
+| Phase 1.2 PRD risk audit | The usefulness threshold requirement is not in use for shipping because cohort onboarding and a usefulness loop are not active | non-blocking | remove the quantitative usefulness gate from the ship bar and treat session notes as optional | closed | avoids a documentation-only ship blocker |
 
 ## 15. Changelog
 
 - v0.1 (2026-03-14): Initial PRD from brainstorm.
 - v0.2 (2026-03-14): Applied the Phase 1 risk audit by locking exact ranking/headline semantics and the quantitative usefulness pass threshold, then marked the PRD ready for task planning.
+- v0.3 (2026-03-14): Removed the usefulness gate/threshold as a ship requirement; optional session notes remain for later.
