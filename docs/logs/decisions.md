@@ -3,6 +3,22 @@
 
 ## Date: 2026-03-14 (WF-0080: production-mvp-launch-wedge)
 
+### AD 80.2: WF-0080 keeps review-detail prioritization as one backend projection contract with explicit ranking semantics
+- **WF ID**: WF-0080
+- **Context**: The approved brainstorm required one bounded review-detail projection seam and an action-first top-3 reading model, but the initial PRD draft still left the exact positive-state threshold and rank precedence partly implicit.
+- **Decision**: Keep the only new reading-model contract at `GET /reviews/{review_id}` response assembly in `backend/main.py` as additive `detail_projection` metadata. Compute ranking from existing card truth using `NOT_ASSESSABLE` before `ASSESSED`, then `CRITICAL` -> `WARNING` -> `NOTE` -> `SUCCESS`, then existing call/node order. Set `headline_state = no_critical_blockers` only when every card is `ASSESSED` and rated `NOTE` or `SUCCESS`.
+- **Why**: This makes the wedge verifiable without inventing new persistence or letting BFF/frontend code reinterpret trust semantics locally.
+- **Tradeoff**: The backend response contract becomes slightly richer, so Phase 2 must prove passthrough discipline and keep the projection additive-only.
+- **Status**: Approved.
+
+### AD 80.3: WF-0080 usefulness closure requires five completed useful cohort sessions
+- **WF ID**: WF-0080
+- **Context**: The brainstorm desired outcome set an evidence bar for 5-10 researcher sessions, but the initial PRD draft captured row structure without restating the exact pass threshold.
+- **Decision**: The walkthrough `Usefulness Evidence Log` remains the closure artifact, and the usefulness gate passes only when at least 5 logged cohort sessions complete the submit-to-detail flow, are rated `useful`, and record a stated next revision action. `mixed` and `not useful` rows remain required evidence but do not count toward the pass threshold.
+- **Why**: This preserves the approved launch wedge as a measurable evidence gate instead of a narrative aspiration.
+- **Tradeoff**: Launch closure stays stricter and may require more deliberate cohort scheduling before any ship recommendation.
+- **Status**: Approved.
+
 ### AD 80.1: WF-0080 locks the launch wedge to one `ERC-2026-PoC` cohort with an action-first review-detail model
 - **WF ID**: WF-0080
 - **Context**: The approved Phase 0 brainstorm rejects architecture-first planning and requires one explicit launch wedge, one happy-path submit-to-detail flow, one review-detail reading model, and 5-10 researcher-session usefulness evidence.

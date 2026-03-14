@@ -2,8 +2,8 @@
 # WF-0080 — Production MVP Launch Wedge
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-03-14
 
 Type: feature
@@ -67,8 +67,8 @@ Type: feature
 - FR4 (US1) (US3): The existing per-user quota seam and `REVIEWS_DISABLED` gate remain the MVP cost/safety control unless Phase 2 proves a narrower existing cap is required.
 - FR5 (US1) (US3): The submit-to-detail path must preserve honest pending, timeout, failure, and retry states on the current review-detail page and must not present a still-processing review as completed.
 - FR6 (US1) (US2): The review-detail reading model must surface at most 3 prioritized actionable cards above the fold.
-- FR7 (US1) (US2): Card prioritization must be computed from existing review-card truth in this order only: assessment status first, lowest rating next, existing call/node order last.
-- FR8 (US1) (US2): The detail page must render an explicit `no critical blockers found` headline only when no card is in a blocking or clearly weak state, while still allowing lower-priority cards below it.
+- FR7 (US1) (US2): Card prioritization must be computed from existing review-card truth in this order only: `assessment_status` priority `NOT_ASSESSABLE` before `ASSESSED`, then rating priority `CRITICAL` before `WARNING` before `NOTE` before `SUCCESS`, then existing call/node order last.
+- FR8 (US1) (US2): The detail page must render an explicit `no critical blockers found` headline only when every card is `ASSESSED` and every card rating is `NOTE` or `SUCCESS`; any `NOT_ASSESSABLE`, `CRITICAL`, or `WARNING` card forces the headline state to `action_required`.
 - FR9 (US1) (US2): Supporting evidence must stay collapsed by default and be expandable per card, except the first ranked card must still expose enough visible summary context to explain why it is ranked first.
 - FR10 (US2) (US3): The only new reading-model contract for MVP must be one bounded projection seam at `GET /reviews/{review_id}` response assembly; the BFF may normalize/pass fields through but must not reinterpret ranking semantics.
 - FR11 (US2) (US3): The bounded projection seam must reuse persisted `ReviewCardSummary` truth, existing detail response fields, and existing call-node order rather than introducing a new review persistence hierarchy or whole-review rewrite.
@@ -97,6 +97,7 @@ Type: feature
     - `top_action_card_ids: list[UUID]` with length `0..3`
     - `ranking_basis: "assessment_status_then_rating_then_existing_order"`
   - `ordered_card_ids` and `top_action_card_ids` must be derived from existing persisted card truth plus existing call/node ordering only; no new persisted ranking table or whole-review synthesized summary object is allowed in MVP.
+  - `headline_state = "no_critical_blockers"` only when every card is `ASSESSED` and has rating `NOTE` or `SUCCESS`; otherwise `headline_state = "action_required"`.
   - The BFF route at `frontend/src/app/api/bff/reviews/[reviewId]/route.ts` may preserve and normalize the new object but must not recompute ranking or headline semantics locally.
 - Detail page UI state contract `(US1) (US2) (FR5) (FR6) (FR8) (FR9) (FR12)`
   - `/app/reviews/[reviewId]` consumes `detail_projection` as the ranking/display contract for the wedge.
@@ -107,6 +108,7 @@ Type: feature
 - Usefulness evidence artifact contract `(US4) (FR15) (FR16)`
   - The walkthrough for WF-0080 must include a `Usefulness Evidence Log` appendix with one row per session containing: `session alias`, `date`, `researcher cohort/user`, `call code`, `snippet goal`, `completion outcome`, `top issue shown`, `usefulness rating`, `stated next revision action`, and `evidence/note reference`.
   - A session does not count as successful wedge evidence unless the row records both completion outcome and a stated next revision action or equivalent explicit usefulness failure.
+  - The launch usefulness bar passes only if at least 5 logged cohort sessions have `completion outcome = completed`, `usefulness rating = useful`, and a non-empty `stated next revision action`; `mixed` and `not useful` rows remain valid evidence but do not count toward the pass threshold.
 - Privacy/retention contract `(US3) (US4) (FR14)`
   - No new storage class is introduced for launch-session text.
   - Review inputs/outputs remain in the existing review storage plus narrow support traces only.
@@ -209,12 +211,12 @@ none
 | Quota/reviews-disabled preservation proof | targeted backend/BFF tests | `fail` (default until executed) | required | existing `QUOTA_EXCEEDED` and `REVIEWS_DISABLED` behavior still works inside the wedge |
 | Review-detail projection proof | targeted backend tests for `detail_projection` | `fail` (default until executed) | required | `headline_state`, `ordered_card_ids`, `top_action_card_ids`, and ranking basis match contract |
 | Top-action render proof | targeted frontend tests or deterministic UI evidence | `fail` (default until executed) | required | top 1-3 actionable cards render above the fold in the approved order |
-| Positive-state proof | targeted frontend/API evidence | `fail` (default until executed) | required | explicit `no critical blockers found` renders only when no blocking/clearly weak cards exist |
+| Positive-state proof | targeted frontend/API evidence | `fail` (default until executed) | required | explicit `no critical blockers found` renders only when all cards are `ASSESSED` and rated `NOTE` or `SUCCESS` |
 | Timeout/degradation honesty proof | targeted pending/failure UI verification | `fail` (default until executed) | required | user sees honest still-processing/failed guidance and retry-or-return-later behavior |
 | Export/copy truthfulness proof | targeted frontend tests and copy evidence | `fail` (default until executed) | required | page-local export/copy behavior does not overclaim additive or projection content |
 | Support trace proof | trace-correlation test/evidence plus walkthrough note | `fail` (default until executed) | required | one failed or disputed session can be explained from bounded support evidence |
 | Privacy/retention proof | walkthrough/manual verification plus code/config evidence | `fail` (default until executed) | required | launch-session inputs/outputs remain only in approved storage/traces with limited access |
-| Usefulness gate proof | walkthrough `Usefulness Evidence Log` | `fail` (default until executed) | required | 5-10 attributable session rows record usefulness outcome and next action |
+| Usefulness gate proof | walkthrough `Usefulness Evidence Log` | `fail` (default until executed) | required | at least 5 logged sessions must be completed, rated `useful`, and record a next revision action |
 | Scope proof | baseline-SHA/commit-range diff plus deferred-surface check | `fail` (default until executed) | required | deferred surfaces remain unchanged unless explicitly approved |
 | Audit disposition proof | findings-closure ledger | `fail` (default until executed) | required | blocking findings are closed and justified non-blocking findings are closed or rejected with rationale |
 
@@ -222,8 +224,10 @@ none
 
 | Review source | Finding | Severity | Planned closure | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| none | none | non-blocking | n/a | open | populated in Phase 1.2/1.3 if findings are raised |
+| Phase 1.2 PRD risk audit | Ranking order and positive-state threshold were not yet explicit enough to be Phase 2-verifiable because `assessment_status` precedence and rating order were implied rather than named | non-blocking | lock the exact `NOT_ASSESSABLE`/`ASSESSED` precedence, the `CRITICAL` -> `WARNING` -> `NOTE` -> `SUCCESS` order, and the exact `no_critical_blockers` rule in the PRD contract | closed | keeps the projection seam bounded and testable without inventing new review state |
+| Phase 1.2 PRD risk audit | The usefulness artifact captured rows but did not yet encode the quantitative launch pass threshold from the brainstorm desired outcome | non-blocking | require at least 5 completed `useful` sessions with a stated next revision action for the usefulness gate to pass | closed | preserves the approved wedge closure bar as a Phase 2/3 verification target |
 
 ## 15. Changelog
 
 - v0.1 (2026-03-14): Initial PRD from brainstorm.
+- v0.2 (2026-03-14): Applied the Phase 1 risk audit by locking exact ranking/headline semantics and the quantitative usefulness pass threshold, then marked the PRD ready for task planning.
