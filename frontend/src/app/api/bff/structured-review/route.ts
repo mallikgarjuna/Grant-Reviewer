@@ -42,6 +42,10 @@ function getWf0080LaunchCohortUserIds(): Set<string> {
   );
 }
 
+function hasWf0080LaunchCohortConfig(): boolean {
+  return getWf0080LaunchCohortUserIds().size > 0;
+}
+
 function isWf0080ProtectedCall(callId: string | null): boolean {
   const protectedCallId = process.env.WF0080_ERC_POC_CALL_ID?.trim() ?? "";
   return protectedCallId.length > 0 && callId === protectedCallId;
@@ -49,6 +53,9 @@ function isWf0080ProtectedCall(callId: string | null): boolean {
 
 async function resolveWf0080ProtectedCall(callId: string | null): Promise<boolean> {
   if (!callId) {
+    return false;
+  }
+  if (!hasWf0080LaunchCohortConfig()) {
     return false;
   }
   if (isWf0080ProtectedCall(callId)) {
