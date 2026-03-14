@@ -4068,6 +4068,140 @@ def test_wf0079_contract_migration_preserves_legacy_null_companion_text(
                 )
 
 
+def _create_wf0079_structured_review_with_cards(
+    *,
+    monkeypatch,
+    node_card_specs: list[tuple[str, str, str | None]],
+) -> tuple[TestClient, str]:
+    client, call_id, _ = create_client_with_erc_poc_seed(monkeypatch)
+
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+
+        review = Review(
+            proposal_snippet_id=None,
+            prompt_template_id=template.id,
+            status=ReviewStatus.COMPLETED,
+            overall_summary="WF-0079 detail contract review",
+            overall_rating=ReviewRating.NOTE,
+            external_user_id=TEST_USER_ID,
+            review_type="structured",
+            structured_payload={
+                "call_id": str(call_id),
+                "nodes": {
+                    node_logical_id: f"Submitted text for {node_logical_id}"
+                    for node_logical_id, _, _ in node_card_specs
+                },
+                "submitted_leaf_ids": [
+                    node_logical_id for node_logical_id, _, _ in node_card_specs
+                ],
+                "stage_scope_leaf_ids": [
+                    node_logical_id for node_logical_id, _, _ in node_card_specs
+                ],
+                "engine_path": "pipeline_v1",
+            },
+        )
+        session.add(review)
+        session.commit()
+        session.refresh(review)
+
+        for node_logical_id, feedback_text, companion_text in node_card_specs:
+            node = session.exec(
+                select(ProposalNode).where(
+                    ProposalNode.funding_call_id == call_id,
+                    ProposalNode.logical_id == node_logical_id,
+                )
+            ).first()
+            assert node is not None
+            expectation = session.exec(
+                select(NodeExpectation)
+                .where(NodeExpectation.proposal_node_id == node.id)
+                .order_by(NodeExpectation.order_index)
+            ).first()
+            assert expectation is not None
+
+            card = ReviewCard(
+                review_id=review.id,
+                node_expectation_id=expectation.id,
+                rating=ReviewRating.NOTE,
+                feedback_text=feedback_text,
+                synthesized_companion_text=companion_text,
+                assessment_status=AssessmentStatus.ASSESSED,
+            )
+            session.add(card)
+        session.commit()
+        return client, str(review.id)
+    finally:
+        session.close()
+
+
+def test_wf0079_contract_review_detail_response_carries_optional_companion_text(
+    monkeypatch,
+) -> None:
+    client, review_id = _create_wf0079_structured_review_with_cards(
+        monkeypatch=monkeypatch,
+        node_card_specs=[
+            (
+                "poc_idea_innovation",
+                "Deterministic ERC PoC feedback.",
+                "Additive ERC PoC companion guidance.",
+            )
+        ],
+    )
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    cards = detail_response.json()["cards"]
+    assert len(cards) == 1
+    assert cards[0]["feedback_text"] == "Deterministic ERC PoC feedback."
+    assert cards[0]["synthesized_companion_text"] == (
+        "Additive ERC PoC companion guidance."
+    )
+
+
+def test_wf0079_contract_review_detail_response_supports_mixed_card_companion_states(
+    monkeypatch,
+) -> None:
+    client, review_id = _create_wf0079_structured_review_with_cards(
+        monkeypatch=monkeypatch,
+        node_card_specs=[
+            (
+                "poc_idea_innovation",
+                "Deterministic innovation feedback.",
+                "Additive innovation companion guidance.",
+            ),
+            (
+                "poc_pi_strategic_leadership",
+                "Deterministic leadership feedback.",
+                None,
+            ),
+        ],
+    )
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    card_by_node = {
+        card["node_logical_id"]: card for card in detail_response.json()["cards"]
+    }
+    assert card_by_node["poc_idea_innovation"]["feedback_text"] == (
+        "Deterministic innovation feedback."
+    )
+    assert card_by_node["poc_idea_innovation"]["synthesized_companion_text"] == (
+        "Additive innovation companion guidance."
+    )
+    assert card_by_node["poc_pi_strategic_leadership"]["feedback_text"] == (
+        "Deterministic leadership feedback."
+    )
+    assert (
+        card_by_node["poc_pi_strategic_leadership"]["synthesized_companion_text"]
+        is None
+    )
+
+
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:
     case = _get_wf0043_case(
         "post_persist_unresolvable_expectation_failed", surface="structured_api"

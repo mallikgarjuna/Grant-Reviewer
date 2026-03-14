@@ -1412,6 +1412,7 @@ def get_review(
                 expectation_guidance_note=guidance_note,
                 rating=card.rating,
                 feedback_text=card.feedback_text,
+                synthesized_companion_text=card.synthesized_companion_text,
                 assessment_status=(
                     card.assessment_status if review.review_type == "structured" else None
                 ),
