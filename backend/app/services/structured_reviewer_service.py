@@ -32,12 +32,6 @@ from app.services.llm_client import LLMClientProtocol, OpenAIClient
 from app.services.node_role_resolution import (
     resolve_supporting_node_logical_ids_for_primary_path,
 )
-from app.services.structured_review_synthesis_service import (
-    StructuredReviewSynthesisAcceptedResult,
-    StructuredReviewSynthesisRequest,
-    StructuredReviewSynthesisResult,
-    StructuredReviewSynthesisService,
-)
 from app.services.review_execution_core import ReviewExecutionCore
 from app.services.reviewer_policy import (
     ReviewerPolicyRule,
@@ -45,6 +39,12 @@ from app.services.reviewer_policy import (
     compute_stage_scope_leaf_ids,
     find_policy_violations,
     get_applicable_reviewer_policy_rules,
+)
+from app.services.structured_review_synthesis_service import (
+    StructuredReviewSynthesisAcceptedResult,
+    StructuredReviewSynthesisRequest,
+    StructuredReviewSynthesisResult,
+    StructuredReviewSynthesisService,
 )
 
 logger = logging.getLogger(__name__)
@@ -233,7 +233,7 @@ class StructuredReviewerService:
 
         expectation_map: dict[str, NodeExpectation] = {}
         not_assessable_payloads: list[
-            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
+            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None, str | None]
         ] = []
         request_expectations: list[dict[str, object]] = []
         applicable_policy_by_node: dict[str, list[ReviewerPolicyRule]] = {}
@@ -279,6 +279,7 @@ class StructuredReviewerService:
                         "Not assessable due to missing cross-node context.",
                         AssessmentStatus.NOT_ASSESSABLE,
                         reason,
+                        None,
                     )
                 )
 
@@ -396,7 +397,7 @@ class StructuredReviewerService:
             return review, []
 
         card_payloads: list[
-            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]
+            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None, str | None]
         ] = list(not_assessable_payloads)
         synthesis_requests: list[StructuredReviewSynthesisRequest] = []
         synthesis_results: list[StructuredReviewSynthesisResult] = []
@@ -631,6 +632,9 @@ class StructuredReviewerService:
             if element.criterion is not None and isinstance(element.criterion.name, str)
             else ""
         )
+        if not isinstance(element_logical_id, str) or not element_logical_id.strip():
+            return None
+
         submitted_text = submitted_text_by_node.get(node_logical_id, "")
         subordinate_prompt_context = tuple(
             prompt_text
@@ -639,9 +643,7 @@ class StructuredReviewerService:
             if isinstance(prompt_text, str) and prompt_text.strip()
         )
         if (
-            not isinstance(element_logical_id, str)
-            or not element_logical_id.strip()
-            or not isinstance(node_title, str)
+            not isinstance(node_title, str)
             or not node_title.strip()
             or not isinstance(element_name, str)
             or not element_name.strip()
