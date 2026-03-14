@@ -2,7 +2,7 @@
 # WF-0081 — Atomic Findings Structured Review
 
 Artifact: task
-Version: v0.2
+Version: v0.3
 Status: Ready for Implementation
 Last Updated: 2026-03-14
 
@@ -50,7 +50,7 @@ Goal:
 Prove the structured-review write path can map existing diagnostic findings into persisted `ReviewFinding` rows for one representative new review while preserving legacy `ReviewCard` reads as a separate compatibility path.
 Slice: tracer-bullet
 User Stories: US1, US2, US3, US4
-PRD Requirements: FR1, FR2, FR3, FR4, FR5, FR11, FR13
+PRD Requirements: FR1, FR2, FR3, FR4, FR5, FR11, FR13, Telemetry 9.2
 Depends on: 1
 Enables: 3, 7
 Parallelizable: no
@@ -69,14 +69,15 @@ Acceptance Criteria:
 - After the change, the same regressions pass by proving a new WF-0081-style structured review persists one `ReviewFinding` per reviewed-node plus evaluation-element finding, records `detail_mode="reviewed_node_findings"`, and leaves legacy review generation/reads on the `ReviewCard` path.
 - The write path owns one bounded mapper seam from diagnostic finding to persisted `ReviewFinding` fields and fails closed when required snapshot data cannot be resolved.
 - A paired regression such as `test_wf0081_contract_unmappable_diagnostic_finding_fails_closed` proves the write owner raises/logs a bounded failure instead of silently dropping a finding that cannot resolve the required evaluation criteria/element snapshot fields.
+- A paired regression such as `test_wf0081_contract_unmappable_diagnostic_finding_records_bounded_failure` proves the same fail-closed path records the bounded write-path failure telemetry/logging required by the PRD instead of failing silently.
 - Positive outcomes can persist `assessment_status="REQUIREMENTS_MET"` with bounded positive guidance text instead of empty issue text.
 TDD Plan:
-- RED: add `test_wf0081_contract_atomic_review_persists_review_findings`, `test_wf0081_contract_legacy_review_card_path_remains_unchanged`, and `test_wf0081_contract_unmappable_diagnostic_finding_fails_closed` in `backend/tests/test_structured_reviewer_service.py`; run them before changing the service/repository seam so they fail on missing findings persistence, missing compatibility separation, and missing fail-closed mapper behavior.
+- RED: add `test_wf0081_contract_atomic_review_persists_review_findings`, `test_wf0081_contract_legacy_review_card_path_remains_unchanged`, `test_wf0081_contract_unmappable_diagnostic_finding_fails_closed`, and `test_wf0081_contract_unmappable_diagnostic_finding_records_bounded_failure` in `backend/tests/test_structured_reviewer_service.py`; run them before changing the service/repository seam so they fail on missing findings persistence, missing compatibility separation, missing fail-closed mapper behavior, and missing bounded failure telemetry/logging.
 - GREEN: add the smallest repository/service write-path change that persists atomic findings for the new mode and preserves legacy `ReviewCard` behavior as-is.
 - REFACTOR: extract a tiny typed findings payload helper or mapper only if the service/repository handoff becomes hard to follow inline; otherwise skip.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0081_contract_atomic_review_persists_review_findings or wf0081_contract_legacy_review_card_path_remains_unchanged or wf0081_contract_unmappable_diagnostic_finding_fails_closed"`
-- `cd backend && rg -n "wf0081_contract_(atomic_review_persists_review_findings|legacy_review_card_path_remains_unchanged|unmappable_diagnostic_finding_fails_closed)|ReviewFinding|detail_mode|pipeline_v1" app/services/structured_reviewer_service.py app/repositories/review_repository.py tests/test_structured_reviewer_service.py`
+- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0081_contract_atomic_review_persists_review_findings or wf0081_contract_legacy_review_card_path_remains_unchanged or wf0081_contract_unmappable_diagnostic_finding_fails_closed or wf0081_contract_unmappable_diagnostic_finding_records_bounded_failure"`
+- `cd backend && rg -n "wf0081_contract_(atomic_review_persists_review_findings|legacy_review_card_path_remains_unchanged|unmappable_diagnostic_finding_(fails_closed|records_bounded_failure))|ReviewFinding|detail_mode|pipeline_v1|logger" app/services/structured_reviewer_service.py app/repositories/review_repository.py tests/test_structured_reviewer_service.py`
 Risks (if any): If the write owner is split across multiple callers, later compatibility fixes can drift between persisted findings and rendered detail responses.
 
 ### [ ] Task 3 — Expose a dual-mode backend review-detail response without heuristic branching
@@ -85,7 +86,7 @@ Goal:
 Return one explicit review-detail API that stays backward compatible for legacy cards while exposing grouped `reviewed_nodes[].findings[]` for new atomic reviews with an explicit `detail_mode`.
 Slice: backend-detail-contract
 User Stories: US1, US2, US3
-PRD Requirements: FR6, FR7, FR8, FR9, FR10, FR12, FR13
+PRD Requirements: FR6, FR7, FR8, FR9, FR10, FR12, FR13, Telemetry 9.1
 Depends on: 1, 2
 Enables: 4, 7
 Parallelizable: no
@@ -104,14 +105,14 @@ Acceptance Criteria:
 - After the change, the same regressions pass by proving legacy reviews still return `detail_mode="legacy_cards"` plus `cards[]`, while atomic reviews return `detail_mode="reviewed_node_findings"` plus `reviewed_nodes[].findings[]` grouped under the reviewed node with evaluation criteria/elements labels and no required `cards[]` rollup.
 - A paired regression such as `test_wf0081_contract_review_detail_modes_are_mutually_exclusive` proves legacy reviews do not require `reviewed_nodes[]` and atomic reviews do not require `cards[]` as their primary researcher-visible contract.
 - Atomic API coverage proves `REQUIREMENTS_MET`, `ASSESSED`, and `NOT_ASSESSABLE` all serialize correctly at the finding level.
-- Same-page detail actions continue to be honest about the active contract or return a bounded limitation marker instead of silently reusing legacy-card text.
+- A paired regression such as `test_wf0081_contract_review_detail_records_detail_mode_usage` proves the backend response seam records review-detail mode usage telemetry from the explicit per-review contract instead of relying on downstream inference.
 TDD Plan:
-- RED: add `test_wf0081_contract_review_detail_exposes_explicit_detail_mode`, `test_wf0081_contract_atomic_review_detail_groups_findings_under_reviewed_nodes`, and `test_wf0081_contract_review_detail_modes_are_mutually_exclusive` in `backend/tests/test_api.py`; run them before changing the response contract so they fail on missing mode metadata, grouped findings, and the single-mode invariant.
+- RED: add `test_wf0081_contract_review_detail_exposes_explicit_detail_mode`, `test_wf0081_contract_atomic_review_detail_groups_findings_under_reviewed_nodes`, `test_wf0081_contract_review_detail_modes_are_mutually_exclusive`, and `test_wf0081_contract_review_detail_records_detail_mode_usage` in `backend/tests/test_api.py`; run them before changing the response contract so they fail on missing mode metadata, grouped findings, the single-mode invariant, and missing detail-mode usage telemetry.
 - GREEN: add the minimal backend schemas and response assembly changes needed to return the explicit dual-mode contract without read-time backfill.
 - REFACTOR: extract a tiny response-assembly helper only if legacy-vs-atomic branching becomes repetitive in `main.py`; otherwise skip.
 Verification Steps:
-- `cd backend && uv run pytest tests/test_api.py -k "wf0081_contract_review_detail_exposes_explicit_detail_mode or wf0081_contract_atomic_review_detail_groups_findings_under_reviewed_nodes or wf0081_contract_review_detail_modes_are_mutually_exclusive"`
-- `cd backend && rg -n "detail_mode|reviewed_nodes|findings|wf0081_contract_review_detail_modes_are_mutually_exclusive|evaluation criteria|evaluation elements" app/schemas/api.py main.py tests/test_api.py`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0081_contract_review_detail_exposes_explicit_detail_mode or wf0081_contract_atomic_review_detail_groups_findings_under_reviewed_nodes or wf0081_contract_review_detail_modes_are_mutually_exclusive or wf0081_contract_review_detail_records_detail_mode_usage"`
+- `cd backend && rg -n "detail_mode|reviewed_nodes|findings|wf0081_contract_review_detail_(modes_are_mutually_exclusive|records_detail_mode_usage)|evaluation criteria|evaluation elements|logger" app/schemas/api.py main.py tests/test_api.py`
 Risks (if any): If the backend keeps both modes implicit, the BFF and page layers will need unsafe shape inference.
 
 ### [ ] Task 4 — Preserve the backend dual-mode contract across the BFF and frontend types
@@ -137,15 +138,16 @@ Session boundary after: no
 Acceptance Criteria:
 - Targeted failing regressions such as `wf0081_bff_review_detail_preserves_explicit_detail_mode` and `wf0081_bff_review_detail_preserves_reviewed_node_findings` prove the current BFF/type boundary does not yet model or preserve the dual-mode contract.
 - After the change, the same regressions pass by proving legacy payloads remain cards-based, atomic payloads preserve `reviewed_nodes[].findings[]` verbatim, and the BFF forwards `detail_mode` explicitly instead of inferring it locally.
+- A paired regression such as `wf0081_bff_review_detail_preserves_backend_detail_metadata_verbatim` proves the BFF keeps backend-provided review-detail metadata authoritative and does not invent atomic semantics through local fallback inference.
 - Frontend types accept all three finding assessment states, including `REQUIREMENTS_MET`.
 - The task does not change UI rendering or same-page action copy yet.
 TDD Plan:
-- RED: add `wf0081_bff_review_detail_preserves_explicit_detail_mode` and `wf0081_bff_review_detail_preserves_reviewed_node_findings` in `frontend/src/app/api/bff/reviews/[reviewId]/route.test.ts`; run them before changing the route/types so they fail on missing explicit mode and findings carry-through.
+- RED: add `wf0081_bff_review_detail_preserves_explicit_detail_mode`, `wf0081_bff_review_detail_preserves_reviewed_node_findings`, and `wf0081_bff_review_detail_preserves_backend_detail_metadata_verbatim` in `frontend/src/app/api/bff/reviews/[reviewId]/route.test.ts`; run them before changing the route/types so they fail on missing explicit mode, missing findings carry-through, and local detail-metadata invention.
 - GREEN: make the minimum route normalization and type updates needed to preserve the backend contract verbatim.
 - REFACTOR: extract a tiny findings normalizer only if optional-field handling becomes repetitive; otherwise skip.
 Verification Steps:
-- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t 'wf0081_bff_review_detail_preserves_explicit_detail_mode|wf0081_bff_review_detail_preserves_reviewed_node_findings'`
-- `cd frontend && rg -n "detail_mode|reviewed_nodes|findings|REQUIREMENTS_MET" src/app/api/bff/reviews/'[reviewId]'/route.ts src/app/api/bff/reviews/'[reviewId]'/route.test.ts src/lib/bff/types.ts`
+- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t 'wf0081_bff_review_detail_preserves_explicit_detail_mode|wf0081_bff_review_detail_preserves_reviewed_node_findings|wf0081_bff_review_detail_preserves_backend_detail_metadata_verbatim'`
+- `cd frontend && rg -n "detail_mode|reviewed_nodes|findings|REQUIREMENTS_MET|detail_state" src/app/api/bff/reviews/'[reviewId]'/route.ts src/app/api/bff/reviews/'[reviewId]'/route.test.ts src/lib/bff/types.ts`
 Risks (if any): If the BFF rewrites response semantics, the page can diverge from backend truth during mixed rollout.
 
 ### [ ] Task 5 — Render reviewed-node findings on the detail page while preserving legacy cards
@@ -173,6 +175,7 @@ Acceptance Criteria:
 - After the change, the same regressions pass by proving atomic reviews render grouped reviewed nodes with evaluation criteria/elements labels, severity, evidence basis, actionable feedback, and explicit `REQUIREMENTS_MET` positive states, while legacy reviews continue to render via the existing card path.
 - The page branches once at the review-detail boundary on explicit `detail_mode`; leaf components do not guess the contract from optional fields.
 - Researcher-facing copy uses `evaluation criteria` / `evaluation elements` terminology and does not surface `rubric`.
+- `frontend/src/components/review/ReviewNodeFindings.tsx` is created in this slice as the single atomic-mode leaf renderer rather than assumed to pre-exist.
 TDD Plan:
 - RED: add `wf0081_review_detail_renders_grouped_reviewed_node_findings` and `wf0081_review_detail_legacy_cards_still_render_without_findings` in `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`; run them before the UI change so they fail on missing dual-mode rendering.
 - GREEN: add the smallest page-level branch and findings render component needed to support atomic reviews while preserving the legacy card component unchanged.
@@ -207,6 +210,7 @@ Acceptance Criteria:
 - A paired regression such as `wf0081_review_detail_legacy_copy_and_export_remain_card_based` proves atomic truthfulness fixes do not silently rewrite legacy review copy/export semantics.
 - The page does not reuse legacy card wording for atomic findings when describing evaluation criteria/elements.
 - Any bounded limitation remains explicit in the rendered copy instead of silently omitting findings content.
+- If the smallest truthful MVP still needs a bounded limitation marker, the same slice must record the limitation on the agreed telemetry seam; otherwise the walkthrough must explicitly mark that telemetry row `skipped` with rationale because no limitation shipped.
 TDD Plan:
 - RED: add `wf0081_review_detail_atomic_copy_and_export_stay_mode_truthful`, `wf0081_review_detail_requirements_met_render_without_empty_issue_shells`, and `wf0081_review_detail_legacy_copy_and_export_remain_card_based` in `frontend/src/app/app/reviews/[reviewId]/page.test.tsx`; run them before changing copy/export handling so they fail on card-only assumptions and legacy-mode regression risk.
 - GREEN: make the minimum page-local copy/export and empty-state updates needed to stay truthful for both detail modes.
@@ -222,7 +226,7 @@ Goal:
 Fail closed on the rollout boundary by proving legacy-card reviews and new findings reviews can coexist without heuristic reads, auto-backfill, or out-of-scope surface drift before claiming WF-0081 is ready to implement.
 Slice: closure-gate
 User Stories: US2, US3, US4
-PRD Requirements: FR6, FR9, FR11, FR12, FR13
+PRD Requirements: FR6, FR9, FR11, FR12, FR13, Telemetry 9.3
 Depends on: 1, 2, 3, 4, 5, 6
 Enables: none
 Parallelizable: no
@@ -238,6 +242,7 @@ Acceptance Criteria:
 - Phase 3 records explicit `pass`, `fail`, or approved `skipped` evidence for each verification-matrix row below before claiming the workflow is closed.
 - The walkthrough becomes the single closure artifact for this workflow and records the exact baseline commit range/SHA, verification evidence pointers, and audit-disposition ledger for both legacy-card and atomic-findings paths.
 - Verification proves legacy reviews still read/render from `ReviewCard`, new reviews read/render from grouped findings, no read-time backfill occurs, and no same-page truthfulness regressions remain open.
+- Closure evidence records whether detail-mode telemetry, bounded write-path failure telemetry, and any render/copy limitation telemetry each passed or were explicitly skipped with rationale.
 - Out-of-scope closure proof explicitly names deferred surfaces including `frontend/src/app/app/reviews/page.tsx`, `frontend/src/app/api/bff/reviews/route.ts`, and any legacy `/reviews` list/history contract files touched by the branch diff.
 - If any blocking proof fails, implementation stops instead of soft-closing the workflow.
 TDD Plan:
@@ -246,32 +251,35 @@ Verification Steps:
 - `git log --oneline main...HEAD`
 - `git diff --name-only main...HEAD -- backend/app/models/domain.py backend/app/services/structured_reviewer_service.py backend/main.py 'frontend/src/app/api/bff/reviews/[reviewId]/route.ts' 'frontend/src/app/app/reviews/[reviewId]/page.tsx'`
 - `git diff --name-only main...HEAD -- 'frontend/src/app/app/reviews/page.tsx' 'frontend/src/app/api/bff/reviews/route.ts'`
-- `cd backend && uv run pytest tests/test_api.py -k "wf0081_contract_review_storage_supports_detail_mode_and_findings or wf0081_contract_migration_preserves_legacy_review_cards or wf0081_contract_review_detail_exposes_explicit_detail_mode or wf0081_contract_atomic_review_detail_groups_findings_under_reviewed_nodes or wf0081_contract_review_detail_modes_are_mutually_exclusive"`
-- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0081_contract_atomic_review_persists_review_findings or wf0081_contract_legacy_review_card_path_remains_unchanged or wf0081_contract_unmappable_diagnostic_finding_fails_closed"`
-- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t 'wf0081_bff_review_detail_preserves_explicit_detail_mode|wf0081_bff_review_detail_preserves_reviewed_node_findings'`
+- `cd backend && uv run pytest tests/test_api.py -k "wf0081_contract_review_storage_supports_detail_mode_and_findings or wf0081_contract_migration_preserves_legacy_review_cards or wf0081_contract_review_detail_exposes_explicit_detail_mode or wf0081_contract_atomic_review_detail_groups_findings_under_reviewed_nodes or wf0081_contract_review_detail_modes_are_mutually_exclusive or wf0081_contract_review_detail_records_detail_mode_usage"`
+- `cd backend && uv run pytest tests/test_structured_reviewer_service.py -k "wf0081_contract_atomic_review_persists_review_findings or wf0081_contract_legacy_review_card_path_remains_unchanged or wf0081_contract_unmappable_diagnostic_finding_fails_closed or wf0081_contract_unmappable_diagnostic_finding_records_bounded_failure"`
+- `cd frontend && npm test -- --runInBand 'src/app/api/bff/reviews/[reviewId]/route.test.ts' -t 'wf0081_bff_review_detail_preserves_explicit_detail_mode|wf0081_bff_review_detail_preserves_reviewed_node_findings|wf0081_bff_review_detail_preserves_backend_detail_metadata_verbatim'`
 - `cd frontend && npm test -- --runInBand 'src/app/app/reviews/[reviewId]/page.test.tsx' -t 'wf0081_review_detail_renders_grouped_reviewed_node_findings|wf0081_review_detail_legacy_cards_still_render_without_findings|wf0081_review_detail_atomic_copy_and_export_stay_mode_truthful|wf0081_review_detail_requirements_met_render_without_empty_issue_shells|wf0081_review_detail_legacy_copy_and_export_remain_card_based'`
-- `rg -n "Verification Matrix|Audit Disposition Ledger|baseline sha|commit range|legacy_cards|reviewed_node_findings|no backfill" docs/walkthroughs/walkthrough-WF-0081-atomic-findings-structured-review.md`
+- `rg -n "Verification Matrix|Audit Disposition Ledger|baseline sha|commit range|legacy_cards|reviewed_node_findings|no backfill|telemetry|skipped" docs/walkthroughs/walkthrough-WF-0081-atomic-findings-structured-review.md`
 Risks (if any): Without an explicit closure task, Phase 3 can overclaim rollout safety while mixed-mode compatibility remains unproved.
 
 ## Verification Matrix
 
 | Proof item | Task | Command or test ID | Expected outcome | Result | Evidence reference | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Persisted detail-mode discriminator proof | 1 | `test_wf0081_contract_review_storage_supports_detail_mode_and_findings` | reviews store an explicit primary detail mode instead of relying on read-time inference | `required` | required | protects mixed rollout |
-| Legacy migration safety proof | 1 | `test_wf0081_contract_migration_preserves_legacy_review_cards` | existing reviews/cards remain valid without backfill | `required` | required | legacy cards stay readable |
-| Atomic findings write-path proof | 2 | `test_wf0081_contract_atomic_review_persists_review_findings` | new atomic reviews persist one finding per reviewed-node plus evaluation-element outcome | `required` | required | current engine findings remain upstream truth |
-| Legacy compatibility separation proof | 2 | `test_wf0081_contract_legacy_review_card_path_remains_unchanged` | legacy review generation/reads remain on `ReviewCard` and do not require `ReviewFinding` | `required` | required | no competing truths |
-| Fail-closed mapping proof | 2 | `test_wf0081_contract_unmappable_diagnostic_finding_fails_closed` | unmappable diagnostic findings raise/log a bounded failure instead of being dropped silently | `required` | required | closes the PRD edge case |
-| Backend dual-mode detail proof | 3 | `test_wf0081_contract_review_detail_exposes_explicit_detail_mode` | `GET /reviews/{review_id}` returns explicit `detail_mode` for every review | `required` | required | no heuristics |
-| Reviewed-node grouping proof | 3 | `test_wf0081_contract_atomic_review_detail_groups_findings_under_reviewed_nodes` | atomic responses group findings beneath reviewed nodes rather than flattening them | `required` | required | primary researcher reading model |
-| Single-mode invariant proof | 3 | `test_wf0081_contract_review_detail_modes_are_mutually_exclusive` | each review exposes one primary detail mode without requiring the other shape | `required` | required | prevents mixed-contract drift |
-| BFF contract carry-through proof | 4 | `wf0081_bff_review_detail_preserves_explicit_detail_mode`, `wf0081_bff_review_detail_preserves_reviewed_node_findings` | BFF/types preserve the backend dual-mode contract verbatim | `required` | required | no semantic rewrite |
-| Legacy render continuity proof | 5 | `wf0081_review_detail_legacy_cards_still_render_without_findings` | legacy reviews still render from `ReviewCard` without placeholder findings | `required` | required | backward compatibility |
-| Atomic findings render proof | 5 | `wf0081_review_detail_renders_grouped_reviewed_node_findings` | atomic reviews render grouped findings with evaluation criteria/elements terminology | `required` | required | no `rubric` copy |
-| Positive-state truthfulness proof | 6 | `wf0081_review_detail_requirements_met_render_without_empty_issue_shells` | `REQUIREMENTS_MET` renders bounded positive guidance without empty issue placeholders | `required` | required | keeps positive cases honest |
-| Copy/export truthfulness proof | 6 | `wf0081_review_detail_atomic_copy_and_export_stay_mode_truthful` | same-page actions stay truthful to the active detail mode | `required` | required | no legacy text leakage |
-| Legacy export continuity proof | 6 | `wf0081_review_detail_legacy_copy_and_export_remain_card_based` | atomic-mode truthfulness changes do not rewrite legacy review export semantics | `required` | required | guards backward compatibility |
-| Mixed-rollout closure proof | 7 | walkthrough verification matrix + scoped diff/test commands | implementation-ready claim is blocked until legacy and atomic compatibility evidence is recorded | `required` | required | fail closed before ship |
+| Persisted detail-mode discriminator proof | 1 | `test_wf0081_contract_review_storage_supports_detail_mode_and_findings` | reviews store an explicit primary detail mode instead of relying on read-time inference | `fail` | pending | protects mixed rollout |
+| Legacy migration safety proof | 1 | `test_wf0081_contract_migration_preserves_legacy_review_cards` | existing reviews/cards remain valid without backfill | `fail` | pending | legacy cards stay readable |
+| Atomic findings write-path proof | 2 | `test_wf0081_contract_atomic_review_persists_review_findings` | new atomic reviews persist one finding per reviewed-node plus evaluation-element outcome | `fail` | pending | current engine findings remain upstream truth |
+| Legacy compatibility separation proof | 2 | `test_wf0081_contract_legacy_review_card_path_remains_unchanged` | legacy review generation/reads remain on `ReviewCard` and do not require `ReviewFinding` | `fail` | pending | no competing truths |
+| Fail-closed mapping proof | 2 | `test_wf0081_contract_unmappable_diagnostic_finding_fails_closed` | unmappable diagnostic findings raise/log a bounded failure instead of being dropped silently | `fail` | pending | closes the PRD edge case |
+| Write-path failure telemetry proof | 2 | `test_wf0081_contract_unmappable_diagnostic_finding_records_bounded_failure` | bounded write-path failures are recorded on the agreed telemetry/logging seam | `fail` | pending | closes PRD telemetry 9.2 |
+| Backend dual-mode detail proof | 3 | `test_wf0081_contract_review_detail_exposes_explicit_detail_mode` | `GET /reviews/{review_id}` returns explicit `detail_mode` for every review | `fail` | pending | no heuristics |
+| Reviewed-node grouping proof | 3 | `test_wf0081_contract_atomic_review_detail_groups_findings_under_reviewed_nodes` | atomic responses group findings beneath reviewed nodes rather than flattening them | `fail` | pending | primary researcher reading model |
+| Single-mode invariant proof | 3 | `test_wf0081_contract_review_detail_modes_are_mutually_exclusive` | each review exposes one primary detail mode without requiring the other shape | `fail` | pending | prevents mixed-contract drift |
+| Detail-mode telemetry proof | 3 | `test_wf0081_contract_review_detail_records_detail_mode_usage` | backend response assembly records `legacy_cards` vs `reviewed_node_findings` usage from the explicit contract | `fail` | pending | closes PRD telemetry 9.1 |
+| BFF contract carry-through proof | 4 | `wf0081_bff_review_detail_preserves_explicit_detail_mode`, `wf0081_bff_review_detail_preserves_reviewed_node_findings`, `wf0081_bff_review_detail_preserves_backend_detail_metadata_verbatim` | BFF/types preserve the backend dual-mode contract verbatim without inventing local atomic semantics | `fail` | pending | no semantic rewrite |
+| Legacy render continuity proof | 5 | `wf0081_review_detail_legacy_cards_still_render_without_findings` | legacy reviews still render from `ReviewCard` without placeholder findings | `fail` | pending | backward compatibility |
+| Atomic findings render proof | 5 | `wf0081_review_detail_renders_grouped_reviewed_node_findings` | atomic reviews render grouped findings with evaluation criteria/elements terminology | `fail` | pending | no `rubric` copy |
+| Positive-state truthfulness proof | 6 | `wf0081_review_detail_requirements_met_render_without_empty_issue_shells` | `REQUIREMENTS_MET` renders bounded positive guidance without empty issue placeholders | `fail` | pending | keeps positive cases honest |
+| Copy/export truthfulness proof | 6 | `wf0081_review_detail_atomic_copy_and_export_stay_mode_truthful` | same-page actions stay truthful to the active detail mode | `fail` | pending | no legacy text leakage |
+| Legacy export continuity proof | 6 | `wf0081_review_detail_legacy_copy_and_export_remain_card_based` | atomic-mode truthfulness changes do not rewrite legacy review export semantics | `fail` | pending | guards backward compatibility |
+| Render/copy limitation telemetry disposition | 7 | walkthrough verification matrix row | any temporary limitation telemetry is recorded, or the row is explicitly `skipped` with rationale when no limitation ships | `fail` | pending | closes PRD telemetry 9.3 conditionally |
+| Mixed-rollout closure proof | 7 | walkthrough verification matrix + scoped diff/test commands | implementation-ready claim is blocked until legacy and atomic compatibility evidence is recorded | `fail` | pending | fail closed before ship |
 
 ## Audit Disposition Ledger
 
@@ -281,8 +289,14 @@ Risks (if any): Without an explicit closure task, Phase 3 can overclaim rollout 
 | Phase 2.2 task review | Task 2 did not explicitly prove fail-closed behavior when a diagnostic finding cannot resolve the required snapshot fields | non-blocking | add `test_wf0081_contract_unmappable_diagnostic_finding_fails_closed` plus matching verification/matrix coverage | closed | prevents silent finding loss |
 | Phase 2.2 task review | Task 3 did not explicitly test the per-review mutual-exclusivity invariant between legacy cards and reviewed-node findings | non-blocking | add `test_wf0081_contract_review_detail_modes_are_mutually_exclusive` and wire it through verification/matrix rows | closed | keeps the API contract single-mode and explicit |
 | Phase 2.2 task review | Task 7 did not name the deferred reviews list/history surfaces in its closure proof | non-blocking | add explicit deferred-surface files to Task 7 acceptance and verification commands | closed | improves hidden-coupling detection during closure |
+| 2026-03-14 fail-closed adversarial review | Task 3 leaked same-page action truthfulness into a backend-only slice that cannot implement or prove page behavior | blocking | keep Task 3 on backend response truth only and carry same-page truthfulness only in Task 6 / Task 7 closure evidence | closed | removes a non-executable acceptance criterion |
+| 2026-03-14 fail-closed adversarial review | PRD telemetry requirements for detail-mode usage and bounded write-path failures were missing from the task plan | blocking | add telemetry coverage to Tasks 2, 3, and 7 matrix/verification evidence without widening beyond existing seams | closed | restores approved PRD scope |
+| 2026-03-14 fail-closed adversarial review | Verification matrix used `required` placeholders instead of explicit fail-closed result states | blocking | default every row to `fail` with `pending` evidence until Phase 3 records pass/fail/skipped evidence | closed | restores explicit ship-gate semantics |
+| 2026-03-14 fail-closed adversarial review | Task 4 did not explicitly prove backend review-detail metadata stays authoritative across BFF normalization | non-blocking | add a dedicated BFF regression and verification hook for metadata preservation | closed | tightens hidden-coupling coverage |
+| 2026-03-14 fail-closed adversarial review | Task 5 named a new renderer file without saying it is intentionally created in the slice | non-blocking | clarify file-creation intent in Task 5 acceptance text | closed | removes file-path ambiguity |
 
 ## Changelog
 
 - v0.1 (2026-03-14): Initial task breakdown from the finalized WF-0081 PRD, preserving legacy `ReviewCard` compatibility and sequencing the findings-based rollout across storage, generation, API, BFF, frontend, and closure proof.
 - v0.2 (2026-03-14): Applied Part B review feedback by adding fail-closed mapper proof, explicit single-mode API invariants, legacy export continuity coverage, and tighter deferred-surface closure checks before marking the plan ready.
+- v0.3 (2026-03-14): Closed the fail-closed adversarial audit by restoring PRD telemetry coverage, removing a backend/UI scope leak, tightening BFF metadata preservation proof, clarifying new-file intent, and converting the verification matrix to explicit fail-closed states.
