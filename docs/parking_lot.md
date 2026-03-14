@@ -209,6 +209,7 @@ Note: `Backlog Ref At Promotion` is a historical snapshot of the parking-lot slo
 | 54 | WF-0076 | subordinate-prompt-runtime-consumption | started-directly | - | 2026-03-12 |
 | 55 | WF-0077 | structured-review-deterministic-researcher-guidance | started-directly | - | 2026-03-13 |
 | 56 | WF-0078 | structured-review-grounded-llm-synthesis | started-directly | - | 2026-03-13 |
+| 57 | WF-0079 | researcher-visible-carry-through-mvp | started-directly | - | 2026-03-13 |
 
 ---
 
