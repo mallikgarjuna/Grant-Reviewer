@@ -33,6 +33,7 @@ from app.services.node_role_resolution import (
     resolve_supporting_node_logical_ids_for_primary_path,
 )
 from app.services.structured_review_synthesis_service import (
+    StructuredReviewSynthesisAcceptedResult,
     StructuredReviewSynthesisRequest,
     StructuredReviewSynthesisResult,
     StructuredReviewSynthesisService,
@@ -408,15 +409,7 @@ class StructuredReviewerService:
                 feedback_text=card.feedback,
                 subordinate_prompts_by_element_id=subordinate_prompts_by_element_id,
             )
-            card_payloads.append(
-                (
-                    expectation.id,
-                    ReviewRating[card.rating],
-                    feedback_text,
-                    AssessmentStatus.ASSESSED,
-                    None,
-                )
-            )
+            synthesized_companion_text: str | None = None
             synthesis_request = self._build_synthesis_request_for_card(
                 call_code=call.code,
                 node_logical_id=card.node_logical_id,
@@ -432,9 +425,25 @@ class StructuredReviewerService:
             )
             if synthesis_request is not None:
                 synthesis_requests.append(synthesis_request)
-                synthesis_results.append(
-                    self.synthesis_service.attempt_card_synthesis(synthesis_request)
+                synthesis_result = self.synthesis_service.attempt_card_synthesis(
+                    synthesis_request
                 )
+                synthesis_results.append(synthesis_result)
+                if isinstance(synthesis_result, StructuredReviewSynthesisAcceptedResult):
+                    synthesized_companion_text = (
+                        synthesis_result.synthesized_feedback
+                    )
+
+            card_payloads.append(
+                (
+                    expectation.id,
+                    ReviewRating[card.rating],
+                    feedback_text,
+                    AssessmentStatus.ASSESSED,
+                    None,
+                    synthesized_companion_text,
+                )
+            )
 
         self.last_synthesis_requests = tuple(synthesis_requests)
         self.last_synthesis_results = tuple(synthesis_results)

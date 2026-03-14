@@ -44,7 +44,7 @@ Verification Steps:
 - `cd backend && rg -n "synthesized_companion_text|ReviewCard" app/models/domain.py migrations/versions tests/test_api.py`
 Risks (if any): If the storage contract grows beyond one nullable field here, later API/frontend slices can overexpose synthesis state prematurely.
 
-### [ ] Task 2 — Tracer bullet: persist one accepted ERC-2026-PoC companion on review creation
+### [x] Task 2 — Tracer bullet: persist one accepted ERC-2026-PoC companion on review creation
 
 Goal:
 Prove the structured-review write path can persist one accepted additive companion for an eligible `ERC-2026-PoC` card while leaving deterministic `feedback_text` unchanged and preventing writes for non-targeted calls/cards.
@@ -223,10 +223,10 @@ Risks (if any): Without an explicit closure gate, Phase 3 could overclaim resear
 
 | Proof item | Task | Command or test ID | Expected outcome | Result | Evidence reference | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Deterministic SSOT boundary proof | 2, 5 | `wf0079_contract_erc_poc_persists_accepted_companion_text`, `wf0079_review_detail_renders_optional_companion_block` | deterministic `feedback_text` remains primary and additive text never replaces it | `fail` (default until executed) | required | must not mutate deterministic baseline |
-| Write-path persistence proof | 2 | `wf0079_contract_erc_poc_persists_accepted_companion_text` | accepted in-scope companion text persists during review generation | `fail` (default until executed) | required | no read-time synthesis |
+| Deterministic SSOT boundary proof | 2, 5 | `wf0079_contract_erc_poc_persists_accepted_companion_text`, `wf0079_review_detail_renders_optional_companion_block` | deterministic `feedback_text` remains primary and additive text never replaces it | `fail` (default until executed) | Task 2 GREEN: write-path preserved deterministic `feedback_text` on 2026-03-14; Task 5 render proof still pending | must not mutate deterministic baseline |
+| Write-path persistence proof | 2 | `wf0079_contract_erc_poc_persists_accepted_companion_text` | accepted in-scope companion text persists during review generation | `pass` | Task 2 GREEN on 2026-03-14 via targeted PostgreSQL selector | no read-time synthesis |
 | Legacy review compatibility proof | 1, 3, 5 | `wf0079_contract_review_card_storage_allows_null_companion_text`, `wf0079_contract_migration_preserves_legacy_null_companion_text`, `wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells` | null legacy rows stay valid from storage through render | `fail` (default until executed) | Task 1 GREEN: storage + migration proof passed on 2026-03-14; Task 3/5 carry-through/render proof still pending | no backfill requirement |
-| Eligibility scope-gate proof | 2, 6 | `wf0079_contract_non_targeted_calls_do_not_persist_companion_text` | non-`ERC-2026-PoC` calls/cards do not persist or expose companion text | `fail` (default until executed) | required | protects narrow rollout |
+| Eligibility scope-gate proof | 2, 6 | `wf0079_contract_non_targeted_calls_do_not_persist_companion_text` | non-`ERC-2026-PoC` calls/cards do not persist or expose companion text | `fail` (default until executed) | Task 2 GREEN: non-targeted write-path remained null on 2026-03-14; Task 6 deferred-surface proof still pending | protects narrow rollout |
 | Detail read/API carry-through proof | 3 | `wf0079_contract_review_detail_response_carries_optional_companion_text` | backend detail response returns the nullable per-card field without semantic drift | `fail` (default until executed) | required | per-card optionality only |
 | BFF carry-through proof | 4 | `wf0079_bff_review_detail_preserves_optional_companion_text` | BFF/type boundary passes the backend field through unchanged | `fail` (default until executed) | required | no semantic rewrite |
 | Mixed-card fail-closed proof | 3, 5 | `wf0079_contract_review_detail_response_supports_mixed_card_companion_states`, `wf0079_review_detail_legacy_and_mixed_cards_hide_empty_companion_shells` | one card can show companion text while another remains deterministic-only | `fail` (default until executed) | required | per-card degradation only |

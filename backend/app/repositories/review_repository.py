@@ -374,6 +374,7 @@ class ReviewRepository:
         feedback: str,
         assessment_status: AssessmentStatus = AssessmentStatus.ASSESSED,
         not_assessable_reason: str | None = None,
+        synthesized_companion_text: str | None = None,
     ) -> ReviewCard:
         """Create a new review card."""
         card = ReviewCard(
@@ -383,6 +384,7 @@ class ReviewRepository:
             feedback_text=feedback,
             assessment_status=assessment_status,
             not_assessable_reason=not_assessable_reason,
+            synthesized_companion_text=synthesized_companion_text,
         )
         self.session.add(card)
         self.session.commit()
@@ -393,11 +395,20 @@ class ReviewRepository:
         self,
         *,
         review_id: UUID,
-        cards: list[tuple[UUID, ReviewRating, str, AssessmentStatus, str | None]],
+        cards: list[
+            tuple[UUID, ReviewRating, str, AssessmentStatus, str | None, str | None]
+        ],
     ) -> list[ReviewCard]:
         """Create many review cards atomically with a single commit."""
         created_cards: list[ReviewCard] = []
-        for expectation_id, rating, feedback, assessment_status, not_assessable_reason in cards:
+        for (
+            expectation_id,
+            rating,
+            feedback,
+            assessment_status,
+            not_assessable_reason,
+            synthesized_companion_text,
+        ) in cards:
             created_cards.append(
                 ReviewCard(
                     review_id=review_id,
@@ -406,6 +417,7 @@ class ReviewRepository:
                     feedback_text=feedback,
                     assessment_status=assessment_status,
                     not_assessable_reason=not_assessable_reason,
+                    synthesized_companion_text=synthesized_companion_text,
                 )
             )
 
