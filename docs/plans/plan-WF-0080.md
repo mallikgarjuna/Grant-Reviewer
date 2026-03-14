@@ -21,14 +21,15 @@ Generate the canonical WF artifacts from it.
 
 ## Intent
 
-Move the structured-review output from the current coarse card model to an atomic finding model.
+Move the structured-review output from the current coarse card model to an atomic finding model at the **Evaluation Element** level.
 Each visible finding should be traceable to:
 
 - one `proposal_node`
 - one `evaluation_element`
-- one `subordinate_prompt`
 
-Each finding should carry its own structured feedback fields instead of collapsing everything into one `feedback_text` blob plus an optional additive companion paragraph.
+**Note on Scope (MVP pragmatism):** While subordinate prompts represent the deepest level of granularity, forcing a 1:1 finding mapping per subordinate prompt risks fragmenting the researcher's reading experience and increases LLM hallucination risk. Subordinate prompts will act as grounding context for the LLM to write a cohesive, element-level finding.
+
+Each finding should carry explicit structured feedback parts (summary, evidence, and synthesized guidance) instead of collapsing everything into one `feedback_text` blob.
 
 ## Repo Reality Anchor
 
@@ -53,8 +54,8 @@ review -> cards[]
 Current user-visible limitation:
 
 - one visible card compresses too much structure
-- `subordinate_prompt` traceability is not first-class in the output
-- OpenAI synthesis is additive wording only, not atomic finding generation
+- OpenAI synthesis is additive wording only, decoupled from the core finding generation
+- No obvious positive reinforcement ("Requirements Met") if a section is good
 
 ## Outcome Definition
 
@@ -66,7 +67,7 @@ review
      -> finding[]
 ```
 
-Each finding must be a first-class object with explicit traceability and structured feedback parts.
+Each finding must be a first-class object anchored to an `evaluation_element`. The UI will display a synthesized, actionable narrative that weaves deterministic policy with LLM suggestions to minimize cognitive load.
 
 ## Sufficient Contract Changes
 
@@ -86,24 +87,19 @@ ReviewFinding
 - evaluation_criterion_name_snapshot
 - evaluation_element_logical_id_snapshot
 - evaluation_element_name_snapshot
-- subordinate_prompt_id_snapshot
-- subordinate_prompt_text_snapshot
-- finding_status
-- severity
-- assessment_status
+- severity ("critical" | "warning" | "note" | "success")
+- assessment_status ("ASSESSED" | "NOT_ASSESSABLE" | "REQUIREMENTS_MET")
 - evidence_basis_text
 - issue_summary_text
-- deterministic_guidance_text
-- llm_guidance_text nullable
-- source_mode ("deterministic" | "llm_additive" | "hybrid")
+- actionable_feedback_text
 - created_at
 ```
 
 Why this is sufficient:
-
-- `ReviewCard` is too coarse for the required traceability
-- snapshots preserve historical renderability even if call YAML changes later
-- separate deterministic vs additive LLM fields keep truthfulness explicit
+- `ReviewCard` is too coarse for the required traceability.
+- Snapshots preserve historical renderability even if call YAML changes later.
+- `actionable_feedback_text` combines the "why" (deterministic policy) and "how to fix" (LLM advice) into one seamless read.
+- `assessment_status` now natively supports a "pass" condition (`REQUIREMENTS_MET`).
 
 ### 2. Keep backward compatibility
 
@@ -136,14 +132,11 @@ AtomicFinding
 - finding_id
 - evaluation_criterion
 - evaluation_element
-- subordinate_prompt
 - severity
 - assessment_status
 - evidence_basis
 - issue_summary
-- deterministic_guidance
-- llm_guidance nullable
-- source_mode
+- actionable_feedback
 ```
 
 ### 4. Sufficient UI changes
@@ -153,27 +146,18 @@ Replace the current “one large card body” reading flow with:
 ```text
 Reviewed section
   -> Finding list
-     -> one bordered finding item per subordinate prompt finding
+     -> one bordered finding item per evaluation element finding
+        -> evaluation element name (header)
         -> issue summary
         -> evidence basis
-        -> deterministic guidance
-        -> additive llm guidance (if present)
-        -> traceability chips/labels
+        -> actionable feedback
 ```
 
-Minimum visible traceability labels:
-
-- `Reviewed section`
-- `Evaluation criterion`
-- `Evaluation element`
-- `Subordinate prompt`
-- `Deterministic guidance`
-- `Additive LLM guidance` when present
+If a section fully meets requirements, explicitly show a "Requirements Met" or "Green Check" state to build researcher confidence.
 
 ## Sufficient Prompt Contract
 
-The prompt must stop asking for one merged feedback blob.
-It must ask for atomic findings keyed to node + evaluation element + subordinate prompt.
+The prompt must ask for findings keyed to the node and evaluation element. It must not ask the LLM to echo back static IDs, which wastes tokens.
 
 ### Prompt shape
 
@@ -181,13 +165,11 @@ System intent:
 
 ```text
 You are generating structured review findings for grant proposal text.
-Return atomic findings only.
-Each finding must map to exactly one proposal node, one evaluation element, and one subordinate prompt.
-Do not merge multiple subordinate prompts into one finding.
-Do not return free-form prose outside the JSON schema.
-Keep deterministic traceability fields unchanged when provided.
-LLM guidance must be additive and must not replace deterministic guidance.
-If evidence is insufficient, return no finding or mark assessment_status accordingly; do not hallucinate evidence.
+Evaluate the submitted text against the provided Evaluation Element and its context prompts.
+If the text satisfies the requirements, return an empty findings array.
+If there are issues, return one or more findings.
+Do not echo back the node or element IDs in the JSON; they are injected by the system.
+Provide a short issue_summary, cite grounded evidence from the submitted text in evidence_basis, and provide cohesive actionable_feedback that advises the researcher on how to satisfy the requirements.
 ```
 
 User payload skeleton:
@@ -198,28 +180,16 @@ CALL CONTEXT
 - review_stage: <stage>
 
 NODE UNDER REVIEW
-- proposal_node_logical_id: <node_id>
-- proposal_node_title: <title>
 - submitted_text: <proposal text>
 
-TRACEABLE EVALUATION TARGETS
-- evaluation_criterion_logical_id
-- evaluation_criterion_name
-- evaluation_element_logical_id
+EVALUATION TARGET
 - evaluation_element_name
-- subordinate_prompt_id
-- subordinate_prompt_text
+- rubric_context (including subordinate prompts for context)
 - deterministic_guidance_text
 
 TASK
-For each subordinate prompt target, decide whether there is a reviewer-visible finding.
-Return zero or more atomic findings.
-Each finding must:
-- reference the exact proposal node, evaluation element, and subordinate prompt
-- explain the issue in a short issue_summary
-- cite grounded evidence from the submitted text in evidence_basis
-- preserve deterministic guidance as provided
-- optionally add concise llm_guidance that helps revision
+Evaluate the text. If requirements are met, return `{ "findings": [] }`.
+Otherwise, return findings specifying `issue_summary`, `evidence_basis`, `actionable_feedback`, and `severity`.
 ```
 
 ## Sufficient JSON Schema Sketch
@@ -228,74 +198,23 @@ Each finding must:
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["proposal_node_logical_id", "findings"],
+  "required": ["findings"],
   "properties": {
-    "proposal_node_logical_id": {
-      "type": "string",
-      "minLength": 1
-    },
     "findings": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "finding_id",
-          "proposal_node_logical_id",
-          "evaluation_criterion_logical_id",
-          "evaluation_criterion_name",
-          "evaluation_element_logical_id",
-          "evaluation_element_name",
-          "subordinate_prompt_id",
-          "subordinate_prompt_text",
           "severity",
-          "assessment_status",
           "evidence_basis",
           "issue_summary",
-          "deterministic_guidance",
-          "llm_guidance",
-          "source_mode"
+          "actionable_feedback"
         ],
         "properties": {
-          "finding_id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "proposal_node_logical_id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "evaluation_criterion_logical_id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "evaluation_criterion_name": {
-            "type": "string",
-            "minLength": 1
-          },
-          "evaluation_element_logical_id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "evaluation_element_name": {
-            "type": "string",
-            "minLength": 1
-          },
-          "subordinate_prompt_id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "subordinate_prompt_text": {
-            "type": "string",
-            "minLength": 1
-          },
           "severity": {
             "type": "string",
-            "enum": ["critical", "warning", "note", "success"]
-          },
-          "assessment_status": {
-            "type": "string",
-            "enum": ["ASSESSED", "NOT_ASSESSABLE"]
+            "enum": ["critical", "warning", "note"]
           },
           "evidence_basis": {
             "type": "string",
@@ -305,16 +224,9 @@ Each finding must:
             "type": "string",
             "minLength": 1
           },
-          "deterministic_guidance": {
+          "actionable_feedback": {
             "type": "string",
             "minLength": 1
-          },
-          "llm_guidance": {
-            "type": ["string", "null"]
-          },
-          "source_mode": {
-            "type": "string",
-            "enum": ["deterministic", "llm_additive", "hybrid"]
           }
         }
       }
@@ -323,6 +235,8 @@ Each finding must:
 }
 ```
 
+*Note: The backend orchestrator will attach the `finding_id`, `proposal_node_logical_id`, and `evaluation_element_logical_id` to the returned objects.*
+
 ## Minimal WF Slice Plan
 
 ### Phase 0 target
@@ -330,9 +244,9 @@ Each finding must:
 Lock the problem framing:
 
 - the current card model is insufficient
-- the new output unit is `finding`
-- traceability must include `proposal_node`, `evaluation_element`, and `subordinate_prompt`
-- additive LLM text must stay visibly separate from deterministic guidance
+- the new output unit is `finding` at the `evaluation_element` scale
+- UX must be cohesive: one actionable feedback field rather than split deterministic/LLM chunks
+- empty findings signify explicitly met requirements
 
 ### Phase 1 target
 
@@ -341,7 +255,7 @@ Lock the product contract:
 - atomic finding persistence
 - review-detail API shape
 - grouped node/finding UI
-- prompt/schema contract for OpenAI generation
+- slimmed prompt/schema contract for purely creative LLM output
 - backward compatibility for legacy reviews
 
 ### Phase 2 target
@@ -351,13 +265,12 @@ Split into minimal tasks.
 Recommended implementation order:
 
 1. Storage contract for persisted atomic findings
-2. Prompt/schema contract for atomic finding generation
-3. Service write path from structured-review runtime into finding persistence
+2. Slim prompt/schema contract and parser tests
+3. Service write path from structured-review runtime into finding persistence (attaching IDs)
 4. Backend detail API carry-through
 5. BFF/types carry-through
 6. Review-detail UI rendering redesign
-7. Copy/export truthfulness review
-8. Walkthrough closeout with browser validation
+7. Walkthrough closeout with browser validation
 
 ## Suggested Task Boundaries
 
@@ -366,31 +279,28 @@ Keep tasks atomic and under the repo’s file-touch limits.
 Recommended first three tasks:
 
 1. Add finding storage contract and migration
-2. Add prompt/schema contract and parser tests
-3. Persist atomic findings for one representative `ERC-2026-PoC` node path
+2. Add slim prompt/schema contract and parser tests
+3. Persist atomic element-level findings for one representative `ERC-2026-PoC` node path
 
 ## Must-Have Verification
 
-- failing regression that proves the current card-only detail contract cannot represent subordinate-prompt atomic findings
+- failing regression that proves the current card-only detail contract cannot represent element-level atomic findings
 - parser/schema tests for the LLM finding JSON
-- persistence test proving one finding per subordinate prompt
 - backend detail contract test proving grouped node + findings response
-- frontend test proving the UI shows one finding item per subordinate prompt
-- browser validation proving the researcher can distinguish deterministic guidance from additive LLM guidance
+- frontend test proving the UI shows element-level finding items and elegant "Requirements Met" empty states
+- browser validation proving the researcher can read a cohesive, single `actionable_feedback` block
 
 ## Explicit Non-Goals for the Next WF
 
 - redesign review history/list surfaces beyond what is needed for truthful labels
 - multi-call rollout beyond a narrow representative wedge unless Phase 0/1 explicitly approves it
-- replacing deterministic guidance with LLM-only guidance
-- free-form markdown dumping as the primary output unit
+- forcing 1:1 mapping of findings to subordinate prompts
 
 ## Ship Bar
 
 The next WF is only complete when a researcher can open `/app/reviews/<review-id>` and see:
 
 - reviewed nodes grouped clearly
-- atomic findings listed separately
-- each finding traceable to one evaluation element and one subordinate prompt
-- deterministic guidance clearly separated from additive LLM guidance
-- no ambiguity about which part came from the deterministic engine vs the LLM
+- atomic findings listed separately by evaluation element
+- a unified `actionable_feedback` narrative per finding
+- a clear success state for sections that meet all element requirements
