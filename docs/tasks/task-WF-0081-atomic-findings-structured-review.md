@@ -150,7 +150,7 @@ Verification Steps:
 - `cd frontend && rg -n "detail_mode|reviewed_nodes|findings|REQUIREMENTS_MET|detail_state" src/app/api/bff/reviews/'[reviewId]'/route.ts src/app/api/bff/reviews/'[reviewId]'/route.test.ts src/lib/bff/types.ts`
 Risks (if any): If the BFF rewrites response semantics, the page can diverge from backend truth during mixed rollout.
 
-### [ ] Task 5 — Render reviewed-node findings on the detail page while preserving legacy cards
+### [x] Task 5 — Render reviewed-node findings on the detail page while preserving legacy cards
 
 Goal:
 Make `/app/reviews/[reviewId]` render the new grouped findings contract for atomic reviews and keep the existing `ReviewCard` path intact for legacy reviews.

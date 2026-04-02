@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({
 
 function reviewPayload(overrides: Record<string, unknown> = {}) {
   return {
+    detail_mode: "legacy_cards",
     review: {
       id: "review-1",
       status: "COMPLETED",
@@ -50,6 +51,54 @@ function reviewPayload(overrides: Record<string, unknown> = {}) {
     moved_legacy_node_references: [],
     ...overrides,
   };
+}
+
+function atomicReviewPayload(overrides: Record<string, unknown> = {}) {
+  return reviewPayload({
+    detail_mode: "reviewed_node_findings",
+    cards: undefined,
+    reviewed_nodes: [
+      {
+        proposal_node_id: "node-1",
+        proposal_node_logical_id: "academic_profile",
+        proposal_node_title: "Academic profile",
+        node_role: "PRIMARY",
+        findings: [
+          {
+            finding_id: "finding-1",
+            evaluation_criterion: "Structured quality",
+            evaluation_element: "Structured node quality",
+            severity: "WARNING",
+            assessment_status: "ASSESSED",
+            issue_summary: "Academic profile needs sharper evidence.",
+            evidence_basis: "The profile text stays too general.",
+            actionable_feedback: "Add concrete achievements tied to the call.",
+          },
+        ],
+      },
+      {
+        proposal_node_id: "node-2",
+        proposal_node_logical_id: "scientific_proposal",
+        proposal_node_title: "Scientific proposal",
+        node_role: "PRIMARY",
+        findings: [
+          {
+            finding_id: "finding-2",
+            evaluation_criterion: "Structured quality",
+            evaluation_element: "Structured node quality",
+            severity: "SUCCESS",
+            assessment_status: "REQUIREMENTS_MET",
+            issue_summary: "Research idea requirements are met.",
+            evidence_basis:
+              "The idea text already addresses the evaluation element.",
+            actionable_feedback:
+              "Keep the current specificity in the final version.",
+          },
+        ],
+      },
+    ],
+    ...overrides,
+  });
 }
 
 function ercPocNodesPayload() {
@@ -262,6 +311,102 @@ describe("ReviewDetailPage", () => {
 
     expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
     expect(screen.getByText("Feedback text")).toBeInTheDocument();
+  });
+
+  it("wf0081_review_detail_renders_grouped_reviewed_node_findings", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              atomicReviewPayload({
+                call_id: "call-erc-poc",
+                call_code: "ERC-2026-PoC",
+                detail_state: "call_linked",
+                ordering_source: "call_nodes",
+                submitted_node_logical_ids: [
+                  "academic_profile",
+                  "scientific_proposal",
+                ],
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc-poc/nodes")) {
+          return new Response(JSON.stringify(ercPocNodesPayload()), {
+            status: 200,
+          });
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
+    });
+    expect(
+      within(reviewRegion).getByText("Reviewed section: Academic profile"),
+    ).toBeInTheDocument();
+    expect(
+      within(reviewRegion).getByText("Reviewed section: Scientific proposal"),
+    ).toBeInTheDocument();
+    expect(
+      within(reviewRegion).getAllByText("Evaluation criterion: Structured quality"),
+    ).toHaveLength(2);
+    expect(
+      within(reviewRegion).getAllByText("Evaluation element: Structured node quality"),
+    ).toHaveLength(2);
+    expect(within(reviewRegion).getAllByText("Evidence basis")).toHaveLength(2);
+    expect(within(reviewRegion).getAllByText("Actionable feedback")).toHaveLength(2);
+    expect(
+      within(reviewRegion).getByText("Requirements met"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Criterion: Quality"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("wf0081_review_detail_legacy_cards_still_render_without_findings", async () => {
+    mockReviewDetailFetch({
+      detail_mode: "legacy_cards",
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "exp-1",
+          node_logical_id: "academic_profile",
+          node_title: "Academic profile",
+          criterion: "Quality",
+          criterion_description: "Quality criterion",
+          evaluation_element_name: "Peer-exceeding quality",
+          expectation_guidance_note: "Provide concrete evidence.",
+          rating: "SUCCESS",
+          feedback_text: "Legacy review card feedback.",
+        },
+      ],
+      reviewed_nodes: undefined,
+    });
+
+    render(<ReviewDetailPage />);
+
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
+    });
+    expect(
+      within(reviewRegion).getByText("Reviewed section: Academic profile"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Legacy review card feedback.")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Evaluation element: Structured node quality"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Requirements met")).not.toBeInTheDocument();
   });
 
   it("wf0067_review_card_trust_metadata_shows_available_and_unavailable_basis", async () => {
