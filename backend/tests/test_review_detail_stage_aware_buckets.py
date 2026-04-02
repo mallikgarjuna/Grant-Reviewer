@@ -31,6 +31,7 @@ def test_out_of_scope_defaults_to_empty() -> None:
             overall_rating="NOTE",
             overall_summary="Summary",
         ),
+        detail_mode="legacy_cards",
         cards=[],
     )
     assert response.out_of_scope_node_logical_ids == []
