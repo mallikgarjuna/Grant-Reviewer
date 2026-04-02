@@ -215,6 +215,44 @@ function installExportDoubles() {
 }
 
 describe("ReviewDetailPage", () => {
+  it("wf0081_review_detail_header_surfaces_funding_call_when_available", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          return new Response(
+            JSON.stringify(
+              reviewPayload({
+                call_id: "call-erc-poc",
+                call_code: "ERC-2026-PoC",
+                detail_state: "call_linked",
+                ordering_source: "call_nodes",
+              }),
+            ),
+            { status: 200 },
+          );
+        }
+        if (url.includes("/api/bff/calls/call-erc-poc/nodes")) {
+          return new Response(JSON.stringify(ercPocNodesPayload()), { status: 200 });
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Coverage summary")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => {
+        return element?.textContent === "Funding call: ERC-2026-PoC";
+      }),
+    ).toBeInTheDocument();
+  });
+
   it("wf0067_review_detail_tracer_surfaces_source_basis_fields_in_reading_flow", async () => {
     vi.stubGlobal(
       "fetch",

@@ -35,7 +35,7 @@ from app.models.domain import (
     ReviewStatus,
 )
 from app.repositories.review_repository import ReviewRepository
-from app.services.llm_client import LLMClientError
+from app.services.llm_client import LLMClientError, StubLLMClient
 from app.services.structured_review_synthesis_service import (
     StructuredReviewSynthesisAcceptedResult,
     StructuredReviewSynthesisRejectedResult,
@@ -2389,6 +2389,95 @@ def test_wf0079_contract_erc_poc_persists_accepted_companion_text(
             persisted_cards[0].synthesized_companion_text
             == synthesized_companion_text
         )
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0079_contract_erc_poc_stub_mode_persists_companion_text(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0079: stub mode should still persist additive companion guidance for ERC PoC.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0079-erc-poc-stub-companion",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0079-erc-poc-stub-companion",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StubLLMClient()
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0079-erc-poc-stub-companion",
+            idempotency_key="wf0079-erc-poc-stub-companion",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith("Revise poc_idea_innovation")
+        assert cards[0].synthesized_companion_text is not None
+        assert "Stub companion guidance" in cards[0].synthesized_companion_text
+
+        persisted_cards = list(
+            service.repository.session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == review.id)
+            ).all()
+        )
+        assert len(persisted_cards) == 1
+        assert persisted_cards[0].synthesized_companion_text is not None
+        assert len(service.last_synthesis_results) == 1
+        accepted_result = service.last_synthesis_results[0]
+        assert isinstance(accepted_result, StructuredReviewSynthesisAcceptedResult)
     finally:
         service.repository.session.close()
 

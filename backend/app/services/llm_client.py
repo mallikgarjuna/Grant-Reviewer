@@ -114,9 +114,21 @@ class StubLLMClient:
     EXPECTATION_ID_PATTERN: ClassVar[re.Pattern[str]] = re.compile(
         r"ID:\s*([0-9a-fA-F-]{36})"
     )
+    SYNTHESIS_FIELD_PATTERNS: ClassVar[dict[str, re.Pattern[str]]] = {
+        "expectation_id": re.compile(r"^expectation_id:\s*(.+)$", re.MULTILINE),
+        "node_logical_id": re.compile(r"^node_logical_id:\s*(.+)$", re.MULTILINE),
+        "element_logical_id": re.compile(
+            r"^evaluation_element_logical_id:\s*(.+)$", re.MULTILINE
+        ),
+        "submitted_excerpt": re.compile(r"^submitted_excerpt:\s*(.+)$", re.MULTILINE),
+    }
 
     def generate(self, prompt: str) -> str:
         """Return valid deterministic JSON without external API calls."""
+        synthesis_payload = self._build_synthesis_payload(prompt)
+        if synthesis_payload is not None:
+            return json.dumps(synthesis_payload)
+
         expectation_ids = self.EXPECTATION_ID_PATTERN.findall(prompt)
         if not expectation_ids:
             raise LLMClientError("Stub mode could not detect expectation IDs in prompt")
@@ -136,6 +148,40 @@ class StubLLMClient:
     def get_model_name(self) -> str:
         """Return stub model name."""
         return self.MODEL_NAME
+
+    @classmethod
+    def _build_synthesis_payload(cls, prompt: str) -> dict[str, object] | None:
+        expectation_id = cls._extract_synthesis_field(prompt, "expectation_id")
+        node_logical_id = cls._extract_synthesis_field(prompt, "node_logical_id")
+        element_logical_id = cls._extract_synthesis_field(prompt, "element_logical_id")
+        submitted_excerpt = cls._extract_synthesis_field(prompt, "submitted_excerpt")
+        if not all(
+            [expectation_id, node_logical_id, element_logical_id, submitted_excerpt]
+        ):
+            return None
+
+        evidence_quote = submitted_excerpt[:80].strip()
+        if not evidence_quote:
+            evidence_quote = submitted_excerpt.strip()
+
+        return {
+            "expectation_id": expectation_id,
+            "node_logical_id": node_logical_id,
+            "evaluation_element_logical_id": element_logical_id,
+            "synthesized_feedback": (
+                "Stub companion guidance: expand the cited evidence into a sharper, "
+                "evaluation-criteria-grounded revision."
+            ),
+            "evidence_quotes": [evidence_quote],
+        }
+
+    @classmethod
+    def _extract_synthesis_field(cls, prompt: str, field_name: str) -> str | None:
+        match = cls.SYNTHESIS_FIELD_PATTERNS[field_name].search(prompt)
+        if match is None:
+            return None
+        value = match.group(1).strip()
+        return value or None
 
 
 def build_llm_client() -> LLMClientProtocol:

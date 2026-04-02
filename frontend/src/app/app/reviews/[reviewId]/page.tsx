@@ -990,6 +990,11 @@ export default function ReviewDetailPage() {
         <p className="mt-3 text-sm text-[var(--color-muted-foreground)]">
           Review ID: <span className="font-mono">{reviewDetail.review.id}</span>
         </p>
+        {reviewDetail.call_code ? (
+          <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">
+            Funding call: <span className="font-medium">{reviewDetail.call_code}</span>
+          </p>
+        ) : null}
 
         {hasOverallSummary ? (
           <div className="mt-6">
