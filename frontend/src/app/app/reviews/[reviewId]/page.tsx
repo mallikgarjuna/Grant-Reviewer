@@ -56,6 +56,10 @@ type ReviewedNodeGroup = NonNullable<ReviewDetailResponse["reviewed_nodes"]>[num
 
 type ReviewDetailMode = NonNullable<ReviewDetailResponse["detail_mode"]>;
 
+function isReviewDetailMode(value: unknown): value is ReviewDetailMode {
+  return value === "legacy_cards" || value === "reviewed_node_findings";
+}
+
 function formatAssessmentStatusLabel(
   assessmentStatus: NonNullable<
     ReviewDetailResponse["reviewed_nodes"]
@@ -108,8 +112,17 @@ async function parseApiError(response: Response): Promise<ApiError> {
   }
 }
 
+function missingDetailModeError(): ApiError {
+  return {
+    code: "INTERNAL_ERROR",
+    message: "Review detail payload is missing an explicit detail mode.",
+    details: {},
+    status: 500,
+  };
+}
+
 function buildReviewExportText(reviewDetail: ReviewDetailResponse): string {
-  const detailMode: ReviewDetailMode = reviewDetail.detail_mode ?? "legacy_cards";
+  const detailMode: ReviewDetailMode = reviewDetail.detail_mode;
   if (detailMode === "reviewed_node_findings") {
     const reviewedNodes = reviewDetail.reviewed_nodes ?? [];
     const lines: string[] = [
@@ -445,6 +458,15 @@ export default function ReviewDetailPage() {
         return;
       }
       const payload = (await response.json()) as ReviewDetailViewModel;
+      if (!isReviewDetailMode(payload.detail_mode)) {
+        if (!cancelled) {
+          setError(missingDetailModeError());
+          setReviewDetail(null);
+          setCallNodes(null);
+          setIsLoading(false);
+        }
+        return;
+      }
       let nextCallNodes: NodeSummary[] | null = null;
       if (typeof payload.call_id === "string" && payload.call_id.length > 0) {
         const callNodesResponse = await fetch(`/api/bff/calls/${payload.call_id}/nodes`, {
@@ -523,6 +545,13 @@ export default function ReviewDetailPage() {
 
         const payload = (await response.json()) as ReviewDetailViewModel;
         if (cancelled) {
+          return;
+        }
+        if (!isReviewDetailMode(payload.detail_mode)) {
+          setError(missingDetailModeError());
+          setReviewDetail(null);
+          setCallNodes(null);
+          stopped = true;
           return;
         }
 
@@ -761,7 +790,7 @@ export default function ReviewDetailPage() {
   const hasOverallSummary = Boolean(
     reviewDetail.review.overall_summary?.trim(),
   );
-  const detailMode: ReviewDetailMode = reviewDetail.detail_mode ?? "legacy_cards";
+  const detailMode: ReviewDetailMode = reviewDetail.detail_mode;
   const reviewCards = reviewDetail.cards ?? [];
   const reviewedNodes = reviewDetail.reviewed_nodes ?? [];
   const isAtomicDetailMode = detailMode === "reviewed_node_findings";

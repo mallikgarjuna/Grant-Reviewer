@@ -609,6 +609,31 @@ describe("ReviewDetailPage", () => {
     expect(await getDownloadedBlob()?.text()).toContain("Criterion: Quality");
   });
 
+  it("wf0081_review_detail_missing_detail_mode_fails_closed", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/bff/reviews/review-1")) {
+          const payload = reviewPayload();
+          delete (payload as { detail_mode?: string }).detail_mode;
+          return new Response(JSON.stringify(payload), { status: 200 });
+        }
+        return new Response(
+          JSON.stringify({ error: { code: "NOT_FOUND", message: "Not found" } }),
+          { status: 404 },
+        );
+      }),
+    );
+
+    render(<ReviewDetailPage />);
+
+    expect(await screen.findByText("Unable to load review")).toBeInTheDocument();
+    expect(
+      screen.getByText("Review detail payload is missing an explicit detail mode."),
+    ).toBeInTheDocument();
+  });
+
   it("wf0067_review_card_trust_metadata_shows_available_and_unavailable_basis", async () => {
     vi.stubGlobal(
       "fetch",

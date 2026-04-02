@@ -180,7 +180,7 @@ export type ReviewDetailProjection = {
 };
 
 export type ReviewDetailResponse = {
-  detail_mode?: "legacy_cards" | "reviewed_node_findings";
+  detail_mode: "legacy_cards" | "reviewed_node_findings";
   call_id?: string | null;
   call_code?: string | null;
   detail_state?: "call_linked" | "legacy_fallback" | "proof_path_unmapped";
