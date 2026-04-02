@@ -220,7 +220,7 @@ Verification Steps:
 - `cd frontend && rg -n "Copy as text|Download \\.txt|REQUIREMENTS_MET|evaluation criteria|evaluation elements" src/app/app/reviews/'[reviewId]'/page.tsx src/app/app/reviews/'[reviewId]'/page.test.tsx src/components/review/ReviewNodeFindings.tsx`
 Risks (if any): If same-page actions remain card-shaped while the page shows findings, researchers can export misleading review content.
 
-### [ ] Task 7 — Close mixed-rollout safety, compatibility proof, and implementation-readiness evidence
+### [x] Task 7 — Close mixed-rollout safety, compatibility proof, and implementation-readiness evidence
 
 Goal:
 Fail closed on the rollout boundary by proving legacy-card reviews and new findings reviews can coexist without heuristic reads, auto-backfill, or out-of-scope surface drift before claiming WF-0081 is ready to implement.

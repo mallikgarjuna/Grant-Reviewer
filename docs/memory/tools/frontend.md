@@ -21,3 +21,4 @@
 
 - **2026-03-10:** `classifyReviewDetailNodes` must filter out `isContainer` nodes before computing coverage/supporting arrays. Why: hierarchical nodes with `has_expectations=true` can be visual containers, and including them leaks container IDs into coverage summaries.
 - **2026-03-14:** Review detail findings should render grouped by reviewed section/node, with explicit `Deterministic feedback` plus optional `LLM companion guidance` per card; do not reintroduce separate `Top actions` / `Other findings` buckets. Why: manual verification for WF-0080 preferred per-section multi-finding visibility over projection-split presentation.
+- **2026-04-02:** Frontend review-detail verification in this repo runs through `npm run test:ui`; `frontend/package.json` does not define `npm test`. Why: use the real script when following task verification steps to avoid false command failures during WF execution.
