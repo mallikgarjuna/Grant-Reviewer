@@ -56,6 +56,22 @@ type ReviewedNodeGroup = NonNullable<ReviewDetailResponse["reviewed_nodes"]>[num
 
 type ReviewDetailMode = NonNullable<ReviewDetailResponse["detail_mode"]>;
 
+function formatAssessmentStatusLabel(
+  assessmentStatus: NonNullable<
+    ReviewDetailResponse["reviewed_nodes"]
+  >[number]["findings"][number]["assessment_status"],
+): string {
+  switch (assessmentStatus) {
+    case "REQUIREMENTS_MET":
+      return "Requirements met";
+    case "NOT_ASSESSABLE":
+      return "Not assessable";
+    case "ASSESSED":
+    default:
+      return "Assessed";
+  }
+}
+
 type ReviewDetailViewState =
   | "call_linked"
   | "legacy_fallback"
@@ -93,6 +109,57 @@ async function parseApiError(response: Response): Promise<ApiError> {
 }
 
 function buildReviewExportText(reviewDetail: ReviewDetailResponse): string {
+  const detailMode: ReviewDetailMode = reviewDetail.detail_mode ?? "legacy_cards";
+  if (detailMode === "reviewed_node_findings") {
+    const reviewedNodes = reviewDetail.reviewed_nodes ?? [];
+    const lines: string[] = [
+      "PeerLens deterministic review export",
+      "Additive companion guidance is not included in this export.",
+      "",
+      `Review ID: ${reviewDetail.review.id}`,
+      `Status: ${reviewDetail.review.status}`,
+      "",
+      "Summary:",
+      reviewDetail.review.overall_summary ?? "No overall summary available.",
+      "",
+      "Reviewed node findings:",
+    ];
+
+    if (reviewedNodes.length === 0) {
+      lines.push("No reviewed node findings available.");
+      return lines.join("\n");
+    }
+
+    reviewedNodes.forEach((reviewedNode, nodeIndex) => {
+      lines.push("");
+      lines.push(
+        `${nodeIndex + 1}. Reviewed section: ${reviewedNode.proposal_node_title}`,
+      );
+
+      reviewedNode.findings.forEach((finding, findingIndex) => {
+        lines.push(`   ${findingIndex + 1}. Evaluation criterion: ${finding.evaluation_criterion}`);
+        lines.push(`      Evaluation element: ${finding.evaluation_element}`);
+        lines.push(
+          `      Assessment status: ${formatAssessmentStatusLabel(finding.assessment_status)}`,
+        );
+        lines.push(`      Severity: ${finding.severity}`);
+        if (finding.issue_summary.trim().length > 0) {
+          lines.push(`      Issue summary: ${finding.issue_summary}`);
+        }
+        if (finding.evidence_basis.trim().length > 0) {
+          lines.push(`      Evidence basis: ${finding.evidence_basis}`);
+        }
+        const actionableLabel =
+          finding.assessment_status === "REQUIREMENTS_MET"
+            ? "Positive guidance"
+            : "Actionable feedback";
+        lines.push(`      ${actionableLabel}: ${finding.actionable_feedback}`);
+      });
+    });
+
+    return lines.join("\n");
+  }
+
   const reviewCards = reviewDetail.cards ?? [];
   const lines: string[] = [
     "PeerLens deterministic review export",

@@ -184,6 +184,36 @@ function mockReviewDetailFetch(
   );
 }
 
+function installExportDoubles() {
+  const clipboardWriteText = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(window, "isSecureContext", {
+    configurable: true,
+    value: true,
+  });
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText: clipboardWriteText },
+  });
+
+  let downloadedBlob: Blob | null = null;
+  vi.stubGlobal(
+    "URL",
+    Object.assign(URL, {
+      createObjectURL: vi.fn((blob: Blob) => {
+        downloadedBlob = blob;
+        return "blob:review-export";
+      }),
+      revokeObjectURL: vi.fn(),
+    }),
+  );
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+
+  return {
+    clipboardWriteText,
+    getDownloadedBlob: () => downloadedBlob,
+  };
+}
+
 describe("ReviewDetailPage", () => {
   it("wf0067_review_detail_tracer_surfaces_source_basis_fields_in_reading_flow", async () => {
     vi.stubGlobal(
@@ -365,7 +395,8 @@ describe("ReviewDetailPage", () => {
       within(reviewRegion).getAllByText("Evaluation element: Structured node quality"),
     ).toHaveLength(2);
     expect(within(reviewRegion).getAllByText("Evidence basis")).toHaveLength(2);
-    expect(within(reviewRegion).getAllByText("Actionable feedback")).toHaveLength(2);
+    expect(within(reviewRegion).getByText("Actionable feedback")).toBeInTheDocument();
+    expect(within(reviewRegion).getByText("Positive guidance")).toBeInTheDocument();
     expect(
       within(reviewRegion).getByText("Requirements met"),
     ).toBeInTheDocument();
@@ -407,6 +438,175 @@ describe("ReviewDetailPage", () => {
       screen.queryByText("Evaluation element: Structured node quality"),
     ).not.toBeInTheDocument();
     expect(screen.queryByText("Requirements met")).not.toBeInTheDocument();
+  });
+
+  it("wf0081_review_detail_atomic_copy_and_export_stay_mode_truthful", async () => {
+    const { clipboardWriteText, getDownloadedBlob } = installExportDoubles();
+    mockReviewDetailFetch(
+      {
+        ...atomicReviewPayload({
+          call_id: "call-erc-poc",
+          call_code: "ERC-2026-PoC",
+          detail_state: "call_linked",
+          ordering_source: "call_nodes",
+          reviewed_nodes: [
+            {
+              proposal_node_id: "node-2",
+              proposal_node_logical_id: "scientific_proposal",
+              proposal_node_title: "Scientific proposal",
+              node_role: "PRIMARY",
+              findings: [
+                {
+                  finding_id: "finding-2",
+                  evaluation_criterion: "Structured quality",
+                  evaluation_element: "Structured node quality",
+                  severity: "SUCCESS",
+                  assessment_status: "REQUIREMENTS_MET",
+                  issue_summary: "",
+                  evidence_basis: "",
+                  actionable_feedback:
+                    "Keep the current specificity in the final version.",
+                },
+              ],
+            },
+          ],
+        }),
+      },
+      ercPocNodesPayload(),
+    );
+
+    render(<ReviewDetailPage />);
+
+    await screen.findByText("Reviewed section: Scientific proposal");
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Copy deterministic text" }),
+    );
+    expect(
+      await screen.findByText("Copied deterministic review text to clipboard."),
+    ).toBeInTheDocument();
+    expect(clipboardWriteText).toHaveBeenCalledTimes(1);
+    expect(clipboardWriteText.mock.calls[0][0]).toContain(
+      "Reviewed section: Scientific proposal",
+    );
+    expect(clipboardWriteText.mock.calls[0][0]).toContain(
+      "Evaluation criterion: Structured quality",
+    );
+    expect(clipboardWriteText.mock.calls[0][0]).toContain("Requirements met");
+    expect(clipboardWriteText.mock.calls[0][0]).toContain(
+      "Positive guidance: Keep the current specificity in the final version.",
+    );
+    expect(clipboardWriteText.mock.calls[0][0]).not.toContain("Cards:");
+    expect(clipboardWriteText.mock.calls[0][0]).not.toContain("Criterion:");
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Download deterministic .txt" }),
+    );
+    expect(
+      await screen.findByText("Downloaded deterministic review as .txt."),
+    ).toBeInTheDocument();
+    expect(await getDownloadedBlob()?.text()).toContain(
+      "Reviewed section: Scientific proposal",
+    );
+    expect(await getDownloadedBlob()?.text()).toContain(
+      "Positive guidance: Keep the current specificity in the final version.",
+    );
+  });
+
+  it("wf0081_review_detail_requirements_met_render_without_empty_issue_shells", async () => {
+    mockReviewDetailFetch(
+      {
+        ...atomicReviewPayload({
+          call_id: "call-erc-poc",
+          call_code: "ERC-2026-PoC",
+          detail_state: "call_linked",
+          ordering_source: "call_nodes",
+          reviewed_nodes: [
+            {
+              proposal_node_id: "node-2",
+              proposal_node_logical_id: "scientific_proposal",
+              proposal_node_title: "Scientific proposal",
+              node_role: "PRIMARY",
+              findings: [
+                {
+                  finding_id: "finding-2",
+                  evaluation_criterion: "Structured quality",
+                  evaluation_element: "Structured node quality",
+                  severity: "SUCCESS",
+                  assessment_status: "REQUIREMENTS_MET",
+                  issue_summary: "",
+                  evidence_basis: "",
+                  actionable_feedback:
+                    "Keep the current specificity in the final version.",
+                },
+              ],
+            },
+          ],
+        }),
+      },
+      ercPocNodesPayload(),
+    );
+
+    render(<ReviewDetailPage />);
+
+    const reviewRegion = await screen.findByRole("region", {
+      name: "Review feedback by section",
+    });
+    expect(within(reviewRegion).getByText("Requirements met")).toBeInTheDocument();
+    expect(
+      within(reviewRegion).getByText("Positive guidance"),
+    ).toBeInTheDocument();
+    expect(
+      within(reviewRegion).getByText(
+        "Keep the current specificity in the final version.",
+      ),
+    ).toBeInTheDocument();
+    expect(within(reviewRegion).queryByText("Issue summary")).not.toBeInTheDocument();
+    expect(within(reviewRegion).queryByText("Evidence basis")).not.toBeInTheDocument();
+  });
+
+  it("wf0081_review_detail_legacy_copy_and_export_remain_card_based", async () => {
+    const { clipboardWriteText, getDownloadedBlob } = installExportDoubles();
+    mockReviewDetailFetch({
+      detail_mode: "legacy_cards",
+      cards: [
+        {
+          id: "card-1",
+          node_expectation_id: "exp-1",
+          node_logical_id: "academic_profile",
+          node_title: "Academic profile",
+          criterion: "Quality",
+          criterion_description: "Quality criterion",
+          evaluation_element_name: "Peer-exceeding quality",
+          expectation_guidance_note: "Provide concrete evidence.",
+          rating: "SUCCESS",
+          feedback_text: "Legacy review card feedback.",
+        },
+      ],
+      reviewed_nodes: undefined,
+    });
+
+    render(<ReviewDetailPage />);
+
+    await screen.findByText("Legacy review card feedback.");
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Copy deterministic text" }),
+    );
+    expect(
+      await screen.findByText("Copied deterministic review text to clipboard."),
+    ).toBeInTheDocument();
+    expect(clipboardWriteText.mock.calls[0][0]).toContain("Cards:");
+    expect(clipboardWriteText.mock.calls[0][0]).toContain("Criterion: Quality");
+    expect(clipboardWriteText.mock.calls[0][0]).not.toContain(
+      "Reviewed section: Academic profile",
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Download deterministic .txt" }),
+    );
+    expect(await getDownloadedBlob()?.text()).toContain("Cards:");
+    expect(await getDownloadedBlob()?.text()).toContain("Criterion: Quality");
   });
 
   it("wf0067_review_card_trust_metadata_shows_available_and_unavailable_basis", async () => {

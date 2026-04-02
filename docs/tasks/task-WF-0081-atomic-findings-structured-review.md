@@ -185,7 +185,7 @@ Verification Steps:
 - `cd frontend && rg -n "detail_mode|reviewed_nodes|evaluation criteria|evaluation elements|REQUIREMENTS_MET" src/app/app/reviews/'[reviewId]'/page.tsx src/app/app/reviews/'[reviewId]'/page.test.tsx src/components/review/ReviewNodeFindings.tsx`
 Risks (if any): If the page branches in multiple places, later compatibility fixes can become inconsistent between node groups, headings, and empty states.
 
-### [ ] Task 6 — Keep copy/export and empty-state behavior truthful for each detail mode
+### [x] Task 6 — Keep copy/export and empty-state behavior truthful for each detail mode
 
 Goal:
 Align same-page copy/export and zero-issue presentation with the active detail mode so atomic findings reviews remain truthful and legacy reviews stay unchanged.

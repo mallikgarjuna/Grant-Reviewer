@@ -37,6 +37,15 @@ export function ReviewNodeFindings({
       </h2>
       <div className="mt-3 grid gap-4">
         {reviewedNode.findings.map((finding, index) => (
+          (() => {
+            const hasIssueSummary = finding.issue_summary.trim().length > 0;
+            const hasEvidenceBasis = finding.evidence_basis.trim().length > 0;
+            const actionableLabel =
+              finding.assessment_status === "REQUIREMENTS_MET"
+                ? "Positive guidance"
+                : "Actionable feedback";
+
+            return (
           <article
             key={finding.finding_id}
             className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm"
@@ -64,21 +73,25 @@ export function ReviewNodeFindings({
               </div>
             </header>
             <div className="grid gap-4 px-6 py-5 text-sm text-[var(--color-foreground)]">
-              <section aria-label="Issue summary">
+              {hasIssueSummary ? (
+                <section aria-label="Issue summary">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-muted-foreground)]">
+                    Issue summary
+                  </p>
+                  <p className="mt-2 whitespace-pre-wrap">{finding.issue_summary}</p>
+                </section>
+              ) : null}
+              {hasEvidenceBasis ? (
+                <section aria-label="Evidence basis">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-muted-foreground)]">
+                    Evidence basis
+                  </p>
+                  <p className="mt-2 whitespace-pre-wrap">{finding.evidence_basis}</p>
+                </section>
+              ) : null}
+              <section aria-label={actionableLabel}>
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-muted-foreground)]">
-                  Issue summary
-                </p>
-                <p className="mt-2 whitespace-pre-wrap">{finding.issue_summary}</p>
-              </section>
-              <section aria-label="Evidence basis">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-muted-foreground)]">
-                  Evidence basis
-                </p>
-                <p className="mt-2 whitespace-pre-wrap">{finding.evidence_basis}</p>
-              </section>
-              <section aria-label="Actionable feedback">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-muted-foreground)]">
-                  Actionable feedback
+                  {actionableLabel}
                 </p>
                 <p className="mt-2 whitespace-pre-wrap">
                   {finding.actionable_feedback}
@@ -86,6 +99,8 @@ export function ReviewNodeFindings({
               </section>
             </div>
           </article>
+            );
+          })()
         ))}
       </div>
     </section>
