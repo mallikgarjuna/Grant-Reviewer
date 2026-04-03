@@ -1,6 +1,10 @@
 <!-- docs/memory/tools/workflow.md -->
 # Agent Workflow
 
+- **Load posture:** on-demand workflow reference/history surface, not default first-load context for every task.
+- **Use this file when:** the task is about WF runner behavior, chat-hygiene rules, review gates, or workflow execution gotchas.
+- **Prefer first:** `AGENTS.md`, `docs/index.md`, and `docs/memory/index.md` for default routing.
+
 - **Chat hygiene:** If a new chat is warranted (context bloat, WF/branch switch, runner needs clean session), explicitly say so to the user and provide a copy-paste prompt. Workflow rules do not strictly require starting a new chat for every phase, but it is highly recommended (especially moving from Phase 0 to Phase 1) to manage context limits.
 
 - **Skills check:** Before starting a new category of work, check for an existing skill in `~/.agents/skills` (or ask the user to run `ls ~/.agents/skills`) and follow the most relevant `SKILL.md`. This is an always-on habit.

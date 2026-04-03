@@ -12,7 +12,7 @@
 
 ## Quick Reference & Links
 
-- **SSOT tasks:** use `docs/index.md`; add tasks under `docs/tasks/`. (Trigger: any work request.)
+- **SSOT tasks:** use `docs/index.md`; add tasks under `docs/tasks/`. (Trigger: workflow/task tracking only.)
 - **Terms:** say **evaluation criteria/elements** (not "rubric") in researcher-facing text; canonical: `backend/app/schemas/call_definitions_v2.py`. (Trigger: UI/docs/copy.)
 - **Runtime:** Python `3.12` (see `backend/.python-version`, `uv`), Node `22.17.0` (see `.nvmrc`, `npm`). (Trigger: env/tooling issues.)
 - **File traceability:** every file must include its project-relative path at top (comment/docstring/header) for copy/paste provenance. (Trigger: create/edit any file.)
