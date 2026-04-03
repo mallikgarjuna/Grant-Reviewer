@@ -96,7 +96,7 @@ Verification Steps:
 - `wc -l AGENTS.md`
 Risks (if any): Over-correcting the trigger could make workflow/task tracking ambiguous or accidentally weaken other global guardrails.
 
-### [ ] Task 4 — Classify memory surfaces and add active-vs-reference routing
+### [x] Task 4 — Classify memory surfaces and add active-vs-reference routing
 
 Goal:
 Make the memory system cheaper to navigate by distinguishing the active router from history/reference-heavy memory surfaces without attempting a full memory redesign.

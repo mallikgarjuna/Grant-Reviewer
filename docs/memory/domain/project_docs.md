@@ -1,6 +1,10 @@
 <!-- docs/memory/domain/project_docs.md -->
 # Project Documentation
 
+- **Load posture:** on-demand reference-heavy memory surface, not default first-load context for every task.
+- **Use this file when:** the task involves documentation policy, workflow artifact rules, code phrase governance, or repo-level provenance decisions.
+- **Prefer first:** `AGENTS.md`, `docs/index.md`, and `docs/memory/index.md` for default routing.
+
 - **Traceability in outputs**: Workflow runner completion summaries must always include explicit provenance: which files were considered/edited and which skills/instructions were used.
 
 - **Traceability in commits**: Every WF commit message must include both the WF ID and the relevant slug so history is self-describing (e.g., `WF-0012: alembic-migration-baseline - <change>`). (Do not rewrite history; enforce going forward).
