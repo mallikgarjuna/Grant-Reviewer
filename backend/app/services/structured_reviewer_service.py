@@ -44,6 +44,7 @@ from app.services.reviewer_policy import (
 )
 from app.services.structured_review_synthesis_service import (
     StructuredReviewSynthesisAcceptedResult,
+    StructuredReviewSynthesisRejectedResult,
     StructuredReviewSynthesisRequest,
     StructuredReviewSynthesisResult,
     StructuredReviewSynthesisService,
@@ -69,6 +70,9 @@ WF0076_SUBORDINATE_PROMPT_PRESENTATION_CALL_CODES = {"ERC-2026-PoC"}
 WF0077_DETERMINISTIC_RESEARCHER_GUIDANCE_CALL_CODES = {"ERC-2026-PoC"}
 WF0076_SUBORDINATE_PROMPT_REASON_PREFIX = "content_evaluated;subordinate_prompt_ids="
 WF0081_FINDING_MAPPING_FAILURE_CODE = "WF0081_FINDING_MAPPING_FAILED"
+WF0081_UNGROUNDED_COMPANION_REASON = (
+    "LLM companion guidance was not shown because it could not be grounded in your text."
+)
 WF0081_FINDING_SEVERITY_TO_RATING: dict[str, ReviewRating] = {
     "ERROR": ReviewRating.CRITICAL,
     "WARNING": ReviewRating.WARNING,
@@ -453,6 +457,14 @@ class StructuredReviewerService:
                     synthesized_companion_text = (
                         synthesis_result.synthesized_feedback
                     )
+                elif (
+                    isinstance(
+                        synthesis_result,
+                        StructuredReviewSynthesisRejectedResult,
+                    )
+                    and synthesis_result.rejection_code == "ungrounded_output"
+                ):
+                    synthesized_companion_text = WF0081_UNGROUNDED_COMPANION_REASON
 
             card_payloads.append(
                 (

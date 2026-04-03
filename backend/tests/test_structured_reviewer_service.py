@@ -40,7 +40,10 @@ from app.services.structured_review_synthesis_service import (
     StructuredReviewSynthesisAcceptedResult,
     StructuredReviewSynthesisRejectedResult,
 )
-from app.services.structured_reviewer_service import StructuredReviewerService
+from app.services.structured_reviewer_service import (
+    StructuredReviewerService,
+    WF0081_UNGROUNDED_COMPANION_REASON,
+)
 from scripts.ingest_call import ingest_call
 
 
@@ -2888,10 +2891,23 @@ def test_wf0078_contract_erc_poc_card_ungrounded_output_falls_back(
         assert review.status == ReviewStatus.COMPLETED
         assert len(cards) == 1
         assert cards[0].feedback_text.startswith("Revise poc_idea_innovation")
+        assert cards[0].synthesized_companion_text == (
+            WF0081_UNGROUNDED_COMPANION_REASON
+        )
         assert len(service.last_synthesis_results) == 1
         rejected_result = service.last_synthesis_results[0]
         assert isinstance(rejected_result, StructuredReviewSynthesisRejectedResult)
         assert rejected_result.rejection_code == "ungrounded_output"
+
+        persisted_cards = list(
+            service.repository.session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == review.id)
+            ).all()
+        )
+        assert len(persisted_cards) == 1
+        assert persisted_cards[0].synthesized_companion_text == (
+            WF0081_UNGROUNDED_COMPANION_REASON
+        )
     finally:
         service.repository.session.close()
 
