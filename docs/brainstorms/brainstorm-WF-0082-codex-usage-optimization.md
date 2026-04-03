@@ -2,8 +2,8 @@
 # WF-0082 — Codex Usage Optimization
 
 Artifact: brainstorm
-Version: v0.1
-Status: Draft
+Version: v0.4
+Status: Draft Complete
 Last Updated: 2026-04-03
 
 Q&A transcript (archived): `docs/brainstorms/qna/brainstorm-QnA-WF-0082-codex-usage-optimization.md`
@@ -100,6 +100,7 @@ Recommended design direction:
 - Keep changes auditable and small enough to validate with concrete before/after context estimates.
 - Valuable but rarely needed rules should be retained behind narrow triggers or reference docs rather than kept in default entrypoints.
 - History-heavy files that remain useful for humans should be split into compact active summaries plus archive/reference files where needed.
+- Preserve researcher-facing terminology and existing provenance/traceability rules unless a later phase explicitly proves a change is necessary.
 
 ## 6. Risks / Unknowns
 
@@ -132,6 +133,13 @@ MVP shape:
 - move rare but valuable rules behind narrow triggers or compact reference docs,
 - and prefer active-summary plus archive splits over deletion for history-heavy surfaces.
 
+MVP success evidence:
+
+- a concrete before/after estimate for the likely repo-local default-load path,
+- at least one high-cost default entrypoint materially reduced or rerouted,
+- no loss of workflow traceability or safety semantics,
+- and a documented operating rule that distinguishes always-on, on-demand, and archival instruction surfaces.
+
 ## 8. Explicit Non-Goals
 
 - Rewriting the entire workflow system.
@@ -139,6 +147,7 @@ MVP shape:
 - Building a generalized Codex framework for other repos.
 - Chasing exact token counts for every possible session path before making any improvements.
 - Deleting historical material purely for neatness when a split/archive approach preserves more value.
+- Quietly changing researcher-facing terminology, workflow provenance expectations, or safety rules without making that change explicit and justified.
 
 ## Section 1 Decisions
 
@@ -161,11 +170,27 @@ Contract Notes / Non-obvious constraints:
 - Default context for this WF: files the repo explicitly encourages opening early or for most tasks.
 - Failed outcome definition: reducing docs while making the workflow less safe or less traceable.
 - Recommended system shape: tiny always-on instructions, compact active dashboard/router files, and archive/reference history behind links.
+- Sequencing rule: prefer entrypoint cleanup first (`docs/index.md`, broad `AGENTS.md` triggers), then deeper memory/archive splits only where the likely-load win remains strong.
 
 Contract Notes / Non-obvious constraints:
 
 - This WF should optimize likely agent behavior, not only document intent; changes that look tidy but do not change likely load paths are insufficient.
 - Any compaction must preserve the ability to recover workflow history and rationale on demand.
+
+## Initial Surface Inventory
+
+- `AGENTS.md`: always-on repo instruction surface; should remain tiny.
+- `docs/index.md`: active dashboard candidate, currently overloaded.
+- `docs/memory/index.md`: routing index, likely should stay small.
+- `docs/memory/domain/*.md` and `docs/memory/tools/*.md`: mixed active/reference memory surfaces; likely need classification.
+- `docs/guides/*.md` and `docs/workflow/*.md`: on-demand procedural references, not default context except when explicitly triggered.
+
+## Verification Guardrails
+
+- Measure the likely repo-local default-load path before and after edits using the same estimation method.
+- Verify that active workflow guidance still routes correctly after any dashboard or archive split.
+- Verify that traceability/provenance rules and researcher-facing terminology are preserved unless intentionally changed.
+- Prefer the smallest edits that materially change likely load behavior before broader documentation cleanup.
 
 ## Initial Step Breakdown
 
@@ -180,3 +205,4 @@ Contract Notes / Non-obvious constraints:
 - v0.1 (2026-04-03): Seeded the brainstorm from the user's request and a read-only repo snapshot, including initial scope, desired outcome, constraints, and a first-pass step breakdown.
 - v0.2 (2026-04-03): Locked the initial Step 1 success direction, measurement posture, first cleanup target, archive posture, and optimization target from the first interactive Q&A batch.
 - v0.3 (2026-04-03): Completed the remaining Phase 0.1 direction using approved recommended defaults, tightening success thresholds, default-context definition, archive posture, and MVP boundaries.
+- v0.4 (2026-04-03): Applied Phase 0.2 tightening edits by adding explicit success evidence, preserving terminology/traceability boundaries, defining the initial surface inventory, and adding verification guardrails; marked brainstorm Draft Complete.
