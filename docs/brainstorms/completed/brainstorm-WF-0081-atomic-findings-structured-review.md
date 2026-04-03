@@ -1,4 +1,4 @@
-<!-- docs/brainstorms/brainstorm-WF-0081-atomic-findings-structured-review.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0081-atomic-findings-structured-review.md -->
 # WF-0081 — Atomic Findings Structured Review
 
 Artifact: brainstorm

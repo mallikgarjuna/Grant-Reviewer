@@ -1,4 +1,4 @@
-<!-- docs/prds/prd-WF-0081-atomic-findings-structured-review.md -->
+<!-- docs/prds/completed/prd-WF-0081-atomic-findings-structured-review.md -->
 # WF-0081 — Atomic Findings Structured Review
 
 Artifact: prd

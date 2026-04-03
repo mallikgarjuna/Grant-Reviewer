@@ -1,10 +1,10 @@
-<!-- docs/tasks/task-WF-0081-atomic-findings-structured-review.md -->
+<!-- docs/tasks/completed/task-WF-0081-atomic-findings-structured-review.md -->
 # WF-0081 — Atomic Findings Structured Review
 
 Artifact: task
-Version: v0.3
-Status: Ready for Implementation
-Last Updated: 2026-03-14
+Version: v0.4
+Status: Done
+Last Updated: 2026-04-03
 
 Type: feature
 
