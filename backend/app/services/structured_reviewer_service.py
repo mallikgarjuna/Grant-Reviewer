@@ -24,6 +24,8 @@ from app.models.domain import (
     NodeExpectation,
     Review,
     ReviewCard,
+    ReviewDetailMode,
+    ReviewFinding,
     ReviewRating,
     ReviewStatus,
 )
@@ -42,6 +44,7 @@ from app.services.reviewer_policy import (
 )
 from app.services.structured_review_synthesis_service import (
     StructuredReviewSynthesisAcceptedResult,
+    StructuredReviewSynthesisRejectedResult,
     StructuredReviewSynthesisRequest,
     StructuredReviewSynthesisResult,
     StructuredReviewSynthesisService,
@@ -66,6 +69,24 @@ WF0069_ACTIONABILITY_CALL_CODES = {
 WF0076_SUBORDINATE_PROMPT_PRESENTATION_CALL_CODES = {"ERC-2026-PoC"}
 WF0077_DETERMINISTIC_RESEARCHER_GUIDANCE_CALL_CODES = {"ERC-2026-PoC"}
 WF0076_SUBORDINATE_PROMPT_REASON_PREFIX = "content_evaluated;subordinate_prompt_ids="
+WF0081_FINDING_MAPPING_FAILURE_CODE = "WF0081_FINDING_MAPPING_FAILED"
+WF0081_UNGROUNDED_COMPANION_REASON = (
+    "LLM companion guidance was not shown because it could not be grounded in your text."
+)
+WF0081_FINDING_SEVERITY_TO_RATING: dict[str, ReviewRating] = {
+    "ERROR": ReviewRating.CRITICAL,
+    "WARNING": ReviewRating.WARNING,
+    "NOTE": ReviewRating.NOTE,
+}
+
+
+class ReviewFindingMappingError(ValueError):
+    """Raised when a diagnostic finding cannot be persisted safely."""
+
+    def __init__(self, *, message: str, finding_id: str) -> None:
+        self.message = message
+        self.finding_id = finding_id
+        super().__init__(message)
 
 
 class StructuredReviewerService:
@@ -153,6 +174,7 @@ class StructuredReviewerService:
         request_payload_sha256: str | None = None,
         idempotency_expires_at: datetime | None = None,
         call_config_digest_override: str | None = None,
+        detail_mode: ReviewDetailMode = ReviewDetailMode.LEGACY_CARDS,
     ) -> tuple[Review, list[ReviewCard]]:
         if not nodes:
             raise ValueError("At least one node is required.")
@@ -226,6 +248,7 @@ class StructuredReviewerService:
             request_payload_sha256=request_payload_sha256,
             idempotency_expires_at=idempotency_expires_at,
             review_type="structured",
+            detail_mode=detail_mode,
             structured_payload=structured_payload,
         )
         review.llm_model = "engine-pipeline-v1"
@@ -434,6 +457,14 @@ class StructuredReviewerService:
                     synthesized_companion_text = (
                         synthesis_result.synthesized_feedback
                     )
+                elif (
+                    isinstance(
+                        synthesis_result,
+                        StructuredReviewSynthesisRejectedResult,
+                    )
+                    and synthesis_result.rejection_code == "ungrounded_output"
+                ):
+                    synthesized_companion_text = WF0081_UNGROUNDED_COMPANION_REASON
 
             card_payloads.append(
                 (
@@ -450,9 +481,35 @@ class StructuredReviewerService:
         self.last_synthesis_results = tuple(synthesis_results)
 
         try:
-            cards = self.repository.create_review_cards_batch(
-                review_id=review.id,
-                cards=card_payloads,
+            if detail_mode == ReviewDetailMode.REVIEWED_NODE_FINDINGS:
+                findings = self._build_review_findings_from_pipeline_result(
+                    review=review,
+                    result=result,
+                    expectation_map=expectation_map,
+                    node_by_logical_id=node_by_logical_id,
+                )
+                self.repository.create_review_findings_batch(findings=findings)
+                cards = []
+                persisted_item_count = len(findings)
+            else:
+                cards = self.repository.create_review_cards_batch(
+                    review_id=review.id,
+                    cards=card_payloads,
+                )
+                persisted_item_count = len(cards)
+        except ReviewFindingMappingError as err:
+            self.repository.rollback()
+            logger.error(
+                "%s review_id=%s finding_id=%s message=%s",
+                WF0081_FINDING_MAPPING_FAILURE_CODE,
+                review.id,
+                err.finding_id,
+                err.message,
+            )
+            return self._fail_contract_error(
+                review,
+                code=WF0081_FINDING_MAPPING_FAILURE_CODE,
+                message=err.message,
             )
         except Exception as err:
             self.repository.rollback()
@@ -463,7 +520,10 @@ class StructuredReviewerService:
             )
 
         review.status = ReviewStatus.COMPLETED
-        review.overall_summary = f"{STRUCTURED_SUMMARY_COMPLETED_PREFIX} {len(cards)} findings via pipeline_v1."
+        review.overall_summary = (
+            f"{STRUCTURED_SUMMARY_COMPLETED_PREFIX} "
+            f"{persisted_item_count} findings via pipeline_v1."
+        )
         if warning_policy_violations:
             review.overall_summary += (
                 f" {STRUCTURED_POLICY_WARNING_PREFIX} "
@@ -472,6 +532,95 @@ class StructuredReviewerService:
         review.overall_rating = ReviewRating.NOTE
         self.repository.update_review(review)
         return review, cards
+
+    def _build_review_findings_from_pipeline_result(
+        self,
+        *,
+        review: Review,
+        result: PipelineResult,
+        expectation_map: dict[str, NodeExpectation],
+        node_by_logical_id: dict[str, Any],
+    ) -> list[ReviewFinding]:
+        findings: list[ReviewFinding] = []
+        for finding in result.findings:
+            expectation = expectation_map.get(finding.primary_expectation_ref)
+            if expectation is None:
+                raise ReviewFindingMappingError(
+                    finding_id=finding.finding_id,
+                    message=(
+                        "Unresolvable expectation ref for persisted review finding: "
+                        f"{finding.primary_expectation_ref}"
+                    ),
+                )
+
+            proposal_node = node_by_logical_id.get(finding.subject_ref.node_logical_id)
+            if proposal_node is None:
+                raise ReviewFindingMappingError(
+                    finding_id=finding.finding_id,
+                    message=(
+                        "Unresolvable proposal node snapshot for persisted review finding: "
+                        f"{finding.subject_ref.node_logical_id}"
+                    ),
+                )
+
+            evaluation_element = expectation.element
+            evaluation_criterion = (
+                evaluation_element.criterion if evaluation_element is not None else None
+            )
+            if evaluation_element is None or evaluation_criterion is None:
+                raise ReviewFindingMappingError(
+                    finding_id=finding.finding_id,
+                    message=(
+                        "Missing evaluation criteria/elements snapshot for persisted "
+                        f"review finding: {finding.primary_expectation_ref}"
+                    ),
+                )
+
+            assessment_status = AssessmentStatus(finding.assessment_status)
+            severity = self._resolve_review_finding_severity(
+                assessment_status=assessment_status,
+                pipeline_severity=finding.severity,
+            )
+            findings.append(
+                ReviewFinding(
+                    review_id=review.id,
+                    proposal_node_id=proposal_node.id,
+                    proposal_node_logical_id_snapshot=proposal_node.logical_id
+                    or proposal_node.title,
+                    proposal_node_title_snapshot=proposal_node.title,
+                    evaluation_criterion_logical_id_snapshot=(
+                        evaluation_criterion.logical_id or evaluation_criterion.name
+                    ),
+                    evaluation_criterion_name_snapshot=evaluation_criterion.name,
+                    evaluation_element_logical_id_snapshot=(
+                        evaluation_element.logical_id or evaluation_element.name
+                    ),
+                    evaluation_element_name_snapshot=evaluation_element.name,
+                    severity=severity,
+                    assessment_status=assessment_status,
+                    issue_summary_text=finding.reason.strip(),
+                    evidence_basis_text=finding.reason.strip(),
+                    actionable_feedback_text=finding.reason.strip(),
+                )
+            )
+
+        return findings
+
+    def _resolve_review_finding_severity(
+        self,
+        *,
+        assessment_status: AssessmentStatus,
+        pipeline_severity: str,
+    ) -> ReviewRating:
+        if assessment_status == AssessmentStatus.REQUIREMENTS_MET:
+            return ReviewRating.SUCCESS
+        severity = WF0081_FINDING_SEVERITY_TO_RATING.get(pipeline_severity)
+        if severity is None:
+            raise ReviewFindingMappingError(
+                finding_id="unknown",
+                message=f"Unsupported finding severity for persisted review finding: {pipeline_severity}",
+            )
+        return severity
 
     def _fail_contract_error(
         self,

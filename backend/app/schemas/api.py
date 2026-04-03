@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.models.domain import NodeType, ReviewRating, ReviewStatus
+from app.models.domain import NodeType, ReviewDetailMode, ReviewRating, ReviewStatus
 
 
 class APIErrorBody(BaseModel):
@@ -171,6 +171,29 @@ class ReviewCardSummary(BaseModel):
     source_basis_state: Literal["available", "unavailable", "legacy_fallback"]
 
 
+class ReviewFindingSummary(BaseModel):
+    """Atomic review finding payload exposed to API consumers."""
+
+    finding_id: UUID
+    evaluation_criterion: str
+    evaluation_element: str
+    severity: ReviewRating
+    assessment_status: str
+    issue_summary: str
+    evidence_basis: str
+    actionable_feedback: str
+
+
+class ReviewedNodeSummary(BaseModel):
+    """Grouped reviewed-node payload for atomic findings reviews."""
+
+    proposal_node_id: UUID
+    proposal_node_logical_id: str
+    proposal_node_title: str
+    node_role: Literal["PRIMARY", "SUPPORTING"] | None = None
+    findings: list[ReviewFindingSummary] = Field(default_factory=list)
+
+
 class ReviewCompatibilityNote(BaseModel):
     """Compatibility annotation for mixed-version review records."""
 
@@ -204,6 +227,7 @@ class ReviewDetailProjection(BaseModel):
 class ReviewDetailResponse(BaseModel):
     """Response for GET /reviews/{review_id}."""
 
+    detail_mode: ReviewDetailMode
     call_id: UUID | None = None
     call_code: str | None = None
     submitted_node_logical_ids: list[str] = Field(default_factory=list)
@@ -226,7 +250,8 @@ class ReviewDetailResponse(BaseModel):
     detail_projection: ReviewDetailProjection | None = None
     support_trace: SupportTraceMetadata | None = None
     review: ReviewSummary
-    cards: list[ReviewCardSummary]
+    cards: list[ReviewCardSummary] | None = None
+    reviewed_nodes: list[ReviewedNodeSummary] | None = None
 
 
 class DeleteReviewResponse(BaseModel):

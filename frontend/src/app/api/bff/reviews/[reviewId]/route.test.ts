@@ -394,4 +394,121 @@ describe("GET /api/bff/reviews/[reviewId]", () => {
     expect(response.status).toBe(200);
     expect(body.detail_projection).toEqual(backendPayload.detail_projection);
   });
+
+  it("wf0081_bff_review_detail_preserves_explicit_detail_mode", async () => {
+    authMock.mockResolvedValue({ userId: "user-1" });
+    getReviewMock.mockResolvedValue({
+      ok: true,
+      data: {
+        detail_mode: "reviewed_node_findings",
+        review: {
+          id: "review-wf0081-mode",
+          status: "COMPLETED",
+          overall_rating: "WARNING",
+          overall_summary: "Summary",
+        },
+        reviewed_nodes: [],
+      },
+    });
+
+    const { GET } = await import("./route");
+    const response = await GET(new Request("http://localhost"), {
+      params: Promise.resolve({ reviewId: "review-wf0081-mode" }),
+    });
+    const body = (await response.json()) as { detail_mode: string };
+
+    expect(response.status).toBe(200);
+    expect(body.detail_mode).toBe("reviewed_node_findings");
+  });
+
+  it("wf0081_bff_review_detail_preserves_reviewed_node_findings", async () => {
+    authMock.mockResolvedValue({ userId: "user-1" });
+    getReviewMock.mockResolvedValue({
+      ok: true,
+      data: {
+        detail_mode: "reviewed_node_findings",
+        review: {
+          id: "review-wf0081-findings",
+          status: "COMPLETED",
+          overall_rating: "WARNING",
+          overall_summary: "Summary",
+        },
+        reviewed_nodes: [
+          {
+            proposal_node_id: "node-1",
+            proposal_node_logical_id: "academic_profile",
+            proposal_node_title: "Academic profile",
+            node_role: "PRIMARY",
+            findings: [
+              {
+                finding_id: "finding-1",
+                evaluation_criterion: "Structured quality",
+                evaluation_element: "Structured node quality",
+                severity: "SUCCESS",
+                assessment_status: "REQUIREMENTS_MET",
+                issue_summary: "Requirements are met.",
+                evidence_basis: "The text already covers the evaluation element.",
+                actionable_feedback: "Keep the current specificity.",
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    const { GET } = await import("./route");
+    const response = await GET(new Request("http://localhost"), {
+      params: Promise.resolve({ reviewId: "review-wf0081-findings" }),
+    });
+    const body = (await response.json()) as {
+      reviewed_nodes: Array<{
+        findings: Array<{ assessment_status: string }>;
+      }>;
+      cards?: unknown;
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.reviewed_nodes).toHaveLength(1);
+    expect(body.reviewed_nodes[0].findings[0].assessment_status).toBe(
+      "REQUIREMENTS_MET",
+    );
+    expect("cards" in body).toBe(false);
+  });
+
+  it("wf0081_bff_review_detail_preserves_backend_detail_metadata_verbatim", async () => {
+    authMock.mockResolvedValue({ userId: "user-1" });
+    getReviewMock.mockResolvedValue({
+      ok: true,
+      data: {
+        detail_mode: "reviewed_node_findings",
+        detail_state: "proof_path_unmapped",
+        ordering_source: "review_payload_fallback",
+        submitted_node_logical_ids: ["academic_profile"],
+        review: {
+          id: "review-wf0081-metadata",
+          status: "COMPLETED",
+          overall_rating: "WARNING",
+          overall_summary: "Summary",
+        },
+        reviewed_nodes: [],
+      },
+    });
+
+    const { GET } = await import("./route");
+    const response = await GET(new Request("http://localhost"), {
+      params: Promise.resolve({ reviewId: "review-wf0081-metadata" }),
+    });
+    const body = (await response.json()) as {
+      detail_mode: string;
+      detail_state: string;
+      ordering_source: string;
+      reviewed_nodes: unknown[];
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.detail_mode).toBe("reviewed_node_findings");
+    expect(body.detail_state).toBe("proof_path_unmapped");
+    expect(body.ordering_source).toBe("review_payload_fallback");
+    expect(body.reviewed_nodes).toEqual([]);
+  });
 });

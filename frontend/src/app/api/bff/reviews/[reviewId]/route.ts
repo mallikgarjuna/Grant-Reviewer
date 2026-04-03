@@ -14,7 +14,7 @@ type RouteContext = {
 
 function normalizeReviewCards(record: Record<string, unknown>) {
   if (!Array.isArray(record.cards)) {
-    return [];
+    return undefined;
   }
   return record.cards
     .filter(
@@ -31,6 +31,28 @@ function normalizeReviewCards(record: Record<string, unknown>) {
       }
       return item;
     });
+}
+
+function normalizeReviewedNodes(record: Record<string, unknown>) {
+  if (!Array.isArray(record.reviewed_nodes)) {
+    return undefined;
+  }
+  return record.reviewed_nodes
+    .filter(
+      (item): item is Record<string, unknown> =>
+        Boolean(item) && typeof item === "object" && !Array.isArray(item),
+    )
+    .map((item) => ({
+      ...item,
+      findings: Array.isArray(item.findings)
+        ? item.findings.filter(
+            (finding): finding is Record<string, unknown> =>
+              Boolean(finding) &&
+              typeof finding === "object" &&
+              !Array.isArray(finding),
+          )
+        : [],
+    }));
 }
 
 function inferDetailState(record: Record<string, unknown>) {
@@ -128,6 +150,7 @@ function normalizeReviewDetailResponse(payload: unknown): unknown {
       : [],
     // Preserve backend card trust fields verbatim; avoid local source-basis synthesis.
     cards: normalizeReviewCards(record),
+    reviewed_nodes: normalizeReviewedNodes(record),
   };
 }
 

@@ -17,6 +17,7 @@ import type {
   ReviewDetailResponse,
 } from "@/lib/bff/types";
 import { ReviewCard } from "@/components/review/ReviewCard";
+import { ReviewNodeFindings } from "@/components/review/ReviewNodeFindings";
 import { ReviewSummary } from "@/components/review/ReviewSummary";
 import {
   buildRenderModel,
@@ -48,8 +49,32 @@ type ReviewCardGroup = {
   key: string;
   title: string;
   nodeLogicalId: string | null;
-  cards: ReviewDetailResponse["cards"];
+  cards: NonNullable<ReviewDetailResponse["cards"]>;
 };
+
+type ReviewedNodeGroup = NonNullable<ReviewDetailResponse["reviewed_nodes"]>[number];
+
+type ReviewDetailMode = NonNullable<ReviewDetailResponse["detail_mode"]>;
+
+function isReviewDetailMode(value: unknown): value is ReviewDetailMode {
+  return value === "legacy_cards" || value === "reviewed_node_findings";
+}
+
+function formatAssessmentStatusLabel(
+  assessmentStatus: NonNullable<
+    ReviewDetailResponse["reviewed_nodes"]
+  >[number]["findings"][number]["assessment_status"],
+): string {
+  switch (assessmentStatus) {
+    case "REQUIREMENTS_MET":
+      return "Requirements met";
+    case "NOT_ASSESSABLE":
+      return "Not assessable";
+    case "ASSESSED":
+    default:
+      return "Assessed";
+  }
+}
 
 type ReviewDetailViewState =
   | "call_linked"
@@ -87,7 +112,68 @@ async function parseApiError(response: Response): Promise<ApiError> {
   }
 }
 
+function missingDetailModeError(): ApiError {
+  return {
+    code: "INTERNAL_ERROR",
+    message: "Review detail payload is missing an explicit detail mode.",
+    details: {},
+    status: 500,
+  };
+}
+
 function buildReviewExportText(reviewDetail: ReviewDetailResponse): string {
+  const detailMode: ReviewDetailMode = reviewDetail.detail_mode;
+  if (detailMode === "reviewed_node_findings") {
+    const reviewedNodes = reviewDetail.reviewed_nodes ?? [];
+    const lines: string[] = [
+      "PeerLens deterministic review export",
+      "Additive companion guidance is not included in this export.",
+      "",
+      `Review ID: ${reviewDetail.review.id}`,
+      `Status: ${reviewDetail.review.status}`,
+      "",
+      "Summary:",
+      reviewDetail.review.overall_summary ?? "No overall summary available.",
+      "",
+      "Reviewed node findings:",
+    ];
+
+    if (reviewedNodes.length === 0) {
+      lines.push("No reviewed node findings available.");
+      return lines.join("\n");
+    }
+
+    reviewedNodes.forEach((reviewedNode, nodeIndex) => {
+      lines.push("");
+      lines.push(
+        `${nodeIndex + 1}. Reviewed section: ${reviewedNode.proposal_node_title}`,
+      );
+
+      reviewedNode.findings.forEach((finding, findingIndex) => {
+        lines.push(`   ${findingIndex + 1}. Evaluation criterion: ${finding.evaluation_criterion}`);
+        lines.push(`      Evaluation element: ${finding.evaluation_element}`);
+        lines.push(
+          `      Assessment status: ${formatAssessmentStatusLabel(finding.assessment_status)}`,
+        );
+        lines.push(`      Severity: ${finding.severity}`);
+        if (finding.issue_summary.trim().length > 0) {
+          lines.push(`      Issue summary: ${finding.issue_summary}`);
+        }
+        if (finding.evidence_basis.trim().length > 0) {
+          lines.push(`      Evidence basis: ${finding.evidence_basis}`);
+        }
+        const actionableLabel =
+          finding.assessment_status === "REQUIREMENTS_MET"
+            ? "Positive guidance"
+            : "Actionable feedback";
+        lines.push(`      ${actionableLabel}: ${finding.actionable_feedback}`);
+      });
+    });
+
+    return lines.join("\n");
+  }
+
+  const reviewCards = reviewDetail.cards ?? [];
   const lines: string[] = [
     "PeerLens deterministic review export",
     "Additive companion guidance is not included in this export.",
@@ -101,10 +187,10 @@ function buildReviewExportText(reviewDetail: ReviewDetailResponse): string {
     "Cards:",
   ];
 
-  if (reviewDetail.cards.length === 0) {
+  if (reviewCards.length === 0) {
     lines.push("No review cards available.");
   } else {
-    reviewDetail.cards.forEach((card, index) => {
+    reviewCards.forEach((card, index) => {
       lines.push("");
       lines.push(`${index + 1}. Criterion: ${card.criterion}`);
       lines.push(`   Rating: ${card.rating}`);
@@ -252,21 +338,55 @@ function buildOrderedCardGroups(
 
 function buildProjectionOrderedCards(
   reviewDetail: ReviewDetailResponse,
-): ReviewDetailResponse["cards"] {
+): NonNullable<ReviewDetailResponse["cards"]> {
+  const reviewCards = reviewDetail.cards ?? [];
   const projection = reviewDetail.detail_projection;
   if (!projection) {
-    return reviewDetail.cards;
+    return reviewCards;
   }
 
-  const cardById = new Map(reviewDetail.cards.map((card) => [card.id, card]));
+  const cardById = new Map(reviewCards.map((card) => [card.id, card]));
   const projectedCards = projection.ordered_card_ids
     .map((cardId) => cardById.get(cardId))
-    .filter((card): card is ReviewDetailResponse["cards"][number] => Boolean(card));
+    .filter((card): card is NonNullable<ReviewDetailResponse["cards"]>[number] => Boolean(card));
   const projectedCardIds = new Set(projectedCards.map((card) => card.id));
-  const unprojectedCards = reviewDetail.cards.filter(
+  const unprojectedCards = reviewCards.filter(
     (card) => !projectedCardIds.has(card.id),
   );
   return [...projectedCards, ...unprojectedCards];
+}
+
+function buildOrderedReviewedNodes(
+  reviewedNodes: NonNullable<ReviewDetailResponse["reviewed_nodes"]>,
+  sortedCallNodes: NodeSummary[],
+): ReviewedNodeGroup[] {
+  if (sortedCallNodes.length === 0) {
+    return reviewedNodes;
+  }
+
+  const nodeIndexByLogicalId = new Map<string, number>();
+  sortedCallNodes.forEach((node, index) => {
+    if (typeof node.logical_id === "string") {
+      nodeIndexByLogicalId.set(node.logical_id, index);
+    }
+  });
+
+  return [...reviewedNodes].sort((left, right) => {
+    const leftIndex = nodeIndexByLogicalId.get(left.proposal_node_logical_id);
+    const rightIndex = nodeIndexByLogicalId.get(right.proposal_node_logical_id);
+    const leftMapped = typeof leftIndex === "number";
+    const rightMapped = typeof rightIndex === "number";
+
+    if (leftMapped && rightMapped && leftIndex !== rightIndex) {
+      return leftIndex - rightIndex;
+    }
+    if (leftMapped !== rightMapped) {
+      return leftMapped ? -1 : 1;
+    }
+    return left.proposal_node_logical_id.localeCompare(
+      right.proposal_node_logical_id,
+    );
+  });
 }
 
 function inferDetailState(
@@ -338,6 +458,15 @@ export default function ReviewDetailPage() {
         return;
       }
       const payload = (await response.json()) as ReviewDetailViewModel;
+      if (!isReviewDetailMode(payload.detail_mode)) {
+        if (!cancelled) {
+          setError(missingDetailModeError());
+          setReviewDetail(null);
+          setCallNodes(null);
+          setIsLoading(false);
+        }
+        return;
+      }
       let nextCallNodes: NodeSummary[] | null = null;
       if (typeof payload.call_id === "string" && payload.call_id.length > 0) {
         const callNodesResponse = await fetch(`/api/bff/calls/${payload.call_id}/nodes`, {
@@ -416,6 +545,13 @@ export default function ReviewDetailPage() {
 
         const payload = (await response.json()) as ReviewDetailViewModel;
         if (cancelled) {
+          return;
+        }
+        if (!isReviewDetailMode(payload.detail_mode)) {
+          setError(missingDetailModeError());
+          setReviewDetail(null);
+          setCallNodes(null);
+          stopped = true;
           return;
         }
 
@@ -654,7 +790,14 @@ export default function ReviewDetailPage() {
   const hasOverallSummary = Boolean(
     reviewDetail.review.overall_summary?.trim(),
   );
-  const submittedNodes = reviewDetail.submitted_leaf_ids ?? [];
+  const detailMode: ReviewDetailMode = reviewDetail.detail_mode;
+  const reviewCards = reviewDetail.cards ?? [];
+  const reviewedNodes = reviewDetail.reviewed_nodes ?? [];
+  const isAtomicDetailMode = detailMode === "reviewed_node_findings";
+  const submittedNodes =
+    reviewDetail.submitted_node_logical_ids ??
+    reviewDetail.submitted_leaf_ids ??
+    reviewedNodes.map((node) => node.proposal_node_logical_id);
   const sortedCallNodes = callNodes ?? [];
   const leafCallNodes = sortedCallNodes.filter((node) => node.has_expectations);
   const nodeById = new Map(sortedCallNodes.map((node) => [node.id, node]));
@@ -766,6 +909,10 @@ export default function ReviewDetailPage() {
     ? [...visibleButNotReviewedNodeLabels, ...noGeneratedCardsNodeLabels]
     : notReviewedNodeLabels;
   const projectedOrderedCards = buildProjectionOrderedCards(reviewDetail);
+  const orderedReviewedNodes = buildOrderedReviewedNodes(
+    reviewedNodes,
+    sortedCallNodes,
+  );
   const detailProjection = reviewDetail.detail_projection;
   const orderedCardGroups = buildOrderedCardGroups(
     projectedOrderedCards,
@@ -843,6 +990,11 @@ export default function ReviewDetailPage() {
         <p className="mt-3 text-sm text-[var(--color-muted-foreground)]">
           Review ID: <span className="font-mono">{reviewDetail.review.id}</span>
         </p>
+        {reviewDetail.call_code ? (
+          <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">
+            Funding call: <span className="font-medium">{reviewDetail.call_code}</span>
+          </p>
+        ) : null}
 
         {hasOverallSummary ? (
           <div className="mt-6">
@@ -1054,7 +1206,8 @@ export default function ReviewDetailPage() {
         ) : null}
       </header>
 
-      {reviewDetail.cards.length > 0 ||
+      {isAtomicDetailMode ||
+      reviewCards.length > 0 ||
       visibleButNotReviewedNodeLabels.length > 0 ||
       noGeneratedCardsNodeLabels.length > 0 ? (
         <div className="grid gap-4">
@@ -1063,35 +1216,42 @@ export default function ReviewDetailPage() {
             aria-label="Review feedback by section"
             className="grid gap-4"
           >
-            {orderedCardGroups.map((group) => (
-              <section
-                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
-                key={group.key}
-                aria-labelledby={`heading-group-${group.key}`}
-              >
-                <h2
-                  id={`heading-group-${group.key}`}
-                  className="text-base font-semibold text-[var(--color-foreground)]"
-                >
-                  Reviewed section: {group.title}
-                </h2>
-                <div className="mt-3 grid gap-4">
-                  {group.cards.map((card, index) => (
-                  <ReviewCard
-                    key={`${group.key}:${card.id}`}
-                    cardId={card.id}
-                    index={index + 1}
-                    criterion={card.criterion}
-                    description={card.criterion_description}
-                    evaluationElementName={card.evaluation_element_name}
-                    rating={card.rating}
-                    feedback={card.feedback_text}
-                    synthesizedCompanionText={card.synthesized_companion_text}
+            {isAtomicDetailMode
+              ? orderedReviewedNodes.map((reviewedNode) => (
+                  <ReviewNodeFindings
+                    key={reviewedNode.proposal_node_id}
+                    reviewedNode={reviewedNode}
                   />
+                ))
+              : orderedCardGroups.map((group) => (
+                  <section
+                    className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                    key={group.key}
+                    aria-labelledby={`heading-group-${group.key}`}
+                  >
+                    <h2
+                      id={`heading-group-${group.key}`}
+                      className="text-base font-semibold text-[var(--color-foreground)]"
+                    >
+                      Reviewed section: {group.title}
+                    </h2>
+                    <div className="mt-3 grid gap-4">
+                      {group.cards.map((card, index) => (
+                        <ReviewCard
+                          key={`${group.key}:${card.id}`}
+                          cardId={card.id}
+                          index={index + 1}
+                          criterion={card.criterion}
+                          description={card.criterion_description}
+                          evaluationElementName={card.evaluation_element_name}
+                          rating={card.rating}
+                          feedback={card.feedback_text}
+                          synthesizedCompanionText={card.synthesized_companion_text}
+                        />
+                      ))}
+                    </div>
+                  </section>
                 ))}
-              </div>
-            </section>
-            ))}
             {hasCoverageSummary
               ? visibleButNotReviewedNodeLabels.map((nodeLabel) => (
                   <section

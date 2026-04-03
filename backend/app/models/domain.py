@@ -11,6 +11,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
+import sqlalchemy as sa
 from sqlalchemy import JSON, Column, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, Relationship, SQLModel
@@ -48,7 +49,13 @@ class ReviewStatus(enum.StrEnum):
     FAILED = "FAILED"
 
 
+class ReviewDetailMode(enum.StrEnum):
+    LEGACY_CARDS = "legacy_cards"
+    REVIEWED_NODE_FINDINGS = "reviewed_node_findings"
+
+
 class AssessmentStatus(enum.StrEnum):
+    REQUIREMENTS_MET = "REQUIREMENTS_MET"
     ASSESSED = "ASSESSED"
     NOT_ASSESSABLE = "NOT_ASSESSABLE"
 
@@ -197,6 +204,7 @@ class ProposalNode(SQLModel, table=True):
     # Relationships
     call: FundingCall | None = Relationship(back_populates="nodes")
     expectations: list["NodeExpectation"] = Relationship(back_populates="node")
+    review_findings: list["ReviewFinding"] = Relationship(back_populates="proposal_node")
 
 
 # 5. EvaluationCriterion
@@ -457,6 +465,17 @@ class Review(SQLModel, table=True):
         default="single",
         description="Review type: single or structured",
     )
+    detail_mode: ReviewDetailMode = Field(
+        default=ReviewDetailMode.LEGACY_CARDS,
+        sa_column=Column(
+            "detail_mode",
+            sa.String(),
+            nullable=False,
+            default=ReviewDetailMode.LEGACY_CARDS.value,
+            server_default=ReviewDetailMode.LEGACY_CARDS.value,
+        ),
+        description="Explicit researcher-visible detail contract for this review.",
+    )
     structured_payload: dict[str, Any] | None = Field(
         default=None,
         sa_column=Column(
@@ -471,6 +490,7 @@ class Review(SQLModel, table=True):
     snippet: ProposalSnippet | None = Relationship(back_populates="review")
     template: PromptTemplate | None = Relationship(back_populates="reviews")
     cards: list["ReviewCard"] = Relationship(back_populates="review")
+    findings: list["ReviewFinding"] = Relationship(back_populates="review")
 
 
 # 11. ReviewCard
@@ -506,3 +526,49 @@ class ReviewCard(SQLModel, table=True):
     # Relationships
     review: Review | None = Relationship(back_populates="cards")
     expectation: NodeExpectation | None = Relationship(back_populates="review_cards")
+
+
+# 12. ReviewFinding
+class ReviewFinding(SQLModel, table=True):
+    """Persisted atomic finding for one reviewed node and evaluation element."""
+
+    __tablename__ = "review_findings"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    review_id: UUID = Field(foreign_key="reviews.id", description="Owning review event")
+    proposal_node_id: UUID = Field(
+        foreign_key="proposal_nodes.id",
+        description="Reviewed proposal node anchor",
+    )
+    proposal_node_logical_id_snapshot: str = Field(
+        description="Stable proposal node logical ID captured at write time",
+    )
+    proposal_node_title_snapshot: str = Field(
+        description="Proposal node title captured at write time",
+    )
+    evaluation_criterion_logical_id_snapshot: str = Field(
+        description="Stable evaluation criterion logical ID captured at write time",
+    )
+    evaluation_criterion_name_snapshot: str = Field(
+        description="Evaluation criterion label captured at write time",
+    )
+    evaluation_element_logical_id_snapshot: str = Field(
+        description="Stable evaluation element logical ID captured at write time",
+    )
+    evaluation_element_name_snapshot: str = Field(
+        description="Evaluation element label captured at write time",
+    )
+    severity: ReviewRating = Field(description="Finding severity for researcher display")
+    assessment_status: AssessmentStatus = Field(
+        description="Assessment state for this finding, including positive outcomes",
+    )
+    issue_summary_text: str = Field(description="Short issue or outcome summary")
+    evidence_basis_text: str = Field(description="Grounded evidence for the finding")
+    actionable_feedback_text: str = Field(
+        description="Actionable next-step guidance for the researcher",
+    )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+    # Relationships
+    review: Review | None = Relationship(back_populates="findings")
+    proposal_node: ProposalNode | None = Relationship(back_populates="review_findings")

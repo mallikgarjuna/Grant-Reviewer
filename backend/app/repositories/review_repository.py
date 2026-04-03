@@ -24,6 +24,8 @@ from app.models.domain import (
     ProposalSnippet,
     Review,
     ReviewCard,
+    ReviewDetailMode,
+    ReviewFinding,
     ReviewRating,
     User,
 )
@@ -172,6 +174,7 @@ class ReviewRepository:
         request_payload_sha256: str | None = None,
         idempotency_expires_at: datetime | None = None,
         review_type: str = "single",
+        detail_mode: ReviewDetailMode = ReviewDetailMode.LEGACY_CARDS,
         structured_payload: dict[str, Any] | None = None,
     ) -> Review:
         """Create a new review record."""
@@ -183,6 +186,7 @@ class ReviewRepository:
             request_payload_sha256=request_payload_sha256,
             idempotency_expires_at=idempotency_expires_at,
             review_type=review_type,
+            detail_mode=detail_mode,
             structured_payload=structured_payload,
         )
         self.session.add(review)
@@ -426,6 +430,18 @@ class ReviewRepository:
         for card in created_cards:
             self.session.refresh(card)
         return created_cards
+
+    def create_review_findings_batch(
+        self,
+        *,
+        findings: list[ReviewFinding],
+    ) -> list[ReviewFinding]:
+        """Create many review findings atomically with a single commit."""
+        self.session.add_all(findings)
+        self.session.commit()
+        for finding in findings:
+            self.session.refresh(finding)
+        return findings
 
     def update_review(
         self,

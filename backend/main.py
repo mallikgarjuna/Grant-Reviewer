@@ -20,9 +20,16 @@ from fastapi import Depends, FastAPI, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
+from sqlmodel import select
 
 from app.db import create_db_and_tables, get_session, ping_database
-from app.models.domain import ProposalSnippet, ReviewRating, ReviewStatus
+from app.models.domain import (
+    ProposalSnippet,
+    ReviewDetailMode,
+    ReviewFinding,
+    ReviewRating,
+    ReviewStatus,
+)
 from app.repositories.review_repository import ReviewRepository
 from app.schemas.api import (
     APIErrorBody,
@@ -43,6 +50,8 @@ from app.schemas.api import (
     ReviewCompatibilityNote,
     ReviewDetailProjection,
     ReviewDetailResponse,
+    ReviewFindingSummary,
+    ReviewedNodeSummary,
     ReviewListItem,
     ReviewsListResponse,
     ReviewSummary,
@@ -621,6 +630,62 @@ def _build_wf0080_detail_projection(
         top_action_card_ids=ordered_card_ids[:3],
         ranking_basis="assessment_status_then_rating_then_existing_order",
     )
+
+
+def _build_reviewed_node_summaries(
+    *,
+    review_id: UUID,
+    repository: ReviewRepository,
+    primary_evaluated_node_logical_ids: list[str],
+    supporting_context_node_logical_ids: list[str],
+) -> list[ReviewedNodeSummary]:
+    findings = list(
+        repository.session.exec(
+            select(ReviewFinding)
+            .where(ReviewFinding.review_id == review_id)
+            .order_by(
+                ReviewFinding.proposal_node_logical_id_snapshot,
+                ReviewFinding.evaluation_criterion_name_snapshot,
+                ReviewFinding.evaluation_element_name_snapshot,
+                ReviewFinding.id,
+            )
+        ).all()
+    )
+    grouped: dict[str, ReviewedNodeSummary] = {}
+    primary_ids = set(primary_evaluated_node_logical_ids)
+    supporting_ids = set(supporting_context_node_logical_ids)
+    for finding in findings:
+        node_logical_id = finding.proposal_node_logical_id_snapshot
+        node_summary = grouped.get(node_logical_id)
+        if node_summary is None:
+            node_role: Literal["PRIMARY", "SUPPORTING"] | None = None
+            if node_logical_id in primary_ids:
+                node_role = "PRIMARY"
+            elif node_logical_id in supporting_ids:
+                node_role = "SUPPORTING"
+            node_summary = ReviewedNodeSummary(
+                proposal_node_id=finding.proposal_node_id,
+                proposal_node_logical_id=node_logical_id,
+                proposal_node_title=finding.proposal_node_title_snapshot,
+                node_role=node_role,
+                findings=[],
+            )
+            grouped[node_logical_id] = node_summary
+
+        node_summary.findings.append(
+            ReviewFindingSummary(
+                finding_id=finding.id,
+                evaluation_criterion=finding.evaluation_criterion_name_snapshot,
+                evaluation_element=finding.evaluation_element_name_snapshot,
+                severity=finding.severity,
+                assessment_status=finding.assessment_status,
+                issue_summary=finding.issue_summary_text,
+                evidence_basis=finding.evidence_basis_text,
+                actionable_feedback=finding.actionable_feedback_text,
+            )
+        )
+
+    return list(grouped.values())
 
 
 def _extract_known_domains(node_config: dict[str, Any]) -> set[str]:
@@ -1485,9 +1550,17 @@ def get_review(
         )
         raise APIException(code="REVIEW_NOT_FOUND", message="Review not found.")
 
+    detail_mode = ReviewDetailMode(review.detail_mode)
+    logger.info(
+        "WF0081_REVIEW_DETAIL_MODE_USAGE review_id=%s detail_mode=%s",
+        review_id,
+        detail_mode.value,
+    )
+
     cards_with_criteria = []
-    if review.status == ReviewStatus.COMPLETED or (
-        review.status == ReviewStatus.FAILED and review.review_type == "structured"
+    if detail_mode == ReviewDetailMode.LEGACY_CARDS and (
+        review.status == ReviewStatus.COMPLETED
+        or (review.status == ReviewStatus.FAILED and review.review_type == "structured")
     ):
         cards_with_criteria = repository.get_review_cards_with_criteria(review_id)
 
@@ -1569,8 +1642,24 @@ def get_review(
         primary_evaluated_node_logical_ids,
         supporting_context_node_logical_ids,
     ) = repository.resolve_review_detail_role_labels(review=review, call_id=call_id)
-    reviewed_card_node_logical_ids = sorted(
+    reviewed_nodes = (
+        _build_reviewed_node_summaries(
+            review_id=review.id,
+            repository=repository,
+            primary_evaluated_node_logical_ids=primary_evaluated_node_logical_ids,
+            supporting_context_node_logical_ids=supporting_context_node_logical_ids,
+        )
+        if detail_mode == ReviewDetailMode.REVIEWED_NODE_FINDINGS
+        else []
+    )
+    reviewed_node_logical_ids = sorted(
         {
+            reviewed_node.proposal_node_logical_id
+            for reviewed_node in reviewed_nodes
+            if isinstance(reviewed_node.proposal_node_logical_id, str)
+        }
+        if detail_mode == ReviewDetailMode.REVIEWED_NODE_FINDINGS
+        else {
             card.node_logical_id
             for card in cards
             if isinstance(card.node_logical_id, str)
@@ -1582,7 +1671,7 @@ def get_review(
     ) = repository.resolve_review_detail_boundary_metadata(
         call_id=call_id,
         submitted_leaf_ids=submitted_leaf_ids,
-        reviewed_card_node_logical_ids=reviewed_card_node_logical_ids,
+        reviewed_card_node_logical_ids=reviewed_node_logical_ids,
     )
     # WF-0070 Task 7: Derive out-of-scope nodes from persisted stage_scope_leaf_ids.
     visible_not_reviewed_node_logical_ids, out_of_scope_node_logical_ids = (
@@ -1620,7 +1709,8 @@ def get_review(
         )
     detail_projection = (
         _build_wf0080_detail_projection(cards)
-        if _is_wf0080_launch_wedge_call(call.code if call is not None else None)
+        if detail_mode == ReviewDetailMode.LEGACY_CARDS
+        and _is_wf0080_launch_wedge_call(call.code if call is not None else None)
         else None
     )
     support_trace = _build_wf0080_support_trace_metadata(
@@ -1630,6 +1720,7 @@ def get_review(
     )
 
     return ReviewDetailResponse(
+        detail_mode=detail_mode,
         call_id=call_id,
         call_code=call.code if call is not None else None,
         submitted_node_logical_ids=submitted_node_logical_ids,
@@ -1653,7 +1744,10 @@ def get_review(
             overall_rating=review.overall_rating,
             overall_summary=review.overall_summary,
         ),
-        cards=cards,
+        cards=cards if detail_mode == ReviewDetailMode.LEGACY_CARDS else None,
+        reviewed_nodes=(
+            reviewed_nodes if detail_mode == ReviewDetailMode.REVIEWED_NODE_FINDINGS else None
+        ),
     )
 
 

@@ -5,6 +5,7 @@ Structured reviewer service tests for pipeline_v1-only runtime.
 from __future__ import annotations
 
 import json
+import logging
 import re
 from pathlib import Path
 from uuid import UUID
@@ -26,16 +27,23 @@ from app.models.domain import (
     NodeType,
     PromptTemplate,
     ProposalNode,
+    Review,
     ReviewCard,
+    ReviewDetailMode,
+    ReviewFinding,
+    ReviewRating,
     ReviewStatus,
 )
 from app.repositories.review_repository import ReviewRepository
-from app.services.llm_client import LLMClientError
+from app.services.llm_client import LLMClientError, StubLLMClient
 from app.services.structured_review_synthesis_service import (
     StructuredReviewSynthesisAcceptedResult,
     StructuredReviewSynthesisRejectedResult,
 )
-from app.services.structured_reviewer_service import StructuredReviewerService
+from app.services.structured_reviewer_service import (
+    StructuredReviewerService,
+    WF0081_UNGROUNDED_COMPANION_REASON,
+)
 from scripts.ingest_call import ingest_call
 
 
@@ -2388,6 +2396,95 @@ def test_wf0079_contract_erc_poc_persists_accepted_companion_text(
         service.repository.session.close()
 
 
+def test_wf0079_contract_erc_poc_stub_mode_persists_companion_text(
+    monkeypatch,
+) -> None:
+    """backend/tests/test_structured_reviewer_service.py
+    WF-0079: stub mode should still persist additive companion guidance for ERC PoC.
+    """
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_erc_poc_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="poc_idea_innovation",
+    )
+    machine_feedback = (
+        "content_evaluated;subordinate_prompt_ids="
+        "prompt_high_risk_high_gain,prompt_expected_outcomes_distinctiveness"
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0079-erc-poc-stub-companion",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0079-erc-poc-stub-companion",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="poc_idea_innovation"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="ASSESSED",
+                    reason=machine_feedback,
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="poc_idea_innovation",
+                    expectation_id=expectation_id,
+                    rating="NOTE",
+                    feedback=machine_feedback,
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    service._llm_client = StubLLMClient()
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                (
+                    "poc_idea_innovation",
+                    "This proposal advances a high-risk catalyst platform with a distinct translational route for market validation.",
+                )
+            ],
+            external_user_id="wf0079-erc-poc-stub-companion",
+            idempotency_key="wf0079-erc-poc-stub-companion",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert len(cards) == 1
+        assert cards[0].feedback_text.startswith("Revise poc_idea_innovation")
+        assert cards[0].synthesized_companion_text is not None
+        assert "Stub companion guidance" in cards[0].synthesized_companion_text
+
+        persisted_cards = list(
+            service.repository.session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == review.id)
+            ).all()
+        )
+        assert len(persisted_cards) == 1
+        assert persisted_cards[0].synthesized_companion_text is not None
+        assert len(service.last_synthesis_results) == 1
+        accepted_result = service.last_synthesis_results[0]
+        assert isinstance(accepted_result, StructuredReviewSynthesisAcceptedResult)
+    finally:
+        service.repository.session.close()
+
+
 def test_wf0079_contract_non_targeted_calls_do_not_persist_companion_text(
     monkeypatch,
 ) -> None:
@@ -2794,10 +2891,23 @@ def test_wf0078_contract_erc_poc_card_ungrounded_output_falls_back(
         assert review.status == ReviewStatus.COMPLETED
         assert len(cards) == 1
         assert cards[0].feedback_text.startswith("Revise poc_idea_innovation")
+        assert cards[0].synthesized_companion_text == (
+            WF0081_UNGROUNDED_COMPANION_REASON
+        )
         assert len(service.last_synthesis_results) == 1
         rejected_result = service.last_synthesis_results[0]
         assert isinstance(rejected_result, StructuredReviewSynthesisRejectedResult)
         assert rejected_result.rejection_code == "ungrounded_output"
+
+        persisted_cards = list(
+            service.repository.session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == review.id)
+            ).all()
+        )
+        assert len(persisted_cards) == 1
+        assert persisted_cards[0].synthesized_companion_text == (
+            WF0081_UNGROUNDED_COMPANION_REASON
+        )
     finally:
         service.repository.session.close()
 
@@ -3582,5 +3692,334 @@ def test_wf0065_structured_service_representative_success_matrix_persists_review
             ).all()
         )
         assert len(persisted_cards) == len(cards)
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0081_contract_atomic_review_persists_review_findings(monkeypatch) -> None:
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_nwo_veni_service(monkeypatch)
+    profile_expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="academic_profile",
+    )
+    outputs_expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="key_outputs",
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0081-atomic-review-persist-findings",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0081-finding-profile",
+                    primary_expectation_ref=profile_expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="academic_profile"),
+                    check_id="check.presence",
+                    finding_kind="MISSING_CONTENT",
+                    severity="WARNING",
+                    assessment_status="ASSESSED",
+                    reason="Clarify the academic profile evidence for this evaluation element.",
+                ),
+                DiagnosticFindingV1(
+                    finding_id="wf0081-finding-outputs",
+                    primary_expectation_ref=outputs_expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="key_outputs"),
+                    check_id="check.presence",
+                    finding_kind="PRESENT_CONTENT",
+                    severity="NOTE",
+                    assessment_status="REQUIREMENTS_MET",
+                    reason="The submitted outputs evidence already meets this evaluation element.",
+                ),
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="academic_profile",
+                    expectation_id=profile_expectation_id,
+                    rating="WARNING",
+                    feedback="Legacy compatibility text should not be persisted for atomic reviews.",
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[
+                ("academic_profile", "Profile evidence text."),
+                ("key_outputs", "Outputs evidence text."),
+            ],
+            external_user_id="wf0081-atomic-review",
+            idempotency_key="wf0081-atomic-review",
+            detail_mode=ReviewDetailMode.REVIEWED_NODE_FINDINGS,
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert review.detail_mode == ReviewDetailMode.REVIEWED_NODE_FINDINGS
+        assert cards == []
+
+        persisted_findings = list(
+            service.repository.session.exec(
+                select(ReviewFinding)
+                .where(ReviewFinding.review_id == review.id)
+                .order_by(ReviewFinding.proposal_node_logical_id_snapshot)
+            ).all()
+        )
+        assert len(persisted_findings) == 2
+        assert {
+            finding.proposal_node_logical_id_snapshot for finding in persisted_findings
+        } == {"academic_profile", "key_outputs"}
+        assert {
+            finding.assessment_status for finding in persisted_findings
+        } == {
+            AssessmentStatus.ASSESSED,
+            AssessmentStatus.REQUIREMENTS_MET,
+        }
+        assert {
+            finding.severity for finding in persisted_findings
+        } == {ReviewRating.WARNING, ReviewRating.SUCCESS}
+
+        persisted_cards = list(
+            service.repository.session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == review.id)
+            ).all()
+        )
+        assert persisted_cards == []
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0081_contract_legacy_review_card_path_remains_unchanged(
+    monkeypatch,
+) -> None:
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="academic_profile",
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0081-legacy-card-path",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0081-legacy-finding",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="academic_profile"),
+                    check_id="check.presence",
+                    finding_kind="MISSING_CONTENT",
+                    severity="WARNING",
+                    assessment_status="ASSESSED",
+                    reason="Legacy structured review still persists cards by default.",
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="academic_profile",
+                    expectation_id=expectation_id,
+                    rating="WARNING",
+                    feedback="Legacy structured review still persists cards by default.",
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Profile evidence text.")],
+            external_user_id="wf0081-legacy-card-path",
+            idempotency_key="wf0081-legacy-card-path",
+        )
+        assert review.status == ReviewStatus.COMPLETED
+        assert review.detail_mode == ReviewDetailMode.LEGACY_CARDS
+        assert len(cards) == 1
+
+        persisted_cards = list(
+            service.repository.session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == review.id)
+            ).all()
+        )
+        assert len(persisted_cards) == 1
+        persisted_findings = list(
+            service.repository.session.exec(
+                select(ReviewFinding).where(ReviewFinding.review_id == review.id)
+            ).all()
+        )
+        assert persisted_findings == []
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0081_contract_unmappable_diagnostic_finding_fails_closed(
+    monkeypatch,
+) -> None:
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_nwo_veni_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="academic_profile",
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0081-finding-mapping-fails-closed",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0081-unmappable-finding",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="missing_node"),
+                    check_id="check.presence",
+                    finding_kind="MISSING_CONTENT",
+                    severity="WARNING",
+                    assessment_status="ASSESSED",
+                    reason="This finding cannot resolve the reviewed node snapshot.",
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="academic_profile",
+                    expectation_id=expectation_id,
+                    rating="WARNING",
+                    feedback="Compatibility text that must not persist after a mapping failure.",
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+
+    try:
+        review, cards = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Profile evidence text.")],
+            external_user_id="wf0081-finding-mapping-fails-closed",
+            idempotency_key="wf0081-finding-mapping-fails-closed",
+            detail_mode=ReviewDetailMode.REVIEWED_NODE_FINDINGS,
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert cards == []
+        assert review.overall_summary is not None
+        assert "WF0081_FINDING_MAPPING_FAILED" in review.overall_summary
+
+        persisted_findings = list(
+            service.repository.session.exec(
+                select(ReviewFinding).where(ReviewFinding.review_id == review.id)
+            ).all()
+        )
+        persisted_cards = list(
+            service.repository.session.exec(
+                select(ReviewCard).where(ReviewCard.review_id == review.id)
+            ).all()
+        )
+        assert persisted_findings == []
+        assert persisted_cards == []
+    finally:
+        service.repository.session.close()
+
+
+def test_wf0081_contract_unmappable_diagnostic_finding_records_bounded_failure(
+    monkeypatch,
+    caplog,
+) -> None:
+    from app.engine.contracts import DiagnosticFindingV1, PipelineResult, SubjectRef
+    from app.engine.contracts import ReviewCard as EngineReviewCard
+
+    service, call_id = _build_nwo_veni_service(monkeypatch)
+    expectation_id = _get_expectation_id_for_node(
+        service,
+        call_id=call_id,
+        node_logical_id="academic_profile",
+    )
+
+    def fake_run_review_pipeline(_request):
+        return PipelineResult(
+            request_id="wf0081-finding-mapping-logs",
+            pipeline_status="SUCCESS",
+            failure_code=None,
+            diagnostics=[],
+            compatibility_output={},
+            findings=[
+                DiagnosticFindingV1(
+                    finding_id="wf0081-unmappable-finding-log",
+                    primary_expectation_ref=expectation_id,
+                    subject_ref=SubjectRef(node_logical_id="missing_node"),
+                    check_id="check.presence",
+                    finding_kind="MISSING_CONTENT",
+                    severity="WARNING",
+                    assessment_status="ASSESSED",
+                    reason="This finding cannot resolve the reviewed node snapshot.",
+                )
+            ],
+            review_cards=[
+                EngineReviewCard(
+                    node_logical_id="academic_profile",
+                    expectation_id=expectation_id,
+                    rating="WARNING",
+                    feedback="Compatibility text that must not persist after a mapping failure.",
+                )
+            ],
+            telemetry={},
+        )
+
+    monkeypatch.setattr(
+        "app.services.structured_reviewer_service.run_review_pipeline",
+        fake_run_review_pipeline,
+    )
+    caplog.set_level(logging.ERROR, logger="app.services.structured_reviewer_service")
+
+    try:
+        review, _ = service.generate_structured_review_pipeline_v1(
+            review_stage="STEP_1",
+            call_id=call_id,
+            nodes=[("academic_profile", "Profile evidence text.")],
+            external_user_id="wf0081-finding-mapping-logs",
+            idempotency_key="wf0081-finding-mapping-logs",
+            detail_mode=ReviewDetailMode.REVIEWED_NODE_FINDINGS,
+        )
+        assert review.status == ReviewStatus.FAILED
+        assert "WF0081_FINDING_MAPPING_FAILED" in caplog.text
+        assert "wf0081-unmappable-finding-log" in caplog.text
+        assert str(review.id) in caplog.text
     finally:
         service.repository.session.close()

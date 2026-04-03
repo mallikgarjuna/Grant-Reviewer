@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import time
+import app.models.domain as domain_models
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -22,7 +23,7 @@ import yaml
 from fastapi.testclient import TestClient
 from psycopg import errors as psycopg_errors
 from psycopg import sql
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, select
 
@@ -43,6 +44,8 @@ from app.models.domain import (
     ProposalSnippet,
     Review,
     ReviewCard,
+    ReviewDetailMode,
+    ReviewFinding,
     ReviewRating,
     ReviewStatus,
     User,
@@ -4162,6 +4165,406 @@ def test_wf0079_contract_migration_preserves_legacy_null_companion_text(
             )
 
 
+def test_wf0081_contract_review_storage_supports_detail_mode_and_findings(
+    monkeypatch,
+) -> None:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+    del client
+
+    assert "detail_mode" in Review.model_fields
+    assert "review_findings" in SQLModel.metadata.tables
+    assert AssessmentStatus.REQUIREMENTS_MET == "REQUIREMENTS_MET"
+
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+
+        review = Review(
+            proposal_snippet_id=None,
+            prompt_template_id=template.id,
+            status=ReviewStatus.COMPLETED,
+            overall_summary="Atomic findings storage proof",
+            overall_rating=ReviewRating.SUCCESS,
+            external_user_id=TEST_USER_ID,
+            review_type="structured",
+            detail_mode=domain_models.ReviewDetailMode.REVIEWED_NODE_FINDINGS,
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "nodes": {
+                    "academic_profile": "Submitted text for academic_profile",
+                },
+                "submitted_leaf_ids": ["academic_profile"],
+                "stage_scope_leaf_ids": ["academic_profile"],
+                "engine_path": "pipeline_v1",
+            },
+        )
+        session.add(review)
+        session.commit()
+        session.refresh(review)
+
+        node = session.exec(
+            select(ProposalNode).where(
+                ProposalNode.funding_call_id == seeded_ids.structured_call_id,
+                ProposalNode.logical_id == "academic_profile",
+            )
+        ).first()
+        assert node is not None
+
+        finding = domain_models.ReviewFinding(
+            review_id=review.id,
+            proposal_node_id=node.id,
+            proposal_node_logical_id_snapshot="academic_profile",
+            proposal_node_title_snapshot="Academic profile",
+            evaluation_criterion_logical_id_snapshot="research_team",
+            evaluation_criterion_name_snapshot="Research team",
+            evaluation_element_logical_id_snapshot="fit_for_call",
+            evaluation_element_name_snapshot="Fit for call",
+            severity=ReviewRating.SUCCESS,
+            assessment_status=AssessmentStatus.REQUIREMENTS_MET,
+            issue_summary_text="Requirements are met for this evaluation element.",
+            evidence_basis_text="The submitted text covers the expected profile evidence.",
+            actionable_feedback_text="Keep this level of specificity in the final version.",
+        )
+        session.add(finding)
+        session.commit()
+        session.refresh(finding)
+        review_id = review.id
+        finding_id = finding.id
+    finally:
+        session.close()
+
+    with engine.connect() as connection:
+        table_names = set(inspect(connection).get_table_names())
+        assert "review_findings" in table_names
+
+        stored_detail_mode = connection.execute(
+            text("SELECT detail_mode FROM reviews WHERE id = :review_id"),
+            {"review_id": review_id},
+        ).scalar_one()
+        assert stored_detail_mode == "reviewed_node_findings"
+
+        stored_finding = connection.execute(
+            text(
+                """
+                SELECT
+                    proposal_node_logical_id_snapshot,
+                    proposal_node_title_snapshot,
+                    evaluation_criterion_logical_id_snapshot,
+                    evaluation_criterion_name_snapshot,
+                    evaluation_element_logical_id_snapshot,
+                    evaluation_element_name_snapshot,
+                    assessment_status
+                FROM review_findings
+                WHERE id = :finding_id
+                """
+            ),
+            {"finding_id": finding_id},
+        ).one()
+
+    assert stored_finding == (
+        "academic_profile",
+        "Academic profile",
+        "research_team",
+        "Research team",
+        "fit_for_call",
+        "Fit for call",
+        "REQUIREMENTS_MET",
+    )
+
+
+def test_wf0081_contract_migration_preserves_legacy_review_cards() -> None:
+    current_db_url = os.getenv("DATABASE_URL", "").strip()
+    if not (
+        current_db_url.startswith("postgres://")
+        or current_db_url.startswith("postgresql://")
+        or current_db_url.startswith("postgresql+psycopg://")
+    ):
+        pytest.skip("WF-0081 migration proof requires PostgreSQL test DATABASE_URL.")
+
+    def replace_db_name(url: str, db_name: str) -> str:
+        parsed = urlparse(url)
+        return urlunparse(parsed._replace(path=f"/{db_name}"))
+
+    temp_db_name = f"wf0081_review_findings_test_{uuid4().hex[:8]}"
+    admin_db_url = replace_db_name(current_db_url, "postgres")
+    database_url = replace_db_name(current_db_url, temp_db_name)
+    env = dict(os.environ)
+    env["DATABASE_URL"] = database_url
+
+    def run_alembic(*args: str) -> None:
+        completed = subprocess.run(
+            ["uv", "run", "alembic", *args],
+            cwd=Path.cwd(),
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert completed.returncode == 0, (
+            f"Command failed: uv run alembic {' '.join(args)}\n"
+            f"stdout:\n{completed.stdout}\n"
+            f"stderr:\n{completed.stderr}"
+        )
+
+    try:
+        try:
+            with psycopg.connect(
+                admin_db_url, autocommit=True
+            ) as connection, connection.cursor() as cursor:
+                cursor.execute(
+                    sql.SQL("CREATE DATABASE {}").format(sql.Identifier(temp_db_name))
+                )
+        except psycopg_errors.InsufficientPrivilege:
+            pytest.skip(
+                "WF-0081 migration proof requires PostgreSQL test user that can create databases."
+            )
+
+        run_alembic("upgrade", "6f8d4c8d91c2")
+
+        now = datetime.now(UTC).replace(tzinfo=None)
+        ids = {
+            "agency": str(uuid4()),
+            "call": str(uuid4()),
+            "node": str(uuid4()),
+            "criterion": str(uuid4()),
+            "element": str(uuid4()),
+            "expectation": str(uuid4()),
+            "user": str(uuid4()),
+            "snippet": str(uuid4()),
+            "template": str(uuid4()),
+            "review": str(uuid4()),
+            "card": str(uuid4()),
+        }
+
+        with psycopg.connect(database_url) as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO funding_agencies (
+                    id, name, short_name, description, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (ids["agency"], "ERC", "ERC-WF0081", None, now, now),
+            )
+            cursor.execute(
+                """
+                INSERT INTO funding_calls (
+                    id, funding_agency_id, name, code, aim_objectives, scope,
+                    general_guidelines, call_year, is_active, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["call"],
+                    ids["agency"],
+                    "ERC Proof Call",
+                    "ERC-2026-LEGACY",
+                    None,
+                    None,
+                    None,
+                    2026,
+                    True,
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO proposal_nodes (
+                    id, funding_call_id, logical_id, parent_node_id, node_type, title,
+                    order_index, guidance_text, archived_at, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["node"],
+                    ids["call"],
+                    "proposal_summary",
+                    None,
+                    "SECTION",
+                    "Proposal Summary",
+                    0,
+                    None,
+                    None,
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO evaluation_criteria (
+                    id, funding_call_id, logical_id, name, description,
+                    order_index, archived_at, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["criterion"],
+                    ids["call"],
+                    "excellence",
+                    "Excellence",
+                    None,
+                    0,
+                    None,
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO evaluation_elements (
+                    id, evaluation_criterion_id, logical_id, name, description,
+                    archived_at, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["element"],
+                    ids["criterion"],
+                    "clarity",
+                    "Clarity",
+                    None,
+                    None,
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO node_expectations (
+                    id, proposal_node_id, evaluation_element_id, expectation_strength,
+                    evaluation_intent, guidance_note, order_index, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["expectation"],
+                    ids["node"],
+                    ids["element"],
+                    "IMPORTANT",
+                    "QUALITY",
+                    None,
+                    0,
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO users (
+                    id, email, is_anonymous, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s)
+                """,
+                (ids["user"], None, True, now, now),
+            )
+            cursor.execute(
+                """
+                INSERT INTO proposal_snippets (
+                    id, user_id, funding_call_id, proposal_node_id, pasted_text,
+                    expires_at, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["snippet"],
+                    ids["user"],
+                    ids["call"],
+                    ids["node"],
+                    "Legacy deterministic snippet",
+                    now,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO prompt_templates (
+                    id, name, version, template_text, is_active, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (ids["template"], "default", 1, "Prompt body", True, now, now),
+            )
+            cursor.execute(
+                """
+                INSERT INTO reviews (
+                    id, proposal_snippet_id, prompt_template_id, status, overall_summary,
+                    overall_rating, prompt_sent, raw_llm_response, llm_model,
+                    external_user_id, idempotency_key, request_payload_sha256,
+                    idempotency_expires_at, review_type, structured_payload, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["review"],
+                    ids["snippet"],
+                    ids["template"],
+                    "COMPLETED",
+                    "Legacy review",
+                    "WARNING",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "single",
+                    None,
+                    now,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO review_cards (
+                    id, review_id, node_expectation_id, rating, feedback_text,
+                    created_at, assessment_status, not_assessable_reason
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    ids["card"],
+                    ids["review"],
+                    ids["expectation"],
+                    "WARNING",
+                    "Legacy deterministic-only feedback",
+                    now,
+                    "ASSESSED",
+                    None,
+                ),
+            )
+            connection.commit()
+
+        run_alembic("upgrade", "head")
+
+        with psycopg.connect(database_url) as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT detail_mode
+                FROM reviews
+                WHERE id = %s
+                """,
+                (ids["review"],),
+            )
+            assert cursor.fetchone() == ("legacy_cards",)
+
+            cursor.execute(
+                """
+                SELECT feedback_text, assessment_status, not_assessable_reason
+                FROM review_cards
+                WHERE id = %s
+                """,
+                (ids["card"],),
+            )
+            assert cursor.fetchone() == (
+                "Legacy deterministic-only feedback",
+                "ASSESSED",
+                None,
+            )
+
+            cursor.execute("SELECT COUNT(*) FROM review_findings")
+            assert cursor.fetchone() == (0,)
+    finally:
+        with psycopg.connect(
+            admin_db_url, autocommit=True
+        ) as connection, connection.cursor() as cursor:
+            cursor.execute(
+                sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(
+                    sql.Identifier(temp_db_name)
+                )
+            )
+
+
 def _create_wf0079_structured_review_with_cards(
     *,
     monkeypatch,
@@ -4242,6 +4645,18 @@ class Wf0080StructuredCardSpec:
     not_assessable_reason: str | None = None
 
 
+@dataclass(frozen=True)
+class Wf0081FindingSpec:
+    """Finding fixture data for WF-0081 detail projection tests."""
+
+    node_logical_id: str
+    assessment_status: AssessmentStatus
+    severity: ReviewRating
+    issue_summary_text: str
+    evidence_basis_text: str
+    actionable_feedback_text: str
+
+
 def _create_wf0080_structured_review_with_cards(
     *,
     monkeypatch,
@@ -4302,6 +4717,88 @@ def _create_wf0080_structured_review_with_cards(
                 not_assessable_reason=spec.not_assessable_reason,
             )
             session.add(card)
+
+        session.commit()
+        return client, str(review.id)
+    finally:
+        session.close()
+
+
+def _create_wf0081_structured_review_with_findings(
+    *,
+    monkeypatch,
+    finding_specs: list[Wf0081FindingSpec],
+) -> tuple[TestClient, str]:
+    client, seeded_ids = create_client_with_seed(monkeypatch)
+
+    session = get_session()
+    try:
+        template = session.exec(select(PromptTemplate)).first()
+        assert template is not None
+
+        review = Review(
+            proposal_snippet_id=None,
+            prompt_template_id=template.id,
+            status=ReviewStatus.COMPLETED,
+            overall_summary="WF-0081 atomic detail projection review",
+            overall_rating=ReviewRating.WARNING,
+            external_user_id=TEST_USER_ID,
+            review_type="structured",
+            detail_mode=ReviewDetailMode.REVIEWED_NODE_FINDINGS,
+            structured_payload={
+                "call_id": str(seeded_ids.structured_call_id),
+                "nodes": {
+                    spec.node_logical_id: f"Submitted text for {spec.node_logical_id}"
+                    for spec in finding_specs
+                },
+                "submitted_leaf_ids": [spec.node_logical_id for spec in finding_specs],
+                "stage_scope_leaf_ids": [spec.node_logical_id for spec in finding_specs],
+                "engine_path": "pipeline_v1",
+            },
+        )
+        session.add(review)
+        session.commit()
+        session.refresh(review)
+
+        for spec in finding_specs:
+            node = session.exec(
+                select(ProposalNode).where(
+                    ProposalNode.funding_call_id == seeded_ids.structured_call_id,
+                    ProposalNode.logical_id == spec.node_logical_id,
+                )
+            ).first()
+            assert node is not None
+
+            if spec.node_logical_id == "academic_profile":
+                criterion_logical_id = "crit_structured_quality"
+                criterion_name = "Structured quality"
+                element_logical_id = "elem_structured_node_quality"
+                element_name = "Structured node quality"
+                node_title = "Academic profile"
+            else:
+                criterion_logical_id = "crit_structured_quality"
+                criterion_name = "Structured quality"
+                element_logical_id = "elem_structured_node_quality_2"
+                element_name = "Structured node quality 2"
+                node_title = "Scientific proposal"
+
+            session.add(
+                ReviewFinding(
+                    review_id=review.id,
+                    proposal_node_id=node.id,
+                    proposal_node_logical_id_snapshot=spec.node_logical_id,
+                    proposal_node_title_snapshot=node_title,
+                    evaluation_criterion_logical_id_snapshot=criterion_logical_id,
+                    evaluation_criterion_name_snapshot=criterion_name,
+                    evaluation_element_logical_id_snapshot=element_logical_id,
+                    evaluation_element_name_snapshot=element_name,
+                    severity=spec.severity,
+                    assessment_status=spec.assessment_status,
+                    issue_summary_text=spec.issue_summary_text,
+                    evidence_basis_text=spec.evidence_basis_text,
+                    actionable_feedback_text=spec.actionable_feedback_text,
+                )
+            )
 
         session.commit()
         return client, str(review.id)
@@ -4618,6 +5115,173 @@ def test_wf0080_non_wedge_responses_do_not_emit_launch_only_contracts(monkeypatc
     detail_payload = detail_response.json()
     assert "detail_projection" not in detail_payload
     assert "support_trace" not in detail_payload
+
+
+def test_wf0081_contract_review_detail_exposes_explicit_detail_mode(
+    monkeypatch,
+) -> None:
+    legacy_client, legacy_review_id = _create_wf0080_structured_review_with_cards(
+        monkeypatch=monkeypatch,
+        card_specs=[
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_idea_innovation",
+                rating=ReviewRating.WARNING,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Legacy review card feedback.",
+            )
+        ],
+    )
+    legacy_detail = get_review_detail(client=legacy_client, review_id=legacy_review_id)
+
+    atomic_client, atomic_review_id = _create_wf0081_structured_review_with_findings(
+        monkeypatch=monkeypatch,
+        finding_specs=[
+            Wf0081FindingSpec(
+                node_logical_id="academic_profile",
+                assessment_status=AssessmentStatus.ASSESSED,
+                severity=ReviewRating.WARNING,
+                issue_summary_text="Academic profile needs sharper evidence.",
+                evidence_basis_text="The profile text stays too general.",
+                actionable_feedback_text="Add concrete achievements tied to the call.",
+            )
+        ],
+    )
+    atomic_detail = get_review_detail(client=atomic_client, review_id=atomic_review_id)
+
+    assert legacy_detail.status_code == 200
+    assert legacy_detail.json()["detail_mode"] == "legacy_cards"
+    assert "cards" in legacy_detail.json()
+
+    assert atomic_detail.status_code == 200
+    assert atomic_detail.json()["detail_mode"] == "reviewed_node_findings"
+    assert "reviewed_nodes" in atomic_detail.json()
+
+
+def test_wf0081_contract_atomic_review_detail_groups_findings_under_reviewed_nodes(
+    monkeypatch,
+) -> None:
+    client, review_id = _create_wf0081_structured_review_with_findings(
+        monkeypatch=monkeypatch,
+        finding_specs=[
+            Wf0081FindingSpec(
+                node_logical_id="academic_profile",
+                assessment_status=AssessmentStatus.ASSESSED,
+                severity=ReviewRating.WARNING,
+                issue_summary_text="Academic profile needs sharper evidence.",
+                evidence_basis_text="The profile text stays too general.",
+                actionable_feedback_text="Add concrete achievements tied to the call.",
+            ),
+            Wf0081FindingSpec(
+                node_logical_id="scientific_proposal",
+                assessment_status=AssessmentStatus.REQUIREMENTS_MET,
+                severity=ReviewRating.SUCCESS,
+                issue_summary_text="Research idea requirements are met.",
+                evidence_basis_text="The idea text already addresses the evaluation element.",
+                actionable_feedback_text="Keep the current specificity in the final version.",
+            ),
+            Wf0081FindingSpec(
+                node_logical_id="scientific_proposal",
+                assessment_status=AssessmentStatus.NOT_ASSESSABLE,
+                severity=ReviewRating.NOTE,
+                issue_summary_text="Research idea cannot be fully assessed yet.",
+                evidence_basis_text="A required dependency section is still missing.",
+                actionable_feedback_text="Add the missing dependency detail before resubmitting.",
+            ),
+        ],
+    )
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    payload = detail_response.json()
+    reviewed_nodes = payload["reviewed_nodes"]
+    assert [node["proposal_node_logical_id"] for node in reviewed_nodes] == [
+        "academic_profile",
+        "scientific_proposal",
+    ]
+
+    academic_profile = reviewed_nodes[0]
+    assert academic_profile["proposal_node_title"] == "Academic profile"
+    assert academic_profile["findings"][0]["evaluation_criterion"] == "Structured quality"
+    assert academic_profile["findings"][0]["evaluation_element"] == "Structured node quality"
+
+    research_idea = reviewed_nodes[1]
+    assert research_idea["proposal_node_title"] == "Scientific proposal"
+    assert len(research_idea["findings"]) == 2
+    assert {
+        finding["assessment_status"] for finding in research_idea["findings"]
+    } == {
+        "REQUIREMENTS_MET",
+        "NOT_ASSESSABLE",
+    }
+
+
+def test_wf0081_contract_review_detail_modes_are_mutually_exclusive(
+    monkeypatch,
+) -> None:
+    legacy_client, legacy_review_id = _create_wf0080_structured_review_with_cards(
+        monkeypatch=monkeypatch,
+        card_specs=[
+            Wf0080StructuredCardSpec(
+                node_logical_id="poc_idea_innovation",
+                rating=ReviewRating.WARNING,
+                assessment_status=AssessmentStatus.ASSESSED,
+                feedback_text="Legacy review card feedback.",
+            )
+        ],
+    )
+    legacy_payload = get_review_detail(
+        client=legacy_client, review_id=legacy_review_id
+    ).json()
+    assert legacy_payload["detail_mode"] == "legacy_cards"
+    assert "cards" in legacy_payload
+    assert "reviewed_nodes" not in legacy_payload
+
+    atomic_client, atomic_review_id = _create_wf0081_structured_review_with_findings(
+        monkeypatch=monkeypatch,
+        finding_specs=[
+            Wf0081FindingSpec(
+                node_logical_id="academic_profile",
+                assessment_status=AssessmentStatus.ASSESSED,
+                severity=ReviewRating.WARNING,
+                issue_summary_text="Academic profile needs sharper evidence.",
+                evidence_basis_text="The profile text stays too general.",
+                actionable_feedback_text="Add concrete achievements tied to the call.",
+            )
+        ],
+    )
+    atomic_payload = get_review_detail(
+        client=atomic_client, review_id=atomic_review_id
+    ).json()
+    assert atomic_payload["detail_mode"] == "reviewed_node_findings"
+    assert "reviewed_nodes" in atomic_payload
+    assert "cards" not in atomic_payload
+
+
+def test_wf0081_contract_review_detail_records_detail_mode_usage(
+    monkeypatch,
+    caplog,
+) -> None:
+    client, review_id = _create_wf0081_structured_review_with_findings(
+        monkeypatch=monkeypatch,
+        finding_specs=[
+            Wf0081FindingSpec(
+                node_logical_id="academic_profile",
+                assessment_status=AssessmentStatus.ASSESSED,
+                severity=ReviewRating.WARNING,
+                issue_summary_text="Academic profile needs sharper evidence.",
+                evidence_basis_text="The profile text stays too general.",
+                actionable_feedback_text="Add concrete achievements tied to the call.",
+            )
+        ],
+    )
+    caplog.set_level("INFO", logger="main")
+
+    detail_response = get_review_detail(client=client, review_id=review_id)
+
+    assert detail_response.status_code == 200
+    assert "WF0081_REVIEW_DETAIL_MODE_USAGE" in caplog.text
+    assert "reviewed_node_findings" in caplog.text
 
 
 def test_wf0043_contract_structured_api_failed_persisted(monkeypatch) -> None:
