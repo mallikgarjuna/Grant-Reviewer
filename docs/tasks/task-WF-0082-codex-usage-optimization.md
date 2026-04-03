@@ -8,7 +8,7 @@ Last Updated: 2026-04-03
 
 ## Task Breakdown (Sequential Order)
 
-### [ ] Task 1 — Tracer bullet: baseline context estimate and surface inventory
+### [x] Task 1 — Tracer bullet: baseline context estimate and surface inventory
 
 Goal:
 Produce the first concrete proof artifact for this WF by capturing the likely default-load baseline and a compact surface inventory for the in-scope instruction surfaces without changing behavior yet.
