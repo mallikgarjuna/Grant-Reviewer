@@ -67,7 +67,7 @@ Verification Steps:
 - `rg -n "WF-0082|Mission|Parking lot|workflow_archive_index" docs/index.md`
 Risks (if any): A bad split can hide history or create a lighter file that no longer routes users or agents to the necessary archive surfaces.
 
-### [ ] Task 3 — Narrow `AGENTS.md` default-entrypoint trigger
+### [x] Task 3 — Narrow `AGENTS.md` default-entrypoint trigger
 
 Goal:
 Remove or narrow the broad `docs/index.md` trigger in `AGENTS.md` so the repo stops encouraging the heavy dashboard path for every work request.

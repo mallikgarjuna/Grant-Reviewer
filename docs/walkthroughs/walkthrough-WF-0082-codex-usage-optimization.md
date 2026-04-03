@@ -68,7 +68,14 @@ Task 2 outcome:
 - The active dashboard still exposes `WF-0082`, `Mission`, `Parking lot`, and the archive route.
 - Historical lookup now routes through `docs/reference/workflow_archive_index.md` instead of staying inline in the default dashboard.
 
+## Task 3 Verification Snapshot
+
+- `AGENTS.md` now routes `docs/index.md` through workflow/task tracking only instead of any work request.
+- The rest of the high-signal AGENTS rules remain unchanged.
+- File length remains within the repo's tiny-file guardrail.
+
 ## Changelog
 
 - v0.1 (2026-04-03): Recorded the baseline default-load estimate, replay command, and compact surface inventory for Task 1.
 - v0.2 (2026-04-03): Recorded the Task 2 dashboard compaction result and the post-split verification snapshot for `docs/index.md`.
+- v0.3 (2026-04-03): Recorded the narrowed `AGENTS.md` trigger and confirmed the file stayed within the tiny-file guardrail for Task 3.
