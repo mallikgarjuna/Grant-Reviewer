@@ -2,8 +2,8 @@
 # WF-0082 — Codex Usage Optimization Tasks
 
 Artifact: task
-Version: v0.2
-Status: Ready for Implementation
+Version: v0.3
+Status: Done
 Last Updated: 2026-04-03
 
 ## Task Breakdown (Sequential Order)
@@ -154,9 +154,11 @@ TDD Plan: N/A
 Verification Steps:
 - `python3 - <<'PY'\nfrom pathlib import Path\nfiles=['AGENTS.md','docs/index.md','docs/memory/index.md']\ncombined=sum(len(Path(f).read_text()) for f in files)\nprint('combined_est_tokens', round(combined/4))\nfor f in files:\n    text=Path(f).read_text()\n    print(f'{f}\\tchars={len(text)}\\test_tokens~={round(len(text)/4)}')\nPY`
 - `rg -n "before|after|default-load|always-on|on-demand|archival|traceability|terminology" docs/walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md docs/logs/decisions.md`
+- `rg -n "Status: Done|Status: Completed|\\| WF-0082 \\|.*\\| Done \\|" docs/tasks/task-WF-0082-codex-usage-optimization.md docs/walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md docs/index.md docs/reference/workflow_archive_index.md`
 Risks (if any): If closure evidence is hand-wavy, the WF may claim optimization success without actually proving that likely-load behavior improved safely.
 
 ## Changelog
 
 - v0.1 (2026-04-03): Initial task breakdown from PRD
 - v0.2 (2026-04-03): Applied review edits by restoring 3-file atomicity for the memory-routing task, tightening the tracer-bullet file surface, and adding stronger active-dashboard routing proof for the index compaction slice.
+- v0.3 (2026-04-03): Closed WF metadata to `Done` and added a deterministic cross-artifact status-alignment verification step for Phase 3.3.

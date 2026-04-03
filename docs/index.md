@@ -5,7 +5,7 @@
 
 | WF ID | Slug / Feature | Brainstorm | PRD | Task File | Walkthrough | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| WF-0082 | codex-usage-optimization | [Brainstorm](brainstorms/brainstorm-WF-0082-codex-usage-optimization.md) | [PRD](prds/prd-WF-0082-codex-usage-optimization.md) | [Tasks](tasks/task-WF-0082-codex-usage-optimization.md) | [Walkthrough](walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md) | Phase 2 (Ready) |
+| WF-0082 | codex-usage-optimization | [Brainstorm](brainstorms/brainstorm-WF-0082-codex-usage-optimization.md) | [PRD](prds/prd-WF-0082-codex-usage-optimization.md) | [Tasks](tasks/task-WF-0082-codex-usage-optimization.md) | [Walkthrough](walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md) | Done |
 
 ## Current Navigation
 

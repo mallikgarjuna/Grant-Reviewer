@@ -42,7 +42,7 @@ These rows remain in the active dashboard because they are not fully archived ye
 | WF ID | Slug / Feature | Key Artifact | Status |
 | :--- | :--- | :--- | :--- |
 | WF-0079 | researcher-visible-carry-through-mvp | [Tasks](../tasks/task-WF-0079-researcher-visible-carry-through-mvp.md) | Completed |
-| WF-0082 | codex-usage-optimization | [Tasks](../tasks/task-WF-0082-codex-usage-optimization.md) | Phase 2 (Ready) |
+| WF-0082 | codex-usage-optimization | [Tasks](../tasks/task-WF-0082-codex-usage-optimization.md) | Done |
 
 ## Notes
 

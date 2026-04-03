@@ -2,8 +2,8 @@
 # WF-0082 — Codex Usage Optimization
 
 Artifact: walkthrough
-Version: v0.4
-Status: In progress
+Version: v0.5
+Status: Completed
 Last Updated: 2026-04-03
 
 ## Baseline Default-Load Estimate
@@ -107,9 +107,16 @@ Result:
 - Traceability preserved: historical workflow/task lookup still routes through `docs/reference/workflow_archive_index.md`, and file provenance headers remain intact.
 - Researcher-facing terminology preserved: `AGENTS.md` still explicitly requires `evaluation criteria/elements` and still forbids `rubric` in researcher-facing text.
 
+## Phase 3.3 Closure Notes
+
+- Part C1 fixed the Phase 3.2 status-drift finding by aligning the task, walkthrough, dashboard, and archive surfaces on one terminal workflow state.
+- Part C2 added and ran a deterministic cross-artifact status-alignment verification command so future handoffs fail closed on stale WF metadata.
+- Part C3 moves the active WF artifacts into `completed/` directories and updates the live routes to point at the completed paths.
+
 ## Changelog
 
 - v0.1 (2026-04-03): Recorded the baseline default-load estimate, replay command, and compact surface inventory for Task 1.
 - v0.2 (2026-04-03): Recorded the Task 2 dashboard compaction result and the post-split verification snapshot for `docs/index.md`.
 - v0.3 (2026-04-03): Recorded the narrowed `AGENTS.md` trigger and confirmed the file stayed within the tiny-file guardrail for Task 3.
 - v0.4 (2026-04-03): Recorded the final before/after default-load comparison, the durable operating rule, and the closing safety/traceability/terminology checks for Task 5.
+- v0.5 (2026-04-03): Closed the walkthrough as `Completed`, recorded the Phase 3.2 review fix, and added the Phase 3.3 closure notes.
