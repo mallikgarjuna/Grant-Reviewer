@@ -1,6 +1,16 @@
 <!-- docs/logs/decisions.md -->
 # Architectural Decisions
 
+## Date: 2026-04-03 (WF-0082: codex-usage-optimization)
+
+### AD 82.1: WF-0082 defines default context by repo trigger posture and optimizes entrypoints before deeper archive work
+- **WF ID**: WF-0082
+- **Context**: The approved brainstorm identified that the repo's main problem is not total documentation volume, but broad default entrypoints that encourage large files such as `docs/index.md` to be opened too early. The workflow also needs to preserve safety, traceability, and researcher-facing terminology while improving day-to-day Codex performance.
+- **Decision**: Define `default context` as files the repo explicitly encourages opening early or for most tasks. Prioritize cleanup of the heaviest likely default entrypoints first, especially `docs/index.md` and any overly broad `AGENTS.md` triggers. Treat deeper memory/history refactors as secondary work only after the entrypoint cleanup is complete or proven insufficient.
+- **Why**: This keeps the optimization tied to likely agent behavior instead of aesthetic file trimming and creates the highest chance of meaningful context reduction with the smallest safe edits.
+- **Tradeoff**: Some large historical files may remain in the repo untouched during MVP if they are no longer default entrypoints; broader archival cleanup can follow later if the first-pass reduction is not enough.
+- **Status**: Approved.
+
 ## Date: 2026-03-14 (WF-0081: atomic-findings-structured-review)
 
 ### AD 81.1: WF-0081 keeps diagnostic findings as the upstream truth and assigns one canonical `ReviewFinding` write owner

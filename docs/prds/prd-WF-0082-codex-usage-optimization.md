@@ -2,8 +2,8 @@
 # WF-0082 — Codex Usage Optimization PRD
 
 Artifact: prd
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Tasks
 Last Updated: 2026-04-03
 
 ## 0. User Stories (MVP)
@@ -65,6 +65,7 @@ Last Updated: 2026-04-03
 ## 4. Functional Requirements
 
 - FR1 (US1, US4): The workflow must establish one consistent, practical method for estimating the likely repo-local default-load path before and after changes.
+- FR1A (US1, US4): The before and after estimates must use the same command, formula, or script so the comparison is replayable and not based on mixed measurement methods.
 - FR2 (US2): The workflow must classify the relevant instruction surfaces into always-on, on-demand, or archival categories using a repo-specific definition of default context.
 - FR3 (US1, US4): The workflow must prioritize the highest-cost likely default entrypoint for cleanup first, with `docs/index.md` as the initial target.
 - FR4 (US1, US2): The workflow must narrow or reroute broad triggers that encourage large docs to be opened for most tasks when those docs are better treated as on-demand or archival.
@@ -92,6 +93,10 @@ Last Updated: 2026-04-03
   - `estimated_cost`: practical size signal using the chosen estimation method
   - `action`: `keep | revise | compact | archive`
   - `rationale`: short reason tied to likely-load behavior and safety constraints
+
+### Required Inventory Output Artifact
+
+- Phase 2 must produce a compact surface inventory table or equivalent structured artifact that records, at minimum, `surface_path`, `load_posture`, `estimated_cost`, `action`, and `rationale`. (`FR2`, `FR8`, `FR10`)
 
 - Default Load Estimate (`FR1`, `FR10`)
   - `path_name`: e.g. likely repo-local default-load path
@@ -148,9 +153,10 @@ Last Updated: 2026-04-03
 1. Confirm brainstorm scope and measurement standard.
 2. Inventory current instruction surfaces and likely-load triggers.
 3. Classify surfaces and choose minimal high-impact edits.
-4. Apply entrypoint cleanup first.
-5. Verify before/after estimate and routing/safety preservation.
-6. Document the durable operating rule for future additions.
+4. Apply entrypoint cleanup first, centered on `docs/index.md` and any overly broad triggers.
+5. Only expand into deeper memory/archive work if the entrypoint cleanup is insufficient or already complete.
+6. Verify before/after estimate and routing/safety preservation.
+7. Document the durable operating rule for future additions.
 
 ### Deep Modules
 
@@ -193,10 +199,20 @@ This WF is documentation/instruction-surface work rather than an application beh
 - Mocking
   - none; rely on direct file/content inspection and deterministic repo commands
 - Minimal verification by requirement
-  - FR1/FR10: rerun the same estimation method before and after edits
+  - FR1/FR1A/FR10: rerun the same estimation method before and after edits
   - FR2/FR8: inspect the resulting classification/routing policy in the edited docs
   - FR3/FR4/FR7: verify the first cleanup target and broad triggers were actually reduced or rerouted
   - FR5/FR9: verify safety/traceability/terminology guardrails remain present and reachable
+
+### Minimal Verification Matrix
+
+| Proof item | Requirement(s) | Replay surface | Expected outcome |
+| :--- | :--- | :--- | :--- |
+| Baseline default-load estimate | FR1, FR1A, FR10 | one deterministic repo command/script/formula run before edits | baseline estimate captured with included surfaces listed |
+| Post-change default-load estimate | FR1, FR1A, FR10 | same deterministic repo command/script/formula run after edits | comparable after-state estimate captured |
+| Entry-point routing check | FR3, FR4, FR9 | direct inspection of `AGENTS.md` and `docs/index.md` | heavy default entrypoint is reduced or rerouted without losing discoverability |
+| Surface inventory proof | FR2, FR8, FR10 | inspect produced inventory artifact | every in-scope surface has posture, action, and rationale |
+| Safety/traceability preservation | FR5, FR9 | direct inspection of edited safety/provenance/terminology surfaces | no silent loss of required workflow safety, provenance, or terminology rules |
 
 ## 9. Telemetry (Minimal)
 
@@ -219,3 +235,4 @@ This WF is documentation/instruction-surface work rather than an application beh
 ## 12. Changelog
 
 - v0.1 (2026-04-03): Initial PRD from brainstorm
+- v0.2 (2026-04-03): Applied risk-audit edits by locking measurement consistency, requiring a concrete inventory output artifact, tightening sequencing around entrypoint cleanup, and adding a minimal verification matrix.
