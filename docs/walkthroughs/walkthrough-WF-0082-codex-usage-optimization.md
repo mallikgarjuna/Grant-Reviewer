@@ -53,7 +53,22 @@ PY
 ## Task Progress Notes
 
 - Task 1 established the replayable baseline and compact inventory artifact without changing repo behavior.
+- Task 2 converted `docs/index.md` from a heavy inline registry into a compact active dashboard and moved historical lookup behind `docs/reference/workflow_archive_index.md`.
+
+## Task 2 Verification Snapshot
+
+| Surface | Chars | Estimated tokens |
+| :--- | ---: | ---: |
+| `docs/index.md` | 1611 | 403 |
+| `docs/reference/workflow_archive_index.md` | 3979 | 995 |
+
+Task 2 outcome:
+
+- `docs/index.md` dropped from `31734` chars / `7934` estimated tokens to `1611` chars / `403` estimated tokens.
+- The active dashboard still exposes `WF-0082`, `Mission`, `Parking lot`, and the archive route.
+- Historical lookup now routes through `docs/reference/workflow_archive_index.md` instead of staying inline in the default dashboard.
 
 ## Changelog
 
 - v0.1 (2026-04-03): Recorded the baseline default-load estimate, replay command, and compact surface inventory for Task 1.
+- v0.2 (2026-04-03): Recorded the Task 2 dashboard compaction result and the post-split verification snapshot for `docs/index.md`.

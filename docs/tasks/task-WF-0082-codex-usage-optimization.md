@@ -36,7 +36,7 @@ Verification Steps:
 - `rg -n "Baseline|Surface inventory|default-load" docs/walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md`
 Risks (if any): If the baseline artifact is vague or non-replayable, later tasks can look green while losing measurement comparability.
 
-### [ ] Task 2 — Convert `docs/index.md` into a compact active dashboard
+### [x] Task 2 — Convert `docs/index.md` into a compact active dashboard
 
 Goal:
 Reduce the highest-cost likely default entrypoint by turning `docs/index.md` into a lightweight active dashboard that routes to archive/history instead of embedding large historical registries inline.
