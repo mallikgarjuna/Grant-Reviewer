@@ -2,8 +2,8 @@
 # WF-0082 — Codex Usage Optimization Tasks
 
 Artifact: task
-Version: v0.1
-Status: Draft
+Version: v0.2
+Status: Ready for Implementation
 Last Updated: 2026-04-03
 
 ## Task Breakdown (Sequential Order)
@@ -20,10 +20,9 @@ Enables: 2, 3, 4, 5
 Parallelizable: no
 Files to modify:
 Must touch files:
-- `docs/tasks/task-WF-0082-codex-usage-optimization.md`
 - `docs/walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md`
 May touch files:
-- `none`
+- `docs/tasks/task-WF-0082-codex-usage-optimization.md`
 Out of scope: editing `AGENTS.md`, `docs/index.md`, memory leaf docs, or adding new routing policy
 Stop if: the baseline estimate cannot be reproduced with one deterministic command/formula or the inventory cannot be expressed compactly in the walkthrough without inventing a new artifact type
 Session boundary after: no
@@ -53,17 +52,19 @@ Must touch files:
 - `docs/reference/workflow_archive_index.md`
 May touch files:
 - `docs/walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md`
-Out of scope: editing `AGENTS.md`, memory leaves, or rewriting archive content beyond what is needed to preserve routing
+Out of scope: editing `AGENTS.md`, memory leaves, or performing broad cleanup/rewriting of archive content beyond what is needed to preserve routing and registry access
 Stop if: preserving discoverability requires touching more than these files or the archive split would break existing registry links without a safe replacement path
 Session boundary after: no
 Acceptance Criteria:
 - `docs/index.md` becomes materially smaller and functions as an active dashboard/router rather than a historical registry dump.
 - Historical workflow/task registry content remains reachable through a linked archive/reference surface.
 - Routing from the active dashboard to the archive surface is explicit and preserves traceability.
+- The compact dashboard still exposes the active WF and the essential top-level routes needed to navigate current work.
 TDD Plan: N/A
 Verification Steps:
 - `python3 - <<'PY'\nfrom pathlib import Path\nfor f in ['docs/index.md','docs/reference/workflow_archive_index.md']:\n    text=Path(f).read_text()\n    print(f'{f}\\tchars={len(text)}\\test_tokens~={round(len(text)/4)}')\nPY`
 - `rg -n "workflow_archive_index|Active|Archive|WF-0082" docs/index.md docs/reference/workflow_archive_index.md`
+- `rg -n "WF-0082|Mission|Parking lot|workflow_archive_index" docs/index.md`
 Risks (if any): A bad split can hide history or create a lighter file that no longer routes users or agents to the necessary archive surfaces.
 
 ### [ ] Task 3 — Narrow `AGENTS.md` default-entrypoint trigger
@@ -111,7 +112,7 @@ Must touch files:
 - `docs/memory/domain/project_docs.md`
 - `docs/memory/tools/workflow.md`
 May touch files:
-- `docs/walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md`
+- `none`
 Out of scope: full reorganization of all memory files, new folder hierarchies, or sweeping edits across every memory leaf
 Stop if: a safe classification requires touching additional memory files beyond this bounded surface or inventing a new memory subsystem
 Session boundary after: yes
@@ -158,3 +159,4 @@ Risks (if any): If closure evidence is hand-wavy, the WF may claim optimization 
 ## Changelog
 
 - v0.1 (2026-04-03): Initial task breakdown from PRD
+- v0.2 (2026-04-03): Applied review edits by restoring 3-file atomicity for the memory-routing task, tightening the tracer-bullet file surface, and adding stronger active-dashboard routing proof for the index compaction slice.
