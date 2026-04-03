@@ -33,7 +33,7 @@ The completed WF archive is intentionally compact here to avoid recreating the o
 - Legacy-with-spec completed workflows:
   - Use `rg --files docs/brainstorms/completed docs/prds/completed docs/tasks/completed docs/walkthroughs/completed | rg 'WF-00(09|10|11|12|13|14|15|16|17|18|19|21|23|24|25|44)'`
 - Active-standard completed workflows:
-  - Use `rg --files docs/brainstorms/completed docs/prds/completed docs/tasks/completed docs/walkthroughs/completed | rg 'WF-00(26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|80|81)'`
+  - Use `rg --files docs/brainstorms/completed docs/prds/completed docs/tasks/completed docs/walkthroughs/completed | rg 'WF-00(26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|80|81|82)'`
 
 ## Still-Active / Non-Archived WF References
 
@@ -42,7 +42,6 @@ These rows remain in the active dashboard because they are not fully archived ye
 | WF ID | Slug / Feature | Key Artifact | Status |
 | :--- | :--- | :--- | :--- |
 | WF-0079 | researcher-visible-carry-through-mvp | [Tasks](../tasks/task-WF-0079-researcher-visible-carry-through-mvp.md) | Completed |
-| WF-0082 | codex-usage-optimization | [Tasks](../tasks/task-WF-0082-codex-usage-optimization.md) | Done |
 
 ## Notes
 

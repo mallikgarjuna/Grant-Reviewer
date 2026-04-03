@@ -1,4 +1,4 @@
-<!-- docs/tasks/task-WF-0082-codex-usage-optimization.md -->
+<!-- docs/tasks/completed/task-WF-0082-codex-usage-optimization.md -->
 # WF-0082 — Codex Usage Optimization Tasks
 
 Artifact: task
@@ -153,8 +153,8 @@ Acceptance Criteria:
 TDD Plan: N/A
 Verification Steps:
 - `python3 - <<'PY'\nfrom pathlib import Path\nfiles=['AGENTS.md','docs/index.md','docs/memory/index.md']\ncombined=sum(len(Path(f).read_text()) for f in files)\nprint('combined_est_tokens', round(combined/4))\nfor f in files:\n    text=Path(f).read_text()\n    print(f'{f}\\tchars={len(text)}\\test_tokens~={round(len(text)/4)}')\nPY`
-- `rg -n "before|after|default-load|always-on|on-demand|archival|traceability|terminology" docs/walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md docs/logs/decisions.md`
-- `rg -n "Status: Done|Status: Completed|\\| WF-0082 \\|.*\\| Done \\|" docs/tasks/task-WF-0082-codex-usage-optimization.md docs/walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md docs/index.md docs/reference/workflow_archive_index.md`
+- `rg -n "before|after|default-load|always-on|on-demand|archival|traceability|terminology" docs/walkthroughs/completed/walkthrough-WF-0082-codex-usage-optimization.md docs/logs/decisions.md`
+- `rg -n "Status: Done|Status: Completed|\\| WF-0082 \\|.*\\| Done \\|" docs/tasks/completed/task-WF-0082-codex-usage-optimization.md docs/walkthroughs/completed/walkthrough-WF-0082-codex-usage-optimization.md docs/index.md`
 Risks (if any): If closure evidence is hand-wavy, the WF may claim optimization success without actually proving that likely-load behavior improved safely.
 
 ## Changelog

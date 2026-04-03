@@ -1,4 +1,4 @@
-<!-- docs/brainstorms/brainstorm-WF-0082-codex-usage-optimization.md -->
+<!-- docs/brainstorms/completed/brainstorm-WF-0082-codex-usage-optimization.md -->
 # WF-0082 — Codex Usage Optimization
 
 Artifact: brainstorm

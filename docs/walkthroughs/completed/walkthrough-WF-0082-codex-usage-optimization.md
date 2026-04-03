@@ -1,4 +1,4 @@
-<!-- docs/walkthroughs/walkthrough-WF-0082-codex-usage-optimization.md -->
+<!-- docs/walkthroughs/completed/walkthrough-WF-0082-codex-usage-optimization.md -->
 # WF-0082 — Codex Usage Optimization
 
 Artifact: walkthrough

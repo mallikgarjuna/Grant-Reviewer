@@ -1,4 +1,4 @@
-<!-- docs/prds/prd-WF-0082-codex-usage-optimization.md -->
+<!-- docs/prds/completed/prd-WF-0082-codex-usage-optimization.md -->
 # WF-0082 — Codex Usage Optimization PRD
 
 Artifact: prd
