@@ -126,7 +126,7 @@ Verification Steps:
 - `python3 - <<'PY'\nfrom pathlib import Path\nfor f in ['docs/memory/index.md','docs/memory/domain/project_docs.md','docs/memory/tools/workflow.md']:\n    text=Path(f).read_text()\n    print(f'{f}\\tchars={len(text)}\\test_tokens~={round(len(text)/4)}')\nPY`
 Risks (if any): If the framing is too weak, the files remain practical default context; if too strong, genuinely useful guidance may become hard to find.
 
-### [ ] Task 5 — Final verification and durable operating rule
+### [x] Task 5 — Final verification and durable operating rule
 
 Goal:
 Record the before/after comparison, verify that routing/safety/terminology still hold, and encode the durable operating rule that future instruction surfaces must follow.

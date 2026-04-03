@@ -11,6 +11,14 @@
 - **Tradeoff**: Some large historical files may remain in the repo untouched during MVP if they are no longer default entrypoints; broader archival cleanup can follow later if the first-pass reduction is not enough.
 - **Status**: Approved.
 
+### AD 82.2: WF-0082 adopts a three-posture instruction model for future repo surfaces
+- **WF ID**: WF-0082
+- **Context**: Implementation proved that the main prompt-budget win came from treating `docs/index.md` and memory surfaces differently instead of assuming all repo guidance should be equally close to every session start.
+- **Decision**: Use three instruction postures going forward: `always_on` for tiny high-signal entry surfaces, `on_demand` for routed reference surfaces, and `archival` for history-heavy traceability surfaces. New instruction docs should default to `on_demand` unless there is a strong reason they must be `always_on`.
+- **Why**: This gives the repo a durable context-budget rule instead of relying on one-off cleanup passes.
+- **Tradeoff**: Some contributors may need one extra click or lookup step to reach historical material, but the default prompt surface stays much smaller and clearer.
+- **Status**: Approved.
+
 ## Date: 2026-03-14 (WF-0081: atomic-findings-structured-review)
 
 ### AD 81.1: WF-0081 keeps diagnostic findings as the upstream truth and assigns one canonical `ReviewFinding` write owner

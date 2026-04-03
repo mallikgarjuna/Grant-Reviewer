@@ -2,7 +2,7 @@
 # WF-0082 — Codex Usage Optimization
 
 Artifact: walkthrough
-Version: v0.1
+Version: v0.4
 Status: In progress
 Last Updated: 2026-04-03
 
@@ -74,8 +74,42 @@ Task 2 outcome:
 - The rest of the high-signal AGENTS rules remain unchanged.
 - File length remains within the repo's tiny-file guardrail.
 
+## Final Before / After Comparison
+
+Method:
+
+- Same deterministic estimate as the baseline: `round(char_count / 4)` over the likely repo-local default-load path `AGENTS.md` + `docs/index.md` + `docs/memory/index.md`.
+
+| Surface | Before chars | Before est. tokens | After chars | After est. tokens |
+| :--- | ---: | ---: | ---: | ---: |
+| `AGENTS.md` | 2939 | 735 | 2950 | 738 |
+| `docs/index.md` | 31734 | 7934 | 1611 | 403 |
+| `docs/memory/index.md` | 994 | 248 | 1243 | 311 |
+| Combined | 35667 | 8917 | 5804 | 1451 |
+
+Result:
+
+- Combined estimated default-load path reduced from `8917` to `1451`.
+- Estimated reduction: `7466` tokens, about `83.7%`.
+- The main win came from converting `docs/index.md` into a compact active dashboard and narrowing the `AGENTS.md` trigger.
+
+## Durable Operating Rule
+
+- `always_on`: only tiny, high-signal entry surfaces that the repo intentionally wants near every session start, such as `AGENTS.md`.
+- `on_demand`: router or reference surfaces that are useful when a task explicitly calls for them, such as `docs/memory/index.md` and selected memory leaves.
+- `archival`: history-heavy surfaces that preserve traceability and lookup value but should not be default prompt payload, such as workflow/task registries now routed through `docs/reference/workflow_archive_index.md`.
+- New instruction surfaces should default to `on_demand` unless there is a strong reason they must be `always_on`.
+- Large historical material should be compacted behind active routers instead of living inline in default dashboards.
+
+## Safety / Traceability / Terminology Checks
+
+- Workflow safety preserved: active workflow routing remains visible from `docs/index.md`, and detailed workflow docs remain available on demand.
+- Traceability preserved: historical workflow/task lookup still routes through `docs/reference/workflow_archive_index.md`, and file provenance headers remain intact.
+- Researcher-facing terminology preserved: `AGENTS.md` still explicitly requires `evaluation criteria/elements` and still forbids `rubric` in researcher-facing text.
+
 ## Changelog
 
 - v0.1 (2026-04-03): Recorded the baseline default-load estimate, replay command, and compact surface inventory for Task 1.
 - v0.2 (2026-04-03): Recorded the Task 2 dashboard compaction result and the post-split verification snapshot for `docs/index.md`.
 - v0.3 (2026-04-03): Recorded the narrowed `AGENTS.md` trigger and confirmed the file stayed within the tiny-file guardrail for Task 3.
+- v0.4 (2026-04-03): Recorded the final before/after default-load comparison, the durable operating rule, and the closing safety/traceability/terminology checks for Task 5.
